@@ -104,7 +104,7 @@ describe('TimelineDetailsView', function () {
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         renderElementIntoDOM(detailsView);
         const evalScriptEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
-            return event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.dur && event.dur > 2000;
+            return event.name === Trace.Types.Events.Name.EVALUATE_SCRIPT && event.dur && event.dur > 2000;
         });
         assert.isOk(evalScriptEvent);
         await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: null, entityMapper: null });
@@ -140,7 +140,7 @@ describe('TimelineDetailsView', function () {
     it('correctly creates an event widget using the static method and hides the tabbed header', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const evalScriptEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
-            return event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.dur && event.dur > 2000;
+            return event.name === Trace.Types.Events.Name.EVALUATE_SCRIPT && event.dur && event.dur > 2000;
         });
         assert.isOk(evalScriptEvent);
         const detailsView = Timeline.TimelineDetailsView.TimelineDetailsPane.makeEventWidget(evalScriptEvent, parsedTrace);

@@ -116,7 +116,7 @@ describeWithEnvironment('Sidebar', () => {
         const entriesLink = {
             type: 'ENTRIES_LINK',
             entryFrom: events[0],
-            state: "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */,
+            state: Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED,
         };
         const sidebar = await renderSidebar(parsedTrace);
         sidebar.setAnnotations([entryLabelAnnotation, entriesLink], new Map());

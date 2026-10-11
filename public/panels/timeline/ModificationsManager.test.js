@@ -71,7 +71,7 @@ describeWithEnvironment('ModificationsManager', () => {
         }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
-            state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
+            state: Trace.Types.File.EntriesLinkState.CONNECTED,
             entryFrom: entry,
             entryTo: entry2,
         }, { loadedFromFile: false, muteAriaNotifications: false });
@@ -113,13 +113,13 @@ describeWithEnvironment('ModificationsManager', () => {
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
-            state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
+            state: Trace.Types.File.EntriesLinkState.CONNECTED,
             entryFrom: entry,
             entryTo: entry2,
         }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
-            state: "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */,
+            state: Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT,
             entryFrom: entry2,
         }, { loadedFromFile: false, muteAriaNotifications: false });
         // Make sure only the link with both 'to' and 'from' entries in in the generated JSON
@@ -144,7 +144,7 @@ describeWithEnvironment('ModificationsManager', () => {
         // Create a connection between entry 1 and entry 2
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
-            state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
+            state: Trace.Types.File.EntriesLinkState.CONNECTED,
             entryFrom: entry1,
             entryTo: entry2,
         }, { loadedFromFile: false, muteAriaNotifications: false });

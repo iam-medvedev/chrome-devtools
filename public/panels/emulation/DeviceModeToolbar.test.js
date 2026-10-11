@@ -68,6 +68,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
                 return createFakeSetting(false);
             },
             createLocalSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
+            resolve: (_descriptor) => createFakeSetting(false),
         });
         tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });

@@ -6,9 +6,11 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { HeapDetachedElementsDataGrid } from './HeapDetachedElementsDataGrid.js';
 import { ProfileType, } from './ProfileHeader.js';
 import { WritableProfileHeader } from './WritableProfileHeader.js';
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Button text to get the detached elements retained by JavaScript.
@@ -69,7 +71,7 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         this.dataGrid.data = { detachedElements, domModel };
     }
     async toolbarItems() {
-        return [this.selectedSizeText];
+        return html `${this.selectedSizeText.element}`;
     }
 }
 const DetachedElementsProfileTypeBase = Common.ObjectWrapper.eventMixin(ProfileType);

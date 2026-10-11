@@ -720,10 +720,12 @@ describe('DeviceModeModel', () => {
             clock.tick(new Date(2026, 8, 1).getTime() - new Date(2026, 0, 1).getTime());
             const septUA = EmulationModel.DeviceModeModel.DeviceModeModel.getDynamicMobileUA();
             assert.strictEqual(septUA.metadata.platformVersion, '15');
+            assert.strictEqual(EmulationModel.DeviceModeModel.DeviceModeModel.getDynamicAndroidVersion(), 15);
             // October 2026: Bump to Android 16
             clock.tick(new Date(2026, 9, 1).getTime() - new Date(2026, 8, 1).getTime());
             const octUA = EmulationModel.DeviceModeModel.DeviceModeModel.getDynamicMobileUA();
             assert.strictEqual(octUA.metadata.platformVersion, '16');
+            assert.strictEqual(EmulationModel.DeviceModeModel.DeviceModeModel.getDynamicAndroidVersion(), 16);
             assert.strictEqual(octUA.metadata.model, 'Pixel 10');
             // January 2030: Future proof check
             clock.tick(new Date(2030, 0, 1).getTime() - new Date(2026, 9, 1).getTime());
@@ -830,6 +832,119 @@ describe('DeviceModeModel', () => {
         finally {
             deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
         }
+    });
+    describe('per-device scale', () => {
+        function createDevice(title) {
+            const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            device.title = title;
+            device.userAgent = 'test-ua';
+            device.vertical = { width: 400, height: 800, hinge: null };
+            device.modes = [{ title: 'default', orientation: EmulationModel.EmulatedDevices.Vertical }];
+            return device;
+        }
+        beforeEach(() => {
+            const em = target.model(SDK.EmulationModel.EmulationModel);
+            assert.exists(em);
+            deviceModeModel.modelAdded(em);
+            deviceModeModel.setAvailableSize(new Platform.Size(100, 100), new Platform.Size(100, 100));
+        });
+        afterEach(() => {
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        });
+        it('restores the saved scale when switching back to a device', () => {
+            const device1 = createDevice('Device 1');
+            const device2 = createDevice('Device 2');
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0], 0.5);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device2, device2.modes[0]);
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.12);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0]);
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.5);
+        });
+        it('respects an explicitly provided scale over the saved one', () => {
+            const device1 = createDevice('Device 1');
+            const device2 = createDevice('Device 2');
+            // Device 1 is saved with auto-adjust (fit scale is 0.12).
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0]);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device2, device2.modes[0]);
+            // Emulate Device 1 again, explicitly requesting a scale of 1 (as Lighthouse does).
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0], 1);
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 1);
+            // Same for a device saved with a fixed scale.
+            universe.settings.createSetting('emulation.auto-adjust-scale', true).set(false);
+            deviceModeModel.scaleSetting().set(0.5);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device2, device2.modes[0]);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0], 1);
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), 1);
+        });
+        it('persists the scale of the active device without switching devices', () => {
+            const device1 = createDevice('Device 1');
+            const device2 = createDevice('Device 2');
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0]);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device2, device2.modes[0]);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0]);
+            // The user picks a fixed zoom level for the active device, then DevTools is reloaded.
+            universe.settings.createSetting('emulation.auto-adjust-scale', true).set(false);
+            deviceModeModel.scaleSetting().set(0.5);
+            const reloadedModel = new EmulationModel.DeviceModeModel.DeviceModeModel(universe.targetManager, universe.settings, universe.multitargetNetworkManager);
+            try {
+                reloadedModel.setAvailableSize(new Platform.Size(100, 100), new Platform.Size(100, 100));
+                reloadedModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0]);
+                assert.strictEqual(reloadedModel.scaleSetting().get(), 0.5);
+            }
+            finally {
+                reloadedModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+            }
+        });
+        it('saves only the final scale settings when switching devices', () => {
+            const device1 = createDevice('Device 1');
+            const device2 = createDevice('Device 2');
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0], 0.5);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device2, device2.modes[0]);
+            const savedEntries = [];
+            universe.settings
+                .createSetting('emulation.device-scale-map', {})
+                .addChangeListener(({ data }) => savedEntries.push({ ...data['Device 1'] }));
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device1, device1.modes[0], 1);
+            assert.deepEqual(savedEntries, [{ scale: 1, autoAdjust: false }]);
+        });
+        it('keeps the saved auto-adjust setting when restoring a device with an explicit scale', () => {
+            const autoAdjustSetting = universe.settings.createSetting('emulation.auto-adjust-scale', true);
+            const device = createDevice('Device 1');
+            const lighthouseDevice = createDevice('Moto G Power');
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, device.modes[0]);
+            const scaleBefore = deviceModeModel.scaleSetting().get();
+            // Lighthouse emulates its device at 100% and afterwards restores the previous device with its previous scale.
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, lighthouseDevice, lighthouseDevice.modes[0], 1);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, device.modes[0], scaleBefore);
+            assert.isTrue(autoAdjustSetting.get());
+            assert.strictEqual(deviceModeModel.scaleSetting().get(), scaleBefore);
+        });
+    });
+    it('updates scale to fit in responsive mode when setAvailableSize is called after emulate', () => {
+        const em = target.model(SDK.EmulationModel.EmulationModel);
+        assert.exists(em);
+        deviceModeModel.modelAdded(em);
+        universe.settings.createSetting('emulation.device-width', 400).set(1000);
+        universe.settings.createSetting('emulation.device-scale-map', {}).set({
+            Responsive: { scale: 1, autoAdjust: true },
+        });
+        // Emulate Responsive before setAvailableSize is called (simulating DevTools startup).
+        deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
+        // Scale must not become 0 while waiting for setAvailableSize.
+        assert.isAbove(deviceModeModel.scaleSetting().get(), 0);
+        assert.isAbove(deviceModeModel.scale(), 0);
+        // setAvailableSize is called on layout with preferred size 500x500.
+        deviceModeModel.setAvailableSize(new Platform.Size(500, 500), new Platform.Size(500, 500));
+        // Fit scale for width 1000 in 500x500 is 0.5.
+        assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.5);
+        assert.strictEqual(deviceModeModel.scale(), 0.5);
+    });
+    it('never calculates a fit scale of 0 even when preferredSize is 1x1', () => {
+        deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
+        deviceModeModel.setWidthAndScaleToFit(400);
+        assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.01);
+        assert.strictEqual(deviceModeModel.scale(), 0.01);
     });
     describe('saveScreenshot', () => {
         const { urlString } = Platform.DevToolsPath;

@@ -1,3 +1,4 @@
+import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';

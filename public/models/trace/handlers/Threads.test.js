@@ -12,18 +12,18 @@ describe('Handler Threads helper', function () {
             return Array.from(process.threads.values());
         });
         const expectedThreadNamesAndTypes = [
-            { name: 'CrRendererMain', type: "MAIN_THREAD" /* Trace.Handlers.Threads.ThreadType.MAIN_THREAD */ },
-            { name: 'Chrome_ChildIOThread', type: "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */ },
-            { name: 'Compositor', type: "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */ },
-            { name: 'ThreadPoolServiceThread', type: "THREAD_POOL" /* Trace.Handlers.Threads.ThreadType.THREAD_POOL */ },
-            { name: 'Media', type: "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */ },
-            { name: 'ThreadPoolForegroundWorker', type: "THREAD_POOL" /* Trace.Handlers.Threads.ThreadType.THREAD_POOL */ },
-            { name: 'CompositorTileWorker4', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
-            { name: 'CompositorTileWorker2', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
-            { name: 'CompositorTileWorker1', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
-            { name: 'CompositorTileWorkerBackground', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
-            { name: 'ThreadPoolForegroundWorker', type: "THREAD_POOL" /* Trace.Handlers.Threads.ThreadType.THREAD_POOL */ },
-            { name: 'CompositorTileWorker3', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
+            { name: 'CrRendererMain', type: Trace.Handlers.Threads.ThreadType.MAIN_THREAD },
+            { name: 'Chrome_ChildIOThread', type: Trace.Handlers.Threads.ThreadType.OTHER },
+            { name: 'Compositor', type: Trace.Handlers.Threads.ThreadType.OTHER },
+            { name: 'ThreadPoolServiceThread', type: Trace.Handlers.Threads.ThreadType.THREAD_POOL },
+            { name: 'Media', type: Trace.Handlers.Threads.ThreadType.OTHER },
+            { name: 'ThreadPoolForegroundWorker', type: Trace.Handlers.Threads.ThreadType.THREAD_POOL },
+            { name: 'CompositorTileWorker4', type: Trace.Handlers.Threads.ThreadType.RASTERIZER },
+            { name: 'CompositorTileWorker2', type: Trace.Handlers.Threads.ThreadType.RASTERIZER },
+            { name: 'CompositorTileWorker1', type: Trace.Handlers.Threads.ThreadType.RASTERIZER },
+            { name: 'CompositorTileWorkerBackground', type: Trace.Handlers.Threads.ThreadType.RASTERIZER },
+            { name: 'ThreadPoolForegroundWorker', type: Trace.Handlers.Threads.ThreadType.THREAD_POOL },
+            { name: 'CompositorTileWorker3', type: Trace.Handlers.Threads.ThreadType.RASTERIZER },
         ];
         const threads = Trace.Handlers.Threads.threadsInTrace(data);
         assert.strictEqual(threads.length, allThreads.length);
@@ -42,15 +42,15 @@ describe('Handler Threads helper', function () {
         assert.strictEqual(data.Samples.profilesInProcess.size, 1);
         const threads = Trace.Handlers.Threads.threadsInTrace(data);
         assert.lengthOf(threads, 1);
-        assert.strictEqual(threads.at(0)?.type, "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */);
+        assert.strictEqual(threads.at(0)?.type, Trace.Handlers.Threads.ThreadType.CPU_PROFILE);
         assert.strictEqual(threads.at(0)?.entries.length, 875);
     });
     it('includes threads that only contain CPU profile samples and no renderer trace events', async function () {
         const events = [
             {
                 cat: 'disabled-by-default-devtools.timeline',
-                name: "TracingStartedInBrowser" /* Trace.Types.Events.Name.TRACING_STARTED_IN_BROWSER */,
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                name: Trace.Types.Events.Name.TRACING_STARTED_IN_BROWSER,
+                ph: Trace.Types.Events.Phase.INSTANT,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(100),
@@ -68,8 +68,8 @@ describe('Handler Threads helper', function () {
             },
             {
                 cat: '__metadata',
-                name: "thread_name" /* Trace.Types.Events.Name.THREAD_NAME */,
-                ph: "M" /* Trace.Types.Events.Phase.METADATA */,
+                name: Trace.Types.Events.Name.THREAD_NAME,
+                ph: Trace.Types.Events.Phase.METADATA,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(0),
@@ -77,8 +77,8 @@ describe('Handler Threads helper', function () {
             },
             {
                 cat: 'disabled-by-default-devtools.timeline',
-                name: "RunTask" /* Trace.Types.Events.Name.RUN_TASK */,
-                ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                name: Trace.Types.Events.Name.RUN_TASK,
+                ph: Trace.Types.Events.Phase.COMPLETE,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(100),
@@ -87,8 +87,8 @@ describe('Handler Threads helper', function () {
             },
             {
                 cat: 'disabled-by-default-v8.cpu_profiler',
-                name: "Profile" /* Trace.Types.Events.Name.PROFILE */,
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                name: Trace.Types.Events.Name.PROFILE,
+                ph: Trace.Types.Events.Phase.SAMPLE,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(2),
                 ts: Trace.Types.Timing.Micro(100),
@@ -101,8 +101,8 @@ describe('Handler Threads helper', function () {
             },
             {
                 cat: 'disabled-by-default-v8.cpu_profiler',
-                name: "ProfileChunk" /* Trace.Types.Events.Name.PROFILE_CHUNK */,
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                name: Trace.Types.Events.Name.PROFILE_CHUNK,
+                ph: Trace.Types.Events.Phase.SAMPLE,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(2),
                 ts: Trace.Types.Timing.Micro(200),
@@ -133,7 +133,7 @@ describe('Handler Threads helper', function () {
         const sampleOnlyThread = threads.find(t => t.tid === Trace.Types.Events.ThreadID(2));
         assert.exists(sampleOnlyThread);
         assert.lengthOf(sampleOnlyThread.entries, 1);
-        assert.strictEqual(sampleOnlyThread.entries[0].name, "ProfileCall" /* Trace.Types.Events.Name.PROFILE_CALL */);
+        assert.strictEqual(sampleOnlyThread.entries[0].name, Trace.Types.Events.Name.PROFILE_CALL);
         assert.strictEqual(sampleOnlyThread.entries[0].callFrame.functionName, 'wasmTask');
         assert.strictEqual(sampleOnlyThread.tree.roots.size, 1);
     });

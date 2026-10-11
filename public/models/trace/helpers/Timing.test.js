@@ -93,8 +93,8 @@ describe('Timing helpers', () => {
         });
         it('can adjust a MARK_SOFT_FCP event timestamp relative to its soft navigation start', async () => {
             const softNavStart = {
-                name: "SoftNavigationStart" /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */,
-                ph: "n" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT */,
+                name: Trace.Types.Events.Name.SOFT_NAVIGATION_START,
+                ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 cat: 'disabled-by-default-devtools.timeline',
@@ -114,8 +114,8 @@ describe('Timing helpers', () => {
                 },
             };
             const softFcpEvent = {
-                name: "SyntheticSoftFirstContentfulPaint" /* Trace.Types.Events.Name.MARK_SOFT_FCP */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                name: Trace.Types.Events.Name.MARK_SOFT_FCP,
+                ph: Trace.Types.Events.Phase.MARK,
                 rawSourceEvent: softNavStart,
                 _tag: 'SyntheticEntryTag',
                 pid: Trace.Types.Events.ProcessID(1),
@@ -148,8 +148,8 @@ describe('Timing helpers', () => {
         });
         it('can adjust a SoftNavigationStart event timestamp relative to its closest navigation start', async () => {
             const navigationStart = {
-                name: "navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                name: Trace.Types.Events.Name.NAVIGATION_START,
+                ph: Trace.Types.Events.Phase.MARK,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 cat: 'disabled-by-default-devtools.timeline',
@@ -165,8 +165,8 @@ describe('Timing helpers', () => {
                 },
             };
             const softNavStart = {
-                name: "SoftNavigationStart" /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */,
-                ph: "n" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT */,
+                name: Trace.Types.Events.Name.SOFT_NAVIGATION_START,
+                ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT,
                 pid: Trace.Types.Events.ProcessID(2),
                 tid: Trace.Types.Events.ThreadID(1),
                 cat: 'disabled-by-default-devtools.timeline',

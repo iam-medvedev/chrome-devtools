@@ -17,7 +17,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'TracingStartedInBrowser',
-                    ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                    ph: Trace.Types.Events.Phase.INSTANT,
                     pid,
                     tid: mainThread,
                     ts: microsec(100),
@@ -32,7 +32,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'SetLayerTreeId',
-                    ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                    ph: Trace.Types.Events.Phase.INSTANT,
                     pid,
                     tid: mainThread,
                     ts: microsec(101),
@@ -41,7 +41,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'toplevel',
                     name: 'Program',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(100000),
                     dur: microsec(3000),
                     tid: mainThread,
@@ -51,7 +51,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'FunctionCall',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(100500),
                     dur: microsec(1500),
                     tid: mainThread,
@@ -61,7 +61,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'Layout',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(101000),
                     dur: microsec(1000),
                     tid: mainThread,
@@ -79,7 +79,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'toplevel',
                     name: 'Program',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(104000),
                     dur: microsec(4000),
                     tid: mainThread,
@@ -89,7 +89,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'FunctionCall',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(104000),
                     dur: microsec(1000),
                     tid: mainThread,
@@ -99,7 +99,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'CommitLoad',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(105000),
                     dur: microsec(1000),
                     tid: mainThread,
@@ -109,7 +109,7 @@ describeWithEnvironment('TimelineRangeSummaryView', () => {
                 {
                     cat: 'disabled-by-default-devtools.timeline',
                     name: 'Layout',
-                    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                    ph: Trace.Types.Events.Phase.COMPLETE,
                     ts: microsec(107000),
                     dur: microsec(1000),
                     tid: mainThread,

@@ -1,6 +1,7 @@
 // ../../front_end/ui/legacy/components/perf_ui/perf_ui-meta.ts
 import * as Common from "../../../../core/common/common.js";
 import * as i18n from "../../../../core/i18n/i18n.js";
+import * as SettingsUI from "../../../settings/settings.js";
 import * as UI from "../../legacy.js";
 var UIStrings = {
   /**
@@ -39,13 +40,9 @@ UI.ActionRegistration.registerActionExtension({
     return new PerfUI.GCActionDelegate.GCActionDelegate();
   }
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.flamechartSelectedNavigationSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.flamechartSelectedNavigation),
-  settingName: "flamechart-selected-navigation",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "classic",
   options: [
     {
       title: i18nLazyString(UIStrings.modern),

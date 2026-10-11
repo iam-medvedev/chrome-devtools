@@ -178,7 +178,7 @@ describe('StackTraceForTraceEvent', function () {
             rawSourceEvent: {
                 cat: 'blink.user_timing',
                 args: { stackTrace: [{ functionName: jsCall.callFrame.functionName }], traceId: measureTraceId },
-                ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+                ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_START,
             },
         };
         const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, data);
@@ -196,7 +196,7 @@ describe('StackTraceForTraceEvent', function () {
         const extensionEntryStart = 0;
         const extensionEntryEnd = 100;
         const entryName = 'Entry';
-        const timestamp = makeInstantEvent("TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */, extensionEntryEnd, '', pid, tid);
+        const timestamp = makeInstantEvent(Trace.Types.Events.Name.TIME_STAMP, extensionEntryEnd, '', pid, tid);
         const extensionData = {
             color: 'tertiary-dark',
             frame: 'frame',
@@ -215,7 +215,7 @@ describe('StackTraceForTraceEvent', function () {
             args: extensionData,
             rawSourceEvent: timestamp,
             dur: Trace.Types.Timing.Micro(extensionEntryEnd - extensionEntryStart),
-            ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+            ph: Trace.Types.Events.Phase.COMPLETE,
             pid,
             tid,
         };
@@ -238,7 +238,7 @@ describe('StackTraceForTraceEvent', function () {
         profileCall1.callFrame.lineNumber = 0;
         profileCall2.callFrame.columnNumber = 0;
         profileCall2.callFrame.lineNumber = 0;
-        const traceEvent = makeCompleteEvent("UpdateLayoutTree" /* Trace.Types.Events.Name.RECALC_STYLE */, 100, 10, '', pid, tid);
+        const traceEvent = makeCompleteEvent(Trace.Types.Events.Name.RECALC_STYLE, 100, 10, '', pid, tid);
         const payloadCallStack = [
             { columnNumber: payloadColumnNumber, functionName: 'bar', lineNumber: payloadLineNumber, scriptId: '115', url: '' },
             { columnNumber: payloadColumnNumber, functionName: 'foo', lineNumber: payloadLineNumber, scriptId: '115', url: '' },

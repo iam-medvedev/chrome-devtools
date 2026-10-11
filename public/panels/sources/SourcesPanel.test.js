@@ -4,14 +4,18 @@
 import { assert } from 'chai';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment, registerActions, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { createContentProviderUISourceCode, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('SourcesPanel', () => {
     function setUpEnvironment() {
         registerNoopActions([
@@ -79,6 +83,120 @@ describeWithEnvironment('SourcesPanel', () => {
         sinon.assert.calledWith(visibilitySpy, sinon.match({ data: sinon.match({ location: sinon.match.string, revealedViewId: sinon.match.any }) }));
         sources.toggleDebuggerSidebar();
         sinon.assert.calledWith(visibilitySpy, sinon.match({ data: sinon.match({ location: sinon.match.string, hiddenViewId: sinon.match.any }) }));
+    });
+    it('clears the UISourceCode flavor when the editor for it is closed', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const context = UI.Context.Context.instance();
+        const uiSourceCode = createStubUISourceCode();
+        context.setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
+        sources.sourcesView().dispatchEventToListeners("EditorClosed" /* Sources.SourcesView.Events.EDITOR_CLOSED */, { uiSourceCode, wasSelected: true });
+        assert.isNull(context.flavor(Workspace.UISourceCode.UISourceCode));
+    });
+    it('keeps the UISourceCode flavor when the editor for another file is closed', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const context = UI.Context.Context.instance();
+        const uiSourceCode = createStubUISourceCode();
+        context.setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
+        sources.sourcesView().dispatchEventToListeners("EditorClosed" /* Sources.SourcesView.Events.EDITOR_CLOSED */, { uiSourceCode: createStubUISourceCode(), wasSelected: false });
+        assert.strictEqual(context.flavor(Workspace.UISourceCode.UISourceCode), uiSourceCode);
+    });
+    it('reveals UISourceCode in navigator when editor is selected and auto-reveal is enabled', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const revealStub = sinon.stub(sources, 'revealInNavigator');
+        const uiSourceCode = createStubUISourceCode();
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.SourcesSettings.autoRevealInNavigatorSettingDescriptor)
+            .set(true);
+        sources.sourcesView().dispatchEventToListeners("EditorSelected" /* Sources.SourcesView.Events.EDITOR_SELECTED */, uiSourceCode);
+        sinon.assert.calledOnceWithExactly(revealStub, uiSourceCode, true);
+    });
+    it('does not reveal UISourceCode in navigator when editor is selected and auto-reveal is disabled', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const revealStub = sinon.stub(sources, 'revealInNavigator');
+        const uiSourceCode = createStubUISourceCode();
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.SourcesSettings.autoRevealInNavigatorSettingDescriptor)
+            .set(false);
+        sources.sourcesView().dispatchEventToListeners("EditorSelected" /* Sources.SourcesView.Events.EDITOR_SELECTED */, uiSourceCode);
+        sinon.assert.notCalled(revealStub);
+    });
+    it('announces navigator and debugger sidebar toggles', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const alertSpy = sinon.spy(UI.ARIAUtils.LiveAnnouncer, 'alert');
+        sources.toggleNavigatorSidebar();
+        sources.toggleNavigatorSidebar();
+        sources.toggleDebuggerSidebar();
+        sources.toggleDebuggerSidebar();
+        assert.deepEqual(alertSpy.args.map(args => args[0]), [
+            'Navigator sidebar hidden',
+            'Navigator sidebar shown',
+            'Debugger sidebar hidden',
+            'Debugger sidebar shown',
+        ]);
+        alertSpy.restore();
+    });
+    describe('handleBeforeUnload', () => {
+        function createBeforeUnloadEvent(returnValue = false) {
+            const event = new Event('beforeunload');
+            Object.defineProperty(event, 'returnValue', { value: returnValue, writable: true });
+            return event;
+        }
+        it('sets returnValue and reveals dirty FileSystem source codes', () => {
+            setUpEnvironment();
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const dirtyFileSystemCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+            dirtyFileSystemCode.isDirty.returns(true);
+            const cleanFileSystemCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+            cleanFileSystemCode.isDirty.returns(false);
+            sinon.stub(workspace, 'uiSourceCodesForProjectType')
+                .withArgs(Workspace.Workspace.projectTypes.FileSystem)
+                .returns([dirtyFileSystemCode, cleanFileSystemCode]);
+            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+            const sources = new Sources.SourcesPanel.SourcesPanel();
+            const event = createBeforeUnloadEvent();
+            sources.handleBeforeUnload(event);
+            assert.isTrue(event.returnValue);
+            sinon.assert.calledWith(showViewStub, 'sources');
+            sinon.assert.calledOnceWithExactly(revealStub, dirtyFileSystemCode, false);
+        });
+        it('ignores dirty source codes from other project types and clean FileSystem source codes', () => {
+            setUpEnvironment();
+            const { uiSourceCode: dirtyNetworkCode } = createContentProviderUISourceCode({
+                url: urlString `https://example.com/script.js`,
+                mimeType: 'text/javascript',
+                projectType: Workspace.Workspace.projectTypes.Network,
+            });
+            dirtyNetworkCode.setWorkingCopy('modified');
+            assert.isTrue(dirtyNetworkCode.isDirty());
+            const { uiSourceCode: cleanFileSystemCode } = createFileSystemUISourceCode({
+                url: urlString `file:///path/to/clean.js`,
+                mimeType: 'text/javascript',
+            });
+            assert.isFalse(cleanFileSystemCode.isDirty());
+            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+            const sources = new Sources.SourcesPanel.SourcesPanel();
+            const event = createBeforeUnloadEvent();
+            sources.handleBeforeUnload(event);
+            assert.isFalse(event.returnValue);
+            sinon.assert.notCalled(showViewStub);
+            sinon.assert.notCalled(revealStub);
+        });
+        it('does nothing if another handler already set returnValue', () => {
+            setUpEnvironment();
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const uiSourceCodesSpy = sinon.spy(workspace, 'uiSourceCodesForProjectType');
+            const sources = new Sources.SourcesPanel.SourcesPanel();
+            const event = createBeforeUnloadEvent(true);
+            sources.handleBeforeUnload(event);
+            sinon.assert.notCalled(uiSourceCodesSpy);
+        });
     });
 });
 //# sourceMappingURL=SourcesPanel.test.js.map

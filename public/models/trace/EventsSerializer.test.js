@@ -57,9 +57,9 @@ describe('EventsSerializer', () => {
     it('returns null for a JSSample event', async function () {
         const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
         const jsSample = {
-            name: "JSSample" /* Trace.Types.Events.Name.JS_SAMPLE */,
+            name: Trace.Types.Events.Name.JS_SAMPLE,
             cat: 'devtools.timeline',
-            ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+            ph: Trace.Types.Events.Phase.INSTANT,
             ts: Trace.Types.Timing.Micro(100),
             dur: Trace.Types.Timing.Micro(0),
             pid: Trace.Types.Events.ProcessID(1),

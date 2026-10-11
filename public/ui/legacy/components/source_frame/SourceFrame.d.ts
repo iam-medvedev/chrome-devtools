@@ -20,16 +20,14 @@ export interface EventTypes {
 export type FormatFn = (lineNo: number, state: CodeMirror.EditorState) => string;
 export declare const LINE_NUMBER_FORMATTER: CodeMirror.Facet<FormatFn, FormatFn>;
 declare const SourceFrameImplBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.View.SimpleView>;
-export declare class SourceFrameImpl extends SourceFrameImplBase implements UI.SearchableView.Searchable, UI.SearchableView.Replaceable, Transformer {
+export declare class SourceFrameImpl extends SourceFrameImplBase implements UI.SearchableView.Searchable, UI.SearchableView.Replaceable, UI.SearchableView.SearchTarget, Transformer {
     #private;
     private readonly options;
     private readonly lazyContent;
     private prettyInternal;
     private rawContent;
     protected formattedMap: Formatter.ScriptFormatter.FormatterSourceMapping | null;
-    private readonly prettyToggle;
     private shouldAutoPrettyPrint;
-    private readonly progressToolbarItem;
     private textEditorInternal;
     private baseDoc;
     private prettyBaseDoc;
@@ -40,7 +38,6 @@ export declare class SourceFrameImpl extends SourceFrameImplBase implements UI.S
     private searchResults;
     private searchRegex;
     private loadError;
-    private readonly sourcePosition;
     private searchableView;
     private editable;
     private positionToReveal;
@@ -53,6 +50,7 @@ export declare class SourceFrameImpl extends SourceFrameImplBase implements UI.S
     contentSet: boolean;
     private selfXssWarningDisabledSetting;
     constructor(lazyContent: () => Promise<TextUtils.ContentData.ContentDataOrError>, options?: SourceFrameOptions, element?: HTMLElement);
+    performUpdate(): void;
     disposeView(): void;
     private placeholderEditorState;
     protected editorConfiguration(doc: string | CodeMirror.Text): CodeMirror.Extension;
@@ -105,7 +103,7 @@ export declare class SourceFrameImpl extends SourceFrameImplBase implements UI.S
     protected getLanguageSupport(content: string | CodeMirror.Text): Promise<CodeMirror.Extension>;
     updateLanguageMode(content: string): Promise<void>;
     setContent(content: string | CodeMirror.Text): Promise<void>;
-    setSearchableView(view: UI.SearchableView.SearchableView | null): void;
+    setSearchableView(view: UI.SearchableView.SearchResultsListener | null): void;
     private doFindSearchMatches;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
     private resetCurrentSearchResultIndex;

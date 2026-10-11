@@ -26,7 +26,7 @@ describe('Name', () => {
             assert.strictEqual(name, 'Frame');
         });
         it('uses the names defined in the entry styles', () => {
-            const entry = allThreadEntriesInTrace(parsedTrace).find(e => e.name === "RunTask" /* Trace.Types.Events.Name.RUN_TASK */);
+            const entry = allThreadEntriesInTrace(parsedTrace).find(e => e.name === Trace.Types.Events.Name.RUN_TASK);
             assert.isOk(entry);
             const name = Trace.Name.forEntry(entry, parsedTrace);
             assert.strictEqual(name, 'Task');
@@ -34,8 +34,8 @@ describe('Name', () => {
     });
     it('adds the event type for EventDispatch events', () => {
         const clickEvent = {
-            name: "EventDispatch" /* Trace.Types.Events.Name.EVENT_DISPATCH */,
-            ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+            name: Trace.Types.Events.Name.EVENT_DISPATCH,
+            ph: Trace.Types.Events.Phase.COMPLETE,
             cat: 'devtools.timeline',
             args: { data: { type: 'click' } },
         };
@@ -44,7 +44,7 @@ describe('Name', () => {
     });
     it('correctly titles layout shifts', () => {
         const shift = {
-            name: "SyntheticLayoutShift" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */,
+            name: Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT,
             args: {},
         };
         const title = Trace.Name.forEntry(shift);
@@ -52,7 +52,7 @@ describe('Name', () => {
     });
     it('correctly titles animation events', () => {
         const animation = {
-            name: "Animation" /* Trace.Types.Events.Name.ANIMATION */,
+            name: Trace.Types.Events.Name.ANIMATION,
             cat: 'devtools.timeline',
             args: {},
         };
@@ -61,7 +61,7 @@ describe('Name', () => {
     });
     it('returns the name and URL for a WebSocketCreate event', () => {
         const createEvent = {
-            name: "WebSocketCreate" /* Trace.Types.Events.Name.WEB_SOCKET_CREATE */,
+            name: Trace.Types.Events.Name.WEB_SOCKET_CREATE,
             args: { data: { url: 'wss://echo.websocket.org/' } },
         };
         const name = Trace.Name.forEntry(createEvent);
@@ -69,7 +69,7 @@ describe('Name', () => {
     });
     it('returns a custom name for WebSocket destroy events', () => {
         const fakeDestroyEvent = {
-            name: "WebSocketDestroy" /* Trace.Types.Events.Name.WEB_SOCKET_DESTROY */,
+            name: Trace.Types.Events.Name.WEB_SOCKET_DESTROY,
         };
         const name = Trace.Name.forEntry(fakeDestroyEvent);
         assert.strictEqual(name, 'WebSocket closed');

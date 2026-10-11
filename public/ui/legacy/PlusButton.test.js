@@ -7,6 +7,7 @@ import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupUserMetricHooks } from '../../testing/UserMetricsHelpers.js';
+import * as Lit from '../lit/lit.js';
 import * as UI from './legacy.js';
 /**
  * Builds a stub `PlusButtonTabbedPane`. `visible` is an array (not a
@@ -37,7 +38,7 @@ function makeView(spec) {
         isPreviewFeature: () => spec.preview ?? false,
         isTransient: () => spec.transient ?? false,
         iconName: () => undefined,
-        toolbarItems: () => Promise.resolve([]),
+        toolbarItems: () => Promise.resolve(Lit.nothing),
         // No test calls widget(); avoid constructing a real Widget per view.
         widget: sinon.stub(),
         disposeView: () => { },

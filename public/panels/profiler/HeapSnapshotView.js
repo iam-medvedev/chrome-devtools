@@ -16,12 +16,14 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotContainmentDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotSortableDataGridEvents, } from './HeapSnapshotDataGrids.js';
 import { HeapSnapshotGenericObjectNode, } from './HeapSnapshotGridNodes.js';
 import { HeapTimelineOverview, Samples } from './HeapTimelineOverview.js';
 import * as ModuleUIStrings from './ModuleUIStrings.js';
 import { ProfileHeader, ProfileType, } from './ProfileHeader.js';
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text to find an item.
@@ -620,7 +622,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         }
         result.push(this.selectedSizeText);
         result.push(this.resetRetainersButton);
-        return result;
+        return html `${result.map(item => item.element)}`;
     }
     willHide() {
         super.willHide();

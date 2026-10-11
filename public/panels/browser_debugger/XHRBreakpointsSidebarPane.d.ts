@@ -1,10 +1,12 @@
 import * as UI from '../../ui/legacy/legacy.js';
+import { type TemplateResult } from '../../ui/lit/lit.js';
 export declare class XHRBreakpointsSidebarPane extends UI.Widget.VBox implements UI.ContextFlavorListener.ContextFlavorListener, UI.Toolbar.ItemsProvider, UI.ListControl.ListDelegate<string> {
     #private;
     private constructor();
     static instance(): XHRBreakpointsSidebarPane;
     static removeInstance(): void;
-    toolbarItems(): UI.Toolbar.ToolbarItem[];
+    toolbarItems(): TemplateResult;
+    get addButtonForTest(): UI.Toolbar.ToolbarButton;
     private emptyElementContextMenu;
     private addButtonClicked;
     heightForItem(_item: string): number;

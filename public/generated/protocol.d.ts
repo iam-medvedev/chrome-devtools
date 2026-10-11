@@ -1199,7 +1199,8 @@ export declare namespace Audits {
         FormModelContextMissingToolName = "FormModelContextMissingToolName",
         FormModelContextMissingToolDescription = "FormModelContextMissingToolDescription",
         FormModelContextRequiredParameterMissingName = "FormModelContextRequiredParameterMissingName",
-        FormModelContextParameterMissingName = "FormModelContextParameterMissingName"
+        FormModelContextParameterMissingName = "FormModelContextParameterMissingName",
+        GeolocationPromptWithoutUserGesture = "GeolocationPromptWithoutUserGesture"
     }
     /**
      * Depending on the concrete errorType, different properties are set.
@@ -3787,6 +3788,17 @@ export declare namespace CSS {
          * Boolean indicating if this is on or off.
          */
         forced: boolean;
+    }
+    interface ForcePositionTryOptionRequest {
+        /**
+         * The element id for which to force the position-try option.
+         */
+        nodeId: DOM.NodeId;
+        /**
+         * The 1-based index of the position-try fallback option, 0 for base position (no fallback),
+         * or omitted to clear the forced state.
+         */
+        index?: integer;
     }
     interface GetBackgroundColorsRequest {
         /**
@@ -14868,6 +14880,12 @@ export declare namespace Page {
          */
         adScriptAncestry?: Network.AdAncestry;
     }
+    interface GetSpellCheckCustomDictionaryRequest {
+        frameId: FrameId;
+    }
+    interface GetSpellCheckCustomDictionaryResponse extends ProtocolResponseWithError {
+        words: string[];
+    }
     interface GetFrameTreeResponse extends ProtocolResponseWithError {
         /**
          * Present frame tree structure.
@@ -19794,6 +19812,12 @@ export declare namespace Debugger {
          * The skipList specifies location ranges that should be skipped on step over.
          */
         skipList?: LocationRange[];
+        /**
+         * Functions whose source range lies within one of the enterRanges are
+         * entered as if by stepInto, even when they are called (directly or
+         * indirectly) from a call that is stepped over.
+         */
+        enterRanges?: LocationRange[];
     }
     /**
      * Fired when breakpoint is resolved to an actual script and location.

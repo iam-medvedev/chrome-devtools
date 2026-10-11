@@ -194,7 +194,6 @@ export declare class SamplingHeapProfileNode extends CPUProfile.ProfileTreeModel
     constructor(node: Protocol.HeapProfiler.SamplingHeapProfileNode);
 }
 export declare class SamplingHeapProfileModel extends CPUProfile.ProfileTreeModel.ProfileTreeModel {
-    modules: any;
     constructor(profile: Protocol.HeapProfiler.SamplingHeapProfile, minOrdinal?: number, maxOrdinal?: number);
 }
 export declare class NodeFormatter implements Formatter {

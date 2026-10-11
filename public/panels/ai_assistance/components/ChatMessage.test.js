@@ -9,7 +9,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, waitFor, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
@@ -49,8 +49,7 @@ describeWithEnvironment('ChatMessage', () => {
         activeSidebarMessage: null,
         inlineExpandedMessages: [],
     };
-    function renderView(props) {
-        const target = document.createElement('div');
+    function renderView(props, target = document.createElement('div')) {
         AiAssistance.ChatMessage.DEFAULT_VIEW({
             onRatingClick: () => { },
             onReportClick: () => { },
@@ -936,7 +935,7 @@ describeWithEnvironment('ChatMessage', () => {
                 assert.isFalse(walkthrough.hasAttribute('open'));
             }
         });
-        it('renders side effect step with aborted indicator when canceled', () => {
+        it('does not render side effect step in the main chat area when canceled', () => {
             const sideEffectMessage = {
                 entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
                 parts: [
@@ -960,10 +959,109 @@ describeWithEnvironment('ChatMessage', () => {
                     isExpanded: false,
                 },
             });
-            const indicator = target.querySelector('.side-effect-container devtools-icon.indicator');
-            assert.isNotNull(indicator);
-            assert.strictEqual(indicator?.getAttribute('aria-label'), 'Aborted');
+            assert.isNull(target.querySelector('.side-effect-container'));
             assert.isNull(target.querySelector('.side-effect-confirmation'));
+        });
+        describe('permission prompt', () => {
+            function createPermissionPromptMessage(dialog = {}) {
+                return {
+                    entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                    parts: [
+                        {
+                            type: 'step',
+                            step: {
+                                state: {
+                                    type: 'needs_approval',
+                                    sideEffectDialog: {
+                                        description: 'The AI wants to read the cookie "session" on https://example.com.',
+                                        permissionTitle: 'Allow reading cookie values?',
+                                        permissionPrompt: "allow-once" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE */,
+                                        onAnswer: () => { },
+                                        ...dialog,
+                                    },
+                                },
+                                title: 'Reading cookie values and metadata',
+                                code: 'getCookieValues({cookieNames: ["session"]})',
+                            },
+                        },
+                    ],
+                    rpcId: 99,
+                    id: '1',
+                };
+            }
+            function getButtons(target) {
+                return Array.from(target.querySelectorAll('.permission-prompt devtools-button'));
+            }
+            beforeEach(() => {
+                updateHostConfig({ devToolsAiNaturalLanguageInterface: { enabled: true } });
+            });
+            it('renders the legacy confirmation when the flag is off', () => {
+                updateHostConfig({ devToolsAiNaturalLanguageInterface: { enabled: false } });
+                const target = renderView({ message: createPermissionPromptMessage() });
+                assert.isNull(target.querySelector('.permission-prompt'));
+                assert.isNotNull(target.querySelector('.side-effect-confirmation'));
+            });
+            it('renders the title, description and code', () => {
+                const target = renderView({ message: createPermissionPromptMessage() });
+                assert.isNull(target.querySelector('.side-effect-confirmation'));
+                const prompt = querySelectorErrorOnMissing(target, '.permission-prompt');
+                assert.strictEqual(prompt.querySelector('.permission-prompt-title')?.textContent, 'Allow reading cookie values?');
+                assert.include(prompt.querySelector('.permission-prompt-description')?.textContent, 'The AI wants to read the cookie "session"');
+                const codeBlock = querySelectorErrorOnMissing(prompt, 'devtools-code-block');
+                assert.strictEqual(codeBlock.code, 'getCookieValues({cookieNames: ["session"]})');
+                assert.strictEqual(codeBlock.shadowRoot?.querySelector('.heading-text')?.textContent, 'Code to execute');
+                assert.include(codeBlock.shadowRoot?.querySelector('.notice')?.textContent, 'Use code snippets with caution');
+            });
+            it('falls back to a generic title when the tool has none', () => {
+                const target = renderView({ message: createPermissionPromptMessage({ permissionTitle: undefined }) });
+                assert.strictEqual(target.querySelector('.permission-prompt-title')?.textContent, 'Allow this action?');
+            });
+            it('offers Skip and Allow once for ALLOW_ONCE', () => {
+                const onAnswer = sinon.stub();
+                const target = renderView({ message: createPermissionPromptMessage({ onAnswer }) });
+                const buttons = getButtons(target);
+                assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['Skip', 'Yes, allow this time']);
+                buttons[0].click();
+                buttons[1].click();
+                assert.deepEqual(onAnswer.args.map(([decision]) => decision), [
+                    "reject" /* AIAssistanceModel.Tool.PermissionDecision.REJECT */,
+                    "allow-once" /* AIAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */,
+                ]);
+            });
+            it('offers Skip, Always allow and Allow once for ALLOW_ONCE_OR_ALWAYS', () => {
+                const onAnswer = sinon.stub();
+                const target = renderView({
+                    message: createPermissionPromptMessage({
+                        onAnswer,
+                        permissionPrompt: "allow-once-or-always" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */,
+                    }),
+                });
+                const buttons = getButtons(target);
+                assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['Skip', 'Yes, always allow', 'Yes, allow this time']);
+                buttons[1].click();
+                sinon.assert.calledOnceWithExactly(onAnswer, "allow-always" /* AIAssistanceModel.Tool.PermissionDecision.ALLOW_ALWAYS */);
+            });
+            it('renders the data disclaimer', () => {
+                const target = renderView({ message: createPermissionPromptMessage() });
+                const footer = querySelectorErrorOnMissing(target, '.permission-prompt-footer');
+                assert.strictEqual(footer.textContent?.trim(), 'Relevant data is sent to Google. Change permissions in settings at any time.');
+            });
+            it('renders the ALLOW_ONCE prompt', async () => {
+                const target = document.createElement('div');
+                renderElementIntoDOM(target, { includeCommonStyles: true });
+                renderView({ message: createPermissionPromptMessage() }, target);
+                await assertScreenshot('ai_assistance/permission_prompt_allow_once.png');
+            });
+            it('renders the ALLOW_ONCE_OR_ALWAYS prompt', async () => {
+                const target = document.createElement('div');
+                renderElementIntoDOM(target, { includeCommonStyles: true });
+                renderView({
+                    message: createPermissionPromptMessage({
+                        permissionPrompt: "allow-once-or-always" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */,
+                    }),
+                }, target);
+                await assertScreenshot('ai_assistance/permission_prompt_allow_once_or_always.png');
+            });
         });
         it('renders widget title and reveal button label from widget data', async () => {
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);
@@ -1440,14 +1538,14 @@ describeWithEnvironment('ChatMessage', () => {
             const widgetHeader = (await waitFor('.widget-header', targetElement));
             assert.isNotNull(widgetHeader);
             const revealBtn = querySelectorErrorOnMissing(widgetHeader, 'devtools-button.widget-reveal-button');
-            const revealError = new Error('Node cannot be found in the current page');
+            const revealError = new Error('Node can’t be found in the current page');
             const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').rejects(revealError);
             const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
             revealBtn.click();
             // Since it's async, we need to wait for the promise microtask queue to drain
             await new Promise(resolve => setTimeout(resolve, 0));
             sinon.assert.calledOnceWithExactly(snackbarShowStub, {
-                message: 'Node cannot be found in the current page',
+                message: 'Node can’t be found in the current page',
             });
             revealStub.restore();
             snackbarShowStub.restore();
@@ -1505,7 +1603,7 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isNotNull(errorP);
             assert.strictEqual(errorP?.textContent, 'The request payload is too large. Please try a smaller image or a screenshot.');
         });
-        it('renders LIGHTHOUSE_REPORT widget as revealer-only for snapshot reports without score gauges', async () => {
+        it('renders LIGHTHOUSE_REPORT widget as revealer-only when score gauges cannot be rendered', async () => {
             const mockReport = {
                 lighthouseVersion: '12.0.0',
                 fetchTime: '2026-08-13T09:00:00.000Z',

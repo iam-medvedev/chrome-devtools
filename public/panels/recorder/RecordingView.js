@@ -102,7 +102,7 @@ const UIStrings = {
     /**
      * @description The text in a tooltip for the timeout input that explains what timeout settings do.
      */
-    timeoutExplanation: 'The timeout setting (in milliseconds) applies to every action when replaying the recording. For example, if a DOM element identified by a CSS selector does not appear on the page within the specified timeout, the replay fails with an error.',
+    timeoutExplanation: 'The timeout setting (in milliseconds) applies to every action when replaying the recording. For example, if a DOM element identified by a CSS selector doesn’t appear on the page within the specified timeout, the replay fails with an error.',
     /**
      * @description The label for the button that cancels replaying.
      */
@@ -318,7 +318,7 @@ function renderTimelineArea(input, output) {
           direction="auto"
           sidebar-position="second"
           sidebar-initial-size="300"
-          sidebar-visibility=${input.showCodeView ? '' : 'hidden'}
+          show=${input.showCodeView ? 'both' : 'main'}
         >
           <div slot="main" role="region" aria-labelledby="recording-steps-heading">
             ${renderSections(input)}

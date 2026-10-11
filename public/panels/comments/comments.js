@@ -10,10 +10,12 @@ __export(CommentsPane_exports, {
   CommentsPane: () => CommentsPane,
   DEFAULT_VIEW: () => DEFAULT_VIEW
 });
+import "../../ui/components/spinners/spinners.js";
 import "../../ui/components/tooltips/tooltips.js";
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as CommentManager from "../../models/comment_manager/comment_manager.js";
+import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
@@ -97,6 +99,12 @@ var commentsPane_css_default = `/*
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
+  .comment-thread-item:focus-visible {
+    background-color: var(--sys-color-state-hover-on-subtle);
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: calc(-1 * var(--sys-size-2));
+  }
+
   .comment-pin-badge {
     display: flex;
     align-items: center;
@@ -150,24 +158,15 @@ var commentsPane_css_default = `/*
     text-overflow: ellipsis;
   }
 
-  .delete-button {
+  .thread-status-working {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: var(--sys-size-11);
-    height: var(--sys-size-11);
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-radius: var(--sys-shape-corner-extra-small);
-    cursor: pointer;
+    gap: var(--sys-size-4);
     color: var(--sys-color-on-surface-subtle);
-    flex-shrink: 0;
-  }
-
-  .delete-button:hover {
-    color: var(--sys-color-error);
-    background-color: var(--sys-color-state-hover-on-subtle);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
+    font-weight: var(--ref-typeface-weight-medium);
+    white-space: nowrap;
   }
 
   .comments-empty-state {
@@ -249,7 +248,15 @@ var UIStrings = {
   /**
    * @description Button text for sending comments to the agent.
    */
-  sendToAgent: "Send to Agent"
+  sendToAgent: "Send to Agent",
+  /**
+   * @description Status text shown next to a spinner when a comment thread is being processed by the agent.
+   */
+  working: "Working",
+  /**
+   * @description Button text shown on resolved comment threads to view the agent response.
+   */
+  seeResponse: "See response"
 };
 var UIStringsNotTranslate = {
   /**
@@ -260,6 +267,53 @@ var UIStringsNotTranslate = {
 var str_ = i18n.i18n.registerUIStrings("panels/comments/CommentsPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var lockedString = i18n.i18n.lockedString;
+function renderThreadStatus(thread, onDeleteThread) {
+  switch (thread.status) {
+    case "SENT_TO_AGENT":
+      return html`
+        <div class="thread-status-working">
+          <devtools-spinner></devtools-spinner>
+          <span>${i18nString(UIStrings.working)}</span>
+        </div>
+      `;
+    case "RESOLVED":
+      return html`
+        <devtools-button
+          .data=${{
+        variant: Buttons.Button.Variant.TEXT,
+        jslogContext: "comments-see-response"
+      }}
+          @keydown=${(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+        }
+      }}
+        >${i18nString(UIStrings.seeResponse)}</devtools-button>
+      `;
+    case "ACTIVE":
+      return html`
+        <devtools-button
+          .data=${{
+        variant: Buttons.Button.Variant.ICON,
+        iconName: "bin",
+        title: i18nString(UIStrings.deleteComment),
+        jslogContext: "delete"
+      }}
+          @click=${(e) => {
+        e.stopPropagation();
+        onDeleteThread(thread.id);
+      }}
+          @keydown=${(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+        }
+      }}
+        ></devtools-button>
+      `;
+    default:
+      return Lit.nothing;
+  }
+}
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
     <style>${commentsPane_css_default}</style>
@@ -304,17 +358,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                   ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, { node: item2.title.node, options: { preventKeyboardFocus: true } }) : html`<span class="anchor-chip-text">${item2.title.text}</span>`}
                 </span>
                 <div class="comment-text">${item2.commentText}</div>
-                <button
-                  class="delete-button"
-                  title=${i18nString(UIStrings.deleteComment)}
-                  aria-label=${i18nString(UIStrings.deleteComment)}
-                  @click=${(e) => {
-      e.stopPropagation();
-      input.onDeleteThread(item2.thread.id);
-    }}
-                  jslog=${VisualLogging.action("delete").track({ click: true })}>
-                  <devtools-icon name="bin"></devtools-icon>
-                </button>
+                ${renderThreadStatus(item2.thread, input.onDeleteThread)}
               </li>
             `
   )}
@@ -341,7 +385,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           class="send-agent-button"
           ?disabled=${input.threads.length === 0}
           @click=${input.onSendToAgent}
-          jslog=${VisualLogging.action("send-to-agent").track({ click: true })}>
+          jslog=${VisualLogging.action("comments-send-to-agent").track({ click: true })}>
           ${i18nString(UIStrings.sendToAgent)}
         </button>
       </div>
@@ -396,11 +440,7 @@ var CommentsPane = class extends UI.Widget.Widget {
     this.requestUpdate();
   };
   #handleSendToAgent = () => {
-    for (const thread of this.#commentManager.getCommentThreads()) {
-      if (thread.status === "ACTIVE") {
-        thread.sendToAgent();
-      }
-    }
+    this.#commentManager.sendQueuedThreads();
   };
   async performUpdate(signal) {
     const rawThreads = this.#commentManager.getCommentThreads().filter((thread) => thread.status !== "DRAFT");

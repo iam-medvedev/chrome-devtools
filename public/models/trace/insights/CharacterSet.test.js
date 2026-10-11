@@ -17,10 +17,10 @@ function addMetaCharsetCheckEvent(data, context, disposition) {
     const eventsByNavigation = data.PageLoadMetrics.metaCharsetCheckEventsByNavigation;
     const events = eventsByNavigation.get(context.navigation) ?? [];
     events.push({
-        name: "MetaCharsetCheck" /* Trace.Types.Events.Name.META_CHARSET_CHECK */,
+        name: Trace.Types.Events.Name.META_CHARSET_CHECK,
         cat: 'devtools.timeline',
-        ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
-        s: "t" /* Trace.Types.Events.Scope.THREAD */,
+        ph: Trace.Types.Events.Phase.INSTANT,
+        s: Trace.Types.Events.Scope.THREAD,
         pid: Trace.Types.Events.ProcessID(1),
         tid: Trace.Types.Events.ThreadID(1),
         ts: Trace.Types.Timing.Micro(context.bounds.min + 1),

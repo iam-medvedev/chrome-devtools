@@ -10,6 +10,7 @@ import * as AIAssistance from '../../../models/ai_assistance/ai_assistance.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { html, render } from '../../../ui/lit/lit.js';
+import * as SettingsUI from '../../../ui/settings/settings.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 const UIStrings = {
@@ -248,7 +249,8 @@ export class Overlays extends EventTarget {
         this.#charts = init.charts;
         this.#queries = init.entryQueries;
         this.#entriesLinkInProgress = null;
-        this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');
+        this.#annotationsHiddenSetting =
+            Common.Settings.Settings.instance().resolve(SettingsUI.TimelineSettings.annotationsHiddenSettingDescriptor);
         this.#annotationsHiddenSetting.addChangeListener(this.update.bind(this));
         // HTMLElements of both Flamecharts. They are used to get the mouse position over the Flamecharts.
         init.flameChartsContainers.main.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'main'));
@@ -270,7 +272,7 @@ export class Overlays extends EventTarget {
     // because `overlaysContainer` doesn't have events to enable the interaction with the
     // Flamecharts beneath it.
     #updateMouseCoordinatesProgressEntriesLink(event, chart) {
-        if (this.#entriesLinkInProgress?.state !== "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */) {
+        if (this.#entriesLinkInProgress?.state !== Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT) {
             return;
         }
         const mouseEvent = event;
@@ -751,11 +753,14 @@ export class Overlays extends EventTarget {
         }
         const isPositionedByEvent = overlay.entry && (overlay.renderLocation === 'BELOW_EVENT' || overlay.renderLocation === 'ABOVE_EVENT');
         element.classList.toggle('positioned-by-event', Boolean(isPositionedByEvent));
-        const component = element.querySelector('.devtools-timespan-breakdown-overlay');
+        const component = element.querySelector('devtools-widget');
         if (!component) {
             return;
         }
         const widget = UI.Widget.Widget.get(component);
+        if (!widget) {
+            return;
+        }
         // Handle horizontal positioning.
         const leftEdgePixel = this.#xPixelForMicroSeconds('main', overlay.sections[0].bounds.min);
         const rightEdgePixel = this.#xPixelForMicroSeconds('main', overlay.sections[overlay.sections.length - 1].bounds.max);
@@ -860,7 +865,7 @@ export class Overlays extends EventTarget {
             }
             // If `fromEntry` is not visible and the link creation is not started yet, meaning that
             // only the button to create the link is displayed, delete the whole overlay.
-            if (!entryFromVisibility && overlay.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
+            if (!entryFromVisibility && overlay.state === Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED) {
                 this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
             }
             // If entryTo exists, pass the coordinates and dimensions of the entry that the arrow snaps to.
@@ -1285,7 +1290,7 @@ export class Overlays extends EventTarget {
                 const entryHeight = this.pixelHeightForEventOnChart(entries.entryFrom) ?? 0;
                 const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay({ x: entryEndX, y: entryStartY, width: entryWidth, height: entryHeight }, overlay.state);
                 component.addEventListener(Components.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
-                    overlay.state = "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */;
+                    overlay.state = Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT;
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Update'));
                 });
                 overlayElement.appendChild(component);
@@ -1465,7 +1470,7 @@ export class Overlays extends EventTarget {
                 break;
             }
             case 'TIMESPAN_BREAKDOWN': {
-                const component = element.querySelector('.devtools-timespan-breakdown-overlay');
+                const component = element.querySelector('devtools-widget');
                 if (!component) {
                     return;
                 }
@@ -1533,7 +1538,7 @@ export class Overlays extends EventTarget {
             case 'ENTRIES_LINK':
                 break;
             case 'TIMESPAN_BREAKDOWN': {
-                const component = element.querySelector('.devtools-timespan-breakdown-overlay');
+                const component = element.querySelector('devtools-widget');
                 if (!component) {
                     return;
                 }
@@ -1822,7 +1827,7 @@ export function jsLogContext(overlay) {
         }
         case 'ENTRIES_LINK': {
             // do not log impressions for incomplete entry links
-            if (overlay.state !== "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */) {
+            if (overlay.state !== Trace.Types.File.EntriesLinkState.CONNECTED) {
                 return null;
             }
             return 'timeline.overlays.entries-link';

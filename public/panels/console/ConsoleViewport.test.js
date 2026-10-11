@@ -11,6 +11,7 @@ describe('ConsoleViewport', () => {
     const viewportWidth = 600; // Matching layout test
     class MockProvider {
         itemHeights = [];
+        itemElements = [];
         minimumRowHeightValue = 16; // Default from ConsoleViewMessage
         fastHeight(index) {
             return this.itemHeights[index] ?? this.minimumRowHeightValue;
@@ -22,6 +23,9 @@ describe('ConsoleViewport', () => {
             return this.minimumRowHeightValue;
         }
         itemElement(index) {
+            if (this.itemElements[index]) {
+                return this.itemElements[index];
+            }
             // For these tests, we only need the element's offsetHeight.
             const mockElement = document.createElement('div');
             mockElement.style.height = `${this.itemHeights[index] ?? this.minimumRowHeightValue}px`;
@@ -36,6 +40,9 @@ describe('ConsoleViewport', () => {
         }
         setItems(heights) {
             this.itemHeights = heights;
+        }
+        setItemElements(elements) {
+            this.itemElements = elements;
         }
     }
     beforeEach(() => {
@@ -110,6 +117,112 @@ describe('ConsoleViewport', () => {
         }
         return { first, last };
     }
+    it('copies only visible text from elements with hidden children', () => {
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = '<span>visible message</span><div style="display: none">hidden stack</div>';
+        Object.defineProperty(messageElement, 'offsetHeight', { value: 20, configurable: true });
+        mockProvider.setItems([20]);
+        mockProvider.setItemElements([{
+                willHide: () => { },
+                wasShown: () => { },
+                element: () => messageElement,
+                focusLastChildOrSelf: () => { },
+            }]);
+        viewport.invalidate();
+        const range = document.createRange();
+        range.selectNodeContents(messageElement);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        let copiedText = '';
+        const copyEvent = new Event('copy', { bubbles: true, cancelable: true });
+        Object.defineProperty(copyEvent, 'clipboardData', {
+            value: {
+                setData: (_format, data) => {
+                    copiedText = data;
+                },
+            },
+        });
+        viewport.element.dispatchEvent(copyEvent);
+        assert.strictEqual(copiedText, 'visible message');
+    });
+    it('copies full text when hidden child becomes visible', () => {
+        const messageElement = document.createElement('div');
+        const hiddenDiv = document.createElement('div');
+        hiddenDiv.textContent = ' expanded stack';
+        hiddenDiv.style.display = 'none';
+        messageElement.appendChild(document.createTextNode('visible message'));
+        messageElement.appendChild(hiddenDiv);
+        Object.defineProperty(messageElement, 'offsetHeight', { value: 20, configurable: true });
+        mockProvider.setItems([20]);
+        mockProvider.setItemElements([{
+                willHide: () => { },
+                wasShown: () => { },
+                element: () => messageElement,
+                focusLastChildOrSelf: () => { },
+            }]);
+        viewport.invalidate();
+        // Now reveal it
+        hiddenDiv.style.display = 'block';
+        const range = document.createRange();
+        range.selectNodeContents(messageElement);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        let copiedText = '';
+        const copyEvent = new Event('copy', { bubbles: true, cancelable: true });
+        Object.defineProperty(copyEvent, 'clipboardData', {
+            value: {
+                setData: (_format, data) => {
+                    copiedText = data;
+                },
+            },
+        });
+        viewport.element.dispatchEvent(copyEvent);
+        assert.strictEqual(copiedText, 'visible message expanded stack');
+    });
+    it('copies visible text from virtualized elements scrolled out of the DOM', () => {
+        const itemHeight0 = 300;
+        const itemHeight1 = 600;
+        const messageElement0 = document.createElement('div');
+        messageElement0.style.height = `${itemHeight0}px`;
+        messageElement0.innerHTML = '<span>item 0 visible</span><div class="hidden-stack-trace">item 0 hidden stack</div>';
+        Object.defineProperty(messageElement0, 'offsetHeight', { value: itemHeight0, configurable: true });
+        const messageElement1 = document.createElement('div');
+        messageElement1.style.height = `${itemHeight1}px`;
+        messageElement1.innerHTML = '<span>item 1 visible</span><div class="hidden-stack-trace">item 1 hidden stack</div>';
+        Object.defineProperty(messageElement1, 'offsetHeight', { value: itemHeight1, configurable: true });
+        mockProvider.setItems([itemHeight0, itemHeight1]);
+        mockProvider.setItemElements([
+            { willHide: () => { }, wasShown: () => { }, element: () => messageElement0, focusLastChildOrSelf: () => { } },
+            { willHide: () => { }, wasShown: () => { }, element: () => messageElement1, focusLastChildOrSelf: () => { } },
+        ]);
+        viewport.invalidate();
+        // Scroll down so item 0 is scrolled out of the viewport and removed by partialViewportUpdate
+        scrollTo(500);
+        // Verify item 0 was removed from the DOM by virtualization
+        assert.isFalse(messageElement0.isConnected);
+        // Select all content across the viewport
+        const range = document.createRange();
+        range.selectNodeContents(viewport.element);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        let copiedText = '';
+        const copyEvent = new Event('copy', { bubbles: true, cancelable: true });
+        Object.defineProperty(copyEvent, 'clipboardData', {
+            value: {
+                setData: (_format, data) => {
+                    copiedText = data;
+                },
+            },
+        });
+        viewport.element.dispatchEvent(copyEvent);
+        assert.include(copiedText, 'item 0 visible');
+        assert.notInclude(copiedText, 'item 0 hidden stack');
+        assert.include(copiedText, 'item 1 visible');
+        assert.notInclude(copiedText, 'item 1 hidden stack');
+    });
     it('should report -1 for first and last visible index when empty', () => {
         setItemsAndRefresh([]);
         assert.strictEqual(viewport.firstVisibleIndex(), -1);

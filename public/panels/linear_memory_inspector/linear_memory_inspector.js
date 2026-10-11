@@ -230,7 +230,7 @@ var UIStrings2 = {
   /**
    * @description Error message that shows up in the console if a buffer to be opened in the Memory inspector panel cannot be found.
    */
-  couldNotOpenLinearMemory: "Could not open Memory inspector: buffer not found",
+  couldNotOpenLinearMemory: "Couldn\u2019t open Memory inspector: buffer not found",
   /**
    * @description A context menu item in the Scope view of the Sources panel.
    */

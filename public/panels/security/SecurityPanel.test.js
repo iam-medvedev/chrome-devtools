@@ -58,6 +58,40 @@ describeWithEnvironment('SecurityOriginView', () => {
     function getDetailsTableRows(section) {
         return [...section.querySelectorAll('.details-table-row')].map(row => [...row.cells].map(cell => cell.textContent ?? ''));
     }
+    describe('security state section', () => {
+        const cases = [
+            {
+                securityState: "secure" /* Protocol.Security.SecurityState.Secure */,
+                title: 'Secure',
+                description: 'This origin is a non-HTTPS secure origin.',
+            },
+            {
+                securityState: "insecure" /* Protocol.Security.SecurityState.Insecure */,
+                title: 'Not secure',
+                description: 'Your connection to this origin isn’t secure.',
+            },
+            {
+                securityState: "unknown" /* Protocol.Security.SecurityState.Unknown */,
+                title: 'No security information',
+                description: 'No security details are available for this origin.',
+            },
+        ];
+        for (const { securityState, title, description } of cases) {
+            it(`renders when securityState is ${securityState} without security details`, () => {
+                const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, {
+                    securityState,
+                    securityDetails: null,
+                    loadedFromCache: false,
+                });
+                const section = querySelectorErrorOnMissing(view.element, '.security-state-section');
+                const heading = querySelectorErrorOnMissing(section, '.origin-view-section-title');
+                assert.strictEqual(heading.textContent, title);
+                assert.strictEqual(heading.getAttribute('role'), 'heading');
+                assert.strictEqual(heading.getAttribute('aria-level'), '2');
+                assert.include(section.textContent, description);
+            });
+        }
+    });
     describe('connection section', () => {
         function getConnectionDetailsRows(securityDetails = {}) {
             const view = new Security.SecurityPanel.SecurityOriginView(urlString `https://foo.bar`, createOriginState(securityDetails));
@@ -686,7 +720,7 @@ describeWithEnvironment('SecurityPanel', () => {
         const unknownOriginElement = querySelectorErrorOnMissing(unknownOriginElements[0], '.highlighted-url');
         assert.strictEqual(unknownOriginElement.textContent, 'https://does-not-resolve.test');
     });
-    it('shows an explanation for blocked mixed content', () => {
+    it('shows an explanation for blocked mixed content and clears it on navigation', () => {
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
         renderElementIntoDOM(securityPanel);
         const securityModel = target.model(Security.SecurityModel.SecurityModel);
@@ -712,6 +746,46 @@ describeWithEnvironment('SecurityPanel', () => {
         const explanationText = querySelectorErrorOnMissing(explanation, '.security-explanation-text');
         assert.include(explanationText.textContent, 'Your page requested non-secure resources that were blocked.');
         const requestsLink = querySelectorErrorOnMissing(explanation, 'button.security-mixed-content');
+        assert.strictEqual(requestsLink.textContent, 'View 1 request in Network panel');
+        assert.strictEqual(requestsLink.getAttribute('role'), 'link');
+        // Test that the explanations are cleared on navigation. Regression test for https://crbug.com/601944.
+        navigate(getMainFrame(target));
+        assert.isEmpty(securityPanel.mainView.contentElement.querySelectorAll('.security-explanation'));
+    });
+    it('replaces the mixed content reload prompt with a request link when a request is recorded', () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const securityModel = target.model(Security.SecurityModel.SecurityModel);
+        assert.exists(securityModel);
+        const pageVisibleSecurityState = new Security.SecurityModel.PageVisibleSecurityState("neutral" /* Protocol.Security.SecurityState.Neutral */, null, null, ['displayed-mixed-content']);
+        securityModel.dispatchEventToListeners(Security.SecurityModel.Events.VisibleSecurityStateChanged, pageVisibleSecurityState);
+        function assertMixedContentExplanation() {
+            const explanations = securityPanel.mainView.contentElement.querySelectorAll('.security-explanation');
+            assert.lengthOf(explanations, 1);
+            const explanation = explanations[0];
+            assert.isTrue(explanation.classList.contains('security-explanation-neutral'));
+            const title = querySelectorErrorOnMissing(explanation, '.security-explanation-title');
+            assert.strictEqual(title.textContent, 'Resources - mixed content');
+            const explanationText = querySelectorErrorOnMissing(explanation, '.security-explanation-text');
+            assert.include(explanationText.textContent, 'This page includes HTTP resources.');
+            return explanation;
+        }
+        const explanationBeforeReload = assertMixedContentExplanation();
+        const reloadPrompt = querySelectorErrorOnMissing(explanationBeforeReload, '.security-mixed-content');
+        assert.strictEqual(reloadPrompt.textContent, 'Reload the page to record requests for HTTP resources.');
+        // Now simulate a refresh.
+        securityModel.dispatchEventToListeners(Security.SecurityModel.Events.VisibleSecurityStateChanged, pageVisibleSecurityState);
+        const request = createNetworkRequest({
+            url: 'http://foo.test',
+            documentURL: 'https://foo.test',
+            frameId: '0',
+            loaderId: '0',
+        });
+        request.mixedContentType = "optionally-blockable" /* Protocol.Security.MixedContentType.OptionallyBlockable */;
+        const networkManager = securityModel.networkManager();
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
+        const explanationAfterReload = assertMixedContentExplanation();
+        const requestsLink = querySelectorErrorOnMissing(explanationAfterReload, '.security-mixed-content');
         assert.strictEqual(requestsLink.textContent, 'View 1 request in Network panel');
         assert.strictEqual(requestsLink.getAttribute('role'), 'link');
     });

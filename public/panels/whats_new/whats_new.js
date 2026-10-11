@@ -330,6 +330,7 @@ import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as UIHelpers2 from "../../ui/helpers/helpers.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 var releaseVersionSeen = "releaseNoteVersionSeen";
 var releaseNoteViewId = "release-note";
 var releaseNoteVersionSetting;
@@ -340,7 +341,7 @@ function showReleaseNoteIfNeeded() {
   return innerShowReleaseNoteIfNeeded(
     releaseNoteVersionSettingValue,
     releaseNote2.version,
-    Common.Settings.Settings.instance().moduleSetting("help.show-release-note").get()
+    Common.Settings.Settings.instance().resolve(SettingsUI.WhatsNewSettings.showReleaseNoteSettingDescriptor).get()
   );
 }
 function getReleaseNoteVersionSetting() {

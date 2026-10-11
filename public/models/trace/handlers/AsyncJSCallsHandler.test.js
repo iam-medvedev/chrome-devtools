@@ -26,9 +26,9 @@ describe('AsyncJSCallsHandler', function () {
     describe('Resolving JS task schedulers to task run entrypoints', function () {
         it('associates a JS task scheduler profile call with the corresponding task run entry point', async function () {
             const jsTaskScheduler = makeProfileCall('setTimeout', 0, 50, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);
             const rendererEvents = [jsTaskScheduler, asyncTaskScheduled, asyncTaskRun, jsTaskRunEntryPoint];
             const allEvents = [...rendererEvents, ...flowEvents];
@@ -44,9 +44,9 @@ describe('AsyncJSCallsHandler', function () {
             const foo = makeProfileCall('foo', 0, 50, pid, tid);
             const bar = makeProfileCall('bar', 0, 40, pid, tid);
             const jsTaskScheduler = makeProfileCall('setTimeout', 0, 30, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);
             const rendererEvents = [foo, bar, jsTaskScheduler, asyncTaskScheduled, asyncTaskRun, jsTaskRunEntryPoint];
             const allEvents = [...rendererEvents, ...flowEvents];
@@ -57,13 +57,13 @@ describe('AsyncJSCallsHandler', function () {
         });
         it('uses the nearest JS entry point descendant of a debuggerTaskRun as async task run', async function () {
             const jsTaskScheduler = makeProfileCall('setTimeout', 0, 30, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
             // Two JS entry points belonging to the same subtree are
             // descendants to the debuggerTaskRun event. Test the one closest
             // to the debuggerTaskRun in the global tree is picked.
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
-            const secondFakeEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 71, 10, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
+            const secondFakeEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 71, 10, cat, tid, pid);
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);
             const rendererEvents = [jsTaskScheduler, asyncTaskScheduled, asyncTaskRun, jsTaskRunEntryPoint, secondFakeEntryPoint];
             const allEvents = [...rendererEvents, ...flowEvents];
@@ -73,14 +73,14 @@ describe('AsyncJSCallsHandler', function () {
             assert.strictEqual(testRunEntryPoints?.[0], jsTaskRunEntryPoint);
         });
         it('falls back to a JS invocation as task scheduler if no profile call is found before in the debuggerTaskScheduled ancestors', async function () {
-            const jsTaskScheduler = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 30, cat, tid, pid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 5, 0, cat, pid, tid);
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
+            const jsTaskScheduler = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 0, 30, cat, tid, pid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 5, 0, cat, pid, tid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
             // Two JS entry points belonging to the same subtree are
             // descendants to the debuggerTaskRun event. Test the one closest
             // to the debuggerTaskRun in the global tree is picked.
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
-            const secondFakeEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 71, 10, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
+            const secondFakeEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 71, 10, cat, tid, pid);
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);
             const rendererEvents = [jsTaskScheduler, asyncTaskScheduled, asyncTaskRun, jsTaskRunEntryPoint, secondFakeEntryPoint];
             const allEvents = [...rendererEvents, ...flowEvents];
@@ -90,15 +90,15 @@ describe('AsyncJSCallsHandler', function () {
             assert.strictEqual(testRunEntryPoints?.[0], jsTaskRunEntryPoint);
         });
         it('returns multiple JS entry points when scheduled by the same function', async function () {
-            const jsTaskScheduler = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 0, 30, cat, tid, pid);
+            const jsTaskScheduler = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 0, 30, cat, tid, pid);
             // Two asyncTaskScheduled events right under the function call.
-            const asyncTaskScheduled1 = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 5, 0, cat, pid, tid);
-            const asyncTaskScheduled2 = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 10, 0, cat, pid, tid);
-            const asyncTaskRun1 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const asyncTaskRun2 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 200, 100, cat, tid, pid);
+            const asyncTaskScheduled1 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 5, 0, cat, pid, tid);
+            const asyncTaskScheduled2 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 10, 0, cat, pid, tid);
+            const asyncTaskRun1 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const asyncTaskRun2 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 200, 100, cat, tid, pid);
             // Two JS entry points,
-            const firstJSTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
-            const secondJSTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 210, 10, cat, tid, pid);
+            const firstJSTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
+            const secondJSTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 210, 10, cat, tid, pid);
             const flow1Events = makeFlowEvents([asyncTaskScheduled1, asyncTaskRun1], 1);
             const flow2Events = makeFlowEvents([asyncTaskScheduled2, asyncTaskRun2], 2);
             const flowEvents = [...flow1Events, ...flow2Events].sort((a, b) => a.ts - b.ts);
@@ -120,12 +120,12 @@ describe('AsyncJSCallsHandler', function () {
         });
         it('assigns the right scheduled events to an event that scheduled multiple tasks', async function () {
             const jsTaskScheduler = makeProfileCall('setInterval', 0, 30, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
             // Simulate two async task runs caused by the same scheduled event.
-            const asyncTaskRun1 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint1 = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
-            const asyncTaskRun2 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 260, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint2 = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 270, 20, cat, tid, pid);
+            const asyncTaskRun1 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint1 = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
+            const asyncTaskRun2 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 260, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint2 = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 270, 20, cat, tid, pid);
             // Create flow events in the same way perfetto does for traces (as separate pairs).
             // schedule -> run 1, run 1 -> run 2.
             const flowEvents = [
@@ -151,10 +151,10 @@ describe('AsyncJSCallsHandler', function () {
     describe('Resolving async JS tasks to schedulers', function () {
         it('associates an async JS task to its scheduler', async function () {
             const jsTaskScheduler = makeProfileCall('setTimeout', 0, 50, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
             asyncTaskScheduled.args.taskName = 'A task name';
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
             const asyncJSTask1 = makeProfileCall('scheduledFunction', 71, 10, pid, tid);
             const asyncJSTask2 = makeProfileCall('scheduledFunction', 81, 5, pid, tid);
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);
@@ -170,9 +170,9 @@ describe('AsyncJSCallsHandler', function () {
         });
         it('only associates the root async JS task in a subtree with the async task scheduler', async function () {
             const jsTaskScheduler = makeProfileCall('setTimeout', 0, 50, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
             const asyncJSTask1 = makeProfileCall('scheduledFunction', 71, 10, pid, tid);
             // Because of its timings, this profile call will be nested inside the one above.
             const asyncJSTask2 = makeProfileCall('nestedFunction', 72, 5, pid, tid);
@@ -187,14 +187,14 @@ describe('AsyncJSCallsHandler', function () {
         });
         it('returns the right scheduler for a task with multiple run events', async function () {
             const jsTaskScheduler = makeProfileCall('setInterval', 0, 50, pid, tid);
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
             asyncTaskScheduled.args.taskName = 'interval';
             // Simulate two async task runs caused by the same scheduled event.
-            const asyncTaskRun1 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint1 = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 70, 20, cat, tid, pid);
+            const asyncTaskRun1 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint1 = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 70, 20, cat, tid, pid);
             const asyncJSTask1 = makeProfileCall('scheduledFunction1', 71, 10, pid, tid);
-            const asyncTaskRun2 = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 160, 100, cat, tid, pid);
-            const jsTaskRunEntryPoint2 = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, 170, 20, cat, tid, pid);
+            const asyncTaskRun2 = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 160, 100, cat, tid, pid);
+            const jsTaskRunEntryPoint2 = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, 170, 20, cat, tid, pid);
             const asyncJSTask2 = makeProfileCall('scheduledFunction2', 171, 10, pid, tid);
             // Create flow events in the same way perfetto does for traces (as separate pairs).
             // schedule -> run 1, run 1 -> run 2.
@@ -222,9 +222,9 @@ describe('AsyncJSCallsHandler', function () {
             assert.strictEqual(testScheduler?.taskName, asyncTaskScheduled.args.taskName);
         });
         it('exports the AsyncTask events as fallbacks when no entry point is found at either end of an async task', async function () {
-            const asyncTaskScheduled = makeCompleteEvent("v8::Debugger::AsyncTaskScheduled" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED */, 0, 0, cat, pid, tid);
+            const asyncTaskScheduled = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_SCHEDULED, 0, 0, cat, pid, tid);
             asyncTaskScheduled.args.taskName = 'interval';
-            const asyncTaskRun = makeCompleteEvent("v8::Debugger::AsyncTaskRun" /* Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN */, 60, 100, cat, tid, pid);
+            const asyncTaskRun = makeCompleteEvent(Trace.Types.Events.Name.DEBUGGER_ASYNC_TASK_RUN, 60, 100, cat, tid, pid);
             // Create flow events in the same way perfetto does for traces (as separate pairs).
             // schedule -> run 1, run 1 -> run 2.
             const flowEvents = makeFlowEvents([asyncTaskScheduled, asyncTaskRun]);

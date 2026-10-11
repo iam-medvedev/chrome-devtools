@@ -3404,6 +3404,10 @@ var stepView_css_default = `/*
   align-items: center;
 }
 
+.title-container:focus-visible {
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+}
+
 .action {
   display: flex;
   align-items: center;
@@ -4085,6 +4089,8 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     "has-breakpoint": input.hasBreakpoint
   };
   const isExpandable = Boolean(input.step);
+  const disclosureRole = isExpandable ? "button" : "presentation";
+  const ariaExpanded = !isExpandable ? void 0 : input.showDetails ? "true" : "false";
   const mainTitle = getStepTypeTitle({
     step: input.step,
     section: input.section
@@ -4148,10 +4154,10 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           <div class="title-container ${isExpandable ? "action" : ""}"
             @click=${isExpandable ? input.toggleShowDetails : void 0}
             @keydown=${isExpandable ? input.onToggleShowDetailsKeydown : void 0}
-            tabindex="0"
+            tabindex=${isExpandable ? 0 : -1}
             jslog=${VisualLogging7.sectionHeader().track({ click: true })}
-            aria-role=${isExpandable ? "button" : ""}
-            aria-label=${isExpandable ? "Show details for step" : ""}
+            role=${disclosureRole}
+            aria-expanded=${ifDefined2(ariaExpanded)}
           >
             ${isExpandable ? html9`<devtools-icon
                     class="chevron"
@@ -4616,7 +4622,7 @@ var UIStrings8 = {
   /**
    * @description The text in a tooltip for the timeout input that explains what timeout settings do.
    */
-  timeoutExplanation: "The timeout setting (in milliseconds) applies to every action when replaying the recording. For example, if a DOM element identified by a CSS selector does not appear on the page within the specified timeout, the replay fails with an error.",
+  timeoutExplanation: "The timeout setting (in milliseconds) applies to every action when replaying the recording. For example, if a DOM element identified by a CSS selector doesn\u2019t appear on the page within the specified timeout, the replay fails with an error.",
   /**
    * @description The label for the button that cancels replaying.
    */
@@ -4826,7 +4832,7 @@ function renderTimelineArea(input, output) {
           direction="auto"
           sidebar-position="second"
           sidebar-initial-size="300"
-          sidebar-visibility=${input.showCodeView ? "" : "hidden"}
+          show=${input.showCodeView ? "both" : "main"}
         >
           <div slot="main" role="region" aria-labelledby="recording-steps-heading">
             ${renderSections(input)}

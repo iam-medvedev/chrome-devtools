@@ -1,9 +1,8 @@
 import './Toolbar.js';
 import { VBox } from './Widget.js';
-export declare class SearchableView extends VBox {
+export declare class SearchableView extends VBox implements SearchResultsListener {
     #private;
     replaceProvider: Replaceable | null;
-    private setting;
     private readonly footerElementContainer;
     private readonly footerElement;
     private replaceToggleButton;
@@ -13,9 +12,6 @@ export declare class SearchableView extends VBox {
     private searchNavigationPrevElement;
     private searchNavigationNextElement;
     private readonly replaceInputElement;
-    private caseSensitiveButton;
-    private wholeWordButton;
-    private regexButton;
     private replaceButtonElement;
     private replaceAllButtonElement;
     minimalSearchQuerySize: number;
@@ -26,15 +22,17 @@ export declare class SearchableView extends VBox {
     constructor(searchable: Searchable, replaceable: Replaceable | null, settingName?: string, element?: HTMLElement);
     get searchProvider(): Searchable;
     set searchProvider(searchable: Searchable);
+    get searchTarget(): SearchTarget | null;
+    set searchTarget(target: SearchTarget | null);
     set settingName(settingName: string | undefined);
     get replaceable(): boolean;
     set replaceable(replaceable: boolean);
     static fromElement(element: Element | null): SearchableView | null;
     private toggleReplace;
-    private saveSetting;
-    private loadSetting;
     setMinimalSearchQuerySize(minimalSearchQuerySize: number): void;
     setPlaceholder(placeholder: string, ariaLabel?: string): void;
+    get placeholder(): string;
+    set placeholder(placeholder: string);
     setReplaceable(replaceable: boolean): void;
     updateSearchMatchesCount(matches: number): void;
     updateCurrentMatchIndex(currentMatchIndex: number): void;
@@ -64,6 +62,13 @@ export declare class SearchableView extends VBox {
     private replaceAll;
     private onInput;
     private onValueChanged;
+}
+export interface SearchResultsListener {
+    updateSearchMatchesCount(matches: number): void;
+    updateCurrentMatchIndex(currentMatchIndex: number): void;
+}
+export interface SearchTarget {
+    setSearchableView?(view: SearchResultsListener | null): void;
 }
 export interface Searchable {
     supportsMatchCounts?(): boolean;

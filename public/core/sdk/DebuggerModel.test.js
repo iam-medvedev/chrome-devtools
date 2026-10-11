@@ -339,6 +339,48 @@ describe('DebuggerModel', () => {
             assert.lengthOf(scopes[1].extraProperties(), 1);
             assert.strictEqual(scopes[1].extraProperties()[0].name, 'Return value');
         });
+        it('exposes emptyReason and retains empty scopes in the scope chain', () => {
+            const target = universe.createTarget();
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            const scriptUrl = urlString `https://script-host/script.js`;
+            const script = new SDK.Script.Script(debuggerModel, SCRIPT_ID_ONE, scriptUrl, 0, 0, 0, 0, 0, '', false, undefined, false, 0, null, null, null, null, null, null, null);
+            const payload = {
+                callFrameId: '0',
+                functionName: 'test',
+                location: {
+                    scriptId: SCRIPT_ID_ONE,
+                    lineNumber: 0,
+                    columnNumber: 0,
+                },
+                url: 'test-url',
+                scopeChain: [
+                    {
+                        type: "block" /* Protocol.Debugger.ScopeType.Block */,
+                        object: { type: 'object' },
+                        emptyReason: "no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */,
+                    },
+                    {
+                        type: "local" /* Protocol.Debugger.ScopeType.Local */,
+                        object: { type: 'object' },
+                    },
+                    {
+                        type: "closure" /* Protocol.Debugger.ScopeType.Closure */,
+                        object: { type: 'object' },
+                        emptyReason: "all-unavailable" /* Protocol.Debugger.ScopeEmptyReason.AllUnavailable */,
+                    },
+                ],
+                this: { type: 'object' },
+                canBeRestarted: false,
+            };
+            const callFrame = new SDK.DebuggerModel.CallFrame(debuggerModel, script, payload, 0);
+            const scopes = callFrame.scopeChain();
+            assert.lengthOf(scopes, 3);
+            assert.strictEqual(scopes[0].emptyReason(), "no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */);
+            assert.isUndefined(scopes[1].emptyReason());
+            assert.strictEqual(scopes[2].emptyReason(), "all-unavailable" /* Protocol.Debugger.ScopeEmptyReason.AllUnavailable */);
+            assert.deepEqual(scopes.map(scope => scope.ordinal()), [0, 1, 2]);
+            assert.strictEqual(callFrame.localScope(), scopes[1]);
+        });
     });
     describe('pause', () => {
         it('with empty call frame list will invoke plain step-into', async () => {

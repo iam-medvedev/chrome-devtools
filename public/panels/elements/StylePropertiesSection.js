@@ -43,8 +43,10 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { createIcon } from '../../ui/kit/kit.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, nothing, render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
 import * as ElementsComponents from './components/components.js';
@@ -1204,7 +1206,8 @@ export class StylePropertiesSection {
             }
         }
         const regex = this.stylesContainer.filterRegex();
-        const hideRule = !hasMatchingChild && regex !== null && !regex.test(this.element.deepTextContent());
+        const hideRule = !hasMatchingChild && regex !== null &&
+            !regex.test(Components.Linkifier.Linkifier.untruncatedTextContent(this.element));
         this.#isHidden = hideRule;
         this.element.classList.toggle('hidden', hideRule);
         if (!hideRule && this.styleInternal.parentRule) {
@@ -1225,7 +1228,9 @@ export class StylePropertiesSection {
      * since the user intentionally toggled them off and they should remain visible.
      */
     #shouldCollapse() {
-        if (!Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').get()) {
+        if (!Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor)
+            .get()) {
             return false;
         }
         if (this.#isInactive) {
@@ -1528,6 +1533,10 @@ export class StylePropertiesSection {
         if (this.element.hasSelection()) {
             return;
         }
+        if (this.styleInternal.parentRule && !this.isHeaderEditable()) {
+            event.consume(true);
+            return;
+        }
         this.startEditingAtFirstPosition();
         event.consume(true);
     }
@@ -1595,17 +1604,23 @@ export class StylePropertiesSection {
             void Common.Revealer.reveal(uiLocation, !focus);
         }
     }
+    isHeaderEditable() {
+        return Boolean(this.styleInternal.parentRule);
+    }
     startEditingAtFirstPosition() {
         if (!this.editable) {
             return;
         }
-        if (!this.styleInternal.parentRule) {
+        if (!this.isHeaderEditable()) {
             this.moveEditorFromSelector('forward');
             return;
         }
         this.startEditingSelector();
     }
     startEditingSelector() {
+        if (!this.isHeaderEditable()) {
+            return;
+        }
         const element = this.selectorElement;
         if (UI.UIUtils.isBeingEdited(element) || this.titleElement.classList.contains('hidden')) {
             return;
@@ -1854,6 +1869,26 @@ export class FunctionRuleSection extends StylePropertiesSection {
         this.customPopulateCallback = () => this.addChildren(children, this.propertiesTreeOutline);
         this.onpopulate();
     }
+    isHeaderEditable() {
+        return false;
+    }
+    moveEditorFromSelector(moveDirection) {
+        if (moveDirection !== 'forward') {
+            super.moveEditorFromSelector(moveDirection);
+            return;
+        }
+        // The body may start with a condition block whose tree element is not a
+        // StylePropertyTreeElement, and the section's own style is a synthetic
+        // declaration spanning the whole body. Edit the first declaration, if
+        // there is one, instead of adding a blank property.
+        const root = this.propertiesTreeOutline.rootElement();
+        for (let child = root.firstChild(); child; child = child.traverseNextTreeElement(false, root, true)) {
+            if (child instanceof StylePropertyTreeElement) {
+                child.startEditingName();
+                return;
+            }
+        }
+    }
     createConditionElement(condition) {
         if ('media' in condition) {
             return this.createMediaElement(condition.media);
@@ -1912,12 +1947,18 @@ export class AtRuleSection extends StylePropertiesSection {
             this.element.classList.add('hidden');
         }
     }
+    isHeaderEditable() {
+        return false;
+    }
 }
 export class PositionTryRuleSection extends StylePropertiesSection {
     constructor(stylesContainer, matchedStyles, style, sectionIdx, active) {
         super(stylesContainer, matchedStyles, style, sectionIdx, null, null, null);
         this.selectorElement.className = 'position-try-values-key';
         this.propertiesTreeOutline.element.classList.toggle('no-affect', !active);
+    }
+    isHeaderEditable() {
+        return false;
     }
 }
 export class KeyframePropertiesSection extends StylePropertiesSection {

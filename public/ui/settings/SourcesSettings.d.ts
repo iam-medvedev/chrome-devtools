@@ -1,0 +1,15 @@
+import * as Common from '../../core/common/common.js';
+export declare const navigatorGroupByFolderSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const navigatorGroupByAuthoredSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const navigatorJustMyCodeSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const searchInAnonymousAndContentScriptsSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const autoRevealInNavigatorSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorTabMovesFocusSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorAutoDetectIndentSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorAutocompletionSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorBracketClosingSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorBracketMatchingSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const textEditorCodeFoldingSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const showWhitespacesInEditorSettingDescriptor: Common.Settings.SettingDescriptor<string>;
+export declare const sourcesWordWrapSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;
+export declare const inlineVariableValuesSettingDescriptor: Common.Settings.SettingDescriptor<boolean>;

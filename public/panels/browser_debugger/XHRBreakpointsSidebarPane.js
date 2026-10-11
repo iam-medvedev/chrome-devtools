@@ -105,7 +105,10 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         xhrBreakpointsSidebarPaneInstance = null;
     }
     toolbarItems() {
-        return [this.#addButton];
+        return html `${this.#addButton.element}`;
+    }
+    get addButtonForTest() {
+        return this.#addButton;
     }
     emptyElementContextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);

@@ -27,6 +27,10 @@ export default `/*
   align-items: center;
 }
 
+.title-container:focus-visible {
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+}
+
 .action {
   display: flex;
   align-items: center;

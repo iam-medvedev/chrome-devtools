@@ -22,10 +22,10 @@ describe('WorkersHandler', () => {
             {
                 name: 'TracingSessionIdForWorker',
                 cat: 'disabled-by-default-devtools.timeline',
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                ph: Trace.Types.Events.Phase.INSTANT,
                 tid: Trace.Types.Events.ThreadID(37651),
                 pid: Trace.Types.Events.ProcessID(71044),
-                s: "t" /* Trace.Types.Events.Scope.THREAD */,
+                s: Trace.Types.Events.Scope.THREAD,
                 ts: Trace.Types.Timing.Micro(107351291649),
                 tts: Trace.Types.Timing.Micro(934),
                 args: {
@@ -40,10 +40,10 @@ describe('WorkersHandler', () => {
             {
                 name: 'TracingSessionIdForWorker',
                 cat: 'disabled-by-default-devtools.timeline',
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                ph: Trace.Types.Events.Phase.INSTANT,
                 tid: Trace.Types.Events.ThreadID(35351),
                 pid: Trace.Types.Events.ProcessID(71044),
-                s: "t" /* Trace.Types.Events.Scope.THREAD */,
+                s: Trace.Types.Events.Scope.THREAD,
                 ts: Trace.Types.Timing.Micro(107351292507),
                 tts: Trace.Types.Timing.Micro(817),
                 args: {

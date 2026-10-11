@@ -3,6 +3,7 @@ import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 var UIStrings = {
   /**
    * @description Title of an action in the emulation tool to toggle device mode.
@@ -107,11 +108,8 @@ UI.ActionRegistration.registerActionExtension({
   condition: Root.Runtime.conditions.canDock,
   title: i18nLazyString(UIStrings.captureNodeScreenshot)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.EmulationSettings.showMediaQueryInspectorSettingDescriptor, {
   category: Common.Settings.SettingCategory.MOBILE,
-  settingName: "show-media-query-inspector",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
   options: [
     {
       value: true,
@@ -124,11 +122,8 @@ Common.Settings.registerSettingExtension({
   ],
   tags: [i18nLazyString(UIStrings.device)]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.EmulationSettings.showRulersSettingDescriptor, {
   category: Common.Settings.SettingCategory.MOBILE,
-  settingName: "emulation.show-rulers",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
   options: [
     {
       value: true,

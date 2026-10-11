@@ -64,7 +64,7 @@ describeWithEnvironment('AiCodeCompletionTeaser', () => {
         const { view, widget } = await createTeaser();
         view.input.onAction(new Event(''));
         sinon.assert.called(showFreDialogStub);
-        assert.exists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
+        assert.exists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data won’t be used to improve Google’s AI models.')));
         widget.detach();
     });
     it('should FRE text not include no logging case when the enterprise policy value is ALLOW', async () => {
@@ -72,7 +72,7 @@ describeWithEnvironment('AiCodeCompletionTeaser', () => {
         const { view, widget } = await createTeaser();
         view.input.onAction(new Event(''));
         sinon.assert.called(showFreDialogStub);
-        assert.notExists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
+        assert.notExists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data won’t be used to improve Google’s AI models.')));
         widget.detach();
     });
     it('renders when AIDA becomes available', async () => {

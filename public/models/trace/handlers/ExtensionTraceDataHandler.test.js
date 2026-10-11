@@ -150,7 +150,7 @@ describe('ExtensionTraceDataHandler', function () {
                     },
                     name: 'test-perf-mark',
                     cat: 'blink.user_timing',
-                    ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                    ph: Trace.Types.Events.Phase.INSTANT,
                     pid: Trace.Types.Events.ProcessID(1),
                     tid: Trace.Types.Events.ThreadID(1),
                     ts: Trace.Types.Timing.Micro(100),

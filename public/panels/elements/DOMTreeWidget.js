@@ -1745,9 +1745,13 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         }
     }
     async toggleHideElement(node) {
-        const changeTracker = this.changeTracker;
-        Elements.DOMChanges.trackVisibilityToggle(changeTracker, node, buildChangeSelector(changeTracker, node), !this.isToggledToHidden(node));
+        const wasHidden = this.isToggledToHidden(node);
         await node.toggleHideElement();
+        const isHidden = this.isToggledToHidden(node);
+        if (isHidden !== wasHidden) {
+            const changeTracker = this.changeTracker;
+            Elements.DOMChanges.trackVisibilityToggle(changeTracker, node, buildChangeSelector(changeTracker, node), isHidden);
+        }
     }
     async removeNode(node) {
         if (this.isToggledToHidden(node)) {
@@ -1856,10 +1860,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     }
     duplicateNode(node) {
         void node.duplicate().then(({ error, node: newNode }) => {
-            if (!error) {
-                const duplicatedNode = newNode ?? node;
+            if (!error && newNode) {
                 const changeTracker = this.changeTracker;
-                Elements.DOMChanges.trackNodeDuplication(changeTracker, duplicatedNode, buildChangeSelector(changeTracker, duplicatedNode));
+                Elements.DOMChanges.trackNodeDuplication(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
             }
         });
     }
@@ -1906,6 +1909,10 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         const selection = target.getComponentSelection();
         if (selection && selection.type === 'Range' && !selection.isCollapsed && selection.toString().length > 0 &&
             target.hasSelection()) {
+            return false;
+        }
+        if (UI.UIUtils.isEditing() || this.#multilineEditing) {
+            event.preventDefault();
             return false;
         }
         if (target.nodeName === 'A') {
@@ -1981,10 +1988,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         }
         const wasExpanded = this.#draggedNodeWasExpanded;
         draggedNode.moveTo(parentNode, anchorNode, (error, newNode) => {
-            if (!error) {
-                const movedNode = newNode ?? draggedNode;
+            if (!error && newNode) {
                 const changeTracker = this.changeTracker;
-                Elements.DOMChanges.trackNodeDrop(changeTracker, movedNode, buildChangeSelector(changeTracker, movedNode));
+                Elements.DOMChanges.trackNodeDrop(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
             }
             this.selectNodeAfterEdit(wasExpanded, error, newNode);
         });
@@ -2150,10 +2156,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             const wasExpanded = this.isNodeExpanded(node);
             if (event.key === 'ArrowUp' && node.previousSibling) {
                 node.moveTo(node.parentNode, node.previousSibling, (error, newNode) => {
-                    if (!error) {
-                        const movedNode = newNode ?? node;
+                    if (!error && newNode) {
                         const changeTracker = this.changeTracker;
-                        Elements.DOMChanges.trackNodeMove(changeTracker, movedNode, buildChangeSelector(changeTracker, movedNode), 
+                        Elements.DOMChanges.trackNodeMove(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), 
                         /* directionUp= */ true);
                     }
                     this.selectNodeAfterEdit(wasExpanded, error, newNode);
@@ -2163,10 +2168,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             }
             if (event.key === 'ArrowDown' && node.nextSibling) {
                 node.moveTo(node.parentNode, node.nextSibling.nextSibling, (error, newNode) => {
-                    if (!error) {
-                        const movedNode = newNode ?? node;
+                    if (!error && newNode) {
                         const changeTracker = this.changeTracker;
-                        Elements.DOMChanges.trackNodeMove(changeTracker, movedNode, buildChangeSelector(changeTracker, movedNode), 
+                        Elements.DOMChanges.trackNodeMove(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), 
                         /* directionUp= */ false);
                     }
                     this.selectNodeAfterEdit(wasExpanded, error, newNode);
@@ -2292,10 +2296,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         const clipboardNode = this.#clipboardData.node;
         if (this.#clipboardData.isCut) {
             clipboardNode.moveTo(targetNode, null, (error, newNode) => {
-                if (!error) {
-                    const movedNode = newNode ?? clipboardNode;
+                if (!error && newNode) {
                     const changeTracker = this.changeTracker;
-                    Elements.DOMChanges.trackNodePaste(changeTracker, movedNode, buildChangeSelector(changeTracker, movedNode), 
+                    Elements.DOMChanges.trackNodePaste(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), 
                     /* isCut= */ true);
                 }
                 this.selectNodeAfterEdit(wasExpanded, error, newNode);
@@ -2304,10 +2307,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
         }
         else {
             clipboardNode.copyTo(targetNode, null, (error, newNode) => {
-                if (!error) {
-                    const addedNode = newNode ?? clipboardNode;
+                if (!error && newNode) {
                     const changeTracker = this.changeTracker;
-                    Elements.DOMChanges.trackNodePaste(changeTracker, addedNode, buildChangeSelector(changeTracker, addedNode), 
+                    Elements.DOMChanges.trackNodePaste(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), 
                     /* isCut= */ false);
                 }
                 this.selectNodeAfterEdit(wasExpanded, error, newNode);
@@ -3078,28 +3080,32 @@ export class ElementsTreeOutline extends ElementsTreeOutlineBase {
             originalScrollTop = treeOutlineContainerElement ? treeOutlineContainerElement.scrollTop : 0;
             this.elementInternal.classList.add('hidden');
         }
-        const rootNodeUpdateRecords = this.rootDOMNodeInternal && this.updateRecords.get(this.rootDOMNodeInternal);
-        if (rootNodeUpdateRecords?.hasChangedChildren()) {
-            // Document's children have changed, perform total update.
-            this.update();
-        }
-        else {
-            for (const [node, record] of this.updateRecords) {
-                if (record.hasChangedChildren()) {
-                    this.updateModifiedParentNode((node));
-                }
-                else {
-                    this.updateModifiedNode((node));
+        try {
+            const rootNodeUpdateRecords = this.rootDOMNodeInternal && this.updateRecords.get(this.rootDOMNodeInternal);
+            if (rootNodeUpdateRecords?.hasChangedChildren()) {
+                // Document's children have changed, perform total update.
+                this.update();
+            }
+            else {
+                for (const [node, record] of this.updateRecords) {
+                    if (record.hasChangedChildren()) {
+                        this.updateModifiedParentNode((node));
+                    }
+                    else {
+                        this.updateModifiedNode((node));
+                    }
                 }
             }
         }
-        if (hidePanelWhileUpdating) {
-            this.elementInternal.classList.remove('hidden');
-            if (treeOutlineContainerElement && originalScrollTop) {
-                treeOutlineContainerElement.scrollTop = originalScrollTop;
+        finally {
+            if (hidePanelWhileUpdating) {
+                this.elementInternal.classList.remove('hidden');
+                if (treeOutlineContainerElement && originalScrollTop) {
+                    treeOutlineContainerElement.scrollTop = originalScrollTop;
+                }
             }
+            this.updateRecords.clear();
         }
-        this.updateRecords.clear();
         this.fireElementsTreeUpdated(updatedNodes);
     }
     updateModifiedNode(node) {

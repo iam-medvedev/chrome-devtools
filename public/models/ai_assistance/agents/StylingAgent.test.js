@@ -154,7 +154,7 @@ describe('StylingAgent', function () {
                     confirmSideEffectForTest: stub,
                     execJs,
                 });
-                promise.resolve(true);
+                promise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
                 await Array.fromAsync(agent.run('test', { selected: new AiAssistance.DOMNodeContext.DOMNodeContext(element) }));
                 sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
             });
@@ -178,7 +178,7 @@ describe('StylingAgent', function () {
                     confirmSideEffectForTest: stub,
                     execJs,
                 });
-                promise.resolve(true);
+                promise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
                 await Array.fromAsync(agent.run('test', { selected: new AiAssistance.DOMNodeContext.DOMNodeContext(element) }));
                 assert.lengthOf(execJs.getCalls(), 2);
                 sinon.assert.match(execJs.getCall(1).args[1], sinon.match({ throwOnSideEffect: false }));
@@ -202,7 +202,7 @@ describe('StylingAgent', function () {
                     confirmSideEffectForTest: stub,
                     execJs,
                 });
-                promise.resolve(false);
+                promise.resolve("reject" /* AiAssistance.Tool.PermissionDecision.REJECT */);
                 const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.DOMNodeContext.DOMNodeContext(element) }));
                 const actionStep = responses.findLast(response => response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
@@ -236,7 +236,7 @@ describe('StylingAgent', function () {
                 const errorStep = responses.at(-1);
                 assert.exists(errorStep);
                 assert.strictEqual(errorStep.error, "abort" /* AiAgent.ErrorType.ABORT */);
-                assert.isFalse(await sideEffectConfirmationPromise.promise);
+                assert.strictEqual(await sideEffectConfirmationPromise.promise, "reject" /* AiAssistance.Tool.PermissionDecision.REJECT */);
             });
         });
         describe('long `Observation` text handling', () => {
@@ -392,6 +392,7 @@ describe('StylingAgent', function () {
             assert.isUndefined(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts);
         });
         it('generates an action response if action and answer both present', async function () {
+            sinon.stub(crypto, 'randomUUID').returns('00000000-0000-0000-0000-000000000001');
             const execJs = sinon.mock().once();
             execJs.onCall(0).returns('hello');
             const agent = new StylingAgent.StylingAgent({

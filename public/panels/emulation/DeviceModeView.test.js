@@ -15,6 +15,7 @@ import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Emulation from './emulation.js';
 describeWithEnvironment('DeviceModeView', () => {
@@ -145,7 +146,8 @@ describeWithEnvironment('DeviceModeView', () => {
         let view;
         let showRulersSetting;
         beforeEach(async () => {
-            showRulersSetting = Common.Settings.Settings.instance().moduleSetting('emulation.show-rulers');
+            showRulersSetting =
+                Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showRulersSettingDescriptor);
             SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
             MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true });
             createTarget();
@@ -201,6 +203,16 @@ describeWithEnvironment('DeviceModeView', () => {
                 preset.click();
                 sinon.assert.calledWith(setWidthAndScaleToFitSpy, 2560);
             });
+        });
+    });
+    describe('Ruler', () => {
+        it('does not render markers or hang when scale is 0', async () => {
+            const ruler = new Emulation.DeviceModeView.Ruler();
+            ruler.scale = 0;
+            renderElementIntoDOM(ruler, { includeCommonStyles: true, width: 800, height: 600 });
+            await ruler.updateComplete;
+            const markers = ruler.contentElement.querySelectorAll('.device-mode-ruler-marker');
+            assert.lengthOf(markers, 0);
         });
     });
 });

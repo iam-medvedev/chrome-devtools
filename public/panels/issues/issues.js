@@ -1502,6 +1502,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -4781,7 +4782,7 @@ var UIStrings16 = {
   /**
    * @description Tooltip in the Issues panel explaining that a SharedArrayBuffer was instantiated in a non-cross-origin-isolated context.
    */
-  aSharedarraybufferWas: "A `SharedArrayBuffer` was instantiated in a context that is not cross-origin isolated",
+  aSharedarraybufferWas: "A `SharedArrayBuffer` was instantiated in a context that isn\u2019t cross-origin isolated",
   /**
    * @description Trigger type in the Issues panel indicating that a SharedArrayBuffer was transferred.
    */
@@ -4789,7 +4790,7 @@ var UIStrings16 = {
   /**
    * @description Tooltip in the Issues panel explaining that a SharedArrayBuffer was transferred to a non-cross-origin-isolated context.
    */
-  sharedarraybufferWasTransferedTo: "`SharedArrayBuffer` was transferred to a context that is not cross-origin isolated",
+  sharedarraybufferWasTransferedTo: "`SharedArrayBuffer` was transferred to a context that isn\u2019t cross-origin isolated",
   /**
    * @description Column header in the Issues panel for source locations in the SharedArrayBuffer affected resources table.
    */

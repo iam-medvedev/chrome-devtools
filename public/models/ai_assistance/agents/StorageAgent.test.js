@@ -73,7 +73,7 @@ describe('StorageAgent', function () {
             targetManager: universe.targetManager,
         });
         const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get key1', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
@@ -94,7 +94,7 @@ describe('StorageAgent', function () {
             targetManager: universe.targetManager,
         });
         const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.DOMStorageItem('https://example.com', 'https://example.com', 'https://example.com/', 'localStorage'));
-        sideEffectPromise.resolve(false);
+        sideEffectPromise.resolve("reject" /* AiAssistance.Tool.PermissionDecision.REJECT */);
         const responses = await Array.fromAsync(agent.run('get key1', { selected: context }));
         const finalAction = responses.findLast((r) => r.type === 'action');
         assert.exists(finalAction, 'Expected an action response');
@@ -224,7 +224,7 @@ describe('StorageAgent', function () {
         mockCookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
         mockCookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/');
         const getCookiesStub = sinon.stub(cookieModel, 'getCookiesForDomain').withArgs('https://example.com').resolves([mockCookie]);
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get value of session-cookie', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
@@ -264,7 +264,7 @@ describe('StorageAgent', function () {
         cookie2.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, '.example.com');
         cookie2.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/sub');
         sinon.stub(cookieModel, 'getCookiesForDomain').withArgs('https://example.com').resolves([cookie1, cookie2]);
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get value of session-cookie', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
@@ -310,7 +310,7 @@ describe('StorageAgent', function () {
             publicCookie,
             secretCookie,
         ]);
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get cookies', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2);
@@ -393,7 +393,7 @@ describe('StorageAgent', function () {
         });
         const context = new AiAssistance.StorageContext.StorageContext(new AiAssistance.StorageItem.CookieItem('https://example.com', 'https://example.com'));
         assert.isTrue(AiAssistance.StorageAgent.isSamePageOrigin(target2.outermostTarget(), context));
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get cookie values', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
@@ -432,7 +432,7 @@ describe('StorageAgent', function () {
         sinon.stub(mockStorageB, 'isLocalStorage').get(() => true);
         mockStorageB.getItems.resolves([['keyA', 'valB']]);
         activeStorages = [mockStorageA, mockStorageB];
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get storage values across origins', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
@@ -475,7 +475,7 @@ describe('StorageAgent', function () {
         const hugeValue = 'A'.repeat(15000);
         mockStorage.getItems.resolves([['hugeKey', hugeValue]]);
         activeStorages = [mockStorage];
-        sideEffectPromise.resolve(true);
+        sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
         const responses = await Array.fromAsync(agent.run('get hugeKey', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2);
@@ -762,7 +762,7 @@ describe('StorageAgent', function () {
         });
         async function loggingIsDisabledDuringRun(aidaClient, item, prompt = 'test') {
             const sideEffectPromise = Promise.withResolvers();
-            sideEffectPromise.resolve(true);
+            sideEffectPromise.resolve("allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */);
             const agent = new AiAssistance.StorageAgent.StorageAgent({
                 aidaClient,
                 serverSideLoggingAllowed: true,

@@ -20,7 +20,7 @@ describe('PerformanceAnnotations', () => {
         });
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const evalScriptEvent = allThreadEntriesInTrace(parsedTrace)
-            .find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
+            .find(event => event.name === Trace.Types.Events.Name.EVALUATE_SCRIPT && event.ts === 122411195649);
         assert.exists(evalScriptEvent);
         const aiCallTree = AICallTree.AICallTree.fromEvent(evalScriptEvent, parsedTrace);
         assert.isOk(aiCallTree);

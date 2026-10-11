@@ -777,6 +777,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -3790,8 +3791,10 @@ __export(ObjectEventListenersSidebarPane_exports, {
 import * as SDK5 from "../../core/sdk/sdk.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "../event_listeners/event_listeners.js";
+var { html: html3 } = Lit3;
 var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends UI3.Widget.VBox {
   #lastRequestedContext;
   // TODO(bmeurer): This is only public for web tests.
@@ -3807,7 +3810,7 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
   toolbarItems() {
     const refreshButton = UI3.Toolbar.Toolbar.createActionButton("browser-debugger.refresh-global-event-listeners");
     refreshButton.setSize(Buttons.Button.Size.SMALL);
-    return [refreshButton];
+    return html3`${refreshButton.element}`;
   }
   async performUpdate() {
     if (this.#lastRequestedContext) {
@@ -3885,7 +3888,7 @@ import * as Platform2 from "../../core/platform/platform.js";
 import * as SDK6 from "../../core/sdk/sdk.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html3, render as render3 } from "../../ui/lit/lit.js";
+import { Directives as Directives3, html as html4, render as render3 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/xhrBreakpointsSidebarPane.css.js
@@ -4057,7 +4060,10 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
     xhrBreakpointsSidebarPaneInstance = null;
   }
   toolbarItems() {
-    return [this.#addButton];
+    return html4`${this.#addButton.element}`;
+  }
+  get addButtonForTest() {
+    return this.#addButton;
   }
   emptyElementContextMenu(event) {
     const contextMenu = new UI4.ContextMenu.ContextMenu(event);
@@ -4086,7 +4092,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
       this.update();
     };
     render3(
-      html3`
+      html4`
         ${i18nString3(UIStrings3.breakWhenUrlContains)}
         <devtools-prompt
             value=""
@@ -4142,7 +4148,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
       this.focus();
     };
     render3(
-      html3`
+      html4`
         <div class=${classMap({ "breakpoint-entry": true, "breakpoint-hit": item2 === this.#hitBreakpoint })}
              role="checkbox"
              aria-checked=${enabled ? "true" : "false"}

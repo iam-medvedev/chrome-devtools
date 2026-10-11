@@ -27,6 +27,7 @@ import * as SDK from "../../core/sdk/sdk.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import { Directives, html, nothing, render } from "../../ui/lit/lit.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sensors/locationsSettingsTab.css.js
@@ -549,7 +550,7 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
       useShadowDom: true
     });
     this.#view = view;
-    this.customSetting = Common.Settings.Settings.instance().moduleSetting("emulation.locations");
+    this.customSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.emulationLocationsSettingDescriptor);
     const list = this.customSetting.get().map((location) => replaceLocationTitles(location, this.customSetting.defaultValue));
     function replaceLocationTitles(location, defaultValues) {
       if (!location.title) {
@@ -747,7 +748,7 @@ import * as i18n3 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as Geometry from "../../ui/geometry/geometry.js";
-import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as SettingsUI2 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html2, render as render2 } from "../../ui/lit/lit.js";
 import * as SettingUIRegistration from "../../ui/settings/settings.js";
@@ -1294,7 +1295,9 @@ var SensorsView = class extends UI2.Widget.VBox {
     this.#location = SDK2.EmulationModel.Location.parseSetting(this.#locationSetting.get());
     this.#locationOverrideEnabled = false;
     this.#locationSectionElement = this.contentElement.createChild("section", "sensors-group");
-    const customLocationsSetting = Common2.Settings.Settings.instance().moduleSetting("emulation.locations");
+    const customLocationsSetting = Common2.Settings.Settings.instance().resolve(
+      SettingUIRegistration.EmulationSettings.emulationLocationsSettingDescriptor
+    );
     this.renderLocationSection(this.#location, customLocationsSetting);
     customLocationsSetting.addChangeListener(() => this.renderLocationSection(this.#location, customLocationsSetting));
     this.createPanelSeparator();
@@ -1816,7 +1819,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   createPressureSection() {
     const container = this.contentElement.createChild("div", "pressure-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(
+    const control = SettingsUI2.SettingsUI.createControlForSetting(
       Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.cpuPressureSettingDescriptor),
       i18nString2(UIStrings2.forcesSelectedPressureStateEmulation)
     );
@@ -1826,7 +1829,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   createCPUPerformanceSection() {
     const container = this.contentElement.createChild("div", "cpu-performance-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(
+    const control = SettingsUI2.SettingsUI.createControlForSetting(
       Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.cpuPerformanceSettingDescriptor),
       i18nString2(UIStrings2.forcesSelectedCpuPerformanceTierEmulation)
     );
@@ -2068,7 +2071,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   appendTouchControl() {
     const container = this.contentElement.createChild("div", "touch-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(
+    const control = SettingsUI2.SettingsUI.createControlForSetting(
       Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.touchSettingDescriptor),
       i18nString2(UIStrings2.forcesTouchInsteadOfClick)
     );
@@ -2078,7 +2081,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   }
   appendIdleEmulator() {
     const container = this.contentElement.createChild("div", "idle-section");
-    const control = SettingsUI.SettingsUI.createControlForSetting(
+    const control = SettingsUI2.SettingsUI.createControlForSetting(
       Common2.Settings.Settings.instance().resolve(SDK2.SDKSettings.idleDetectionSettingDescriptor),
       i18nString2(UIStrings2.forcesSelectedIdleStateEmulation)
     );

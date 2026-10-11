@@ -11,6 +11,7 @@ __export(AccessibilityAnnouncementRecordingListView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "../../ui/legacy/components/data_grid/data_grid.js";
+import * as Common2 from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
@@ -69,6 +70,7 @@ __export(AccessibilityAnnouncementRecordingView_exports, {
   teardownScript: () => teardownScript,
   validateAndSanitizeAnnouncement: () => validateAndSanitizeAnnouncement
 });
+import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as SDK from "../../core/sdk/sdk.js";
@@ -626,7 +628,15 @@ var DEFAULT_VIEW = (input, _output, target) => {
         </div>
       ` : Lit.nothing}
       <div class="announcements-main-pane">
-        ${widget(AccessibilityAnnouncementRecordingListView, { items: input.announcements })}
+        <devtools-widget
+          ${widget(AccessibilityAnnouncementRecordingListView, {
+      items: input.announcements,
+      selectedItem: input.selectedAnnouncement
+    })}
+          @announcement-selected=${(e) => input.onSelectAnnouncement(e.detail)}
+          @reveal-in-elements=${(e) => input.onRevealInElements(e.detail)}
+          @reveal-in-a11y-tree=${(e) => input.onRevealInA11yTree(e.detail)}>
+        </devtools-widget>
       </div>
     </div>`,
     target
@@ -637,6 +647,10 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
     return;
   }
   const elementIdMap = /* @__PURE__ */ new WeakMap();
+  const elementRegistry = /* @__PURE__ */ new Map();
+  const registryCleanup = typeof FinalizationRegistry !== "undefined" ? new FinalizationRegistry((id) => {
+    elementRegistry.delete(id);
+  }) : null;
   let recordIdCounter = 0;
   function getOrCreateRecordId(element) {
     if (!element || element.nodeType !== Node.ELEMENT_NODE) {
@@ -647,9 +661,14 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
       recordIdCounter++;
       id = String(recordIdCounter);
       elementIdMap.set(element, id);
+      elementRegistry.set(id, new WeakRef(element));
+      registryCleanup?.register(element, id);
     }
     return id;
   }
+  window.__announcementsRecorderGetElement = function(id) {
+    return elementRegistry.get(id)?.deref();
+  };
   function getParentOrHost(node) {
     if (!node) {
       return null;
@@ -1003,6 +1022,8 @@ function injectedScript(ariaLiveApi, jsTriggeredApi) {
     }
     delete window.__announcementsRecorderBinding_loaded;
     delete window.__announcementsRecorderBinding_cleanup;
+    elementRegistry.clear();
+    delete window.__announcementsRecorderGetElement;
   };
 }
 function teardownScript() {
@@ -1097,6 +1118,7 @@ function buildCsvContent(announcements) {
 var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane {
   #announcements = [];
   #filteredAnnouncements = null;
+  #selectedAnnouncement = null;
   #isRecording = false;
   #blockedTargets = /* @__PURE__ */ new Map();
   #scriptIdentifiers = /* @__PURE__ */ new Map();
@@ -1266,6 +1288,7 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   clearAnnouncements() {
     this.#announcements = [];
     this.#filteredAnnouncements = [];
+    this.#selectedAnnouncement = null;
     this.requestUpdate();
   }
   #matchesFilter(announcement) {
@@ -1345,6 +1368,55 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
   exportCsvForTest() {
     return this.#buildCsvContent();
   }
+  #onSelectAnnouncement = (item) => {
+    this.#selectedAnnouncement = item;
+    this.requestUpdate();
+  };
+  async #revealElement(item, targetPanel) {
+    const target = item.target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return;
+    }
+    const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+    const domModel = target.model(SDK.DOMModel.DOMModel);
+    if (!runtimeModel || !domModel) {
+      return;
+    }
+    if (!item.elementId) {
+      return;
+    }
+    try {
+      const response = await target.runtimeAgent().invoke_evaluate({
+        expression: `window.__announcementsRecorderGetElement?.(${JSON.stringify(item.elementId)})`,
+        objectGroup: "reveal-node"
+      });
+      if (response.result && response.result.type === "object" && response.result.subtype !== "null") {
+        const remoteObject = runtimeModel.createRemoteObject(response.result);
+        const domNode = await domModel.pushObjectAsNodeToFrontend(remoteObject);
+        if (domNode) {
+          const toggleAction = UI2.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-a11y-tree") ? UI2.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree") : null;
+          if (targetPanel === "accessibility") {
+            if (toggleAction && !toggleAction.toggled()) {
+              await toggleAction.execute();
+            }
+          } else if (targetPanel === "elements") {
+            if (toggleAction && toggleAction.toggled()) {
+              await toggleAction.execute();
+            }
+          }
+          await Common.Revealer.reveal(domNode);
+        }
+      }
+    } finally {
+      runtimeModel.releaseObjectGroup("reveal-node");
+    }
+  }
+  revealElementForTest(item, targetPanel) {
+    return this.#revealElement(item, targetPanel);
+  }
+  selectedAnnouncementForTest() {
+    return this.#selectedAnnouncement;
+  }
   performUpdate() {
     const blockedTargets = [];
     for (const [target, reason] of this.#blockedTargets) {
@@ -1377,7 +1449,15 @@ var AccessibilityAnnouncementRecordingView = class extends AccessibilitySubPane 
         this.setTextFilter(text);
       },
       blockedTargets,
-      announcements: filteredAnnouncements
+      announcements: filteredAnnouncements,
+      selectedAnnouncement: this.#selectedAnnouncement,
+      onSelectAnnouncement: this.#onSelectAnnouncement,
+      onRevealInElements: (item) => {
+        void this.#revealElement(item, "elements");
+      },
+      onRevealInA11yTree: (item) => {
+        void this.#revealElement(item, "accessibility");
+      }
     };
     this.#view(input, void 0, this.contentElement);
   }
@@ -1433,7 +1513,15 @@ var UIStrings2 = {
   /**
    * @description Context menu item for copying the announcement element HTML snippet to the clipboard.
    */
-  copyElementHtml: "Copy element HTML"
+  copyElementHtml: "Copy element HTML",
+  /**
+   * @description Context menu item to reveal the announcement source element in the Elements panel DOM tree.
+   */
+  revealInElements: "Reveal in Elements panel",
+  /**
+   * @description Context menu item to reveal the announcement source element in the full Accessibility tree.
+   */
+  revealInA11yTree: "Reveal in Accessibility tree"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingListView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -1488,10 +1576,10 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     target
   );
 };
-var AccessibilityAnnouncementRecordingListView = class extends UI3.Widget.VBox {
+var AccessibilityAnnouncementRecordingListViewBase = Common2.ObjectWrapper.eventMixin(UI3.Widget.VBox);
+var AccessibilityAnnouncementRecordingListView = class _AccessibilityAnnouncementRecordingListView extends AccessibilityAnnouncementRecordingListViewBase {
   #items = [];
   #selectedItem = null;
-  #onSelect = null;
   #view;
   constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
@@ -1521,15 +1609,21 @@ var AccessibilityAnnouncementRecordingListView = class extends UI3.Widget.VBox {
   get selectedItem() {
     return this.#selectedItem;
   }
-  set onSelect(onSelect) {
-    this.#onSelect = onSelect;
-  }
   reset() {
     this.#items = [];
     this.#selectedItem = null;
     this.requestUpdate();
   }
   #populateContextMenu(contextMenu, item) {
+    if (item.element) {
+      const revealSection = contextMenu.revealSection();
+      revealSection.appendItem(i18nString2(UIStrings2.revealInElements), () => {
+        this.dispatchEventToListeners(_AccessibilityAnnouncementRecordingListView.Events.REVEAL_IN_ELEMENTS, item);
+      }, { jslogContext: "reveal-in-elements" });
+      revealSection.appendItem(i18nString2(UIStrings2.revealInA11yTree), () => {
+        this.dispatchEventToListeners(_AccessibilityAnnouncementRecordingListView.Events.REVEAL_IN_A11Y_TREE, item);
+      }, { jslogContext: "reveal-in-a11y-tree" });
+    }
     if (item.message) {
       contextMenu.clipboardSection().appendItem(i18nString2(UIStrings2.copyMessage), () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.message);
@@ -1550,16 +1644,24 @@ var AccessibilityAnnouncementRecordingListView = class extends UI3.Widget.VBox {
       },
       onSelect: (item) => {
         this.selectedItem = item;
-        this.#onSelect?.(item);
+        this.dispatchEventToListeners(_AccessibilityAnnouncementRecordingListView.Events.ANNOUNCEMENT_SELECTED, item);
       },
       onDeselect: () => {
         this.selectedItem = null;
-        this.#onSelect?.(null);
+        this.dispatchEventToListeners(_AccessibilityAnnouncementRecordingListView.Events.ANNOUNCEMENT_SELECTED, null);
       }
     };
     this.#view(input, void 0, this.contentElement);
   }
 };
+((AccessibilityAnnouncementRecordingListView2) => {
+  let Events;
+  ((Events2) => {
+    Events2["ANNOUNCEMENT_SELECTED"] = "announcement-selected";
+    Events2["REVEAL_IN_ELEMENTS"] = "reveal-in-elements";
+    Events2["REVEAL_IN_A11Y_TREE"] = "reveal-in-a11y-tree";
+  })(Events = AccessibilityAnnouncementRecordingListView2.Events || (AccessibilityAnnouncementRecordingListView2.Events = {}));
+})(AccessibilityAnnouncementRecordingListView || (AccessibilityAnnouncementRecordingListView = {}));
 
 // ../../front_end/panels/accessibility/AccessibilityNodeView.ts
 var AccessibilityNodeView_exports = {};
@@ -1574,7 +1676,7 @@ __export(AccessibilityNodeView_exports, {
   StringProperties: () => StringProperties,
   TypeStyles: () => TypeStyles
 });
-import * as Common from "../../core/common/common.js";
+import * as Common3 from "../../core/common/common.js";
 import * as i18n7 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 
@@ -1912,6 +2014,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -5179,11 +5282,11 @@ var UIStrings4 = {
   /**
    * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsNotRendered: "Element is not rendered",
+  elementIsNotRendered: "Element isn\u2019t rendered",
   /**
    * @description Reason in the Accessibility tab in the Elements panel.
    */
-  elementIsNotVisible: "Element is not visible",
+  elementIsNotVisible: "Element isn\u2019t visible",
   /**
    * @description Reason in the Accessibility tab in the Elements panel. Indicates the
    * ARIA role for this element, which will always have the format 'role=', but with different roles
@@ -5608,7 +5711,7 @@ var AXRelatedNodeElement = class {
    */
   revealNode() {
     if (this.deferredNode) {
-      void this.deferredNode.resolvePromise().then((node) => Common.Revealer.reveal(node));
+      void this.deferredNode.resolvePromise().then((node) => Common3.Revealer.reveal(node));
     }
   }
 };

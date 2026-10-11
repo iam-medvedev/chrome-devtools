@@ -10,7 +10,7 @@ import * as Timeline from './timeline.js';
 describeWithEnvironment('RecordingMetadata', () => {
     it('for a CPU profile it just returns the origin', async () => {
         const result = Timeline.RecordingMetadata.forCPUProfile();
-        assert.deepEqual(result, { dataOrigin: "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */ });
+        assert.deepEqual(result, { dataOrigin: Trace.Types.File.DataOrigin.CPU_PROFILE });
     });
     it('returns the associated metadata for a chrome trace', async () => {
         const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance({ forceNew: true });
@@ -42,7 +42,7 @@ describeWithEnvironment('RecordingMetadata', () => {
                 targetLatency: undefined,
             },
             cruxFieldData: undefined,
-            dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
+            dataOrigin: Trace.Types.File.DataOrigin.TRACE_EVENTS,
             emulatedDeviceTitle: undefined,
             hostDPR: 1,
         });
@@ -61,7 +61,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             networkThrottling: undefined,
             networkThrottlingConditions: undefined,
             cruxFieldData: undefined,
-            dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
+            dataOrigin: Trace.Types.File.DataOrigin.TRACE_EVENTS,
             emulatedDeviceTitle: undefined,
             hostDPR: 1,
         });
@@ -97,7 +97,7 @@ describeWithEnvironment('RecordingMetadata', () => {
                 targetLatency: undefined,
             },
             cruxFieldData: undefined,
-            dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
+            dataOrigin: Trace.Types.File.DataOrigin.TRACE_EVENTS,
             emulatedDeviceTitle: undefined,
             hostDPR: 1,
         });
@@ -135,7 +135,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             emulatedDeviceTitle: undefined,
             hostDPR: 1,
             cruxFieldData: undefined,
-            dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
+            dataOrigin: Trace.Types.File.DataOrigin.TRACE_EVENTS,
         });
     });
 });

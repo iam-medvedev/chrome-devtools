@@ -634,7 +634,7 @@ describe('ContextSelectionAgent', function () {
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             const onInspectElement = sinon.stub().resolves(node);
             const sideEffectConfirmationPromise = Promise.withResolvers();
-            sideEffectConfirmationPromise.resolve(true);
+            sideEffectConfirmationPromise.resolve("allow-once" /* Tool.PermissionDecision.ALLOW_ONCE */);
             const agent = new ContextSelectionAgent.ContextSelectionAgent({
                 aidaClient: mockAidaClient([
                     [{
@@ -947,7 +947,9 @@ describe('ContextSelectionAgent', function () {
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
             assert.exists(actionResponse);
-            assert.deepEqual(actionResponse, {
+            const { callId, ...actionWithoutCallId } = actionResponse;
+            assert.isString(callId);
+            assert.deepEqual(actionWithoutCallId, {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
                 code: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',
@@ -1043,7 +1045,9 @@ describe('ContextSelectionAgent', function () {
             const responses = await Array.fromAsync(agent.run('test', { selected: null }));
             const actionResponse = responses.find(response => response.type === "action" /* AiAgent.ResponseType.ACTION */);
             assert.exists(actionResponse);
-            assert.deepEqual(actionResponse, {
+            const { callId, ...actionWithoutCallId } = actionResponse;
+            assert.isString(callId);
+            assert.deepEqual(actionWithoutCallId, {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
                 code: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',

@@ -9,6 +9,7 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { Printer } from '../../testing/PropertyParser.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import { render } from '../../ui/lit/lit.js';
 import * as Elements from './elements.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('PropertyRenderer', () => {
@@ -17,15 +18,20 @@ describeWithEnvironment('PropertyRenderer', () => {
     }
     describe('Renderer', () => {
         function textFragments(nodes) {
-            return nodes.map(n => n.textContent);
+            if (nodes instanceof Node) {
+                return nodes.childTextNodes().map(n => n.textContent).filter(Boolean);
+            }
+            const span = document.createElement('span');
+            render(nodes, span);
+            return textFragments(span);
         }
         it('parses text', () => {
             // Prevent normalization to get an accurate representation of the parser result.
             sinon.stub(Element.prototype, 'normalize');
-            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', 'var(--v)').valueElement.childNodes)), ['var', '(', '--v', ')']);
-            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', '/* comments are text */ 1px solid 4').valueElement.childNodes)), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
-            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)')
-                .valueElement.childNodes)), [
+            assert.deepEqual(textFragments(renderValueElement('--p', 'var(--v)').valueElement), ['var', '(', '--v', ')']);
+            assert.deepEqual(textFragments(renderValueElement('--p', '/* comments are text */ 1px solid 4').valueElement), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
+            assert.deepEqual(textFragments(renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)')
+                .valueElement), [
                 '2px', ' ', 'var', '(', '--double', ',', ' ', 'var', '(', '--fallback', ',', ' ', 'black', ')',
                 ')', ' ', '#32a1ce', ' ', 'rgb', '(', '124', ' ', '125', ' ', '21', ' ', '0', ')',
             ]);
@@ -62,11 +68,42 @@ describeWithEnvironment('PropertyRenderer', () => {
         });
         it('renders trailing comments', () => {
             const property = '/* color: red */ blue /* color: red */';
-            assert.strictEqual(textFragments(Array.from(renderValueElement('--p', property).valueElement.childNodes)).join(''), property);
+            assert.strictEqual(textFragments(renderValueElement('--p', property).valueElement).join(''), property);
+            const withoutSpaces = '/* color: red */blue/* color: red */';
+            assert.strictEqual(textFragments(renderValueElement('--p', withoutSpaces).valueElement).join(''), withoutSpaces);
         });
         it('renders malformed comments', () => {
             const property = 'red /* foo: bar';
-            assert.strictEqual(textFragments(Array.from(renderValueElement('--p', property).valueElement.childNodes)).join(''), property);
+            assert.strictEqual(textFragments(renderValueElement('--p', property).valueElement).join(''), property);
+        });
+        it('computes preceding space from the AST', () => {
+            const property = '/* c1 */1px  /* c2 */ solid\tvar( --v , 2px )/* c3 */';
+            const ast = SDK.CSSPropertyParser.tokenizeDeclaration('--p', property);
+            assert.exists(ast);
+            const nodes = [];
+            SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => {
+                if ((!node.firstChild && node.parent?.name !== 'NumberLiteral') || node.name === 'NumberLiteral') {
+                    nodes.push([ast.text(node), Elements.PropertyRenderer.precedingSpace(node, ast)]);
+                }
+                return false;
+            });
+            for (const trailing of ast.trailingNodes) {
+                nodes.push([ast.text(trailing), Elements.PropertyRenderer.precedingSpace(trailing, ast)]);
+            }
+            assert.strictEqual(Elements.PropertyRenderer.precedingSpace(ast.tree, ast), '');
+            assert.deepEqual(nodes, [
+                ['/* c1 */', ' '],
+                ['1px', ''],
+                ['/* c2 */', '  '],
+                ['solid', ' '],
+                ['var', '\t'],
+                ['(', ''],
+                ['--v', ' '],
+                [',', ' '],
+                ['2px', ' '],
+                [')', ' '],
+                ['/* c3 */', ''],
+            ]);
         });
     });
     describe('URLRenderer', () => {

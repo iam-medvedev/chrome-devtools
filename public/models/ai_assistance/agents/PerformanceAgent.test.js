@@ -10,7 +10,7 @@ import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
-import { getInsightOrError } from '../../../testing/InsightHelpers.js';
+import { getInsightOrError, stubInsightModel } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
@@ -36,6 +36,28 @@ function deleteAllWidgetData(responses) {
             });
         }
     }
+}
+/**
+ * Formats responses for snapshot testing.
+ *
+ * - Strips huge widget data to prevent crashes and bloated snapshots.
+ * - Splits multiline string text in context details into arrays of lines so that
+ *   diffs in snapshots are readable and git diff only highlights the changing line(s).
+ */
+function formatResponsesForSnapshot(responses) {
+    deleteAllWidgetData(responses);
+    return responses.map(response => {
+        if ('details' in response && response.details) {
+            return {
+                ...response,
+                details: response.details.map(detail => ({
+                    ...detail,
+                    text: detail.text.includes('\n') ? detail.text.split('\n') : detail.text,
+                })),
+            };
+        }
+        return response;
+    });
 }
 async function loadTrace(context, name, config) {
     return await TraceLoader.traceEngine(context, name, config ? { config } : undefined);
@@ -143,8 +165,7 @@ describe('PerformanceAgent', function () {
                 });
                 const context = PerformanceTraceContext.PerformanceTraceContext.fromCallTree(aiCallTree);
                 const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-                deleteAllWidgetData(responses);
-                snapshotTester.assert(this, JSON.stringify(responses, null, 2));
+                snapshotTester.assert(this, JSON.stringify(formatResponsesForSnapshot(responses), null, 2));
                 assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
                     {
                         role: 1,
@@ -300,6 +321,13 @@ describe('PerformanceAgent', function () {
             const response = agent.parseTextResponse('`````hello ````` world`````');
             assert.deepEqual(response, { answer: 'hello ````` world' });
         });
+        it('extracts suggestions when the response is wrapped in 5 backticks', async () => {
+            const agent = createAgentForConversation();
+            const response = agent.parseTextResponse('`````\nhello world\nSUGGESTIONS: ["suggestion"]\n`````');
+            // Only the fences are stripped, so the newlines after the opening fence and
+            // before the closing fence remain in the answer.
+            assert.deepEqual(response, { answer: '\nhello world\n', suggestions: ['suggestion'] });
+        });
         it('does not strip out inline code backticks', async () => {
             const agent = createAgentForConversation();
             const response = agent.parseTextResponse('This is code `console.log("hello")`');
@@ -368,8 +396,7 @@ code
                         }]]),
             });
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            deleteAllWidgetData(responses);
-            snapshotTester.assert(this, JSON.stringify(responses, null, 2));
+            snapshotTester.assert(this, JSON.stringify(formatResponsesForSnapshot(responses), null, 2));
         });
     });
     describe('enhanceQuery', () => {
@@ -827,7 +854,7 @@ code
             const lcpDiscovery = getInsightOrError('LCPDiscovery', parsedTrace.insights, firstNav);
             const insightSetId = [...parsedTrace.insights.keys()][0];
             const insightSet = parsedTrace.insights.get(insightSetId);
-            insightSet.model.LCPBreakdown = {
+            stubInsightModel(insightSet, 'LCPBreakdown', {
                 insightKey: 'LCPBreakdown',
                 state: 'fail',
                 lcpMs: 1,
@@ -835,7 +862,7 @@ code
                     name: 'largestContentfulPaint::Candidate',
                     args: { data: { nodeId: 4 } },
                 },
-            };
+            });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpDiscovery);
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
@@ -880,7 +907,7 @@ code
             const lcpDiscovery = getInsightOrError('LCPDiscovery', parsedTrace.insights, firstNav);
             const insightSetId = [...parsedTrace.insights.keys()][0];
             const insightSet = parsedTrace.insights.get(insightSetId);
-            insightSet.model.LCPBreakdown = {
+            stubInsightModel(insightSet, 'LCPBreakdown', {
                 insightKey: 'LCPBreakdown',
                 state: 'fail',
                 lcpMs: 1,
@@ -888,7 +915,7 @@ code
                     name: 'largestContentfulPaint::Candidate',
                     args: { data: { nodeId: 4 } },
                 },
-            };
+            });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpDiscovery);
             const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
@@ -942,7 +969,7 @@ code
             const insightSet = parsedTrace.insights.get(insightSetId);
             const lcpRequest = parsedTrace.data.NetworkRequests.byTime.find(r => r.args.data.url.endsWith('50.jpg'));
             assert.exists(lcpRequest);
-            insightSet.model.LCPBreakdown = {
+            stubInsightModel(insightSet, 'LCPBreakdown', {
                 insightKey: 'LCPBreakdown',
                 state: 'fail',
                 lcpMs: 1,
@@ -951,7 +978,7 @@ code
                     args: { data: { nodeId: 4 } },
                 },
                 lcpRequest,
-            };
+            });
             const context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpDiscovery);
             const agent = new PerformanceAgent.PerformanceAgent({
                 aidaClient: mockAidaClient([
@@ -1004,7 +1031,7 @@ code
                 context = PerformanceTraceContext.PerformanceTraceContext.fromInsight(parsedTrace, lcpDiscovery);
             });
             it('yields a PERF_INSIGHT widget for LCPBreakdown', async function () {
-                insightSet.model.LCPBreakdown = {
+                stubInsightModel(insightSet, 'LCPBreakdown', {
                     insightKey: 'LCPBreakdown',
                     state: 'fail',
                     lcpMs: 1000,
@@ -1012,7 +1039,7 @@ code
                         name: 'largestContentfulPaint::Candidate',
                         args: { data: { nodeId: 4 } },
                     },
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1034,11 +1061,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.LCPBreakdown);
             });
             it('yields a PERF_INSIGHT widget for RenderBlocking', async function () {
-                insightSet.model.RenderBlocking = {
+                stubInsightModel(insightSet, 'RenderBlocking', {
                     insightKey: 'RenderBlocking',
                     state: 'fail',
                     renderBlockingRequests: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1060,10 +1087,10 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.RenderBlocking);
             });
             it('yields a PERF_INSIGHT widget for LCPDiscovery', async function () {
-                insightSet.model.LCPDiscovery = {
+                stubInsightModel(insightSet, 'LCPDiscovery', {
                     insightKey: 'LCPDiscovery',
                     state: 'fail',
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1085,12 +1112,12 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.LCPDiscovery);
             });
             it('yields a PERF_INSIGHT widget for CLSCulprits', async function () {
-                insightSet.model.CLSCulprits = {
+                stubInsightModel(insightSet, 'CLSCulprits', {
                     insightKey: 'CLSCulprits',
                     state: 'fail',
                     clusters: [],
                     worstCluster: null,
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1112,14 +1139,14 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.CLSCulprits);
             });
             it('yields a PERF_INSIGHT widget for NetworkDependencyTree', async function () {
-                insightSet.model.NetworkDependencyTree = {
+                stubInsightModel(insightSet, 'NetworkDependencyTree', {
                     insightKey: 'NetworkDependencyTree',
                     state: 'fail',
                     rootNodes: [],
                     maxTime: 0,
                     preconnectedOrigins: [],
                     preconnectCandidates: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1141,11 +1168,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.NetworkDependencyTree);
             });
             it('yields a PERF_INSIGHT widget for ThirdParties', async function () {
-                insightSet.model.ThirdParties = {
+                stubInsightModel(insightSet, 'ThirdParties', {
                     insightKey: 'ThirdParties',
                     state: 'fail',
                     entitySummaries: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1167,11 +1194,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.ThirdParties);
             });
             it('yields a PERF_INSIGHT widget for ForcedReflow', async function () {
-                insightSet.model.ForcedReflow = {
+                stubInsightModel(insightSet, 'ForcedReflow', {
                     insightKey: 'ForcedReflow',
                     state: 'fail',
                     aggregatedBottomUpData: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1193,11 +1220,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.ForcedReflow);
             });
             it('yields a PERF_INSIGHT widget for Cache', async function () {
-                insightSet.model.Cache = {
+                stubInsightModel(insightSet, 'Cache', {
                     insightKey: 'Cache',
                     state: 'fail',
                     requests: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1219,10 +1246,10 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.Cache);
             });
             it('yields a PERF_INSIGHT widget for INPBreakdown', async function () {
-                insightSet.model.INPBreakdown = {
+                stubInsightModel(insightSet, 'INPBreakdown', {
                     insightKey: 'INPBreakdown',
                     state: 'fail',
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1244,10 +1271,10 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.INPBreakdown);
             });
             it('yields a PERF_INSIGHT widget for DocumentLatency', async function () {
-                insightSet.model.DocumentLatency = {
+                stubInsightModel(insightSet, 'DocumentLatency', {
                     insightKey: 'DocumentLatency',
                     state: 'fail',
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1269,12 +1296,12 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.DocumentLatency);
             });
             it('yields a PERF_INSIGHT widget for DOMSize', async function () {
-                insightSet.model.DOMSize = {
+                stubInsightModel(insightSet, 'DOMSize', {
                     insightKey: 'DOMSize',
                     state: 'fail',
                     largeLayoutUpdates: [],
                     largeStyleRecalcs: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1296,12 +1323,12 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.DOMSize);
             });
             it('yields a PERF_INSIGHT widget for DuplicatedJavaScript', async function () {
-                insightSet.model.DuplicatedJavaScript = {
+                stubInsightModel(insightSet, 'DuplicatedJavaScript', {
                     insightKey: 'DuplicatedJavaScript',
                     state: 'fail',
                     duplicationGroupedByNodeModules: new Map(),
                     wastedBytes: 0,
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1323,12 +1350,12 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.DuplicatedJavaScript);
             });
             it('yields a PERF_INSIGHT widget for ImageDelivery', async function () {
-                insightSet.model.ImageDelivery = {
+                stubInsightModel(insightSet, 'ImageDelivery', {
                     insightKey: 'ImageDelivery',
                     state: 'fail',
                     optimizableImages: [],
                     wastedBytes: 0,
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1350,11 +1377,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.ImageDelivery);
             });
             it('yields a PERF_INSIGHT widget for FontDisplay', async function () {
-                insightSet.model.FontDisplay = {
+                stubInsightModel(insightSet, 'FontDisplay', {
                     insightKey: 'FontDisplay',
                     state: 'fail',
                     fonts: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1376,13 +1403,13 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.FontDisplay);
             });
             it('yields a PERF_INSIGHT widget for SlowCSSSelector', async function () {
-                insightSet.model.SlowCSSSelector = {
+                stubInsightModel(insightSet, 'SlowCSSSelector', {
                     insightKey: 'SlowCSSSelector',
                     state: 'fail',
                     totalElapsedMs: 0,
                     totalMatchAttempts: 0,
                     totalMatchCount: 0,
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1404,11 +1431,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.SlowCSSSelector);
             });
             it('yields a PERF_INSIGHT widget for LegacyJavaScript', async function () {
-                insightSet.model.LegacyJavaScript = {
+                stubInsightModel(insightSet, 'LegacyJavaScript', {
                     insightKey: 'LegacyJavaScript',
                     state: 'fail',
                     legacyJavaScriptResults: new Map(),
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1430,11 +1457,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.LegacyJavaScript);
             });
             it('yields a PERF_INSIGHT widget for Viewport', async function () {
-                insightSet.model.Viewport = {
+                stubInsightModel(insightSet, 'Viewport', {
                     insightKey: 'Viewport',
                     state: 'fail',
                     mobileOptimized: false,
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1456,11 +1483,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.Viewport);
             });
             it('yields a PERF_INSIGHT widget for ModernHTTP', async function () {
-                insightSet.model.ModernHTTP = {
+                stubInsightModel(insightSet, 'ModernHTTP', {
                     insightKey: 'ModernHTTP',
                     state: 'fail',
                     http1Requests: [],
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1482,11 +1509,11 @@ code
                 assert.strictEqual(widget?.data.insightData, insightSet.model.ModernHTTP);
             });
             it('yields a PERF_INSIGHT widget for CharacterSet', async function () {
-                insightSet.model.CharacterSet = {
+                stubInsightModel(insightSet, 'CharacterSet', {
                     insightKey: 'CharacterSet',
                     state: 'fail',
                     data: { hasHttpCharset: false, metaCharsetDisposition: 'missing' },
-                };
+                });
                 const agent = createAgentForConversation({
                     aidaClient: mockAidaClient([
                         [{
@@ -1773,9 +1800,10 @@ code
             const focus = context.getItem();
             assert.exists(focus);
             const mockNetworkEvent = {
-                name: "SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */,
+                name: Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST,
                 args: {
                     data: {
+                        url: 'https://example.com/api',
                         responseHeaders: [
                             { name: 'x-csrf-token', value: 'secret' },
                             { name: 'content-type', value: 'text/html' },
@@ -1858,7 +1886,6 @@ code
             const details = JSON.parse(parsedOutput.details);
             const headers = details.args.data.headers;
             assert.deepEqual(headers, [
-                { name: 'x-csrf-token', value: '<redacted>' },
                 { name: 'content-type', value: 'text/html' },
             ]);
         });

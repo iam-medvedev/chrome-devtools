@@ -265,9 +265,12 @@ var LargestContentfulPaint = class _LargestContentfulPaint extends Metric {
     return !isImage || !isLowPriority;
   }
   static getOptimisticGraph(dependencyGraph, processedNavigation) {
-    const lcp = processedNavigation.timestamps.largestContentfulPaint;
+    const { firstContentfulPaint: fcp, largestContentfulPaint: lcp } = processedNavigation.timestamps;
     if (!lcp) {
       throw new Core3.LanternError("NO_LCP");
+    }
+    if (fcp === lcp && processedNavigation.largestContentfulPaintEvt?.args?.data?.type === "text") {
+      return FirstContentfulPaint.getOptimisticGraph(dependencyGraph, processedNavigation);
     }
     return FirstContentfulPaint.getFirstPaintBasedGraph(dependencyGraph, {
       cutoffTimestamp: lcp,
@@ -275,9 +278,12 @@ var LargestContentfulPaint = class _LargestContentfulPaint extends Metric {
     });
   }
   static getPessimisticGraph(dependencyGraph, processedNavigation) {
-    const lcp = processedNavigation.timestamps.largestContentfulPaint;
+    const { firstContentfulPaint: fcp, largestContentfulPaint: lcp } = processedNavigation.timestamps;
     if (!lcp) {
       throw new Core3.LanternError("NO_LCP");
+    }
+    if (fcp === lcp && processedNavigation.largestContentfulPaintEvt?.args?.data?.type === "text") {
+      return FirstContentfulPaint.getPessimisticGraph(dependencyGraph, processedNavigation);
     }
     return FirstContentfulPaint.getFirstPaintBasedGraph(dependencyGraph, {
       cutoffTimestamp: lcp,
@@ -520,7 +526,7 @@ var TotalBlockingTime = class _TotalBlockingTime extends Metric {
     if (!fcpResult) {
       throw new Core6.LanternError("FCP is required to calculate the TBT metric");
     }
-    const interactiveResult = extras?.fcpResult;
+    const interactiveResult = extras?.interactiveResult;
     if (!interactiveResult) {
       throw new Core6.LanternError("Interactive is required to calculate the TBT metric");
     }

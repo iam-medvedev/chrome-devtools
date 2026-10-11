@@ -6,8 +6,67 @@ import type * as Protocol from '../../../generated/protocol.js';
 import type * as LHModel from '../../lighthouse/lighthouse.js';
 import type * as Trace from '../../trace/trace.js';
 import type * as Workspace from '../../workspace/workspace.js';
-import type { ContextHandlerResult, DataHandlerResult } from '../tools/Tool.js';
+import { type ContextHandlerResult, type DataHandlerResult, PermissionDecision, type PermissionPrompt } from '../tools/Tool.js';
 type UrlString = Platform.DevToolsPath.UrlString;
+/**
+ * The types of event in the response stream that `AiConversation#run()`
+ * yields to the AI assistance panel. The same events, minus a few, are saved
+ * as the conversation history and replayed when a saved conversation opens.
+ *
+ * ## Order of events in one run
+ *
+ * ```
+ * USER_QUERY                    (AiConversation, first run of a query only)
+ * CONTEXT*                      (agent's handleContextDetails())
+ * repeated for each model request, up to MAX_STEPS:
+ *   QUERYING
+ *   one of:
+ *     ANSWER (complete: false)*, ANSWER (complete: true)   text-only reply; the run ends
+ *     [ANSWER (complete: true)], <tool call events>        function call, optionally with text
+ *     ERROR                                                the run ends
+ * ```
+ *
+ * An `ERROR` can also follow the tool call events, for example when the user
+ * aborts, the page navigates cross-origin, or the run reaches `MAX_STEPS`.
+ *
+ * ## Events for one tool call
+ *
+ * `AiAgent#callFunction()` yields these. All events for one call carry the
+ * same `callId`.
+ *
+ * ```
+ * TITLE?, THOUGHT?              from the tool's displayInfoFromArgs()
+ * if the tool needs approval:
+ *   ACTION {code}               code only, shown above the approval prompt;
+ *                               skipped if displayInfoFromArgs() has no action
+ *   SIDE_EFFECT                 the panel shows the prompt and calls confirm()
+ *   if denied: ACTION {code, output, canceled: true}, and the call ends
+ * ACTION {code, output, widgets, toolName}   result or error
+ * ```
+ *
+ * If the tool switches context instead of returning a result, there is no
+ * result `ACTION`. `AiAgent#run()` yields `CONTEXT_CHANGE` and returns, and
+ * `AiConversation` starts a new run with the agent for the new context.
+ *
+ * ## Saved history
+ *
+ * `AiConversation` saves every event except `CONTEXT_CHANGE` and partial
+ * `ANSWER`s. `AiConversation#serialize()` removes `confirm`, images and
+ * widgets, and redacts the `ACTION` output of tools annotated with
+ * `REDACT_FROM_HISTORY`. Saved data has no version field, so new fields must
+ * be optional.
+ *
+ * ## How the panel renders events
+ *
+ * `AiAssistancePanel#consumeResponseStream()` builds one chat message per
+ * `USER_QUERY` and one step per tool call:
+ * - `QUERYING` starts a new step with a spinner. The panel shows the step only
+ *   if it is the first part of the message. Otherwise, the step stays hidden
+ *   until a tool call fills it in.
+ * - `TITLE`, `THOUGHT`, `ACTION` and `SIDE_EFFECT` update the step for their
+ *   `callId`. Events saved before `callId` existed update the current step.
+ * - `ANSWER` adds the answer text. `ERROR` sets the message error.
+ */
 export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
@@ -47,6 +106,10 @@ export interface AnswerResponse {
     suggestions?: [string, ...string[]];
     widgets?: AiWidget[];
 }
+/**
+ * No agent yields this event. The panel still handles it by attaching the
+ * suggestions to the last answer.
+ */
 export interface SuggestionsResponse {
     type: ResponseType.SUGGESTIONS;
     suggestions: [string, ...string[]];
@@ -60,27 +123,73 @@ export interface ContextDetail {
     text: string;
     codeLang?: string;
 }
+/**
+ * Describes the context sent with the user's query, such as the selected
+ * element. The agent's `handleContextDetails()` yields it before the first
+ * model request. The panel shows it as a completed "Analyzing data" step.
+ */
 export interface ContextResponse {
     type: ResponseType.CONTEXT;
     details: [ContextDetail, ...ContextDetail[]];
     widgets?: AiWidget[];
 }
-export interface TitleResponse {
+/**
+ * Identifies the tool call that an event belongs to. `AiAgent#callFunction()`
+ * generates one per call and sets it on every event for that call. Only the
+ * UI reads it; the agent never sends it to the model.
+ *
+ * Conversations saved before this field existed do not have it. The panel
+ * applies events without a `callId` to the current step.
+ */
+interface ToolCallEvent {
+    callId?: string;
+}
+/**
+ * The heading of a tool call's step, from `displayInfoFromArgs().title`.
+ */
+export interface TitleResponse extends ToolCallEvent {
     type: ResponseType.TITLE;
     title: string;
+    /**
+     * No agent sets this field.
+     */
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
-export interface ThoughtResponse {
+/**
+ * Explanation text for a tool call's step, from
+ * `displayInfoFromArgs().thought`. The panel marks the step as completed when
+ * it receives a thought, even though the tool has not run yet.
+ */
+export interface ThoughtResponse extends ToolCallEvent {
     type: ResponseType.THOUGHT;
     thought: string;
+    /**
+     * No agent sets this field.
+     */
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
-export interface SideEffectResponse {
+/**
+ * Asks the user to approve a tool call that has side effects. The agent waits
+ * until `confirm()` is called. If `displayInfoFromArgs()` returns an
+ * `action`, the agent yields it in a code-only `ACTION` just before this
+ * event.
+ */
+export interface SideEffectResponse extends ToolCallEvent {
     type: ResponseType.SIDE_EFFECT;
     description: string | null;
+    /**
+     * No agent sets this field. The code comes from the preceding `ACTION`.
+     */
     code?: string;
-    confirm: (confirm: boolean) => void;
+    confirm: (decision: PermissionDecision) => void;
+    permissionPrompt?: PermissionPrompt;
+    permissionTitle?: string;
 }
+/**
+ * Yielded when a tool selects a new context, for example a network request.
+ * `AiConversation` switches to the agent for that context and starts a new
+ * run. `AiConversation` does not save this event in the history.
+ */
 export interface ContextChangeResponse {
     type: ResponseType.CONTEXT_CHANGE;
     /**
@@ -94,20 +203,49 @@ export interface ContextChangeResponse {
 }
 interface SerializedSideEffectResponse extends Omit<SideEffectResponse, 'confirm'> {
 }
-export interface ActionResponse {
+/**
+ * The code and result of a tool call. A call yields one or two:
+ * - Calls that need approval and have code first yield a code-only `ACTION`
+ *   (no `output`), so the panel can show the code above the approval prompt.
+ * - Every call that runs, fails or is denied ends with an `ACTION` that has
+ *   an `output`.
+ */
+export interface ActionResponse extends ToolCallEvent {
     type: ResponseType.ACTION;
+    /**
+     * The text shown in the step's code box, from
+     * `displayInfoFromArgs().action`. It is real code only for tools that run
+     * code, such as `executeJavaScript`. For other tools it is a readable form of
+     * the call.
+     */
     code?: string;
+    /**
+     * The tool's result, error message, or the denial message. Missing on the
+     * code-only `ACTION` that precedes an approval prompt.
+     */
     output?: string;
+    /**
+     * True if the user denied the call, so the tool did not run.
+     */
     canceled: boolean;
     widgets?: AiWidget[];
     /**
-     * The name of the executed tool. Only populated for AI v2.
+     * The name of the tool. Set on the result `ACTION` but not on the code-only
+     * or denied `ACTION`. `AiConversation#serialize()` uses it to redact the
+     * output of tools annotated with `REDACT_FROM_HISTORY`.
      */
     toolName?: string;
 }
+/**
+ * Yielded before each model request. The panel starts a new step for it.
+ */
 export interface QueryingResponse {
     type: ResponseType.QUERYING;
 }
+/**
+ * The user's query. Yielded by `AiConversation`, not by the agent, before
+ * the first run for the query. The panel starts a new chat message for it.
+ */
 export interface UserQuery {
     type: ResponseType.USER_QUERY;
     query: string;
@@ -145,7 +283,7 @@ export interface ParsedAnswer {
     suggestions?: [string, ...string[]];
 }
 export type ParsedResponse = ParsedAnswer;
-export declare const MAX_STEPS = 10;
+export declare const MAX_STEPS = 20;
 export interface ConversationSuggestion {
     title: string;
     jslogContext?: string;
@@ -371,7 +509,17 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
      */
     parameters: Host.AidaClient.FunctionObjectParam<keyof Args>;
     /**
-     * Provided a way to give information back to the UI.
+     * Returns the text the UI shows for a call to this function. The agent
+     * calls it before the handler runs.
+     *
+     * - `title`: the step heading, sent as `TITLE`.
+     * - `thought`: optional explanation shown in the step, sent as `THOUGHT`.
+     * - `action`: the text shown in the step's code box, sent as
+     *   `ACTION.code`. It is real code only for tools that run code, such as
+     *   `executeJavaScript`. For other tools it is a readable form of the call,
+     *   for example `getInsightDetails('NAVIGATION_0', 'LCPBreakdown')`, and is
+     *   never executed.
+     * - `suggestions`: `AiAgent` does not use this field.
      */
     displayInfoFromArgs?: (args: Args) => {
         title?: string;
@@ -379,6 +527,15 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
         action?: string;
         suggestions?: [string, ...string[]];
     };
+    /**
+     * Choices the permission prompt offers when the handler returns
+     * `requiresApproval`. Behaves as `ALLOW_ONCE` when unset.
+     */
+    permissionPrompt?: PermissionPrompt;
+    /**
+     * Title of the permission prompt, e.g. "Allow reading cookie values?".
+     */
+    permissionTitle?: string;
     /**
      * Function implementation that the LLM will try to execute,
      */
@@ -391,8 +548,6 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
  *
  * TODO: missing a test that action code is yielded before the
  * confirmation dialog.
- * TODO: missing a test for an error if it took
- * more than MAX_STEPS iterations.
  */
 export declare abstract class AiAgent<T> {
     #private;
@@ -454,8 +609,7 @@ export declare abstract class AiAgent<T> {
     get sessionId(): string;
     /**
      * The AI has instructions to emit structured suggestions in their response. This
-     * function parses for that. Lines inside fenced code blocks are kept as answer text
-     * and never parsed, so code that contains a `suggestions` key is left intact.
+     * function parses for that.
      *
      * Note: currently only StylingAgent and PerformanceAgent utilize this, but
      * eventually all agents should support this.
@@ -466,6 +620,18 @@ export declare abstract class AiAgent<T> {
      * though/action/title/answer/suggestions component.
      */
     parseTextResponse(response: string): ParsedResponse;
+    /**
+     * Parses the text of a response that is still streaming. Only the `answer`
+     * of the result is shown, as a partial answer. By default, partial answers
+     * use the same parsing as completed answers.
+     *
+     * This hook exists so that `AiAgent2` (AI V2) can parse follow-up
+     * suggestions differently without changing the V1 agents. Remove it once
+     * AI V2 ships and the V1 agents are removed. b/568697679 explores getting
+     * suggestions from a function call instead of parsing them from text,
+     * which would remove the need for this parsing.
+     */
+    protected parsePartialTextResponse(response: string): ParsedResponse;
     protected finalizeAnswer(answer: AnswerResponse): Promise<AnswerResponse>;
     /**
      * Declare a function that the AI model can call.
@@ -490,6 +656,13 @@ export declare abstract class AiAgent<T> {
         signal?: AbortSignal;
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }
+/**
+ * Parses `suggestions` as a JSON array and returns its non-empty string items,
+ * with whitespace collapsed and each item truncated to `MAX_SUGGESTION_LENGTH`.
+ * Returns `undefined` if the value is not an array or no items remain.
+ * Throws if `suggestions` is not valid JSON.
+ */
+export declare function sanitizeSuggestions(suggestions: string): [string, ...string[]] | undefined;
 /**
  * Maps AIDA-specific client error instances to user-facing ErrorType enums.
  * This handles AIDA API failure modes such as quota exhaustion or blockages.

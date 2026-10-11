@@ -62,6 +62,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     private static appendTextWithoutHashes;
     private static appendHiddenText;
     static untruncatedNodeText(node: Node): string;
+    static untruncatedTextContent(node: Node): string;
     static linkInfo(link: Element | null): LinkInfo | null;
     private static handleClick;
     static handleClickFromNewComponentLand(linkInfo: LinkInfo): void;
@@ -116,6 +117,7 @@ interface LinkInfo {
     revealable?: Object;
     fallback?: Element;
     userMetric?: Host.UserMetrics.Action;
+    allowPrivileged?: boolean;
 }
 export interface LinkifyURLOptions {
     allowPrivileged?: boolean;

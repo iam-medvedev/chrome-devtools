@@ -1019,36 +1019,21 @@ export class SamplingHeapProfileHeader extends WritableProfileHeader {
 export class SamplingHeapProfileNode extends CPUProfile.ProfileTreeModel.ProfileNode {
     self;
     constructor(node) {
+        const legacyNode = node;
         const callFrame = node.callFrame || {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            functionName: node['functionName'],
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            scriptId: node['scriptId'],
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            url: node['url'],
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            lineNumber: node['lineNumber'] - 1,
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            columnNumber: node['columnNumber'] - 1,
+            functionName: legacyNode.functionName,
+            scriptId: legacyNode.scriptId,
+            url: legacyNode.url,
+            lineNumber: legacyNode.lineNumber - 1,
+            columnNumber: legacyNode.columnNumber - 1,
         };
         super(callFrame);
         this.self = node.selfSize;
     }
 }
 export class SamplingHeapProfileModel extends CPUProfile.ProfileTreeModel.ProfileTreeModel {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    modules;
     constructor(profile, minOrdinal, maxOrdinal) {
         super();
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.modules = profile.modules || [];
         let nodeIdToSizeMap = null;
         if (minOrdinal || maxOrdinal) {
             nodeIdToSizeMap = new Map();

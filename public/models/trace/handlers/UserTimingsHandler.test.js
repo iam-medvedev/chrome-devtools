@@ -55,8 +55,8 @@ describe('UserTimingsHandler', function () {
                 // beginEvent is the ASYNC_NESTABLE_START and the endEvent is the
                 // ASYNC_NESTABLE_END.
                 for (let i = 0; i < timingsData.performanceMeasures.length; i++) {
-                    assert.strictEqual(timingsData.performanceMeasures[i].args.data.beginEvent.ph, "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */);
-                    assert.strictEqual(timingsData.performanceMeasures[i].args.data.endEvent.ph, "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */);
+                    assert.strictEqual(timingsData.performanceMeasures[i].args.data.beginEvent.ph, Trace.Types.Events.Phase.ASYNC_NESTABLE_START);
+                    assert.strictEqual(timingsData.performanceMeasures[i].args.data.endEvent.ph, Trace.Types.Events.Phase.ASYNC_NESTABLE_END);
                 }
             });
             it('sorts the blocks to ensure they are in time order', async function () {
@@ -139,8 +139,8 @@ describe('UserTimingsHandler', function () {
                 // beginEvent is the ASYNC_NESTABLE_START and the endEvent is the
                 // ASYNC_NESTABLE_END.
                 for (let i = 0; i < timingsData.consoleTimings.length; i++) {
-                    assert.strictEqual(timingsData.consoleTimings[i].args.data.beginEvent.ph, "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */);
-                    assert.strictEqual(timingsData.consoleTimings[i].args.data.endEvent.ph, "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */);
+                    assert.strictEqual(timingsData.consoleTimings[i].args.data.beginEvent.ph, Trace.Types.Events.Phase.ASYNC_NESTABLE_START);
+                    assert.strictEqual(timingsData.consoleTimings[i].args.data.endEvent.ph, Trace.Types.Events.Phase.ASYNC_NESTABLE_END);
                 }
             });
             it('sorts the blocks to ensure they are in time order', async function () {
@@ -177,7 +177,7 @@ describe('UserTimingsHandler', function () {
     });
     describe('UserTiming::Measure events parsing', function () {
         it('stores user timing events by trace id', async function () {
-            const userTimingMeasure = makeCompleteEvent("UserTiming::Measure" /* Trace.Types.Events.Name.USER_TIMING_MEASURE */, 0, 100, 'cat', 0, 0);
+            const userTimingMeasure = makeCompleteEvent(Trace.Types.Events.Name.USER_TIMING_MEASURE, 0, 100, 'cat', 0, 0);
             userTimingMeasure.args.traceId = 1;
             Trace.Handlers.ModelHandlers.UserTimings.handleEvent(userTimingMeasure);
             await Trace.Handlers.ModelHandlers.UserTimings.finalize();
@@ -293,10 +293,10 @@ describe('UserTimingsHandler', function () {
     describe('sorting function userTimingComparator', () => {
         function makeFakeSyntheticEvent(ts, dur, name, track) {
             const beginEvent = makeCompleteEvent(name, ts, dur, 'blink.user_timing', 0, 0);
-            beginEvent.ph = "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */;
+            beginEvent.ph = Trace.Types.Events.Phase.ASYNC_NESTABLE_START;
             beginEvent.args.detail = JSON.stringify({ devtools: { track } });
             const endEvent = makeCompleteEvent(name, ts + dur, 0, 'blink.user_timing', 0, 0);
-            endEvent.ph = "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */;
+            endEvent.ph = Trace.Types.Events.Phase.ASYNC_NESTABLE_END;
             const syntheticEvent = Trace.Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent({
                 rawSourceEvent: beginEvent,
@@ -305,7 +305,7 @@ describe('UserTimingsHandler', function () {
                 ts: Trace.Types.Timing.Micro(ts),
                 dur: Trace.Types.Timing.Micro(dur),
                 args: { data: { beginEvent, endEvent } },
-                ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+                ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_START,
                 pid: Trace.Types.Events.ProcessID(0),
                 tid: Trace.Types.Events.ThreadID(0),
             });
@@ -316,7 +316,7 @@ describe('UserTimingsHandler', function () {
                 cat: 'devtools.timeline',
                 pid: Trace.Types.Events.ProcessID(2017),
                 tid: Trace.Types.Events.ThreadID(259),
-                name: "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */,
+                name: Trace.Types.Events.Name.TIME_STAMP,
                 args: {
                     data: {
                         message: name,
@@ -326,7 +326,7 @@ describe('UserTimingsHandler', function () {
                     },
                 },
                 ts: Trace.Types.Timing.Micro(start),
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+                ph: Trace.Types.Events.Phase.INSTANT,
             };
         }
         function sortAll(events) {

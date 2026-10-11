@@ -20,7 +20,7 @@ describe('AICallTree', function () {
         // A random RasterizerTask. Although this does technically run on the
         // main _frame_, it is not on the thread we identify as the main thread.
         const rasterTask = allThreadEntriesInTrace(parsedTrace).find(e => {
-            return e.name === "RasterTask" /* Trace.Types.Events.Name.RASTER_TASK */ && e.pid === 4274 && e.tid === 23555;
+            return e.name === Trace.Types.Events.Name.RASTER_TASK && e.pid === 4274 && e.tid === 23555;
         });
         assert.isOk(rasterTask);
         assert.isNull(AICallTree.AICallTree.fromEvent(rasterTask, parsedTrace));
@@ -286,7 +286,7 @@ describe('AICallTree', function () {
 const makeEvent = (name, ts, dur) => ({
     name,
     cat: 'disabled-by-default-devtools.timeline',
-    ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+    ph: Trace.Types.Events.Phase.COMPLETE,
     ts: Trace.Types.Timing.Micro(ts),
     dur: Trace.Types.Timing.Micro(dur),
     pid: Trace.Types.Events.ProcessID(1),
@@ -319,12 +319,12 @@ describe('AITreeFilter', () => {
 describe('CompileCode filter', () => {
     it('excludes COMPILE_CODE nodes if non-selected', () => {
         const selectedEvent = makeEvent('selected', 0, 100);
-        const compileCodeEvent = makeEvent("V8.CompileCode" /* Trace.Types.Events.Name.COMPILE_CODE */, 0, 100);
+        const compileCodeEvent = makeEvent(Trace.Types.Events.Name.COMPILE_CODE, 0, 100);
         const filter = new AICallTree.ExcludeCompileCodeFilter(selectedEvent);
         assert.isFalse(filter.accept(compileCodeEvent));
     });
     it('includes COMPILE_CODE nodes if selected', () => {
-        const selectedEvent = makeEvent("V8.CompileCode" /* Trace.Types.Events.Name.COMPILE_CODE */, 0, 100);
+        const selectedEvent = makeEvent(Trace.Types.Events.Name.COMPILE_CODE, 0, 100);
         const filter = new AICallTree.ExcludeCompileCodeFilter(selectedEvent);
         assert.isTrue(filter.accept(selectedEvent));
     });

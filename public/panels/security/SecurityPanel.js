@@ -1292,6 +1292,30 @@ function renderNoteSection(loadedFromCache) {
     <div>${i18nString(UIStrings.theSecurityDetailsAboveAreFrom)}</div>`;
     // clang-format on
 }
+function renderSecurityStateSection(securityState) {
+    let title;
+    let description;
+    if (securityState === "secure" /* Protocol.Security.SecurityState.Secure */) {
+        // If the security state is secure but there are no security details,
+        // this means that the origin is a non-cryptographic secure origin, e.g.
+        // chrome:// or about:.
+        title = i18nString(UIStrings.secure);
+        description = i18nString(UIStrings.thisOriginIsANonhttpsSecure);
+    }
+    else if (securityState !== "unknown" /* Protocol.Security.SecurityState.Unknown */) {
+        title = i18nString(UIStrings.notSecure);
+        description = i18nString(UIStrings.yourConnectionToThisOriginIsNot);
+    }
+    else {
+        title = i18nString(UIStrings.noSecurityInformation);
+        description = i18nString(UIStrings.noSecurityDetailsAreAvailableFor);
+    }
+    // clang-format off
+    return html `
+    <div class="origin-view-section-title" role="heading" aria-level="2">${title}</div>
+    <div>${description}</div>`;
+    // clang-format on
+}
 export class SecurityOriginView extends UI.Widget.VBox {
     #origin;
     #titleSection;
@@ -1317,29 +1341,10 @@ export class SecurityOriginView extends UI.Widget.VBox {
             // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
             render(renderNoteSection(originState.loadedFromCache), noteSection);
         }
-        else if (originState.securityState === "secure" /* Protocol.Security.SecurityState.Secure */) {
-            // If the security state is secure but there are no security details,
-            // this means that the origin is a non-cryptographic secure origin, e.g.
-            // chrome:// or about:.
-            const secureSection = this.element.createChild('div', 'origin-view-section');
-            const secureDiv = secureSection.createChild('div', 'origin-view-section-title');
-            secureDiv.textContent = i18nString(UIStrings.secure);
-            UI.ARIAUtils.markAsHeading(secureDiv, 2);
-            secureSection.createChild('div').textContent = i18nString(UIStrings.thisOriginIsANonhttpsSecure);
-        }
-        else if (originState.securityState !== "unknown" /* Protocol.Security.SecurityState.Unknown */) {
-            const notSecureSection = this.element.createChild('div', 'origin-view-section');
-            const notSecureDiv = notSecureSection.createChild('div', 'origin-view-section-title');
-            notSecureDiv.textContent = i18nString(UIStrings.notSecure);
-            UI.ARIAUtils.markAsHeading(notSecureDiv, 2);
-            notSecureSection.createChild('div').textContent = i18nString(UIStrings.yourConnectionToThisOriginIsNot);
-        }
         else {
-            const noInfoSection = this.element.createChild('div', 'origin-view-section');
-            const noInfoDiv = noInfoSection.createChild('div', 'origin-view-section-title');
-            noInfoDiv.textContent = i18nString(UIStrings.noSecurityInformation);
-            UI.ARIAUtils.markAsHeading(noInfoDiv, 2);
-            noInfoSection.createChild('div').textContent = i18nString(UIStrings.noSecurityDetailsAreAvailableFor);
+            const securityStateSection = this.element.createChild('div', 'origin-view-section security-state-section');
+            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+            render(renderSecurityStateSection(originState.securityState), securityStateSection);
         }
     }
     #createCertificateSection(securityDetails) {

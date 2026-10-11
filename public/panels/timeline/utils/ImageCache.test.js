@@ -13,9 +13,9 @@ describe('ImageCache', () => {
         ...defaultTraceEvent,
         id: '0x1',
         args: { snapshot: validJpegData },
-        name: "Screenshot" /* Trace.Types.Events.Name.SCREENSHOT */,
+        name: Trace.Types.Events.Name.SCREENSHOT,
         cat: 'disabled-by-default-devtools.screenshot',
-        ph: "O" /* Trace.Types.Events.Phase.OBJECT_SNAPSHOT */,
+        ph: Trace.Types.Events.Phase.OBJECT_SNAPSHOT,
     };
     Trace.Handlers.ModelHandlers.Screenshots.reset();
     Trace.Handlers.ModelHandlers.Screenshots.handleEvent(rawSourceEvent);

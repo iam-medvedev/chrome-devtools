@@ -352,6 +352,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -5142,6 +5143,23 @@ function renderNoteSection(loadedFromCache) {
     ${loadedFromCache ? html2`<div>${i18nString3(UIStrings3.thisResponseWasLoadedFromCache)}</div>` : nothing2}
     <div>${i18nString3(UIStrings3.theSecurityDetailsAboveAreFrom)}</div>`;
 }
+function renderSecurityStateSection(securityState) {
+  let title;
+  let description;
+  if (securityState === Security.SecurityState.Secure) {
+    title = i18nString3(UIStrings3.secure);
+    description = i18nString3(UIStrings3.thisOriginIsANonhttpsSecure);
+  } else if (securityState !== Security.SecurityState.Unknown) {
+    title = i18nString3(UIStrings3.notSecure);
+    description = i18nString3(UIStrings3.yourConnectionToThisOriginIsNot);
+  } else {
+    title = i18nString3(UIStrings3.noSecurityInformation);
+    description = i18nString3(UIStrings3.noSecurityDetailsAreAvailableFor);
+  }
+  return html2`
+    <div class="origin-view-section-title" role="heading" aria-level="2">${title}</div>
+    <div>${description}</div>`;
+}
 var SecurityOriginView = class extends UI2.Widget.VBox {
   #origin;
   #titleSection;
@@ -5164,24 +5182,9 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       }
       const noteSection = this.element.createChild("div", "origin-view-section origin-view-notes");
       render2(renderNoteSection(originState.loadedFromCache), noteSection);
-    } else if (originState.securityState === Security.SecurityState.Secure) {
-      const secureSection = this.element.createChild("div", "origin-view-section");
-      const secureDiv = secureSection.createChild("div", "origin-view-section-title");
-      secureDiv.textContent = i18nString3(UIStrings3.secure);
-      UI2.ARIAUtils.markAsHeading(secureDiv, 2);
-      secureSection.createChild("div").textContent = i18nString3(UIStrings3.thisOriginIsANonhttpsSecure);
-    } else if (originState.securityState !== Security.SecurityState.Unknown) {
-      const notSecureSection = this.element.createChild("div", "origin-view-section");
-      const notSecureDiv = notSecureSection.createChild("div", "origin-view-section-title");
-      notSecureDiv.textContent = i18nString3(UIStrings3.notSecure);
-      UI2.ARIAUtils.markAsHeading(notSecureDiv, 2);
-      notSecureSection.createChild("div").textContent = i18nString3(UIStrings3.yourConnectionToThisOriginIsNot);
     } else {
-      const noInfoSection = this.element.createChild("div", "origin-view-section");
-      const noInfoDiv = noInfoSection.createChild("div", "origin-view-section-title");
-      noInfoDiv.textContent = i18nString3(UIStrings3.noSecurityInformation);
-      UI2.ARIAUtils.markAsHeading(noInfoDiv, 2);
-      noInfoSection.createChild("div").textContent = i18nString3(UIStrings3.noSecurityDetailsAreAvailableFor);
+      const securityStateSection = this.element.createChild("div", "origin-view-section security-state-section");
+      render2(renderSecurityStateSection(originState.securityState), securityStateSection);
     }
   }
   #createCertificateSection(securityDetails) {

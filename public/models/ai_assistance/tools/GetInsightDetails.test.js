@@ -8,6 +8,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import { assertIsError, assertIsResult, makeFakeParsedTrace, } from '../../../testing/AiAssistanceHelpers.js';
+import { stubInsightModel } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
@@ -160,11 +161,11 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.RenderBlocking = {
+        stubInsightModel(insightSet, 'RenderBlocking', {
             insightKey: 'RenderBlocking',
             state: 'fail',
             renderBlockingRequests: [],
-        };
+        });
         const capabilities = createPerformanceTraceCapabilities(parsedTrace);
         const tool = new GetInsightDetailsTool();
         const result = await tool.handler({ insightSetId: insightSet.id, insightName: 'RenderBlocking' }, capabilities);
@@ -181,7 +182,7 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.LCPBreakdown = {
+        stubInsightModel(insightSet, 'LCPBreakdown', {
             insightKey: 'LCPBreakdown',
             state: 'fail',
             lcpMs: 1000,
@@ -189,7 +190,7 @@ describe('GetInsightDetailsTool', () => {
                 name: 'largestContentfulPaint::Candidate',
                 args: { data: { nodeId: 4 } },
             },
-        };
+        });
         const target = universe.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         assert.isOk(domModel);
@@ -227,7 +228,7 @@ describe('GetInsightDetailsTool', () => {
                 },
             },
         };
-        insightSet.model.LCPBreakdown = {
+        stubInsightModel(insightSet, 'LCPBreakdown', {
             insightKey: 'LCPBreakdown',
             state: 'fail',
             lcpMs: 1000,
@@ -236,7 +237,7 @@ describe('GetInsightDetailsTool', () => {
                 name: 'largestContentfulPaint::Candidate',
                 args: { data: { nodeId: 4 } },
             },
-        };
+        });
         const target = universe.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         assert.isOk(domModel);
@@ -273,14 +274,25 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.LCPDiscovery = {
+        stubInsightModel(insightSet, 'LCPDiscovery', {
             insightKey: 'LCPDiscovery',
             state: 'fail',
             lcpEvent: {
                 name: 'largestContentfulPaint::Candidate',
                 args: { data: { nodeId: 4 } },
             },
-        };
+        });
+        // The DOM_TREE widget resolves the LCP node via `getLCP()`, which reads the
+        // LCP event from the LCPBreakdown insight.
+        stubInsightModel(insightSet, 'LCPBreakdown', {
+            insightKey: 'LCPBreakdown',
+            state: 'fail',
+            lcpMs: 1000,
+            lcpEvent: {
+                name: 'largestContentfulPaint::Candidate',
+                args: { data: { nodeId: 4 } },
+            },
+        });
         const target = universe.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         assert.isOk(domModel);
@@ -303,7 +315,7 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.LCPBreakdown = {
+        stubInsightModel(insightSet, 'LCPBreakdown', {
             insightKey: 'LCPBreakdown',
             state: 'fail',
             lcpMs: 1000,
@@ -311,7 +323,7 @@ describe('GetInsightDetailsTool', () => {
                 name: 'largestContentfulPaint::Candidate',
                 args: { data: { nodeId: 4 } },
             },
-        };
+        });
         const target = universe.targetManager.primaryPageTarget();
         const capabilities = createPerformanceTraceCapabilities(parsedTrace, { isFresh: false, target });
         const tool = new GetInsightDetailsTool();
@@ -329,7 +341,7 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.LCPBreakdown = {
+        stubInsightModel(insightSet, 'LCPBreakdown', {
             insightKey: 'LCPBreakdown',
             state: 'fail',
             lcpMs: 1000,
@@ -337,7 +349,7 @@ describe('GetInsightDetailsTool', () => {
                 name: 'largestContentfulPaint::Candidate',
                 args: { data: { nodeId: 4 } },
             },
-        };
+        });
         const target = universe.targetManager.primaryPageTarget();
         const domModel = target?.model(SDK.DOMModel.DOMModel);
         assert.isOk(domModel);
@@ -355,11 +367,11 @@ describe('GetInsightDetailsTool', () => {
         assert.isOk(parsedTrace.insights);
         const insightSetId = [...parsedTrace.insights.keys()][0];
         const insightSet = parsedTrace.insights.get(insightSetId);
-        insightSet.model.RenderBlocking = {
+        stubInsightModel(insightSet, 'RenderBlocking', {
             insightKey: 'RenderBlocking',
             state: 'fail',
             renderBlockingRequests: [],
-        };
+        });
         sinon.stub(AiAssistance.PerformanceInsightFormatter.PerformanceInsightFormatter.prototype, 'formatInsight')
             .returns('x'.repeat(AiAssistance.Tool.MAX_FUNCTION_RESULT_BYTE_LENGTH + 1));
         const capabilities = createPerformanceTraceCapabilities(parsedTrace);

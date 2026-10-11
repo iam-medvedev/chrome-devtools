@@ -218,7 +218,7 @@ export const NativeFunctions = [
     {
         name: "create",
         signatures: [["?options"]],
-        receivers: ["CredentialsContainer", "SemanticEmbedder"]
+        receivers: ["CredentialsContainer", "DecisionModel", "SemanticEmbedder"]
     },
     {
         name: "defineProperty",
@@ -2757,7 +2757,13 @@ export const NativeFunctions = [
     },
     {
         name: "getFileHandle",
-        signatures: [["name", "?options"]]
+        signatures: [["name", "?options"]],
+        receivers: ["FileSystemDirectoryHandle"]
+    },
+    {
+        name: "getFileHandle",
+        signatures: [["hash", "?options"]],
+        receivers: ["CrossOriginStorageManager"]
     },
     {
         name: "removeEntry",
@@ -3849,6 +3855,10 @@ export const NativeFunctions = [
     {
         name: "framebufferTextureMultiviewOVR",
         signatures: [["target", "attachment", "texture", "level", "baseViewIndex", "numViews"]]
+    },
+    {
+        name: "startRendering",
+        signatures: [["?chunkSize"]]
     },
     {
         name: "convertToBlob",
@@ -8293,6 +8303,14 @@ export const NativeFunctions = [
         signatures: [["animatorName", "effects", "?timeline", "?options"]]
     },
     {
+        name: "availability",
+        signatures: [["?options"]]
+    },
+    {
+        name: "decide",
+        signatures: [["input", "?options"]]
+    },
+    {
         name: "LanguageModelToolCall",
         signatures: [["init"]]
     },
@@ -8303,10 +8321,6 @@ export const NativeFunctions = [
     {
         name: "LanguageModelToolError",
         signatures: [["init"]]
-    },
-    {
-        name: "availability",
-        signatures: [["?options"]]
     },
     {
         name: "embed",
@@ -8386,7 +8400,7 @@ export const NativeFunctions = [
     },
     {
         name: "createParserOptions",
-        signatures: [["input"]]
+        signatures: [["?input", "...args"]]
     },
     {
         name: "createPolicy",
@@ -8443,6 +8457,10 @@ export const NativeFunctions = [
     {
         name: "setPathData",
         signatures: [["pathData"]]
+    },
+    {
+        name: "getPathSegmentAtLength",
+        signatures: [["distance"]]
     },
     {
         name: "ByteLengthQueuingStrategy",
@@ -8569,14 +8587,8 @@ export const NativeFunctions = [
         signatures: [["width", "height"]]
     },
     {
-        name: "getElementTransform",
-        signatures: [["element", "draw_transform"]],
-        receivers: ["OffscreenCanvas"]
-    },
-    {
-        name: "getElementTransform",
-        signatures: [["element", "?draw_transform"]],
-        receivers: ["HTMLCanvasElement"]
+        name: "getElementImageDefaultSize",
+        signatures: [["element"]]
     },
     {
         name: "updateElementGeometry",
@@ -8733,6 +8745,10 @@ export const NativeFunctions = [
     {
         name: "ElementGeometryUpdateEvent",
         signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "getElementTransform",
+        signatures: [["element"]]
     },
     {
         name: "captureElementImage",
@@ -9023,54 +9039,6 @@ export const NativeFunctions = [
         signatures: [["milliseconds"]]
     },
     {
-        name: "beforeHTML",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "beforeHTMLUnsafe",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "afterHTML",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "afterHTMLUnsafe",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "replaceWithHTML",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "replaceWithHTMLUnsafe",
-        signatures: [["html", "?options"]]
-    },
-    {
-        name: "streamBeforeHTML",
-        signatures: [["?options"]]
-    },
-    {
-        name: "streamBeforeHTMLUnsafe",
-        signatures: [["?options"]]
-    },
-    {
-        name: "streamAfterHTML",
-        signatures: [["?options"]]
-    },
-    {
-        name: "streamAfterHTMLUnsafe",
-        signatures: [["?options"]]
-    },
-    {
-        name: "streamReplaceWithHTML",
-        signatures: [["?options"]]
-    },
-    {
-        name: "streamReplaceWithHTMLUnsafe",
-        signatures: [["?options"]]
-    },
-    {
         name: "Comment",
         signatures: [["?data"]]
     },
@@ -9160,7 +9128,7 @@ export const NativeFunctions = [
     },
     {
         name: "Focusable",
-        signatures: [["target"]]
+        signatures: [["target", "?options"], ["focusable", "?options"]]
     },
     {
         name: "getBoxQuads",
@@ -9181,6 +9149,54 @@ export const NativeFunctions = [
     {
         name: "MutationObserver",
         signatures: [["callback"]]
+    },
+    {
+        name: "beforeHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "beforeHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "afterHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "afterHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "replaceWithHTML",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "replaceWithHTMLUnsafe",
+        signatures: [["html", "?options"]]
+    },
+    {
+        name: "streamBeforeHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamBeforeHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamAfterHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamAfterHTMLUnsafe",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamReplaceWithHTML",
+        signatures: [["?options"]]
+    },
+    {
+        name: "streamReplaceWithHTMLUnsafe",
+        signatures: [["?options"]]
     },
     {
         name: "Observable",

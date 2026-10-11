@@ -16,7 +16,7 @@ describe('WarningsHandler', function () {
         // We expect one long task.
         assert.strictEqual(events?.length, 1);
         const event = events?.at(0);
-        assert.strictEqual(event?.name, "RunTask" /* Trace.Types.Events.Name.RUN_TASK */);
+        assert.strictEqual(event?.name, Trace.Types.Events.Name.RUN_TASK);
     });
     it('does not identify worker long tasks', async function () {
         // We run the entire model here as the WarningsHandler actually depends on the WorkersHandler.
@@ -49,8 +49,8 @@ describe('WarningsHandler', function () {
         const layout = forcedReflow[1];
         assert.deepEqual(data.perEvent.get(stylesRecalc), ['FORCED_REFLOW']);
         assert.deepEqual(data.perEvent.get(layout), ['FORCED_REFLOW']);
-        assert.strictEqual(stylesRecalc.name, "UpdateLayoutTree" /* Trace.Types.Events.Name.RECALC_STYLE */);
-        assert.strictEqual(layout.name, "Layout" /* Trace.Types.Events.Name.LAYOUT */);
+        assert.strictEqual(stylesRecalc.name, Trace.Types.Events.Name.RECALC_STYLE);
+        assert.strictEqual(layout.name, Trace.Types.Events.Name.LAYOUT);
     });
     it('ignores reflows that are not forced by JS', async function () {
         const events = await TraceLoader.rawEvents(this, 'large-recalc-style.json.gz');

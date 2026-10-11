@@ -400,6 +400,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -7194,7 +7195,7 @@ var generatedProperties = [
       "overlay"
     ],
     "name": "overscroll-container-type",
-    "runtime_flag": "OverscrollGestures",
+    "runtime_flag": "OverscrollAreas",
     "runtime_flag_status": "experimental"
   },
   {
@@ -16462,14 +16463,19 @@ function toggleClassAndInjectStyleRule(pseudoElementName, hidden) {
   const classNamePrefix = "__web-inspector-hide";
   const classNameSuffix = "-shortcut__";
   const styleTagId = "__web-inspector-hide-shortcut-style__";
-  const pseudoElementNameEscaped = pseudoElementName ? pseudoElementName.replace(/[\(\)\:]/g, "_") : "";
+  let pseudoElementNameEscaped = "";
+  if (pseudoElementName) {
+    pseudoElementNameEscaped = pseudoElementName.replace(/[^a-zA-Z0-9-]/g, function(c) {
+      return "_" + c.charCodeAt(0).toString(16) + "_";
+    });
+  }
   const className = classNamePrefix + pseudoElementNameEscaped + classNameSuffix;
   this.classList.toggle(className, hidden);
   let localRoot = this;
   while (localRoot.parentNode) {
     localRoot = localRoot.parentNode;
   }
-  if (localRoot.nodeType === Node.DOCUMENT_NODE) {
+  if (localRoot.nodeType === 9) {
     localRoot = document.head;
   }
   let style = localRoot.querySelector("style#" + styleTagId);
@@ -16837,7 +16843,7 @@ var BaseVariableMatcher = class extends BaseVariableMatcherBase {
       return null;
     }
     const nameNode = args[0][0];
-    const fallback = args.length === 2 ? args[1] : void 0;
+    const fallback = args.length > 1 ? Array.from(ASTUtils.stripComments(ASTUtils.siblings(nameNode.nextSibling))).slice(1, -1) : void 0;
     if (!isVariableNameNode(nameNode, matching.ast)) {
       return null;
     }
@@ -18571,9 +18577,7 @@ var ComputedText = class {
   }
   countTopLevelValues(begin, end) {
     const pieces = Array.from(this.#getPieces(begin, end));
-    const counts = pieces.map(
-      (chunk) => chunk instanceof ComputedTextChunk ? chunk.topLevelValueCount : this.#countTopLevelValuesInStringPiece(chunk)
-    );
+    const counts = pieces.map((chunk) => chunk instanceof ComputedTextChunk ? chunk.topLevelValueCount : this.#countTopLevelValuesInStringPiece(chunk));
     const count = counts.reduce((sum, v) => sum + v, 0);
     return count;
   }
@@ -21730,11 +21734,11 @@ var UIStrings2 = {
   /**
    * @description Error message for when a CSS file can't be loaded.
    */
-  couldNotFindTheOriginalStyle: "Could not find the original style sheet",
+  couldNotFindTheOriginalStyle: "Couldn\u2019t find the original style sheet",
   /**
    * @description Error message to display when a source CSS file could not be retrieved.
    */
-  couldNotRetrieveSourceStyles: "Could not retrieve source styles"
+  couldNotRetrieveSourceStyles: "Couldn\u2019t retrieve source styles"
 };
 var str_2 = i18n3.i18n.registerUIStrings("core/sdk/CSSStyleSheetHeader.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -22487,6 +22491,9 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     const noScopes = this.#originalScopes.every((scopes) => scopes === null || scopes.length === 0);
     return noScopes && !this.#generatedRanges.length;
   }
+  hasGeneratedRanges() {
+    return this.#generatedRanges.length > 0;
+  }
   addOriginalScopesAtIndex(sourceIdx, scopes) {
     if (!this.#originalScopes[sourceIdx]?.length) {
       this.#originalScopes[sourceIdx] = scopes;
@@ -22769,6 +22776,93 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
     }
     return result;
   }
+  /**
+   * @returns the body of the innermost inlined function at the position (the innermost range with a `callSite`
+   *          within the generated function), or null if the position is not inside an inlined function.
+   *
+   * The innermost inlined function is the logical frame the position belongs to, i.e. the analogue of the top frame
+   * of a real call stack. Stepping over its body therefore goes up exactly one logical frame: into the caller, which
+   * may itself be inlined. An outer range would leave several logical frames at once.
+   */
+  inlinedFunctionRange(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
+      if (rangeChain[i].callSite) {
+        return { start: rangeChain[i].start, end: rangeChain[i].end };
+      }
+    }
+    return null;
+  }
+  /**
+   * @returns the bodies of all functions that were inlined directly into the logical function at the position
+   *          (the innermost inlined function, or else the generated function). Doesn't descend into inlined
+   *          functions or nested generated functions.
+   */
+  inlinedCalleeRanges(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    let body;
+    for (let i = rangeChain.length - 1; i >= 0 && !body; --i) {
+      if (rangeChain[i].callSite || rangeChain[i].isStackFrame) {
+        body = rangeChain[i];
+      }
+    }
+    const result = [];
+    (function walk(range) {
+      for (const child of range.children) {
+        if (child.isStackFrame) {
+          continue;
+        }
+        if (child.callSite) {
+          result.push({ start: child.start, end: child.end });
+        } else {
+          walk(child);
+        }
+      }
+    })(body ?? { children: this.#generatedRanges });
+    return result;
+  }
+  /**
+   * @returns the outlined parts of the authored function at the position: the hidden generated functions whose
+   *          original scope lies within that function's original scope (see {@link GeneratedFrameKind.OUTLINED}).
+   *          Includes the outlined part the position itself is in, if any. Sorted by start position.
+   */
+  outlinedFunctionRanges(generatedLine, generatedColumn) {
+    const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+    const functionScope = this.#findFunctionScopeInOriginalScopeChain(rangeChain.at(-1)?.originalScope);
+    if (!functionScope) {
+      return [];
+    }
+    const isWithinFunction = (scope) => scope !== void 0 && (scope === functionScope || isWithinFunction(scope.parent));
+    const result = [];
+    (function walk(ranges) {
+      for (const range of ranges) {
+        if (range.isStackFrame && range.isHidden && isWithinFunction(range.originalScope)) {
+          result.push({ start: range.start, end: range.end });
+        }
+        walk(range.children);
+      }
+    })(this.#generatedRanges);
+    return result;
+  }
+  /**
+   * @returns the "artificial" generated functions (in the DWARF sense): functions that contain no authored code at all
+   *          (no original scope anywhere in their subtree), e.g. compiler helpers. Sorted by start position,
+   *          non-overlapping.
+   */
+  artificialFunctionRanges() {
+    const hasOriginalScope = (range) => range.originalScope !== void 0 || range.children.some(hasOriginalScope);
+    const result = [];
+    (function walk(ranges) {
+      for (const range of ranges) {
+        if (range.isStackFrame && !hasOriginalScope(range)) {
+          result.push({ start: range.start, end: range.end });
+        } else {
+          walk(range.children);
+        }
+      }
+    })(this.#generatedRanges);
+    return result;
+  }
 };
 var GeneratedFrameKind = /* @__PURE__ */ ((GeneratedFrameKind2) => {
   GeneratedFrameKind2["VISIBLE"] = "VISIBLE";
@@ -22982,6 +23076,14 @@ var SourceMap = class _SourceMap {
   hasScopeInfo() {
     this.#ensureSourceMapProcessed();
     return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
+  }
+  /**
+   * True iff the scopes come from the source map itself (encoded `scopes`), not from the AST fallback or from an
+   * extension.
+   */
+  hasEncodedScopeInfo() {
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo !== null && this.#scopesFallbackPromise === void 0 && this.#scopesInfo.hasGeneratedRanges();
   }
   waitForScopeInfo() {
     this.#ensureSourceMapProcessed();
@@ -23502,6 +23604,22 @@ var SourceMap = class _SourceMap {
   translateRawFrame(generatedLine, generatedColumn) {
     this.#ensureSourceMapProcessed();
     return this.#scopesInfo?.translateRawFrame(generatedLine, generatedColumn) ?? null;
+  }
+  /** See {@link SourceMapScopesInfo.inlinedFunctionRange}. `null` without encoded scopes. */
+  inlinedFunctionRange(generatedLine, generatedColumn) {
+    return this.hasEncodedScopeInfo() ? this.#scopesInfo?.inlinedFunctionRange(generatedLine, generatedColumn) ?? null : null;
+  }
+  /** See {@link SourceMapScopesInfo.inlinedCalleeRanges}. Empty without encoded scopes. */
+  inlinedCalleeRanges(generatedLine, generatedColumn) {
+    return this.hasEncodedScopeInfo() ? this.#scopesInfo?.inlinedCalleeRanges(generatedLine, generatedColumn) ?? [] : [];
+  }
+  /** See {@link SourceMapScopesInfo.outlinedFunctionRanges}. Empty without encoded scopes. */
+  outlinedFunctionRanges(generatedLine, generatedColumn) {
+    return this.hasEncodedScopeInfo() ? this.#scopesInfo?.outlinedFunctionRanges(generatedLine, generatedColumn) ?? [] : [];
+  }
+  /** See {@link SourceMapScopesInfo.artificialFunctionRanges}. Empty without encoded scopes. */
+  artificialFunctionRanges() {
+    return this.hasEncodedScopeInfo() ? this.#scopesInfo?.artificialFunctionRanges() ?? [] : [];
   }
 };
 function asRangeMapping(entry) {
@@ -29691,8 +29809,9 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
    */
   async toggleHideElement() {
     let pseudoElementName = this.pseudoType() ? this.nodeName() : null;
-    if (pseudoElementName && this.pseudoIdentifier()) {
-      pseudoElementName += `(${this.pseudoIdentifier()})`;
+    const pseudoIdentifier = this.pseudoIdentifier();
+    if (pseudoElementName && pseudoIdentifier) {
+      pseudoElementName += `(${cssEscape(pseudoIdentifier)})`;
     }
     let effectiveNode = this;
     while (effectiveNode?.pseudoType()) {
@@ -29914,8 +30033,9 @@ var DOMNode = class _DOMNode extends Common20.ObjectWrapper.ObjectWrapper {
       const classList = classes.trim().split(/\s+/g);
       return (lowerCaseName === "div" ? "" : lowerCaseName) + "." + classList.map((cls) => cssEscape(cls)).join(".");
     }
-    if (this.pseudoIdentifier()) {
-      return `${lowerCaseName}(${this.pseudoIdentifier()})`;
+    const pseudoIdentifier = this.pseudoIdentifier();
+    if (pseudoIdentifier) {
+      return `${lowerCaseName}(${cssEscape(pseudoIdentifier)})`;
     }
     return lowerCaseName;
   }
@@ -31468,6 +31588,17 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     }
     this.dispatchEventToListeners("FrameNavigatedWithinDocument" /* FrameNavigatedWithinDocument */, frame);
   }
+  frameStoppedLoading(frameId) {
+    const frame = this.framesInternal.get(frameId);
+    if (!frame) {
+      return;
+    }
+    void frame.getStorageKey(
+      /* forceFetch */
+      true
+    );
+    void this.updateStorageKeys();
+  }
   frameDetached(frameId, isSwap) {
     if (!this.#cachedResourcesProcessed) {
       return;
@@ -32198,7 +32329,8 @@ var PageDispatcher = class {
   }
   frameStartedLoading({}) {
   }
-  frameStoppedLoading({}) {
+  frameStoppedLoading({ frameId }) {
+    this.#resourceTreeModel.frameStoppedLoading(frameId);
   }
   frameRequestedNavigation({}) {
   }
@@ -32774,15 +32906,13 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   #skipAllPausesSetting;
   #skipAllPausesTimeout;
   #beforePausedCallback = null;
-  #computeAutoStepRangesCallback = null;
+  #computeAutoStepCallback = null;
   evaluateOnCallFrameCallback = null;
   #synchronizeBreakpointsCallback = null;
   // We need to be able to register listeners for individual breakpoints. As such, we dispatch
   // on breakpoint ids, which are not statically known. The event #payload will always be a `Location`.
   #breakpointResolvedEventTarget = new Common25.ObjectWrapper.ObjectWrapper();
-  // When stepping over with autostepping enabled, the context denotes the function to which autostepping is restricted
-  // to by way of its functionLocation (as per Debugger.CallFrame).
-  #autoSteppingContext = null;
+  #stepContext = null;
   #isPausing = false;
   constructor(target) {
     super(target);
@@ -32996,49 +33126,62 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   breakpointsActiveChanged() {
     void this.agent.invoke_setBreakpointsActive({ active: this.#breakpointsActiveSetting.get() });
   }
-  setComputeAutoStepRangesCallback(callback) {
-    this.#computeAutoStepRangesCallback = callback;
+  setComputeAutoStepCallback(callback) {
+    this.#computeAutoStepCallback = callback;
   }
-  async computeAutoStepSkipList(mode) {
-    let ranges = [];
-    if (this.#computeAutoStepRangesCallback && this.#debuggerPausedDetails && this.#debuggerPausedDetails.callFrames.length > 0) {
-      const [callFrame] = this.#debuggerPausedDetails.callFrames;
-      ranges = await this.#computeAutoStepRangesCallback.call(null, mode, callFrame);
-    }
-    const skipList = ranges.map(({ start, end }) => ({
+  async stepInto() {
+    await this.#userStep("StepInto" /* STEP_INTO */);
+  }
+  async stepOver() {
+    await this.#userStep("StepOver" /* STEP_OVER */);
+  }
+  async stepOut() {
+    await this.#userStep("StepOut" /* STEP_OUT */);
+  }
+  scheduleStepIntoAsync() {
+    void this.#userStep(
+      "StepInto" /* STEP_INTO */,
+      /* breakOnAsyncCall */
+      true
+    );
+  }
+  async #userStep(mode, breakOnAsyncCall = false) {
+    const callFrames = this.#debuggerPausedDetails?.callFrames ?? [];
+    this.#stepContext = { mode, callFrames };
+    const step = this.#computeAutoStepCallback && callFrames.length > 0 ? await this.#computeAutoStepCallback(mode, callFrames) : { command: mode, ranges: [] };
+    this.#issueStep(step, breakOnAsyncCall);
+  }
+  #issueStep({ command, ranges, enterRanges }, breakOnAsyncCall = false) {
+    const toProtocolRange = ({ start, end }) => ({
       scriptId: start.scriptId,
       start: { lineNumber: start.lineNumber, columnNumber: start.columnNumber },
       end: { lineNumber: end.lineNumber, columnNumber: end.columnNumber }
-    }));
-    return sortAndMergeRanges(skipList);
-  }
-  async stepInto() {
-    const skipList = await this.computeAutoStepSkipList("StepInto" /* STEP_INTO */);
-    void this.agent.invoke_stepInto({ breakOnAsyncCall: false, skipList });
-  }
-  async stepOver() {
-    this.#autoSteppingContext = this.#debuggerPausedDetails?.callFrames[0]?.functionLocation() ?? null;
-    const skipList = await this.computeAutoStepSkipList("StepOver" /* STEP_OVER */);
-    void this.agent.invoke_stepOver({ skipList });
-  }
-  async stepOut() {
-    const skipList = await this.computeAutoStepSkipList("StepOut" /* STEP_OUT */);
-    if (skipList.length !== 0) {
-      void this.agent.invoke_stepOver({ skipList });
-    } else {
-      void this.agent.invoke_stepOut();
+    });
+    const skipList = sortAndMergeRanges(ranges.map(toProtocolRange));
+    switch (command) {
+      case "StepInto" /* STEP_INTO */:
+        void this.agent.invoke_stepInto({ breakOnAsyncCall, skipList });
+        break;
+      case "StepOver" /* STEP_OVER */: {
+        const request = { skipList };
+        if (enterRanges?.length) {
+          request.enterRanges = sortAndMergeRanges(enterRanges.map(toProtocolRange));
+        }
+        void this.agent.invoke_stepOver(request);
+        break;
+      }
+      case "StepOut" /* STEP_OUT */:
+        void this.agent.invoke_stepOut();
+        break;
     }
   }
-  scheduleStepIntoAsync() {
-    void this.computeAutoStepSkipList("StepInto" /* STEP_INTO */).then((skipList) => {
-      void this.agent.invoke_stepInto({ breakOnAsyncCall: true, skipList });
-    });
-  }
   resume() {
+    this.#stepContext = null;
     void this.agent.invoke_resume({ terminateOnResume: false });
     this.#isPausing = false;
   }
   pause() {
+    this.#stepContext = null;
     this.#isPausing = true;
     this.skipAllPauses(false);
     void this.agent.invoke_pause();
@@ -33112,7 +33255,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#scripts.clear();
     this.#scriptsBySourceURL.clear();
     this.#discardableScripts = [];
-    this.#autoSteppingContext = null;
+    this.#stepContext = null;
   }
   scripts() {
     return Array.from(this.#scripts.values());
@@ -33146,18 +33289,22 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   debuggerPausedDetails() {
     return this.#debuggerPausedDetails;
   }
+  /**
+   * @returns null if the pause was presented, or the step to issue instead, as decided by the before-paused callback.
+   */
   async setDebuggerPausedDetails(debuggerPausedDetails) {
     this.#isPausing = false;
     this.#debuggerPausedDetails = debuggerPausedDetails;
     if (this.#beforePausedCallback) {
-      if (!await this.#beforePausedCallback.call(null, debuggerPausedDetails, this.#autoSteppingContext)) {
-        return false;
+      const autoStep = await this.#beforePausedCallback(debuggerPausedDetails, this.#stepContext);
+      if (autoStep) {
+        return autoStep;
       }
     }
-    this.#autoSteppingContext = null;
+    this.#stepContext = null;
     this.dispatchEventToListeners("DebuggerPaused" /* DebuggerPaused */, this);
     this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
-    return true;
+    return null;
   }
   resetDebuggerPausedDetails() {
     this.#isPausing = false;
@@ -33194,12 +33341,9 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
         return;
       }
     }
-    if (!await this.setDebuggerPausedDetails(pausedDetails)) {
-      if (this.#autoSteppingContext) {
-        void this.stepOver();
-      } else {
-        void this.stepInto();
-      }
+    const autoStep = await this.setDebuggerPausedDetails(pausedDetails);
+    if (autoStep) {
+      this.#issueStep(autoStep);
     }
   }
   resumedScript() {
@@ -33866,6 +34010,16 @@ var Scope = class {
   }
   icon() {
     return void 0;
+  }
+  /**
+   * Present iff V8 has no variable values to show for this scope, either because the scope
+   * declares no variables or because all of them are unavailable (e.g. optimized out).
+   *
+   * Such scopes are retained in {@link CallFrame.scopeChain} so they can be addressed via
+   * `scopeNumber` in `Debugger.evaluateOnCallFrame` and matched against source map scopes.
+   */
+  emptyReason() {
+    return this.#payload.emptyReason;
   }
   extraProperties() {
     if (this !== this.#callFrame.localScope() || this.#callFrame.script.isWasm()) {
@@ -37524,7 +37678,10 @@ var ServerSentEventsParser = class {
       this.#data += "\n";
     }
     if (fieldName === "id") {
-      this.#id = this.#line.substring(fieldValueStart);
+      const id = this.#line.substring(fieldValueStart);
+      if (!id.includes("\0")) {
+        this.#id = id;
+      }
     }
   }
 };
@@ -37815,11 +37972,11 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  secureOnly: 'This cookie was blocked because it had the "`Secure`" attribute and the connection was not secure',
+  secureOnly: 'This cookie was blocked because it had the "`Secure`" attribute and the connection wasn\u2019t secure',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  notOnPath: "This cookie was blocked because its path was not an exact match for or a superdirectory of the request URL\u2019s path",
+  notOnPath: "This cookie was blocked because its path wasn\u2019t an exact match for or a superdirectory of the request URL\u2019s path",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37831,15 +37988,15 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  sameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute and the request was made from a different site and was not initiated by a top-level navigation',
+  sameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute and the request was made from a different site and wasn\u2019t initiated by a top-level navigation',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  sameSiteUnspecifiedTreatedAsLax: 'This cookie didn\u2019t specify a "`SameSite`" attribute when it was stored and was defaulted to "`SameSite=Lax`", and was blocked because the request was made from a different site and was not initiated by a top-level navigation. The cookie had to have been set with "`SameSite=None`" to enable cross-site usage.',
+  sameSiteUnspecifiedTreatedAsLax: 'This cookie didn\u2019t specify a "`SameSite`" attribute when it was stored and was defaulted to "`SameSite=Lax`", and was blocked because the request was made from a different site and wasn\u2019t initiated by a top-level navigation. The cookie had to have been set with "`SameSite=None`" to enable cross-site usage.',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  sameSiteNoneInsecure: 'This cookie was blocked because it had the "`SameSite=None`" attribute but was not marked "`Secure`". Cookies without SameSite restrictions must be marked "`Secure`" and sent over a secure connection.',
+  sameSiteNoneInsecure: 'This cookie was blocked because it had the "`SameSite=None`" attribute but wasn\u2019t marked "`Secure`". Cookies without SameSite restrictions must be marked "`Secure`" and sent over a secure connection.',
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37875,7 +38032,7 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
-  theSchemeOfThisConnectionIsNot: "The scheme of this connection is not allowed to store cookies",
+  theSchemeOfThisConnectionIsNot: "The scheme of this connection isn\u2019t allowed to store cookies",
   /**
    * @description Tooltip to explain why a cookie was blocked.
    */
@@ -37883,24 +38040,24 @@ var UIStrings11 = {
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonSecureOnly: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`Secure`" attribute but was not received over a secure connection',
+  blockedReasonSecureOnly: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`Secure`" attribute but wasn\u2019t received over a secure connection',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    * @example {SameSite=Strict} PH1
    */
-  blockedReasonSameSiteStrictLax: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "{PH1}" attribute but came from a cross-site response which was not the response to a top-level navigation',
+  blockedReasonSameSiteStrictLax: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "{PH1}" attribute but came from a cross-site response which wasn\u2019t the response to a top-level navigation',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonSameSiteUnspecifiedTreatedAsLax: 'This "`Set-Cookie`" header didn\u2019t specify a "`SameSite`" attribute and was defaulted to "`SameSite=Lax`", and was blocked because it came from a cross-site response which was not the response to a top-level navigation. The "`Set-Cookie`" header had to have been set with "`SameSite=None`" to enable cross-site usage.',
+  blockedReasonSameSiteUnspecifiedTreatedAsLax: 'This "`Set-Cookie`" header didn\u2019t specify a "`SameSite`" attribute and was defaulted to "`SameSite=Lax`", and was blocked because it came from a cross-site response which wasn\u2019t the response to a top-level navigation. The "`Set-Cookie`" header had to have been set with "`SameSite=None`" to enable cross-site usage.',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonSameSiteNoneInsecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`SameSite=None`" attribute but did not have the "`Secure`" attribute, which is required in order to use "`SameSite=None`"',
+  blockedReasonSameSiteNoneInsecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it had the "`SameSite=None`" attribute but didn\u2019t have the "`Secure`" attribute, which is required in order to use "`SameSite=None`"',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
-  blockedReasonOverwriteSecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it was not sent over a secure connection and would have overwritten a cookie with the "`Secure`" attribute',
+  blockedReasonOverwriteSecure: 'This attempt to set a cookie via a "`Set-Cookie`" header was blocked because it wasn\u2019t sent over a secure connection and would have overwritten a cookie with the "`Secure`" attribute',
   /**
    * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
@@ -41206,7 +41363,7 @@ var UIStrings13 = {
    * @example {https://example.com/sourcemap.map} PH1
    * @example {An error occurred} PH2
    */
-  couldNotLoadContentForSS: "Could not load content for {PH1} ({PH2})"
+  couldNotLoadContentForSS: "Couldn\u2019t load content for {PH1} ({PH2})"
 };
 var str_13 = i18n29.i18n.registerUIStrings("core/sdk/CompilerSourceMappingContentProvider.ts", UIStrings13);
 var i18nString13 = i18n29.i18n.getLocalizedString.bind(void 0, str_13);

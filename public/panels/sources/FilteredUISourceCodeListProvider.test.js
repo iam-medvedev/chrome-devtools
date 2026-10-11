@@ -11,6 +11,7 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
 import { render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
@@ -66,7 +67,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const resourceType = Common.ResourceType.resourceTypes.Script;
         const { workspace, project, uiSourceCode } = setUpEnvironmentWithUISourceCode(url, resourceType);
         // ignore the uiSourceCode
-        const setting = Common.Settings.Settings.instance().moduleSetting('navigator-just-my-code');
+        const setting = Common.Settings.Settings.instance().resolve(SettingsUI.SourcesSettings.navigatorJustMyCodeSettingDescriptor);
         setting.set(true);
         Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiSourceCode);
         const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
