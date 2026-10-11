@@ -180,7 +180,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const entriesLink = {
             type: 'ENTRIES_LINK',
             entryFrom: defaultTraceEvents[0],
-            state: "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */,
+            state: Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED,
         };
         const component = await renderAnnotationsTab([entryLabelAnnotation, entriesLink], new Map());
         const annotationsWrapperElement = component.contentElement.querySelector('.annotations');
@@ -205,7 +205,7 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         const entriesLink = {
             type: 'ENTRIES_LINK',
             entryFrom: defaultTraceEvents[1],
-            state: "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */,
+            state: Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED,
         };
         const component = await renderAnnotationsTab([entryLabelAnnotation, entriesLink], new Map());
         const annotationsWrapperElement = component.contentElement.querySelector('.annotations');

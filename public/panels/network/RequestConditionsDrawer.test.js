@@ -186,7 +186,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             assert.exists(item.querySelector('devtools-icon[name=cross-circle-filled]'));
             const tooltip = item.querySelector(`devtools-tooltip[id=url-pattern-error-${index}]`);
             assert.exists(tooltip);
-            assert.strictEqual(tooltip.textContent, 'RegExp groups are not allowedLearn more');
+            assert.strictEqual(tooltip.textContent, 'RegExp groups aren’t allowedLearn more');
         });
         it('shows an error message in the editor when the pattern is invalid or has regexp groups', async () => {
             requestConditionsDrawer = new Network.RequestConditionsDrawer.RequestConditionsDrawer();
@@ -196,7 +196,7 @@ describeWithEnvironment('RequestConditionsDrawer', () => {
             await requestConditionsDrawer.updateComplete;
             const prompt = requestConditionsDrawer.contentElement.querySelector('devtools-prompt');
             assert.exists(prompt);
-            assert.strictEqual(prompt?.validator?.('http://*/(\\d+)'), 'RegExp groups are not allowed');
+            assert.strictEqual(prompt?.validator?.('http://*/(\\d+)'), 'RegExp groups aren’t allowed');
             assert.strictEqual(prompt?.validator?.('ht tp://*'), 'This pattern failed to parse as a URLPattern');
         });
     });

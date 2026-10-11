@@ -228,8 +228,8 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         const mainThreadContext = this.context();
         for (const thread of threads) {
             // We treat CPU_PROFILE as main thread because in a CPU Profile trace there is only ever one thread.
-            const isMainThread = thread.type === "MAIN_THREAD" /* Trace.Handlers.Threads.ThreadType.MAIN_THREAD */ ||
-                thread.type === "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */;
+            const isMainThread = thread.type === Trace.Handlers.Threads.ThreadType.MAIN_THREAD ||
+                thread.type === Trace.Handlers.Threads.ThreadType.CPU_PROFILE;
             if (isMainThread) {
                 drawThreadEntries(mainThreadContext, thread);
             }
@@ -369,7 +369,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
             if (!image?.naturalWidth || !image.naturalHeight) {
                 return;
             }
-            const imageHeight = this.height() - 2 * TimelineFilmStripOverview.Padding;
+            const imageHeight = this.height() - 2 * TimelineFilmStripOverview.PADDING;
             const imageWidth = Math.ceil(imageHeight * image.naturalWidth / image.naturalHeight);
             const popoverScale = Math.min(200 / image.naturalWidth, 1);
             this.emptyImage = new Image(image.naturalWidth * popoverScale, image.naturalHeight * popoverScale);
@@ -393,7 +393,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
         if (!this.#filmStrip || this.#filmStrip.frames.length < 1) {
             return;
         }
-        const padding = TimelineFilmStripOverview.Padding;
+        const padding = TimelineFilmStripOverview.PADDING;
         const width = this.width();
         const zeroTime = customStartTime ?? Trace.Helpers.Timing.microToMilli(this.#filmStrip.zeroTime);
         const spanTime = customEndTime ? customEndTime - zeroTime : Trace.Helpers.Timing.microToMilli(this.#filmStrip.spanTime);
@@ -451,9 +451,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
         this.lastElement = null;
         this.frameToImagePromise = new Map();
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static Padding = 2;
+    static PADDING = 2;
 }
 export class TimelineEventOverviewMemory extends TimelineEventOverview {
     heapSizeLabel;

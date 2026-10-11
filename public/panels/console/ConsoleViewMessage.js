@@ -214,6 +214,7 @@ const UIStrings = {
     /**
      * @description Element text content in Object properties section.
      */
+    // eslint-disable-next-line @devtools/l10n-uistrings-text-style
     dots: '(...)',
     /**
      * @description Element title in Object properties section.
@@ -1642,8 +1643,7 @@ export class ConsoleViewMessage {
     }
     toExportString() {
         const lines = [];
-        const nodes = this.contentElement().childTextNodes();
-        const messageContent = nodes.map(Components.Linkifier.Linkifier.untruncatedNodeText).join('');
+        const messageContent = Components.Linkifier.Linkifier.untruncatedTextContent(this.contentElement());
         for (let i = 0; i < this.repeatCount(); ++i) {
             lines.push(messageContent);
         }

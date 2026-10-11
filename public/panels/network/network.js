@@ -444,7 +444,7 @@ var UIStrings2 = {
   /**
    * @description Error text for empty list widget input in Request Conditions tool
    */
-  patternInputCannotBeEmpty: "Pattern input cannot be empty",
+  patternInputCannotBeEmpty: "Pattern input can\u2019t be empty",
   /**
    * @description Error text for duplicate list widget input in Request Conditions tool
    */
@@ -456,7 +456,7 @@ var UIStrings2 = {
   /**
    * @description Tooltip message when a pattern failed to parse as a URLPattern because it contains RegExp groups
    */
-  patternFailedWithRegExpGroups: "RegExp groups are not allowed",
+  patternFailedWithRegExpGroups: "RegExp groups aren\u2019t allowed",
   /**
    * @description Tooltip message when a pattern was converted to a URLPattern
    * @example {example.com} PH1
@@ -1353,6 +1353,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -3905,14 +3906,14 @@ var UIStrings3 = {
    * not being deferred is that while the HTTP request is in scope of a session, it was
    * not possible to trigger a refresh proactively.
    */
-  proactiveRefreshNotPossible: "Not deferred (Request is in scope of session but proactive refresh is not possible)",
+  proactiveRefreshNotPossible: "Not deferred (Request is in scope of session but proactive refresh isn\u2019t possible)",
   /**
    * @description One of the HTTP request deferral decisions. This one notes that the
    * request was not deferred (i.e. not paused and later unpaused). The reasoning for it
    * not being deferred is that while the HTTP request is in scope of a session, the HTTP
    * request's initiator is not allowed to trigger a refresh.
    */
-  inScopeRefreshNotAllowed: "Not deferred (Request is in scope of session but initiator is not allowed to trigger refresh)",
+  inScopeRefreshNotAllowed: "Not deferred (Request is in scope of session but initiator isn\u2019t allowed to trigger refresh)",
   /**
    * @description One of the HTTP request deferral decisions. This one notes that the
    * request was not deferred (i.e. not paused and later unpaused). The reasoning for it
@@ -3925,7 +3926,7 @@ var UIStrings3 = {
    * request was not deferred (i.e. not paused and later unpaused). The reasoning for it
    * not being deferred is that the HTTP request is not in scope of a session.
    */
-  notInScope: "Not deferred (Request is not in scope of session)"
+  notInScope: "Not deferred (Request isn\u2019t in scope of session)"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/network/RequestDeviceBoundSessionsView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -4229,6 +4230,7 @@ import * as Common4 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform2 from "../../core/platform/platform.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
+import * as EmulationModel from "../../models/emulation/emulation.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
 import { Directives as Directives3, html as html5, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
@@ -4670,11 +4672,12 @@ function getUserAgentMetadata(userAgent) {
   for (const userAgentDescriptor of userAgentGroups) {
     for (const userAgentVersion of userAgentDescriptor.values) {
       if (userAgent === SDK4.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(userAgentVersion.value)) {
-        if (!userAgentVersion.metadata) {
+        const { metadata } = userAgentVersion;
+        if (!metadata) {
           return null;
         }
-        SDK4.NetworkManager.MultitargetNetworkManager.patchUserAgentMetadataWithChromeVersion(userAgentVersion.metadata);
-        return userAgentVersion.metadata;
+        SDK4.NetworkManager.MultitargetNetworkManager.patchUserAgentMetadataWithChromeVersion(metadata);
+        return metadata;
       }
     }
   }
@@ -4819,6 +4822,29 @@ var userAgentGroups = [
           architecture: "x86",
           model: "",
           mobile: false
+        }
+      },
+      {
+        // Desktop Android with the AndroidDesktopUASpoofAsChromeOS and AndroidDesktopUAPlatform
+        // features: the UA string is spoofed as Chrome OS, while UA-CH reports the real Android
+        // platform and version.
+        title: "Chrome \u2014 Googlebook",
+        value: "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/%s Safari/537.36",
+        get metadata() {
+          return {
+            brands: [
+              { brand: "Not A;Brand", version: "99" },
+              { brand: "Chromium", version: "%s" },
+              { brand: "Google Chrome", version: "%s" }
+            ],
+            fullVersion: "%s",
+            platform: "Android",
+            platformVersion: `${EmulationModel.DeviceModeModel.DeviceModeModel.getDynamicAndroidVersion()}.0.0`,
+            architecture: "x86",
+            bitness: "64",
+            model: "",
+            mobile: false
+          };
         }
       },
       {
@@ -5186,7 +5212,7 @@ var UIStrings6 = {
   /**
    * @description Reason why a request was blocked shown in the Network panel
    */
-  coopSandboxedIframeCannotNavigateToCoopPage: "Sandboxed iframe\u2019s popup cannot navigate to COOP page",
+  coopSandboxedIframeCannotNavigateToCoopPage: "Sandboxed iframe\u2019s popup can\u2019t navigate to COOP page",
   /**
    * @description Reason why a request was blocked shown in the Network panel
    */
@@ -5241,7 +5267,7 @@ var UIStrings6 = {
   /**
    * @description Tooltip providing details on why the request has unknown status.
    */
-  unknownExplanation: "The request status cannot be shown here because the page that issued it unloaded while the request was in flight. You can use chrome://net-export to capture a network log and see all request details.",
+  unknownExplanation: "The request status can\u2019t be shown here because the page that issued it unloaded while the request was in flight. You can use chrome://net-export to capture a network log and see all request details.",
   /**
    * @description Text in Network Data Grid Node of the Network panel. Noun, short for a 'HTTP server
    * push'.
@@ -6269,6 +6295,9 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     this.parentView().dispatchEventToListeners("RequestSelected" /* RequestSelected */, this.requestInternal);
   }
   openInNewTab() {
+    if (Common5.ParsedURL.isPrivilegedScheme(this.requestInternal.url())) {
+      return;
+    }
     Host3.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.requestInternal.url());
   }
   isFailed() {
@@ -6849,7 +6878,7 @@ var UIStrings7 = {
    * @example {Learn more} PH1
    *
    */
-  siteHasCookieInOtherPartition: "This site has cookies in another partition, that were not sent with this request. {PH1}",
+  siteHasCookieInOtherPartition: "This site has cookies in another partition, that weren\u2019t sent with this request. {PH1}",
   /**
    * @description Title of a link to the developer documentation.
    */
@@ -7110,6 +7139,7 @@ import * as Tracing2 from "../../services/tracing/tracing.js";
 import * as PerfUI5 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI15 from "../../ui/legacy/legacy.js";
+import * as Settings12 from "../../ui/settings/settings.js";
 import * as VisualLogging11 from "../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling3 from "../mobile_throttling/mobile_throttling.js";
 import * as Search from "../search/search.js";
@@ -7172,6 +7202,7 @@ var dataGridAiButton_css_default = `/*
 import * as PerfUI4 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Components4 from "../../ui/legacy/components/utils/utils.js";
 import * as UI14 from "../../ui/legacy/legacy.js";
+import * as Settings10 from "../../ui/settings/settings.js";
 import * as VisualLogging10 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/network/FetchHeaderCommenting.ts
@@ -7194,7 +7225,7 @@ var UIStrings8 = {
   /**
    * @description Comment in a generated fetch command explaining why the Accept-Charset header is commented out.
    */
-  deprecatedBrowserDoesNotSend: "Deprecated; browser does not send this",
+  deprecatedBrowserDoesNotSend: "Deprecated; browser doesn\u2019t send this",
   /**
    * @description Comment in a generated fetch command explaining why the Accept-Encoding header is commented out.
    */
@@ -8192,6 +8223,7 @@ import * as RenderCoordinator2 from "../../ui/components/render_coordinator/rend
 import * as PerfUI3 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "../../ui/legacy/theme_support/theme_support.js";
+import * as Settings7 from "../../ui/settings/settings.js";
 
 // ../../front_end/panels/network/NetworkOverview.ts
 var NetworkOverview_exports = {};
@@ -9635,7 +9667,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
     if (!request) {
       return null;
     }
-    const useTimingBars = !Common10.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
+    const useTimingBars = !Common10.Settings.Settings.instance().resolve(Settings7.NetworkSettings.colorCodeResourceTypesSettingDescriptor).get() && !this.calculator.startAtZero;
     let range;
     let start;
     let end;
@@ -9761,7 +9793,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
   didDrawForTest() {
   }
   draw() {
-    const useTimingBars = !Common10.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
+    const useTimingBars = !Common10.Settings.Settings.instance().resolve(Settings7.NetworkSettings.colorCodeResourceTypesSettingDescriptor).get() && !this.calculator.startAtZero;
     const nodes = this.nodes;
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -11899,7 +11931,6 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
   filterBar;
   textFilterSetting;
   networkRequestToNode;
-  static #allowedSchemes = /* @__PURE__ */ new Set(["http:", "https:", "ws:", "wss:", "data:"]);
   constructor(filterBar, progressBarContainer, networkLogLargeRowsSetting) {
     super();
     this.registerRequiredCSS(networkLogView_css_default);
@@ -11915,9 +11946,8 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     this.networkOnlyBlockedRequestsSetting = Common12.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
     this.networkOnlyThirdPartySetting = Common12.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
     this.networkResourceTypeFiltersSetting = Common12.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
-    this.networkShowOptionsToGenerateHarWithSensitiveData = Common12.Settings.Settings.instance().createSetting(
-      "network.show-options-to-generate-har-with-sensitive-data",
-      false
+    this.networkShowOptionsToGenerateHarWithSensitiveData = Common12.Settings.Settings.instance().resolve(
+      Settings10.NetworkSettings.showOptionsToGenerateHarWithSensitiveDataSettingDescriptor
     );
     this.progressBarContainer = progressBarContainer;
     this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
@@ -12008,7 +12038,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       i18nString12(UIStrings13.dropHarFilesHere),
       this.handleDrop.bind(this)
     );
-    Common12.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").addChangeListener(this.invalidateAllItems.bind(this, false), this);
+    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.colorCodeResourceTypesSettingDescriptor).addChangeListener(this.invalidateAllItems.bind(this, false), this);
     SDK11.TargetManager.TargetManager.instance().observeModels(SDK11.NetworkManager.NetworkManager, this, { scoped: true });
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(
       Logs5.NetworkLog.Events.RequestAdded,
@@ -12027,7 +12057,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     );
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.Reset, this.reset, this);
     this.updateGroupByFrame();
-    Common12.Settings.Settings.instance().moduleSetting("network.group-by-frame").addChangeListener(() => this.updateGroupByFrame());
+    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.groupByFrameSettingDescriptor).addChangeListener(() => this.updateGroupByFrame());
     this.filterBar = filterBar;
     this.textFilterSetting = Common12.Settings.Settings.instance().createSetting("network-text-filter", "");
     if (this.textFilterSetting.get()) {
@@ -12035,7 +12065,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
   }
   updateGroupByFrame() {
-    const value = Common12.Settings.Settings.instance().moduleSetting("network.group-by-frame").get();
+    const value = Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.groupByFrameSettingDescriptor).get();
     this.setGrouping(value ? "Frame" : null);
   }
   static sortSearchValues(key, values) {
@@ -13569,15 +13599,10 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     return requests.filter((request) => !request.isBlobRequest());
   }
   static #getValidClipboardUrl(url) {
-    try {
-      const parsedUrl = new URL(url);
-      if (!_NetworkLogView.#allowedSchemes.has(parsedUrl.protocol)) {
-        return null;
-      }
-      return url;
-    } catch {
+    if (Common12.ParsedURL.schemeIs(url, "blob:") || Common12.ParsedURL.schemeIs(url, "filesystem:") || !Common12.ParsedURL.hasWebSafeScheme(url)) {
       return null;
     }
+    return url;
   }
   async generateFetchCall(request, style, generateOptions) {
     const internalOnly = /* @__PURE__ */ new Set(["method", "path", "scheme", "version"]);
@@ -14581,7 +14606,7 @@ var NetworkPanel = class _NetworkPanel extends UI15.Panel.Panel {
       ),
       SettingsUI.SettingsUI.createSettingCheckbox(
         i18nString14(UIStrings15.groupByFrame),
-        Common13.Settings.Settings.instance().moduleSetting("network.group-by-frame"),
+        Common13.Settings.Settings.instance().resolve(Settings12.NetworkSettings.groupByFrameSettingDescriptor),
         i18nString14(UIStrings15.groupRequestsByTopLevelRequest)
       ),
       SettingsUI.SettingsUI.createSettingCheckbox(
@@ -14830,9 +14855,8 @@ var NetworkPanel = class _NetworkPanel extends UI15.Panel.Panel {
     );
     exportHarMenuButton.setTitle(i18nString14(UIStrings15.exportHar));
     this.panelToolbar.appendToolbarItem(exportHarMenuButton);
-    const networkShowOptionsToGenerateHarWithSensitiveData = Common13.Settings.Settings.instance().createSetting(
-      "network.show-options-to-generate-har-with-sensitive-data",
-      false
+    const networkShowOptionsToGenerateHarWithSensitiveData = Common13.Settings.Settings.instance().resolve(
+      Settings12.NetworkSettings.showOptionsToGenerateHarWithSensitiveDataSettingDescriptor
     );
     const updateShowOptionsToGenerateHarWithSensitiveData = () => {
       const showOptionsToGenerateHarWithSensitiveData = networkShowOptionsToGenerateHarWithSensitiveData.get();
@@ -17283,11 +17307,7 @@ var RequestPreviewView = class extends UI21.Widget.VBox {
     }
     const toolbar5 = this.element.createChild("devtools-toolbar", "network-item-preview-toolbar");
     void view.toolbarItems().then((items) => {
-      if (Array.isArray(items)) {
-        items.map((item4) => toolbar5.appendToolbarItem(item4));
-      } else {
-        render14(items, toolbar5);
-      }
+      render14(items, toolbar5);
     });
     return view;
   }

@@ -14,7 +14,7 @@ import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 async function waitForViewToSettle(view) {
     await doubleRaf();
-    const viewer = view.element.querySelector('devtools-linear-memory-inspector-viewer');
+    const viewer = view.element.querySelector('.viewer-widget');
     if (viewer) {
         let prevHeight = -1;
         while (viewer.clientHeight !== prevHeight) {

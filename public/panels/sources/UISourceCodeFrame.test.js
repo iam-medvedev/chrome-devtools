@@ -3,20 +3,21 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Sources from './sources.js';
-const { UISourceCodeFrame } = Sources.UISourceCodeFrame;
+const { DEFAULT_POPOVER_VIEW, MessageWidget, RowMessage, UISourceCodeFrame } = Sources.UISourceCodeFrame;
 const { urlString } = Platform.DevToolsPath;
 describe('UISourceCodeFrame', () => {
     setupRuntimeHooks();
@@ -111,6 +112,22 @@ describe('UISourceCodeFrame', () => {
             assert.isNull(frame.textEditor.getAttribute('data-file-path'));
         });
     });
+    it('removes all setting change listeners it added on dispose', () => {
+        setup();
+        const { uiSourceCode } = createFileSystemUISourceCode({
+            url: Platform.DevToolsPath.urlString `file:///path/to/file.ts`,
+            mimeType: 'text/typescript',
+            content: 'const a = 1;',
+        });
+        const addSpy = sinon.spy(Common.Settings.Setting.prototype, 'addChangeListener');
+        const removeSpy = sinon.spy(Common.Settings.Setting.prototype, 'removeChangeListener');
+        const frame = new UISourceCodeFrame(uiSourceCode);
+        frame.dispose();
+        const listenersOf = (spy) => spy.getCalls().filter(call => call.args[1] === frame).map(call => [call.thisValue.name, call.args[0]]);
+        const added = listenersOf(addSpy);
+        assert.isNotEmpty(added);
+        assert.sameDeepMembers(listenersOf(removeSpy), added);
+    });
     describe('plugin toolbar items', () => {
         async function createFrameWithTestPlugin() {
             setup();
@@ -148,6 +165,36 @@ describe('UISourceCodeFrame', () => {
             frame.dispose();
             plugin.dispatchEventToListeners("ToolbarItemsChanged" /* Sources.Plugin.Events.TOOLBAR_ITEMS_CHANGED */);
             sinon.assert.notCalled(frameListener);
+        });
+    });
+    describe('MessageWidget', () => {
+        it('renders highest severity non-issue icon and issue icon with click handler', () => {
+            const clickHandler = sinon.spy();
+            const warningMsg = new RowMessage(new Workspace.UISourceCode.Message("Warning" /* Workspace.UISourceCode.Message.Level.WARNING */, 'warning'), 0, 0);
+            const errorMsg = new RowMessage(new Workspace.UISourceCode.Message("Error" /* Workspace.UISourceCode.Message.Level.ERROR */, 'error'), 0, 0);
+            const issueMsg = new RowMessage(new Workspace.UISourceCode.Message("Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */, 'issue', clickHandler), 0, 0);
+            const widget = new MessageWidget([warningMsg, errorMsg, issueMsg]);
+            const dom = widget.toDOM();
+            const errorIcon = dom.querySelector('.cm-messageIcon-error');
+            assert.exists(errorIcon);
+            assert.strictEqual(errorIcon.getAttribute('name'), 'cross-circle-filled');
+            const issueIcon = dom.querySelector('.cm-messageIcon-issue');
+            assert.exists(issueIcon);
+            assert.strictEqual(issueIcon.getAttribute('name'), 'issue-exclamation-filled');
+            issueIcon.click();
+            sinon.assert.calledOnce(clickHandler);
+        });
+    });
+    describe('DEFAULT_POPOVER_VIEW', () => {
+        it('renders single and repeated error and warning messages', async () => {
+            const singleError = new RowMessage(new Workspace.UISourceCode.Message("Error" /* Workspace.UISourceCode.Message.Level.ERROR */, 'Uncaught TypeError: Cannot read property'), 0, 0);
+            const repeatedError = new RowMessage(new Workspace.UISourceCode.Message("Error" /* Workspace.UISourceCode.Message.Level.ERROR */, 'Repeated error message'), 0, 0);
+            const singleWarning = new RowMessage(new Workspace.UISourceCode.Message("Warning" /* Workspace.UISourceCode.Message.Level.WARNING */, 'Deprecation warning'), 0, 0);
+            const repeatedWarning = new RowMessage(new Workspace.UISourceCode.Message("Warning" /* Workspace.UISourceCode.Message.Level.WARNING */, 'Repeated warning message'), 0, 0);
+            const target = document.createElement('div');
+            renderElementIntoDOM(target, { includeCommonStyles: true });
+            DEFAULT_POPOVER_VIEW({ messages: [singleError, repeatedError, repeatedError, singleWarning, repeatedWarning, repeatedWarning] }, undefined, target);
+            await assertScreenshot('sources/error-popover.png');
         });
     });
 });

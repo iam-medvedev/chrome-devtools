@@ -23,9 +23,9 @@ describe('FlowsHandler', function () {
             makeCompleteEvent('B', 10, 10, cat, pid, tid),
             makeCompleteEvent('C', 20, 10, cat, pid, tid),
             // Flow phase events
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 1, pid, tid),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
         ];
         const { flows } = await getFlowsHandlerData(events);
         assert.lengthOf(flows, 1);
@@ -34,13 +34,13 @@ describe('FlowsHandler', function () {
     it('handles multiple flows with the same group token', async function () {
         const events = [
             // Flow 1 phase events
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 1, pid, tid),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
             // Flow 2 phase
-            makeFlowPhaseEvent('A', 30, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 2, pid, tid),
-            makeFlowPhaseEvent('A', 40, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 2, pid, tid),
-            makeFlowPhaseEvent('A', 50, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 2, pid, tid),
+            makeFlowPhaseEvent('A', 30, cat, Trace.Types.Events.Phase.FLOW_START, 2, pid, tid),
+            makeFlowPhaseEvent('A', 40, cat, Trace.Types.Events.Phase.FLOW_STEP, 2, pid, tid),
+            makeFlowPhaseEvent('A', 50, cat, Trace.Types.Events.Phase.FLOW_END, 2, pid, tid),
             // Flow 1 events
             makeCompleteEvent('A', 0, 10, cat, pid, tid),
             makeCompleteEvent('B', 10, 10, cat, pid, tid),
@@ -58,11 +58,11 @@ describe('FlowsHandler', function () {
     it('handles events belonging to multiple flows', async function () {
         const events = [
             // Flow 1 phase events
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
             // Flow 2 phase events
-            makeFlowPhaseEvent('B', 10, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 2, pid, tid),
-            makeFlowPhaseEvent('B', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 2, pid, tid),
+            makeFlowPhaseEvent('B', 10, cat, Trace.Types.Events.Phase.FLOW_START, 2, pid, tid),
+            makeFlowPhaseEvent('B', 20, cat, Trace.Types.Events.Phase.FLOW_END, 2, pid, tid),
             // Flow 1 & 2: A -> B, B -> C
             makeCompleteEvent('A', 0, 10, cat, pid, tid),
             makeCompleteEvent('B', 10, 10, cat, pid, tid),
@@ -79,9 +79,9 @@ describe('FlowsHandler', function () {
         const otherThread = 1;
         const events = [
             // Flow phase events. Flow events happen in different threads
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 1, pid, otherThread),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, otherThread),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 1, pid, otherThread),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, otherThread),
             makeCompleteEvent('A', 0, 10, cat, pid, tid),
             makeCompleteEvent('B', 10, 10, cat, pid, otherThread),
             makeCompleteEvent('C', 20, 10, cat, pid, otherThread),
@@ -94,8 +94,8 @@ describe('FlowsHandler', function () {
         const otherThread = 1;
         const events = [
             // Flow phase events. Flow events happen in different threads
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
             // Flow events (pid and tid combination differs from the one
             // of the flow phase events, thus they should not be matched).
             makeCompleteEvent('A', 0, 10, cat, pid, otherThread),
@@ -109,16 +109,16 @@ describe('FlowsHandler', function () {
         const tidForFlow2 = 1;
         const events = [
             // Flow 1 phase events
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 1, pid, tid),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
             // Flow 2 phase events. Using different pid and tid to ensure
             // the flow group token is different from flow 1.
             // The overlapping timestamps should not cause issues identifying
             // the events belonging to the two different flows.
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 2, pidForFlow2, tidForFlow2),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 2, pidForFlow2, tidForFlow2),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 2, pidForFlow2, tidForFlow2),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 2, pidForFlow2, tidForFlow2),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 2, pidForFlow2, tidForFlow2),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 2, pidForFlow2, tidForFlow2),
             // Flow 1 events
             makeCompleteEvent('A', 0, 10, cat, pid, tid),
             makeCompleteEvent('B', 10, 10, cat, pid, tid),
@@ -136,9 +136,9 @@ describe('FlowsHandler', function () {
     it('ignores events with no corresponding flow phase event', async function () {
         const events = [
             // Flow 1 phase events
-            makeFlowPhaseEvent('A', 0, cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 10, cat, "t" /* Trace.Types.Events.Phase.FLOW_STEP */, 1, pid, tid),
-            makeFlowPhaseEvent('A', 20, cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, 1, pid, tid),
+            makeFlowPhaseEvent('A', 0, cat, Trace.Types.Events.Phase.FLOW_START, 1, pid, tid),
+            makeFlowPhaseEvent('A', 10, cat, Trace.Types.Events.Phase.FLOW_STEP, 1, pid, tid),
+            makeFlowPhaseEvent('A', 20, cat, Trace.Types.Events.Phase.FLOW_END, 1, pid, tid),
             // Flow 1 events
             makeCompleteEvent('A', 0, 10, cat, pid, tid),
             makeCompleteEvent('B', 10, 10, cat, pid, tid),

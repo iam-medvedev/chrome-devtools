@@ -64,5 +64,10 @@ describe('TotalBlockingTime utils', () => {
         const events = [{ start: 500, end: 3000, duration: 2500 }];
         assert.strictEqual(calculateSumOfBlockingTime(events, fcpTimeMs, interactiveTimeMs), 0);
     });
+    it('throws when interactiveResult is missing in TotalBlockingTime.compute', () => {
+        const fakeData = {};
+        const fakeFcp = {};
+        assert.throws(() => Metrics.TotalBlockingTime.compute(fakeData, { fcpResult: fakeFcp }), 'Interactive is required to calculate the TBT metric');
+    });
 });
 //# sourceMappingURL=TBTUtils.test.js.map

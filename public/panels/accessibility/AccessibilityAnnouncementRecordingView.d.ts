@@ -14,6 +14,7 @@ export interface BlockedTargetInfo {
     targetName: string;
     reason: string;
 }
+export type RevealTargetPanel = 'elements' | 'accessibility';
 export interface ViewInput {
     isRecording: boolean;
     onToggleRecording: () => void;
@@ -26,6 +27,10 @@ export interface ViewInput {
     onTextFilterChange: (text: string) => void;
     blockedTargets: BlockedTargetInfo[];
     announcements: readonly A11yAnnouncement[];
+    selectedAnnouncement: A11yAnnouncement | null;
+    onSelectAnnouncement: (item: A11yAnnouncement | null) => void;
+    onRevealInElements: (item: A11yAnnouncement) => void;
+    onRevealInA11yTree: (item: A11yAnnouncement) => void;
 }
 export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
@@ -34,6 +39,7 @@ declare global {
         __announcementsRecorderBinding?: (payload: string) => void;
         __announcementsRecorderBinding_loaded?: boolean;
         __announcementsRecorderBinding_cleanup?: () => void;
+        __announcementsRecorderGetElement?: (id: string) => Element | undefined;
     }
 }
 export interface A11yAnnouncement {
@@ -66,6 +72,8 @@ export declare class AccessibilityAnnouncementRecordingView extends Accessibilit
     setRecordTypeFilter(type: RecordTypeFilter): void;
     setTextFilter(text: string): void;
     exportCsvForTest(): string;
+    revealElementForTest(item: A11yAnnouncement, targetPanel: RevealTargetPanel): Promise<void>;
+    selectedAnnouncementForTest(): A11yAnnouncement | null;
     performUpdate(): void;
     announcementsForTest(): A11yAnnouncement[];
     blockedReasonForTargetForTest(target: SDK.Target.Target): string | undefined;

@@ -23,7 +23,7 @@ describe('TimelineSelection', function () {
         assert.isFalse(TimelineSelection.selectionIsRange(selection));
     });
     it('can be created with a network request', function () {
-        const request = makeCompleteEvent("ResourceSendRequest" /* Trace.Types.Events.Name.RESOURCE_SEND_REQUEST */, 1000, 2000);
+        const request = makeCompleteEvent(Trace.Types.Events.Name.RESOURCE_SEND_REQUEST, 1000, 2000);
         const selection = TimelineSelection.selectionFromEvent(request);
         assert.strictEqual(selection.event, request);
         const timings = TimelineSelection.rangeForSelection(selection);
@@ -33,7 +33,7 @@ describe('TimelineSelection', function () {
         assert.isFalse(TimelineSelection.selectionIsRange(selection));
     });
     it('can be created with an LCP event', function () {
-        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const lcpEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 1000);
         const selection = TimelineSelection.selectionFromEvent(lcpEvent);
         assert.strictEqual(selection.event, lcpEvent);
         const timings = TimelineSelection.rangeForSelection(selection);
@@ -63,11 +63,11 @@ describe('TimelineSelection', function () {
         assert.isFalse(TimelineSelection.selectionIsEvent(selection));
     });
     it('knows if two event selections are equal if they have the same event', function () {
-        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const lcpEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 1000);
         const selection1 = TimelineSelection.selectionFromEvent(lcpEvent);
         const selection2 = TimelineSelection.selectionFromEvent(lcpEvent);
         assert.isTrue(TimelineSelection.selectionsEqual(selection1, selection2));
-        const networkEvent = makeCompleteEvent("ResourceSendRequest" /* Trace.Types.Events.Name.RESOURCE_SEND_REQUEST */, 1000, 2000);
+        const networkEvent = makeCompleteEvent(Trace.Types.Events.Name.RESOURCE_SEND_REQUEST, 1000, 2000);
         const selection3 = TimelineSelection.selectionFromEvent(networkEvent);
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection3));
     });
@@ -79,7 +79,7 @@ describe('TimelineSelection', function () {
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection3));
     });
     it('knows selections of different types are not equal', function () {
-        const lcpEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 1000);
+        const lcpEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 1000);
         const selection1 = TimelineSelection.selectionFromEvent(lcpEvent);
         const selection2 = TimelineSelection.selectionFromRangeMicroSeconds(microseconds(0), microseconds(10));
         assert.isFalse(TimelineSelection.selectionsEqual(selection1, selection2));

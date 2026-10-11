@@ -198,8 +198,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         }
     }
     searchableView() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visibleView = this.visibleView;
         return visibleView?.searchableView ? visibleView.searchableView() : null;
     }
@@ -381,13 +379,8 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         }
         this.profileViewToolbar.removeToolbarItems();
         void view.toolbarItems().then(items => {
-            if (Array.isArray(items)) {
-                items.map(item => this.profileViewToolbar.appendToolbarItem(item));
-            }
-            else {
-                // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-                render(items, this.profileViewToolbar);
-            }
+            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
+            render(items, this.profileViewToolbar);
         });
         return view;
     }

@@ -358,48 +358,25 @@ UI.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LayerViewerSettings.chromeWindowSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.chromeFrameInLayersView),
-  settingName: "frame-viewer-chrome-window",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.chromeFrameInLayersView)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineInvalidationTrackingSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.timelineInvalidationTracking),
-  settingName: "timeline-invalidation-tracking",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.timelineInvalidationTracking)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineShowAllEventsSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.timelineShowAllEvents),
-  settingName: "timeline-show-all-events",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.timelineShowAllEvents)
 });
 SettingsUI.SettingUIRegistration.register(LiveMetrics.timelineEnableSoftNavigationsSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
   title: i18nLazyString(UIStrings.enableSoftNavigations)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineDebugModeSettingDescriptor, {
   category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.timelineDebugMode),
-  settingName: "timeline-debug-mode",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.PERFORMANCE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  settingName: "annotations-hidden",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.timelineDebugMode)
 });
 UI.ContextMenu.registerItem({
   location: UI.ContextMenu.ItemLocation.TIMELINE_MENU_OPEN,
@@ -493,108 +470,68 @@ Common.Revealer.registerRevealer({
     return new Timeline.TimelinePanel.ProfileFinishedRevealer();
   }
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineDisableJsSamplingSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.disableJavascriptSamples),
-  settingName: "timeline-disable-js-sampling",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.disableJavascriptSamples)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.TimelineSettings.timelineCaptureLayersAndPicturesSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.NONE,
+    title: i18nLazyString(UIStrings.enableAdvancedPaint)
+  }
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineCaptureSelectorStatsSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.enableAdvancedPaint),
-  settingName: "timeline-capture-layers-and-pictures",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.enableSelectorStats)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineScreenshotCaptureModeSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.enableSelectorStats),
-  settingName: "timeline-capture-selector-stats",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.screenshotCapture)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineShowScreenshotsSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.screenshotCapture),
-  settingName: "timeline-screenshot-capture-mode",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "auto"
+  title: i18nLazyString(UIStrings.screenshots)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineShowMemorySettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.screenshots),
-  settingName: "timeline-show-screenshots",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.memory)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineDimThirdPartiesSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.memory),
-  settingName: "timeline-show-memory",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.dimThirdParties)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineShowExtensionDataSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SESSION,
-  title: i18nLazyString(UIStrings.dimThirdParties),
-  settingName: "timeline-dim-third-parties",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.showCustomtracks)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.TimelineSettings.timelineCountersGraphJsHeapSizeUsedSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.NONE,
+    title: i18nLazyString(UIStrings.jsHeap)
+  }
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineCountersGraphDocumentsSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.showCustomtracks),
-  settingName: "timeline-show-extension-data",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.documents)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.TimelineSettings.timelineCountersGraphNodesSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.jsHeap),
-  settingName: "timeline-counters-graph-js-heap-size-used",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.nodes)
 });
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.documents),
-  settingName: "timeline-counters-graph-documents",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.nodes),
-  settingName: "timeline-counters-graph-nodes",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.listeners),
-  settingName: "timeline-counters-graph-js-event-listeners",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.gpuMemory),
-  settingName: "timeline-counters-graph-gpu-memory-used-kb",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.TimelineSettings.timelineCountersGraphJsEventListenersSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.NONE,
+    title: i18nLazyString(UIStrings.listeners)
+  }
+);
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.TimelineSettings.timelineCountersGraphGpuMemoryUsedKbSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.NONE,
+    title: i18nLazyString(UIStrings.gpuMemory)
+  }
+);
 //# sourceMappingURL=timeline-meta.js.map

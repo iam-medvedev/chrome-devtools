@@ -828,6 +828,7 @@ import * as Common3 from "../../core/common/common.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 
 // ../../front_end/panels/profiler/ProfileHeader.ts
 var ProfileHeader_exports = {};
@@ -1159,6 +1160,7 @@ var WritableProfileHeader = class extends ProfileHeader {
 };
 
 // ../../front_end/panels/profiler/HeapDetachedElementsView.ts
+var { html: html2 } = Lit2;
 var UIStrings3 = {
   /**
    * @description Button text to get the detached elements retained by JavaScript.
@@ -1219,7 +1221,7 @@ var DetachedElementsProfileView = class extends UI3.View.SimpleView {
     this.dataGrid.data = { detachedElements, domModel };
   }
   async toolbarItems() {
-    return [this.selectedSizeText];
+    return html2`${this.selectedSizeText.element}`;
   }
 };
 var DetachedElementsProfileTypeBase = Common3.ObjectWrapper.eventMixin(
@@ -1703,7 +1705,7 @@ import * as PerfUI3 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
-import { Directives, html as html2, nothing, render as render2 } from "../../ui/lit/lit.js";
+import { Directives, html as html3, nothing, render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/HeapTimelineOverview.ts
@@ -2799,8 +2801,8 @@ var ViewTypes = /* @__PURE__ */ ((ViewTypes2) => {
 })(ViewTypes || {});
 var DEFAULT_VIEW2 = (input, output, target) => {
   const { searchableView, dataProvider } = input;
-  render2(html2`
-    ${input.hasTemporaryView ? html2`
+  render2(html3`
+    ${input.hasTemporaryView ? html3`
       <devtools-widget ${widget2(() => input.timelineOverview)}></devtools-widget>` : nothing}
     <devtools-widget ${widget2((element) => {
     const searchableViewWidget = new UI6.SearchableView.SearchableView(input.searchable, null, void 0, element);
@@ -2808,7 +2810,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     return searchableViewWidget;
   })}
       ${widgetRef(UI6.SearchableView.SearchableView, input.onSearchableViewMount)}>
-      ${input.viewType === "Flame" /* FLAME */ && searchableView && dataProvider ? html2`
+      ${input.viewType === "Flame" /* FLAME */ && searchableView && dataProvider ? html3`
           <devtools-widget
             autofocus
             ${widget2((e) => new ProfileFlameChart(searchableView, dataProvider, e), { range: input.range })}
@@ -2819,7 +2821,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     output.jumpToPreviousSearchResult = widget4.jumpToPreviousSearchResult.bind(widget4);
     output.onSearchCanceled = widget4.onSearchCanceled.bind(widget4);
   })}>
-          </devtools-widget>` : input.profileDataGridTree ? html2`
+          </devtools-widget>` : input.profileDataGridTree ? html3`
           <div class="data-grid-target vbox flex-auto">${renderDataGrid(input)}</div>` : nothing}
     </devtools-widget>`, target);
 };
@@ -2831,11 +2833,11 @@ function renderDataGrid(input) {
   if (input.profileDataGridTree && input.profileDataGridTree.searchResults) {
     highlightIndex = input.profileDataGridTree.searchResultIndex + 1;
   }
-  return html2`
+  return html3`
     <style>${profilesPanel_css_default}</style>
     <devtools-data-grid class="flex-auto" name=${i18nString4(UIStrings4.profiler)} striped autofocus resize="last"
                         highlight=${highlightIndex >= 1 ? highlightIndex : nothing}
-                        @deselect=${input.onDeselect} .template=${html2`
+                        @deselect=${input.onDeselect} .template=${html3`
       <style>${profilesPanel_css_default}</style>
       <table>
         <tr>
@@ -2870,7 +2872,7 @@ function renderNode(node, input) {
   const onCollapse = () => {
     input.onCollapse(node);
   };
-  return html2`
+  return html3`
   <tr data-uid=${node.callUID} ?selected=${input.selectedNode === node} ?expanded=${node.expanded}
       ?highlighted=${node.searchMatchedSelfColumn || node.searchMatchedTotalColumn || node.searchMatchedFunctionColumn}
       @select=${onSelect}
@@ -2891,7 +2893,7 @@ function renderNode(node, input) {
       </div>
     </td>
     <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? "highlight" : ""} ${node.deoptReason ? "not-optimized" : ""}">
-      ${node.deoptReason ? html2`
+      ${node.deoptReason ? html3`
         <devtools-icon name="warning-filled" class="profile-warn-marker small"
                         title=${i18nString4(UIStrings4.notOptimizedS, { PH1: node.deoptReason })}>
         </devtools-icon>` : nothing}
@@ -2908,9 +2910,9 @@ function renderNode(node, input) {
     }
   }) : nothing}
     </td>
-    ${node.hasChildren() ? html2`
+    ${node.hasChildren() ? html3`
       <td><table>
-        ${node.expanded ? html2`${repeat(
+        ${node.expanded ? html3`${repeat(
     node.children,
     (child) => child.callUID,
     (child) => renderNode(child, input)
@@ -2983,7 +2985,7 @@ var HeapProfileView = class extends UI6.View.SimpleView {
   async toolbarItems() {
     const currentViewType = this.viewType.get();
     const isFlame = currentViewType === "Flame" /* FLAME */;
-    return html2`
+    return html3`
       <select title=${i18nString4(UIStrings4.profileViewMode)} aria-label=${i18nString4(UIStrings4.profileViewMode)}
               @change=${this.changeView.bind(this)}
               jslog=${VisualLogging3.dropDown("profile-view.selected-view").track({ change: true })}
@@ -3104,8 +3106,8 @@ var HeapProfileView = class extends UI6.View.SimpleView {
     );
   }
   static buildPopoverTable(popoverInfo) {
-    return html2`<table>
-      ${popoverInfo.map((entry) => html2`
+    return html3`<table>
+      ${popoverInfo.map((entry) => html3`
         <tr>
           <td>${entry.title}</td>
           <td>${entry.value}</td>
@@ -3657,34 +3659,21 @@ var SamplingHeapProfileHeader = class extends WritableProfileHeader {
 var SamplingHeapProfileNode = class extends CPUProfile.ProfileTreeModel.ProfileNode {
   self;
   constructor(node) {
+    const legacyNode = node;
     const callFrame = node.callFrame || {
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-      // @ts-expect-error
-      functionName: node["functionName"],
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-      // @ts-expect-error
-      scriptId: node["scriptId"],
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-      // @ts-expect-error
-      url: node["url"],
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-      // @ts-expect-error
-      lineNumber: node["lineNumber"] - 1,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-      // @ts-expect-error
-      columnNumber: node["columnNumber"] - 1
+      functionName: legacyNode.functionName,
+      scriptId: legacyNode.scriptId,
+      url: legacyNode.url,
+      lineNumber: legacyNode.lineNumber - 1,
+      columnNumber: legacyNode.columnNumber - 1
     };
     super(callFrame);
     this.self = node.selfSize;
   }
 };
 var SamplingHeapProfileModel = class extends CPUProfile.ProfileTreeModel.ProfileTreeModel {
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modules;
   constructor(profile, minOrdinal, maxOrdinal) {
     super();
-    this.modules = profile.modules || [];
     let nodeIdToSizeMap = null;
     if (minOrdinal || maxOrdinal) {
       nodeIdToSizeMap = /* @__PURE__ */ new Map();
@@ -3864,6 +3853,7 @@ import * as PerfUI4 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components3 from "../../ui/legacy/components/utils/utils.js";
 import * as UI9 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/HeapSnapshotDataGrids.ts
@@ -3907,7 +3897,7 @@ import * as HeapSnapshotModel from "../../models/heap_snapshot/heap_snapshot.js"
 import { createIcon } from "../../ui/kit/kit.js";
 import * as DataGrid from "../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html3, render as render3 } from "../../ui/lit/lit.js";
+import { Directives as Directives2, html as html4, render as render3 } from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
@@ -4120,7 +4110,7 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends HeapSnapshotGridN
       const tooltip = this.data[tooltipColumn];
       if (percent) {
         render3(
-          html3`
+          html4`
           <div class="profile-multiple-values">
             <span aria-hidden="true" title=${Directives2.ifDefined(tooltip)}>${value2}</span>
             <span class="percent-column" aria-hidden="true">${percent}</span>
@@ -4134,7 +4124,7 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends HeapSnapshotGridN
         );
       } else {
         render3(
-          html3`
+          html4`
           <div>
             <span title=${Directives2.ifDefined(tooltip)}>${value2}</span>
           </div>`,
@@ -4422,7 +4412,7 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     cell.setAttribute("jslog", jslog.toString());
     const output = {};
     render3(
-      html3`<div
+      html4`<div
         class="source-code event-properties"
         style="overflow: visible;"
         ${Directives2.ref((el) => {
@@ -4913,7 +4903,7 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   createCell(columnId) {
     const cell = columnId === "object" ? super.createCell(columnId) : this.createValueCell(columnId);
     if (columnId === "object" && this.count > 1) {
-      const template = html3`<span class="objects-count">×${this.data.count}</span>`;
+      const template = html4`<span class="objects-count">×${this.data.count}</span>`;
       render3(template, cell);
     }
     return cell;
@@ -6219,6 +6209,7 @@ var UIStrings7 = {
 };
 
 // ../../front_end/panels/profiler/HeapSnapshotView.ts
+var { html: html5 } = Lit3;
 var UIStrings8 = {
   /**
    * @description Text to find an item.
@@ -6851,7 +6842,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI9.View.SimpleView {
     }
     result.push(this.selectedSizeText);
     result.push(this.resetRetainersButton);
-    return result;
+    return html5`${result.map((item2) => item2.element)}`;
   }
   willHide() {
     super.willHide();
@@ -8041,7 +8032,7 @@ import * as i18n19 from "../../core/i18n/i18n.js";
 import * as Platform9 from "../../core/platform/platform.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
-import { html as html4, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
+import { html as html6, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/IsolateSelector.ts
@@ -8525,7 +8516,7 @@ var str_9 = i18n19.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.t
 var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_9);
 var { widget: widget3, widgetRef: widgetRef2 } = UI11.Widget;
 var DEFAULT_VIEW3 = (input, output, target) => {
-  render4(html4`
+  render4(html6`
     <style>${profileLauncherView_css_default}</style>
     <div class="profile-launcher-view-content vbox" jslog=${VisualLogging6.section("profiler.launcher")}>
       <div class="vbox">
@@ -8534,7 +8525,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
           ${input.profileTypes.map((entry) => {
     const radioId = `profile-type-${entry.profileType.id}`;
     const customContent = entry.customContent;
-    return html4`
+    return html6`
               <div class="profile-type-option" jslog=${VisualLogging6.item(Platform9.StringUtilities.toKebabCase(entry.profileType.id))}>
                 <input id=${radioId} type="radio" name="profile-type"
                     .checked=${entry.selected}
@@ -8544,7 +8535,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                   />
                 <label for=${radioId}>${entry.profileType.name}</label>
                 <p>${entry.profileType.description}</p>
-                ${customContent ? html4`
+                ${customContent ? html6`
                   <p>
                     <span role="group" aria-labelledby=${radioId}>
                       ${customContent}
@@ -9456,11 +9447,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI13.Panel.PanelWithSidebar {
     }
     this.profileViewToolbar.removeToolbarItems();
     void view.toolbarItems().then((items) => {
-      if (Array.isArray(items)) {
-        items.map((item2) => this.profileViewToolbar.appendToolbarItem(item2));
-      } else {
-        render5(items, this.profileViewToolbar);
-      }
+      render5(items, this.profileViewToolbar);
     });
     return view;
   }

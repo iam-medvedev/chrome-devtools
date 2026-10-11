@@ -564,7 +564,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(aiLabelButtonWrapper);
             const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
             assert.isOk(tooltip);
-            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won’t always get it right. Learn more in settings');
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. This data won’t be used to improve Google’s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won’t always get it right. Learn more in settings');
         });
         it('Does not show `generate ai label` button if the label is not empty', async function () {
             updateHostConfig({
@@ -622,7 +622,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(aiLabelButtonWrapper);
             const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
             assert.isOk(tooltip);
-            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations are not available. Learn more in settings');
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations aren’t available. Learn more in settings');
         });
         it('Shows disabled `generate ai label` button if the user is in an unsupported location', async function () {
             updateHostConfig({
@@ -644,7 +644,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(aiLabelButtonWrapper);
             const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
             assert.isOk(tooltip);
-            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations are not available. Learn more in settings');
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations aren’t available. Learn more in settings');
         });
         it('Does not show the `generate ai label` button for enterprise users with disabled AI features', async function () {
             updateHostConfig({
@@ -1154,13 +1154,13 @@ describeWithEnvironment('Overlays', () => {
                 type: 'ENTRIES_LINK',
                 entryFrom: FAKE_EVENT,
                 entryTo: FAKE_EVENT,
-                state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
+                state: Trace.Types.File.EntriesLinkState.CONNECTED,
             };
             const overlayPending = {
                 type: 'ENTRIES_LINK',
                 entryFrom: FAKE_EVENT,
                 entryTo: undefined,
-                state: "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */,
+                state: Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT,
             };
             const connectedContext = Overlays.Overlays.jsLogContext(overlayConnected);
             assert.strictEqual(connectedContext, 'timeline.overlays.entries-link');
@@ -1248,6 +1248,74 @@ describeWithEnvironment('Overlays', () => {
             pin.click();
             const dispatchedEvent = await clickEventPromise;
             assert.strictEqual(dispatchedEvent.overlay.commentThreadId, 'thread-test-pin-1');
+        });
+    });
+    describe('Timespan Breakdown Overlay', () => {
+        it('positions a newly added timespan breakdown overlay and resets stale label styles on update', async () => {
+            const charts = createCharts();
+            const flameChartsContainer = document.createElement('div');
+            const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+            const networkFlameChartsContainer = flameChartsContainer.createChild('div');
+            const container = flameChartsContainer.createChild('div');
+            renderElementIntoDOM(flameChartsContainer, { allowMultipleChildren: true });
+            sinon.stub(charts.mainChart, 'canvasBoundingClientRect').returns(new DOMRect(0, 0, 1000, 500));
+            const overlays = new Overlays.Overlays.Overlays({
+                container,
+                flameChartsContainers: {
+                    main: mainFlameChartsContainer,
+                    network: networkFlameChartsContainer,
+                },
+                charts,
+                entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
+            });
+            overlays.updateChartDimensions('main', {
+                widthPixels: 1000,
+                heightPixels: 500,
+                scrollOffsetPixels: 0,
+                allGroupsCollapsed: false,
+            });
+            overlays.updateChartDimensions('network', {
+                widthPixels: 1000,
+                heightPixels: 200,
+                scrollOffsetPixels: 0,
+                allGroupsCollapsed: false,
+            });
+            overlays.updateVisibleWindow(microsecondsTraceWindow(0, 1_000));
+            const breakdownOverlay = overlays.add({
+                type: 'TIMESPAN_BREAKDOWN',
+                sections: [{
+                        bounds: microsecondsTraceWindow(250, 750),
+                        label: 'Resource load duration',
+                        showDuration: true,
+                    }],
+            });
+            await overlays.update();
+            await UI.Widget.Widget.allUpdatesComplete;
+            const overlayDOM = container.querySelector('.overlay-type-TIMESPAN_BREAKDOWN');
+            assert.isOk(overlayDOM);
+            const segmentContainer = overlayDOM.querySelector('.timeline-segment-container');
+            assert.isOk(segmentContainer);
+            assert.strictEqual(segmentContainer.style.left, '250px');
+            assert.strictEqual(segmentContainer.style.width, '500px');
+            const sectionEl = overlayDOM.querySelector('.timespan-breakdown-overlay-section');
+            const labelEl = overlayDOM.querySelector('.timespan-breakdown-overlay-label');
+            assert.isOk(sectionEl);
+            assert.isOk(labelEl);
+            assert.strictEqual(sectionEl.style.width, '500px');
+            assert.isFalse(labelEl.classList.contains('labelTruncated'));
+            assert.isNotEmpty(labelEl.style.marginLeft);
+            // Update to a narrow section where the label is truncated; stale marginLeft must be cleared.
+            overlays.updateExisting(breakdownOverlay, {
+                sections: [{
+                        bounds: microsecondsTraceWindow(250, 290),
+                        label: 'Resource load delay',
+                        showDuration: true,
+                    }],
+            });
+            await overlays.update();
+            await UI.Widget.Widget.allUpdatesComplete;
+            assert.isTrue(labelEl.classList.contains('labelTruncated'));
+            assert.strictEqual(labelEl.style.marginLeft, '');
         });
     });
 });

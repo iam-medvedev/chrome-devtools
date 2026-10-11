@@ -23,6 +23,7 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AddDebugInfoURLDialog } from './AddSourceMapURLDialog.js';
 import { BreakpointEditDialog } from './BreakpointEditDialog.js';
@@ -104,7 +105,7 @@ const UIStrings = {
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
-    theDebuggerWillSkipStepping: 'The debugger will skip stepping through this script, and will not stop on exceptions',
+    theDebuggerWillSkipStepping: 'The debugger will skip stepping through this script, and won’t stop on exceptions',
     /**
      * @description Text in Debugger plugin of the Sources panel.
      */
@@ -208,7 +209,7 @@ export class DebuggerPlugin extends Plugin {
         this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
         this.scriptFileForDebuggerModel = new Map();
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.showSourceMapInfobarIfNeeded.bind(this), this);
+        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.showSourceMapInfobarIfNeeded, this);
         this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
         Workspace.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
         UI.Context.Context.instance().addFlavorChangeListener(StackTrace.StackTrace.DebuggableFrameFlavor, this.callFrameChanged, this);
@@ -848,7 +849,9 @@ export class DebuggerPlugin extends Plugin {
         if (!this.editor) {
             return null;
         }
-        if (!Common.Settings.Settings.instance().moduleSetting('inline-variable-values').get()) {
+        if (!Common.Settings.Settings.instance()
+            .resolve(SettingsUI.SourcesSettings.inlineVariableValuesSettingDescriptor)
+            .get()) {
             return null;
         }
         const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
@@ -1485,6 +1488,7 @@ export class DebuggerPlugin extends Plugin {
         this.breakpointManager.removeEventListener(Breakpoints.BreakpointManager.Events.BreakpointRemoved, this.breakpointChange, this);
         this.uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
         this.uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+        this.loader.removeEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.showSourceMapInfobarIfNeeded, this);
         Workspace.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.ignoreListCallback);
         debuggerPluginForUISourceCode.delete(this.uiSourceCode);
         super.dispose();

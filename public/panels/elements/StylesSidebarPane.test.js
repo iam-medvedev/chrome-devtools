@@ -21,6 +21,7 @@ import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_e
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as PanelsCommon from '../common/common.js';
 import * as Elements from './elements.js';
 describe('StylesSidebarPane', () => {
@@ -551,7 +552,9 @@ describe('StylesSidebarPane', () => {
             });
         });
         describe('collapsing non-contributing sections', () => {
-            const enableCollapse = () => Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(true);
+            const enableCollapse = () => Common.Settings.Settings.instance()
+                .resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor)
+                .set(true);
             it('collapses a section where all properties are overloaded', async () => {
                 enableCollapse();
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
@@ -653,7 +656,9 @@ describe('StylesSidebarPane', () => {
                 assert.strictEqual(finalCount, initialCount, 'LiveLocations count is growing');
             });
             it('does not collapse non-contributing sections when the setting is disabled', async () => {
-                Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(false);
+                Common.Settings.Settings.instance()
+                    .resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor)
+                    .set(false);
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -934,7 +939,7 @@ describe('StylesSidebarPane', () => {
             });
             it('reacts to toggling the collapse-non-contributing-css-rules setting at runtime', async () => {
                 enableCollapse();
-                const collapseSetting = Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules');
+                const collapseSetting = Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor);
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
                 node.id = 1;
@@ -1476,7 +1481,9 @@ describe('StylesSidebarPane', () => {
                 assert.lengthOf(sectionBlocks[0].sections, 0);
             });
             it('should render transition & animation styles when the animations panel is not visible but the css-animations-only-when-animations-tab-open setting is disabled', async () => {
-                Common.Settings.Settings.instance().moduleSetting('css-animations-only-when-animations-tab-open').set(false);
+                Common.Settings.Settings.instance()
+                    .resolve(SettingsUI.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor)
+                    .set(false);
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const matchedStyles = await getMatchedStyles({
                     connection,
@@ -3088,7 +3095,9 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
     let cssModel;
     let node;
     beforeEach(() => {
-        Common.Settings.Settings.instance().moduleSetting('show-inactive-css-rules').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showInactiveCSSRulesSettingDescriptor)
+            .set(true);
         connection = new MockCDPConnection();
         const target = createTarget({ connection });
         cssModel = target.model(SDK.CSSModel.CSSModel);
@@ -3099,7 +3108,9 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         stylesSidebarPane.setNodeForTest(node);
     });
     it('does not preserve inactive rules when setting is disabled', async () => {
-        Common.Settings.Settings.instance().moduleSetting('show-inactive-css-rules').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showInactiveCSSRulesSettingDescriptor)
+            .set(false);
         const styleSheetId = '0';
         const rangeA = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
         const rangeB = { startLine: 1, startColumn: 0, endLine: 1, endColumn: 10 };
@@ -3306,7 +3317,9 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         assert.lengthOf(blocks3[0].sections, 0);
     });
     it('collapses inactive sections when collapse-non-contributing-css-rules is enabled', async () => {
-        Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor)
+            .set(true);
         const styleSheetIdA = '0';
         const styleSheetIdB = '1';
         // 1. Initial match: Rule A and Rule B with non-conflicting properties
@@ -3350,7 +3363,9 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         assert.isFalse(sectionB4.isCollapsed(), 'Section should be uncollapsed when matching again');
     });
     it('does not collapse inactive sections when collapse-non-contributing-css-rules is disabled', async () => {
-        Common.Settings.Settings.instance().moduleSetting('collapse-non-contributing-css-rules').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor)
+            .set(false);
         const styleSheetIdA = '0';
         const styleSheetIdB = '1';
         // 1. Initial match: Rule A and Rule B
@@ -3624,7 +3639,9 @@ describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyfr
     let cssModel;
     let node;
     beforeEach(() => {
-        Common.Settings.Settings.instance().moduleSetting('show-inactive-css-rules').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showInactiveCSSRulesSettingDescriptor)
+            .set(false);
         connection = new MockCDPConnection();
         const target = createTarget({ connection });
         cssModel = target.model(SDK.CSSModel.CSSModel);

@@ -796,6 +796,11 @@ declare namespace ProtocolProxyApi {
      */
     invoke_forceStartingStyle(params: Protocol.CSS.ForceStartingStyleRequest): Promise<Protocol.ProtocolResponseWithError>;
 
+    /**
+     * Forces a position-try option for the given node.
+     */
+    invoke_forcePositionTryOption(params: Protocol.CSS.ForcePositionTryOptionRequest): Promise<Protocol.ProtocolResponseWithError>;
+
     invoke_getBackgroundColors(params: Protocol.CSS.GetBackgroundColorsRequest): Promise<Protocol.CSS.GetBackgroundColorsResponse>;
 
     /**
@@ -3416,6 +3421,14 @@ declare namespace ProtocolProxyApi {
     invoke_getSiblingSubApps(): Promise<Protocol.Page.GetSiblingSubAppsResponse>;
 
     invoke_getAdScriptAncestry(params: Protocol.Page.GetAdScriptAncestryRequest): Promise<Protocol.Page.GetAdScriptAncestryResponse>;
+
+    /**
+     * Returns the words that the frame's document added to its spell check custom
+     * dictionary with `document.spellCheckCustomDictionary.addWords()`, sorted.
+     * Page script cannot read the dictionary back; this lets developers inspect
+     * it.
+     */
+    invoke_getSpellCheckCustomDictionary(params: Protocol.Page.GetSpellCheckCustomDictionaryRequest): Promise<Protocol.Page.GetSpellCheckCustomDictionaryResponse>;
 
     /**
      * Returns present frame tree structure.

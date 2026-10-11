@@ -56,8 +56,8 @@ describe('SamplesHandler', function () {
         function makeProfileChunkEvent(nodes, samples, timeDeltas, ts) {
             return {
                 cat: '',
-                name: "ProfileChunk" /* Trace.Types.Events.Name.PROFILE_CHUNK */,
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                name: Trace.Types.Events.Name.PROFILE_CHUNK,
+                ph: Trace.Types.Events.Phase.SAMPLE,
                 pid,
                 tid: Trace.Types.Events.ThreadID(0),
                 ts: Trace.Types.Timing.Micro(ts),
@@ -85,14 +85,14 @@ describe('SamplesHandler', function () {
             const E = 4;
             const root = 9;
             const mockProfileEvent = {
-                name: "Profile" /* Trace.Types.Events.Name.PROFILE */,
+                name: Trace.Types.Events.Name.PROFILE,
                 id,
                 args: { data: { startTime: Trace.Types.Timing.Micro(0) } },
                 cat: '',
                 pid,
                 tid,
                 ts: Trace.Types.Timing.Micro(0),
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                ph: Trace.Types.Events.Phase.SAMPLE,
             };
             /**
              * +------------> (sample at time)
@@ -249,8 +249,8 @@ describe('SamplesHandler', function () {
         function makeProfileEvent(id, source) {
             return {
                 cat: '',
-                name: "Profile" /* Trace.Types.Events.Name.PROFILE */,
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                name: Trace.Types.Events.Name.PROFILE,
+                ph: Trace.Types.Events.Phase.SAMPLE,
                 pid,
                 tid,
                 ts: Trace.Types.Timing.Micro(0),
@@ -264,8 +264,8 @@ describe('SamplesHandler', function () {
         ]) {
             return {
                 cat: '',
-                name: "ProfileChunk" /* Trace.Types.Events.Name.PROFILE_CHUNK */,
-                ph: "P" /* Trace.Types.Events.Phase.SAMPLE */,
+                name: Trace.Types.Events.Name.PROFILE_CHUNK,
+                ph: Trace.Types.Events.Phase.SAMPLE,
                 pid,
                 tid,
                 ts: Trace.Types.Timing.Micro(1),

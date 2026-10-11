@@ -94,15 +94,15 @@ describeWithEnvironment('TimingTrackAppender', function () {
                 throw new Error('A metric was not found');
             }
             assert.strictEqual(timingsTrackAppender.colorForEvent(firstContentfulPaint), '#1A6937');
-            assert.strictEqual(timingsTrackAppender.titleForEvent(firstContentfulPaint), "FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
+            assert.strictEqual(timingsTrackAppender.titleForEvent(firstContentfulPaint), Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
             assert.strictEqual(timingsTrackAppender.colorForEvent(markLoad), '#B31412');
-            assert.strictEqual(timingsTrackAppender.titleForEvent(markLoad), "L" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L */);
+            assert.strictEqual(timingsTrackAppender.titleForEvent(markLoad), Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L);
             assert.strictEqual(timingsTrackAppender.colorForEvent(markDOMContent), '#0867CB');
-            assert.strictEqual(timingsTrackAppender.titleForEvent(markDOMContent), "DCL" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL */);
+            assert.strictEqual(timingsTrackAppender.titleForEvent(markDOMContent), Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL);
             assert.strictEqual(timingsTrackAppender.colorForEvent(firstPaint), '#228847');
-            assert.strictEqual(timingsTrackAppender.titleForEvent(firstPaint), "FP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */);
+            assert.strictEqual(timingsTrackAppender.titleForEvent(firstPaint), Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP);
             assert.strictEqual(timingsTrackAppender.colorForEvent(largestContentfulPaint), '#1A3422');
-            assert.strictEqual(timingsTrackAppender.titleForEvent(largestContentfulPaint), "LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+            assert.strictEqual(timingsTrackAppender.titleForEvent(largestContentfulPaint), Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
         });
         it('returns the correct title for performance measures', () => {
             const performanceMeasures = parsedTrace.data.UserTimings.performanceMeasures;

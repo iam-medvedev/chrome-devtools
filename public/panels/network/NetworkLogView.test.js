@@ -22,6 +22,7 @@ import { activate } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Settings from '../../ui/settings/settings.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('NetworkLogView', () => {
@@ -35,14 +36,6 @@ describeWithEnvironment('NetworkLogView', () => {
         connection.setSuccessHandler('Debugger.enable', () => ({}));
         connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
         const dummyStorage = new Common.Settings.SettingsStorage({});
-        for (const settingName of ['network-color-code-resource-types', 'network.group-by-frame']) {
-            Common.Settings.maybeRemoveSettingExtension(settingName);
-            Common.Settings.registerSettingExtension({
-                settingName,
-                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-                defaultValue: false,
-            });
-        }
         Common.Settings.Settings.instance({
             forceNew: true,
             syncedStorage: dummyStorage,
@@ -553,7 +546,7 @@ describeWithEnvironment('NetworkLogView', () => {
         assert.lengthOf(rootNode.children, 0);
     });
     it('correctly shows/hides "Copy all as HAR (with sensitive data)" menu item', async () => {
-        const networkShowOptionsToGenerateHarWithSensitiveDataSetting = Common.Settings.Settings.instance().createSetting('network.show-options-to-generate-har-with-sensitive-data', false);
+        const networkShowOptionsToGenerateHarWithSensitiveDataSetting = Common.Settings.Settings.instance().resolve(Settings.NetworkSettings.showOptionsToGenerateHarWithSensitiveDataSettingDescriptor);
         createNetworkRequest('url1', { target });
         networkLogView = createNetworkLogView(new UI.FilterBar.FilterBar('network-panel', true));
         renderElementIntoDOM(networkLogView);
@@ -1162,14 +1155,6 @@ describeWithEnvironment('Edit and resend as fetch', () => {
         connection.setSuccessHandler('Debugger.enable', () => ({}));
         connection.setSuccessHandler('Storage.getStorageKey', () => ({}));
         const dummyStorage = new Common.Settings.SettingsStorage({});
-        for (const settingName of ['network-color-code-resource-types', 'network.group-by-frame']) {
-            Common.Settings.maybeRemoveSettingExtension(settingName);
-            Common.Settings.registerSettingExtension({
-                settingName,
-                settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-                defaultValue: false,
-            });
-        }
         Common.Settings.Settings.instance({
             forceNew: true,
             syncedStorage: dummyStorage,

@@ -9,6 +9,7 @@ import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet } from '../../testing/StyleHelpers.js';
@@ -24,11 +25,13 @@ describeWithEnvironment('StylesPropertySection', () => {
         SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
         const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace);
+        Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
         Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager: SDK.TargetManager.TargetManager.instance() });
         computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
     });
     afterEach(() => {
         Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
+        Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
         Workspace.Workspace.WorkspaceImpl.removeInstance();
         SDK.PageResourceLoader.PageResourceLoader.removeInstance();
     });
@@ -1691,6 +1694,210 @@ describeWithEnvironment('StylesPropertySection', () => {
             sinon.assert.notCalled(refreshUpdateSpy);
             assert.strictEqual(section.headerText(), '1%');
             assert.strictEqual(selectorElement.textContent, '1%');
+        });
+    });
+    it('matches untruncated stylesheet filename in updateFilter when Linkifier truncates link text', async () => {
+        const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+        const styleSheetId = '0';
+        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        const header = {
+            sourceURL: 'https://example.com/very-long-stylesheet-filename-for-search.css',
+            isMutable: true,
+            hasSourceURL: true,
+            length: 10,
+            ...range,
+        };
+        const matchedPayload = [{
+                rule: {
+                    selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                    origin,
+                    styleSheetId,
+                    style: { cssProperties: [{ name: 'color', value: 'red' }], shorthandEntries: [], range },
+                },
+                matchingSelectors: [0],
+            }];
+        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, ...header, matchedPayload, connection });
+        const declaration = matchedStyles.nodeStyles()[0];
+        assert.exists(declaration);
+        const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, declaration, 0, null, null, null);
+        const block = new Elements.StylesSidebarPane.SectionBlock(null);
+        block.sections = [section];
+        stylesSidebarPane.sectionBlocks = [block];
+        // Apply the filter before LiveLocations resolve so the initial pass hides the section
+        // and the coalesced LIVE_LOCATION_UPDATED listener re-evaluates it once links settle.
+        const filterRegexStub = sinon.stub(stylesSidebarPane, 'filterRegex');
+        filterRegexStub.returns(/very-long-stylesheet-filename/i);
+        assert.isFalse(section.updateFilter());
+        assert.isTrue(section.isHidden());
+        const updateFilterSpy = sinon.spy(section, 'updateFilter');
+        await Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
+        sinon.assert.calledOnce(updateFilterSpy);
+        assert.isNotNull(section.element.querySelector('.devtools-link-ellipsis'));
+        assert.notInclude(section.element.deepTextContent(), 'very-long-stylesheet-filename');
+        assert.isFalse(section.isHidden());
+        filterRegexStub.returns(/non-existent-stylesheet/i);
+        assert.isFalse(section.updateFilter());
+        assert.isTrue(section.isHidden());
+    });
+    it('does not start editing selector on FunctionRuleSection, AtRuleSection, or PositionTryRuleSection', async () => {
+        const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+        const styleSheetId = '0';
+        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        const functionRules = [{
+                name: { text: '--my-func', range },
+                origin,
+                styleSheetId,
+                parameters: [{ name: '--param', type: '*' }],
+                children: [{
+                        style: {
+                            styleSheetId,
+                            range,
+                            cssProperties: [{ name: 'result', value: 'var(--param)' }],
+                            shorthandEntries: [],
+                        },
+                    }],
+            }];
+        const atRules = [{
+                type: "font-palette-values" /* Protocol.CSS.CSSAtRuleType.FontPaletteValues */,
+                name: { text: '--my-palette', range },
+                origin,
+                styleSheetId,
+                style: {
+                    styleSheetId,
+                    range,
+                    cssProperties: [{ name: 'font-family', value: 'Bixa' }],
+                    shorthandEntries: [],
+                },
+            }];
+        const positionTryRules = [{
+                name: { text: '--my-try', range },
+                origin,
+                styleSheetId,
+                style: {
+                    styleSheetId,
+                    range,
+                    cssProperties: [{ name: 'top', value: '10px' }],
+                    shorthandEntries: [],
+                },
+                active: true,
+            }];
+        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, ...range, functionRules, atRules, positionTryRules, connection });
+        const functionRule = matchedStyles.functionRules()[0];
+        const atRule = matchedStyles.atRules()[0];
+        const positionTryRule = matchedStyles.positionTryRules()[0];
+        assert.exists(functionRule);
+        assert.exists(atRule);
+        assert.exists(positionTryRule);
+        const functionSection = new Elements.StylePropertiesSection.FunctionRuleSection(stylesSidebarPane, matchedStyles, functionRule.style, functionRule.children(), 0, functionRule.nameWithParameters(), true);
+        const atRuleSection = new Elements.StylePropertiesSection.AtRuleSection(stylesSidebarPane, matchedStyles, atRule.style, 1, true);
+        const positionTrySection = new Elements.StylePropertiesSection.PositionTryRuleSection(stylesSidebarPane, matchedStyles, positionTryRule.style, 2, true);
+        assert.isFalse(functionSection.isHeaderEditable());
+        assert.isFalse(atRuleSection.isHeaderEditable());
+        assert.isFalse(positionTrySection.isHeaderEditable());
+        const startEditingStub = sinon.stub(UI.InplaceEditor.InplaceEditor, 'startEditing');
+        for (const [section, selectorClass] of [[functionSection, '.function-key'],
+            [atRuleSection, '.font-palette-values-key'],
+            [positionTrySection, '.position-try-values-key']]) {
+            const selectorElement = section.element.querySelector(selectorClass);
+            assert.exists(selectorElement);
+            selectorElement.click();
+            sinon.assert.notCalled(startEditingStub);
+            assert.isFalse(stylesSidebarPane.isEditingStyle);
+            section.startEditingSelector();
+            sinon.assert.notCalled(startEditingStub);
+            assert.isFalse(stylesSidebarPane.isEditingStyle);
+        }
+    });
+    describe('keyboard navigation with non-editable headers', () => {
+        const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+        const styleSheetId = '0';
+        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        function cancelEditing(treeElement) {
+            treeElement.nameElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        }
+        async function createFunctionSection(children) {
+            const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+            assert.exists(cssModel);
+            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            const functionRules = [{
+                    name: { text: '--my-func', range },
+                    origin,
+                    styleSheetId,
+                    parameters: [],
+                    children,
+                }];
+            const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, functionRules, connection });
+            const functionRule = matchedStyles.functionRules()[0];
+            assert.exists(functionRule);
+            const section = new Elements.StylePropertiesSection.FunctionRuleSection(stylesSidebarPane, matchedStyles, functionRule.style, functionRule.children(), 0, functionRule.nameWithParameters(), true);
+            renderElementIntoDOM(section.element);
+            return { stylesSidebarPane, section };
+        }
+        it('edits the first declaration on Enter when a @function body starts with a condition block', async () => {
+            const { stylesSidebarPane, section } = await createFunctionSection([{
+                    condition: {
+                        media: { text: '(width > 0px)', source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */, styleSheetId },
+                        conditionText: '(width > 0px)',
+                        children: [{
+                                style: { styleSheetId, range, cssProperties: [{ name: 'result', value: '1px', range }], shorthandEntries: [] },
+                            }],
+                    },
+                }]);
+            const conditionElement = section.propertiesTreeOutline.firstChild();
+            assert.exists(conditionElement);
+            assert.notInstanceOf(conditionElement, Elements.StylePropertyTreeElement.StylePropertyTreeElement);
+            const declaration = conditionElement.firstChild();
+            assert.instanceOf(declaration, Elements.StylePropertyTreeElement.StylePropertyTreeElement);
+            const addBlankSpy = sinon.spy(section, 'addNewBlankProperty');
+            section.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+            assert.isTrue(stylesSidebarPane.isEditingStyle);
+            assert.isTrue(UI.UIUtils.isBeingEdited(declaration.nameElement));
+            sinon.assert.notCalled(addBlankSpy);
+            cancelEditing(declaration);
+        });
+        it('does not add a blank property on Enter in a @function without declarations', async () => {
+            const { stylesSidebarPane, section } = await createFunctionSection([]);
+            const addBlankSpy = sinon.spy(section, 'addNewBlankProperty');
+            section.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+            sinon.assert.notCalled(addBlankSpy);
+            assert.isFalse(stylesSidebarPane.isEditingStyle);
+            assert.strictEqual(section.propertiesTreeOutline.rootElement().childCount(), 0);
+        });
+        it('moves to the previous section on Shift+Tab from the first declaration', async () => {
+            const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+            assert.exists(cssModel);
+            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            const style = { styleSheetId, range, cssProperties: [{ name: 'top', value: '10px', range }], shorthandEntries: [] };
+            const positionTryRules = [
+                { name: { text: '--first', range }, origin, styleSheetId, style, active: true },
+                { name: { text: '--second', range }, origin, styleSheetId, style, active: true },
+            ];
+            const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, positionTryRules, connection });
+            const [firstSection, secondSection] = matchedStyles.positionTryRules().map((rule, index) => new Elements.StylePropertiesSection.PositionTryRuleSection(stylesSidebarPane, matchedStyles, rule.style, index, true));
+            const container = document.createElement('div');
+            container.append(firstSection.element, secondSection.element);
+            renderElementIntoDOM(container);
+            const declaration = secondSection.propertiesTreeOutline.firstChild();
+            assert.instanceOf(declaration, Elements.StylePropertyTreeElement.StylePropertyTreeElement);
+            const startEditingStub = sinon.stub(UI.InplaceEditor.InplaceEditor, 'startEditing');
+            const addBlankSpy = sinon.spy(firstSection, 'addNewBlankProperty');
+            declaration.startEditingName();
+            assert.isTrue(UI.UIUtils.isBeingEdited(declaration.nameElement));
+            declaration.nameElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            // The header is not editable, so the editor moves on to the previous section.
+            sinon.assert.notCalled(startEditingStub);
+            sinon.assert.calledOnce(addBlankSpy);
+            const newProperty = addBlankSpy.firstCall.returnValue;
+            assert.isTrue(UI.UIUtils.isBeingEdited(newProperty.nameElement));
+            assert.isTrue(stylesSidebarPane.isEditingStyle);
+            cancelEditing(newProperty);
         });
     });
 });

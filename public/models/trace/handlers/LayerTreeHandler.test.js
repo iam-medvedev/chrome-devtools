@@ -30,7 +30,7 @@ describe('LayerTreeHandler', function () {
             return paint.ts === 42482841188;
         });
         const snapshotEvent = data.snapshots.find(snapshot => {
-            return snapshot.name === "cc::DisplayItemList" /* Trace.Types.Events.Name.LEGACY_DISPLAY_ITEM_LIST_SNAPSHOT */ &&
+            return snapshot.name === Trace.Types.Events.Name.LEGACY_DISPLAY_ITEM_LIST_SNAPSHOT &&
                 snapshot.id2?.local === '0x10c038b6d80';
         });
         if (!paintEvent || !snapshotEvent) {

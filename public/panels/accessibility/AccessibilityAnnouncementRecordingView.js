@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -171,7 +172,15 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         </div>
       ` : Lit.nothing}
       <div class="announcements-main-pane">
-        ${widget(AccessibilityAnnouncementRecordingListView, { items: input.announcements })}
+        <devtools-widget
+          ${widget(AccessibilityAnnouncementRecordingListView, {
+        items: input.announcements,
+        selectedItem: input.selectedAnnouncement,
+    })}
+          @announcement-selected=${(e) => input.onSelectAnnouncement(e.detail)}
+          @reveal-in-elements=${(e) => input.onRevealInElements(e.detail)}
+          @reveal-in-a11y-tree=${(e) => input.onRevealInA11yTree(e.detail)}>
+        </devtools-widget>
       </div>
     </div>`, target);
     // clang-format on
@@ -183,6 +192,12 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
     }
     // Assigns a unique tracking identifier using an in-memory WeakMap (does not mutate DOM elements).
     const elementIdMap = new WeakMap();
+    const elementRegistry = new Map();
+    const registryCleanup = typeof FinalizationRegistry !== 'undefined' ?
+        new FinalizationRegistry((id) => {
+            elementRegistry.delete(id);
+        }) :
+        null;
     let recordIdCounter = 0;
     function getOrCreateRecordId(element) {
         if (!element || element.nodeType !== Node.ELEMENT_NODE) {
@@ -193,9 +208,14 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
             recordIdCounter++;
             id = String(recordIdCounter);
             elementIdMap.set(element, id);
+            elementRegistry.set(id, new WeakRef(element));
+            registryCleanup?.register(element, id);
         }
         return id;
     }
+    window.__announcementsRecorderGetElement = function (id) {
+        return elementRegistry.get(id)?.deref();
+    };
     // Traverses to parent element or across shadow root boundary to host element.
     function getParentOrHost(node) {
         if (!node) {
@@ -575,6 +595,8 @@ export function injectedScript(ariaLiveApi, jsTriggeredApi) {
         }
         delete window.__announcementsRecorderBinding_loaded;
         delete window.__announcementsRecorderBinding_cleanup;
+        elementRegistry.clear();
+        delete window.__announcementsRecorderGetElement;
     };
 }
 export function teardownScript() {
@@ -671,6 +693,7 @@ export function buildCsvContent(announcements) {
 export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane {
     #announcements = [];
     #filteredAnnouncements = null;
+    #selectedAnnouncement = null;
     #isRecording = false;
     #blockedTargets = new Map();
     #scriptIdentifiers = new Map();
@@ -847,6 +870,7 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     clearAnnouncements() {
         this.#announcements = [];
         this.#filteredAnnouncements = [];
+        this.#selectedAnnouncement = null;
         this.requestUpdate();
     }
     #matchesFilter(announcement) {
@@ -931,6 +955,68 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     exportCsvForTest() {
         return this.#buildCsvContent();
     }
+    #onSelectAnnouncement = (item) => {
+        this.#selectedAnnouncement = item;
+        this.requestUpdate();
+    };
+    async #revealElement(item, targetPanel) {
+        const target = item.target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!target) {
+            return;
+        }
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        if (!runtimeModel || !domModel) {
+            return;
+        }
+        // Live DOM elements cannot cross the CDP binding string boundary directly,
+        // so elementId acts as an in-memory registry lookup key to fetch the node on
+        // demand. An announcement may lack a valid elementId in several scenarios:
+        // - Document-level announcements: When Document.prototype.ariaNotify is called
+        //   directly without a specific element node.
+        // - Detached or non-element nodes: If an announcement was recorded on a node
+        //   that lacked an element context when getOrCreateRecordId evaluated.
+        // - Older or synthetic payloads: Payloads constructed in unit tests or external
+        //   fixtures where elementId was omitted or passed as "".
+        if (!item.elementId) {
+            return;
+        }
+        try {
+            const response = await target.runtimeAgent().invoke_evaluate({
+                expression: `window.__announcementsRecorderGetElement?.(${JSON.stringify(item.elementId)})`,
+                objectGroup: 'reveal-node',
+            });
+            if (response.result && response.result.type === 'object' && response.result.subtype !== 'null') {
+                const remoteObject = runtimeModel.createRemoteObject(response.result);
+                const domNode = await domModel.pushObjectAsNodeToFrontend(remoteObject);
+                if (domNode) {
+                    const toggleAction = UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-a11y-tree') ?
+                        UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-a11y-tree') :
+                        null;
+                    if (targetPanel === 'accessibility') {
+                        if (toggleAction && !toggleAction.toggled()) {
+                            await toggleAction.execute();
+                        }
+                    }
+                    else if (targetPanel === 'elements') {
+                        if (toggleAction && toggleAction.toggled()) {
+                            await toggleAction.execute();
+                        }
+                    }
+                    await Common.Revealer.reveal(domNode);
+                }
+            }
+        }
+        finally {
+            runtimeModel.releaseObjectGroup('reveal-node');
+        }
+    }
+    revealElementForTest(item, targetPanel) {
+        return this.#revealElement(item, targetPanel);
+    }
+    selectedAnnouncementForTest() {
+        return this.#selectedAnnouncement;
+    }
     performUpdate() {
         const blockedTargets = [];
         for (const [target, reason] of this.#blockedTargets) {
@@ -965,6 +1051,14 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
             },
             blockedTargets,
             announcements: filteredAnnouncements,
+            selectedAnnouncement: this.#selectedAnnouncement,
+            onSelectAnnouncement: this.#onSelectAnnouncement,
+            onRevealInElements: (item) => {
+                void this.#revealElement(item, 'elements');
+            },
+            onRevealInA11yTree: (item) => {
+                void this.#revealElement(item, 'accessibility');
+            },
         };
         this.#view(input, undefined, this.contentElement);
     }

@@ -5,8 +5,10 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
+const { html } = Lit;
 export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
     #lastRequestedContext;
     // TODO(bmeurer): This is only public for web tests.
@@ -22,7 +24,7 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
     toolbarItems() {
         const refreshButton = UI.Toolbar.Toolbar.createActionButton('browser-debugger.refresh-global-event-listeners');
         refreshButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
-        return [refreshButton];
+        return html `${refreshButton.element}`;
     }
     async performUpdate() {
         if (this.#lastRequestedContext) {

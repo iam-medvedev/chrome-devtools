@@ -9,6 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
 const { createRef, ref } = Directives;
@@ -373,7 +374,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         });
         this.#view = view;
         this.customSetting =
-            Common.Settings.Settings.instance().moduleSetting('emulation.locations');
+            Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.emulationLocationsSettingDescriptor);
         const list = this.customSetting.get().map(location => replaceLocationTitles(location, this.customSetting.defaultValue));
         function replaceLocationTitles(location, defaultValues) {
             // This check is done for locations that might had been cached wrongly due to crbug.com/1171670.

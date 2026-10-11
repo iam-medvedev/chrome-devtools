@@ -1567,6 +1567,13 @@ export namespace ProtocolMapping {
       paramsType: [Protocol.CSS.ForceStartingStyleRequest];
       returnType: void;
     };
+    /**
+     * Forces a position-try option for the given node.
+     */
+    'CSS.forcePositionTryOption': {
+      paramsType: [Protocol.CSS.ForcePositionTryOptionRequest];
+      returnType: void;
+    };
     'CSS.getBackgroundColors': {
       paramsType: [Protocol.CSS.GetBackgroundColorsRequest];
       returnType: Protocol.CSS.GetBackgroundColorsResponse;
@@ -4220,6 +4227,16 @@ export namespace ProtocolMapping {
     'Page.getAdScriptAncestry': {
       paramsType: [Protocol.Page.GetAdScriptAncestryRequest];
       returnType: Protocol.Page.GetAdScriptAncestryResponse;
+    };
+    /**
+     * Returns the words that the frame's document added to its spell check custom
+     * dictionary with `document.spellCheckCustomDictionary.addWords()`, sorted.
+     * Page script cannot read the dictionary back; this lets developers inspect
+     * it.
+     */
+    'Page.getSpellCheckCustomDictionary': {
+      paramsType: [Protocol.Page.GetSpellCheckCustomDictionaryRequest];
+      returnType: Protocol.Page.GetSpellCheckCustomDictionaryResponse;
     };
     /**
      * Returns present frame tree structure.

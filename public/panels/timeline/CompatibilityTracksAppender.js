@@ -9,6 +9,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { getDurationString, getEventLevel } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
@@ -182,7 +183,7 @@ export class CompatibilityTracksAppender {
     #addThreadAppenders() {
         const threadTrackOrder = (appender) => {
             switch (appender.threadType) {
-                case "MAIN_THREAD" /* Trace.Handlers.Threads.ThreadType.MAIN_THREAD */: {
+                case Trace.Handlers.Threads.ThreadType.MAIN_THREAD: {
                     if (appender.isOnMainFrame) {
                         // Ensure `about:blank` or `chrome://new-tab-page` are deprioritized, as they're likely not the profiling targets
                         const url = appender.getUrl();
@@ -193,25 +194,27 @@ export class CompatibilityTracksAppender {
                     }
                     return 1;
                 }
-                case "WORKER" /* Trace.Handlers.Threads.ThreadType.WORKER */:
+                case Trace.Handlers.Threads.ThreadType.WORKER:
                     return 3;
-                case "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */:
+                case Trace.Handlers.Threads.ThreadType.RASTERIZER:
                     return 4;
-                case "THREAD_POOL" /* Trace.Handlers.Threads.ThreadType.THREAD_POOL */:
+                case Trace.Handlers.Threads.ThreadType.THREAD_POOL:
                     return 5;
-                case "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */:
+                case Trace.Handlers.Threads.ThreadType.OTHER:
                     return 7;
                 default:
                     return 8;
             }
         };
         const threads = Trace.Handlers.Threads.threadsInTrace(this.#parsedTrace.data);
-        const showAllEvents = Common.Settings.Settings.instance().moduleSetting('timeline-show-all-events').get();
+        const showAllEvents = Common.Settings.Settings.instance()
+            .resolve(SettingsUI.TimelineSettings.timelineShowAllEventsSettingDescriptor)
+            .get();
         for (const { pid, tid, name, type, entries, tree } of threads) {
             if (this.#parsedTrace.data.Meta.traceIsGeneric) {
                 // If the trace is generic, we just push all of the threads with no effort to differentiate them, hence
                 // overriding the thread type to be OTHER for all threads.
-                this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */, entries, tree));
+                this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, Trace.Handlers.Threads.ThreadType.OTHER, entries, tree));
                 continue;
             }
             if ((name && HIDDEN_THREAD_NAMES.has(name)) && !showAllEvents) {

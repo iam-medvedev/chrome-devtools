@@ -68,7 +68,7 @@ export class DynamicSetting {
     }
     static none = [];
 }
-export const tabMovesFocus = DynamicSetting.bool('text-editor-tab-moves-focus', [], CM.keymap.of([{
+export const tabMovesFocus = DynamicSetting.bool(SettingsUI.SourcesSettings.textEditorTabMovesFocusSettingDescriptor, [], CM.keymap.of([{
         key: 'Tab',
         run: (view) => view.state.doc.length ? CM.indentMore(view) : false,
         shift: (view) => view.state.doc.length ? CM.indentLess(view) : false,
@@ -147,7 +147,7 @@ function announceSelectedCompletionInfo(view) {
     });
     UI.ARIAUtils.LiveAnnouncer.alert(ariaMessage);
 }
-export const autocompletion = new DynamicSetting('text-editor-autocompletion', (activateOnTyping) => [CM.autocompletion({
+export const autocompletion = new DynamicSetting(SettingsUI.SourcesSettings.textEditorAutocompletionSettingDescriptor, (activateOnTyping) => [CM.autocompletion({
         activateOnTyping,
         icons: false,
         optionClass: (option) => option.type === 'secondary' ? 'cm-secondaryCompletion' : '',
@@ -170,8 +170,8 @@ export const autocompletion = new DynamicSetting('text-editor-autocompletion', (
         { key: 'PageUp', run: CM.moveCompletionSelection(false, 'page') },
         { key: 'Enter', run: acceptCompletionIfNotConservative },
     ]))]);
-export const bracketMatching = DynamicSetting.bool('text-editor-bracket-matching', CM.bracketMatching());
-export const codeFolding = DynamicSetting.bool('text-editor-code-folding', [
+export const bracketMatching = DynamicSetting.bool(SettingsUI.SourcesSettings.textEditorBracketMatchingSettingDescriptor, CM.bracketMatching());
+export const codeFolding = DynamicSetting.bool(SettingsUI.SourcesSettings.textEditorCodeFoldingSettingDescriptor, [
     CM.foldGutter({
         markerDOM(open) {
             const iconName = open ? 'triangle-down' : 'triangle-right';
@@ -205,7 +205,7 @@ function detectIndentation(doc) {
     const indentUnit = TextUtils.TextUtils.detectIndentation(lines);
     return indentUnit ?? Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
 }
-export const autoDetectIndent = DynamicSetting.bool('text-editor-auto-detect-indent', AutoDetectIndent);
+export const autoDetectIndent = DynamicSetting.bool(SettingsUI.SourcesSettings.textEditorAutoDetectIndentSettingDescriptor, AutoDetectIndent);
 function matcher(decorator) {
     return CM.ViewPlugin.define(view => ({
         decorations: decorator.createDeco(view),
@@ -241,7 +241,7 @@ const showTrailingWhitespace = matcher(new CM.MatchDecorator({
     decoration: CM.Decoration.mark({ class: 'cm-trailingWhitespace' }),
     boundary: /\S/,
 }));
-export const showWhitespace = new DynamicSetting('show-whitespaces-in-editor', value => {
+export const showWhitespace = new DynamicSetting(SettingsUI.SourcesSettings.showWhitespacesInEditorSettingDescriptor, value => {
     if (value === 'all') {
         return showAllWhitespace;
     }
@@ -261,7 +261,7 @@ function getIndentUnit(indent) {
 }
 export const indentUnit = new DynamicSetting('text-editor-indent', getIndentUnit);
 export const domWordWrap = DynamicSetting.bool(SettingsUI.ElementsSettings.domWordWrapSettingDescriptor, CM.EditorView.lineWrapping);
-export const sourcesWordWrap = DynamicSetting.bool('sources.word-wrap', CM.EditorView.lineWrapping);
+export const sourcesWordWrap = DynamicSetting.bool(SettingsUI.SourcesSettings.sourcesWordWrapSettingDescriptor, CM.EditorView.lineWrapping);
 function detectLineSeparator(text) {
     if (/\r\n/.test(text) && !/(^|[^\r])\n/.test(text)) {
         return CM.EditorState.lineSeparator.of('\r\n');
@@ -320,7 +320,7 @@ export function baseConfiguration(text) {
         CM.bidiIsolates(),
     ];
 }
-export const closeBrackets = DynamicSetting.bool('text-editor-bracket-closing', [
+export const closeBrackets = DynamicSetting.bool(SettingsUI.SourcesSettings.textEditorBracketClosingSettingDescriptor, [
     CM.html.autoCloseTags,
     CM.closeBrackets(),
     CM.keymap.of(CM.closeBracketsKeymap),

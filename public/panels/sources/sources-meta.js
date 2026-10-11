@@ -27,7 +27,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
    */
-  doNotCaptureAsyncStackTraces: "Do not capture async stack traces",
+  doNotCaptureAsyncStackTraces: "Don\u2019t capture async stack traces",
   /**
    * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
    */
@@ -47,7 +47,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Debugger category that can be invoked through the Command Menu.
    */
-  doNotPauseOnExceptions: "Do not pause on exceptions",
+  doNotPauseOnExceptions: "Don\u2019t pause on exceptions",
   /**
    * @description Command for showing the 'Sources' tool
    */
@@ -255,7 +255,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
-  doNotSearchInAnonymousAndContent: "Do not search in anonymous and content scripts",
+  doNotSearchInAnonymousAndContent: "Don\u2019t search in anonymous and content scripts",
   /**
    * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
@@ -263,7 +263,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
-  doNotAutomaticallyRevealFilesIn: "Do not automatically reveal files in sidebar",
+  doNotAutomaticallyRevealFilesIn: "Don\u2019t automatically reveal files in sidebar",
   /**
    * @description Title of a setting under the Sources category.
    *'tab moves focus' is the name of the setting, which means that when the user
@@ -295,7 +295,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
-  doNotDetectIndentation: "Do not detect indentation",
+  doNotDetectIndentation: "Don\u2019t detect indentation",
   /**
    * @description Title of a setting under Sources category that can be invoked through the command menu.
    *This setting turns on the automatic formatting of source files in the Sources panel that are detected
@@ -307,7 +307,7 @@ var UIStrings = {
    *This setting turns off the automatic formatting of source files in the Sources panel that are detected
    *to be minified.
    */
-  doNotAutomaticallyPrettyPrintMinifiedSources: "Do not automatically pretty print minified sources",
+  doNotAutomaticallyPrettyPrintMinifiedSources: "Don\u2019t automatically pretty print minified sources",
   /**
    * @description Text for autocompletion.
    */
@@ -363,7 +363,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Sources category that can be invoked through the command menu.
    */
-  doNotShowWhitespaceCharacters: "Do not show whitespace characters",
+  doNotShowWhitespaceCharacters: "Don\u2019t show whitespace characters",
   /**
    * @description One value of an option that can be set to 'none', 'all', or 'trailing'. The setting
    * controls how whitespace characters are shown in a text editor.
@@ -454,7 +454,7 @@ var UIStrings = {
    * the sources panel will not be automatically be focused whenever the application hits a breakpoint
    * and comes to a halt.
    */
-  disableAutoFocusOnDebuggerPaused: "Do not focus Sources panel when triggering a breakpoint",
+  disableAutoFocusOnDebuggerPaused: "Don\u2019t focus Sources panel when triggering a breakpoint",
   /**
    * @description  Title of a setting under the Sources category in Settings. If this option is on,
    * the sources panel will be automatically shown whenever the application hits a breakpoint and
@@ -1516,21 +1516,6 @@ UI.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
-  settingName: "navigator-group-by-folder",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  settingName: "navigator-group-by-authored",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
-});
-Common.Settings.registerSettingExtension({
-  settingName: "navigator-just-my-code",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
-});
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.jsSourceMapsEnabledSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.javaScriptSourceMaps),
@@ -1609,31 +1594,26 @@ SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.pauseOnExceptionEnable
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.SourcesSettings.searchInAnonymousAndContentScriptsSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.SOURCES,
+    title: i18nLazyString(UIStrings.searchInAnonymousAndContent),
+    options: [
+      {
+        value: true,
+        title: i18nLazyString(UIStrings.searchInAnonymousAndContent)
+      },
+      {
+        value: false,
+        title: i18nLazyString(UIStrings.doNotSearchInAnonymousAndContent)
+      }
+    ]
+  }
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.autoRevealInNavigatorSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.searchInAnonymousAndContent),
-  settingName: "search-in-anonymous-and-content-scripts",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.searchInAnonymousAndContent)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.doNotSearchInAnonymousAndContent)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.automaticallyRevealFilesIn),
-  settingName: "auto-reveal-in-navigator",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1645,13 +1625,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorTabMovesFocusSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.tabMovesFocus),
-  settingName: "text-editor-tab-moves-focus",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
   options: [
     {
       value: true,
@@ -1663,13 +1639,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorAutoDetectIndentSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.detectIndentation),
-  settingName: "text-editor-auto-detect-indent",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1681,13 +1653,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorAutocompletionSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.autocompletion),
-  settingName: "text-editor-autocompletion",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1699,13 +1667,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorBracketClosingSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.bracketClosing),
-  settingName: "text-editor-bracket-closing",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1717,12 +1681,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorBracketMatchingSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
   title: i18nLazyString(UIStrings.bracketMatching),
-  settingName: "text-editor-bracket-matching",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1734,13 +1695,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.textEditorCodeFoldingSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.codeFolding),
-  settingName: "text-editor-code-folding",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1752,13 +1709,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.showWhitespacesInEditorSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.showWhitespaceCharacters),
-  settingName: "show-whitespaces-in-editor",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "original",
   options: [
     {
       title: i18nLazyString(UIStrings.doNotShowWhitespaceCharacters),
@@ -1777,13 +1730,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.sourcesWordWrapSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.wordWrap),
-  settingName: "sources.word-wrap",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.wordWrap)
 });
 UI.ActionRegistration.registerActionExtension({
   category: UI.ActionRegistration.ActionCategory.SOURCES,
@@ -1803,13 +1752,9 @@ UI.ActionRegistration.registerActionExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.inlineVariableValuesSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.variableValuesInlineWhile),
-  settingName: "inline-variable-values",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,

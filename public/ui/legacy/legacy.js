@@ -653,7 +653,7 @@ __export(Dialog_exports, {
 });
 import * as Common16 from "../../core/common/common.js";
 import * as i18n27 from "../../core/i18n/i18n.js";
-import { nothing as nothing6, render as render10 } from "../lit/lit.js";
+import { nothing as nothing7, render as render10 } from "../lit/lit.js";
 import * as Buttons7 from "../components/buttons/buttons.js";
 import * as VisualLogging17 from "../visual_logging/visual_logging.js";
 
@@ -841,7 +841,7 @@ import * as Root8 from "../../core/root/root.js";
 import * as Buttons5 from "../components/buttons/buttons.js";
 import * as VisualLogging15 from "../visual_logging/visual_logging.js";
 import { createIcon as createIcon7 } from "../kit/kit.js";
-import { nothing as nothing4, render as render7 } from "../lit/lit.js";
+import { nothing as nothing5, render as render7 } from "../lit/lit.js";
 import * as SettingUIRegistration from "../settings/settings.js";
 
 // ../../front_end/ui/legacy/ContextMenu.ts
@@ -3981,6 +3981,8 @@ var SplitWidget = class extends SplitWidgetBase {
       widget2.element.slot = "main";
       if (this.#showMode === "OnlyMain" /* ONLY_MAIN */ || this.#showMode === "Both" /* BOTH */) {
         widget2.show(this.element);
+      } else {
+        this.#hideSide(widget2);
       }
     }
     this.resumeInvalidations();
@@ -3998,9 +4000,20 @@ var SplitWidget = class extends SplitWidgetBase {
       widget2.element.slot = "sidebar";
       if (this.#showMode === "OnlySidebar" /* ONLY_SIDEBAR */ || this.#showMode === "Both" /* BOTH */) {
         widget2.show(this.element);
+      } else {
+        this.#hideSide(widget2);
       }
     }
     this.resumeInvalidations();
+  }
+  #hideSide(widget2) {
+    if (this.element instanceof SplitWidgetElement) {
+      widget2.hideWidget();
+    } else {
+      this.#detaching = true;
+      widget2.detach();
+      this.#detaching = false;
+    }
   }
   mainWidget() {
     return this.#mainWidget;
@@ -4087,9 +4100,7 @@ var SplitWidget = class extends SplitWidgetBase {
         }
       }
       if (sideToHide) {
-        this.#detaching = true;
-        sideToHide.detach();
-        this.#detaching = false;
+        this.#hideSide(sideToHide);
       }
       this.#resizerElement.classList.add("hidden");
       shadowToShow.classList.remove("hidden");
@@ -4524,11 +4535,15 @@ var SplitWidget = class extends SplitWidgetBase {
   toggleSidebar() {
     if (this.#showMode !== "Both" /* BOTH */) {
       this.showBoth(true);
-      LiveAnnouncer.alert(this.#shownSidebarString);
+      if (this.#shownSidebarString) {
+        LiveAnnouncer.alert(this.#shownSidebarString);
+      }
       return true;
     }
     this.hideSidebar(true);
-    LiveAnnouncer.alert(this.#hiddenSidebarString);
+    if (this.#hiddenSidebarString) {
+      LiveAnnouncer.alert(this.#hiddenSidebarString);
+    }
     return false;
   }
   #updateShowHideSidebarButton() {
@@ -4547,7 +4562,7 @@ var SplitWidget = class extends SplitWidgetBase {
   }
 };
 var SplitWidgetElement = class extends WidgetElement {
-  static observedAttributes = ["direction", "sidebar-position", "sidebar-initial-size", "sidebar-visibility"];
+  static observedAttributes = ["direction", "sidebar-position", "sidebar-initial-size", "show"];
   constructor() {
     super();
     registerWidgetConfig(this, widgetConfig((element) => {
@@ -4574,9 +4589,11 @@ var SplitWidgetElement = class extends WidgetElement {
       if (autoAdjustOrientation) {
         widget2.setAutoAdjustOrientation(true);
       }
-      const sidebarHidden = element.getAttribute("sidebar-visibility") === "hidden";
-      if (sidebarHidden) {
+      const show = element.getAttribute("show");
+      if (show === "main") {
         widget2.hideSidebar();
+      } else if (show === "sidebar") {
+        widget2.hideMain();
       }
       widget2.addEventListener("ShowModeChanged" /* SHOW_MODE_CHANGED */, () => {
         element.dispatchEvent(new CustomEvent("change", { detail: widget2.showMode() }));
@@ -4594,9 +4611,11 @@ var SplitWidgetElement = class extends WidgetElement {
       widget2.setAutoAdjustOrientation(newValue === "auto");
     } else if (name === "sidebar-position") {
       widget2.setSecondIsSidebar(newValue === "second");
-    } else if (name === "sidebar-visibility") {
-      if (newValue === "hidden") {
+    } else if (name === "show") {
+      if (newValue === "main") {
         widget2.hideSidebar();
+      } else if (newValue === "sidebar") {
+        widget2.hideMain();
       } else {
         widget2.showBoth();
       }
@@ -4687,97 +4706,6 @@ var tabbedPane_css_default = `/*
 .tabbed-pane-placeholder {
   text-align: center;
   align-content: center;
-
-  .sources-placeholder {
-    display: inline-block;
-  }
-}
-
-.tabbed-pane-placeholder-row {
-  max-width: var(--sys-size-32);
-  min-width: var(--sys-size-28);
-  margin: 0 var(--sys-size-8);
-
-  &.workspace {
-    line-height: 18px;
-    display: inline-flex;
-    align-items: center;
-    border: var(--sys-size-2) dashed var(--sys-color-divider);
-    padding: var(--sys-size-8);
-    border-radius: var(--sys-shape-corner-medium);
-    margin: var(--sys-size-8) var(--sys-size-8) var(--sys-size-11);
-
-    > .icon-container {
-      flex-shrink: 0;
-      width: var(--sys-size-13);
-      height: var(--sys-size-13);
-      background: var(--sys-color-tonal-container);
-      align-content: center;
-      border-radius: var(--sys-shape-corner-full);
-      margin-right: var(--sys-size-8);
-
-      > devtools-icon {
-        color: var(--sys-color-on-tonal-container);
-      }
-    }
-  }
-
-  &.shortcuts-list {
-    padding: 0 var(--sys-size-6);
-
-    .shortcut-line {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      column-gap: var(--sys-size-10);
-      padding: var(--sys-size-4) 0;
-
-      &:not(:last-child) {
-        border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-      }
-
-      .shortcuts {
-        display: flex;
-        flex-direction: row;
-        gap: var(--sys-size-4);
-        align-items: center;
-      }
-
-      .keybinds-key {
-        display: flex;
-        flex-shrink: 0;
-        align-items: center;
-        justify-content: center;
-        height: var(--sys-size-11);
-        min-width: var(--sys-size-11);
-        font: var(--sys-typescale-body5-medium);
-        white-space: nowrap;
-        border-radius: var(--sys-shape-corner-small);
-        background: var(--sys-color-tonal-container);
-        padding: 0 var(--sys-size-4);
-      }
-
-      & button {
-        margin-inline: 0;
-      }
-    }
-  }
-
-  & button {
-    cursor: pointer;
-    color: var(--text-link);
-    background: transparent;
-    border: none;
-    padding: 0;
-    text-decoration: underline;
-    margin-inline: var(--sys-size-3);
-    text-align: left;
-
-    &:focus-visible {
-      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-      outline-offset: var(--sys-size-2);
-      border-radius: var(--sys-size-2);
-    }
-  }
 }
 
 .tabbed-pane-header {
@@ -4810,6 +4738,11 @@ var tabbedPane_css_default = `/*
   display: flex;
   align-items: center;
   margin-right: var(--sys-size-2);
+}
+
+.tabbed-pane-header-tab-slot-container {
+  /* Always take the size of the slotted content, which is what gets measured. */
+  flex: none;
 }
 
 .tabbed-pane-header-tab-suffix-element {
@@ -4864,6 +4797,9 @@ var tabbedPane_css_default = `/*
 }
 
 .tabbed-pane-header-tab {
+  /* For the outline of dot icons. Custom properties are inherited by slotted icons as well. */
+  --icon-gap-default: var(--icon-gap-toolbar);
+
   font: var(--sys-typescale-body4-medium);
   color: var(--sys-color-on-surface-subtle);
   height: var(--sys-size-12);
@@ -4873,18 +4809,14 @@ var tabbedPane_css_default = `/*
   cursor: default;
   display: flex;
   align-items: center;
+
+  &:hover {
+    --icon-gap-default: var(--icon-gap-toolbar-hover);
+  }
 }
 
 .tabbed-pane-header-tab.closeable {
   padding-right: var(--sys-size-3);
-}
-
-.tabbed-pane-header-tab devtools-icon.dot::before {
-  outline-color: var(--icon-gap-toolbar);
-}
-
-.tabbed-pane-header-tab:hover devtools-icon.dot::before {
-  outline-color: var(--icon-gap-toolbar-hover);
 }
 
 .tabbed-pane-header-tab:not(.vertical-tab-layout):hover,
@@ -5437,9 +5369,13 @@ var TabbedPane = class extends TabbedPaneBase {
     this.tabsById.delete(id2);
     this.tabsHistory.splice(this.tabsHistory.indexOf(tab), 1);
     this.#tabs.splice(this.#tabs.indexOf(tab), 1);
+    if (this.lastSelectedOverflowTab === tab) {
+      delete this.lastSelectedOverflowTab;
+    }
     if (tab.shown) {
       this.hideTabElement(tab);
     }
+    tab.clearSlots();
     const eventData = { tabId: id2, view: tab.view, isUserGesture: userGesture };
     this.dispatchEventToListeners("TabClosed" /* TabClosed */, eventData);
     return true;
@@ -6178,6 +6114,12 @@ var TabbedPaneTab = class {
   #tabElement;
   icon = null;
   suffixElement = null;
+  // The containers of the `icon-<id>` and `suffix-<id>` slots of the tab header.
+  #slotContainers = {};
+  // Whether elements are assigned to these slots.
+  #hasSlottedContent = { icon: false, suffix: false };
+  // Last known width of these containers.
+  #slotContainerWidths = { icon: 0, suffix: 0 };
   #width;
   delegate;
   titleElement;
@@ -6313,6 +6255,51 @@ var TabbedPaneTab = class {
     titleElement.insertAdjacentElement("afterend", suffixElementContainer);
     tabSuffixElements.set(tabElement, suffixElementContainer);
   }
+  /**
+   * Adds a slot for the `slot="icon-<id>"` or `slot="suffix-<id>"` children
+   * of the TabbedPaneElement to the tab header. The container is hidden
+   * while nothing is assigned to the slot.
+   */
+  #createSlotContainer(titleElement, kind, measuring) {
+    if (measuring && !this.#hasSlottedContent[kind]) {
+      return;
+    }
+    const container = document.createElement("span");
+    container.classList.add(
+      kind === "icon" ? "tabbed-pane-header-tab-icon" : "tabbed-pane-header-tab-suffix-element",
+      "tabbed-pane-header-tab-slot-container"
+    );
+    titleElement.insertAdjacentElement(kind === "icon" ? "beforebegin" : "afterend", container);
+    if (measuring) {
+      const width = this.#measureSlotContainer(kind);
+      if (width > 0) {
+        container.style.boxSizing = "border-box";
+        container.style.width = `${width}px`;
+      }
+      return;
+    }
+    const slot = container.createChild("slot");
+    slot.name = `${kind}-${this.#id}`;
+    this.#slotContainers[kind] = container;
+    container.style.display = "none";
+    container.addEventListener("slotchange", () => {
+      this.#hasSlottedContent[kind] = slot.assignedElements().length > 0;
+      container.style.display = this.#hasSlottedContent[kind] ? "" : "none";
+      delete this.measuredWidth;
+      this.tabbedPane.requestUpdate();
+    });
+  }
+  clearSlots() {
+    this.#slotContainers.icon?.removeChildren();
+    this.#slotContainers.suffix?.removeChildren();
+  }
+  #measureSlotContainer(kind) {
+    const width = this.#slotContainers[kind]?.getBoundingClientRect().width ?? 0;
+    if (width > 0) {
+      this.#slotContainerWidths[kind] = width;
+    }
+    return this.#slotContainerWidths[kind];
+  }
   createMeasureClone(original) {
     const fakeClone = document.createElement("div");
     fakeClone.style.width = original.style.width;
@@ -6331,6 +6318,8 @@ var TabbedPaneTab = class {
     Tooltip.install(titleElement, this.tooltip || "");
     this.createIconElement(tabElement, titleElement, measuring);
     this.createSuffixElement(tabElement, titleElement, measuring);
+    this.#createSlotContainer(titleElement, "icon", measuring);
+    this.#createSlotContainer(titleElement, "suffix", measuring);
     if (!measuring) {
       this.titleElement = titleElement;
     }
@@ -6677,8 +6666,6 @@ var TabbedPaneElement = class extends WidgetElement {
       const selected = child.hasAttribute("selected");
       const enabled = !child.hasAttribute("disabled");
       const isCloseable = child.hasAttribute("closeable") ? true : child.hasAttribute("uncloseable") ? false : void 0;
-      const icon = child.querySelector('[slot="icon"]') ?? void 0;
-      const suffix = child.querySelector('[slot="suffix"]') ?? void 0;
       const view = Widget.getOrCreateWidget(child);
       view.setHideOnDetach();
       if (widget2.selectedTabId !== id2) {
@@ -6691,9 +6678,7 @@ var TabbedPaneElement = class extends WidgetElement {
         jslogContext,
         selected,
         enabled,
-        isCloseable,
-        icon,
-        suffix
+        isCloseable
       });
     }
     const newIds = new Set(tabs.map((tab) => tab.id));
@@ -6736,12 +6721,6 @@ var TabbedPaneElement = class extends WidgetElement {
           tab.jslogContext
         );
       }
-      if (tab.icon !== void 0) {
-        widget2.setTabIcon(tab.id, tab.icon);
-      }
-      if (tab.suffix !== void 0) {
-        widget2.setSuffixElement(tab.id, tab.suffix);
-      }
       if (tab.enabled !== void 0) {
         widget2.setTabEnabled(tab.id, tab.enabled);
       }
@@ -6779,7 +6758,7 @@ import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Platform8 from "../../core/platform/platform.js";
 import * as Root4 from "../../core/root/root.js";
 import { createIcon as createIcon4 } from "../kit/kit.js";
-import { render as render3 } from "../lit/lit.js";
+import { nothing as nothing3, render as render3 } from "../lit/lit.js";
 import * as VisualLogging7 from "../visual_logging/visual_logging.js";
 
 // ../../front_end/ui/legacy/PlusButton.ts
@@ -7415,7 +7394,7 @@ var PreRegisteredView = class {
   }
   async toolbarItems() {
     if (!this.viewRegistration.hasToolbar) {
-      return [];
+      return nothing3;
     }
     const provider = await this.widget();
     return provider.toolbarItems();
@@ -7504,17 +7483,11 @@ var ViewManager = class _ViewManager extends Common9.ObjectWrapper.ObjectWrapper
     viewManagerInstance = void 0;
   }
   static createToolbar(toolbarItems) {
-    if (Array.isArray(toolbarItems) && !toolbarItems.length) {
+    if (toolbarItems === nothing3) {
       return null;
     }
     const toolbar5 = document.createElement("devtools-toolbar");
-    if (Array.isArray(toolbarItems)) {
-      for (const item8 of toolbarItems) {
-        toolbar5.appendToolbarItem(item8);
-      }
-    } else {
-      render3(toolbarItems, toolbar5);
-    }
+    render3(toolbarItems, toolbar5);
     return toolbar5;
   }
   static setWidgetForView(view, widget2) {
@@ -12417,7 +12390,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
       !this.#cancelOnBlur
     ));
     proxy.addEventListener("keydown", this.#editingValueKeyDown.bind(this));
-    placeholder.getComponentSelection()?.selectAllChildren(placeholder);
+    this.#textPrompt.selectAll();
     this.#textPrompt.focus();
   }
   #stopEditing() {
@@ -12532,6 +12505,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   #ariaPlaceholder = null;
   #ariaLabelFromPlaceholder = false;
   boundOnKeyDown;
+  #boundSaveSelection;
+  #boundOnFocusIn;
   boundOnInput;
   boundOnMouseWheel;
   boundClearAutocomplete;
@@ -12544,6 +12519,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   oldTabIndex;
   completeTimeout;
   #disableDefaultSuggestionForEmptyInput;
+  #savedSelection = null;
   jslogContext = void 0;
   constructor() {
     super();
@@ -12627,6 +12603,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
     this.#element = element;
     this.boundOnKeyDown = this.onKeyDown.bind(this);
+    this.#boundSaveSelection = this.#saveSelection.bind(this);
+    this.#boundOnFocusIn = this.#onFocusIn.bind(this);
     this.boundOnInput = this.onInput.bind(this);
     this.boundOnMouseWheel = this.onMouseWheel.bind(this);
     this.boundClearAutocomplete = this.clearAutocomplete.bind(this);
@@ -12653,6 +12631,10 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.#updateAriaRole();
     this.#element.setAttribute("contenteditable", "plaintext-only");
     this.element().addEventListener("keydown", this.boundOnKeyDown, false);
+    this.#element.addEventListener("focusin", this.#boundOnFocusIn, false);
+    if (this.element().hasFocus()) {
+      this.#onFocusIn();
+    }
     this.#element.addEventListener("input", this.boundOnInput, false);
     this.#element.addEventListener("wheel", this.boundOnMouseWheel, false);
     this.#element.addEventListener("selectstart", this.boundClearAutocomplete, false);
@@ -12706,6 +12688,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.clearAutocomplete();
     this.element().textContent = text;
     this.previousText = this.text();
+    this.#savedSelection = { anchorColumn: text.length, focusColumn: text.length };
     if (this.element().hasFocus()) {
       this.moveCaretToEndOfPrompt();
       this.element().scrollIntoView();
@@ -12723,17 +12706,22 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     if (endIndex < startIndex) {
       endIndex = startIndex;
     }
-    const textNode = this.element().childNodes[0];
-    const range = new Range();
-    range.setStart(textNode, startIndex);
-    range.setEnd(textNode, endIndex);
-    const selection = window.getSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    this.setDOMSelection(startIndex, endIndex);
+  }
+  selectAll() {
+    this.setSelectedRange(0, this.text().length);
   }
   focus() {
+    if (!this.element().hasFocus()) {
+      if (this.#savedSelection) {
+        const textLength = this.text().length;
+        const anchorColumn = Platform12.NumberUtilities.clamp(this.#savedSelection.anchorColumn, 0, textLength);
+        const focusColumn = Platform12.NumberUtilities.clamp(this.#savedSelection.focusColumn, 0, textLength);
+        this.setDOMSelection(anchorColumn, focusColumn);
+      } else {
+        this.moveCaretToEndOfPrompt();
+      }
+    }
     this.element().focus();
   }
   title() {
@@ -12769,11 +12757,20 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   removeFromElement() {
     this.clearAutocomplete();
+    this.#savedSelection = null;
     this.element().removeEventListener(
       "keydown",
       this.boundOnKeyDown,
       false
     );
+    this.element().removeEventListener(
+      "focusin",
+      this.#boundOnFocusIn,
+      false
+    );
+    if (this.#boundSaveSelection) {
+      this.element().ownerDocument.removeEventListener("selectionchange", this.#boundSaveSelection, false);
+    }
     this.element().removeEventListener("input", this.boundOnInput, false);
     this.element().removeEventListener(
       "selectstart",
@@ -12904,6 +12901,31 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.dispatchEventToListeners("TextChanged" /* TEXT_CHANGED */);
     this.autoCompleteSoon();
   }
+  #getOffsetInElement(container, offset) {
+    const textLength = this.text().length;
+    const beforeRange = document.createRange();
+    beforeRange.setStart(this.element(), 0);
+    beforeRange.setEnd(container, offset);
+    return Platform12.NumberUtilities.clamp(beforeRange.toString().length, 0, textLength);
+  }
+  #saveSelection() {
+    if (!this.#element || !this.element().isConnected || !this.element().hasFocus()) {
+      return;
+    }
+    const selection = this.element().getComponentSelection();
+    if (!selection || selection.rangeCount === 0 || !selection.anchorNode || !selection.focusNode) {
+      return;
+    }
+    if (!selection.anchorNode.isSelfOrDescendant(this.element()) || !selection.focusNode.isSelfOrDescendant(this.element())) {
+      return;
+    }
+    const anchorColumn = this.#getOffsetInElement(selection.anchorNode, selection.anchorOffset);
+    const focusColumn = this.#getOffsetInElement(selection.focusNode, selection.focusOffset);
+    this.#savedSelection = {
+      anchorColumn,
+      focusColumn
+    };
+  }
   acceptAutoComplete() {
     let result = false;
     if (this.isSuggestBoxVisible() && this.suggestBox) {
@@ -12930,7 +12952,15 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
     this.#currentSuggestion = null;
   }
+  #onFocusIn() {
+    if (this.#boundSaveSelection) {
+      this.element().ownerDocument.addEventListener("selectionchange", this.#boundSaveSelection, false);
+    }
+  }
   onBlur() {
+    if (this.#boundSaveSelection) {
+      this.element().ownerDocument.removeEventListener("selectionchange", this.#boundSaveSelection, false);
+    }
     this.clearAutocomplete();
   }
   refreshGhostText() {
@@ -13085,17 +13115,16 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   setDOMSelection(startColumn, endColumn) {
     this.element().normalize();
     const node = this.element().childNodes[0];
-    if (!node || node === this.ghostTextElement) {
+    if (!node || node === this.ghostTextElement || node.nodeType !== Node.TEXT_NODE) {
+      this.#savedSelection = { anchorColumn: 0, focusColumn: 0 };
+      this.element().getComponentSelection()?.setBaseAndExtent(this.element(), 0, this.element(), 0);
       return;
     }
-    const range = document.createRange();
-    range.setStart(node, startColumn);
-    range.setEnd(node, endColumn);
-    const selection = this.element().getComponentSelection();
-    if (selection) {
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    const length = node.length;
+    const anchorOffset = Platform12.NumberUtilities.clamp(startColumn, 0, length);
+    const focusOffset = Platform12.NumberUtilities.clamp(endColumn, 0, length);
+    this.#savedSelection = { anchorColumn: anchorOffset, focusColumn: focusOffset };
+    this.element().getComponentSelection()?.setBaseAndExtent(node, anchorOffset, node, focusOffset);
   }
   isSuggestBoxVisible() {
     return this.suggestBox?.visible() ?? false;
@@ -13140,6 +13169,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
       const textNode = container;
       offset = (textNode.textContent || "").length;
     }
+    const textLength = this.text().length;
+    this.#savedSelection = { anchorColumn: textLength, focusColumn: textLength };
     selectionRange.setStart(container, offset);
     selectionRange.setEnd(container, offset);
     if (selection) {
@@ -13587,7 +13618,7 @@ var Toolbar = class _Toolbar extends HTMLElement {
       }
     }
     this.items = [];
-    render7(nothing4, this);
+    render7(nothing5, this);
   }
   hideSeparatorDupes() {
     if (!this.items.length) {
@@ -13936,6 +13967,7 @@ var ToolbarInput = class _ToolbarInput extends ToolbarItem {
   }
 };
 var ToolbarFilter = class extends ToolbarInput {
+  #regexButton;
   constructor(filterBy, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext, element, showRegexToggle, onRegexToggle) {
     const filterPlaceholder = filterBy ? filterBy : i18nString12(UIStrings12.filter);
     super(
@@ -13971,18 +14003,27 @@ var ToolbarFilter = class extends ToolbarInput {
       setLabel(regexButton, i18nString12(UIStrings12.useRegularExpression));
       regexButton.addEventListener("click", () => {
         regexButton.checked = regexButton.toggled;
-        onRegexToggle?.();
+        onRegexToggle?.(regexButton.toggled);
       });
       this.insertTrailingElement(regexButton);
+      this.#regexButton = regexButton;
     }
+  }
+  setRegexToggled(toggled) {
+    if (!this.#regexButton || this.#regexButton.toggled === toggled) {
+      return;
+    }
+    this.#regexButton.toggled = toggled;
+    this.#regexButton.checked = toggled;
   }
 };
 var ToolbarInputElement = class extends HTMLElement {
-  static observedAttributes = ["value", "disabled", "regex"];
+  static observedAttributes = ["value", "disabled", "regex", "regex-toggled"];
   item;
   datalist = null;
   #value = void 0;
   #disabled = false;
+  #regexToggled = false;
   connectedCallback() {
     if (this.item) {
       return;
@@ -14034,6 +14075,9 @@ var ToolbarInputElement = class extends HTMLElement {
     if (this.#disabled) {
       this.item.setEnabled(false);
     }
+    if (this.#regexToggled && this.item instanceof ToolbarFilter) {
+      this.item.setRegexToggled(true);
+    }
     this.item.addEventListener(ToolbarInput.Event.TEXT_CHANGED, (event) => {
       this.dispatchEvent(new CustomEvent("change", { detail: event.data }));
     });
@@ -14044,8 +14088,9 @@ var ToolbarInputElement = class extends HTMLElement {
   focus() {
     this.item?.focus();
   }
-  #onRegexToggle() {
-    this.dispatchEvent(new CustomEvent("regextoggle"));
+  #onRegexToggle(toggled) {
+    this.#regexToggled = toggled;
+    this.dispatchEvent(new CustomEvent("regextoggle", { detail: toggled }));
   }
   async #onAutocomplete(expression, prefix, force) {
     if (!prefix && !force && expression || !this.datalist) {
@@ -14065,6 +14110,11 @@ var ToolbarInputElement = class extends HTMLElement {
       this.#disabled = typeof newValue === "string";
       if (this.item) {
         this.item.setEnabled(!this.#disabled);
+      }
+    } else if (name === "regex-toggled") {
+      this.#regexToggled = typeof newValue === "string";
+      if (this.item instanceof ToolbarFilter) {
+        this.item.setRegexToggled(this.#regexToggled);
       }
     }
   }
@@ -15366,7 +15416,6 @@ devtools-toolbar {
     height: var(--toolbar-height);
     border: none;
     white-space: pre;
-    overflow: hidden;
     max-width: 100%;
     color: var(--icon-default);
 
@@ -15638,6 +15687,7 @@ devtools-toolbar {
       width: 100%;
       position: absolute;
       left: 0;
+      border-radius: inherit;
       background: var(--sys-color-cdt-base);
       z-index: -1;
     }
@@ -18458,7 +18508,7 @@ var DialogWidget = class extends DialogWidgetBase {
   #open = false;
   #jslogContext = "";
   #dialogStack = false;
-  #content = nothing6;
+  #content = nothing7;
   #dialog = new Dialog();
   constructor(element) {
     super(element);
@@ -18518,7 +18568,7 @@ var DialogWidget = class extends DialogWidgetBase {
   }
   performUpdate() {
     if (this.open) {
-      render10(this.#content ?? nothing6, this.#dialog.contentElement);
+      render10(this.#content ?? nothing7, this.#dialog.contentElement);
       if (!this.#dialog.isShowing()) {
         this.#dialog.show(this.contentElement.ownerDocument, this.#dialogStack);
         this.#dialog.contentElement.focus();
@@ -19998,7 +20048,7 @@ __export(ListWidget_exports, {
 import * as i18n33 from "../../core/i18n/i18n.js";
 import * as Platform21 from "../../core/platform/platform.js";
 import * as Buttons8 from "../components/buttons/buttons.js";
-import { html as html7, nothing as nothing7, render as render12 } from "../lit/lit.js";
+import { html as html7, nothing as nothing8, render as render12 } from "../lit/lit.js";
 import * as VisualLogging20 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -20013,16 +20063,11 @@ var listWidget_css_default = `/*
   overflow-y: auto;
   flex-direction: column;
 
-  --override-background-list-item-color: hsl(0deg 0% 96%);
+  --override-background-list-item-color: var(--sys-color-neutral-container);
 
   &:has(div) {
     border: var(--sys-size-1) solid var(--sys-color-divider);
   }
-}
-
-.theme-with-dark-background .list,
-:host-context(.theme-with-dark-background) .list {
-  --override-background-list-item-color: hsl(0deg 0% 16%);
 }
 
 .list-separator {
@@ -20349,7 +20394,7 @@ var ListWidget = class extends VBox {
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
-          ${controlLabels?.hideEdit ? nothing7 : html7`<devtools-button class=toolbar-button
+          ${controlLabels?.hideEdit ? nothing8 : html7`<devtools-button class=toolbar-button
                            .iconName=${"edit"}
                            .jslogContext=${"edit-item"}
                            .title=${controlLabels?.edit ?? i18nString17(UIStrings17.editString)}
@@ -21820,10 +21865,9 @@ function createClearButton(jslogContext) {
 }
 var SearchableView = class extends VBox {
   #searchProvider;
+  #searchTarget = null;
   replaceProvider = null;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setting = null;
+  #setting = null;
   #replaceable = false;
   footerElementContainer;
   footerElement;
@@ -21835,13 +21879,24 @@ var SearchableView = class extends VBox {
   searchNavigationNextElement;
   replaceInputElement;
   #searchConfigButtons;
-  caseSensitiveButton;
-  wholeWordButton;
-  regexButton;
+  #caseSensitiveButton;
+  #wholeWordButton;
+  #regexButton;
   replaceButtonElement;
   replaceAllButtonElement;
   minimalSearchQuerySize = 3;
   searchIsVisible;
+  #secondRowVisible = false;
+  #placeholder = i18nString19(UIStrings19.findString);
+  #searchAriaLabel;
+  #caseSensitiveToggled = false;
+  #wholeWordToggled = false;
+  #regexToggled = false;
+  #matchesText = "";
+  #matchesAriaLabel = "";
+  #hasMatches = false;
+  #history = [""];
+  #historyPosition = 0;
   currentQuery;
   valueChangedTimeoutId;
   constructor(searchableOrElement, replaceable = null, settingName, element) {
@@ -21863,7 +21918,8 @@ var SearchableView = class extends VBox {
     const iconAndInput = searchInputElements.createChild("div", "icon-and-input");
     const searchIcon = createIcon8("search");
     iconAndInput.appendChild(searchIcon);
-    this.searchInputElement = createHistoryInput("search", "search-replace search");
+    this.searchInputElement = iconAndInput.createChild("input", "search-replace search");
+    this.searchInputElement.type = "search";
     this.searchInputElement.id = "search-input-field";
     this.searchInputElement.autocomplete = "off";
     this.searchInputElement.placeholder = i18nString19(UIStrings19.findString);
@@ -21873,7 +21929,6 @@ var SearchableView = class extends VBox {
     );
     this.searchInputElement.addEventListener("keydown", this.onSearchKeyDown.bind(this), true);
     this.searchInputElement.addEventListener("input", this.onInput.bind(this), false);
-    iconAndInput.appendChild(this.searchInputElement);
     const replaceInputElements = searchInputElements.createChild("div", "replace-element input-line");
     this.replaceInputElement = replaceInputElements.createChild("input", "search-replace");
     this.replaceInputElement.addEventListener("keydown", this.onReplaceKeyDown.bind(this), true);
@@ -21958,12 +22013,24 @@ var SearchableView = class extends VBox {
     this.#searchProvider = searchable;
     this.#updateSearchConfigButtons();
   }
-  set settingName(settingName) {
-    if (this.setting?.name === settingName) {
+  get searchTarget() {
+    return this.#searchTarget;
+  }
+  set searchTarget(target) {
+    if (this.#searchTarget === target) {
       return;
     }
-    this.setting = settingName ? Common18.Settings.Settings.instance().createSetting(settingName, {}) : null;
-    this.loadSetting();
+    this.#searchTarget?.setSearchableView?.(null);
+    this.#searchTarget = target;
+    this.#searchTarget?.setSearchableView?.(this);
+    this.refreshSearch();
+  }
+  set settingName(settingName) {
+    if (this.#setting?.name === settingName) {
+      return;
+    }
+    this.#setting = settingName ? Common18.Settings.Settings.instance().createSetting(settingName, {}) : null;
+    this.#loadSetting();
   }
   get replaceable() {
     return this.#replaceable;
@@ -21977,72 +22044,53 @@ var SearchableView = class extends VBox {
       this.updateReplaceVisibility();
     }
   }
+  #createConfigToggleButton(iconName, label, onToggle) {
+    const button = new Buttons10.Button.Button();
+    button.data = {
+      variant: Buttons10.Button.Variant.ICON_TOGGLE,
+      size: Buttons10.Button.Size.SMALL,
+      iconName,
+      toggledIconName: iconName,
+      toggled: false,
+      toggleType: Buttons10.Button.ToggleType.PRIMARY,
+      title: label,
+      jslogContext: iconName
+    };
+    setLabel(button, label);
+    button.addEventListener("click", () => {
+      onToggle();
+      this.#saveSetting();
+      this.performSearch(false, true);
+    });
+    this.#searchConfigButtons.appendChild(button);
+    return button;
+  }
   #updateSearchConfigButtons() {
-    this.caseSensitiveButton?.remove();
-    this.caseSensitiveButton = void 0;
-    this.wholeWordButton?.remove();
-    this.wholeWordButton = void 0;
-    this.regexButton?.remove();
-    this.regexButton = void 0;
+    this.#caseSensitiveButton?.remove();
+    this.#caseSensitiveButton = void 0;
+    this.#wholeWordButton?.remove();
+    this.#wholeWordButton = void 0;
+    this.#regexButton?.remove();
+    this.#regexButton = void 0;
     if (!this.#searchProvider) {
       return;
     }
-    const saveSettingAndPerformSearch = () => {
-      this.saveSetting();
-      this.performSearch(false, true);
-    };
     if (this.#searchProvider.supportsCaseSensitiveSearch()) {
-      const iconName = "match-case";
-      this.caseSensitiveButton = new Buttons10.Button.Button();
-      this.caseSensitiveButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggled: false,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        title: i18nString19(UIStrings19.matchCase),
-        jslogContext: iconName
-      };
-      setLabel(this.caseSensitiveButton, i18nString19(UIStrings19.matchCase));
-      this.caseSensitiveButton.addEventListener("click", saveSettingAndPerformSearch);
-      this.#searchConfigButtons.appendChild(this.caseSensitiveButton);
+      this.#caseSensitiveButton = this.#createConfigToggleButton("match-case", i18nString19(UIStrings19.matchCase), () => {
+        this.#caseSensitiveToggled = Boolean(this.#caseSensitiveButton?.toggled);
+      });
     }
     if (this.#searchProvider.supportsWholeWordSearch()) {
-      const iconName = "match-whole-word";
-      this.wholeWordButton = new Buttons10.Button.Button();
-      this.wholeWordButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggled: false,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        title: i18nString19(UIStrings19.matchWholeWord),
-        jslogContext: iconName
-      };
-      setLabel(this.wholeWordButton, i18nString19(UIStrings19.matchWholeWord));
-      this.wholeWordButton.addEventListener("click", saveSettingAndPerformSearch);
-      this.#searchConfigButtons.appendChild(this.wholeWordButton);
+      this.#wholeWordButton = this.#createConfigToggleButton("match-whole-word", i18nString19(UIStrings19.matchWholeWord), () => {
+        this.#wholeWordToggled = Boolean(this.#wholeWordButton?.toggled);
+      });
     }
     if (this.#searchProvider.supportsRegexSearch()) {
-      const iconName = "regular-expression";
-      this.regexButton = new Buttons10.Button.Button();
-      this.regexButton.data = {
-        variant: Buttons10.Button.Variant.ICON_TOGGLE,
-        size: Buttons10.Button.Size.SMALL,
-        iconName,
-        toggledIconName: iconName,
-        toggleType: Buttons10.Button.ToggleType.PRIMARY,
-        toggled: false,
-        jslogContext: iconName,
-        title: i18nString19(UIStrings19.useRegularExpression)
-      };
-      setLabel(this.regexButton, i18nString19(UIStrings19.useRegularExpression));
-      this.regexButton.addEventListener("click", saveSettingAndPerformSearch);
-      this.#searchConfigButtons.appendChild(this.regexButton);
+      this.#regexButton = this.#createConfigToggleButton("regular-expression", i18nString19(UIStrings19.useRegularExpression), () => {
+        this.#regexToggled = Boolean(this.#regexButton?.toggled);
+      });
     }
-    this.loadSetting();
+    this.#loadSetting();
   }
   static fromElement(element) {
     let view = null;
@@ -22053,48 +22101,60 @@ var SearchableView = class extends VBox {
     return view;
   }
   toggleReplace() {
-    const replaceEnabled = this.replaceToggleButton.isToggled();
-    const label = replaceEnabled ? i18nString19(UIStrings19.disableFindAndReplace) : i18nString19(UIStrings19.enableFindAndReplace);
+    this.#secondRowVisible = this.replaceToggleButton.isToggled();
+    const label = this.#secondRowVisible ? i18nString19(UIStrings19.disableFindAndReplace) : i18nString19(UIStrings19.enableFindAndReplace);
     setLabel(this.replaceToggleButton.element, label);
     this.replaceToggleButton.element.title = label;
     this.updateSecondRowVisibility();
   }
-  saveSetting() {
-    if (!this.setting) {
+  #saveSetting() {
+    if (!this.#setting) {
       return;
     }
-    const settingValue = this.setting.get() || {};
-    if (this.caseSensitiveButton) {
-      settingValue.caseSensitive = this.caseSensitiveButton.toggled;
+    const settingValue = this.#setting.get() || {};
+    if (this.#searchProvider?.supportsCaseSensitiveSearch()) {
+      settingValue.caseSensitive = this.#caseSensitiveToggled;
     }
-    if (this.wholeWordButton) {
-      settingValue.wholeWord = this.wholeWordButton.toggled;
+    if (this.#searchProvider?.supportsWholeWordSearch()) {
+      settingValue.wholeWord = this.#wholeWordToggled;
     }
-    if (this.regexButton) {
-      settingValue.isRegex = this.regexButton.toggled;
+    if (this.#searchProvider?.supportsRegexSearch()) {
+      settingValue.isRegex = this.#regexToggled;
     }
-    this.setting.set(settingValue);
+    this.#setting.set(settingValue);
   }
-  loadSetting() {
-    const settingValue = this.setting ? this.setting.get() || {} : {};
-    if (this.caseSensitiveButton) {
-      this.caseSensitiveButton.toggled = Boolean(settingValue.caseSensitive);
+  #loadSetting() {
+    const settingValue = this.#setting ? this.#setting.get() || {} : {};
+    this.#caseSensitiveToggled = Boolean(this.#searchProvider?.supportsCaseSensitiveSearch() && settingValue.caseSensitive);
+    this.#wholeWordToggled = Boolean(this.#searchProvider?.supportsWholeWordSearch() && settingValue.wholeWord);
+    this.#regexToggled = Boolean(this.#searchProvider?.supportsRegexSearch() && settingValue.isRegex);
+    if (this.#caseSensitiveButton) {
+      this.#caseSensitiveButton.toggled = this.#caseSensitiveToggled;
     }
-    if (this.wholeWordButton) {
-      this.wholeWordButton.toggled = Boolean(settingValue.wholeWord);
+    if (this.#wholeWordButton) {
+      this.#wholeWordButton.toggled = this.#wholeWordToggled;
     }
-    if (this.regexButton) {
-      this.regexButton.toggled = Boolean(settingValue.isRegex);
+    if (this.#regexButton) {
+      this.#regexButton.toggled = this.#regexToggled;
     }
   }
   setMinimalSearchQuerySize(minimalSearchQuerySize) {
     this.minimalSearchQuerySize = minimalSearchQuerySize;
   }
   setPlaceholder(placeholder, ariaLabel) {
+    this.#placeholder = placeholder;
+    this.#searchAriaLabel = ariaLabel;
     this.searchInputElement.placeholder = placeholder;
-    if (ariaLabel) {
-      setLabel(this.searchInputElement, ariaLabel);
+    if (this.#searchAriaLabel) {
+      setLabel(this.searchInputElement, this.#searchAriaLabel);
     }
+  }
+  get placeholder() {
+    return this.#placeholder;
+  }
+  set placeholder(placeholder) {
+    this.#placeholder = placeholder;
+    this.searchInputElement.placeholder = placeholder;
   }
   setReplaceable(replaceable) {
     this.replaceable = replaceable;
@@ -22114,7 +22174,7 @@ var SearchableView = class extends VBox {
   }
   closeSearch() {
     this.cancelSearch();
-    if (this.footerElementContainer.hasFocus()) {
+    if (this.footerElementContainer?.hasFocus()) {
       this.focus();
     }
     this.searchProvider.onSearchClosed?.();
@@ -22134,6 +22194,8 @@ var SearchableView = class extends VBox {
   resetSearch() {
     this.clearSearch();
     this.updateReplaceVisibility();
+    this.#matchesText = "";
+    this.#matchesAriaLabel = "";
     this.matchesElementValue.textContent = "";
   }
   refreshSearch() {
@@ -22169,28 +22231,31 @@ var SearchableView = class extends VBox {
     return true;
   }
   updateSearchNavigationButtonState(enabled) {
-    this.replaceButtonElement.disabled = !enabled;
-    this.replaceAllButtonElement.disabled = !enabled;
+    this.#hasMatches = enabled;
+    this.replaceButtonElement.disabled = !this.#hasMatches;
+    this.replaceAllButtonElement.disabled = !this.#hasMatches;
     if (this.searchProvider.supportsMatchCounts?.() === true) {
-      this.searchNavigationPrevElement.setEnabled(enabled);
-      this.searchNavigationNextElement.setEnabled(enabled);
+      this.searchNavigationPrevElement.setEnabled(this.#hasMatches);
+      this.searchNavigationNextElement.setEnabled(this.#hasMatches);
     }
   }
   updateSearchMatchesCountAndCurrentMatchIndex(matches, currentMatchIndex) {
     if (!this.currentQuery) {
-      this.matchesElementValue.textContent = "";
+      this.#matchesText = "";
+      this.#matchesAriaLabel = "";
     } else if (matches === 0 || currentMatchIndex >= 0) {
-      this.matchesElementValue.textContent = i18nString19(UIStrings19.dOfD, { PH1: currentMatchIndex + 1, PH2: matches });
-      setLabel(
-        this.matchesElement,
-        i18nString19(UIStrings19.accessibledOfD, { PH1: currentMatchIndex + 1, PH2: matches })
-      );
+      this.#matchesText = i18nString19(UIStrings19.dOfD, { PH1: currentMatchIndex + 1, PH2: matches });
+      this.#matchesAriaLabel = i18nString19(UIStrings19.accessibledOfD, { PH1: currentMatchIndex + 1, PH2: matches });
     } else if (matches === 1) {
-      this.matchesElementValue.textContent = i18nString19(UIStrings19.matchString);
-      setLabel(this.matchesElement, i18nString19(UIStrings19.matchString));
+      this.#matchesText = i18nString19(UIStrings19.matchString);
+      this.#matchesAriaLabel = i18nString19(UIStrings19.matchString);
     } else {
-      this.matchesElementValue.textContent = i18nString19(UIStrings19.dMatches, { PH1: matches });
-      setLabel(this.matchesElement, i18nString19(UIStrings19.dMatches, { PH1: matches }));
+      this.#matchesText = i18nString19(UIStrings19.dMatches, { PH1: matches });
+      this.#matchesAriaLabel = i18nString19(UIStrings19.dMatches, { PH1: matches });
+    }
+    this.matchesElementValue.textContent = this.#matchesText;
+    if (this.#matchesAriaLabel) {
+      setLabel(this.matchesElement, this.#matchesAriaLabel);
     }
     this.updateSearchNavigationButtonState(matches > 0);
   }
@@ -22199,7 +22264,7 @@ var SearchableView = class extends VBox {
       this.cancelSearch();
     }
     let queryCandidate;
-    if (!this.searchInputElement.hasFocus()) {
+    if (!this.searchInputElement?.hasFocus()) {
       const selection = InspectorView.instance().element.window().getSelection();
       if (selection?.rangeCount) {
         queryCandidate = selection.toString().replace(/\r?\n.*/, "");
@@ -22207,22 +22272,41 @@ var SearchableView = class extends VBox {
     }
     this.toggleSearchBar(true);
     this.updateReplaceVisibility();
-    if (queryCandidate) {
+    if (queryCandidate && this.searchInputElement) {
       this.searchInputElement.value = queryCandidate;
     }
     this.performSearch(false, false);
-    this.searchInputElement.focus();
-    this.searchInputElement.select();
+    this.searchInputElement?.focus();
+    this.searchInputElement?.select();
     this.searchIsVisible = true;
   }
   updateReplaceVisibility() {
     this.replaceToggleButton.setVisible(this.replaceable);
     if (!this.replaceable) {
+      this.#secondRowVisible = false;
       this.replaceToggleButton.setToggled(false);
       this.updateSecondRowVisibility();
     }
   }
   onSearchKeyDown(event) {
+    if (event.keyCode === Keys.Up.code) {
+      if (this.#historyPosition > 0) {
+        this.#historyPosition--;
+        this.searchInputElement.value = this.#history[this.#historyPosition];
+        this.onInput();
+      }
+      event.consume(true);
+      return;
+    }
+    if (event.keyCode === Keys.Down.code) {
+      if (this.#historyPosition < this.#history.length - 1) {
+        this.#historyPosition++;
+        this.searchInputElement.value = this.#history[this.#historyPosition];
+        this.onInput();
+      }
+      event.consume(true);
+      return;
+    }
     if (Platform22.KeyboardUtilities.isEscKey(event)) {
       this.closeSearch();
       event.consume(true);
@@ -22230,6 +22314,11 @@ var SearchableView = class extends VBox {
     }
     if (!(event.key === "Enter")) {
       return;
+    }
+    if (!(this.#history.length > 1 && this.#history[this.#history.length - 2] === this.searchInputElement.value)) {
+      this.#history[this.#history.length - 1] = this.searchInputElement.value;
+      this.#historyPosition = this.#history.length - 1;
+      this.#history.push("");
     }
     if (!this.currentQuery) {
       this.performSearch(true, true, event.shiftKey);
@@ -22267,7 +22356,7 @@ var SearchableView = class extends VBox {
     this.updateSearchMatchesCountAndCurrentMatchIndex(0, -1);
   }
   performSearch(forceSearch, shouldJump, jumpBackwards) {
-    const query = this.searchInputElement.value;
+    const query = this.searchInputElement?.value ?? "";
     if (!query || !forceSearch && query.length < this.minimalSearchQuerySize && !this.currentQuery) {
       this.clearSearch();
       return;
@@ -22278,19 +22367,15 @@ var SearchableView = class extends VBox {
     this.searchProvider.performSearch(searchConfig, shouldJump, jumpBackwards);
   }
   currentSearchConfig() {
-    const query = this.searchInputElement.value;
-    const caseSensitive = this.caseSensitiveButton ? this.caseSensitiveButton.toggled : false;
-    const wholeWord = this.wholeWordButton ? this.wholeWordButton.toggled : false;
-    const isRegex = this.regexButton ? this.regexButton.toggled : false;
-    return new SearchConfig(query, caseSensitive, wholeWord, isRegex);
+    const query = this.searchInputElement?.value ?? "";
+    return new SearchConfig(query, this.#caseSensitiveToggled, this.#wholeWordToggled, this.#regexToggled);
   }
   updateSecondRowVisibility() {
-    const secondRowVisible = this.replaceToggleButton.isToggled();
-    this.footerElementContainer.classList.toggle("replaceable", secondRowVisible);
-    if (secondRowVisible) {
-      this.replaceInputElement.focus();
+    this.footerElementContainer.classList.toggle("replaceable", this.#secondRowVisible);
+    if (this.#secondRowVisible) {
+      this.replaceInputElement?.focus();
     } else {
-      this.searchInputElement.focus();
+      this.searchInputElement?.focus();
     }
     this.doResize();
   }
@@ -22299,7 +22384,7 @@ var SearchableView = class extends VBox {
       throw new Error("No 'replaceable' provided to SearchableView!");
     }
     const searchConfig = this.currentSearchConfig();
-    this.replaceProvider.replaceSelectionWith(searchConfig, this.replaceInputElement.value);
+    this.replaceProvider.replaceSelectionWith(searchConfig, this.replaceInputElement?.value ?? "");
     this.currentQuery = void 0;
     this.performSearch(true, true);
   }
@@ -22308,15 +22393,18 @@ var SearchableView = class extends VBox {
       throw new Error("No 'replaceable' provided to SearchableView!");
     }
     const searchConfig = this.currentSearchConfig();
-    this.replaceProvider.replaceAllWith(searchConfig, this.replaceInputElement.value);
+    this.replaceProvider.replaceAllWith(searchConfig, this.replaceInputElement?.value ?? "");
   }
   onInput() {
+    if (this.#history.length === this.#historyPosition + 1) {
+      this.#history[this.#historyPosition] = this.searchInputElement.value;
+    }
     if (!Common18.Settings.Settings.instance().resolve(Settings12.MainSettings.searchAsYouTypeSettingDescriptor).get()) {
       this.clearSearch();
       return;
     }
     clearTimeout(this.valueChangedTimeoutId);
-    const timeout = this.searchInputElement.value.length < 3 ? 200 : 0;
+    const timeout = (this.searchInputElement?.value.length ?? 0) < 3 ? 200 : 0;
     this.valueChangedTimeoutId = window.setTimeout(this.onValueChanged.bind(this), timeout);
   }
   onValueChanged() {
@@ -22786,6 +22874,7 @@ __export(View_exports, {
   SimpleView: () => SimpleView
 });
 import * as Platform23 from "../../core/platform/platform.js";
+import { nothing as nothing9 } from "../lit/lit.js";
 var SimpleView = class extends VBox {
   #title;
   #viewId;
@@ -22811,7 +22900,7 @@ var SimpleView = class extends VBox {
     return false;
   }
   toolbarItems() {
-    return Promise.resolve([]);
+    return Promise.resolve(nothing9);
   }
   widget() {
     return Promise.resolve(this);

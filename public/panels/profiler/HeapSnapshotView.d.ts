@@ -7,6 +7,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotContainmentDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, type HeapSnapshotSortableDataGrid } from './HeapSnapshotDataGrids.js';
 import { type HeapSnapshotGridNode } from './HeapSnapshotGridNodes.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent, Samples } from './HeapTimelineOverview.js';
@@ -73,7 +74,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
         count: number;
         size: number;
     }): void;
-    toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
+    toolbarItems(): Promise<Lit.TemplateResult>;
     willHide(): void;
     supportsCaseSensitiveSearch(): boolean;
     supportsWholeWordSearch(): boolean;

@@ -6,21 +6,33 @@ export interface ViewInput {
     isLabelEditable: boolean;
     onLabelFocusOut: () => void;
     onLabelDblClick: () => void;
-    onLabelKeyDown: (event: KeyboardEvent) => void;
-    onLabelInput: () => void;
+    onLabelEditComplete: () => void;
+    onLabelInput: (label: string) => void;
+}
+export interface PositionLabelOptions {
+    /**
+     * The bounds of the flame chart canvas that the label must stay within.
+     */
+    canvasRect: DOMRect;
+    /**
+     * Whether to hide the label if the range is too narrow: that is, if the
+     * visible part of the range is not wider than the duration text.
+     */
+    hideLabelIfTooNarrow: boolean;
 }
 /**
- * Elements the view fills in through refs. The widget measures them to
- * position the label, and focuses the label box. They are undefined until the
- * first render.
- *
- * TODO(crbug.com/407941310): Replace these temporary raw element references
- * with view callbacks and declarative state in a follow-up CL.
+ * Callbacks the view fills in when it renders.
  */
 export interface ViewOutput {
-    rangeContainer?: HTMLElement;
-    labelBox?: HTMLElement;
-    durationBox?: HTMLElement;
+    focusLabel: () => void;
+    /**
+     * Moves the label as required to keep it on screen, and hides it if the
+     * visible part of the range is too narrow. Returns true once the label has
+     * been measured, including when it is hidden. Returns false, without
+     * changing anything, if the duration text has no width to measure against,
+     * or if the view has not rendered yet.
+     */
+    positionLabel: (options: PositionLabelOptions) => boolean;
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
@@ -46,11 +58,11 @@ export declare class TimeRangeOverlay extends UI.Widget.Widget {
     /**
      * We use this method after the overlay has been positioned in order to move
      * the label as required to keep it on screen.
-     * If the label is off to the left or right, we fix it to that corner and
-     * align the text so the label is visible as long as possible.
      *
      * This runs synchronously, rather than through `requestUpdate()`, so that
-     * `Overlays` can reposition the label in the same frame as the range.
+     * `Overlays` can reposition the label in the same frame as the range. The
+     * current state is passed to the view as arguments, rather than through the
+     * view input, because the last render may not include it yet.
      */
     updateLabelPositioning(): void;
     performUpdate(): void;

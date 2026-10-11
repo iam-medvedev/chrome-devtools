@@ -26,15 +26,15 @@ describe('CLSCulprits', function () {
             const expected = [
                 {
                     name: 'simple-animation',
-                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    failureReasons: [Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY],
                     unsupportedProperties: ['color'],
                     animation: simpleAnimation,
                 },
                 {
                     name: 'top',
                     failureReasons: [
-                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
-                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                        Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE,
+                        Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY,
                     ],
                     unsupportedProperties: ['top'],
                     animation: top,
@@ -64,8 +64,8 @@ describe('CLSCulprits', function () {
                 {
                     name: 'simple-animation',
                     failureReasons: [
-                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
-                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                        Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE,
+                        Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY,
                     ],
                     unsupportedProperties: ['height', 'color', 'top'],
                     animation: simpleAnimation,
@@ -76,8 +76,8 @@ describe('CLSCulprits', function () {
                 {
                     name: 'simple-animation',
                     failureReasons: [
-                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
-                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                        Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE,
+                        Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY,
                     ],
                     unsupportedProperties: ['height', 'color', 'top'],
                     animation: simpleAnimation,
@@ -85,8 +85,8 @@ describe('CLSCulprits', function () {
                 {
                     name: 'top',
                     failureReasons: [
-                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
-                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                        Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE,
+                        Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY,
                     ],
                     unsupportedProperties: ['top'],
                     animation: top,

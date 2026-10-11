@@ -34,7 +34,7 @@ var UIStrings = {
   /**
    * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting off.
    */
-  doNotShowGridNamedAreas: "Do not show grid named areas",
+  doNotShowGridNamedAreas: "Don\u2019t show grid named areas",
   /**
    * @description Title of a setting that turns on grid track size labels.
    */
@@ -46,7 +46,7 @@ var UIStrings = {
   /**
    * @description Title for CSS Grid tooling option.
    */
-  doNotShowGridTrackSizes: "Do not show grid track sizes",
+  doNotShowGridTrackSizes: "Don\u2019t show grid track sizes",
   /**
    * @description Title of a setting that turns on grid extension lines.
    */
@@ -54,7 +54,7 @@ var UIStrings = {
   /**
    * @description Title of a setting that turns off the grid extension lines.
    */
-  doNotExtendGridLines: "Do not extend grid lines",
+  doNotExtendGridLines: "Don\u2019t extend grid lines",
   /**
    * @description Title of a setting that turns on grid line labels.
    */
@@ -570,62 +570,39 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.highlightN
   order: 4,
   title: i18nLazyString(UIStrings.revealDomNodeOnHover)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.showDetailedInspectTooltipSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 5,
-  title: i18nLazyString(UIStrings.detailedInspectTooltip),
-  settingName: "show-detailed-inspect-tooltip",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.detailedInspectTooltip)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.ELEMENTS,
+    order: 6,
+    title: i18nLazyString(UIStrings.cssAnimationsOnlyWhenAnimationsTabOpen)
+  }
+);
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.ElementsSettings.collapseNonContributingCSSRulesSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.ELEMENTS,
+    order: 7,
+    title: i18nLazyString(UIStrings.collapseNonContributingCSSRules)
+  }
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.showInactiveCSSRulesSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  order: 6,
-  title: i18nLazyString(UIStrings.cssAnimationsOnlyWhenAnimationsTabOpen),
-  settingName: "css-animations-only-when-animations-tab-open",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  order: 7,
-  title: i18nLazyString(UIStrings.collapseNonContributingCSSRules),
-  settingName: "collapse-non-contributing-css-rules",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   order: 8,
-  title: i18nLazyString(UIStrings.showInactiveCSSRules),
-  settingName: "show-inactive-css-rules",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.showInactiveCSSRules)
 });
-Common.Settings.registerSettingExtension({
-  settingName: "show-event-listeners-for-ancestors",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.ADORNER,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  settingName: "adorner-settings",
-  settingType: Common.Settings.SettingType.ARRAY,
-  defaultValue: []
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.ELEMENTS,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.CSSDocumentationTooltip),
-  settingName: "show-css-property-documentation-on-hover",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
-});
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.ElementsSettings.showCSSPropertyDocumentationOnHoverSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.ELEMENTS,
+    title: i18nLazyString(UIStrings.CSSDocumentationTooltip)
+  }
+);
 UI.ContextMenu.registerProvider({
   contextTypes() {
     return [
@@ -713,13 +690,9 @@ UI.Toolbar.registerToolbarItem({
   location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
   order: 0
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.ElementsSettings.showFrameworkListenersSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.GLOBAL,
-  title: i18nLazyString(UIStrings.frameworkListeners),
-  settingName: "show-frameowkr-listeners",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.frameworkListeners)
 });
 SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.showMetricsRulersSettingDescriptor, {
   category: Common.Settings.SettingCategory.ELEMENTS,

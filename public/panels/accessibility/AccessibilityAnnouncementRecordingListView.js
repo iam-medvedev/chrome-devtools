@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -46,6 +47,14 @@ const UIStrings = {
      * @description Context menu item for copying the announcement element HTML snippet to the clipboard.
      */
     copyElementHtml: 'Copy element HTML',
+    /**
+     * @description Context menu item to reveal the announcement source element in the Elements panel DOM tree.
+     */
+    revealInElements: 'Reveal in Elements panel',
+    /**
+     * @description Context menu item to reveal the announcement source element in the full Accessibility tree.
+     */
+    revealInA11yTree: 'Reveal in Accessibility tree',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AccessibilityAnnouncementRecordingListView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -101,10 +110,10 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     </devtools-data-grid>`, target);
     // clang-format on
 };
-export class AccessibilityAnnouncementRecordingListView extends UI.Widget.VBox {
+const AccessibilityAnnouncementRecordingListViewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+export class AccessibilityAnnouncementRecordingListView extends AccessibilityAnnouncementRecordingListViewBase {
     #items = [];
     #selectedItem = null;
-    #onSelect = null;
     #view;
     constructor(element, view = DEFAULT_VIEW) {
         super(element, { useShadowDom: true });
@@ -134,15 +143,21 @@ export class AccessibilityAnnouncementRecordingListView extends UI.Widget.VBox {
     get selectedItem() {
         return this.#selectedItem;
     }
-    set onSelect(onSelect) {
-        this.#onSelect = onSelect;
-    }
     reset() {
         this.#items = [];
         this.#selectedItem = null;
         this.requestUpdate();
     }
     #populateContextMenu(contextMenu, item) {
+        if (item.element) {
+            const revealSection = contextMenu.revealSection();
+            revealSection.appendItem(i18nString(UIStrings.revealInElements), () => {
+                this.dispatchEventToListeners("reveal-in-elements" /* AccessibilityAnnouncementRecordingListView.Events.REVEAL_IN_ELEMENTS */, item);
+            }, { jslogContext: 'reveal-in-elements' });
+            revealSection.appendItem(i18nString(UIStrings.revealInA11yTree), () => {
+                this.dispatchEventToListeners("reveal-in-a11y-tree" /* AccessibilityAnnouncementRecordingListView.Events.REVEAL_IN_A11Y_TREE */, item);
+            }, { jslogContext: 'reveal-in-a11y-tree' });
+        }
         if (item.message) {
             contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), () => {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(item.message);
@@ -163,14 +178,22 @@ export class AccessibilityAnnouncementRecordingListView extends UI.Widget.VBox {
             },
             onSelect: (item) => {
                 this.selectedItem = item;
-                this.#onSelect?.(item);
+                this.dispatchEventToListeners("announcement-selected" /* AccessibilityAnnouncementRecordingListView.Events.ANNOUNCEMENT_SELECTED */, item);
             },
             onDeselect: () => {
                 this.selectedItem = null;
-                this.#onSelect?.(null);
+                this.dispatchEventToListeners("announcement-selected" /* AccessibilityAnnouncementRecordingListView.Events.ANNOUNCEMENT_SELECTED */, null);
             },
         };
         this.#view(input, undefined, this.contentElement);
     }
 }
+(function (AccessibilityAnnouncementRecordingListView) {
+    let Events;
+    (function (Events) {
+        Events["ANNOUNCEMENT_SELECTED"] = "announcement-selected";
+        Events["REVEAL_IN_ELEMENTS"] = "reveal-in-elements";
+        Events["REVEAL_IN_A11Y_TREE"] = "reveal-in-a11y-tree";
+    })(Events = AccessibilityAnnouncementRecordingListView.Events || (AccessibilityAnnouncementRecordingListView.Events = {}));
+})(AccessibilityAnnouncementRecordingListView || (AccessibilityAnnouncementRecordingListView = {}));
 //# sourceMappingURL=AccessibilityAnnouncementRecordingListView.js.map

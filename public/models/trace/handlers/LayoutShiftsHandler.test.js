@@ -219,9 +219,9 @@ describe('LayoutShiftsHandler', function () {
                 clusterScore += event.args.data ? event.args.data.weighted_score_delta : 0;
                 // Here we've crossed the threshold from Good to NI (but not Bad) so
                 // check that both the Good and NI windows values are set as expected.
-                if (scoreBeforeEvent < 0.1 /* Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.NEEDS_IMPROVEMENT */ &&
-                    clusterScore >= 0.1 /* Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.NEEDS_IMPROVEMENT */ &&
-                    clusterScore < 0.25 /* Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD */) {
+                if (scoreBeforeEvent < Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.NEEDS_IMPROVEMENT &&
+                    clusterScore >= Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.NEEDS_IMPROVEMENT &&
+                    clusterScore < Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD) {
                     assert.strictEqual(cluster.scoreWindows.good.max, event.ts - 1);
                     assert.isOk(cluster.scoreWindows.needsImprovement, 'No Needs Improvement window');
                     assert.strictEqual(cluster.scoreWindows.needsImprovement.min, event.ts);
@@ -229,8 +229,8 @@ describe('LayoutShiftsHandler', function () {
                 // Here we have transitioned from either Good or NI to Bad, so
                 // again we assert that the Bad window starts when expected,
                 // and that either the NI or Good window finishes just prior.
-                if (scoreBeforeEvent < 0.25 /* Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD */ &&
-                    clusterScore >= 0.25 /* Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD */) {
+                if (scoreBeforeEvent < Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD &&
+                    clusterScore >= Trace.Handlers.ModelHandlers.LayoutShifts.LayoutShiftsThreshold.BAD) {
                     assert.isOk(cluster.scoreWindows.bad, 'No Bad window');
                     if (cluster.scoreWindows.needsImprovement) {
                         assert.strictEqual(cluster.scoreWindows.needsImprovement.max, event.ts - 1);

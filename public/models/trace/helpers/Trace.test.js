@@ -29,7 +29,7 @@ describe('Trace helpers', function () {
                 pid,
                 ts: Trace.Types.Timing.Micro(0),
                 cat: 'test',
-                ph: "M" /* Trace.Types.Events.Phase.METADATA */,
+                ph: Trace.Types.Events.Phase.METADATA,
             };
         }
         function pid(x) {
@@ -98,7 +98,7 @@ describe('Trace helpers', function () {
             const firstNavigation = Meta.navigationsByNavigationId.values().next().value;
             const fcp = PageLoadMetrics.metricScoresByFrameId.get(Meta.mainFrameId)
                 ?.get(firstNavigation)
-                ?.get("FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
+                ?.get(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
             assert.isOk(fcp?.event, 'FCP not found');
             const navigationForFirstRequest = Trace.Helpers.Trace.getNavigationForTraceEvent(fcp.event, Meta.mainFrameId, Meta.navigationsByFrameId);
             assert.strictEqual(navigationForFirstRequest, firstNavigation);
@@ -429,7 +429,7 @@ describe('Trace helpers', function () {
                     name: `fake-event:${id}`,
                     ts: tsMicro,
                     id2: { local: id },
-                    ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+                    ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_START,
                     pid: Trace.Types.Events.ProcessID(1),
                     tid: Trace.Types.Events.ThreadID(1),
                     cat: 'blink.user_timing',
@@ -437,12 +437,12 @@ describe('Trace helpers', function () {
             }
             function makeEndEvent(id, tsMicro) {
                 const event = makeBeginEvent(id, tsMicro);
-                event.ph = "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */;
+                event.ph = Trace.Types.Events.Phase.ASYNC_NESTABLE_END;
                 return event;
             }
             function makeInstantEvent(id, tsMicro) {
                 const event = makeBeginEvent(id, tsMicro);
-                event.ph = "n" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT */;
+                event.ph = Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT;
                 return event;
             }
             it('can match up begin and end events with any instant events in the time period', async () => {
@@ -528,8 +528,8 @@ describe('Trace helpers', function () {
     describe('getZeroIndexedLineAndColumnNumbersForEvent', () => {
         it('subtracts one from the line number of a function call', async () => {
             const fakeFunctionCall = {
-                name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
-                ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                name: Trace.Types.Events.Name.FUNCTION_CALL,
+                ph: Trace.Types.Events.Phase.COMPLETE,
                 cat: 'devtools-timeline',
                 dur: Trace.Types.Timing.Micro(100),
                 ts: Trace.Types.Timing.Micro(100),
@@ -539,7 +539,7 @@ describe('Trace helpers', function () {
                     data: {
                         functionName: 'test',
                         url: 'https://google.com/test.js',
-                        scriptId: Number(123),
+                        scriptId: '123',
                         lineNumber: 1,
                         columnNumber: 1,
                     },
@@ -719,7 +719,7 @@ describe('Trace helpers', function () {
     });
     describe('isTopLevelEvent', () => {
         it('is true for a RunTask event', () => {
-            const runTask = makeCompleteEvent("RunTask" /* Trace.Types.Events.Name.RUN_TASK */, 0, 100, 'disabled-by-default-devtools.timeline');
+            const runTask = makeCompleteEvent(Trace.Types.Events.Name.RUN_TASK, 0, 100, 'disabled-by-default-devtools.timeline');
             assert.isTrue(Trace.Helpers.Trace.isTopLevelEvent(runTask));
         });
     });

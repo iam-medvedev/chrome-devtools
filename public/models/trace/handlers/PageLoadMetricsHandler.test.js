@@ -26,8 +26,8 @@ describe('PageLoadMetricsHandler', function () {
             // and one for the second.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 2);
             const scoresByMetricName = [...pageLoadEventsForMainFrame.values()];
-            const fcpCount = countMetricOcurrences(scoresByMetricName, "FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
-            const lcpCount = countMetricOcurrences(scoresByMetricName, "LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+            const fcpCount = countMetricOcurrences(scoresByMetricName, Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
+            const lcpCount = countMetricOcurrences(scoresByMetricName, Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
             assert.strictEqual(fcpCount, 2);
             assert.strictEqual(lcpCount, 2);
         });
@@ -49,8 +49,8 @@ describe('PageLoadMetricsHandler', function () {
                 // Single FCP event that occurred after the refresh.
                 assert.strictEqual(pageLoadEventsForMainFrame.size, 1);
                 const scoresByMetricName = [...pageLoadEventsForMainFrame.values()];
-                const fcpCount = countMetricOcurrences(scoresByMetricName, "FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
-                const lcpCount = countMetricOcurrences(scoresByMetricName, "LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+                const fcpCount = countMetricOcurrences(scoresByMetricName, Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
+                const lcpCount = countMetricOcurrences(scoresByMetricName, Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
                 assert.strictEqual(fcpCount, 1);
                 assert.strictEqual(lcpCount, 1);
             });
@@ -88,7 +88,7 @@ describe('PageLoadMetricsHandler', function () {
             // There are 2 MarkDOMContent events on the main frame: one for the first navigation,
             // and one for the second.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 2);
-            const dclCount = countMetricOcurrences([...pageLoadEventsForMainFrame.values()], "DCL" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL */);
+            const dclCount = countMetricOcurrences([...pageLoadEventsForMainFrame.values()], Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL);
             assert.strictEqual(dclCount, 2);
         });
     });
@@ -112,48 +112,48 @@ describe('PageLoadMetricsHandler', function () {
             allMetricScores = scoresByMetricName.flatMap(metricScores => [...metricScores.values()]);
         });
         it('extracts DOMContentLoaded correctly', () => {
-            const domContentLoadedMetrics = getMetricsByName("DCL" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL */);
+            const domContentLoadedMetrics = getMetricsByName(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL);
             assert.strictEqual(domContentLoadedMetrics[0].timing, 34520);
-            assert.strictEqual(domContentLoadedMetrics[0].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(domContentLoadedMetrics[0].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(domContentLoadedMetrics[0], firstNavigationId);
             assert.strictEqual(domContentLoadedMetrics[1].timing, 40401);
-            assert.strictEqual(domContentLoadedMetrics[1].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(domContentLoadedMetrics[1].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(domContentLoadedMetrics[1], secondNavigationId);
         });
         it('extracts First Contentful Paint correctly', () => {
-            const firstContentfulPaints = getMetricsByName("FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
+            const firstContentfulPaints = getMetricsByName(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
             assert.strictEqual(firstContentfulPaints[0].timing, 37269);
-            assert.strictEqual(firstContentfulPaints[0].classification, "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+            assert.strictEqual(firstContentfulPaints[0].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].timing, 42390);
-            assert.strictEqual(firstContentfulPaints[1].classification, "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+            assert.strictEqual(firstContentfulPaints[1].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts Largest Contentful Paint correctly', () => {
-            const firstContentfulPaints = getMetricsByName("LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+            const firstContentfulPaints = getMetricsByName(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
             assert.strictEqual(firstContentfulPaints[0].timing, 37271);
-            assert.strictEqual(firstContentfulPaints[0].classification, "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+            assert.strictEqual(firstContentfulPaints[0].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].timing, 42391);
-            assert.strictEqual(firstContentfulPaints[1].classification, "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+            assert.strictEqual(firstContentfulPaints[1].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts First Paint correctly', () => {
-            const firstContentfulPaints = getMetricsByName("FP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */);
+            const firstContentfulPaints = getMetricsByName(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP);
             assert.strictEqual(firstContentfulPaints[0].timing, 37269);
-            assert.strictEqual(firstContentfulPaints[0].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(firstContentfulPaints[0].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].timing, 42389);
-            assert.strictEqual(firstContentfulPaints[1].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(firstContentfulPaints[1].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts Load correctly', () => {
-            const firstContentfulPaints = getMetricsByName("L" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L */);
+            const firstContentfulPaints = getMetricsByName(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L);
             assert.strictEqual(firstContentfulPaints[0].timing, 148980);
-            assert.strictEqual(firstContentfulPaints[0].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(firstContentfulPaints[0].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].timing, 161333);
-            assert.strictEqual(firstContentfulPaints[1].classification, "unclassified" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
+            assert.strictEqual(firstContentfulPaints[1].classification, Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('provides metric scores sorted in ASC order by their events\' timestamps', () => {
@@ -191,9 +191,9 @@ describe('PageLoadMetricsHandler', function () {
             });
             it('extracts all marker events from a trace correctly', () => {
                 for (const metricName of Trace.Types.Events.MarkerName) {
-                    if (metricName === "largestContentfulPaint::CandidateForSoftNavigation" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION */ ||
-                        metricName === "SoftNavigationStart" /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */ ||
-                        metricName === "SyntheticSoftFirstContentfulPaint" /* Trace.Types.Events.Name.MARK_SOFT_FCP */) {
+                    if (metricName === Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION ||
+                        metricName === Trace.Types.Events.Name.SOFT_NAVIGATION_START ||
+                        metricName === Trace.Types.Events.Name.MARK_SOFT_FCP) {
                         continue;
                     }
                     const markerEventsOfThisType = allMarkerEvents.filter(event => event.name === metricName);
@@ -239,7 +239,7 @@ describe('PageLoadMetricsHandler', function () {
             // We need to tell Meta about process and main frame:
             const browserProcess = {
                 name: 'process_name',
-                ph: "M" /* Trace.Types.Events.Phase.METADATA */,
+                ph: Trace.Types.Events.Phase.METADATA,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(0),
@@ -248,8 +248,8 @@ describe('PageLoadMetricsHandler', function () {
             };
             const mainFrameCommitted = {
                 name: 'FrameCommittedInBrowser',
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
-                s: "t" /* Trace.Types.Events.Scope.THREAD */,
+                ph: Trace.Types.Events.Phase.INSTANT,
+                s: Trace.Types.Events.Scope.THREAD,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(0),
@@ -264,9 +264,9 @@ describe('PageLoadMetricsHandler', function () {
                 },
             };
             const tracingStarted = {
-                name: "TracingStartedInBrowser" /* Trace.Types.Events.Name.TRACING_STARTED_IN_BROWSER */,
-                ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
-                s: "t" /* Trace.Types.Events.Scope.THREAD */,
+                name: Trace.Types.Events.Name.TRACING_STARTED_IN_BROWSER,
+                ph: Trace.Types.Events.Phase.INSTANT,
+                s: Trace.Types.Events.Scope.THREAD,
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(0),
@@ -285,8 +285,8 @@ describe('PageLoadMetricsHandler', function () {
                 },
             };
             const softNavStart = {
-                name: "SoftNavigationStart" /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */,
-                ph: "n" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT */,
+                name: Trace.Types.Events.Name.SOFT_NAVIGATION_START,
+                ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_INSTANT,
                 pid: Trace.Types.Events.ProcessID(2),
                 tid: Trace.Types.Events.ThreadID(1),
                 ts: Trace.Types.Timing.Micro(10_000),
@@ -306,8 +306,8 @@ describe('PageLoadMetricsHandler', function () {
                 },
             };
             const softFcpEvent = {
-                name: "SyntheticSoftFirstContentfulPaint" /* Trace.Types.Events.Name.MARK_SOFT_FCP */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                name: Trace.Types.Events.Name.MARK_SOFT_FCP,
+                ph: Trace.Types.Events.Phase.MARK,
                 rawSourceEvent: softNavStart,
                 _tag: 'SyntheticEntryTag',
                 pid: Trace.Types.Events.ProcessID(2),
@@ -340,7 +340,7 @@ describe('PageLoadMetricsHandler', function () {
             assert.isOk(metricsForFrame);
             const metricsForSoftNav = metricsForFrame.get(softNavStart);
             assert.isOk(metricsForSoftNav);
-            const fcpScore = metricsForSoftNav.get("FCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
+            const fcpScore = metricsForSoftNav.get(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP);
             assert.isOk(fcpScore);
             assert.strictEqual(fcpScore.event, softFcpEvent);
             assert.strictEqual(fcpScore.navigation, softNavStart);
@@ -361,9 +361,9 @@ describe('PageLoadMetricsHandler', function () {
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.PageLoadMetrics.finalize();
             const pageLoadMetricsData = Trace.Handlers.ModelHandlers.PageLoadMetrics.data();
-            const softNavMarkers = pageLoadMetricsData.allMarkerEvents.filter(event => event.name === "SoftNavigationStart" /* Trace.Types.Events.Name.SOFT_NAVIGATION_START */ ||
-                event.name === "SyntheticSoftFirstContentfulPaint" /* Trace.Types.Events.Name.MARK_SOFT_FCP */ ||
-                event.name === "largestContentfulPaint::CandidateForSoftNavigation" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION */);
+            const softNavMarkers = pageLoadMetricsData.allMarkerEvents.filter(event => event.name === Trace.Types.Events.Name.SOFT_NAVIGATION_START ||
+                event.name === Trace.Types.Events.Name.MARK_SOFT_FCP ||
+                event.name === Trace.Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION);
             assert.lengthOf(softNavMarkers, 0);
         });
     });

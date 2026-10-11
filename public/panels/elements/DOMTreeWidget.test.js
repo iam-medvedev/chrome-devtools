@@ -986,6 +986,62 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+        it('does not start dragging a DOM node while inline editing is active', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target);
+            let pWidget = null;
+            try {
+                window.getSelection()?.removeAllRanges();
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [
+                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'intro'] },
+                        { nodeId: 3, nodeName: 'SPAN' },
+                    ],
+                });
+                const pNode = rootNode.children()[0];
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const treeElement = tree.getInternalTreeOutlineForTest().rootElement().children()[0].children()[0];
+                assert.exists(treeElement);
+                pWidget = findElementsTreeWidget(domTree, pNode);
+                assert.exists(pWidget);
+                domTree.startEditing(pNode, 'class');
+                await waitForTreeUpdates();
+                assert.isTrue(pWidget.isEditing);
+                const editingElement = treeElement.listItemElement.querySelector('.being-edited');
+                assert.exists(editingElement);
+                const selection = editingElement.getComponentSelection();
+                assert.exists(selection);
+                selection.collapseToStart();
+                treeElement.listItemElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true }));
+                const dataTransfer = new DataTransfer();
+                const dragStartEvent = new DragEvent('dragstart', { bubbles: true, composed: true, cancelable: true, dataTransfer });
+                treeElement.listItemElement.dispatchEvent(dragStartEvent);
+                assert.isTrue(dragStartEvent.defaultPrevented);
+                assert.isNull(domTree.nodeBeingDragged());
+                // Dragging an active non-collapsed text selection inside the editor should not call preventDefault().
+                const range = document.createRange();
+                range.selectNodeContents(editingElement);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                const selectionDragEvent = new DragEvent('dragstart', { bubbles: true, composed: true, cancelable: true, dataTransfer });
+                editingElement.dispatchEvent(selectionDragEvent);
+                assert.isFalse(selectionDragEvent.defaultPrevented);
+                assert.isNull(domTree.nodeBeingDragged());
+            }
+            finally {
+                window.getSelection()?.removeAllRanges();
+                pWidget?.editing?.cancel();
+                domTree.detach();
+            }
+        });
         it('handles clipboard operations (cut, copy, paste, .in-clipboard styling, and events)', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
@@ -3665,6 +3721,12 @@ describeWithEnvironment('DOMTreeWidget', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
             assert.isUndefined(lastChange());
         });
+        it('does not record a change when duplicateNode resolves with a null node', async () => {
+            sinon.stub(childNode1, 'duplicate').resolves({ error: null, node: null });
+            domTree.duplicateNode(childNode1);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.isUndefined(lastChange());
+        });
         it('records a change when pasteNode is called with copied node', () => {
             const clonedNode = SDK.DOMModel.DOMNode.create(childNode1.domModel(), null, false, {
                 nodeId: 4,
@@ -3692,6 +3754,14 @@ describeWithEnvironment('DOMTreeWidget', () => {
             domTree.pasteNode(childNode2);
             assert.isUndefined(lastChange());
         });
+        it('does not record a change when pasteNode copyTo yields a null node', () => {
+            sinon.stub(childNode1, 'copyTo').callsFake((_targetNode, _anchorNode, callback) => {
+                callback?.(null, null);
+            });
+            domTree.setClipboardData({ node: childNode1, isCut: false });
+            domTree.pasteNode(childNode2);
+            assert.isUndefined(lastChange());
+        });
         it('records a change when pasteNode is called with cut node', () => {
             sinon.stub(childNode1, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
                 callback?.(null, childNode1);
@@ -3704,6 +3774,14 @@ describeWithEnvironment('DOMTreeWidget', () => {
         it('does not record a change when pasteNode with cut node fails with an error', () => {
             sinon.stub(childNode1, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
                 callback?.('Error moving node', null);
+            });
+            domTree.setClipboardData({ node: childNode1, isCut: true });
+            domTree.pasteNode(childNode2);
+            assert.isUndefined(lastChange());
+        });
+        it('does not record a change when pasteNode with cut node yields a null node', () => {
+            sinon.stub(childNode1, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
+                callback?.(null, null);
             });
             domTree.setClipboardData({ node: childNode1, isCut: true });
             domTree.pasteNode(childNode2);
@@ -3738,6 +3816,16 @@ describeWithEnvironment('DOMTreeWidget', () => {
             domTree.onKeyDown(upEvent);
             assert.isUndefined(lastChange());
         });
+        it('does not record a change when reordering nodes yields a null node', () => {
+            sinon.stub(childNode2, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
+                callback?.(null, null);
+            });
+            domTree.selectDOMNode(childNode2);
+            const isMac = Host.Platform.isMac();
+            const upEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', ctrlKey: !isMac, metaKey: isMac, bubbles: true });
+            domTree.onKeyDown(upEvent);
+            assert.isUndefined(lastChange());
+        });
         it('records a change when drag and drop moves a node', () => {
             sinon.stub(childNode1, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
                 callback?.(null, childNode1);
@@ -3753,12 +3841,25 @@ describeWithEnvironment('DOMTreeWidget', () => {
             domTree.moveNode(childNode1, childNode2, /* isClosingTag= */ false);
             assert.isUndefined(lastChange());
         });
-        it('records a change when toggleHideElement is called', () => {
-            sinon.stub(childNode1, 'toggleHideElement');
-            sinon.stub(childNode1, 'isToggledToHidden').returns(false);
-            void domTree.toggleHideElement(childNode1);
+        it('does not record a change when drag and drop move yields a null node', () => {
+            sinon.stub(childNode1, 'moveTo').callsFake((_targetNode, _anchorNode, callback) => {
+                callback?.(null, null);
+            });
+            domTree.moveNode(childNode1, childNode2, /* isClosingTag= */ false);
+            assert.isUndefined(lastChange());
+        });
+        it('records a change when toggleHideElement is called', async () => {
+            sinon.stub(childNode1, 'toggleHideElement').resolves();
+            sinon.stub(childNode1, 'isToggledToHidden').onFirstCall().returns(false).onSecondCall().returns(true);
+            await domTree.toggleHideElement(childNode1);
             assert.strictEqual(lastChange(), 'Hid element <p>');
             assert.strictEqual(lastChangeBackendNodeId(), 2);
+        });
+        it('does not record a change when toggleHideElement fails to change hidden state', async () => {
+            sinon.stub(childNode1, 'toggleHideElement').resolves();
+            sinon.stub(childNode1, 'isToggledToHidden').returns(false);
+            await domTree.toggleHideElement(childNode1);
+            assert.isUndefined(lastChange());
         });
         it('ignores late requestDocument resolution for a DOMModel that was removed via modelRemoved', async () => {
             const { domTree, domModel: primaryDomModel } = setupDOMTreeWidget(target);

@@ -7,15 +7,15 @@ describe('Trace file types', () => {
     describe('traceEventKeyToValues', () => {
         it('converts the values for a LegacyTimelineFrame', async () => {
             const result = Trace.Types.File.traceEventKeyToValues('l-101');
-            assert.deepEqual(result, { type: "l" /* Trace.Types.File.EventKeyType.LEGACY_TIMELINE_FRAME */, rawIndex: 101 });
+            assert.deepEqual(result, { type: Trace.Types.File.EventKeyType.LEGACY_TIMELINE_FRAME, rawIndex: 101 });
         });
         it('converts the values for a raw event', async () => {
             const result = Trace.Types.File.traceEventKeyToValues('r-101');
-            assert.deepEqual(result, { type: "r" /* Trace.Types.File.EventKeyType.RAW_EVENT */, rawIndex: 101 });
+            assert.deepEqual(result, { type: Trace.Types.File.EventKeyType.RAW_EVENT, rawIndex: 101 });
         });
         it('converts the values for a synthetic event', async () => {
             const result = Trace.Types.File.traceEventKeyToValues('s-101');
-            assert.deepEqual(result, { type: "s" /* Trace.Types.File.EventKeyType.SYNTHETIC_EVENT */, rawIndex: 101 });
+            assert.deepEqual(result, { type: Trace.Types.File.EventKeyType.SYNTHETIC_EVENT, rawIndex: 101 });
         });
         it('converts the values for a profile call event', async () => {
             const pid = Trace.Types.Events.ProcessID(1);
@@ -25,7 +25,7 @@ describe('Trace file types', () => {
             const key = ['p', pid, tid, sampleIndex, nodeId].join('-');
             const result = Trace.Types.File.traceEventKeyToValues(key);
             assert.deepEqual(result, {
-                type: "p" /* Trace.Types.File.EventKeyType.PROFILE_CALL */,
+                type: Trace.Types.File.EventKeyType.PROFILE_CALL,
                 processID: pid,
                 threadID: tid,
                 sampleIndex,

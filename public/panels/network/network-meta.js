@@ -395,38 +395,33 @@ UI.ActionRegistration.registerActionExtension({
     return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.NETWORK,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData),
-  settingName: "network.show-options-to-generate-har-with-sensitive-data",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
-  tags: [
-    i18n.i18n.lockedLazyString("HAR")
-  ],
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.dontAllowToGenerateHarWithSensitiveData)
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.NetworkSettings.showOptionsToGenerateHarWithSensitiveDataSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.NETWORK,
+    title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData),
+    tags: [
+      i18n.i18n.lockedLazyString("HAR")
+    ],
+    options: [
+      {
+        value: true,
+        title: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveData)
+      },
+      {
+        value: false,
+        title: i18nLazyString(UIStrings.dontAllowToGenerateHarWithSensitiveData)
+      }
+    ],
+    learnMore: {
+      url: "https://goo.gle/devtools-export-hars",
+      tooltip: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveDataDocumentation)
     }
-  ],
-  learnMore: {
-    url: "https://goo.gle/devtools-export-hars",
-    tooltip: i18nLazyString(UIStrings.allowToGenerateHarWithSensitiveDataDocumentation)
   }
-});
-Common.Settings.registerSettingExtension({
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.NetworkSettings.colorCodeResourceTypesSettingDescriptor, {
   category: Common.Settings.SettingCategory.NETWORK,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.colorcodeResourceTypes),
-  settingName: "network-color-code-resource-types",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
   tags: [
     i18nLazyString(UIStrings.colorCode),
     i18nLazyString(UIStrings.resourceType)
@@ -442,13 +437,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.NetworkSettings.groupByFrameSettingDescriptor, {
   category: Common.Settings.SettingCategory.NETWORK,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.groupNetworkLogByFrame),
-  settingName: "network.group-by-frame",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false,
   tags: [
     i18nLazyString(UIStrings.netWork),
     i18nLazyString(UIStrings.frame),

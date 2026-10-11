@@ -12,117 +12,23 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html } from '../../ui/lit/lit.js';
 import * as SourcesComponents from './components/components.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
 describe('TabbedEditorContainer', () => {
-    describe('HistoryItem', () => {
-        const { HistoryItem } = Sources.TabbedEditorContainer;
-        const url = urlString `http://localhost`;
-        describe('fromObject', () => {
-            it('rejects invalid resource type names', () => {
-                assert.throws(() => {
-                    HistoryItem.fromObject({ url, resourceTypeName: 'some-invalid-resource-type-name' });
-                });
-            });
-            it('correctly deserializes resource type names', () => {
-                for (const resourceType of Object.values(Common.ResourceType.resourceTypes)) {
-                    const resourceTypeName = resourceType.name();
-                    assert.propertyVal(HistoryItem.fromObject({ url, resourceTypeName }), 'resourceType', resourceType);
-                }
-            });
-        });
-        describe('toObject', () => {
-            it('correctly serializes resource types', () => {
-                for (const resourceType of Object.values(Common.ResourceType.resourceTypes)) {
-                    const item = new HistoryItem(url, resourceType);
-                    assert.propertyVal(item.toObject(), 'resourceTypeName', resourceType.name());
-                }
-            });
-        });
-    });
-    describe('History', () => {
-        const { History, HistoryItem } = Sources.TabbedEditorContainer;
-        describe('fromObject', () => {
-            it('deserializes correctly', () => {
-                const history = History.fromObject([
-                    { url: 'http://localhost/foo.js', resourceTypeName: 'script' },
-                    { url: 'webpack:///src/foo.vue', resourceTypeName: 'sm-script', scrollLineNumber: 5 },
-                    { url: 'http://localhost/foo.js', resourceTypeName: 'sm-script' },
-                ]);
-                const keys = history.keys();
-                assert.lengthOf(keys, 3);
-                assert.propertyVal(keys[0], 'url', 'http://localhost/foo.js');
-                assert.propertyVal(keys[0], 'resourceType', Common.ResourceType.resourceTypes.Script);
-                assert.isUndefined(history.selectionRange(keys[0]));
-                assert.isUndefined(history.scrollLineNumber(keys[0]));
-                assert.propertyVal(keys[1], 'url', 'webpack:///src/foo.vue');
-                assert.propertyVal(keys[1], 'resourceType', Common.ResourceType.resourceTypes.SourceMapScript);
-                assert.isUndefined(history.selectionRange(keys[1]));
-                assert.strictEqual(history.scrollLineNumber(keys[1]), 5);
-                assert.propertyVal(keys[2], 'url', 'http://localhost/foo.js');
-                assert.propertyVal(keys[2], 'resourceType', Common.ResourceType.resourceTypes.SourceMapScript);
-                assert.isUndefined(history.selectionRange(keys[2]));
-                assert.isUndefined(history.scrollLineNumber(keys[2]));
-            });
-            it('gracefully ignores items with invalid resource type names', () => {
-                const history = History.fromObject([
-                    { url: 'http://localhost/foo.js', resourceTypeName: 'script' },
-                    { url: 'http://localhost/baz.js', resourceTypeName: 'some-invalid-resource-type-name' },
-                    { url: 'http://localhost/bar.js', resourceTypeName: 'sm-script' },
-                ]);
-                const keys = history.keys();
-                assert.lengthOf(keys, 2);
-                assert.propertyVal(keys[0], 'url', 'http://localhost/foo.js');
-                assert.propertyVal(keys[1], 'url', 'http://localhost/bar.js');
-            });
-        });
-        describe('toObject', () => {
-            it('serializes correctly', () => {
-                const history = new History([
-                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.Script),
-                    new HistoryItem(urlString `webpack:///src/foo.vue`, Common.ResourceType.resourceTypes.SourceMapScript, undefined, 5),
-                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.SourceMapScript),
-                ]);
-                const serializedHistory = history.toObject();
-                assert.lengthOf(serializedHistory, 3);
-                assert.propertyVal(serializedHistory[0], 'url', 'http://localhost/foo.js');
-                assert.propertyVal(serializedHistory[0], 'resourceTypeName', 'script');
-                assert.propertyVal(serializedHistory[1], 'url', 'webpack:///src/foo.vue');
-                assert.propertyVal(serializedHistory[1], 'resourceTypeName', 'sm-script');
-                assert.propertyVal(serializedHistory[1], 'scrollLineNumber', 5);
-                assert.propertyVal(serializedHistory[2], 'url', 'http://localhost/foo.js');
-                assert.propertyVal(serializedHistory[2], 'resourceTypeName', 'sm-script');
-            });
-        });
-        describe('update', () => {
-            it('moves items referenced by keys to the beginning', () => {
-                const history = new History([
-                    new HistoryItem(urlString `webpack:///src/foo.vue`, Common.ResourceType.resourceTypes.SourceMapScript),
-                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.Script),
-                    new HistoryItem(urlString `http://localhost/foo.js`, Common.ResourceType.resourceTypes.SourceMapScript),
-                ]);
-                history.update([{
-                        url: urlString `http://localhost/foo.js`,
-                        resourceType: Common.ResourceType.resourceTypes.Script,
-                    }]);
-                assert.strictEqual(history.index({
-                    url: urlString `http://localhost/foo.js`,
-                    resourceType: Common.ResourceType.resourceTypes.Script,
-                }), 0);
-            });
-        });
-    });
     describeWithEnvironment('TabbedEditorContainer View', () => {
         let testUniverse;
         let persistence;
         let tabbedEditorContainer;
+        let viewStub;
         const views = new Map();
         beforeEach(() => {
             views.clear();
@@ -133,43 +39,52 @@ describe('TabbedEditorContainer', () => {
             const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
             void testUniverse.networkPersistenceManager;
+            viewStub = createViewFunctionStub(Sources.TabbedEditorContainer.TabbedEditorContainer);
             const setting = createFakeSetting('previously-viewed-files', []);
-            tabbedEditorContainer = new Sources.TabbedEditorContainer.TabbedEditorContainer();
+            tabbedEditorContainer =
+                new Sources.TabbedEditorContainer.TabbedEditorContainer(undefined, viewStub, uiSourceCode => {
+                    let view = views.get(uiSourceCode);
+                    if (!view) {
+                        view = new UI.Widget.Widget();
+                        views.set(uiSourceCode, view);
+                    }
+                    return view;
+                });
             tabbedEditorContainer.previouslyViewedFilesSetting = setting;
-            // Hook getOrCreateSourceView for tests replacing the view caching
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sinon.stub(tabbedEditorContainer, 'getOrCreateSourceView').callsFake(uiSourceCode => {
-                let view = views.get(uiSourceCode);
-                if (!view) {
-                    view = new UI.Widget.Widget();
-                    views.set(uiSourceCode, view);
-                }
-                return view;
-            });
         });
         afterEach(() => {
             Root.DevToolsContext.setGlobalInstance(null);
         });
         it('renders shortcuts in placeholder', async () => {
-            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry.instance(), 'shortcutsForAction').callsFake(actionId => {
-                if (actionId === 'quick-open.show') {
-                    return [{ descriptors: [{ name: 'Ctrl+P' }] }];
-                }
-                return [];
-            });
-            sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'getAction').callsFake(_ => {
-                return { execute: () => Promise.resolve() };
-            });
-            const setting = createFakeSetting('previously-viewed-files', []);
-            const container = new Sources.TabbedEditorContainer.TabbedEditorContainer();
-            container.previouslyViewedFilesSetting = setting;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sinon.stub(container, 'getOrCreateSourceView').returns(new UI.Widget.Widget());
-            renderElementIntoDOM(container);
-            const tabbedPane = container.tabbedPaneForTesting;
+            const container = document.createElement('div');
+            renderElementIntoDOM(container, { includeCommonStyles: true });
+            const input = {
+                openTabs: [],
+                leftToolbarItems: [],
+                rightToolbarItems: [],
+                tabDelegate: { closeTabs: () => { }, onContextMenu: () => { } },
+                shortcuts: [
+                    {
+                        description: 'Open file',
+                        onClick: () => { },
+                        keys: ['Ctrl+P'],
+                    },
+                    {
+                        description: '',
+                        onClick: () => { },
+                        keys: [],
+                    },
+                ],
+                onAddFileSystemClicked: () => { },
+                onConnectAutomaticFileSystem: () => { },
+                onClose: () => { },
+                onTabOrderChanged: () => { },
+                onSelect: () => { },
+            };
+            Sources.TabbedEditorContainer.DEFAULT_VIEW(input, undefined, container);
             await raf();
-            tabbedPane.getWidget().performUpdate();
-            const placeholder = tabbedPane.getWidget().contentElement?.querySelector('.sources-placeholder');
+            const tabbedPane = container.querySelector('devtools-tabbed-pane');
+            const placeholder = tabbedPane?.shadowRoot?.querySelector('.sources-placeholder');
             assert.exists(placeholder);
             const shortcutLines = placeholder.querySelectorAll('.shortcut-line');
             assert.lengthOf(shortcutLines, 2);
@@ -181,13 +96,25 @@ describe('TabbedEditorContainer', () => {
             assert.notExists(shortcutLines[1].querySelector('button'));
         });
         it('triggers addFileSystem when select folder button is clicked', async () => {
-            const addFileSystemStub = sinon.stub(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), 'addFileSystem')
-                .resolves(null);
-            renderElementIntoDOM(tabbedEditorContainer);
-            const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
+            const addFileSystemStub = sinon.stub();
+            const container = document.createElement('div');
+            renderElementIntoDOM(container, { includeCommonStyles: true });
+            const input = {
+                openTabs: [],
+                leftToolbarItems: [],
+                rightToolbarItems: [],
+                tabDelegate: { closeTabs: () => { }, onContextMenu: () => { } },
+                shortcuts: [],
+                onAddFileSystemClicked: addFileSystemStub,
+                onConnectAutomaticFileSystem: () => { },
+                onClose: () => { },
+                onTabOrderChanged: () => { },
+                onSelect: () => { },
+            };
+            Sources.TabbedEditorContainer.DEFAULT_VIEW(input, undefined, container);
             await raf();
-            tabbedPane.getWidget().performUpdate();
-            const placeholder = tabbedPane.getWidget().contentElement?.querySelector('.sources-placeholder');
+            const tabbedPane = container.querySelector('devtools-tabbed-pane');
+            const placeholder = tabbedPane?.shadowRoot?.querySelector('.sources-placeholder');
             assert.exists(placeholder);
             const button = placeholder.querySelector('button');
             assert.exists(button);
@@ -195,11 +122,76 @@ describe('TabbedEditorContainer', () => {
             button?.click();
             sinon.assert.calledOnce(addFileSystemStub);
         });
+        it('renders open tabs correctly', async () => {
+            const container = document.createElement('div');
+            container.style.width = '800px';
+            container.style.height = '300px';
+            container.style.display = 'flex';
+            container.style.flexDirection = 'column';
+            renderElementIntoDOM(container, { includeCommonStyles: true });
+            const stubUiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+            const input = {
+                openTabs: [
+                    {
+                        tabId: 'tab-active',
+                        title: 'active.js',
+                        tooltip: 'active.js',
+                        uiSourceCode: stubUiSourceCode,
+                        isCloseable: true,
+                        hasLoadError: false,
+                        hasUnsavedCommittedChanges: false,
+                    },
+                    {
+                        tabId: 'tab-error',
+                        title: 'error.js',
+                        tooltip: 'error.js',
+                        uiSourceCode: stubUiSourceCode,
+                        isCloseable: true,
+                        hasLoadError: true,
+                        hasUnsavedCommittedChanges: false,
+                    },
+                    {
+                        tabId: 'tab-persisted',
+                        title: 'persisted.js',
+                        tooltip: 'persisted.js',
+                        uiSourceCode: stubUiSourceCode,
+                        isCloseable: true,
+                        hasLoadError: false,
+                        hasUnsavedCommittedChanges: false,
+                        icon: html `<devtools-icon class="small dot green" name="document"></devtools-icon>`,
+                    },
+                    {
+                        tabId: 'tab-unsaved',
+                        title: 'unsaved.js',
+                        tooltip: 'unsaved.js',
+                        uiSourceCode: stubUiSourceCode,
+                        isCloseable: true,
+                        hasLoadError: false,
+                        hasUnsavedCommittedChanges: true,
+                    },
+                ],
+                activeTabId: 'tab-active',
+                leftToolbarItems: [],
+                rightToolbarItems: [],
+                tabDelegate: {
+                    closeTabs: () => { },
+                    onContextMenu: () => { },
+                },
+                shortcuts: [],
+                onAddFileSystemClicked: () => { },
+                onConnectAutomaticFileSystem: () => { },
+                onClose: () => { },
+                onTabOrderChanged: () => { },
+                onSelect: () => { },
+            };
+            Sources.TabbedEditorContainer.DEFAULT_VIEW(input, undefined, container);
+            await raf();
+            await assertScreenshot('sources/tabbed-editor-container-tabs.png');
+        });
         it('keeps selected tab when persistence binding is created', async () => {
             const networkUrl = urlString `https://example.com/foo.js`;
             const fsUrlfoo = urlString `file:///var/www/foo.js`;
             const fsUrlbar = urlString `file:///var/www/bar.js`;
-            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -223,30 +215,24 @@ describe('TabbedEditorContainer', () => {
             tabbedEditorContainer.showFile(barSourceCode);
             tabbedEditorContainer.showFile(networkSourceCode);
             tabbedEditorContainer.showFile(fsSourceCode);
-            const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify initial tabs.
-            await raf();
-            let tabs = tabbedPane.tabs;
-            assert.lengthOf(tabs, 3);
-            assert.strictEqual(tabs[0].title, 'bar.js');
-            assert.strictEqual(tabs[1].title, 'foo.js');
-            assert.strictEqual(tabs[2].title, 'foo.js');
-            assert.isTrue(tabs[2].selected);
+            assert.lengthOf(viewStub.input.openTabs, 3);
+            assert.strictEqual(viewStub.input.openTabs[0].title, 'bar.js');
+            assert.strictEqual(viewStub.input.openTabs[1].title, 'foo.js');
+            assert.strictEqual(viewStub.input.openTabs[2].title, 'foo.js');
+            assert.strictEqual(viewStub.input.activeTabId, viewStub.input.openTabs[2].tabId);
             // Create binding.
             const binding = new Persistence.Persistence.PersistenceBinding(networkSourceCode, fsSourceCode);
             await persistence.addBinding(binding);
             // Verify tabs after binding.
-            await raf();
-            tabs = tabbedPane.tabs;
-            assert.lengthOf(tabs, 2);
-            assert.strictEqual(tabs[0].title, 'bar.js');
-            assert.strictEqual(tabs[1].title, 'foo.js');
-            assert.isTrue(tabs[1].selected);
+            assert.lengthOf(viewStub.input.openTabs, 2);
+            assert.strictEqual(viewStub.input.openTabs[0].title, 'bar.js');
+            assert.strictEqual(viewStub.input.openTabs[1].title, 'foo.js');
+            assert.strictEqual(viewStub.input.activeTabId, viewStub.input.openTabs[1].tabId);
         });
         it('replaces network tab with file system tab when persistence binding is established', async () => {
             const networkUrl = urlString `http://127.0.0.1:8000/devtools/persistence/resources/foo.js`;
             const fsUrl = urlString `file:///var/www/devtools/persistence/resources/foo.js`;
-            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -262,23 +248,19 @@ describe('TabbedEditorContainer', () => {
             });
             // Open the network tab.
             tabbedEditorContainer.showFile(networkSourceCode);
-            const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify that the network tab is opened.
-            await raf();
-            let tabs = tabbedPane.tabs;
-            assert.lengthOf(tabs, 1);
+            assert.lengthOf(viewStub.input.openTabs, 1);
+            assert.strictEqual(viewStub.input.openTabs[0].uiSourceCode, networkSourceCode);
             // Create binding.
             const binding = new Persistence.Persistence.PersistenceBinding(networkSourceCode, fsSourceCode);
             await persistence.addBinding(binding);
             // Verify tabs after binding: network tab is replaced by the file system tab.
-            await raf();
-            tabs = tabbedPane.tabs;
-            assert.lengthOf(tabs, 1);
+            assert.lengthOf(viewStub.input.openTabs, 1);
+            assert.strictEqual(viewStub.input.openTabs[0].uiSourceCode, fsSourceCode);
         });
         it('opens filesystem UISourceCode when network UISourceCode with persistence binding is shown', async () => {
             const networkUrl = urlString `http://127.0.0.1:8000/devtools/persistence/resources/foo.js`;
             const fsUrl = urlString `file:///var/www/devtools/persistence/resources/foo.js`;
-            renderElementIntoDOM(tabbedEditorContainer);
             const { uiSourceCode: networkSourceCode } = createContentProviderUISourceCode({
                 url: networkUrl,
                 mimeType: 'text/javascript',
@@ -297,11 +279,9 @@ describe('TabbedEditorContainer', () => {
             await persistence.addBinding(binding);
             // Show the network file.
             tabbedEditorContainer.showFile(networkSourceCode);
-            const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
             // Verify that the filesystem tab is opened, not the network one.
-            await raf();
-            const tabs = tabbedPane.tabs;
-            assert.lengthOf(tabs, 1);
+            assert.lengthOf(viewStub.input.openTabs, 1);
+            assert.strictEqual(viewStub.input.openTabs[0].uiSourceCode, fsSourceCode);
             assert.strictEqual(tabbedEditorContainer.currentFile(), fsSourceCode);
         });
         it('creates new source view of updated type when renamed file requires a different viewer', async () => {
@@ -387,10 +367,9 @@ describeWithEnvironment('TabbedEditorContainer', () => {
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
             const setting = createFakeSetting('previouslyViewedFilesSetting', []);
-            const tabbedEditorContainer = new Sources.TabbedEditorContainer.TabbedEditorContainer();
+            const viewStub = createViewFunctionStub(Sources.TabbedEditorContainer.TabbedEditorContainer);
+            const tabbedEditorContainer = new Sources.TabbedEditorContainer.TabbedEditorContainer(undefined, viewStub, () => new UI.Widget.Widget());
             tabbedEditorContainer.previouslyViewedFilesSetting = setting;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sinon.stub(tabbedEditorContainer, 'getOrCreateSourceView').returns(new UI.Widget.Widget());
             const { uiSourceCode: uiSourceCode1 } = createContentProviderUISourceCode({ url: urlString `http://localhost/foo.js`, mimeType: 'text/javascript' });
             const { uiSourceCode: uiSourceCode2 } = createContentProviderUISourceCode({ url: urlString `http://localhost/bar.js`, mimeType: 'text/javascript' });
             const { uiSourceCode: uiSourceCode3 } = createContentProviderUISourceCode({ url: urlString `http://localhost/baz.js`, mimeType: 'text/javascript' });
@@ -406,8 +385,7 @@ describeWithEnvironment('TabbedEditorContainer', () => {
             Persistence.Persistence.PersistenceImpl.instance().dispatchEventToListeners(Persistence.Persistence.Events.BindingCreated, binding1);
             Persistence.Persistence.PersistenceImpl.instance().dispatchEventToListeners(Persistence.Persistence.Events.BindingCreated, binding2);
             Persistence.Persistence.PersistenceImpl.instance().dispatchEventToListeners(Persistence.Persistence.Events.BindingCreated, binding3);
-            const tabbedPane = tabbedEditorContainer.tabbedPaneForTesting;
-            const tabTitles = tabbedPane.tabs.map(t => t.title);
+            const tabTitles = viewStub.input.openTabs.map(t => t.title);
             assert.deepEqual(tabTitles, ['foo.js', 'bar.js', 'baz.js']);
             assert.strictEqual(tabbedEditorContainer.currentFile(), fsUiSourceCode3);
         });

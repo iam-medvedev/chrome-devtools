@@ -8,38 +8,38 @@ import * as Trace from '../trace.js';
 describe('TraceEvent types', function () {
     const { Phase, isNestableAsyncPhase, isPhaseAsync, isFlowPhase } = Trace.Types.Events;
     it('is able to determine if a phase is a nestable async phase', function () {
-        assert.isTrue(isNestableAsyncPhase("b" /* Phase.ASYNC_NESTABLE_START */));
-        assert.isTrue(isNestableAsyncPhase("e" /* Phase.ASYNC_NESTABLE_END */));
-        assert.isTrue(isNestableAsyncPhase("n" /* Phase.ASYNC_NESTABLE_INSTANT */));
+        assert.isTrue(isNestableAsyncPhase(Phase.ASYNC_NESTABLE_START));
+        assert.isTrue(isNestableAsyncPhase(Phase.ASYNC_NESTABLE_END));
+        assert.isTrue(isNestableAsyncPhase(Phase.ASYNC_NESTABLE_INSTANT));
     });
     it('is able to determine if a phase is not a nestable async phase', function () {
-        assert.isFalse(isNestableAsyncPhase("B" /* Phase.BEGIN */));
-        assert.isFalse(isNestableAsyncPhase("E" /* Phase.END */));
-        assert.isFalse(isNestableAsyncPhase("S" /* Phase.ASYNC_BEGIN */));
+        assert.isFalse(isNestableAsyncPhase(Phase.BEGIN));
+        assert.isFalse(isNestableAsyncPhase(Phase.END));
+        assert.isFalse(isNestableAsyncPhase(Phase.ASYNC_BEGIN));
     });
     it('is able to determine if a phase is an async phase', function () {
-        assert.isTrue(isPhaseAsync("b" /* Phase.ASYNC_NESTABLE_START */));
-        assert.isTrue(isPhaseAsync("e" /* Phase.ASYNC_NESTABLE_END */));
-        assert.isTrue(isPhaseAsync("n" /* Phase.ASYNC_NESTABLE_INSTANT */));
-        assert.isTrue(isPhaseAsync("S" /* Phase.ASYNC_BEGIN */));
-        assert.isTrue(isPhaseAsync("T" /* Phase.ASYNC_STEP_INTO */));
-        assert.isTrue(isPhaseAsync("p" /* Phase.ASYNC_STEP_PAST */));
-        assert.isTrue(isPhaseAsync("F" /* Phase.ASYNC_END */));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_NESTABLE_START));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_NESTABLE_END));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_NESTABLE_INSTANT));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_BEGIN));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_STEP_INTO));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_STEP_PAST));
+        assert.isTrue(isPhaseAsync(Phase.ASYNC_END));
     });
     it('is able to determine if a phase is not an async phase', function () {
-        assert.isFalse(isPhaseAsync("B" /* Phase.BEGIN */));
-        assert.isFalse(isPhaseAsync("M" /* Phase.METADATA */));
-        assert.isFalse(isPhaseAsync("N" /* Phase.OBJECT_CREATED */));
+        assert.isFalse(isPhaseAsync(Phase.BEGIN));
+        assert.isFalse(isPhaseAsync(Phase.METADATA));
+        assert.isFalse(isPhaseAsync(Phase.OBJECT_CREATED));
     });
     it('is able to determine if a phase is a flow phase', function () {
-        assert.isTrue(isFlowPhase("s" /* Phase.FLOW_START */));
-        assert.isTrue(isFlowPhase("t" /* Phase.FLOW_STEP */));
-        assert.isTrue(isFlowPhase("f" /* Phase.FLOW_END */));
+        assert.isTrue(isFlowPhase(Phase.FLOW_START));
+        assert.isTrue(isFlowPhase(Phase.FLOW_STEP));
+        assert.isTrue(isFlowPhase(Phase.FLOW_END));
     });
     it('is able to determine if a phase is not a flow phase', function () {
-        assert.isFalse(isFlowPhase("T" /* Phase.ASYNC_STEP_INTO */));
-        assert.isFalse(isFlowPhase("b" /* Phase.ASYNC_NESTABLE_START */));
-        assert.isFalse(isFlowPhase("B" /* Phase.BEGIN */));
+        assert.isFalse(isFlowPhase(Phase.ASYNC_STEP_INTO));
+        assert.isFalse(isFlowPhase(Phase.ASYNC_NESTABLE_START));
+        assert.isFalse(isFlowPhase(Phase.BEGIN));
     });
     it('recognizes instant display item list snapshots from current traces', async function () {
         const events = await TraceLoader.rawEvents(this, 'display-item-list-instant-snapshot.json.gz');
@@ -48,8 +48,8 @@ describe('TraceEvent types', function () {
         if (!Trace.Types.Events.isDisplayListItemListSnapshot(snapshotEvent)) {
             throw new Error('Could not recognize the instant display item list snapshot');
         }
-        assert.strictEqual(snapshotEvent.name, "cc::DisplayItemList:snapshot" /* Trace.Types.Events.Name.DISPLAY_ITEM_LIST_SNAPSHOT */);
-        assert.strictEqual(snapshotEvent.ph, "I" /* Trace.Types.Events.Phase.INSTANT */);
+        assert.strictEqual(snapshotEvent.name, Trace.Types.Events.Name.DISPLAY_ITEM_LIST_SNAPSHOT);
+        assert.strictEqual(snapshotEvent.ph, Trace.Types.Events.Phase.INSTANT);
         assert.isNotEmpty(snapshotEvent.args.snapshot.skp64);
     });
     it('is able to determine that an event is a synthetic user timing event', async function () {

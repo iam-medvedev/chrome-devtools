@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import { type TemplateResult } from '../lit/lit.js';
+import { type LitTemplate } from '../lit/lit.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
 import type { Suggestion } from './SuggestBox.js';
@@ -151,7 +151,9 @@ export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private updateEmptyStyles;
 }
 export declare class ToolbarFilter extends ToolbarInput {
-    constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string, element?: HTMLElement, showRegexToggle?: boolean, onRegexToggle?: () => void);
+    #private;
+    constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string, element?: HTMLElement, showRegexToggle?: boolean, onRegexToggle?: (toggled: boolean) => void);
+    setRegexToggled(toggled: boolean): void;
 }
 export declare class ToolbarInputElement extends HTMLElement {
     #private;
@@ -220,7 +222,7 @@ export interface Provider {
     item(): ToolbarItem | null;
 }
 export interface ItemsProvider {
-    toolbarItems(): ToolbarItem[] | TemplateResult;
+    toolbarItems(): LitTemplate;
 }
 export declare class ToolbarComboBox extends ToolbarItem<void, HTMLSelectElement> {
     constructor(changeHandler: ((arg0: Event) => void) | null, title: string, className?: string, jslogContext?: string, element?: HTMLSelectElement);

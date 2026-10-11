@@ -565,6 +565,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -3091,11 +3092,13 @@ function createProcessedNavigation(data, frameId, navigation) {
     }
     return metricScore.event.ts;
   };
+  const lcpScore = scores.get(Handlers2.ModelHandlers.PageLoadMetrics.MetricName.LCP);
   return {
     timestamps: {
       firstContentfulPaint: getTimestamp(Handlers2.ModelHandlers.PageLoadMetrics.MetricName.FCP),
       largestContentfulPaint: getTimestampOrUndefined(Handlers2.ModelHandlers.PageLoadMetrics.MetricName.LCP)
-    }
+    },
+    largestContentfulPaintEvt: lcpScore && Handlers2.ModelHandlers.PageLoadMetrics.metricIsLCP(lcpScore) ? lcpScore.event : void 0
   };
 }
 function createParsedUrl(url) {
@@ -3182,6 +3185,8 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
       resourceSize = url.pathname.length - commaIndex - 1;
     }
   }
+  const hasExplicitRenderBlocking = request.rawSourceEvent.args.data.renderBlocking !== void 0 || request.args.data.renderBlocking !== "non_blocking";
+  const renderBlocking = hasExplicitRenderBlocking ? request.args.data.renderBlocking : void 0;
   return {
     rawRequest: request,
     requestId: request.args.data.requestId,
@@ -3208,6 +3213,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     resourceType,
     mimeType: request.args.data.mimeType,
     priority: request.args.data.priority,
+    renderBlocking,
     frameId: request.args.data.frame,
     fromWorker,
     serverResponseTime: request.args.data.lrServerResponseTime
@@ -3538,6 +3544,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       handler.reset();
     }
     options.logger?.start("parse:handleEvent");
+    const handleEventFns = sortedHandlers.map(([, handler]) => handler.handleEvent);
     for (let i = 0; i < traceEvents.length; ++i) {
       if (options.yieldToMain !== false && i % eventsPerChunk === 0 && i) {
         const percent = calculateProgress(i / traceEvents.length, 0.2 /* HANDLE_EVENT */);
@@ -3545,9 +3552,8 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
       const event = traceEvents[i];
-      for (let j = 0; j < sortedHandlers.length; ++j) {
-        const [, handler] = sortedHandlers[j];
-        handler.handleEvent(event);
+      for (let j = 0; j < handleEventFns.length; ++j) {
+        handleEventFns[j](event);
       }
     }
     options.logger?.end("parse:handleEvent");
@@ -3833,7 +3839,8 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     } catch (e) {
       const expectedErrors = [
         "mainDocumentRequest not found",
-        "missing metric scores for main frame",
+        "missing metric scores for frame",
+        "missing metric scores for specified navigation",
         "missing metric: FCP",
         "missing metric: LCP",
         "NO_LCP",

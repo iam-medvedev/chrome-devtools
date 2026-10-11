@@ -366,6 +366,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -4772,118 +4773,116 @@ var backgroundServiceView_css_default = `/*
 // ../../front_end/panels/application/BackgroundServiceView.ts
 var UIStrings3 = {
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Name of the background fetch service in the background service view of the Application panel.
    */
   backgroundFetch: "Background fetch",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Name of the background sync service in the background service view of the Application panel.
    */
   backgroundSync: "Background sync",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Name of the push messaging service in the background service view of the Application panel.
    */
   pushMessaging: "Push messaging",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Name of the notifications service in the background service view of the Application panel.
    */
   notifications: "Notifications",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Name of the payment handler service in the background service view of the Application panel.
    */
   paymentHandler: "Payment handler",
   /**
-   * @description Text in the Periodic Background Service View of the Application panel
+   * @description Name of the periodic background sync service in the background service view of the Application panel.
    */
   periodicBackgroundSync: "Periodic background sync",
   /**
-   * @description Text to clear content
+   * @description Tooltip text for the clear button in the toolbar of the background service view in the Application panel.
    */
   clear: "Clear",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon download button in the Background Service View of the Application panel
+   * @description Tooltip text for the save button in the toolbar of the background service view in the Application panel.
    */
   saveEvents: "Save events",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Label text for the checkbox to show events from other domains in the background service view of the Application panel.
    */
   showEventsFromOtherDomains: "Show events from other domains",
   /**
-   * @description Text of a checkbox to show events for other storage keys
+   * @description Label text for the checkbox to show events from other storage partitions in the background service view of the Application panel.
    */
   showEventsForOtherStorageKeys: "Show events from other storage partitions",
   /**
-   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Tooltip and action title to stop recording events in the background service view of the Application panel.
    */
   stopRecordingEvents: "Stop recording events",
   /**
-   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Tooltip, button label, and action title to start recording events in the background service view of the Application panel.
    */
   startRecordingEvents: "Start recording events",
   /**
-   * @description Text for timestamps of items
+   * @description Table column header for event timestamps in the background service view of the Application panel.
    */
   timestamp: "Timestamp",
   /**
-   * @description Text that refers to some events
+   * @description Table column header for event names in the background service view of the Application panel.
    */
   event: "Event",
   /**
-   * @description Text for the origin of something
+   * @description Table column header for event origins in the background service view of the Application panel.
    */
   origin: "Origin",
   /**
-   * @description Text for the storage key of something
+   * @description Table column header for storage keys in the background service view of the Application panel.
    */
-  storageKey: "Storage Key",
+  storageKey: "Storage key",
   /**
-   * @description Text in Background Service View of the Application panel. The Scope is a URL associated with the Service Worker, which limits which pages/sites the Service Worker operates on.
+   * @description Table column header for Service Worker scopes in the background service view of the Application panel.
    */
-  swScope: "Service Worker Scope",
+  swScope: "Service Worker scope",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Table column header for instance IDs in the background service view of the Application panel.
    */
   instanceId: "Instance ID",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Accessible name for the background services datagrid in the Application panel.
    */
   backgroundServices: "Background services",
   /**
-   * @description Text in Background Service View of the Application panel.
-   *             An event here refers to a background service event that is an entry in a table.
+   * @description Header text in the preview sidebar of the background service view when no event is selected.
    */
   noEventSelected: "No event selected",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Text in the preview sidebar of the background service view instructing the user to select an event to view its metadata.
    */
   selectAnEventToViewMetadata: "Select an event to view its metadata",
   /**
-   * @description Text in Background Service View of the Application panel
-   * @example {Background Fetch} PH1
+   * @description Header text in the background service view when recording service activity.
+   * @example {background fetch} PH1
    */
   recordingSActivity: "Recording {PH1} activity\u2026",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Header text in the background service view when no recording has been started yet.
    */
   noRecording: "No recording yet",
   /**
-   * @description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
-   * @example {Background Fetch} PH1
+   * @description Informational text in the background service view explaining that DevTools records service activity for up to 3 days.
+   * @example {background fetch} PH1
    */
   // eslint-disable-next-line @devtools/l10n-uistrings-sentence-punctuation -- Concatenated with recordingSActivity in UI to form a multi-sentence message.
   devtoolsWillRecordAllSActivity: "DevTools will record all {PH1} activity for up to 3 days, even when closed.",
   /**
-   * @description Text in Background Service View of the Application panel to instruct the user on how to start a recording for
-   * background services.
+   * @description Informational text in the background service view explaining how to start recording background service events.
    * @example {Start recording events} PH1
    * @example {Ctrl + E} PH2
    */
   startRecordingToDebug: 'Start to debug background services by using the "{PH1}" button or by pressing {PH2}',
   /**
-   * @description Text to show an item is empty
+   * @description Text indicating that a metadata value is empty in the background service view of the Application panel.
    */
   empty: "empty",
   /**
-   * @description Text in Background Service View of the Application panel
+   * @description Text shown in the preview sidebar when the selected event has no metadata in the background service view of the Application panel.
    */
   noMetadataForThisEvent: "No metadata for this event"
 };
@@ -5324,7 +5323,7 @@ import * as UI5 from "../../ui/legacy/legacy.js";
 import * as ApplicationComponents3 from "./components/components.js";
 var UIStrings4 = {
   /**
-   * @description Hover text for the Bounce Tracking Mitigations element in the Application Panel sidebar.
+   * @description Label for the bounce tracking mitigations tree element in the Application panel sidebar.
    */
   bounceTrackingMitigations: "Bounce tracking mitigations"
 };
@@ -7885,112 +7884,110 @@ var indexedDBViews_css_default = `/*
 // ../../front_end/panels/application/IndexedDBViews.ts
 var UIStrings8 = {
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Label for database version in the IndexedDB view of the Application panel.
    */
   version: "Version",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Label for the number of object stores in the IndexedDB view of the Application panel.
    */
   objectStores: "Object stores",
   /**
-   * @description Text of button in Indexed DBViews of the Application panel
+   * @description Button text to delete a database in the IndexedDB view of the Application panel.
    */
   deleteDatabase: "Delete database",
   /**
-   * @description Text of button in Indexed DBViews of the Application panel
+   * @description Button text to refresh a database in the IndexedDB view of the Application panel.
    */
   refreshDatabase: "Refresh database",
   /**
-   * @description Text in Application panel IndexedDB delete confirmation dialog
-   * @example {msb} PH1
+   * @description Title of the confirmation dialog when deleting an IndexedDB database in the Application panel.
+   * @example {my-database} PH1
    */
   confirmDeleteDatabase: 'Delete "{PH1}" database?',
   /**
-   * @description Explanation text in Application panel IndexedDB delete confirmation dialog
+   * @description Message in the confirmation dialog when deleting an IndexedDB database in the Application panel.
    */
   databaseWillBeRemoved: "The selected database and contained data will be removed",
   /**
-   * @description Title of the confirmation dialog in the IndexedDB tab of the Application panel
-   *              that the user is about to clear an object store and this cannot be undone.
+   * @description Title of the confirmation dialog when clearing an object store in the IndexedDB view of the Application panel.
    * @example {table1} PH1
    */
   confirmClearObjectStore: 'Clear "{PH1}" object store?',
   /**
-   * @description Description in the confirmation dialog in the IndexedDB tab of the Application
-   *              panel that the user is about to clear an object store and this cannot be undone.
+   * @description Message in the confirmation dialog when clearing an object store in the IndexedDB view of the Application panel.
    */
   objectStoreWillBeCleared: "The data contained in the selected object store will be removed",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Title of the IndexedDB tab in the Application panel.
    */
   idb: "IDB",
   /**
-   * @description Text to refresh the page
+   * @description Tooltip text for the refresh button in the IndexedDB view of the Application panel.
    */
   refresh: "Refresh",
   /**
-   * @description Tooltip text that appears when hovering over the delete button in the Indexed DBViews of the Application panel
+   * @description Tooltip text for the delete selected button in the IndexedDB view of the Application panel.
    */
   deleteSelected: "Delete selected",
   /**
-   * @description Tooltip text that appears when hovering over the clear button in the Indexed DBViews of the Application panel
+   * @description Tooltip text for the clear object store button in the IndexedDB view of the Application panel.
    */
   clearObjectStore: "Clear object store",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Status text in the IndexedDB view of the Application panel indicating data may be stale.
    */
   dataMayBeStale: "Data may be stale",
   /**
-   * @description Title of needs refresh in indexed dbviews of the application panel
+   * @description Tooltip text in the IndexedDB view of the Application panel explaining that entries may have been modified.
    */
   someEntriesMayHaveBeenModified: "Some entries may have been modified",
   /**
-   * @description Text in DOMStorage Items View of the Application panel
+   * @description Column header in the IndexedDB datagrid for the entry key.
    */
   keyString: "Key",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Column header in the IndexedDB datagrid for the entry primary key.
    */
   primaryKey: "Primary key",
   /**
-   * @description Text for the value of something
+   * @description Column header in the IndexedDB datagrid for the entry value.
    */
   valueString: "Value",
   /**
-   * @description Data grid name for Indexed DB data grids
+   * @description Accessible name for the IndexedDB datagrid in the Application panel.
    */
-  indexedDb: "Indexed DB",
+  indexedDb: "IndexedDB",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Label prefix for key path in the IndexedDB view of the Application panel.
    */
   keyPath: "Key path: ",
   /**
-   * @description Tooltip text that appears when hovering over the triangle left button in the Indexed DBViews of the Application panel
+   * @description Tooltip text for the previous page button in the IndexedDB view of the Application panel.
    */
   showPreviousPage: "Show previous page",
   /**
-   * @description Tooltip text that appears when hovering over the triangle right button in the Indexed DBViews of the Application panel
+   * @description Tooltip text for the next page button in the IndexedDB view of the Application panel.
    */
   showNextPage: "Show next page",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Placeholder text in the key filter input of the IndexedDB view in the Application panel.
    */
   filterByKey: "Filter by key (show keys greater or equal to)",
   /**
-   * @description Text in Context menu for expanding objects in IndexedDB tables
+   * @description Context menu item to expand an object recursively in IndexedDB tables.
    */
-  expandRecursively: "Expand Recursively",
+  expandRecursively: "Expand recursively",
   /**
-   * @description Text in Context menu for collapsing objects in IndexedDB tables
+   * @description Context menu item to collapse an object in IndexedDB tables.
    */
   collapse: "Collapse",
   /**
-   * @description Span text content in Indexed DBViews of the Application panel
+   * @description Status text in the IndexedDB view of the Application panel showing the total number of entries.
    * @example {2} PH1
    */
   totalEntriesS: "Total entries: {PH1}",
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Status text in the IndexedDB view of the Application panel showing the key generator value.
    * @example {2} PH1
    */
   keyGeneratorValueS: "Key generator value: {PH1}"
@@ -8240,8 +8237,6 @@ var IDBDataView = class extends UI9.View.SimpleView {
   index;
   lastPageSize;
   lastSkipCount;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lastKey;
   #view;
   constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback, view = IDB_DATA_VIEW_DEFAULT_VIEW) {
@@ -8285,8 +8280,6 @@ var IDBDataView = class extends UI9.View.SimpleView {
     this.updateData(true);
     this.performUpdate();
   }
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parseKey(keyString) {
     let result;
     try {
@@ -9234,9 +9227,9 @@ var PreloadingRuleSetView = class extends UI11.Widget.VBox {
       widget12.ruleSet = ruleSet;
     }
     if (ruleSet === null) {
-      this.hsplit.setAttribute("sidebar-visibility", "hidden");
+      this.hsplit.setAttribute("show", "main");
     } else {
-      this.hsplit.removeAttribute("sidebar-visibility");
+      this.hsplit.setAttribute("show", "both");
     }
   }
   getRuleSet() {
@@ -10463,61 +10456,61 @@ var serviceWorkerCacheViews_css_default = `/*
 // ../../front_end/panels/application/ServiceWorkerCacheViews.ts
 var UIStrings15 = {
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Title of the cache storage view in the Application panel.
    */
   cache: "Cache",
   /**
-   * @description Text to refresh the page
+   * @description Tooltip text for the refresh button in the cache storage view of the Application panel.
    */
   refresh: "Refresh",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
+   * @description Tooltip text for the delete selected button in the cache storage view of the Application panel.
    */
-  deleteSelected: "Delete Selected",
+  deleteSelected: "Delete selected",
   /**
-   * @description Text in Service Worker Cache Views of the Application panel
+   * @description Placeholder text for the filter input in the cache storage view of the Application panel.
    */
   filterByPath: "Filter by path",
   /**
-   * @description Text in Service Worker Cache Views of the Application panel that shows if no cache entry is selected for preview
+   * @description Empty state header in the cache storage view of the Application panel when no cache entry is selected.
    */
   noCacheEntrySelected: "No cache entry selected",
   /**
-   * @description Text in Service Worker Cache Views of the Application panel
+   * @description Empty state text in the cache storage view of the Application panel when no cache entry is selected.
    */
   selectACacheEntryAboveToPreview: "Select a cache entry above to preview",
   /**
-   * @description Text for the name of something
+   * @description Column header in the cache storage datagrid for the entry name.
    */
   name: "Name",
   /**
-   * @description Text in Service Worker Cache Views of the Application panel
+   * @description Column header in the cache storage datagrid for the time the entry was cached.
    */
-  timeCached: "Time Cached",
+  timeCached: "Time cached",
   /**
-   * @description Tooltip text that appears when hovering over the vary header column in the Service Worker Cache Views of the Application panel
+   * @description Tooltip text for the Vary header column in the cache storage datagrid of the Application panel.
    */
   varyHeaderWarning: "\u26A0\uFE0F Set ignoreVary to true when matching this entry",
   /**
-   * @description Text used to show that data was retrieved from ServiceWorker Cache
+   * @description Accessible name for the cache storage datagrid in the Application panel.
    */
-  serviceWorkerCache: "`Service Worker` Cache",
+  serviceWorkerCache: "`Service Worker` cache",
   /**
-   * @description Span text content in Service Worker Cache Views of the Application panel
+   * @description Status text in the cache storage view of the Application panel showing the number of matching entries.
    * @example {2} PH1
    */
   matchingEntriesS: "Matching entries: {PH1}",
   /**
-   * @description Span text content in Indexed DBViews of the Application panel
+   * @description Status text in the cache storage view of the Application panel showing the total number of entries.
    * @example {2} PH1
    */
   totalEntriesS: "Total entries: {PH1}",
   /**
-   * @description Text for network request headers
+   * @description Tab title for request headers in the cache storage entry preview of the Application panel.
    */
   headers: "Headers",
   /**
-   * @description Text for previewing items
+   * @description Tab title for response preview in the cache storage entry preview of the Application panel.
    */
   preview: "Preview"
 };
@@ -10979,23 +10972,23 @@ var RequestView = class extends UI15.Widget.VBox {
 // ../../front_end/panels/application/ServiceWorkerCacheTreeElement.ts
 var UIStrings16 = {
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Label for the cache storage tree element in the Application panel sidebar.
    */
   cacheStorage: "Cache storage",
   /**
-   * @description Text in Application Panel if no cache storage was detected.
+   * @description Empty state title in the Application panel when no cache storage is detected.
    */
   noCacheStorage: "No cache storage detected",
   /**
-   * @description Description text in Application Panel describing the cache storage tab
+   * @description Empty state description in the Application panel describing the cache storage view.
    */
   cacheStorageDescription: "On this page you can view and delete cache data",
   /**
-   * @description A context menu item in the Application Panel Sidebar of the Application panel
+   * @description Context menu item in the Application panel sidebar to refresh caches.
    */
-  refreshCaches: "Refresh Caches",
+  refreshCaches: "Refresh caches",
   /**
-   * @description Text to delete something
+   * @description Context menu item in the Application panel sidebar to delete a cache.
    */
   delete: "Delete"
 };
@@ -11478,7 +11471,7 @@ var serviceWorkerUpdateCycleView_css_default = `/*
     outline-offset: calc(-1 * var(--sys-size-2));
   }
 
-  .service-worker-update-timing-bar-clickable[aria-checked="true"]::before {
+  .service-worker-update-timing-bar-clickable[aria-expanded="true"]::before {
     transform: rotate(90deg);
   }
 
@@ -11536,25 +11529,25 @@ var serviceWorkerUpdateCycleView_css_default = `/*
 // ../../front_end/panels/application/ServiceWorkerUpdateCycleView.ts
 var UIStrings17 = {
   /**
-   * @description Text in Indexed DBViews of the Application panel
+   * @description Table column header for the version column in the Service Worker update cycle table of the Application panel.
    */
   version: "Version",
   /**
-   * @description Table heading for Service Workers update information. Update is a noun.
+   * @description Table column header for the update activity column in the Service Worker update cycle table of the Application panel. Update is a noun.
    */
-  updateActivity: "Update Activity",
+  updateActivity: "Update activity",
   /**
-   * @description Title for the timeline tab.
+   * @description Table column header for the timeline column in the Service Worker update cycle table of the Application panel.
    */
   timeline: "Timeline",
   /**
-   * @description Text in Service Workers Update Life Cycle
-   * @example {2} PH1
+   * @description Details row text displaying the start time of a phase in the Service Worker update cycle table of the Application panel.
+   * @example {2026-09-14T15:30:00.000Z} PH1
    */
   startTimeS: "Start time: {PH1}",
   /**
-   * @description Text for end time of an event
-   * @example {2} PH1
+   * @description Details row text displaying the end time of a phase in the Service Worker update cycle table of the Application panel.
+   * @example {2026-09-14T15:30:00.000Z} PH1
    */
   endTimeS: "End time: {PH1}"
 };
@@ -11580,8 +11573,9 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         resize: true,
         keydown: "ArrowLeft|ArrowRight|ArrowUp|ArrowDown|Enter|Space"
       })}>
-          <td class="service-worker-update-timing-bar-clickable" tabindex="0" role="switch"
-              aria-checked=${expanded ? "true" : "false"}
+          <td class="service-worker-update-timing-bar-clickable" tabindex="0" role="button"
+              aria-expanded=${expanded ? "true" : "false"}
+              aria-label=${`#${range.id} ${phaseName}`}
               @focus=${input.onFocus}
               @keydown=${(e) => input.onKeydown(e, key)}
               @click=${(e) => input.onClick(e, key)}
@@ -11846,157 +11840,149 @@ var ServiceWorkerUpdateNames = /* @__PURE__ */ ((ServiceWorkerUpdateNames2) => {
 // ../../front_end/panels/application/ServiceWorkersView.ts
 var UIStrings18 = {
   /**
-   * @description Text for linking to other Service Worker registrations
+   * @description Section header for Service Worker registrations from other origins in the Service Workers view of the Application panel.
    */
-  serviceWorkersFromOtherOrigins: "Service workers from other origins",
+  serviceWorkersFromOtherOrigins: "Service Workers from other origins",
   /**
-   * @description Title of update on reload setting in service workers view of the application panel
+   * @description Label text for the update on reload checkbox in the Service Workers view of the Application panel.
    */
   updateOnReload: "Update on reload",
   /**
-   * @description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
+   * @description Tooltip text for the update on reload setting in the Service Workers view of the Application panel.
    */
-  onPageReloadForceTheService: "On page reload, force the `service worker` to update, and activate it",
+  onPageReloadForceTheService: "On page reload, force the `Service Worker` to update, and activate it",
   /**
-   * @description Title of bypass service worker setting in service workers view of the application panel
+   * @description Label text for the bypass for network checkbox in the Service Workers view of the Application panel.
    */
   bypassForNetwork: "Bypass for network",
   /**
-   * @description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
+   * @description Tooltip text for the bypass for network setting in the Service Workers view of the Application panel.
    */
-  bypassTheServiceWorkerAndLoad: "Bypass the `service worker` and load resources from the network",
+  bypassTheServiceWorkerAndLoad: "Bypass the `Service Worker` and load resources from the network",
   /**
-   * @description Screen reader title for a section of the Service Workers view of the Application panel
+   * @description Aria label for a Service Worker registration section in the Service Workers view of the Application panel.
    * @example {https://example.com} PH1
    */
-  serviceWorkerForS: "`Service worker` for {PH1}",
+  serviceWorkerForS: "`Service Worker` for {PH1}",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Default text for the test push message input in the Service Workers view of the Application panel.
    */
   testPushMessageFromDevtools: "Test push message from DevTools",
   /**
-   * @description Button label for service worker network requests
+   * @description Button label and tooltip to view Service Worker network requests in the Network panel.
    */
   networkRequests: "Network requests",
   /**
-   * @description Label for a button in the Service Workers View of the Application panel.
-   * Imperative noun. Clicking the button will refresh the list of service worker registrations.
+   * @description Button label and tooltip to update a Service Worker registration in the Service Workers view of the Application panel.
    */
   update: "Update",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Tooltip text for the unregister button in the Service Workers view of the Application panel.
    */
-  unregisterServiceWorker: "Unregister service worker",
+  unregisterServiceWorker: "Unregister Service Worker",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Button label to unregister a Service Worker in the Service Workers view of the Application panel.
    */
   unregister: "Unregister",
   /**
-   * @description Text for the source of something
+   * @description Field label for the Service Worker script source in the Service Workers view of the Application panel.
    */
   source: "Source",
   /**
-   * @description Text for the status of something
+   * @description Field label for the Service Worker status in the Service Workers view of the Application panel.
    */
   status: "Status",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Field label for the controlled clients of a Service Worker in the Service Workers view of the Application panel.
    */
   clients: "Clients",
   /**
-   * @description Text in Service Workers View of the Application panel. Label for a section of the
-   * tool which allows the developer to send a test push message to the service worker.
+   * @description Field label and button text for sending a test push message in the Service Workers view of the Application panel.
    */
   pushString: "Push",
   /**
-   * @description Text in Service Workers View of the Application panel. Placeholder text for where
-   * the user can type in the data they want to push to the service worker i.e. the 'push data'. Noun
-   * phrase.
+   * @description Placeholder text and aria label for the push data input field in the Service Workers view of the Application panel.
    */
   pushData: "Push data",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Field label and button text for dispatching a sync event in the Service Workers view of the Application panel.
    */
   syncString: "Sync",
   /**
-   * @description Placeholder text for the input box where a user is asked for a test tag to sync. This is used as a compound noun, not as a verb.
+   * @description Placeholder text and aria label for the sync tag input field in the Service Workers view of the Application panel.
    */
   syncTag: "Sync tag",
   /**
-   * @description Text for button in Service Workers View of the Application panel that dispatches a periodicsync event
+   * @description Field label and button text for dispatching a periodic sync event in the Service Workers view of the Application panel.
    */
   periodicSync: "Periodic sync",
   /**
-   * @description Default tag for a periodicsync event in Service Workers View of the Application panel
+   * @description Placeholder text and aria label for the periodic sync tag input field in the Service Workers view of the Application panel.
    */
   periodicSyncTag: "Periodic sync tag",
   /**
-   * @description Aria accessible name in Service Workers View of the Application panel
+   * @description Aria label for the link to show registration errors in the Console panel.
    * @example {3} PH1
    */
   sRegistrationErrors: "{PH1} registration errors",
   /**
-   * @description Text in Service Workers View of the Application panel. The Date/time that a service
-   * worker version update was received by the webpage.
+   * @description Date and time when a Service Worker version update was received in the Service Workers view of the Application panel.
    * @example {7/3/2019, 3:38:37 PM} PH1
    */
   receivedS: "Received {PH1}",
   /**
-   **@description Text in Service Workers View of the Application panel.
+   * @description Field label for Service Worker router rules in the Service Workers view of the Application panel.
    */
   routers: "Routers",
   /**
-   * @description Text in Service Workers View of the Application panel
-   * @example {example.com} PH1
+   * @description Title for a deleted Service Worker registration in the Service Workers view of the Application panel.
+   * @example {https://example.com} PH1
    */
   sDeleted: "{PH1} - deleted",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Status text for an activated Service Worker version in the Service Workers view of the Application panel.
    * @example {1} PH1
-   * @example {stopped} PH2
+   * @example {running} PH2
    */
   sActivatedAndIsS: "#{PH1} activated and is {PH2}",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Button label to stop a running Service Worker in the Service Workers view of the Application panel.
    */
   stopString: "Stop",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Button label to start a stopped Service Worker in the Service Workers view of the Application panel.
    */
   startString: "Start",
   /**
-   * @description Text in Service Workers View of the Application panel. Service workers have
-   * different versions, which are labelled with numbers e.g. version #2. This text indicates that a
-   * particular version is now redundant (it was replaced by a newer version). # means 'number' here.
+   * @description Status text indicating that a Service Worker version is redundant in the Service Workers view of the Application panel.
    * @example {2} PH1
    */
   sIsRedundant: "#{PH1} is redundant",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Status text indicating that a Service Worker version is waiting to activate in the Service Workers view of the Application panel.
    * @example {2} PH1
    */
   sWaitingToActivate: "#{PH1} waiting to activate",
   /**
-   * @description Text in Service Workers View of the Application panel
+   * @description Status text indicating that a Service Worker version is trying to install in the Service Workers view of the Application panel.
    * @example {2} PH1
    */
   sTryingToInstall: "#{PH1} trying to install",
   /**
-   * @description Text in Service Workers Update Timeline. Update is a noun.
+   * @description Field label for the update cycle timeline in the Service Workers view of the Application panel. Update is a noun.
    */
-  updateCycle: "Update Cycle",
+  updateCycle: "Update cycle",
   /**
-   * @description Text of a DOM element in Service Workers View of the Application panel
-   * @example {example.com} PH1
+   * @description Text displaying the worker client URL in the Service Workers view of the Application panel.
+   * @example {https://example.com} PH1
    */
   workerS: "Worker: {PH1}",
   /**
-   * @description Link text in Service Workers View of the Application panel. When the link is clicked,
-   * the focus is moved to the service worker's client page.
+   * @description Tooltip text for the button to focus a client page in the Service Workers view of the Application panel.
    */
-  focus: "focus",
+  focus: "Focus",
   /**
-   * @description Link to view all the Service Workers that have been registered.
+   * @description Link text to view all Service Worker registrations on chrome://serviceworker-internals in the Application panel.
    */
   seeAllRegistrations: "See all registrations"
 };
@@ -12659,22 +12645,15 @@ import * as UI19 from "../../ui/legacy/legacy.js";
 import { StorageMetadataView as StorageMetadataView3 } from "./components/components.js";
 var UIStrings19 = {
   /**
-   * @description Label for an item in the Application Panel Sidebar of the Application panel
-   * Storage Buckets allow developers to separate site data into buckets so that they can be
-   * deleted independently.
+   * @description Label for the storage buckets tree element in the Application panel sidebar.
    */
   storageBuckets: "Storage buckets",
   /**
-   * @description Text for an item in the Application Panel
-   * if no storage buckets are available to show. Storage Buckets allow developers to separate
-   * site data into buckets so that they can be
-   * deleted independently. https://developer.chrome.com/docs/web-platform/storage-buckets.
+   * @description Empty state title in the Application panel when no storage buckets are detected.
    */
   noStorageBuckets: "No storage buckets detected",
   /**
-   * @description Description text in the Application Panel describing the storage buckets tab.
-   * Storage Buckets allow developers to separate site data into buckets so that they can be
-   * deleted independently. https://developer.chrome.com/docs/web-platform/storage-buckets.
+   * @description Empty state description in the Application panel describing the storage buckets view.
    */
   storageBucketsDescription: "On this page you can view and delete storage buckets, and their associated `Storage APIs`"
 };
@@ -12862,7 +12841,7 @@ import * as Platform8 from "../../core/platform/platform.js";
 import * as SDK21 from "../../core/sdk/sdk.js";
 import * as SourceFrame5 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI26 from "../../ui/legacy/legacy.js";
-import { render as render16 } from "../../ui/lit/lit.js";
+import { nothing as nothing9, render as render16 } from "../../ui/lit/lit.js";
 import * as VisualLogging17 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/application/CookieItemsView.ts
@@ -12943,19 +12922,19 @@ import * as VisualLogging11 from "../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents10 from "./components/components.js";
 var UIStrings20 = {
   /**
-   * @description Text to refresh the page
+   * @description Tooltip text for the refresh button in the storage items toolbar of the Application panel.
    */
   refresh: "Refresh",
   /**
-   * @description Text to clear everything
+   * @description Tooltip text for the clear all button in the storage items toolbar of the Application panel.
    */
-  clearAll: "Clear All",
+  clearAll: "Clear all",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
+   * @description Tooltip text for the delete selected button in the storage items toolbar of the Application panel.
    */
-  deleteSelected: "Delete Selected",
+  deleteSelected: "Delete selected",
   /**
-   * @description Text that informs screen reader users that the storage table has been refreshed
+   * @description Screen reader announcement when the storage table is refreshed.
    */
   refreshedStatus: "Table refreshed"
 };
@@ -13102,43 +13081,43 @@ var StorageItemsToolbar = class _StorageItemsToolbar extends StorageItemsToolbar
 // ../../front_end/panels/application/CookieItemsView.ts
 var UIStrings21 = {
   /**
-   * @description Label for checkbox to show URL-decoded cookie values
+   * @description Checkbox label to show URL-decoded cookie values in the cookie preview of the Application panel.
    */
   showUrlDecoded: "Show URL-decoded",
   /**
-   * @description Text of a context menu item to start a chat with AI
+   * @description Context menu item in the Application panel to start a chat with AI assistance.
    */
   startAChat: "Start a chat",
   /**
-   * @description Text of a context menu item to explain a web cookie with AI
+   * @description Context menu item in the Application panel to explain a cookie with AI assistance.
    */
   explainCookie: "Explain this cookie",
   /**
-   * @description Text in Cookie Items View of the Application panel to indicate that no cookie has been selected for preview
+   * @description Empty state header in the cookie preview of the Application panel when no cookie is selected.
    */
   noCookieSelected: "No cookie selected",
   /**
-   * @description Text in Cookie Items View of the Application panel
+   * @description Empty state text in the cookie preview of the Application panel when no cookie is selected.
    */
   selectACookieToPreviewItsValue: "Select a cookie to preview its value",
   /**
-   * @description Text for filter in Cookies View of the Application panel
+   * @description Checkbox label in the cookies view of the Application panel to filter cookies with issues.
    */
   onlyShowCookiesWithAnIssue: "Only show cookies with an issue",
   /**
-   * @description Title for filter in the Cookies View of the Application panel
+   * @description Tooltip text for the filter checkbox in the cookies view of the Application panel to filter cookies with issues.
    */
   onlyShowCookiesWhichHaveAn: "Only show cookies that have an associated issue",
   /**
-   * @description Label to only delete the cookies that are visible after filtering
+   * @description Tooltip text for the clear button in the cookies view of the Application panel to delete visible filtered cookies.
    */
   clearFilteredCookies: "Clear filtered cookies",
   /**
-   * @description Label to delete all cookies
+   * @description Tooltip text for the clear button in the cookies view of the Application panel to delete all cookies.
    */
   clearAllCookies: "Clear all cookies",
   /**
-   * @description Alert message for screen reader to announce # of cookies in the table
+   * @description Screen reader announcement for the number of cookies shown in the table of the Application panel.
    * @example {5} PH1
    */
   numberOfCookiesShownInTableS: "Number of cookies shown in table: {PH1}"
@@ -14631,24 +14610,24 @@ var { Size: Size2 } = Geometry2;
 var { repeat: repeat2, ifDefined } = LitDirectives;
 var UIStrings23 = {
   /**
-   * @description Text that shows in the Application Panel if no value is selected for preview
+   * @description Empty state header in the storage items view of the Application panel when no value is selected.
    */
   noPreviewSelected: "No value selected",
   /**
-   * @description Preview text when viewing storage in Application panel
+   * @description Empty state text in the storage items view of the Application panel when no value is selected.
    */
   selectAValueToPreview: "Select a value to preview",
   /**
-   * @description Text for announcing number of entries after filtering
+   * @description Screen reader announcement for the number of entries shown in the storage table of the Application panel.
    * @example {5} PH1
    */
   numberEntries: "Number of entries shown in table: {PH1}",
   /**
-   * @description Text in DOMStorage Items View of the Application panel
+   * @description Column header for key in the storage items datagrid of the Application panel.
    */
   key: "Key",
   /**
-   * @description Text for the value of something
+   * @description Column header for value in the storage items datagrid of the Application panel.
    */
   value: "Value"
 };
@@ -14966,24 +14945,23 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
 // ../../front_end/panels/application/DOMStorageItemsView.ts
 var UIStrings24 = {
   /**
-   * @description Name for the "DOM Storage Items" table that shows the content of the DOM Storage.
+   * @description Accessible name for the DOM storage items datagrid in the Application panel.
    */
-  domStorageItems: "DOM Storage Items",
+  domStorageItems: "DOM storage items",
   /**
-   * @description Text for announcing that the "DOM Storage Items" table was cleared, that is, all
-   * entries were deleted.
+   * @description Screen reader announcement when the DOM storage items table is cleared.
    */
-  domStorageItemsCleared: "DOM Storage Items cleared",
+  domStorageItemsCleared: "DOM storage items cleared",
   /**
-   * @description Text for announcing a DOM Storage key/value item has been deleted
+   * @description Screen reader announcement when a DOM storage key-value item is deleted.
    */
   domStorageItemDeleted: "The storage item was deleted",
   /**
-   * @description Text of a context menu item to start a chat with AI
+   * @description Context menu item in the Application panel to start a chat with AI assistance.
    */
   startAChat: "Start a chat",
   /**
-   * @description Text of a context menu item to explain a storage item of a storage bucket with AI
+   * @description Context menu item in the Application panel to explain a DOM storage item with AI assistance.
    */
   explainItem: "Explain this item"
 };
@@ -15181,14 +15159,13 @@ import * as UI25 from "../../ui/legacy/legacy.js";
 import * as VisualLogging16 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings25 = {
   /**
-   * @description Name for the "Extension Storage Items" table that shows the content of the extension Storage.
+   * @description Accessible name for the extension storage items datagrid in the Application panel.
    */
-  extensionStorageItems: "Extension Storage Items",
+  extensionStorageItems: "Extension storage items",
   /**
-   * @description Text for announcing that the "Extension Storage Items" table was cleared, that is, all
-   * entries were deleted.
+   * @description Screen reader announcement when the extension storage items table is cleared.
    */
-  extensionStorageItemsCleared: "Extension Storage Items cleared"
+  extensionStorageItemsCleared: "Extension storage items cleared"
 };
 var str_25 = i18n49.i18n.registerUIStrings("panels/application/ExtensionStorageItemsView.ts", UIStrings25);
 var i18nString25 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
@@ -15536,9 +15513,8 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
     this.storageViewToolbar.classList.toggle("hidden", true);
     if (view instanceof UI26.View.SimpleView) {
       void view.toolbarItems().then((items) => {
-        if (Array.isArray(items)) {
-          items.map((item4) => this.storageViewToolbar.appendToolbarItem(item4));
-          this.storageViewToolbar.classList.toggle("hidden", !items.length);
+        if (items === nothing9) {
+          this.storageViewToolbar.classList.toggle("hidden", true);
         } else {
           render16(items, this.storageViewToolbar);
           this.storageViewToolbar.classList.toggle("hidden", false);
@@ -15766,131 +15742,130 @@ var storageView_css_default = `/*
 // ../../front_end/panels/application/StorageView.ts
 var UIStrings26 = {
   /**
-   * @description Text in the Storage View that expresses the amount of used and available storage quota
+   * @description Text in the storage view that expresses the amount of used and available storage quota.
    * @example {1.5 MB} PH1
    * @example {123.1 MB} PH2
    */
   storageQuotaUsed: "{PH1} used out of {PH2} storage quota",
   /**
-   * @description Tooltip in the Storage View that expresses the precise amount of used and available storage quota
+   * @description Tooltip in the storage view that expresses the precise amount of used and available storage quota.
    * @example {200} PH1
    * @example {400} PH2
    */
   storageQuotaUsedWithBytes: "{PH1} bytes used out of {PH2} bytes storage quota",
   /**
-   * @description Fragment indicating that a certain data size has been custom configured
+   * @description Fragment indicating that a certain data size has been custom configured.
    * @example {1.5 MB} PH1
    */
   storageWithCustomMarker: "{PH1} (custom)",
   /**
-   * @description Text in Application Panel Sidebar and title text of the Storage View of the Application panel
+   * @description Title text of the storage view in the Application panel.
    */
   storageTitle: "Storage",
   /**
-   * @description Title text in Storage View of the Application panel
+   * @description Section title in the storage view of the Application panel.
    */
   usage: "Usage",
   /**
-   * @description Unit for data size in DevTools
+   * @description Unit for data size in DevTools.
    */
   mb: "MB",
   /**
-   * @description Link to learn more about Progressive Web Apps
+   * @description Link text to learn more about Progressive Web Apps in the storage view of the Application panel.
    */
   learnMore: "Learn more",
   /**
-   * @description Button text for the button in the Storage View of the Application panel for clearing site-specific storage
+   * @description Section title in the storage view of the Application panel for clearing site-specific storage.
    */
   clearSiteData: "Clear site data",
   /**
-   * @description Button text in the Storage View of the Application panel for clearing selected site-specific storage
+   * @description Button text in the storage view of the Application panel for clearing selected site-specific storage.
    */
   clearSelected: "Clear selected",
   /**
-   * @description Announce message when the "clear site data" task is complete
+   * @description Screen reader announcement when the clear site data task is complete.
    */
   SiteDataCleared: "Site data cleared",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for unregistering service workers.
    */
   unregisterServiceWorker: "Unregister service workers",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for clearing local and session storage.
    */
   localAndSessionStorage: "Local and session storage",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for clearing IndexedDB storage.
    */
   indexDB: "IndexedDB",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for clearing cookies.
    */
   cookies: "Cookies",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for clearing cache storage.
    */
   cacheStorage: "Cache storage",
   /**
-   * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
+   * @description Checkbox label in the storage view of the Application panel for including third-party cookies.
    */
   thirdPartyCookies: "Third-party cookies",
   /**
-   * @description Text for error message in Application Quota Override
-   * @example {Image} PH1
+   * @description Text for error message in the storage view of the Application panel when an origin fails to load.
+   * @example {https://example.com} PH1
    */
   sFailedToLoad: "{PH1} (failed to load)",
   /**
-   * @description Text for error message in Application Quota Override
+   * @description Error message in the storage view of the Application panel when a quota override fails.
    */
   internalError: "Internal error",
   /**
-   * @description Text for error message in Application Quota Override
+   * @description Error message in the storage view of the Application panel when custom quota is not a number.
    */
-  pleaseEnterANumber: "Please enter a number",
+  pleaseEnterANumber: "Enter a number",
   /**
-   * @description Text for error message in Application Quota Override
+   * @description Error message in the storage view of the Application panel when custom quota is negative.
    */
   numberMustBeNonNegative: "Number must be non-negative",
   /**
-   * @description Text for error message in Application Quota Override
+   * @description Error message in the storage view of the Application panel when custom quota is too large.
    * @example {9000000000000} PH1
    */
   numberMustBeSmaller: "Number must be smaller than {PH1}",
   /**
-   * @description Button text for the "Clear site data" button in the Storage View of the Application panel while the clearing action is pending
+   * @description Button text for the clear button in the storage view of the Application panel while clearing is in progress.
    */
   clearing: "Clearing\u2026",
   /**
-   * @description Quota row title in Clear Storage View of the Application panel
+   * @description Tooltip text in the storage view of the Application panel indicating storage quota is limited in Incognito mode.
    */
   storageQuotaIsLimitedIn: "Storage quota is limited in Incognito mode",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Category name for file system storage in the storage view of the Application panel.
    */
-  fileSystem: "File System",
+  fileSystem: "File system",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Category name for other storage types in the storage view of the Application panel.
    */
   other: "Other",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Chart title for the storage usage pie chart in the storage view of the Application panel.
    */
   storageUsage: "Storage usage",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Category name for service worker storage in the storage view of the Application panel.
    */
   serviceWorkers: "Service workers",
   /**
-   * @description Checkbox label in Application Panel Sidebar of the Application panel.
-   * Storage quota refers to the amount of disk available for the website or app.
+   * @description Checkbox label in the storage view of the Application panel to simulate custom storage quota.
    */
   simulateCustomStorage: "Simulate custom storage quota",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Category name for local storage in the storage view of the Application panel.
    */
   localStorage: "Local storage",
   /**
-   * @description Text in Application Panel Sidebar of the Application panel
+   * @description Category name for session storage in the storage view of the Application panel.
    */
   sessionStorage: "Session storage"
 };
@@ -15963,6 +15938,12 @@ var StorageView = class _StorageView extends UI27.Widget.VBox {
       i18nString26(UIStrings26.cacheStorage),
       Storage.StorageType.Cache_storage,
       "cache-storage-checkbox"
+    );
+    this.appendSettingCheckbox(
+      leftColumn,
+      i18nString26(UIStrings26.fileSystem),
+      Storage.StorageType.File_systems,
+      "file-systems-checkbox"
     );
     this.appendSettingCheckbox(
       leftColumn,
@@ -16439,6 +16420,7 @@ var StorageView = class _StorageView extends UI27.Widget.VBox {
 var AllStorageTypes = [
   Storage.StorageType.Cache_storage,
   Storage.StorageType.Cookies,
+  Storage.StorageType.File_systems,
   Storage.StorageType.Indexeddb,
   Storage.StorageType.Local_storage,
   Storage.StorageType.Service_workers
@@ -16495,8 +16477,7 @@ import * as UI28 from "../../ui/legacy/legacy.js";
 import * as ApplicationComponents12 from "./components/components.js";
 var UIStrings27 = {
   /**
-   * @description Hover text for an info icon in the Private State Token panel.
-   * Previously known as 'Trust Tokens'.
+   * @description Label for the private state tokens tree element in the Application panel sidebar.
    */
   trustTokens: "Private state tokens"
 };
@@ -16565,7 +16546,7 @@ import * as UI29 from "../../ui/legacy/legacy.js";
 import {
   Directives as Directives7,
   html as html16,
-  nothing as nothing9,
+  nothing as nothing10,
   render as render17
 } from "../../ui/lit/lit.js";
 import * as VisualLogging19 from "../../ui/visual_logging/visual_logging.js";
@@ -16945,167 +16926,171 @@ var webMCPView_css_default = `/*
 // ../../front_end/panels/application/WebMCPView.ts
 var UIStrings28 = {
   /**
-   * @description Text for the header of the tool registry section
+   * @description Section header for the available tools list in the WebMCP view of the Application panel.
    */
-  toolRegistry: "Available Tools",
+  toolRegistry: "Available tools",
   /**
-   * @description Title of text to display when no tools are registered
+   * @description Header text displayed when no tools are registered in the WebMCP view of the Application panel.
    */
-  noToolsPlaceholderTitle: "Available `WebMCP` Tools",
+  noToolsPlaceholderTitle: "Available `WebMCP` tools",
   /**
-   * @description Text to display when no tools are registered
+   * @description Informational text displayed when no tools are registered in the WebMCP view of the Application panel.
    */
   noToolsPlaceholder: "Registered `WebMCP` tools for this page will appear here. No tools have been registered or detected yet.",
   /**
-   * @description Title of text to display when no calls have been made
+   * @description Header text displayed when no tool calls have been made in the WebMCP view of the Application panel.
    */
-  noCallsPlaceholderTitle: "Tool Activity",
+  noCallsPlaceholderTitle: "Tool activity",
   /**
-   * @description Text to display when no calls have been made
+   * @description Informational text displayed when no tool calls have been made in the WebMCP view of the Application panel.
    */
   noCallsPlaceholder: "Start interacting with your `WebMCP` agent to see real-time tool calls and executions here",
   /**
-   * @description Text for the header of the tool details section
+   * @description Tab title and section header for the tool details in the WebMCP view of the Application panel.
    */
   toolDetails: "Details",
   /**
-   * @description Text for the link to reveal the tool's DOM node in the Elements panel
+   * @description Tooltip and aria label for the button to reveal the tool's DOM node in the Elements panel.
    */
   viewInElementsPanel: "View in Elements panel",
   /**
-   * @description Text for the frame of a tool
+   * @description Label for the frame where a tool is registered in the WebMCP view of the Application panel.
    */
   frame: "Frame",
   /**
-   * @description Text for the name of a tool call
+   * @description Table column header and details label for the tool name in the WebMCP view of the Application panel.
    */
   name: "Name",
   /**
-   * @description Text for the status of a tool call
+   * @description Table column header for the tool call status in the WebMCP view of the Application panel.
    */
   status: "Status",
   /**
-   * @description Text for the input of a tool call
+   * @description Table column header and tab title for the tool call input in the WebMCP view of the Application panel.
    */
   input: "Input",
   /**
-   * @description Text for the output of a tool call
+   * @description Table column header and tab title for the tool call output in the WebMCP view of the Application panel.
    */
   output: "Output",
   /**
-   * @description Text for the status of a tool call that is in progress
+   * @description Status text for a tool call that is in progress in the WebMCP view of the Application panel.
    */
-  inProgress: "In Progress",
+  inProgress: "In progress",
   /**
-   * @description Tooltip for the clear log button
+   * @description Tooltip text for the clear log button in the toolbar of the WebMCP view in the Application panel.
    */
   clearLog: "Clear log",
   /**
-   * @description Text to close something
+   * @description Tooltip text for the close button in the sidebar of the WebMCP view in the Application panel.
    */
   close: "Close",
   /**
-   * @description Placeholder for the filter input
+   * @description Placeholder text for the filter input in the toolbar of the WebMCP view in the Application panel.
    */
   filter: "Filter",
   /**
-   * @description Tooltip for the tool types dropdown
+   * @description Tooltip text and button label for the tool types filter dropdown in the WebMCP view of the Application panel.
    */
   toolTypes: "Tool types",
   /**
-   * @description Tooltip for the status types dropdown
+   * @description Tooltip text and button label for the status types filter dropdown in the WebMCP view of the Application panel.
    */
   statusTypes: "Status types",
   /**
-   * @description Tooltip for the clear filters button
+   * @description Tooltip text for the clear filters button in the toolbar of the WebMCP view in the Application panel.
    */
   clearFilters: "Clear filters",
   /**
-   * @description Filter option for imperative tools
+   * @description Filter option label for imperative tools in the WebMCP view of the Application panel.
    */
   imperative: "Imperative",
   /**
-   * @description Filter option for declarative tools
+   * @description Filter option label for declarative tools in the WebMCP view of the Application panel.
    */
   declarative: "Declarative",
   /**
-   * @description Text for the status of a tool call that has failed
+   * @description Status text and filter option for a tool call that ended in an error in the WebMCP view of the Application panel.
    */
   error: "Error",
   /**
-   * @description Text for the status of a tool call that was canceled
+   * @description Status text and filter option for a tool call that was canceled in the WebMCP view of the Application panel.
    */
   canceled: "Canceled",
   /**
-   * @description Text for the status of a tool call that succeeded
+   * @description Status text and filter option for a tool call that completed successfully in the WebMCP view of the Application panel.
    */
   completed: "Completed",
   /**
-   * @description Text for the status of a tool call that has failed
+   * @description Filter option for a tool call that is in progress in the WebMCP view of the Application panel.
    */
-  pending: "In Progress",
+  pending: "In progress",
   /**
-   * @description Text for the total number of tool calls
+   * @description Summary text displaying the total number of tool calls in the WebMCP view of the Application panel.
    * @example {2} PH1
    */
-  totalCalls: "{PH1} Total calls",
+  totalCalls: "{PH1} total calls",
   /**
-   * @description Text for the number of failed tool calls
+   * @description Summary text displaying the number of failed tool calls in the WebMCP view of the Application panel.
    * @example {1} PH1
    */
-  failed: "{PH1} Failed",
+  failed: "{PH1} failed",
   /**
-   * @description Text for the number of canceled tool calls
+   * @description Summary text displaying the number of canceled tool calls in the WebMCP view of the Application panel.
    * @example {1} PH1
    */
-  canceledCount: "{PH1} Canceled",
+  canceledCount: "{PH1} canceled",
   /**
-   * @description Text for the number of in progress tool calls
+   * @description Summary text displaying the number of in-progress tool calls in the WebMCP view of the Application panel.
    * @example {1} PH1
    */
-  inProgressCount: "{PH1} In Progress",
+  inProgressCount: "{PH1} in progress",
   /**
-   * @description Context menu action to copy the name of a tool
+   * @description Context menu action to copy the name of a tool in the WebMCP view of the Application panel.
    */
   copyName: "Copy name",
   /**
-   * @description Context menu action to copy the description of a tool
+   * @description Context menu action to copy the description of a tool in the WebMCP view of the Application panel.
    */
   copyDescription: "Copy description",
   /**
-   * @description Context menu action to cancel an in-progress tool call
+   * @description Context menu action to cancel an in-progress tool call in the WebMCP view of the Application panel.
    */
   cancelCall: "Cancel",
   /**
-   * @description Text for the header of the tool run section
+   * @description Section header and button label to run a tool in the WebMCP view of the Application panel.
    */
-  runTool: "Run Tool",
+  runTool: "Run tool",
   /**
-   * @description Context menu action to reveal the tool in the tool list
+   * @description Context menu action to reveal a tool in the tool list in the WebMCP view of the Application panel.
    */
   revealTool: "Reveal tool",
   /**
-   * @description Context menu action to edit and run the tool
+   * @description Context menu action, button title, and aria label to edit and run a tool in the WebMCP view of the Application panel.
    */
   editAndRun: "Edit and run",
   /**
-   * @description Tooltip for the paste button
+   * @description Button label for the paste button in the WebMCP view of the Application panel.
    */
   paste: "Paste",
   /**
-   * @description Notice to display when a tool has been unregistered
+   * @description Tooltip text for the paste button in the WebMCP view of the Application panel.
+   */
+  pasteTooltip: "Paste tool parameters from clipboard as JSON",
+  /**
+   * @description Notice displayed when a tool has been unregistered in the WebMCP view of the Application panel.
    */
   toolUnregisteredNotice: "This tool has been unregistered",
   /**
-   * @description Label for a list of tool flags or attributes
+   * @description Label for tool flags in the tool details section of the WebMCP view in the Application panel.
    */
   flags: "Flags",
   /**
-   * @description Text for the label of the tool description
+   * @description Label for the tool description in the tool details section of the WebMCP view in the Application panel.
    */
   description: "Description",
   /**
-   * @description Text for the label of the tool origin
+   * @description Label for the tool origin in the tool details section of the WebMCP view in the Application panel.
    */
   origin: "Origin"
 };
@@ -17319,7 +17304,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
           <devtools-split-view name="webmcp-call-split-view"
                                direction="column"
                                sidebar-position="second"
-                               sidebar-visibility=${input.selectedCall ? "show" : "hidden"}>
+                               show=${input.selectedCall ? "both" : "main"}>
             <div slot="main" style="display: flex; flex-direction: column; overflow: hidden; height: 100%;">
               <devtools-data-grid striped .template=${html16`
                 <table>
@@ -17332,7 +17317,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
                             ${!input.selectedCall ? html16`
                     <th id="input" weight="30">${i18nString28(UIStrings28.input)}</th>
                     <th id="output" weight="30">${i18nString28(UIStrings28.output)}</th>
-                            ` : nothing9}
+                            ` : nothing10}
                   </tr>
                       ${Directives7.repeat(
     input.toolCalls,
@@ -17399,7 +17384,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
       e.stopPropagation();
       input.onCallSelect(call, "webmcp.call-outputs" /* OUTPUT */);
     }}>${call.result?.output !== void 0 ? JSON.stringify(call.result.output) : call.result?.errorText ?? ""}</td>
-                        ` : nothing9}
+                        ` : nothing10}
                     </tr>
                   `
   )}
@@ -17475,7 +17460,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
                            direction="column"
                            sidebar-position="second"
                            name="webmcp-details-split-view"
-                           sidebar-visibility=${input.selectedTool ? "show" : "hidden"}>
+                           show=${input.selectedTool ? "both" : "main"}>
         <div slot="main" class="tool-list" jslog=${VisualLogging19.section("tool-list")}>
           <div class="section-title">${i18nString28(UIStrings28.toolRegistry)}</div>
           ${tools.length === 0 ? html16`
@@ -17533,7 +17518,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
                 .size=${Buttons9.Button.Size.SMALL}
                 .variant=${Buttons9.Button.Variant.TEXT}
                 .jslogContext=${"paste"}
-                title=${i18nString28(UIStrings28.paste)}
+                title=${i18nString28(UIStrings28.pasteTooltip)}
                 @click=${input.onPaste}
               >${i18nString28(UIStrings28.paste)}</devtools-button>
             </div>
@@ -17570,7 +17555,7 @@ var DEFAULT_VIEW12 = (input, output, target) => {
       });
     }
   }}>${i18nString28(UIStrings28.runTool)}</devtools-button>
-          ` : nothing9}
+          ` : nothing10}
         </div>
       </devtools-split-view>
     </devtools-split-view>
@@ -17804,7 +17789,7 @@ var WebMCPView = class _WebMCPView extends UI29.Widget.VBox {
 };
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   if (input.valueObject === void 0 && input.valueString === void 0 && !input.errorText && !input.symbolizedError) {
-    render17(nothing9, target);
+    render17(nothing10, target);
     return;
   }
   const isParsable = input.valueObject !== void 0;
@@ -17821,7 +17806,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
           <ul role="tree">
             <li role=treeitem class="object-properties-section-root-element object-properties-section source-code" open>
               ${object.description}
-              ${object.hasChildren ? ObjectUI2.ObjectPropertiesSection.renderObjectTree(objectTree) : nothing9}
+              ${object.hasChildren ? ObjectUI2.ObjectPropertiesSection.renderObjectTree(objectTree) : nothing10}
             </li>
           </ul>
         `}></devtools-tree>`;
@@ -17830,7 +17815,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   const createErrorText = (text) => html16`<div class="payload-value source-code error-text">${text}</div>`;
   const createException = (error) => {
     if (!error) {
-      return nothing9;
+      return nothing10;
     }
     return html16`
       <div class="payload-value source-code error-text">
@@ -17846,7 +17831,7 @@ var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
     <style>${symbolizedErrorWidget_css_default}</style>
     <div class="call-payload-view">
       <div class="call-payload-content">
-            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.symbolizedError ? createException(input.symbolizedError) : input.errorText ? createErrorText(input.errorText) : nothing9}
+            ${isParsable ? createPayload(input.valueObject) : input.valueString !== void 0 ? createSourceText(input.valueString) : input.symbolizedError ? createException(input.symbolizedError) : input.errorText ? createErrorText(input.errorText) : nothing10}
       </div>
     </div>
   `,
@@ -17920,7 +17905,7 @@ var PayloadWidget = class extends UI29.Widget.Widget {
 };
 var TOOL_DETAILS_VIEW = (input, output, target) => {
   if (!input.tool) {
-    render17(nothing9, target);
+    render17(nothing10, target);
     return;
   }
   const tool = input.tool;
@@ -17941,11 +17926,11 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
       ${flags.length > 0 ? html16`
       <div class="label">${i18nString28(UIStrings28.flags)}</div>
       <div class="value">${formattedFlags}</div>
-      ` : nothing9}
+      ` : nothing10}
       ${tool.frame ? html16`
       <div class="label">${i18nString28(UIStrings28.frame)}</div>
       <div class="value">${Components4.Linkifier.Linkifier.linkifyRevealable(tool.frame, tool.frame.displayName())}</div>
-      ` : nothing9}
+      ` : nothing10}
       ${origin instanceof SDK23.DOMModel.DOMNode ? html16`
       <div class="label">${i18nString28(UIStrings28.origin)}</div>
       <div class="value tool-origin-container">
@@ -17977,7 +17962,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
     Components4.JSPresentationUtils.StackTracePreviewContent,
     { stackTrace: origin, options: { expandable: true } }
   )}
-      </div>` : nothing9}
+      </div>` : nothing10}
     </div>
     ${input.isUnregistered ? html16`
       <div class="call-to-action">
@@ -17988,7 +17973,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
           </div>
         </div>
       </div>
-    ` : nothing9}
+    ` : nothing10}
   `, target);
 };
 var ToolDetailsWidget = class extends UI29.Widget.Widget {

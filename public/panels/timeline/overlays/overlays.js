@@ -30,6 +30,7 @@ import * as AIAssistance from "../../../models/ai_assistance/ai_assistance.js";
 import * as Trace from "../../../models/trace/trace.js";
 import * as UI from "../../../ui/legacy/legacy.js";
 import { html, render } from "../../../ui/lit/lit.js";
+import * as SettingsUI from "../../../ui/settings/settings.js";
 import * as VisualLogging from "../../../ui/visual_logging/visual_logging.js";
 import * as Components from "./components/components.js";
 var UIStrings = {
@@ -245,7 +246,7 @@ var Overlays = class extends EventTarget {
     this.#charts = init.charts;
     this.#queries = init.entryQueries;
     this.#entriesLinkInProgress = null;
-    this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting("annotations-hidden");
+    this.#annotationsHiddenSetting = Common.Settings.Settings.instance().resolve(SettingsUI.TimelineSettings.annotationsHiddenSettingDescriptor);
     this.#annotationsHiddenSetting.addChangeListener(this.update.bind(this));
     init.flameChartsContainers.main.addEventListener(
       "mousemove",
@@ -674,11 +675,14 @@ var Overlays = class extends EventTarget {
     }
     const isPositionedByEvent = overlay.entry && (overlay.renderLocation === "BELOW_EVENT" || overlay.renderLocation === "ABOVE_EVENT");
     element.classList.toggle("positioned-by-event", Boolean(isPositionedByEvent));
-    const component = element.querySelector(".devtools-timespan-breakdown-overlay");
+    const component = element.querySelector("devtools-widget");
     if (!component) {
       return;
     }
     const widget2 = UI.Widget.Widget.get(component);
+    if (!widget2) {
+      return;
+    }
     const leftEdgePixel = this.#xPixelForMicroSeconds("main", overlay.sections[0].bounds.min);
     const rightEdgePixel = this.#xPixelForMicroSeconds("main", overlay.sections[overlay.sections.length - 1].bounds.max);
     if (leftEdgePixel === null || rightEdgePixel === null) {
@@ -1267,7 +1271,7 @@ var Overlays = class extends EventTarget {
         break;
       }
       case "TIMESPAN_BREAKDOWN": {
-        const component = element.querySelector(".devtools-timespan-breakdown-overlay");
+        const component = element.querySelector("devtools-widget");
         if (!component) {
           return;
         }
@@ -1332,7 +1336,7 @@ var Overlays = class extends EventTarget {
       case "ENTRIES_LINK":
         break;
       case "TIMESPAN_BREAKDOWN": {
-        const component = element.querySelector(".devtools-timespan-breakdown-overlay");
+        const component = element.querySelector("devtools-widget");
         if (!component) {
           return;
         }

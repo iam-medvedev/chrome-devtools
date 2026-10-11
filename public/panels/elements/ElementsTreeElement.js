@@ -474,7 +474,7 @@ function renderLinkifiedValue(value, node) {
             if (el) {
                 setValueWithEntities(el, value);
             }
-        })}}></span>`;
+        })}></span>`;
     }
     value = value.replace(closingPunctuationRegex, '$&\u200B');
     if (value.startsWith('data:')) {
@@ -590,12 +590,23 @@ function renderAttribute(attr, updateRecord, isDiff, node, issues) {
     else if (nodeName === 'image' && (name === 'xlink:href' || name === 'href')) {
         valueType = 2 /* ValueType.SRCSET */;
     }
-    const withEntitiesRef = (valueType === 0 /* ValueType.UNKNOWN */ && !isRelation) ? ref(el => {
-        if (el) {
-            setValueWithEntities(el, value);
-        }
-    }) :
-        nothing;
+    let valueContent = nothing;
+    if (valueType === 1 /* ValueType.SRC */) {
+        valueContent = renderLinkifiedValue(value, node);
+    }
+    else if (valueType === 2 /* ValueType.SRCSET */) {
+        valueContent = renderLinkifiedSrcset(Common.Srcset.parseSrcset(value), node);
+    }
+    else if (linkifyValue && relationPromise) {
+        valueContent = until(relationPromise, value);
+    }
+    else if (valueType === 0 /* ValueType.UNKNOWN */ && !isRelation) {
+        valueContent = html `<span ${ref(el => {
+            if (el) {
+                setValueWithEntities(el, value);
+            }
+        })}></span>`;
+    }
     const jslog = VisualLogging.value(name === 'style' ? 'style-attribute' : 'attribute').track({
         change: true,
         dblclick: true,
@@ -606,12 +617,7 @@ function renderAttribute(attr, updateRecord, isDiff, node, issues) {
         'violating-element': hasAttributeIssues,
     };
     return html `<span class="webkit-html-attribute" jslog=${jslog}><span class=${classMap(attributeNameClasses)}
-      ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && !hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)}>${linkifyName && relationPromise ? until(relationPromise, name) : name}</span>${hasText ?
-        html `=\u200B"<span class="webkit-html-attribute-value" ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)} ${withEntitiesRef}>
-                        ${valueType === 1 /* ValueType.SRC */ ? renderLinkifiedValue(value, node) : nothing}
-                        ${valueType === 2 /* ValueType.SRCSET */ ? renderLinkifiedSrcset(Common.Srcset.parseSrcset(value), node) : nothing}
-                        ${linkifyValue && relationPromise ? until(relationPromise, value) : nothing}
-                </span>"` :
+      ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && !hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)}>${linkifyName && relationPromise ? until(relationPromise, name) : name}</span>${hasText ? html `=\u200B"<span class="webkit-html-attribute-value" ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)}>${valueContent}</span>"` :
         nothing}</span>`;
 }
 function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement, updateRecord, issues) {
@@ -2254,9 +2260,10 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
         }
         if (attributeName !== null && (attributeName.trim() || newText.trim()) && oldText !== newText) {
             const edit = { attributeName, oldText, newText };
+            // The changeTracker has to be resolved before the widget is detached from the DOM.
+            const changeTracker = this.changeTracker;
             this.node.setAttribute(attributeName, newText, (error) => {
                 if (!error) {
-                    const changeTracker = this.changeTracker;
                     Elements.DOMChanges.trackAttributeEdit(changeTracker, this.node, buildChangeSelector(changeTracker, this.node), edit);
                     Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
                 }
@@ -2301,13 +2308,14 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
             return;
         }
         const wasExpanded = this.#expanded;
+        // The changeTracker has to be resolved before the widget is detached from the DOM.
+        const changeTracker = this.changeTracker;
         this.node.setNodeName(newText, (error, newNode) => {
             if (error || !newNode) {
                 cancel();
                 return;
             }
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
-            const changeTracker = this.changeTracker;
             Elements.DOMChanges.trackTagNameEdit(changeTracker, newNode, buildChangeSelector(changeTracker, newNode), oldText ?? tagName ?? '', newText);
             if (this.selectNodeAfterEdit) {
                 this.selectNodeAfterEdit(wasExpanded, error, newNode, moveDirection);
@@ -2317,9 +2325,10 @@ export class ElementsTreeWidget extends UI.Widget.Widget {
     textNodeEditingCommitted(textNode, _element, newText) {
         this.editing = null;
         const oldValue = textNode.nodeValue() ?? '';
+        // The changeTracker has to be resolved before the widget is detached from the DOM.
+        const changeTracker = this.changeTracker;
         function callback(error) {
             if (!error && oldValue !== newText) {
-                const changeTracker = this.changeTracker;
                 Elements.DOMChanges.trackTextNodeEdit(changeTracker, textNode, buildChangeSelector(changeTracker, textNode), oldValue, newText);
             }
             this.#clearDOMNextUpdate = true;

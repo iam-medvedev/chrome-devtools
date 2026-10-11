@@ -304,11 +304,11 @@ describe('UserInteractionsHandler', function () {
     });
     it('gets the correct score classification for Interaction to Next Paint event', () => {
         const eventA = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 10_000, interactionId: 1 });
-        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventA.dur), "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventA.dur), Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD);
         const eventB = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 250_000, interactionId: 1 });
-        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventB.dur), "ok" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.OK */);
+        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventB.dur), Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.OK);
         const eventC = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 1_000_000, interactionId: 1 });
-        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventC.dur), "bad" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.BAD */);
+        assert.strictEqual(Trace.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventC.dur), Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.BAD);
     });
 });
 //# sourceMappingURL=UserInteractionsHandler.test.js.map

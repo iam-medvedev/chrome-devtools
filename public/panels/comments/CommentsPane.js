@@ -1,10 +1,12 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -30,6 +32,14 @@ const UIStrings = {
      * @description Button text for sending comments to the agent.
      */
     sendToAgent: 'Send to Agent',
+    /**
+     * @description Status text shown next to a spinner when a comment thread is being processed by the agent.
+     */
+    working: 'Working',
+    /**
+     * @description Button text shown on resolved comment threads to view the agent response.
+     */
+    seeResponse: 'See response',
 };
 const UIStringsNotTranslate = {
     /**
@@ -40,6 +50,55 @@ const UIStringsNotTranslate = {
 const str_ = i18n.i18n.registerUIStrings('panels/comments/CommentsPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
+function renderThreadStatus(thread, onDeleteThread) {
+    // clang-format off
+    switch (thread.status) {
+        case 'SENT_TO_AGENT':
+            return html `
+        <div class="thread-status-working">
+          <devtools-spinner></devtools-spinner>
+          <span>${i18nString(UIStrings.working)}</span>
+        </div>
+      `;
+        case 'RESOLVED':
+            return html `
+        <devtools-button
+          .data=${{
+                variant: "text" /* Buttons.Button.Variant.TEXT */,
+                jslogContext: 'comments-see-response',
+            }}
+          @keydown=${(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                }
+            }}
+        >${i18nString(UIStrings.seeResponse)}</devtools-button>
+      `;
+        case 'ACTIVE':
+            return html `
+        <devtools-button
+          .data=${{
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                iconName: 'bin',
+                title: i18nString(UIStrings.deleteComment),
+                jslogContext: 'delete',
+            }}
+          @click=${(e) => {
+                e.stopPropagation();
+                onDeleteThread(thread.id);
+            }}
+          @keydown=${(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                }
+            }}
+        ></devtools-button>
+      `;
+        default:
+            return Lit.nothing;
+    }
+    // clang-format on
+}
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
@@ -84,17 +143,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         html `<span class="anchor-chip-text">${item.title.text}</span>`}
                 </span>
                 <div class="comment-text">${item.commentText}</div>
-                <button
-                  class="delete-button"
-                  title=${i18nString(UIStrings.deleteComment)}
-                  aria-label=${i18nString(UIStrings.deleteComment)}
-                  @click=${(e) => {
-        e.stopPropagation();
-        input.onDeleteThread(item.thread.id);
-    }}
-                  jslog=${VisualLogging.action('delete').track({ click: true })}>
-                  <devtools-icon name="bin"></devtools-icon>
-                </button>
+                ${renderThreadStatus(item.thread, input.onDeleteThread)}
               </li>
             `)}
         </ul>
@@ -120,7 +169,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           class="send-agent-button"
           ?disabled=${input.threads.length === 0}
           @click=${input.onSendToAgent}
-          jslog=${VisualLogging.action('send-to-agent').track({ click: true })}>
+          jslog=${VisualLogging.action('comments-send-to-agent').track({ click: true })}>
           ${i18nString(UIStrings.sendToAgent)}
         </button>
       </div>
@@ -168,11 +217,7 @@ export class CommentsPane extends UI.Widget.Widget {
         this.requestUpdate();
     };
     #handleSendToAgent = () => {
-        for (const thread of this.#commentManager.getCommentThreads()) {
-            if (thread.status === 'ACTIVE') {
-                thread.sendToAgent();
-            }
-        }
+        this.#commentManager.sendQueuedThreads();
     };
     async performUpdate(signal) {
         const rawThreads = this.#commentManager.getCommentThreads().filter(thread => thread.status !== 'DRAFT');

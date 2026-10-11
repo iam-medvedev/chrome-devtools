@@ -119,8 +119,8 @@ describeWithEnvironment('TimelineUIUtils', function () {
             // it into buildDetailsNodeForTraceEvent
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
-                name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
-                ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                name: Trace.Types.Events.Name.FUNCTION_CALL,
+                ph: Trace.Types.Events.Phase.COMPLETE,
                 cat: 'devtools-timeline',
                 dur: Trace.Types.Timing.Micro(100),
                 ts: Trace.Types.Timing.Micro(100),
@@ -130,7 +130,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                     data: {
                         functionName: 'test',
                         url: 'https://google.com/test.js',
-                        scriptId: Number(SCRIPT_ID_STRING),
+                        scriptId: SCRIPT_ID_STRING,
                         lineNumber: 1,
                         columnNumber: 1,
                     },
@@ -149,8 +149,8 @@ describeWithEnvironment('TimelineUIUtils', function () {
             // it into buildDetailsNodeForTraceEvent
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
-                name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
-                ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+                name: Trace.Types.Events.Name.FUNCTION_CALL,
+                ph: Trace.Types.Events.Phase.COMPLETE,
                 cat: 'devtools-timeline',
                 dur: Trace.Types.Timing.Micro(100),
                 ts: Trace.Types.Timing.Micro(100),
@@ -160,7 +160,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                     data: {
                         functionName: 'test',
                         url: 'https://google.com/test.js',
-                        scriptId: Number(SCRIPT_ID_STRING),
+                        scriptId: SCRIPT_ID_STRING,
                         lineNumber: 1,
                         columnNumber: 1,
                     },
@@ -369,7 +369,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
-            const event = makeCompleteEvent("v8.parseOnBackgroundWaiting" /* Trace.Types.Events.Name.STREAMING_COMPILE_SCRIPT_WAITING */, 1, 1, 'v8,devtools.timeline,disabled-by-default-v8.compile');
+            const event = makeCompleteEvent(Trace.Types.Events.Name.STREAMING_COMPILE_SCRIPT_WAITING, 1, 1, 'v8,devtools.timeline,disabled-by-default-v8.compile');
             assert.strictEqual('rgb(2 2 2)', Timeline.TimelineUIUtils.TimelineUIUtils.eventColor(event));
         });
         it('assigns the correct color to the swatch of an event\'s title', async function () {
@@ -791,7 +791,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
             TraceLoader.initTraceBoundsManager(parsedTrace);
             const [process] = parsedTrace.data.Renderer.processes.values();
             const [thread] = process.threads.values();
-            const stylesRecalc = thread.entries.filter(entry => entry.name === "UpdateLayoutTree" /* Trace.Types.Events.Name.RECALC_STYLE */);
+            const stylesRecalc = thread.entries.filter(entry => entry.name === Trace.Types.Events.Name.RECALC_STYLE);
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, stylesRecalc[3], new Components.Linkifier.Linkifier(), false, null);
             const stackTraceData = getStackTraceForDetailsElement(details);
             assert.deepEqual(stackTraceData, ['(anonymous) @ web.dev/js/app.js?v=1423cda3:1:183']);
@@ -805,14 +805,14 @@ describeWithEnvironment('TimelineUIUtils', function () {
             //        |--V8.ParseFunction--||---------f1-------|
             //                              |---f2---||---f3---|
             //                              |measure|  |mark|
-            const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 500, '', pid, tid);
+            const evaluateScript = makeCompleteEvent(Trace.Types.Events.Name.EVALUATE_SCRIPT, 0, 500, '', pid, tid);
             const v8Run = makeCompleteEvent('v8.run', 10, 490, '', pid, tid);
             const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1, '', pid, tid);
             const function1 = makeProfileCall('function 1', 300, 130, pid, tid);
             const function2 = makeProfileCall('function 2', 300, 50, pid, tid);
             const function3 = makeProfileCall('function 3', 351, 20, pid, tid);
-            const measure = makeCompleteEvent("UserTiming" /* Trace.Types.Events.Name.USER_TIMING */, 300, 50, 'blink.user_timing', pid, tid);
-            const measureTrace = makeCompleteEvent("UserTiming::Measure" /* Trace.Types.Events.Name.USER_TIMING_MEASURE */, 300, 50, 'cat', pid, tid);
+            const measure = makeCompleteEvent(Trace.Types.Events.Name.USER_TIMING, 300, 50, 'blink.user_timing', pid, tid);
+            const measureTrace = makeCompleteEvent(Trace.Types.Events.Name.USER_TIMING_MEASURE, 300, 50, 'cat', pid, tid);
             const mark = makeInstantEvent('Mark', 352, 'blink.user_timing', pid, tid);
             const rendererHandlerData = makeMockRendererHandlerData([evaluateScript, v8Run, parseFunction, function1, function2, measure, measureTrace, function3, mark]);
             measureTrace.args.traceId = traceId;
@@ -828,7 +828,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
             const parsedTrace = await basicStackTraceParsedTrace();
             const [function1, function2, function3] = allThreadEntriesInTrace(parsedTrace).filter(Trace.Types.Events.isProfileCall);
             const mark = allThreadEntriesInTrace(parsedTrace).find(event => event.name === 'Mark');
-            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === Trace.Types.Events.Name.USER_TIMING);
             assert.exists(mark);
             assert.exists(measure);
             const markerExtensionEntry = {
@@ -855,7 +855,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
                 rawSourceEvent: {
                     cat: 'blink.user_timing',
                     args: { traceId: measure.args.traceId },
-                    ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+                    ph: Trace.Types.Events.Phase.ASYNC_NESTABLE_START,
                 },
             };
             const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mockExtensionTrackEntry, new Components.Linkifier.Linkifier(), false, null);
@@ -870,7 +870,7 @@ describeWithEnvironment('TimelineUIUtils', function () {
             const parsedTrace = await basicStackTraceParsedTrace();
             const [function1, function2, function3] = allThreadEntriesInTrace(parsedTrace).filter(Trace.Types.Events.isProfileCall);
             const mark = allThreadEntriesInTrace(parsedTrace).find(event => event.name === 'Mark');
-            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === Trace.Types.Events.Name.USER_TIMING);
             assert.exists(mark);
             assert.exists(measure);
             const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mark, new Components.Linkifier.Linkifier(), false, null);
@@ -1196,40 +1196,40 @@ describeWithEnvironment('TimelineUIUtils', function () {
             },
         };
         it('is true for a timestamp event', () => {
-            const timestamp = makeInstantEvent("TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */, 0);
+            const timestamp = makeInstantEvent(Trace.Types.Events.Name.TIME_STAMP, 0);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(mockParsedTrace, timestamp));
         });
         it('is true for a Mark First Paint event', () => {
             const markFirstPaint = {
-                ...makeInstantEvent("firstPaint" /* Trace.Types.Events.Name.MARK_FIRST_PAINT */, 0),
-                name: "firstPaint" /* Trace.Types.Events.Name.MARK_FIRST_PAINT */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_FIRST_PAINT, 0),
+                name: Trace.Types.Events.Name.MARK_FIRST_PAINT,
+                ph: Trace.Types.Events.Phase.MARK,
                 args: { frame: 'main-frame-id' },
             };
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(mockParsedTrace, markFirstPaint));
         });
         it('is true for a Mark FCP event', () => {
             const markFCPEvent = {
-                ...makeInstantEvent("firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */, 0),
-                name: "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_FCP, 0),
+                name: Trace.Types.Events.Name.MARK_FCP,
+                ph: Trace.Types.Events.Phase.MARK,
                 args: { frame: 'main-frame-id' },
             };
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(mockParsedTrace, markFCPEvent));
         });
         it('is false for a Mark FCP event not on the main frame', () => {
             const markFCPEvent = {
-                ...makeInstantEvent("firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */, 0),
-                name: "firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_FCP, 0),
+                name: Trace.Types.Events.Name.MARK_FCP,
+                ph: Trace.Types.Events.Phase.MARK,
                 args: { frame: 'not-the-main-frame' },
             };
             assert.isFalse(Timeline.TimelineUIUtils.isMarkerEvent(mockParsedTrace, markFCPEvent));
         });
         it('is true for a MarkDOMContent event', () => {
             const markDOMContentEvent = {
-                ...makeInstantEvent("MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */, 0),
-                name: "MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_DOM_CONTENT, 0),
+                name: Trace.Types.Events.Name.MARK_DOM_CONTENT,
                 args: {
                     data: {
                         frame: 'main-frame-id',
@@ -1243,8 +1243,8 @@ describeWithEnvironment('TimelineUIUtils', function () {
         });
         it('is true for a MarkLoad event', () => {
             const markLoadEvent = {
-                ...makeInstantEvent("MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */, 0),
-                name: "MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_LOAD, 0),
+                name: Trace.Types.Events.Name.MARK_LOAD,
                 args: {
                     data: {
                         frame: 'main-frame-id',
@@ -1258,9 +1258,9 @@ describeWithEnvironment('TimelineUIUtils', function () {
         });
         it('is true for an LCP candidate event', () => {
             const markLCPCandidate = {
-                ...makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 0),
-                name: "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 0),
+                name: Trace.Types.Events.Name.MARK_LCP_CANDIDATE,
+                ph: Trace.Types.Events.Phase.MARK,
                 args: {
                     frame: 'main-frame-id',
                     data: {
@@ -1277,8 +1277,8 @@ describeWithEnvironment('TimelineUIUtils', function () {
         });
         it('is false for a MarkDOMContent event not on outermost main frame', () => {
             const markDOMContentEvent = {
-                ...makeInstantEvent("MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */, 0),
-                name: "MarkDOMContent" /* Trace.Types.Events.Name.MARK_DOM_CONTENT */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_DOM_CONTENT, 0),
+                name: Trace.Types.Events.Name.MARK_DOM_CONTENT,
                 args: {
                     data: {
                         frame: 'main-frame-id',
@@ -1327,21 +1327,21 @@ describeWithEnvironment('TimelineUIUtils', function () {
     });
     describe('buildDetailsNodeForMarkerEvents', () => {
         it('builds the right link for an LCP Event', () => {
-            const markLCPEvent = makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 0);
+            const markLCPEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 0);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLCPEvent);
             const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/lcp/');
             assert.strictEqual(html.innerText, 'Learn more about Largest Contentful Paint.');
         });
         it('builds the right link for an FCP Event', () => {
-            const markFCPEvent = makeInstantEvent("firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */, 0);
+            const markFCPEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_FCP, 0);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markFCPEvent);
             const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/first-contentful-paint/');
             assert.strictEqual(html.innerText, 'Learn more about First Contentful Paint.');
         });
         it('builds a generic event for other marker events', () => {
-            const markLoadEvent = makeInstantEvent("MarkLoad" /* Trace.Types.Events.Name.MARK_LOAD */, 0);
+            const markLoadEvent = makeInstantEvent(Trace.Types.Events.Name.MARK_LOAD, 0);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLoadEvent);
             const url = html.querySelector('devtools-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/user-centric-performance-metrics/');
@@ -1534,7 +1534,7 @@ describeWithEnvironment('TimelineUIUtils - mapping to authored function name whe
             scriptId: script.scriptId,
             url: 'file://gen.js',
         };
-        const functionCall = makeCompleteEvent("FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */, ts, dur, '', pid, tid);
+        const functionCall = makeCompleteEvent(Trace.Types.Events.Name.FUNCTION_CALL, ts, dur, '', pid, tid);
         functionCall.args = {
             data: {
                 // line and column number of function calls have an offset

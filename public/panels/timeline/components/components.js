@@ -778,6 +778,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -3892,13 +3893,13 @@ function buildRowsForWebSocketEvent(event, parsedTrace) {
   const initiator = parsedTrace.data.Initiators.eventToInitiator.get(event);
   if (initiator && Trace3.Types.Events.isWebSocketCreate(initiator)) {
     rows.push({ key: i18n7.i18n.lockedString("URL"), value: initiator.args.data.url });
-    if (initiator.args.data.websocketProtocol) {
-      rows.push({ key: i18nString4(UIStrings4.websocketProtocol), value: initiator.args.data.websocketProtocol });
+    if (initiator.args.data.webSocketProtocol) {
+      rows.push({ key: i18nString4(UIStrings4.websocketProtocol), value: initiator.args.data.webSocketProtocol });
     }
   } else if (Trace3.Types.Events.isWebSocketCreate(event)) {
     rows.push({ key: i18n7.i18n.lockedString("URL"), value: event.args.data.url });
-    if (event.args.data.websocketProtocol) {
-      rows.push({ key: i18nString4(UIStrings4.websocketProtocol), value: event.args.data.websocketProtocol });
+    if (event.args.data.webSocketProtocol) {
+      rows.push({ key: i18nString4(UIStrings4.websocketProtocol), value: event.args.data.webSocketProtocol });
     }
   }
   if (Trace3.Types.Events.isWebSocketTransfer(event)) {
@@ -9782,6 +9783,7 @@ import * as TraceBounds3 from "../../../services/trace_bounds/trace_bounds.js";
 import * as UI14 from "../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit14 from "../../../ui/lit/lit.js";
+import * as SettingsUI from "../../../ui/settings/settings.js";
 import * as VisualLogging9 from "../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/components/sidebarAnnotationsTab.css.js
@@ -9974,7 +9976,7 @@ var SidebarAnnotationsTab = class extends UI14.Widget.Widget {
   constructor(view = DEFAULT_VIEW10) {
     super();
     this.#view = view;
-    this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().moduleSetting("annotations-hidden");
+    this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().resolve(SettingsUI.TimelineSettings.annotationsHiddenSettingDescriptor);
   }
   deduplicatedAnnotations() {
     return this.#annotations;
@@ -11183,7 +11185,7 @@ var CategorySummary = class extends UI18.Widget.Widget {
 // ../../front_end/panels/timeline/components/TimelineRangeSummaryView.ts
 var { render: render19, html: html19 } = Lit18;
 var { widget: widget6 } = UI19.Widget;
-var categoryBreakdownCacheSymbol = /* @__PURE__ */ Symbol("categoryBreakdownCache");
+var categoryBreakdownCache = /* @__PURE__ */ new WeakMap();
 var TIMELINE_RANGE_SUMMARY_VIEW_DEFAULT_VIEW = (input, _output, target) => {
   const { parsedTrace, events, startTime, endTime } = input;
   if (!events || !parsedTrace) {
@@ -11259,7 +11261,7 @@ function statsForTimeRange(events, startTime, endTime) {
   return aggregatedStats;
   function aggregatedStatsAtTime(time) {
     const stats = {};
-    const cache = events[categoryBreakdownCacheSymbol];
+    const cache = categoryBreakdownCache.get(events) ?? {};
     for (const category in cache) {
       const categoryCache = cache[category];
       const index = Platform10.ArrayUtilities.upperBound(categoryCache.time, time, Platform10.ArrayUtilities.DEFAULT_COMPARATOR);
@@ -11287,7 +11289,7 @@ function statsForTimeRange(events, startTime, endTime) {
     return result;
   }
   function buildRangeStatsCacheIfNeeded(events2) {
-    if (events2[categoryBreakdownCacheSymbol]) {
+    if (categoryBreakdownCache.has(events2)) {
       return;
     }
     const aggregatedStats2 = {};
@@ -11336,8 +11338,7 @@ function statsForTimeRange(events, startTime, endTime) {
         categoryChange(category || null, parentCategory || null, endTime2 || 0);
       }
     }
-    const obj = events2;
-    obj[categoryBreakdownCacheSymbol] = aggregatedStats2;
+    categoryBreakdownCache.set(events2, aggregatedStats2);
   }
 }
 export {

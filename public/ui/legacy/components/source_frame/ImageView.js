@@ -97,6 +97,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           src=${input.imageSrc}
           alt=${i18nString(UIStrings.imageFromS, { PH1: input.url })}
           @load=${input.onImageLoad}
+          @error=${input.onImageError}
           @contextmenu=${{ handleEvent: input.onContextMenu, capture: true }}
         >` : html `
         <img
@@ -105,7 +106,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           hidden
         >`}
       <devtools-link
-        class="resource-image-unavailable ${input.isUnavailable ? '' : 'hidden'}"
+        class="resource-image-unavailable ${
+    // Do not offer an external link for privileged URLs (e.g. from an imported HAR).
+    input.isUnavailable && !Common.ParsedURL.isPrivilegedScheme(input.url) ? '' : 'hidden'}"
         href=${input.url}
       >
         <devtools-icon name="open-externally"></devtools-icon>
@@ -122,19 +125,25 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     });
 };
 // clang-format on
-export class ImageView extends UI.View.SimpleView {
-    url;
-    parsedURL;
-    contentProvider;
-    uiSourceCode;
-    sizeLabel;
-    dimensionsLabel;
-    aspectRatioLabel;
+export var Events;
+(function (Events) {
+    Events["TOOLBAR_ITEMS_CHANGED"] = "ToolbarItemsChanged";
+})(Events || (Events = {}));
+const ImageViewBase = Common.ObjectWrapper.eventMixin(UI.View.SimpleView);
+export class ImageView extends ImageViewBase {
+    #url;
+    #parsedURL;
+    #contentProvider;
+    #uiSourceCode;
+    #size = '';
+    #dimensions = '';
+    #aspectRatio = '';
     #mimeType;
-    cachedContent;
+    #cachedContent;
     #view;
     #imageSrc = null;
     #isUnavailable = false;
+    #loadPromise;
     #loadResolve;
     constructor(mimeType, contentProvider, view = DEFAULT_VIEW) {
         super({
@@ -143,44 +152,50 @@ export class ImageView extends UI.View.SimpleView {
             jslog: `${VisualLogging.pane('image-view')}`,
         });
         this.#view = view;
-        this.url = contentProvider.contentURL();
-        this.parsedURL = new Common.ParsedURL.ParsedURL(this.url);
-        this.contentProvider = contentProvider;
-        this.uiSourceCode = contentProvider instanceof Workspace.UISourceCode.UISourceCode ? contentProvider : null;
-        if (this.uiSourceCode) {
-            this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
-            new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.ImageFile, UI.DropTarget.Type.URI], i18nString(UIStrings.dropImageFileHere), this.handleDrop.bind(this));
+        this.#url = contentProvider.contentURL();
+        this.#parsedURL = new Common.ParsedURL.ParsedURL(this.#url);
+        this.#contentProvider = contentProvider;
+        this.#uiSourceCode = contentProvider instanceof Workspace.UISourceCode.UISourceCode ? contentProvider : null;
+        if (this.#uiSourceCode) {
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.#workingCopyCommitted, this);
+            new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.ImageFile, UI.DropTarget.Type.URI], i18nString(UIStrings.dropImageFileHere), this.#handleDrop.bind(this));
         }
-        this.sizeLabel = new UI.Toolbar.ToolbarText();
-        this.dimensionsLabel = new UI.Toolbar.ToolbarText();
-        this.aspectRatioLabel = new UI.Toolbar.ToolbarText();
         this.#mimeType = mimeType;
         this.performUpdate();
     }
     performUpdate() {
         this.#view({
-            url: this.url,
+            url: this.#url,
             imageSrc: this.#imageSrc,
             isUnavailable: this.#isUnavailable,
             onImageLoad: this.#onImageLoad,
-            onContextMenu: this.contextMenu.bind(this),
+            onImageError: this.#onImageError,
+            onContextMenu: this.#contextMenu.bind(this),
         }, undefined, this.contentElement);
     }
     #onImageLoad = (event) => {
         const img = event.target;
-        this.dimensionsLabel.setText(i18nString(UIStrings.dD, { PH1: img.naturalWidth, PH2: img.naturalHeight }));
-        this.aspectRatioLabel.setText(Platform.NumberUtilities.aspectRatio(img.naturalWidth, img.naturalHeight));
+        this.#dimensions = i18nString(UIStrings.dD, { PH1: img.naturalWidth, PH2: img.naturalHeight });
+        this.#aspectRatio = Platform.NumberUtilities.aspectRatio(img.naturalWidth, img.naturalHeight);
         this.#loadResolve?.();
         this.#loadResolve = undefined;
+        this.#loadPromise = undefined;
+    };
+    #onImageError = () => {
+        this.#dimensions = '';
+        this.#aspectRatio = '';
+        this.#loadResolve?.();
+        this.#loadResolve = undefined;
+        this.#loadPromise = undefined;
     };
     async toolbarItems() {
-        await this.updateContentIfNeeded();
+        await this.#updateContentIfNeeded();
         return html `
-      ${this.sizeLabel.element}
+      <div class="toolbar-text">${this.#size}</div>
       <div class="toolbar-divider"></div>
-      ${this.dimensionsLabel.element}
+      <div class="toolbar-text">${this.#dimensions}</div>
       <div class="toolbar-divider"></div>
-      ${this.aspectRatioLabel.element}
+      <div class="toolbar-text">${this.#aspectRatio}</div>
       <div class="toolbar-divider"></div>
       <div class="toolbar-text">${this.#mimeType}</div>
     `;
@@ -188,82 +203,93 @@ export class ImageView extends UI.View.SimpleView {
     wasShown() {
         super.wasShown();
         this.requestUpdate();
-        void this.updateContentIfNeeded();
+        void this.#updateContentIfNeeded();
     }
     disposeView() {
-        if (this.uiSourceCode) {
-            this.uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+        if (this.#uiSourceCode) {
+            this.#uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.#workingCopyCommitted, this);
         }
     }
-    workingCopyCommitted() {
-        void this.updateContentIfNeeded();
+    #workingCopyCommitted() {
+        void this.#updateContentIfNeeded().then(() => {
+            this.dispatchEventToListeners("ToolbarItemsChanged" /* Events.TOOLBAR_ITEMS_CHANGED */);
+        });
     }
-    async updateContentIfNeeded() {
-        const content = await this.contentProvider.requestContentData();
-        if (TextUtils.ContentData.ContentData.isError(content) || this.cachedContent?.contentEqualTo(content)) {
+    async #updateContentIfNeeded() {
+        const content = await this.#contentProvider.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(content) || this.#cachedContent?.contentEqualTo(content)) {
+            await this.#loadPromise;
             return;
         }
-        this.cachedContent = content;
+        this.#cachedContent = content;
+        this.#loadResolve?.();
+        this.#loadResolve = undefined;
+        this.#loadPromise = undefined;
         const imageSrc = content.asImagePreviewUrl();
         if (imageSrc === null) {
             this.#isUnavailable = true;
             this.#imageSrc = null;
+            this.#size = '';
+            this.#dimensions = '';
+            this.#aspectRatio = '';
             this.performUpdate();
             return;
         }
         this.#isUnavailable = false;
-        const loadPromise = new Promise(resolve => {
+        this.#loadPromise = new Promise(resolve => {
             this.#loadResolve = resolve;
         });
         this.#imageSrc = imageSrc;
         const size = content.isTextContent ? content.text.length : Platform.StringUtilities.base64ToSize(content.base64);
-        this.sizeLabel.setText(i18n.ByteUtilities.bytesToString(size));
+        this.#size = i18n.ByteUtilities.bytesToString(size);
         this.performUpdate();
-        await loadPromise;
+        await this.#loadPromise;
     }
-    contextMenu(event) {
+    #contextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         const parsedSrc = new Common.ParsedURL.ParsedURL(this.#imageSrc ?? '');
-        if (!this.parsedURL.isDataURL()) {
-            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyImageUrl), this.copyImageURL.bind(this), {
+        if (!this.#parsedURL.isDataURL()) {
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyImageUrl), this.#copyImageURL.bind(this), {
                 jslogContext: 'image-view.copy-image-url',
             });
         }
         if (parsedSrc.isDataURL()) {
-            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyImageAsDataUri), this.copyImageAsDataURL.bind(this), {
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyImageAsDataUri), this.#copyImageAsDataURL.bind(this), {
                 jslogContext: 'image-view.copy-image-as-data-url',
             });
         }
-        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.openImageInNewTab), this.openInNewTab.bind(this), {
-            jslogContext: 'image-view.open-in-new-tab',
-        });
-        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.saveImageAs), this.saveImage.bind(this), {
+        if (!Common.ParsedURL.isPrivilegedScheme(this.#url)) {
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.openImageInNewTab), this.#openInNewTab.bind(this), {
+                jslogContext: 'image-view.open-in-new-tab',
+            });
+        }
+        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.saveImageAs), this.#saveImage.bind(this), {
             jslogContext: 'image-view.save-image',
         });
         void contextMenu.show();
     }
-    copyImageAsDataURL() {
+    #copyImageAsDataURL() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#imageSrc ?? '');
     }
-    copyImageURL() {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.url);
+    #copyImageURL() {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#url);
     }
-    async saveImage() {
-        if (!this.cachedContent) {
+    async #saveImage() {
+        if (!this.#cachedContent) {
             return;
         }
         let suggestedName = '';
-        if (this.parsedURL.isDataURL()) {
+        if (this.#parsedURL.isDataURL()) {
             suggestedName = i18nString(UIStrings.download);
-            const { type, subtype } = this.parsedURL.extractDataUrlMimeType();
+            const { type, subtype } = this.#parsedURL.extractDataUrlMimeType();
             if (type === 'image' && subtype) {
                 suggestedName += '.' + subtype;
             }
         }
         else {
-            suggestedName = decodeURIComponent(this.parsedURL.displayName);
+            suggestedName = decodeURIComponent(this.#parsedURL.displayName);
         }
-        const blob = this.cachedContent.asBlob();
+        const blob = this.#cachedContent.asBlob();
         if (!blob) {
             return;
         }
@@ -281,10 +307,13 @@ export class ImageView extends UI.View.SimpleView {
             throw error;
         }
     }
-    openInNewTab() {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.url);
+    #openInNewTab() {
+        if (Common.ParsedURL.isPrivilegedScheme(this.#url)) {
+            return;
+        }
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.#url);
     }
-    async handleDrop(dataTransfer) {
+    async #handleDrop(dataTransfer) {
         const items = dataTransfer.items;
         if (!items.length || items[0].kind !== 'file') {
             return;
@@ -305,10 +334,10 @@ export class ImageView extends UI.View.SimpleView {
                     result = null;
                     console.error('Can\'t read file: ' + e);
                 }
-                if (typeof result !== 'string' || !this.uiSourceCode) {
+                if (typeof result !== 'string' || !this.#uiSourceCode) {
                     return;
                 }
-                this.uiSourceCode.setContent(encoded ? btoa(result) : result, encoded);
+                this.#uiSourceCode.setContent(encoded ? btoa(result) : result, encoded);
             };
             if (encoded) {
                 reader.readAsBinaryString(file);

@@ -12,6 +12,7 @@ __export(ChartViewport_exports, {
 import * as Common2 from "../../../../core/common/common.js";
 import * as Platform3 from "../../../../core/platform/platform.js";
 import * as RenderCoordinator from "../../../components/render_coordinator/render_coordinator.js";
+import * as SettingsUI from "../../../settings/settings.js";
 import * as UI3 from "../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/chartViewport.css.js
@@ -4138,7 +4139,7 @@ var ChartViewport = class extends UI3.Widget.VBox {
    * 4. Trackpad: Mouse Wheel AND horizontal scroll (deltaX > deltaY): --> Zoom
    */
   onMouseWheel(wheelEvent) {
-    const navigation = Common2.Settings.Settings.instance().moduleSetting("flamechart-selected-navigation").get();
+    const navigation = Common2.Settings.Settings.instance().resolve(SettingsUI.TimelineSettings.flamechartSelectedNavigationSettingDescriptor).get();
     const panDelta = (wheelEvent.deltaY || wheelEvent.deltaX) / 53 * this.offsetHeight / 8;
     const zoomDelta = Math.pow(1.2, (wheelEvent.deltaY || wheelEvent.deltaX) * 1 / 53) - 1;
     if (navigation === "classic") {
@@ -5357,6 +5358,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {

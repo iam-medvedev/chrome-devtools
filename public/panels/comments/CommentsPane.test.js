@@ -123,6 +123,7 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
             },
             comments: [{ author: 'DEVELOPER', text: commentText, timestamp: 0 }],
         });
+        thread.status = 'ACTIVE';
         return {
             thread,
             title: { text: selectorText },
@@ -144,6 +145,57 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
         const target = renderView({ threads });
         renderElementIntoDOM(target, { includeCommonStyles: true });
         await assertScreenshot('comments/comments_pane_list.png');
+    });
+    it('renders delete button for active threads, spinner for pending threads, and See response button for resolved threads', () => {
+        const onThreadClick = sinon.spy();
+        const activeThread = createMockThread(1, 'a.queued', 'Queued comment');
+        activeThread.thread.save();
+        const pendingThread = createMockThread(2, 'div.pending', 'Pending comment');
+        pendingThread.thread.sendToAgent();
+        const resolvedThread = createMockThread(3, 'span.resolved', 'Resolved comment');
+        resolvedThread.thread.resolve('Agent reply');
+        const target = renderView({
+            threads: [activeThread, pendingThread, resolvedThread],
+            onThreadClick,
+        });
+        renderElementIntoDOM(target);
+        const items = target.querySelectorAll('.comment-thread-item');
+        assert.lengthOf(items, 3);
+        const deleteButton = items[0].querySelector('devtools-button');
+        assert.isNotNull(deleteButton);
+        assert.strictEqual(deleteButton.getAttribute('title'), 'Delete comment');
+        assert.isNull(items[0].querySelector('.thread-status-working'));
+        const workingStatus = items[1].querySelector('.thread-status-working');
+        assert.isNotNull(workingStatus);
+        assert.isNotNull(workingStatus.querySelector('devtools-spinner'));
+        assert.strictEqual(workingStatus.querySelector('span')?.textContent, 'Working');
+        assert.isNull(items[1].querySelector('devtools-button'));
+        const seeResponseButton = items[2].querySelector('devtools-button');
+        assert.isNotNull(seeResponseButton);
+        assert.strictEqual(seeResponseButton.textContent?.trim(), 'See response');
+        assert.isNull(items[2].querySelector('.thread-status-working'));
+        seeResponseButton.click();
+        sinon.assert.calledOnceWithExactly(onThreadClick, resolvedThread.thread);
+    });
+    it('does not trigger thread selection when pressing Enter or Space on the delete button', () => {
+        const onThreadClick = sinon.spy();
+        const mockThreadData = createMockThread(1, 'a.button', 'Test comment');
+        const target = renderView({
+            threads: [mockThreadData],
+            onThreadClick,
+        });
+        renderElementIntoDOM(target);
+        const deleteButton = target.querySelector('.comment-thread-item devtools-button');
+        assert.isNotNull(deleteButton);
+        for (const key of ['Enter', ' ']) {
+            const keydownEvent = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+            deleteButton.dispatchEvent(keydownEvent);
+            assert.isFalse(keydownEvent.defaultPrevented);
+        }
+        sinon.assert.notCalled(onThreadClick);
+        const threadItem = target.querySelector('.comment-thread-item');
+        threadItem.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+        sinon.assert.calledOnceWithExactly(onThreadClick, mockThreadData.thread);
     });
 });
 //# sourceMappingURL=CommentsPane.test.js.map

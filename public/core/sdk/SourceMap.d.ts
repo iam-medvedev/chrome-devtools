@@ -5,7 +5,7 @@ import * as TextUtils from '../text_utils/text_utils.js';
 import type { CallFrame, Location, ScopeChainEntry } from './DebuggerModel.js';
 import type { Script } from './Script.js';
 import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
-import { type RawFrameTranslation } from './SourceMapScopesInfo.js';
+import { type PositionRange, type RawFrameTranslation } from './SourceMapScopesInfo.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -107,6 +107,11 @@ export declare class SourceMap {
     sourceURLs(): Platform.DevToolsPath.UrlString[];
     embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string | null;
     hasScopeInfo(): boolean;
+    /**
+     * True iff the scopes come from the source map itself (encoded `scopes`), not from the AST fallback or from an
+     * extension.
+     */
+    hasEncodedScopeInfo(): boolean;
     waitForScopeInfo(): Promise<void>;
     findEntry(lineNumber: number, columnNumber: number): SourceMapEntry | null;
     /** Returns the entry at the given position but only if an entry exists for that exact position */
@@ -171,6 +176,14 @@ export declare class SourceMap {
     } | null;
     /** See {@link SourceMapScopesInfo.translateRawFrame}. `null` if no scopes information is available. */
     translateRawFrame(generatedLine: number, generatedColumn: number): RawFrameTranslation | null;
+    /** See {@link SourceMapScopesInfo.inlinedFunctionRange}. `null` without encoded scopes. */
+    inlinedFunctionRange(generatedLine: number, generatedColumn: number): PositionRange | null;
+    /** See {@link SourceMapScopesInfo.inlinedCalleeRanges}. Empty without encoded scopes. */
+    inlinedCalleeRanges(generatedLine: number, generatedColumn: number): PositionRange[];
+    /** See {@link SourceMapScopesInfo.outlinedFunctionRanges}. Empty without encoded scopes. */
+    outlinedFunctionRanges(generatedLine: number, generatedColumn: number): PositionRange[];
+    /** See {@link SourceMapScopesInfo.artificialFunctionRanges}. Empty without encoded scopes. */
+    artificialFunctionRanges(): PositionRange[];
 }
 export declare class TokenIterator {
     #private;

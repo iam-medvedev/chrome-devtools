@@ -1,4 +1,5 @@
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type A11yAnnouncement } from './AccessibilityAnnouncementRecordingView.js';
 export interface ViewInput {
@@ -10,7 +11,8 @@ export interface ViewInput {
 }
 export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class AccessibilityAnnouncementRecordingListView extends UI.Widget.VBox {
+declare const AccessibilityAnnouncementRecordingListViewBase: Common.ObjectWrapper.EventMixin<AccessibilityAnnouncementRecordingListView.EventTypes, typeof UI.Widget.VBox>;
+export declare class AccessibilityAnnouncementRecordingListView extends AccessibilityAnnouncementRecordingListViewBase {
     #private;
     constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
@@ -18,7 +20,19 @@ export declare class AccessibilityAnnouncementRecordingListView extends UI.Widge
     get items(): readonly A11yAnnouncement[];
     set selectedItem(item: A11yAnnouncement | null);
     get selectedItem(): A11yAnnouncement | null;
-    set onSelect(onSelect: (item: A11yAnnouncement | null) => void);
     reset(): void;
     performUpdate(): void;
 }
+export declare namespace AccessibilityAnnouncementRecordingListView {
+    const enum Events {
+        ANNOUNCEMENT_SELECTED = "announcement-selected",
+        REVEAL_IN_ELEMENTS = "reveal-in-elements",
+        REVEAL_IN_A11Y_TREE = "reveal-in-a11y-tree"
+    }
+    interface EventTypes {
+        [Events.ANNOUNCEMENT_SELECTED]: A11yAnnouncement | null;
+        [Events.REVEAL_IN_ELEMENTS]: A11yAnnouncement;
+        [Events.REVEAL_IN_A11Y_TREE]: A11yAnnouncement;
+    }
+}
+export {};

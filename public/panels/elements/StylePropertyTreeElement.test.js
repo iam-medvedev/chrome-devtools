@@ -19,8 +19,11 @@ import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { Icon } from '../../ui/kit/kit.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as LegacyUI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
+const { html } = Lit;
 describeWithEnvironment('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
     let computedStyleModel;
@@ -485,7 +488,9 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.isNull(hintWrapper, 'Hint wrapper should not exist');
         });
         it('should not create a hint when property is overridden by animation but the css-animations-only-when-animations-tab-open setting is disabled', () => {
-            Common.Settings.Settings.instance().moduleSetting('css-animations-only-when-animations-tab-open').set(false);
+            Common.Settings.Settings.instance()
+                .resolve(SettingsUI.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor)
+                .set(false);
             const stylePropertyTreeElement = getTreeElement('opacity', '0.5');
             sinon.stub(matchedStyles, 'isPropertyOverriddenByAnimation').returns(true);
             stylePropertyTreeElement.updateAnimationOverrideHint();
@@ -575,6 +580,19 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.strictEqual(linkSwatch.innerText, '--not-existing');
             assert.strictEqual(cssVarSwatch.innerText, 'var(--not-existing, red)');
             assert.strictEqual(stylePropertyTreeElement.valueElement.innerText, 'var(--not-existing, red)');
+        });
+        it('should render a CSSVarSwatch for variable usage with a comma-containing fallback', () => {
+            const stylePropertyTreeElement = getTreeElement('font-family', 'var(--font, Arial, sans-serif)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const linkSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch');
+            assert.exists(linkSwatch);
+            const cssVarSwatch = linkSwatch.parentElement;
+            assert.exists(cssVarSwatch);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            assert.strictEqual(linkSwatch.innerText, '--font');
+            assert.strictEqual(cssVarSwatch.innerText, 'var(--font, Arial, sans-serif)');
+            assert.strictEqual(stylePropertyTreeElement.valueElement.innerText, 'var(--font, Arial, sans-serif)');
         });
         it('should render a CSSVarSwatch inside CSSVarSwatch for variable usage with another variable fallback', () => {
             const stylePropertyTreeElement = getTreeElement('color', 'var(--not-existing, var(--a))');
@@ -838,12 +856,13 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 .showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, stylesSidebarPane, matchedStyles, null, new Map(), null), false, 0, false);
             await promise;
             const { evaluations } = view.args[0][0];
-            assert.deepEqual(evaluations.flat().map(args => args?.textContent).flat(), [
-                '',
+            assert.deepEqual(evaluations.flat().map(line => {
+                const div = document.createElement('div');
+                Lit.render(line, div);
+                return div.textContent;
+            }), [
                 'rgb(from #ff0c0c calc(1.000 / 2) 0.047 0.047)',
-                '',
                 'rgb(from #ff0c0c 0.5 0.047 0.047)',
-                '',
                 '#800c0c',
             ]);
         });
@@ -852,7 +871,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         it('renders the easing function swatch', () => {
             const stylePropertyTreeElement = getTreeElement('animation-timing-function', 'ease-out');
             stylePropertyTreeElement.updateTitle();
-            assert.instanceOf(stylePropertyTreeElement.valueElement?.firstChild?.firstChild, Icon);
+            assert.instanceOf(stylePropertyTreeElement.valueElement?.firstElementChild?.firstChild, Icon);
         });
     });
     describe('UrlRenderer', () => {
@@ -1175,8 +1194,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 })
                     .filter(b => !!b);
                 return {
-                    nodes,
-                    nodeGroups: [nodes],
+                    nodes: html `${nodes}`,
                     cssControls: new Map(),
                 };
             });
@@ -1311,7 +1329,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 sinon.assert.calledWith(linkSwatchDataStub.set, {
                     text: data.identifier,
                     isDefined: false,
-                    tooltip: { title: '--identifier is not defined' },
+                    tooltip: { title: '--identifier isn’t defined' },
                     jslogContext: 'anchor-link',
                     onLinkActivate: sinon.match.func,
                 });
@@ -2098,12 +2116,16 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         const webCustomDataStub = sinon.createStubInstance(Elements.WebCustomData.WebCustomData);
         webCustomDataStub.findCssProperty.returns({ name: 'color', description: 'test color' });
         sinon.stub(stylesSidebarPane, 'webCustomData').get(() => webCustomDataStub);
-        Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showCSSPropertyDocumentationOnHoverSettingDescriptor)
+            .set(false);
         const treeElementWithoutTooltip = getTreeElement('color', 'blue');
         treeElementWithoutTooltip.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
         treeElementWithoutTooltip.updateTitle();
         assert.notExists(treeElementWithoutTooltip.listItemElement.querySelector('devtools-tooltip[jslogcontext="elements.css-property-doc"]'));
-        Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').set(true);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showCSSPropertyDocumentationOnHoverSettingDescriptor)
+            .set(true);
         const treeElementWithTooltip = getTreeElement('color', 'blue');
         treeElementWithTooltip.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
         treeElementWithTooltip.updateTitle();
@@ -2114,7 +2136,9 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         assert.isTrue(tooltip.open);
         tooltip.hidePopover();
         assert.isFalse(tooltip.open);
-        Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').set(false);
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showCSSPropertyDocumentationOnHoverSettingDescriptor)
+            .set(false);
         tooltip.showPopover();
         assert.isFalse(tooltip.open);
     });

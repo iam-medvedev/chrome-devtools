@@ -641,16 +641,16 @@ var UIStringsNotTranslate = {
   /**
    * @description Enterprise users with logging off - Security disclaimer text displayed when the information icon on a button that generates an AI label is hovered.
    */
-  generateLabelSecurityDisclaimerLoggingOff: "The selected call stack is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won\u2019t always get it right.",
+  generateLabelSecurityDisclaimerLoggingOff: "The selected call stack is sent to Google. This data won\u2019t be used to improve Google\u2019s AI models. Your organization may change these settings at any time. This is an experimental AI feature and won\u2019t always get it right.",
   /**
    * @description The `Generate AI label button` tooltip disclaimer for when the feature is not available and the reason can be checked in settings.
    */
   // eslint-disable-next-line @devtools/l10n-uistrings-sentence-punctuation -- Concatenated with learnMore in the UI to form a multi-sentence message.
-  autoAnnotationNotAvailableDisclaimer: "Auto annotations are not available.",
+  autoAnnotationNotAvailableDisclaimer: "Auto annotations aren\u2019t available.",
   /**
    * @description The `Generate AI label button` tooltip disclaimer for when the feature is not available because the user is offline.
    */
-  autoAnnotationNotAvailableOfflineDisclaimer: "Auto annotations are not available because you are offline",
+  autoAnnotationNotAvailableOfflineDisclaimer: "Auto annotations aren\u2019t available because you are offline",
   /**
    * @description Header text for the AI-powered annotations suggestions disclaimer dialog.
    */
@@ -674,7 +674,7 @@ var UIStringsNotTranslate = {
   /**
    * @description Second disclaimer item text for the fre dialog - trace data is sent to Google.
    */
-  freDisclaimerPrivacyDataSentToGoogleNoLogging: "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  freDisclaimerPrivacyDataSentToGoogleNoLogging: "To generate annotation suggestions, your performance trace is sent to Google. This data won\u2019t be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Text for the 'learn more' button displayed in fre.
    */
@@ -1354,7 +1354,59 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/timeline/overlays/components/TimeRangeOverlay.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+function visibleOverlayWidth(overlayRect, canvasRect) {
+  const { x: overlayStartX, width } = overlayRect;
+  const overlayEndX = overlayStartX + width;
+  const canvasStartX = canvasRect.x;
+  const canvasEndX = canvasRect.x + canvasRect.width;
+  const leftVisible = Math.max(canvasStartX, overlayStartX);
+  const rightVisible = Math.min(canvasEndX, overlayEndX);
+  return rightVisible - leftVisible;
+}
+function applyLabelPosition(overlay, rangeContainer, durationBox, options) {
+  const { canvasRect, hideLabelIfTooNarrow } = options;
+  const paddingForScrollbar = 9;
+  const overlayRect = overlay.getBoundingClientRect();
+  const labelRect = rangeContainer.getBoundingClientRect();
+  const visibleWidth = visibleOverlayWidth(overlayRect, canvasRect) - paddingForScrollbar;
+  const durationBoxLength = durationBox.getBoundingClientRect().width;
+  if (!durationBoxLength) {
+    return false;
+  }
+  const hideLabel = hideLabelIfTooNarrow && visibleWidth <= durationBoxLength;
+  rangeContainer.classList.toggle("labelHidden", hideLabel);
+  if (hideLabel) {
+    return true;
+  }
+  const labelLeftMarginToCenter = (overlayRect.width - labelRect.width) / 2;
+  const newLabelX = overlayRect.x + labelLeftMarginToCenter;
+  const labelOffLeftOfScreen = newLabelX < canvasRect.x;
+  rangeContainer.classList.toggle("offScreenLeft", labelOffLeftOfScreen);
+  const rightBound = canvasRect.x + canvasRect.width;
+  const labelRightEdge = overlayRect.x + labelLeftMarginToCenter + labelRect.width;
+  const labelOffRightOfScreen = labelRightEdge > rightBound;
+  rangeContainer.classList.toggle("offScreenRight", labelOffRightOfScreen);
+  if (labelOffLeftOfScreen) {
+    rangeContainer.style.marginLeft = `${Math.abs(canvasRect.x - overlayRect.x) + paddingForScrollbar}px`;
+  } else if (labelOffRightOfScreen) {
+    rangeContainer.style.marginRight = `${overlayRect.right - canvasRect.right + paddingForScrollbar}px`;
+  } else {
+    rangeContainer.style.margin = "0px";
+  }
+  return true;
+}
 var DEFAULT_VIEW = (input, output, target) => {
+  const handleKeyDown = (event) => {
+    if (event.key === Platform2.KeyboardUtilities.ENTER_KEY || event.key === Platform2.KeyboardUtilities.ESCAPE_KEY) {
+      event.stopPropagation();
+      input.onLabelEditComplete();
+      if (event.target instanceof HTMLElement) {
+        event.target.blur();
+      }
+    }
+  };
+  let rangeContainer;
+  let durationBox;
   render3(
     html3`
         <style>${timeRangeOverlay_css_default}</style>
@@ -1363,7 +1415,7 @@ var DEFAULT_VIEW = (input, output, target) => {
           role="region"
           aria-label=${i18nString3(UIStrings3.timeRange)}
           ${Directives3.ref((el) => {
-      output.rangeContainer = el instanceof HTMLElement ? el : void 0;
+      rangeContainer = el instanceof HTMLElement ? el : void 0;
     })}
         >
           <span
@@ -1371,26 +1423,35 @@ var DEFAULT_VIEW = (input, output, target) => {
            role="textbox"
            @focusout=${input.onLabelFocusOut}
            @dblclick=${input.onLabelDblClick}
-           @keydown=${input.onLabelKeyDown}
-           @input=${input.onLabelInput}
+           @keydown=${handleKeyDown}
+           @input=${(event) => input.onLabelInput(event.target instanceof HTMLElement ? event.target.textContent ?? "" : "")}
            contenteditable=${input.isLabelEditable ? "plaintext-only" : false}
            aria-label=${input.label}
            .textContent=${Directives3.live(input.label)}
            jslog=${VisualLogging3.textField("timeline.annotations.time-range-label-input").track({ keydown: true, click: true })}
            ${Directives3.ref((el) => {
-      output.labelBox = el instanceof HTMLElement ? el : void 0;
+      if (el instanceof HTMLElement) {
+        output.focusLabel = () => el.focus();
+      }
     })}
           ></span>
           <span
             class="duration"
             ${Directives3.ref((el) => {
-      output.durationBox = el instanceof HTMLElement ? el : void 0;
+      durationBox = el instanceof HTMLElement ? el : void 0;
     })}
           >${input.durationText}</span>
         </span>
       `,
     target
   );
+  const renderedRangeContainer = rangeContainer;
+  const renderedDurationBox = durationBox;
+  if (renderedRangeContainer && renderedDurationBox) {
+    output.positionLabel = (options) => applyLabelPosition(target, renderedRangeContainer, renderedDurationBox, options);
+  } else {
+    output.positionLabel = () => false;
+  }
 };
 var TimeRangeOverlay = class extends UI2.Widget.Widget {
   #duration = null;
@@ -1414,7 +1475,11 @@ var TimeRangeOverlay = class extends UI2.Widget.Widget {
   onRemove = () => {
   };
   #view;
-  #viewOutput = {};
+  #viewOutput = {
+    focusLabel: () => {
+    },
+    positionLabel: () => false
+  };
   constructor(element, view = DEFAULT_VIEW) {
     super(element);
     this.#view = view;
@@ -1450,102 +1515,55 @@ var TimeRangeOverlay = class extends UI2.Widget.Widget {
     this.requestUpdate();
   }
   /**
-   * This calculates how much of the time range is in the user's view. This is
-   * used to determine how much of the label can fit into the view, and if we
-   * should even show the label.
-   */
-  #visibleOverlayWidth(overlayRect) {
-    if (!this.#canvasRect) {
-      return 0;
-    }
-    const { x: overlayStartX, width } = overlayRect;
-    const overlayEndX = overlayStartX + width;
-    const canvasStartX = this.#canvasRect.x;
-    const canvasEndX = this.#canvasRect.x + this.#canvasRect.width;
-    const leftVisible = Math.max(canvasStartX, overlayStartX);
-    const rightVisible = Math.min(canvasEndX, overlayEndX);
-    return rightVisible - leftVisible;
-  }
-  /**
    * We use this method after the overlay has been positioned in order to move
    * the label as required to keep it on screen.
-   * If the label is off to the left or right, we fix it to that corner and
-   * align the text so the label is visible as long as possible.
    *
    * This runs synchronously, rather than through `requestUpdate()`, so that
-   * `Overlays` can reposition the label in the same frame as the range.
+   * `Overlays` can reposition the label in the same frame as the range. The
+   * current state is passed to the view as arguments, rather than through the
+   * view input, because the last render may not include it yet.
    */
   updateLabelPositioning() {
-    const { rangeContainer, labelBox, durationBox } = this.#viewOutput;
-    if (!rangeContainer || !labelBox || !this.#canvasRect) {
+    if (!this.#canvasRect) {
       return;
     }
-    const paddingForScrollbar = 9;
-    const overlayRect = this.element.getBoundingClientRect();
-    const labelFocused = UI2.DOMUtilities.deepActiveElement(this.element.ownerDocument) === labelBox;
-    const labelRect = rangeContainer.getBoundingClientRect();
-    const visibleOverlayWidth = this.#visibleOverlayWidth(overlayRect) - paddingForScrollbar;
-    const durationBoxLength = durationBox?.getBoundingClientRect().width;
-    if (!durationBoxLength) {
+    const measured = this.#viewOutput.positionLabel({
+      canvasRect: this.#canvasRect,
+      // Do not hide the label when:
+      // 1. It is empty (a new range that the user needs to type into).
+      // 2. It is currently being edited (`#isLabelEditable` is true). For a
+      //    non-empty label, `#isLabelEditable` is true only while the user has
+      //    double-clicked to edit the label (or is still typing into an
+      //    initially empty label) and has not yet blurred it (`@focusout`
+      //    resets `#isLabelEditable` to false).
+      hideLabelIfTooNarrow: !this.#isLabelEditable && this.#label.length > 0
+    });
+    if (!measured) {
       return;
-    }
-    const overlayTooNarrow = visibleOverlayWidth <= durationBoxLength;
-    const hideLabel = overlayTooNarrow && !labelFocused && this.#label.length > 0;
-    rangeContainer.classList.toggle("labelHidden", hideLabel);
-    if (hideLabel) {
-      return;
-    }
-    const labelLeftMarginToCenter = (overlayRect.width - labelRect.width) / 2;
-    const newLabelX = overlayRect.x + labelLeftMarginToCenter;
-    const labelOffLeftOfScreen = newLabelX < this.#canvasRect.x;
-    rangeContainer.classList.toggle("offScreenLeft", labelOffLeftOfScreen);
-    const rightBound = this.#canvasRect.x + this.#canvasRect.width;
-    const labelRightEdge = overlayRect.x + labelLeftMarginToCenter + labelRect.width;
-    const labelOffRightOfScreen = labelRightEdge > rightBound;
-    rangeContainer.classList.toggle("offScreenRight", labelOffRightOfScreen);
-    if (labelOffLeftOfScreen) {
-      rangeContainer.style.marginLeft = `${Math.abs(this.#canvasRect.x - overlayRect.x) + paddingForScrollbar}px`;
-    } else if (labelOffRightOfScreen) {
-      rangeContainer.style.marginRight = `${overlayRect.right - this.#canvasRect.right + paddingForScrollbar}px`;
-    } else {
-      rangeContainer.style.margin = "0px";
     }
     if (this.#label === "") {
       this.#setLabelEditability(true);
     }
   }
-  #focusInputBox() {
-    const labelBox = this.#viewOutput.labelBox;
-    if (!labelBox) {
-      console.error("`labelBox` element is missing.");
-      return;
-    }
-    labelBox.focus();
-  }
   #setLabelEditability(editable) {
     if (this.#label === "") {
-      this.#focusInputBox();
+      this.#viewOutput.focusLabel();
       return;
     }
     this.#isLabelEditable = editable;
     this.#focusLabelOnUpdate = editable;
     this.requestUpdate();
   }
-  #handleLabelInput() {
-    const labelBoxTextContent = this.#viewOutput.labelBox?.textContent ?? "";
-    if (labelBoxTextContent !== this.#label) {
-      this.#label = labelBoxTextContent;
+  #handleLabelInput(label) {
+    if (label !== this.#label) {
+      this.#label = label;
       this.onLabelChange(this.#label);
       this.requestUpdate();
     }
   }
-  #handleLabelInputKeyDown(event) {
-    if (event.key === Platform2.KeyboardUtilities.ENTER_KEY || event.key === Platform2.KeyboardUtilities.ESCAPE_KEY) {
-      event.stopPropagation();
-      if (this.#label === "") {
-        this.onRemove();
-      }
-      this.#viewOutput.labelBox?.blur();
+  #handleLabelEditComplete() {
+    if (this.#label === "") {
+      this.onRemove();
     }
   }
   performUpdate() {
@@ -1556,7 +1574,7 @@ var TimeRangeOverlay = class extends UI2.Widget.Widget {
         isLabelEditable: this.#isLabelEditable,
         onLabelFocusOut: () => this.#setLabelEditability(false),
         onLabelDblClick: () => this.#setLabelEditability(true),
-        onLabelKeyDown: this.#handleLabelInputKeyDown.bind(this),
+        onLabelEditComplete: this.#handleLabelEditComplete.bind(this),
         onLabelInput: this.#handleLabelInput.bind(this)
       },
       this.#viewOutput,
@@ -1566,7 +1584,7 @@ var TimeRangeOverlay = class extends UI2.Widget.Widget {
     if (this.#focusLabelOnUpdate) {
       this.#focusLabelOnUpdate = false;
       if (this.#isLabelEditable) {
-        this.#focusInputBox();
+        this.#viewOutput.focusLabel();
       }
     }
   }
@@ -1830,6 +1848,14 @@ var TimespanBreakdownOverlay = class extends UI3.Widget.Widget {
       return;
     }
     const paddingForScrollbar = 9;
+    for (const section of sections) {
+      const label = section.querySelector(".timespan-breakdown-overlay-label");
+      if (!label) {
+        continue;
+      }
+      label.classList.remove("labelHidden", "labelTruncated", "offScreenLeft", "offScreenRight");
+      label.style.marginLeft = "";
+    }
     const sectionLayoutData = /* @__PURE__ */ new Map();
     for (const section of sections) {
       const label = section.querySelector(".timespan-breakdown-overlay-label");

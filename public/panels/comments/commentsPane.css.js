@@ -80,6 +80,12 @@ export default `/*
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
+  .comment-thread-item:focus-visible {
+    background-color: var(--sys-color-state-hover-on-subtle);
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    outline-offset: calc(-1 * var(--sys-size-2));
+  }
+
   .comment-pin-badge {
     display: flex;
     align-items: center;
@@ -133,24 +139,15 @@ export default `/*
     text-overflow: ellipsis;
   }
 
-  .delete-button {
+  .thread-status-working {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: var(--sys-size-11);
-    height: var(--sys-size-11);
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-radius: var(--sys-shape-corner-extra-small);
-    cursor: pointer;
+    gap: var(--sys-size-4);
     color: var(--sys-color-on-surface-subtle);
-    flex-shrink: 0;
-  }
-
-  .delete-button:hover {
-    color: var(--sys-color-error);
-    background-color: var(--sys-color-state-hover-on-subtle);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
+    font-weight: var(--ref-typeface-weight-medium);
+    white-space: nowrap;
   }
 
   .comments-empty-state {

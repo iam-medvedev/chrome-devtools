@@ -2,6 +2,7 @@ import '../../ui/kit/kit.js';
 import '../../ui/components/lists/lists.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
 export { locationsSettingsTabStyles };
 export interface EditorInputControls {
@@ -54,14 +55,7 @@ export declare class LocationsSettingsTab extends UI.Widget.VBox {
     private closeDialog;
     private updateDialogErrors;
 }
-export interface LocationDescription {
-    title: string;
-    lat: number;
-    long: number;
-    timezoneId: string;
-    locale: string;
-    accuracy?: number;
-}
+export type LocationDescription = SettingsUI.EmulationSettings.LocationDescription;
 export declare function validateTitle(value: string): string | null;
 export declare function validateLatitude(value: string): string | null;
 export declare function validateLongitude(value: string): string | null;

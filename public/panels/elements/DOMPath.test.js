@@ -587,5 +587,149 @@ describeWithEnvironment('DOMPath', () => {
             'input.primary',
         ]);
     });
+    it('computes valid CSS selectors for pseudo-elements', () => {
+        const divNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+            nodeId: 100,
+            backendNodeId: 100,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            attributes: ['id', 'target'],
+            pseudoElements: [
+                {
+                    nodeId: 101,
+                    backendNodeId: 101,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: '::before',
+                    localName: '::before',
+                    nodeValue: '',
+                    pseudoType: 'before',
+                },
+                {
+                    nodeId: 102,
+                    backendNodeId: 102,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: '::after',
+                    localName: '::after',
+                    nodeValue: '',
+                    pseudoType: 'after',
+                },
+            ],
+        });
+        const beforeNode = divNode.beforePseudoElement();
+        assert.exists(beforeNode);
+        assert.strictEqual(Elements.DOMPath.cssPath(beforeNode, true), '#target::before');
+        const afterNode = divNode.afterPseudoElement();
+        assert.exists(afterNode);
+        assert.strictEqual(Elements.DOMPath.cssPath(afterNode, true), '#target::after');
+    });
+    it('escapes pseudo-element identifiers in CSS selectors', () => {
+        const divNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+            nodeId: 100,
+            backendNodeId: 100,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'DIV',
+            localName: 'div',
+            nodeValue: '',
+            attributes: ['id', 'target'],
+            pseudoElements: [
+                {
+                    nodeId: 101,
+                    backendNodeId: 101,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: '::view-transition-group',
+                    localName: '::view-transition-group',
+                    nodeValue: '',
+                    pseudoType: 'view-transition-group',
+                    pseudoIdentifier: 'page transition',
+                },
+                {
+                    nodeId: 102,
+                    backendNodeId: 102,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: '::view-transition-group',
+                    localName: '::view-transition-group',
+                    nodeValue: '',
+                    pseudoType: 'view-transition-group',
+                    pseudoIdentifier: '123.foo',
+                },
+            ],
+        });
+        const vtGroupNodes = divNode.pseudoElements().get('view-transition-group');
+        assert.exists(vtGroupNodes);
+        assert.lengthOf(vtGroupNodes, 2);
+        assert.strictEqual(Elements.DOMPath.cssPath(vtGroupNodes[0], true), '#target::view-transition-group(page\\ transition)');
+        assert.strictEqual(Elements.DOMPath.cssPath(vtGroupNodes[1], true), '#target::view-transition-group(\\31 23\\.foo)');
+    });
+    it('computes valid CSS selectors for nested view-transition pseudo-elements', () => {
+        const htmlNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+            nodeId: 200,
+            backendNodeId: 200,
+            nodeType: Node.ELEMENT_NODE,
+            nodeName: 'HTML',
+            localName: 'html',
+            nodeValue: '',
+            pseudoElements: [
+                {
+                    nodeId: 201,
+                    backendNodeId: 201,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: '::view-transition',
+                    localName: '::view-transition',
+                    nodeValue: '',
+                    pseudoType: 'view-transition',
+                    pseudoElements: [
+                        {
+                            nodeId: 202,
+                            backendNodeId: 202,
+                            nodeType: Node.ELEMENT_NODE,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: 'view-transition-group',
+                            pseudoIdentifier: 'root',
+                            pseudoElements: [
+                                {
+                                    nodeId: 203,
+                                    backendNodeId: 203,
+                                    nodeType: Node.ELEMENT_NODE,
+                                    nodeName: '::view-transition-image-pair',
+                                    localName: '::view-transition-image-pair',
+                                    nodeValue: '',
+                                    pseudoType: 'view-transition-image-pair',
+                                    pseudoIdentifier: 'root',
+                                    pseudoElements: [
+                                        {
+                                            nodeId: 204,
+                                            backendNodeId: 204,
+                                            nodeType: Node.ELEMENT_NODE,
+                                            nodeName: '::view-transition-old',
+                                            localName: '::view-transition-old',
+                                            nodeValue: '',
+                                            pseudoType: 'view-transition-old',
+                                            pseudoIdentifier: 'root',
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        });
+        const transitionNode = htmlNode.viewTransitionPseudoElements().find(n => n.pseudoType() === 'view-transition');
+        assert.exists(transitionNode);
+        const groupNode = transitionNode.viewTransitionPseudoElements().find(n => n.pseudoType() === 'view-transition-group');
+        assert.exists(groupNode);
+        const imagePairNode = groupNode.viewTransitionPseudoElements().find(n => n.pseudoType() === 'view-transition-image-pair');
+        assert.exists(imagePairNode);
+        const oldNode = imagePairNode.viewTransitionPseudoElements().find(n => n.pseudoType() === 'view-transition-old');
+        assert.exists(oldNode);
+        assert.strictEqual(Elements.DOMPath.cssPath(transitionNode, true), 'html::view-transition');
+        assert.strictEqual(Elements.DOMPath.cssPath(groupNode, true), 'html::view-transition-group(root)');
+        assert.strictEqual(Elements.DOMPath.cssPath(imagePairNode, true), 'html::view-transition-image-pair(root)');
+        assert.strictEqual(Elements.DOMPath.cssPath(oldNode, true), 'html::view-transition-old(root)');
+    });
 });
 //# sourceMappingURL=DOMPath.test.js.map

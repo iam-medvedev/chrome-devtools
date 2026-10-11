@@ -732,6 +732,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -3715,7 +3716,7 @@ import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.j
 import * as RequestLinkIcon from "../../ui/components/request_link_icon/request_link_icon.js";
 import { createIcon, Icon } from "../../ui/kit/kit.js";
 import * as DataGrid from "../../ui/legacy/components/data_grid/data_grid.js";
-import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as ObjectUI3 from "../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
@@ -4531,10 +4532,12 @@ __export(SymbolizedErrorWidget_exports, {
   SymbolizedErrorWidget: () => SymbolizedErrorWidget
 });
 import * as Bindings from "../../models/bindings/bindings.js";
+import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
 var { html: html2, render: render2 } = Lit2;
+var { widget } = UI2.Widget;
 function renderHeader(content, isCause) {
   if (isCause) {
     return html2`<div class="symbolized-error-header"><span>Caused by: </span><span class="error-message-text">${content}</span></div>`;
@@ -4608,7 +4611,10 @@ function renderFrameSuffix(frame) {
 var DEFAULT_VIEW2 = (input, _output, target) => {
   const renderError2 = (error, isCause) => {
     if (error instanceof Bindings.SymbolizedError.UnparsableError) {
-      const fragment = ConsoleViewMessage.linkifyWithCustomLinkifier(
+      const fragment = error.errorStack.length > getMaxTokenizableStringLength() ? html2`${widget(ObjectUI2.ObjectPropertiesSection.ExpandableTextPropertyValue, {
+        text: error.errorStack,
+        maxLength: getLongStringVisibleLength()
+      })}` : ConsoleViewMessage.linkifyWithCustomLinkifier(
         error.errorStack,
         (text, url, lineNumber, columnNumber) => {
           const options = { text, lineNumber, columnNumber, ignoreListManager: input.ignoreListManager };
@@ -4858,6 +4864,7 @@ var UIStrings2 = {
   /**
    * @description Element text content in Object properties section.
    */
+  // eslint-disable-next-line @devtools/l10n-uistrings-text-style
   dots: "(...)",
   /**
    * @description Element title in Object properties section.
@@ -4976,7 +4983,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.selectableChildren = [];
     this.messageResized = onResize;
     this.elementInternal = null;
-    this.previewFormatter = new ObjectUI2.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
+    this.previewFormatter = new ObjectUI3.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
     this.searchRegexInternal = null;
     this.messageIcon = null;
     this.traceExpanded = false;
@@ -5390,7 +5397,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   formatParameter(output, forceObjectFormat, includePreview) {
     if (output.customPreview()) {
-      const component = new ObjectUI2.CustomPreviewComponent.CustomPreviewComponent();
+      const component = new ObjectUI3.CustomPreviewComponent.CustomPreviewComponent();
       component.object = output;
       return component;
     }
@@ -5452,7 +5459,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     const result = document.createElement("span");
     const description = obj.description || "";
     if (description.length > getMaxTokenizableStringLength()) {
-      const propertyValue = new ObjectUI2.ObjectPropertiesSection.ExpandableTextPropertyValue();
+      const propertyValue = new ObjectUI3.ObjectPropertiesSection.ExpandableTextPropertyValue();
       propertyValue.text = description;
       propertyValue.maxLength = getLongStringVisibleLength();
       propertyValue.show(
@@ -5484,7 +5491,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       if (obj.preview) {
         titleElement.classList.add("console-object-preview");
         render3(
-          html3`${this.previewFormatter.renderObjectPreview(obj.preview, includeNullOrUndefined)}${ObjectUI2.ObjectPropertiesSection.getMemoryIcon(obj)}`,
+          html3`${this.previewFormatter.renderObjectPreview(obj.preview, includeNullOrUndefined)}${ObjectUI3.ObjectPropertiesSection.getMemoryIcon(obj)}`,
           titleElement
         );
       }
@@ -5493,7 +5500,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       renderPreview(true);
     } else if (obj.type === "function") {
       titleElement.classList.add("object-value-function");
-      void ObjectUI2.ObjectPropertiesSection.formatObjectAsFunction(obj, false).then((t) => {
+      void ObjectUI3.ObjectPropertiesSection.formatObjectAsFunction(obj, false).then((t) => {
         const fragment = document.createDocumentFragment();
         render3(t, fragment, { host: this });
         titleElement.insertBefore(fragment, titleElement.firstChild);
@@ -5507,7 +5514,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       return titleElement;
     }
     const container = document.createElement("span");
-    const section = new ObjectUI2.ObjectPropertiesSection.ObjectPropertiesSectionWidget();
+    const section = new ObjectUI3.ObjectPropertiesSection.ObjectPropertiesSectionWidget();
     section.markAsRoot();
     const treeElement = section.element;
     treeElement.classList.add("console-view-object-properties-section");
@@ -5518,7 +5525,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       if (obj instanceof SDK3.RemoteObject.LocalJSONObject) {
         contextMenu.viewSection().appendItem(
           i18nString2(UIStrings2.expandRecursively),
-          () => section.objectTree?.expandRecursively(ObjectUI2.ObjectPropertiesSection.EXPANDABLE_MAX_DEPTH),
+          () => section.objectTree?.expandRecursively(ObjectUI3.ObjectPropertiesSection.EXPANDABLE_MAX_DEPTH),
           { jslogContext: "expand-recursively" }
         );
         contextMenu.viewSection().appendItem(
@@ -5540,15 +5547,15 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (section.objectTree) {
       const resizeEvent = { data: treeElement };
       section.objectTree.addEventListener(
-        ObjectUI2.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED,
+        ObjectUI3.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED,
         () => this.messageResized(resizeEvent)
       );
       section.objectTree.addEventListener(
-        ObjectUI2.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED,
+        ObjectUI3.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED,
         () => this.messageResized(resizeEvent)
       );
       section.objectTree.addEventListener(
-        ObjectUI2.ObjectPropertiesSection.ObjectTreeNodeBase.Events.FILTER_CHANGED,
+        ObjectUI3.ObjectPropertiesSection.ObjectTreeNodeBase.Events.FILTER_CHANGED,
         () => renderPreview(section.objectTree?.includeNullOrUndefinedValues || false)
       );
     }
@@ -5560,7 +5567,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     void SDK3.RemoteObject.RemoteFunction.objectAsFunction(originalFunction).targetFunction().then(formatTargetFunction.bind(this));
     return result;
     function formatTargetFunction(targetFunction) {
-      const promise = ObjectUI2.ObjectPropertiesSection.formatObjectAsFunction(targetFunction, true, includePreview);
+      const promise = ObjectUI3.ObjectPropertiesSection.formatObjectAsFunction(targetFunction, true, includePreview);
       if (targetFunction !== originalFunction) {
         const note = result.createChild("span", "object-state-note info-note");
         UI3.Tooltip.Tooltip.install(note, i18nString2(UIStrings2.functionWasResolvedFromBound));
@@ -5651,8 +5658,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   renderSymbolizedError(errorRemoteObject) {
     const container = document.createElement("span");
-    const widget2 = new SymbolizedErrorWidget();
-    widget2.ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+    const widget3 = new SymbolizedErrorWidget();
+    widget3.ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
     const selectableChildIndex = this.selectableChildren.length;
     const format2 = async () => {
       const error = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createSymbolizedError(
@@ -5660,16 +5667,16 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
         this.message.exceptionDetails
       );
       if (error) {
-        widget2.error = error;
+        widget3.error = error;
       }
-      await widget2.updateComplete;
-      const selectableLinks = widget2.linkElements.map((element) => ({ element, forceSelect: () => element.focus() }));
+      await widget3.updateComplete;
+      const selectableLinks = widget3.linkElements.map((element) => ({ element, forceSelect: () => element.focus() }));
       this.selectableChildren.splice(selectableChildIndex, 0, ...selectableLinks);
     };
     this.#formatErrorStackPromiseForTest = Promise.all([this.#formatErrorStackPromiseForTest, format2()]).then(() => {
     });
-    widget2.markAsRoot();
-    widget2.show(container);
+    widget3.markAsRoot();
+    widget3.show(container);
     return container;
   }
   formatAsArrayEntry(output) {
@@ -6291,8 +6298,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   toExportString() {
     const lines = [];
-    const nodes = this.contentElement().childTextNodes();
-    const messageContent = nodes.map(Components2.Linkifier.Linkifier.untruncatedNodeText).join("");
+    const messageContent = Components2.Linkifier.Linkifier.untruncatedTextContent(this.contentElement());
     for (let i = 0; i < this.repeatCount(); ++i) {
       lines.push(messageContent);
     }
@@ -6343,7 +6349,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   static linkifyWithCustomLinkifier(string, linkifier) {
     if (string.length > getMaxTokenizableStringLength()) {
-      const propertyValue = new ObjectUI2.ObjectPropertiesSection.ExpandableTextPropertyValue();
+      const propertyValue = new ObjectUI3.ObjectPropertiesSection.ExpandableTextPropertyValue();
       propertyValue.text = string;
       propertyValue.maxLength = getLongStringVisibleLength();
       return propertyValue;
@@ -7011,12 +7017,12 @@ async function formatStackTrace(message) {
   if (!previewContainer) {
     return "";
   }
-  const widget2 = UI4.Widget.Widget.get(previewContainer);
-  if (!widget2) {
+  const widget3 = UI4.Widget.Widget.get(previewContainer);
+  if (!widget3) {
     return "";
   }
-  await widget2.updateComplete;
-  const preview = widget2.contentElement.querySelector(".stack-preview-container");
+  await widget3.updateComplete;
+  const preview = widget3.contentElement.querySelector(".stack-preview-container");
   const nodes = preview.childTextNodes();
   const messageContent = nodes.filter((n) => {
     return !n.parentElement?.closest(".show-all-link,.show-less-link,.hidden-row");
@@ -7051,7 +7057,7 @@ var UIStringsNotTranslate = {
   /**
    * @description Explainer for which data is being sent by the console insights feature
    */
-  consoleInsightsSendsDataNoLogging: "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  consoleInsightsSendsDataNoLogging: "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data won\u2019t be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Third item in the first-run experience dialog
    */
@@ -7673,7 +7679,7 @@ import * as CodeMirror from "../../third_party/codemirror.next/codemirror.next.j
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as Dialogs2 from "../../ui/components/dialogs/dialogs.js";
 import * as TextEditor from "../../ui/components/text_editor/text_editor.js";
-import * as ObjectUI3 from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as ObjectUI4 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
 import { Directives, html as html5, nothing as nothing5, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
@@ -7758,7 +7764,7 @@ var consolePinPane_css_default = `/*
 
 // ../../front_end/panels/console/ConsolePinPane.ts
 var { createRef, ref: ref2, repeat } = Directives;
-var { widget } = UI6.Widget;
+var { widget: widget2 } = UI6.Widget;
 var UIStrings3 = {
   /**
    * @description A context menu item in the live expressions section of the Console panel.
@@ -7821,7 +7827,7 @@ var DEFAULT_PANE_VIEW = (input, _output, target) => {
     ${repeat(
     input.pins,
     (pin) => pin,
-    (pin) => widget(ConsolePinPresenter, {
+    (pin) => widget2(ConsolePinPresenter, {
       pin,
       focusOut: input.focusOut,
       onRemove: () => input.onRemove(pin)
@@ -7961,7 +7967,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     editor: editorRef.value
   });
 };
-var FORMATTER = new ObjectUI3.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
+var FORMATTER = new ObjectUI4.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
 function renderResult(result, isEditing) {
   if (!result) {
     return nothing5;
@@ -8294,7 +8300,7 @@ var ConsolePin = class extends Common4.ObjectWrapper.ObjectWrapper {
     const editorText = this.#editor?.workingCopyWithHint() ?? "";
     const throwOnSideEffect = Boolean(this.#editor?.isEditing()) && editorText !== this.#expression;
     const timeout = throwOnSideEffect ? 250 : void 0;
-    const result = await ObjectUI3.JavaScriptREPL.JavaScriptREPL.evaluate(
+    const result = await ObjectUI4.JavaScriptREPL.JavaScriptREPL.evaluate(
       editorText,
       executionContext,
       throwOnSideEffect,
@@ -8926,7 +8932,7 @@ var ConsoleViewport = class {
     const end = this.selectionIsBackward ? this.anchorSelection.item : this.headSelection.item;
     for (let i = start; i <= end; i++) {
       const element = this.providerElement(i);
-      if (element?.consoleMessage().type === "table") {
+      if (element?.consoleMessage?.().type === "table") {
         return true;
       }
     }
@@ -9059,7 +9065,7 @@ var ConsoleViewport = class {
         continue;
       }
       const element = providerElement.element();
-      const lineContent = element.childTextNodes().map(Components4.Linkifier.Linkifier.untruncatedNodeText).join("");
+      const lineContent = this.visibleChildTextNodes(element).map(Components4.Linkifier.Linkifier.untruncatedNodeText).join("");
       textLines.push(lineContent);
     }
     const endProviderElement = this.providerElement(endSelection.item);
@@ -9078,6 +9084,29 @@ var ConsoleViewport = class {
     }
     return textLines.join("\n");
   }
+  isNodeVisible(node) {
+    const element = node instanceof Element ? node : node.parentElement;
+    if (!element) {
+      return false;
+    }
+    if (element.closest(".hidden-stack-trace, .hidden")) {
+      return false;
+    }
+    if (element.isConnected) {
+      return element.checkVisibility();
+    }
+    let current = element;
+    while (current) {
+      if (current instanceof HTMLElement && (current.style.display === "none" || current.style.visibility === "hidden")) {
+        return false;
+      }
+      current = current.parentElement;
+    }
+    return true;
+  }
+  visibleChildTextNodes(element) {
+    return element.childTextNodes().filter((node) => this.isNodeVisible(node));
+  }
   textOffsetInNode(itemElement, selectionNode, offset) {
     const textContentLength = selectionNode.textContent ? selectionNode.textContent.length : 0;
     if (selectionNode.nodeType !== Node.TEXT_NODE) {
@@ -9091,7 +9120,7 @@ var ConsoleViewport = class {
     let chars = 0;
     let node = itemElement;
     while ((node = node.traverseNextNode(itemElement)) && node !== selectionNode) {
-      if (node.nodeType !== Node.TEXT_NODE || node.parentNode && (node.parentNode.nodeName === "STYLE" || node.parentNode.nodeName === "SCRIPT" || node.parentNode.nodeName === "#document-fragment")) {
+      if (node.nodeType !== Node.TEXT_NODE || node.parentNode && (node.parentNode.nodeName === "STYLE" || node.parentNode.nodeName === "SCRIPT" || node.parentNode.nodeName === "#document-fragment") || !this.isNodeVisible(node)) {
         continue;
       }
       chars += Components4.Linkifier.Linkifier.untruncatedNodeText(node).length;
@@ -9211,7 +9240,7 @@ import * as SourceMapScopes from "../../models/source_map_scopes/source_map_scop
 import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as TextEditor2 from "../../ui/components/text_editor/text_editor.js";
 import { Icon as Icon2 } from "../../ui/kit/kit.js";
-import * as ObjectUI4 from "../../ui/legacy/components/object_ui/object_ui.js";
+import * as ObjectUI5 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
 import * as Settings10 from "../../ui/settings/settings.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
@@ -11528,7 +11557,7 @@ var ConsolePrompt = class extends ConsolePromptBase {
     const id = ++this.requestPreviewCurrent;
     const text = TextEditor2.Config.contentIncludingHint(this.editor.editor).trim();
     const executionContext = UI11.Context.Context.instance().flavor(SDK8.RuntimeModel.ExecutionContext);
-    const { preview, result } = await ObjectUI4.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(
+    const { preview, result } = await ObjectUI5.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(
       text,
       true,
       true,
@@ -11713,7 +11742,7 @@ var ConsolePrompt = class extends ConsolePromptBase {
       const consoleModel = executionContext.target().model(SDK8.ConsoleModel.ConsoleModel);
       if (consoleModel) {
         const message = consoleModel.addCommandMessage(executionContext, text);
-        const expression = ObjectUI4.JavaScriptREPL.JavaScriptREPL.wrapObjectLiteral(text);
+        const expression = ObjectUI5.JavaScriptREPL.JavaScriptREPL.wrapObjectLiteral(text);
         void this.evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI);
         if (ConsolePanel.instance().isShowing()) {
           Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.CommandEvaluatedInConsolePanel);

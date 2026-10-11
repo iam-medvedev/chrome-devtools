@@ -13,8 +13,8 @@ describeWithEnvironment('EntryNodes', function () {
     describe('nodeIdsForEvent', () => {
         it('identifies node ids for a Layout event', () => {
             const layoutEvent = {
-                ...makeCompleteEvent("Layout" /* Trace.Types.Events.Name.LAYOUT */, 0, 1000),
-                name: "Layout" /* Trace.Types.Events.Name.LAYOUT */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.LAYOUT, 0, 1000),
+                name: Trace.Types.Events.Name.LAYOUT,
                 args: {
                     beginData: {
                         frame: 'main-frame',
@@ -36,8 +36,8 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a LayoutShift event', () => {
             const rawLayoutShift = {
-                ...makeInstantEvent("LayoutShift" /* Trace.Types.Events.Name.LAYOUT_SHIFT */, 0),
-                name: "LayoutShift" /* Trace.Types.Events.Name.LAYOUT_SHIFT */,
+                ...makeInstantEvent(Trace.Types.Events.Name.LAYOUT_SHIFT, 0),
+                name: Trace.Types.Events.Name.LAYOUT_SHIFT,
                 args: {
                     frame: 'main-frame',
                     data: {
@@ -61,7 +61,7 @@ describeWithEnvironment('EntryNodes', function () {
             };
             const layoutShiftEvent = {
                 ...rawLayoutShift,
-                name: "SyntheticLayoutShift" /* Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT */,
+                name: Trace.Types.Events.Name.SYNTHETIC_LAYOUT_SHIFT,
                 rawSourceEvent: rawLayoutShift,
                 _tag: 'SyntheticEntryTag',
                 parsedData: {
@@ -88,8 +88,8 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a Paint event', () => {
             const paintEvent = {
-                ...makeCompleteEvent("Paint" /* Trace.Types.Events.Name.PAINT */, 0, 1000),
-                name: "Paint" /* Trace.Types.Events.Name.PAINT */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.PAINT, 0, 1000),
+                name: Trace.Types.Events.Name.PAINT,
                 args: {
                     data: {
                         clip: [],
@@ -104,8 +104,8 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a PaintImage event', () => {
             const paintImageEvent = {
-                ...makeCompleteEvent("PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */, 0, 1000),
-                name: "PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.PAINT_IMAGE, 0, 1000),
+                name: Trace.Types.Events.Name.PAINT_IMAGE,
                 args: {
                     data: {
                         ...defaultTraceEvent,
@@ -126,8 +126,8 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a ScrollLayer event', () => {
             const scrollLayerEvent = {
-                ...makeCompleteEvent("ScrollLayer" /* Trace.Types.Events.Name.SCROLL_LAYER */, 0, 1000),
-                name: "ScrollLayer" /* Trace.Types.Events.Name.SCROLL_LAYER */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.SCROLL_LAYER, 0, 1000),
+                name: Trace.Types.Events.Name.SCROLL_LAYER,
                 args: {
                     data: {
                         ...defaultTraceEvent,
@@ -141,15 +141,15 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a DecodeImage event', () => {
             const decodeImageEvent = {
-                ...makeCompleteEvent("Decode Image" /* Trace.Types.Events.Name.DECODE_IMAGE */, 0, 1000),
-                name: "Decode Image" /* Trace.Types.Events.Name.DECODE_IMAGE */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.DECODE_IMAGE, 0, 1000),
+                name: Trace.Types.Events.Name.DECODE_IMAGE,
                 args: {
                     imageType: 'png',
                 },
             };
             const paintImageEvent = {
-                ...makeCompleteEvent("PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */, 0, 1000),
-                name: "PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.PAINT_IMAGE, 0, 1000),
+                name: Trace.Types.Events.Name.PAINT_IMAGE,
                 args: {
                     data: {
                         ...defaultTraceEvent,
@@ -177,15 +177,15 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a DrawLazyPixelRef event', () => {
             const drawLazyPixelRefEvent = {
-                ...makeInstantEvent("Draw LazyPixelRef" /* Trace.Types.Events.Name.DRAW_LAZY_PIXEL_REF */, 0),
-                name: "Draw LazyPixelRef" /* Trace.Types.Events.Name.DRAW_LAZY_PIXEL_REF */,
+                ...makeInstantEvent(Trace.Types.Events.Name.DRAW_LAZY_PIXEL_REF, 0),
+                name: Trace.Types.Events.Name.DRAW_LAZY_PIXEL_REF,
                 args: {
                     LazyPixelRef: 1,
                 },
             };
             const paintImageEvent = {
-                ...makeCompleteEvent("PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */, 0, 1000),
-                name: "PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.PAINT_IMAGE, 0, 1000),
+                name: Trace.Types.Events.Name.PAINT_IMAGE,
                 args: {
                     data: {
                         ...defaultTraceEvent,
@@ -213,9 +213,9 @@ describeWithEnvironment('EntryNodes', function () {
         });
         it('identifies node ids for a MarkLCP event', () => {
             const lcpCandidateEvent = {
-                ...makeInstantEvent("largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */, 0),
-                name: "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */,
-                ph: "R" /* Trace.Types.Events.Phase.MARK */,
+                ...makeInstantEvent(Trace.Types.Events.Name.MARK_LCP_CANDIDATE, 0),
+                name: Trace.Types.Events.Name.MARK_LCP_CANDIDATE,
+                ph: Trace.Types.Events.Phase.MARK,
                 args: {
                     frame: 'main-frame-id',
                     data: {
@@ -241,8 +241,8 @@ describeWithEnvironment('EntryNodes', function () {
         }
         it('returns the related DOM nodes', async () => {
             const layoutEvent = {
-                ...makeCompleteEvent("Layout" /* Trace.Types.Events.Name.LAYOUT */, 0, 1000),
-                name: "Layout" /* Trace.Types.Events.Name.LAYOUT */,
+                ...makeCompleteEvent(Trace.Types.Events.Name.LAYOUT, 0, 1000),
+                name: Trace.Types.Events.Name.LAYOUT,
                 args: {
                     beginData: {
                         frame: 'main-frame',

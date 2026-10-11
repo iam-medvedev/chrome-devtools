@@ -1220,7 +1220,7 @@ var UIStrings4 = {
   /**
    * @description Text label indicating why an option is not available, because the user's device is not fast enough to emulate a device.
    */
-  calibrationErrorDeviceTooWeak: "Device is not powerful enough"
+  calibrationErrorDeviceTooWeak: "Device isn\u2019t powerful enough"
 };
 var str_4 = i18n9.i18n.registerUIStrings("panels/common/CPUThrottlingOption.ts", UIStrings4);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_4);
@@ -1654,14 +1654,6 @@ import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
 import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
 var extensionOrigins = /* @__PURE__ */ new WeakMap();
-var kForbiddenSchemes = [
-  "chrome:",
-  "chrome-untrusted:",
-  "chrome-error:",
-  "chrome-search:",
-  "devtools:",
-  "isolated-app:"
-];
 var extensionServerInstance;
 function parseCanonicalURL(url) {
   try {
@@ -1950,8 +1942,8 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
   hasExtensions() {
     return Boolean(this.registeredExtensions.size);
   }
-  notifySearchAction(panelId, action3, searchString) {
-    this.postNotification(Extensions2.ExtensionAPI.PrivateAPI.Events.PanelSearch + panelId, [action3, searchString]);
+  notifySearchAction(panelId, action4, searchString) {
+    this.postNotification(Extensions2.ExtensionAPI.PrivateAPI.Events.PanelSearch + panelId, [action4, searchString]);
   }
   notifyViewShown(identifier, frameIndex) {
     this.postNotification(Extensions2.ExtensionAPI.PrivateAPI.Events.ViewShown + identifier, [frameIndex]);
@@ -2506,13 +2498,14 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     let validScheme = message.urlScheme;
     if (validScheme) {
+      let urlToParse;
       try {
-        const urlToParse = validScheme.replace(/:?(\/\/)?$/, "") + "://test";
+        urlToParse = validScheme.replace(/:?(\/\/)?$/, "") + "://test";
         validScheme = new URL(urlToParse).protocol;
       } catch {
         return this.status.E_BADARG("urlScheme", "Invalid scheme");
       }
-      if (kForbiddenSchemes.includes(validScheme) || validScheme === "file:") {
+      if (Common5.ParsedURL.isPrivilegedScheme(urlToParse)) {
         return this.status.E_BADARG("urlScheme", "Scheme is forbidden");
       }
     }
@@ -2571,47 +2564,55 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
       });
     }
   }
-  extensionAllowedOnURL(url, port) {
-    const origin = extensionOrigins.get(port);
-    const extension = origin && this.registeredExtensions.get(origin);
+  getRegisteredExtension(portOrExtension) {
+    if (portOrExtension instanceof RegisteredExtension) {
+      return portOrExtension;
+    }
+    const origin = extensionOrigins.get(portOrExtension);
+    return origin ? this.registeredExtensions.get(origin) : void 0;
+  }
+  extensionAllowedOnURL(url, portOrExtension) {
+    const extension = this.getRegisteredExtension(portOrExtension);
     return Boolean(extension?.isAllowedOnTarget(url));
+  }
+  extensionAllowedOnScript(script, portOrExtension) {
+    if (script.hasSourceURL) {
+      const embedderName = script.embedderName();
+      if (embedderName && URL.canParse(embedderName) && !this.extensionAllowedOnURL(embedderName, portOrExtension)) {
+        return false;
+      }
+      return this.extensionAllowedOnTarget(script.target(), portOrExtension);
+    }
+    return this.extensionAllowedOnURL(script.contentURL(), portOrExtension) && this.extensionAllowedOnTarget(script.target(), portOrExtension);
   }
   /**
    * Slightly more permissive as {@link extensionAllowedOnURL}: This method also permits
    * UISourceCodes that originate from a {@link SDK.Script.Script} with a sourceURL magic comment as
    * long as the corresponding target and the embedder name (if it is a URL) are permitted.
    */
-  extensionAllowedOnContentProvider(contentProvider, port) {
+  extensionAllowedOnContentProvider(contentProvider, portOrExtension) {
     if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
       const debuggerSourceMapURLs = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().sourceMapURLsForUISourceCode(
         contentProvider
       );
       const cssSourceMapURLs = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().sourceMapURLsForUISourceCode(contentProvider);
-      const sourceMapURLs = [...debuggerSourceMapURLs, ...cssSourceMapURLs];
-      if (sourceMapURLs.some((url) => !this.extensionAllowedOnURL(url, port))) {
+      const cssCompiledURLs = Bindings.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(contentProvider);
+      const sourceMapURLs = [...debuggerSourceMapURLs, ...cssSourceMapURLs, ...cssCompiledURLs];
+      if (sourceMapURLs.some((url) => !this.extensionAllowedOnURL(url, portOrExtension))) {
         return false;
       }
-    }
-    if (contentProvider instanceof Workspace.UISourceCode.UISourceCode && contentProvider.contentType() === Common5.ResourceType.resourceTypes.Script) {
       const scripts = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider);
       if (scripts.length > 0) {
-        const uiSourceCodeTarget = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider) ?? void 0;
-        if (uiSourceCodeTarget && !this.extensionAllowedOnTarget(uiSourceCodeTarget, port)) {
+        if (!scripts.every((script) => this.extensionAllowedOnScript(script, portOrExtension))) {
           return false;
         }
-        return scripts.every((script) => {
-          if (script.hasSourceURL) {
-            const embedderName = script.embedderName();
-            if (embedderName && URL.canParse(embedderName) && !this.extensionAllowedOnURL(embedderName, port)) {
-              return false;
-            }
-            return this.extensionAllowedOnTarget(script.target(), port);
-          }
-          return this.extensionAllowedOnURL(script.contentURL(), port) && this.extensionAllowedOnTarget(script.target(), port);
-        });
+        if (contentProvider.contentType() === Common5.ResourceType.resourceTypes.Script) {
+          const uiSourceCodeTarget = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider) ?? void 0;
+          return !uiSourceCodeTarget || this.extensionAllowedOnTarget(uiSourceCodeTarget, portOrExtension);
+        }
       }
     }
-    if (!this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+    if (!this.extensionAllowedOnURL(contentProvider.contentURL(), portOrExtension)) {
       return false;
     }
     let target;
@@ -2622,7 +2623,7 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     } else if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
       target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider) ?? void 0;
     }
-    return !target || this.extensionAllowedOnTarget(target, port);
+    return !target || this.extensionAllowedOnTarget(target, portOrExtension);
   }
   /**
    * This method prefers returning 'Permission denied' errors if restricted resources are not found,
@@ -2641,11 +2642,11 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     return { uiSourceCode };
   }
-  extensionAllowedOnTarget(target, port) {
+  extensionAllowedOnTarget(target, portOrExtension) {
     if (!target) {
       return false;
     }
-    return this.extensionAllowedOnURL(target.inspectedURL(), port);
+    return this.extensionAllowedOnURL(target.inspectedURL(), portOrExtension);
   }
   onReload(message, port) {
     if (message.command !== Extensions2.ExtensionAPI.PrivateAPI.Commands.Reload) {
@@ -3040,22 +3041,18 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
   }
   notifyResourceAdded(event) {
     const uiSourceCode = event.data;
-    const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
-    const targetUrl = target?.inspectedURL();
     this.postNotification(
       Extensions2.ExtensionAPI.PrivateAPI.Events.ResourceAdded,
       [this.makeResource(uiSourceCode)],
-      (extension) => extension.isAllowedOnTarget(uiSourceCode.url()) && (!targetUrl || extension.isAllowedOnTarget(targetUrl))
+      (extension) => this.extensionAllowedOnContentProvider(uiSourceCode, extension)
     );
   }
   notifyUISourceCodeContentCommitted(event) {
     const { uiSourceCode, content } = event.data;
-    const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
-    const targetUrl = target?.inspectedURL();
     this.postNotification(
       Extensions2.ExtensionAPI.PrivateAPI.Events.ResourceContentCommitted,
       [this.makeResource(uiSourceCode), content],
-      (extension) => extension.isAllowedOnTarget(uiSourceCode.url()) && (!targetUrl || extension.isAllowedOnTarget(targetUrl))
+      (extension) => this.extensionAllowedOnContentProvider(uiSourceCode, extension)
     );
   }
   async notifyRequestFinished(event) {
@@ -3361,7 +3358,7 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     if (!parsedURL) {
       return false;
     }
-    if (kForbiddenSchemes.includes(parsedURL.protocol)) {
+    if (!Common5.ParsedURL.schemeIs(parsedURL, "chrome-extension:") && !Common5.ParsedURL.schemeIs(parsedURL, "file:") && Common5.ParsedURL.isPrivilegedScheme(parsedURL)) {
       return false;
     }
     if ((window.DevToolsAPI?.getOriginsForbiddenForExtensions?.() || []).includes(parsedURL.origin)) {
@@ -3867,6 +3864,7 @@ import * as Input from "../../ui/components/input/input.js";
 import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.js";
 import * as UI9 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/commentThreadWidget.css.js
 var commentThreadWidget_css_default = `/*
@@ -3905,10 +3903,6 @@ var commentThreadWidget_css_default = `/*
     display: flex;
     align-items: center;
     gap: var(--sys-size-3);
-    flex-shrink: 0;
-  }
-
-  .close-button {
     flex-shrink: 0;
   }
 
@@ -4072,6 +4066,11 @@ var UIStrings7 = {
    */
   sent: "Sent",
   /**
+   * @description Tooltip and accessible label for the icon button in the comment thread header that deletes a queued
+   * comment (a comment saved locally but not yet sent to the agent).
+   */
+  deleteQueuedComment: "Delete queued comment",
+  /**
    * @description Alt text for the checkmark icon in the comment thread header indicating that comments have been sent
    * to the agent.
    */
@@ -4085,13 +4084,14 @@ var UIStrings7 = {
    */
   sendToAgent: "Send to agent",
   /**
+   * @description Label of the submit button while the Cmd (Mac) or Ctrl (Windows/Linux) key is held. Clicking it
+   * saves the comment locally so that it is sent to the agent together with the next comment, instead of immediately.
+   */
+  queueComment: "Queue comment",
+  /**
    * @description aria-label for the comment text area.
    */
-  commentInputAriaLabel: "Comment input",
-  /**
-   * @description Tooltip and aria-label for the close button in the comment thread header.
-   */
-  close: "Close"
+  commentInputAriaLabel: "Comment input"
 };
 var UIStringsNotTranslate2 = {
   /**
@@ -4104,33 +4104,59 @@ var i18nString7 = i18n17.i18n.getLocalizedString.bind(void 0, str_7);
 var lockedString3 = i18n17.i18n.lockedString;
 var DEFAULT_VIEW6 = (input, _output, target) => {
   const hasComment = input.comments.length > 0;
+  const buttonText = input.isQueueModifierPressed ? i18nString7(UIStrings7.queueComment) : i18nString7(UIStrings7.sendToAgent);
+  const submit = (queue) => {
+    if (queue) {
+      input.onQueueComment(input.commentText);
+    } else {
+      input.onAddComment(input.commentText);
+    }
+  };
+  const renderHeaderStatus = () => {
+    if (!hasComment) {
+      return Lit3.nothing;
+    }
+    switch (input.status) {
+      case "SENT_TO_AGENT":
+        return html8`
+          <div class="sent-status">
+            <devtools-icon
+              class="check-icon"
+              name="checkmark"
+              aria-label=${i18nString7(UIStrings7.sentCheckmark)}>
+            </devtools-icon>
+            <span>${i18nString7(UIStrings7.sent)}</span>
+          </div>
+        `;
+      // clang-format on
+      case "ACTIVE":
+        return html8`
+          <devtools-button
+            class="delete-button"
+            aria-label=${i18nString7(UIStrings7.deleteQueuedComment)}
+            .iconName=${"bin"}
+            .variant=${Buttons4.Button.Variant.ICON}
+            .size=${Buttons4.Button.Size.SMALL}
+            .title=${i18nString7(UIStrings7.deleteQueuedComment)}
+            @click=${input.onDeleteQueuedComment}
+          ></devtools-button>
+        `;
+      // clang-format on
+      default:
+        return Lit3.nothing;
+    }
+  };
   render7(html8`
     <style>${Input.textInputStyles}${commentThreadWidget_css_default}</style>
-    <div class="comment-thread-widget ${hasComment ? "submitted" : ""}">
+    <div
+      class="comment-thread-widget ${hasComment ? "submitted" : ""}"
+      jslog=${VisualLogging4.popover("comment-thread")}>
       <div class="header">
         <span class="selected-item">
           ${"node" in input.title ? widget3(DOMNodeLink, { node: input.title.node }) : html8`<span class="selected-item-text">${input.title.text}</span>`}
         </span>
         <div class="header-actions">
-          ${hasComment ? html8`
-            <div class="sent-status">
-              <devtools-icon
-                class="check-icon"
-                name="checkmark"
-                aria-label=${i18nString7(UIStrings7.sentCheckmark)}>
-              </devtools-icon>
-              <span>${i18nString7(UIStrings7.sent)}</span>
-            </div>
-          ` : Lit3.nothing}
-          <devtools-button
-            class="close-button"
-            aria-label=${i18nString7(UIStrings7.close)}
-            .iconName=${"cross"}
-            .variant=${Buttons4.Button.Variant.ICON}
-            .size=${Buttons4.Button.Size.SMALL}
-            .title=${i18nString7(UIStrings7.close)}
-            @click=${input.onClose}
-          ></devtools-button>
+          ${renderHeaderStatus()}
         </div>
       </div>
 
@@ -4162,11 +4188,16 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           .value=${input.commentText}
           @input=${input.onCommentTextChange}
           @keydown=${(event) => {
+    const queueModifier = UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event);
+    input.onQueueModifierChange(queueModifier);
     if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
       event.preventDefault();
-      input.onAddComment(input.commentText);
+      submit(queueModifier);
     }
   }}
+          @keyup=${(event) => input.onQueueModifierChange(UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event))}
+          @blur=${() => input.onQueueModifierChange(false)}
+          jslog=${VisualLogging4.textField("comments-input").track({ keydown: "Enter" })}
         ></textarea>
         <div class="footer">
           <devtools-icon
@@ -4185,10 +4216,16 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
             </div>
           </devtools-tooltip>
           <devtools-button
-            aria-label=${i18nString7(UIStrings7.sendToAgent)}
+            aria-label=${buttonText}
             .disabled=${!input.commentText.trim()}
-            @click=${() => input.onAddComment(input.commentText)}>
-            ${i18nString7(UIStrings7.sendToAgent)}
+            @mousedown=${(event) => {
+    event.preventDefault();
+  }}
+            @click=${(event) => submit(
+    input.isQueueModifierPressed || UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)
+  )}
+            jslog=${VisualLogging4.action("comments-send-to-agent").track({ click: true })}>
+            ${buttonText}
           </devtools-button>
         </div>
       ` : Lit3.nothing}
@@ -4199,10 +4236,13 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
   title = { text: "" };
   #comments = [];
   #commentText = "";
+  #status = "DRAFT";
+  #isQueueModifierPressed = false;
   #textAreaRef = createRef();
   #view;
   onAddComment;
-  onClose;
+  onQueueComment;
+  onDeleteQueuedComment;
   constructor(element, view = DEFAULT_VIEW6) {
     super(element);
     this.#view = view;
@@ -4214,17 +4254,40 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
       this.#textAreaRef.value?.focus({ preventScroll: true });
     });
   }
+  willHide() {
+    this.#isQueueModifierPressed = false;
+    super.willHide();
+  }
   set comments(comments) {
     this.#comments = comments;
     this.requestUpdate();
   }
-  #handleAddComment = (text) => {
+  set status(commentStatus) {
+    this.#status = commentStatus;
+    this.requestUpdate();
+  }
+  #handleQueueModifierChange = (pressed) => {
+    if (this.#isQueueModifierPressed !== pressed) {
+      this.#isQueueModifierPressed = pressed;
+      this.requestUpdate();
+    }
+  };
+  #submit(text, callback) {
     const commentText = text.trim();
-    if (commentText && this.onAddComment) {
-      this.onAddComment(commentText);
+    if (commentText && callback) {
+      callback(commentText);
       this.#commentText = "";
       this.requestUpdate();
     }
+  }
+  #handleAddComment = (text) => {
+    this.#submit(text, this.onAddComment);
+  };
+  #handleQueueComment = (text) => {
+    this.#submit(text, this.onQueueComment);
+  };
+  #handleDeleteQueuedComment = () => {
+    this.onDeleteQueuedComment?.();
   };
   #handleCommentTextChange = (event) => {
     const input = event.target;
@@ -4236,10 +4299,14 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
       title: this.title,
       comments: this.#comments,
       commentText: this.#commentText,
+      isQueueModifierPressed: this.#isQueueModifierPressed,
       textAreaRef: this.#textAreaRef,
+      status: this.#status,
       onAddComment: this.#handleAddComment,
+      onQueueComment: this.#handleQueueComment,
       onCommentTextChange: this.#handleCommentTextChange,
-      onClose: this.onClose
+      onDeleteQueuedComment: this.#handleDeleteQueuedComment,
+      onQueueModifierChange: this.#handleQueueModifierChange
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -4448,8 +4515,10 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
               ${UI10.Widget.widget(CommentThreadWidget, {
         title: input.title,
         comments: [...item2.thread.comments],
+        status: item2.thread.status,
         onAddComment: input.onAddComment,
-        onClose: input.onCloseCommentThread
+        onDeleteQueuedComment: input.onDeleteQueuedComment,
+        onQueueComment: input.onQueueComment
       })}
             </div>
           `;
@@ -4570,10 +4639,10 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     if (!isModeActive) {
       this.#setActiveThreadId(null);
     }
-    const action3 = UI10.ActionRegistry.ActionRegistry.instance().getAction(
+    const action4 = UI10.ActionRegistry.ActionRegistry.instance().getAction(
       "comments.toggle-comment-mode"
     );
-    action3?.setToggled(isModeActive);
+    action4?.setToggled(isModeActive);
     this.requestUpdate();
   }
   #syncActiveThreadFromManager() {
@@ -4669,7 +4738,10 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
         title: { text: "" },
         onAddComment: () => {
         },
-        onCloseCommentThread: this.#handleCloseCommentThread
+        onDeleteQueuedComment: () => {
+        },
+        onQueueComment: () => {
+        }
       },
       void 0,
       this.contentElement
@@ -4693,19 +4765,33 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
           return;
         }
         activeThread.sendToAgent(text);
-        const threadId = activeThread.id;
-        this.#clearCloseTimeout();
-        this.#closeTimeoutId = window.setTimeout(() => {
-          this.#closeTimeoutId = null;
-          if (this.#activeThreadId === threadId) {
-            this.#setActiveThreadId(null);
-            this.requestUpdate();
-          }
-        }, AUTO_CLOSE_DELAY_MS);
+        this.#scheduleAutoClose(activeThread.id);
       },
-      onCloseCommentThread: this.#handleCloseCommentThread
+      onDeleteQueuedComment: () => {
+        if (!activeThread) {
+          return;
+        }
+        this.#commentOverlayManager.removeCommentThread(activeThread.id);
+      },
+      onQueueComment: (text) => {
+        if (!activeThread) {
+          return;
+        }
+        activeThread.save(text);
+        this.#scheduleAutoClose(activeThread.id);
+      }
     };
     this.#view(viewInput, void 0, this.contentElement);
+  }
+  #scheduleAutoClose(threadId) {
+    this.#clearCloseTimeout();
+    this.#closeTimeoutId = window.setTimeout(() => {
+      this.#closeTimeoutId = null;
+      if (this.#activeThreadId === threadId) {
+        this.#setActiveThreadId(null);
+        this.requestUpdate();
+      }
+    }, AUTO_CLOSE_DELAY_MS);
   }
   async performUpdate(signal) {
     if (!this.#commentManager.isAgentAttached()) {
@@ -4794,14 +4880,14 @@ var ButtonProvider = class {
     this.#commentManager = commentManager ?? Root3.DevToolsContext.globalInstance().get(
       CommentManager.CommentManager.CommentManager
     );
-    const action3 = UI10.ActionRegistry.ActionRegistry.instance().getAction("comments.toggle-comment-mode");
-    action3.setEnabled(this.#commentManager.isAgentAttached());
-    this.#button = UI10.Toolbar.Toolbar.createActionButton(action3);
+    const action4 = UI10.ActionRegistry.ActionRegistry.instance().getAction("comments.toggle-comment-mode");
+    action4.setEnabled(this.#commentManager.isAgentAttached());
+    this.#button = UI10.Toolbar.Toolbar.createActionButton(action4);
     this.#button.setVisible(this.#commentManager.isAgentAttached());
     this.#commentManager.addEventListener(
       CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED,
       (event) => {
-        action3.setEnabled(event.data);
+        action4.setEnabled(event.data);
         this.#button.setVisible(event.data);
       }
     );
@@ -4819,69 +4905,31 @@ __export(CommentsStatusBarPill_exports, {
 });
 import * as i18n19 from "../../core/i18n/i18n.js";
 import * as CommentManager3 from "../../models/comment_manager/comment_manager.js";
-import * as Buttons5 from "../../ui/components/buttons/buttons.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
 import * as Lit5 from "../../ui/lit/lit.js";
-import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/common/commentsStatusBarPill.css.js
-var commentsStatusBarPill_css_default = `/*
- * Copyright 2026 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-@scope to (devtools-widget > *) {
-  .pill-container {
-    display: flex;
-    align-items: center;
-    gap: var(--sys-size-3);
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./commentsStatusBarPill.css")} */`;
-
-// ../../front_end/panels/common/CommentsStatusBarPill.ts
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
    * @description Button text for the comments status bar pill showing the number of open comments.
    * @example {2} PH1
    */
-  commentsCount: "Comments ({PH1})",
-  /**
-   * @description Button text for sending all draft comments to the agent in the comments status bar pill.
-   * @example {2} PH1
-   */
-  sendToAgentCount: "Send to agent ({PH1})"
+  commentsCount: "Comments ({PH1})"
 };
 var str_8 = i18n19.i18n.registerUIStrings("panels/common/CommentsStatusBarPill.ts", UIStrings8);
 var i18nString8 = i18n19.i18n.getLocalizedString.bind(void 0, str_8);
 var { html: html10, render: render9 } = Lit5;
 var DEFAULT_VIEW8 = (input, _output, target) => {
-  const unsentCount = input.threads.filter((thread) => thread.status === "ACTIVE").length;
   const tooltip = input.threads.flatMap((thread) => thread.comments.map((comment) => comment.text)).join("\n");
   render9(html10`
-    <style>${commentsStatusBarPill_css_default}</style>
     ${input.threads.length <= 0 ? Lit5.nothing : html10`
-      <div class="pill-container">
-        <button
-          class="devtools-pill"
-          title=${tooltip}
-          ?disabled=${input.disabled}
-          @click=${input.onPillClick}
-          jslog=${VisualLogging4.action("comments-status-bar-pill").track({ click: true })}>
-          ${i18nString8(UIStrings8.commentsCount, { PH1: input.threads.length })}
-        </button>
-        ${unsentCount > 0 ? html10`
-          <devtools-button
-            .variant=${Buttons5.Button.Variant.PRIMARY}
-            .disabled=${Boolean(input.disabled)}
-            .jslogContext=${"comments-send-to-agent"}
-            @click=${input.onSendToAgentClick}>
-            ${i18nString8(UIStrings8.sendToAgentCount, { PH1: unsentCount })}
-          </devtools-button>
-        ` : Lit5.nothing}
-      </div>
+      <button
+        class="devtools-pill"
+        title=${tooltip}
+        ?disabled=${input.disabled}
+        @click=${input.onPillClick}
+        jslog=${VisualLogging5.action("comments-status-bar-pill").track({ click: true })}>
+        ${i18nString8(UIStrings8.commentsCount, { PH1: input.threads.length })}
+      </button>
     `}
   `, target);
 };
@@ -4927,20 +4975,12 @@ var CommentsStatusBarPill = class extends UI11.Widget.Widget {
   performUpdate() {
     const viewInput = {
       threads: this.#commentManager.isAgentAttached() ? this.#commentManager.getCommentThreads().filter((thread) => thread.status !== "DRAFT") : [],
-      onPillClick: this.#handlePillClick,
-      onSendToAgentClick: this.#handleSendToAgentClick
+      onPillClick: this.#handlePillClick
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
   #handlePillClick = () => {
     void UI11.ViewManager.ViewManager.instance().showView("comments");
-  };
-  #handleSendToAgentClick = () => {
-    for (const thread of this.#commentManager.getCommentThreads()) {
-      if (thread.status === "ACTIVE") {
-        thread.sendToAgent();
-      }
-    }
   };
 };
 export {

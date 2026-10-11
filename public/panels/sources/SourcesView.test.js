@@ -13,6 +13,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
@@ -81,8 +82,6 @@ describeWithEnvironment('SourcesView', () => {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
     });
     it('creates editor tabs only for in-scope uiSourceCodes', async () => {
-        const addUISourceCodeSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'addUISourceCode');
-        const removeUISourceCodesSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'removeUISourceCodes');
         createContentProviderUISourceCodes({
             items: [
                 { url: urlString `http://example.com/a.js`, mimeType: 'application/javascript' },
@@ -100,19 +99,16 @@ describeWithEnvironment('SourcesView', () => {
             projectType: Workspace.Workspace.projectTypes.Network,
             target: target2,
         });
-        const sourcesView = new Sources.SourcesView.SourcesView();
+        const view = createViewFunctionStub(Sources.SourcesView.SourcesView);
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
         renderElementIntoDOM(sourcesView);
         await sourcesView.updateComplete;
-        let addedURLs = addUISourceCodeSpy.args.map(args => args[0].url());
-        assert.deepEqual(addedURLs, ['http://example.com/a.js', 'http://example.com/b.js']);
-        sinon.assert.notCalled(removeUISourceCodesSpy);
-        addUISourceCodeSpy.resetHistory();
+        let urls = [...view.input.uiSourceCodes].map(c => c.url());
+        assert.deepEqual(urls, ['http://example.com/a.js', 'http://example.com/b.js']);
         target2.targetManager().setScopeTarget(target2);
         await sourcesView.updateComplete;
-        addedURLs = addUISourceCodeSpy.args.map(args => args[0].url());
-        assert.deepEqual(addedURLs, ['http://foo.com/script.js']);
-        const removedURLs = removeUISourceCodesSpy.args.flatMap(args => args[0].map(c => c.url()));
-        assert.deepEqual(removedURLs, ['http://example.com/a.js', 'http://example.com/b.js']);
+        urls = [...view.input.uiSourceCodes].map(c => c.url());
+        assert.deepEqual(urls, ['http://foo.com/script.js']);
         sourcesView.detach();
     });
     it('doesn\'t remove non-network UISourceCodes when changing the scope target', async () => {
@@ -121,13 +117,105 @@ describeWithEnvironment('SourcesView', () => {
             mimeType: 'application/javascript',
             type: Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS,
         });
-        const sourcesView = new Sources.SourcesView.SourcesView();
+        const view = createViewFunctionStub(Sources.SourcesView.SourcesView);
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
         renderElementIntoDOM(sourcesView);
         await sourcesView.updateComplete;
-        const removeUISourceCodesSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'removeUISourceCodes');
         target2.targetManager().setScopeTarget(target2);
         await sourcesView.updateComplete;
-        sinon.assert.notCalled(removeUISourceCodesSpy);
+        const urls = [...view.input.uiSourceCodes].map(c => c.url());
+        assert.deepEqual(urls, ['snippet:///foo.js']);
+        sourcesView.detach();
+    });
+    it('does not re-create uiSourceCodes Set on unrelated view updates', async () => {
+        createFileSystemUISourceCode({
+            url: urlString `snippet:///foo.js`,
+            mimeType: 'application/javascript',
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS,
+        });
+        const view = createViewFunctionStub(Sources.SourcesView.SourcesView);
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        const initialSet = view.input.uiSourceCodes;
+        sourcesView.isNavigatorSidebarOpen = !sourcesView.isNavigatorSidebarOpen;
+        await sourcesView.updateComplete;
+        assert.strictEqual(view.input.uiSourceCodes, initialSet);
+        sourcesView.detach();
+    });
+    it('does not schedule TabbedEditorContainer update on unrelated SourcesView updates', async () => {
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        sourcesView.setLayoutMode(true, false);
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        const requestUpdateSpy = sinon.spy(Sources.TabbedEditorContainer.TabbedEditorContainer.prototype, 'requestUpdate');
+        sourcesView.toggleBreakpointsActiveState(false);
+        await sourcesView.updateComplete;
+        sinon.assert.notCalled(requestUpdateSpy);
+        requestUpdateSpy.restore();
+        sourcesView.detach();
+    });
+    it('passes sourceLocation and updates active editor state via view input callbacks', async () => {
+        const { uiSourceCode } = createFileSystemUISourceCode({
+            url: urlString `file:///path/to/file.js`,
+            mimeType: 'application/javascript',
+        });
+        const view = createViewFunctionStub(Sources.SourcesView.SourcesView);
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        await sourcesView.showSourceLocation(uiSourceCode, { lineNumber: 5, columnNumber: 2 }, true, false);
+        assert.deepEqual(view.input.sourceLocation, {
+            uiSourceCode,
+            location: { lineNumber: 5, columnNumber: 2 },
+            omitFocus: true,
+            omitHighlight: false,
+        });
+        const sourceFrame = new Sources.UISourceCodeFrame.UISourceCodeFrame(uiSourceCode);
+        sinon.stub(sourceFrame, 'canEditSource').returns(true);
+        view.input.onEditorSelected({
+            currentFile: uiSourceCode,
+            currentView: sourceFrame,
+            previousView: null,
+            userGesture: true,
+        });
+        await sourcesView.updateComplete;
+        assert.strictEqual(sourcesView.currentUISourceCode(), uiSourceCode);
+        assert.strictEqual(sourcesView.currentSourceFrame(), sourceFrame);
+        assert.isTrue(view.input.isSearchReplaceable);
+        assert.strictEqual(view.input.searchTarget, sourceFrame);
+        view.input.onEditorClosed(uiSourceCode);
+        await sourcesView.updateComplete;
+        assert.isNull(sourcesView.currentUISourceCode());
+        assert.isNull(sourcesView.visibleView());
+        assert.isNull(view.input.searchTarget);
+        sourcesView.detach();
+    });
+    it('updates layout mode and breakpoints active state in view input', async () => {
+        const view = createViewFunctionStub(Sources.SourcesView.SourcesView);
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        assert.isTrue(view.input.breakpointsActive);
+        assert.isFalse(view.input.isVertical);
+        assert.isTrue(view.input.isInWrapper);
+        sourcesView.setLayoutMode(true, false);
+        sourcesView.toggleBreakpointsActiveState(false);
+        await sourcesView.updateComplete;
+        assert.isFalse(view.input.breakpointsActive);
+        assert.isTrue(view.input.isVertical);
+        assert.isFalse(view.input.isInWrapper);
+        sourcesView.detach();
+    });
+    it('returns the searchableView populated by the view output', async () => {
+        const dummySearchableView = {};
+        const view = (_input, output) => {
+            output.searchableView = dummySearchableView;
+        };
+        const sourcesView = new Sources.SourcesView.SourcesView(undefined, view);
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        assert.strictEqual(sourcesView.searchableView(), dummySearchableView);
         sourcesView.detach();
     });
     it('reveals and focuses the source location synchronously', async () => {
@@ -147,6 +235,53 @@ describeWithEnvironment('SourcesView', () => {
         sinon.assert.calledOnceWithExactly(showSourceLocationSpy, uiSourceCode, undefined, undefined, undefined);
         assert.strictEqual(sourcesView.currentUISourceCode(), uiSourceCode);
         await revealed;
+        sourcesView.detach();
+    });
+    it('clears current UISourceCode and visibleView when closed tab has a duplicate script selected', async () => {
+        createContentProviderUISourceCodes({
+            items: [
+                { url: urlString `http://example.com/a.js`, mimeType: 'application/javascript' },
+            ],
+            projectId: 'projectId1',
+            projectType: Workspace.Workspace.projectTypes.Network,
+            target: target1,
+        });
+        createContentProviderUISourceCodes({
+            items: [
+                { url: urlString `http://example.com/a.js`, mimeType: 'application/javascript' },
+            ],
+            projectId: 'projectId2',
+            projectType: Workspace.Workspace.projectTypes.Network,
+            target: target2,
+        });
+        const sourcesView = new Sources.SourcesView.SourcesView();
+        renderElementIntoDOM(sourcesView);
+        await sourcesView.updateComplete;
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const uiSourceCodeA = workspace.uiSourceCodes().find(code => code.url() === urlString `http://example.com/a.js` &&
+            code.project().id() === 'projectId1');
+        const uiSourceCodeB = workspace.uiSourceCodes().find(code => code.url() === urlString `http://example.com/a.js` &&
+            code.project().id() === 'projectId2');
+        assert.isDefined(uiSourceCodeA);
+        assert.isDefined(uiSourceCodeB);
+        assert.notStrictEqual(uiSourceCodeA, uiSourceCodeB);
+        await sourcesView.showSourceLocation(uiSourceCodeA);
+        await sourcesView.showSourceLocation(uiSourceCodeB);
+        assert.strictEqual(sourcesView.currentUISourceCode(), uiSourceCodeB);
+        const sourceFrameB = sourcesView.currentSourceFrame();
+        assert.isNotNull(sourceFrameB);
+        assert.isTrue(sourceFrameB.isShowing());
+        const disposeSpy = sinon.spy(sourceFrameB, 'dispose');
+        const editorClosedSpy = sinon.spy();
+        sourcesView.addEventListener("EditorClosed" /* Sources.SourcesView.Events.EDITOR_CLOSED */, editorClosedSpy);
+        const tabbedEditorContainer = UI.Context.Context.instance().flavor(Sources.TabbedEditorContainer.TabbedEditorContainer);
+        assert.isNotNull(tabbedEditorContainer);
+        tabbedEditorContainer.closeFile(uiSourceCodeA);
+        assert.isNull(sourcesView.currentUISourceCode());
+        assert.isNull(sourcesView.visibleView());
+        sinon.assert.calledOnce(disposeSpy);
+        sinon.assert.calledOnce(editorClosedSpy);
+        assert.isTrue(editorClosedSpy.firstCall.args[0].data.wasSelected);
         sourcesView.detach();
     });
 });

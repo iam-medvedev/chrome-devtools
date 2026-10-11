@@ -1315,7 +1315,7 @@ var UIStrings3 = {
   /**
    * @description Tooltip to explain lack of raw headers for a particular network request
    */
-  onlyProvisionalHeadersAre: "Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn\u2019t store the original request headers. Disable cache to see full request headers.",
+  onlyProvisionalHeadersAre: "Only provisional headers are available because this request wasn\u2019t sent over the network and instead was served from a local cache, which doesn\u2019t store the original request headers. Disable cache to see full request headers.",
   /**
    * @description Message to explain lack of raw headers for a particular network request
    */
@@ -1747,6 +1747,7 @@ var Audits;
     GenericIssueErrorType2["FormModelContextMissingToolDescription"] = "FormModelContextMissingToolDescription";
     GenericIssueErrorType2["FormModelContextRequiredParameterMissingName"] = "FormModelContextRequiredParameterMissingName";
     GenericIssueErrorType2["FormModelContextParameterMissingName"] = "FormModelContextParameterMissingName";
+    GenericIssueErrorType2["GeolocationPromptWithoutUserGesture"] = "GeolocationPromptWithoutUserGesture";
   })(GenericIssueErrorType = Audits2.GenericIssueErrorType || (Audits2.GenericIssueErrorType = {}));
   let ClientHintIssueReason;
   ((ClientHintIssueReason2) => {
@@ -4593,7 +4594,7 @@ var UIStrings5 = {
   /**
    * @description Explanation text for which cross-origin policy to set.
    */
-  onlyChooseThisOptionIfAn: "Only choose this option if an arbitrary website including this resource does not impose a security risk",
+  onlyChooseThisOptionIfAn: "Only choose this option if an arbitrary website including this resource doesn\u2019t impose a security risk",
   /**
    * @description Message in the Headers View of the Network panel when a cross-origin opener policy blocked loading a sandbox iframe.
    */

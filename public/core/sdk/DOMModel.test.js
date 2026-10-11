@@ -560,6 +560,18 @@ describe('DOMModel', () => {
                 });
                 assert.strictEqual(domNode.simpleSelector(), '::view-transition-new(root)');
             });
+            it('should escape pseudo identifier in simpleSelector', () => {
+                const domNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 2,
+                    nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                    pseudoIdentifier: '123.foo',
+                    nodeName: '::view-transition-new',
+                    localName: '::view-transition-new',
+                    nodeValue: '',
+                });
+                assert.strictEqual(domNode.simpleSelector(), '::view-transition-new(\\31 23\\.foo)');
+            });
         });
         describe('isCustomElement', () => {
             let target;
@@ -760,6 +772,156 @@ describe('DOMModel', () => {
                     assert.isFalse(pseudoNode.isToggledToHidden());
                 });
             }
+            it('escapes pseudo-element identifiers when hiding a pseudo element', async () => {
+                const target = universe.createTarget();
+                const model = target.model(SDK.DOMModel.DOMModel);
+                const parentNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 1,
+                    nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                    nodeName: 'DIV',
+                    localName: 'div',
+                    nodeValue: '',
+                    pseudoElements: [{
+                            nodeId: 2,
+                            backendNodeId: 2,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: '123.foo',
+                        }],
+                });
+                const vtNodes = parentNode.pseudoElements().get("view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */);
+                assert.exists(vtNodes);
+                assert.lengthOf(vtNodes, 1);
+                const pseudoNode = vtNodes[0];
+                const callFunction = sinon.stub().resolves({});
+                const release = sinon.stub();
+                sinon.stub(parentNode, 'resolveToObject').resolves({ callFunction,
+                    release });
+                await pseudoNode.toggleHideElement();
+                sinon.assert.calledOnce(callFunction);
+                assert.deepEqual(callFunction.firstCall.args[1], [{ value: '::view-transition-group(\\31 23\\.foo)' }, { value: true }]);
+            });
+            it('generates distinct classes and style rules when hiding multiple pseudo elements', async function () {
+                const target = universe.createTarget();
+                const model = target.model(SDK.DOMModel.DOMModel);
+                const parentNode = SDK.DOMModel.DOMNode.create(model, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 1,
+                    nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                    nodeName: 'DIV',
+                    localName: 'div',
+                    nodeValue: '',
+                    pseudoElements: [
+                        {
+                            nodeId: 2,
+                            backendNodeId: 2,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: 'ヘッダー',
+                        },
+                        {
+                            nodeId: 3,
+                            backendNodeId: 3,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: 'フッター',
+                        },
+                        {
+                            nodeId: 4,
+                            backendNodeId: 4,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: 'a.b',
+                        },
+                        {
+                            nodeId: 5,
+                            backendNodeId: 5,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: 'a b',
+                        },
+                        {
+                            nodeId: 6,
+                            backendNodeId: 6,
+                            nodeType: 1 /* NodeType.ELEMENT_NODE */,
+                            nodeName: '::view-transition-group',
+                            localName: '::view-transition-group',
+                            nodeValue: '',
+                            pseudoType: "view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */,
+                            pseudoIdentifier: 'a__b',
+                        },
+                    ],
+                });
+                const vtNodes = parentNode.pseudoElements().get("view-transition-group" /* ProtocolModule.DOM.PseudoType.ViewTransitionGroup */);
+                assert.exists(vtNodes);
+                assert.lengthOf(vtNodes, 5);
+                const classes = new Set();
+                const styleClasses = new Set();
+                const style = {
+                    textContent: '',
+                    classList: {
+                        contains: function (cls) {
+                            return styleClasses.has(cls);
+                        },
+                        add: function (cls) {
+                            styleClasses.add(cls);
+                        },
+                    },
+                };
+                const element = {
+                    nodeType: 1,
+                    parentNode: null,
+                    classList: {
+                        toggle: function (cls, force) {
+                            if (force) {
+                                classes.add(cls);
+                            }
+                            else {
+                                classes.delete(cls);
+                            }
+                        },
+                    },
+                    querySelector: function () {
+                        return style;
+                    },
+                };
+                const callFunction = sinon.stub().callsFake(function (fn, args) {
+                    fn.apply(element, args.map(function (a) {
+                        return a.value;
+                    }));
+                    return Promise.resolve({});
+                });
+                const release = sinon.stub();
+                sinon.stub(parentNode, 'resolveToObject').resolves({ callFunction,
+                    release });
+                for (const node of vtNodes) {
+                    await node.toggleHideElement();
+                }
+                assert.strictEqual(classes.size, 5);
+                assert.include(style.textContent, '::view-transition-group(ヘッダー)');
+                assert.include(style.textContent, '::view-transition-group(フッター)');
+                assert.include(style.textContent, '::view-transition-group(a\\.b)');
+                assert.include(style.textContent, '::view-transition-group(a\\ b)');
+                assert.include(style.textContent, '::view-transition-group(a__b)');
+                await vtNodes[0].toggleHideElement();
+                assert.strictEqual(classes.size, 4);
+            });
         });
     });
     describe('document.open() URL update (crbug.com/370690261)', () => {

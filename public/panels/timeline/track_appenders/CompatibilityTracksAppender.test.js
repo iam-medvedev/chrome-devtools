@@ -75,7 +75,7 @@ describeWithEnvironment('CompatibilityTracksAppender', function () {
                 // This file contains two rasterizer threads which should be
                 // nested inside the same header.
                 await initTrackAppender(this, 'lcp-images-rasterizer.json.gz');
-                const rasterTracks = tracksAppender.threadAppenders().filter(threadAppender => threadAppender.threadType === "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */);
+                const rasterTracks = tracksAppender.threadAppenders().filter(threadAppender => threadAppender.threadType === Trace.Handlers.Threads.ThreadType.RASTERIZER);
                 assert.lengthOf(rasterTracks, 2);
                 const raster1Events = tracksAppender.eventsInTrack(rasterTracks[0]);
                 assert.lengthOf(raster1Events, 6);

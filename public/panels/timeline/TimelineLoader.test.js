@@ -71,7 +71,7 @@ describeWithEnvironment('TimelineLoader', () => {
         assert.isNull(exclusiveFilter); // We are not filtering out any events for this trace.
         // Ensure that we loaded something that looks about right!
         assert.lengthOf(collectedEvents, 8252);
-        assert.notStrictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
+        assert.notStrictEqual(metadata?.dataOrigin, Trace.Types.File.DataOrigin.CPU_PROFILE);
     });
     it('can load a JSON file with no metadata', async () => {
         const trace = {
@@ -102,7 +102,7 @@ describeWithEnvironment('TimelineLoader', () => {
         const [collectedEvents, /* exclusiveFilter */ , metadata] = loadingCompleteSpy.args[0];
         // We create one synthetic trace event for CPU profile
         assert.lengthOf(collectedEvents, 1);
-        assert.strictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
+        assert.strictEqual(metadata?.dataOrigin, Trace.Types.File.DataOrigin.CPU_PROFILE);
     });
     it('can load recorded trace events correctly', async () => {
         const testTraceEvents = [
@@ -126,7 +126,7 @@ describeWithEnvironment('TimelineLoader', () => {
         assert.isNull(exclusiveFilter);
         // Ensure that we loaded something that looks about right!
         assert.lengthOf(collectedEvents, testTraceEvents.length);
-        assert.notStrictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
+        assert.notStrictEqual(metadata?.dataOrigin, Trace.Types.File.DataOrigin.CPU_PROFILE);
     });
     it('can load recorded CPUProfile correctly', async () => {
         const testProfile = { nodes: [], startTime: 0, endTime: 0 };
@@ -146,7 +146,7 @@ describeWithEnvironment('TimelineLoader', () => {
         const [collectedEvents, /* exclusiveFilter */ , metadata] = loadingCompleteSpy.args[0];
         // We create one synthetic trace event for CPU profile
         assert.lengthOf(collectedEvents, 1);
-        assert.strictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
+        assert.strictEqual(metadata?.dataOrigin, Trace.Types.File.DataOrigin.CPU_PROFILE);
     });
     it('resolves traceLoaded with CANCELLED state when cancelled', async () => {
         const testTraceEvents = [

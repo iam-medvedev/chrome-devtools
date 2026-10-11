@@ -208,6 +208,7 @@ models/bindings/PresentationConsoleMessageHelper.test.js
 models/bindings/ResourceMapping.test.js
 models/bindings/ResourceScriptMapping.test.js
 models/bindings/ResourceUtils.test.js
+models/bindings/SourceMapStepping.test.js
 models/bindings/StylesSourceMapping.test.js
 models/bindings/SymbolizedError.test.js
 models/breakpoints/BreakpointManager.test.js
@@ -635,6 +636,7 @@ panels/sources/CallStackSidebarPane.test.js
 panels/sources/CoveragePlugin.test.js
 panels/sources/DebuggerPausedMessage.test.js
 panels/sources/DebuggerPlugin.test.js
+panels/sources/EditorHistory.test.js
 panels/sources/FilePathScoreFunction.test.js
 panels/sources/FilteredUISourceCodeListProvider.test.js
 panels/sources/NavigatorView.test.js
@@ -642,6 +644,7 @@ panels/sources/OutlineQuickOpen.test.js
 panels/sources/PersistenceAction.test.js
 panels/sources/ResourceOriginPlugin.test.js
 panels/sources/ScopeChainSidebarPane.test.js
+panels/sources/SnippetsPlugin.test.js
 panels/sources/SourcesNavigator.test.js
 panels/sources/SourcesPanel.test.js
 panels/sources/SourcesSearchScope.test.js
@@ -866,6 +869,7 @@ ui/legacy/components/quick_open/QuickOpen.test.js
 ui/legacy/components/settings_ui/SettingsUI.test.js
 ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
 ui/legacy/components/source_frame/FontView.test.js
+ui/legacy/components/source_frame/ImageView.test.js
 ui/legacy/components/source_frame/JSONView.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js

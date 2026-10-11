@@ -102,6 +102,19 @@ describeWithEnvironment('Linkifier', () => {
             const url = urlString `chrome://settings`;
             const link = Components.Linkifier.Linkifier.linkifyURL(url, { allowPrivileged: true });
             assert.isTrue(link.classList.contains('devtools-link'));
+            const info = Components.Linkifier.Linkifier.linkInfo(link);
+            assert.exists(info);
+            const actions = Components.Linkifier.Linkifier.linkActions(info);
+            assert.isTrue(actions.some(a => a.jslogContext === 'open-in-new-tab'));
+        });
+        it('omits open-in-new-tab and does not trigger clipboard copy on invokeFirstAction for privileged URLs without allowPrivileged', () => {
+            const info = {
+                url: urlString `chrome://settings`,
+            };
+            const actions = Components.Linkifier.Linkifier.linkActions(info);
+            assert.isFalse(actions.some(a => a.jslogContext === 'open-in-new-tab'));
+            assert.isTrue(actions.some(a => a.jslogContext === 'copy-link-address'));
+            assert.isFalse(Components.Linkifier.Linkifier.invokeFirstAction(info));
         });
         it('renders file URLs as plain span by default', async () => {
             const url = urlString `file:///etc/passwd`;
@@ -500,22 +513,26 @@ describeWithEnvironment('Linkifier', () => {
     });
 });
 describeWithEnvironment('ContentProviderContextMenuProvider', () => {
-    it('does not add \'Open in new tab\'-entry for file URLs', async () => {
+    it('does not add \'Open in new tab\'-entry for privileged URLs', async () => {
         const provider = new Components.Linkifier.ContentProviderContextMenuProvider();
-        let contextMenu = new UI.ContextMenu.ContextMenu({});
-        let uiSourceCode = {
+        const contextMenu = new UI.ContextMenu.ContextMenu({});
+        const uiSourceCode = {
             contentURL: () => 'https://www.example.com/index.html',
         };
         provider.appendApplicableItems({}, contextMenu, uiSourceCode);
-        let openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
+        const openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
         assert.exists(openInNewTabItem);
-        contextMenu = new UI.ContextMenu.ContextMenu({});
-        uiSourceCode = {
-            contentURL: () => 'file://usr/local/example/index.html',
-        };
-        provider.appendApplicableItems({}, contextMenu, uiSourceCode);
-        openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
-        assert.isUndefined(openInNewTabItem);
+        for (const url of ['file://usr/local/example/index.html',
+            'chrome-extension://nnkmpipfcdgmkgepigmhifcgbddoohgk/secret.html',
+            'chrome://settings',
+        ]) {
+            const menu = new UI.ContextMenu.ContextMenu({});
+            const sourceCode = {
+                contentURL: () => url,
+            };
+            provider.appendApplicableItems({}, menu, sourceCode);
+            assert.isUndefined(findMenuItemWithLabel(menu.revealSection(), 'Open in new tab'));
+        }
     });
 });
 describeWithEnvironment('isRegisteredLinkHandlerScheme', () => {

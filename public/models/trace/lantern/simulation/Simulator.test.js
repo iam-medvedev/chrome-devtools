@@ -291,25 +291,27 @@ describe('DependencyGraph/Simulator', () => {
             // should be 950ms for E and 800ms for F/G
             assert.strictEqual(resultB.timeInMs, 950 + 800);
         });
-        it('should maximize throughput with H2', () => {
+        it('should maximize throughput with H2 and H3', () => {
             const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
-            const connectionDefaults = { protocol: 'h2', connectionId: 1 };
-            const nodeA = new NetworkNode(request({ startTime: 0, endTime: 1, ...connectionDefaults }));
-            const nodeB = new NetworkNode(request({ startTime: 1, endTime: 2, ...connectionDefaults }));
-            const nodeC = new NetworkNode(request({ startTime: 2, endTime: 3, ...connectionDefaults }));
-            const nodeD = new NetworkNode(request({ startTime: 3, endTime: 4, ...connectionDefaults }));
-            nodeA.addDependent(nodeB);
-            nodeB.addDependent(nodeC);
-            nodeB.addDependent(nodeD);
-            // Run two simulations:
-            //  - The first with C & D in parallel.
-            //  - The second with C & D in series.
-            // Under HTTP/2 simulation these should be equivalent, but definitely parallel
-            // shouldn't be slower.
-            const resultA = simulator.simulate(nodeA);
-            nodeC.addDependent(nodeD);
-            const resultB = simulator.simulate(nodeA);
-            assert.isAtMost(resultA.timeInMs, resultB.timeInMs);
+            for (const protocol of ['h2', 'h3']) {
+                const connectionDefaults = { protocol, connectionId: 1 };
+                const nodeA = new NetworkNode(request({ startTime: 0, endTime: 1, ...connectionDefaults }));
+                const nodeB = new NetworkNode(request({ startTime: 1, endTime: 2, ...connectionDefaults }));
+                const nodeC = new NetworkNode(request({ startTime: 2, endTime: 3, ...connectionDefaults }));
+                const nodeD = new NetworkNode(request({ startTime: 3, endTime: 4, ...connectionDefaults }));
+                nodeA.addDependent(nodeB);
+                nodeB.addDependent(nodeC);
+                nodeB.addDependent(nodeD);
+                // Run two simulations:
+                //  - The first with C & D in parallel.
+                //  - The second with C & D in series.
+                // Under HTTP/2 and HTTP/3 simulation these should be equivalent, but definitely parallel
+                // shouldn't be slower.
+                const resultA = simulator.simulate(nodeA);
+                nodeC.addDependent(nodeD);
+                const resultB = simulator.simulate(nodeA);
+                assert.isAtMost(resultA.timeInMs, resultB.timeInMs, `expected parallel <= series for ${protocol}`);
+            }
         });
         it('should throw (not hang) on graphs with cycles', () => {
             const rootNode = new NetworkNode(request({}));
@@ -335,6 +337,18 @@ describe('DependencyGraph/Simulator', () => {
                     assert.isAtLeast(startTime, previousStartTime);
                 }
             });
+        });
+        it('should not count connectionless (fromDiskCache) requests toward active network requests', () => {
+            const rootNode = new NetworkNode(request({ startTime: 0, endTime: 1, fromDiskCache: true }));
+            const nodeCached = new NetworkNode(request({ startTime: 1, endTime: 2, fromDiskCache: true }));
+            const nodeReal = new NetworkNode(request({ startTime: 2, endTime: 3, fromDiskCache: false }));
+            rootNode.addDependent(nodeCached);
+            rootNode.addDependent(nodeReal);
+            const simulator = new Simulator({ serverResponseTimeByOrigin, maximumConcurrentRequests: 1, observedThroughput: 1 });
+            const result = simulator.simulate(rootNode);
+            // Both nodeCached and nodeReal should start immediately after rootNode finishes at 8ms.
+            assertNodeTiming(result, nodeCached, { startTime: 8, endTime: 16 });
+            assertNodeTiming(result, nodeReal, { startTime: 8, endTime: 958 });
         });
     });
     describe('.simulateTimespan', () => {

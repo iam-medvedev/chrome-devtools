@@ -25,6 +25,7 @@ async function renderOverlay(label) {
     return component;
 }
 const CANVAS_WIDTH_PX = 1000;
+const DURATION = Trace.Types.Timing.Micro(1_260_000);
 /**
  * Renders the overlay the same way `Overlays` does: inside an absolutely
  * positioned wrapper element whose left and width match the time range. The
@@ -44,14 +45,14 @@ async function renderPositionedOverlay(options) {
     canvas.appendChild(overlayElement);
     renderElementIntoDOM(canvas);
     const component = new TimeRangeOverlay();
-    component.label = 'label';
-    component.duration = Trace.Types.Timing.Micro(1_260_000);
+    component.label = options.label;
+    component.duration = options.duration;
     component.canvasRect = canvas.getBoundingClientRect();
     component.markAsRoot();
     component.show(overlayElement);
     // The update renders the view and then positions the label.
     await component.updateComplete;
-    return { component, overlayElement };
+    return { component, overlayElement, canvas };
 }
 describe('TimeRangeOverlay', () => {
     setupLocaleHooks();
@@ -193,12 +194,23 @@ describe('TimeRangeOverlay', () => {
         assert.strictEqual(labelBox.getAttribute('contenteditable'), 'false');
     });
     it('hides a non-empty, unfocused label when the visible range is narrower than the duration', async () => {
-        const { component } = await renderPositionedOverlay({ left: 100, width: 20 });
+        const { component } = await renderPositionedOverlay({ left: 100, width: 20, label: 'label', duration: DURATION });
         const { rangeContainer } = getRenderedElements(component);
         assert.isTrue(rangeContainer.classList.contains('labelHidden'));
     });
+    it('keeps a non-empty label visible while it is being edited even when the visible range is narrower than the duration', async () => {
+        const { component } = await renderPositionedOverlay({ left: 100, width: 20, label: 'label', duration: DURATION });
+        const { rangeContainer, labelBox } = getRenderedElements(component);
+        assert.isTrue(rangeContainer.classList.contains('labelHidden'));
+        labelBox.dispatchEvent(new MouseEvent('dblclick'));
+        await component.updateComplete;
+        assert.isFalse(rangeContainer.classList.contains('labelHidden'));
+        labelBox.blur();
+        await component.updateComplete;
+        assert.isTrue(rangeContainer.classList.contains('labelHidden'));
+    });
     it('keeps the label centered when the range is fully inside the canvas', async () => {
-        const { component } = await renderPositionedOverlay({ left: 200, width: 400 });
+        const { component } = await renderPositionedOverlay({ left: 200, width: 400, label: 'label', duration: DURATION });
         const { rangeContainer } = getRenderedElements(component);
         assert.isFalse(rangeContainer.classList.contains('labelHidden'));
         assert.isFalse(rangeContainer.classList.contains('offScreenLeft'));
@@ -206,7 +218,7 @@ describe('TimeRangeOverlay', () => {
         assert.strictEqual(rangeContainer.style.margin, '0px');
     });
     it('pins the label to the left edge of the canvas when the range starts off the left of the canvas', async () => {
-        const { component } = await renderPositionedOverlay({ left: -200, width: 400 });
+        const { component } = await renderPositionedOverlay({ left: -200, width: 400, label: 'label', duration: DURATION });
         const { rangeContainer } = getRenderedElements(component);
         assert.isTrue(rangeContainer.classList.contains('offScreenLeft'));
         assert.isFalse(rangeContainer.classList.contains('offScreenRight'));
@@ -214,7 +226,7 @@ describe('TimeRangeOverlay', () => {
         assert.strictEqual(rangeContainer.style.marginLeft, '209px');
     });
     it('pins the label to the right edge of the canvas when the range ends off the right of the canvas', async () => {
-        const { component } = await renderPositionedOverlay({ left: CANVAS_WIDTH_PX - 200, width: 400 });
+        const { component } = await renderPositionedOverlay({ left: CANVAS_WIDTH_PX - 200, width: 400, label: 'label', duration: DURATION });
         const { rangeContainer } = getRenderedElements(component);
         assert.isTrue(rangeContainer.classList.contains('offScreenRight'));
         assert.isFalse(rangeContainer.classList.contains('offScreenLeft'));
@@ -222,7 +234,7 @@ describe('TimeRangeOverlay', () => {
         assert.strictEqual(rangeContainer.style.marginRight, '209px');
     });
     it('repositions the label synchronously when updateLabelPositioning() is called', async () => {
-        const { component, overlayElement } = await renderPositionedOverlay({ left: 200, width: 400 });
+        const { component, overlayElement } = await renderPositionedOverlay({ left: 200, width: 400, label: 'label', duration: DURATION });
         const { rangeContainer } = getRenderedElements(component);
         assert.isFalse(rangeContainer.classList.contains('offScreenLeft'));
         // This is what `Overlays` does when the user pans: move the wrapper, then
@@ -231,6 +243,37 @@ describe('TimeRangeOverlay', () => {
         component.updateLabelPositioning();
         assert.isTrue(rangeContainer.classList.contains('offScreenLeft'));
         assert.strictEqual(rangeContainer.style.marginLeft, '209px');
+    });
+    it('positions the label against a canvasRect set just before updateLabelPositioning() is called', async () => {
+        const { component, canvas } = await renderPositionedOverlay({ left: 600, width: 300, label: 'label', duration: DURATION });
+        const { rangeContainer } = getRenderedElements(component);
+        assert.isFalse(rangeContainer.classList.contains('offScreenRight'));
+        // This is what `Overlays` does on every update: set the canvas rect, then
+        // reposition the label before the update that the new rect requests.
+        const canvasRect = canvas.getBoundingClientRect();
+        component.canvasRect = new DOMRect(canvasRect.x, canvasRect.y, 700, canvasRect.height);
+        component.updateLabelPositioning();
+        assert.isTrue(rangeContainer.classList.contains('offScreenRight'));
+        // The margin is the 200px the range extends past the narrower canvas, plus 9px of scrollbar padding.
+        assert.strictEqual(rangeContainer.style.marginRight, '209px');
+        // Wait for the requested update, so that it does not run after the test
+        // has removed the locale.
+        await component.updateComplete;
+    });
+    it('focuses an empty label once it has been positioned', async () => {
+        const { component } = await renderPositionedOverlay({ left: 200, width: 400, label: '', duration: DURATION });
+        const { labelBox } = getRenderedElements(component);
+        assert.strictEqual(document.activeElement, labelBox);
+    });
+    it('does not focus an empty label while the duration text has no width', async () => {
+        const { component } = await renderPositionedOverlay({ left: 200, width: 400, label: '', duration: null });
+        const { labelBox } = getRenderedElements(component);
+        assert.notStrictEqual(document.activeElement, labelBox);
+    });
+    it('keeps an empty label visible when the visible range is narrower than the duration', async () => {
+        const { component } = await renderPositionedOverlay({ left: 100, width: 20, label: '', duration: DURATION });
+        const { rangeContainer } = getRenderedElements(component);
+        assert.isFalse(rangeContainer.classList.contains('labelHidden'));
     });
 });
 //# sourceMappingURL=TimeRangeOverlay.test.js.map

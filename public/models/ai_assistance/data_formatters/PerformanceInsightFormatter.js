@@ -13,7 +13,7 @@ function getLCPData(parsedTrace, frameId, navigation) {
     if (!navMetrics) {
         return null;
     }
-    const metric = navMetrics.get("LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+    const metric = navMetrics.get(Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP);
     if (!metric || !Trace.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
         return null;
     }
@@ -51,7 +51,7 @@ export class PerformanceInsightFormatter {
         return this.#formatMilli(Trace.Helpers.Timing.microToMilli(x));
     }
     #formatRequestUrl(request) {
-        return `${request.args.data.url} ${this.#traceFormatter.serializeEvent(request)}`;
+        return `${this.#traceFormatter.formatRequestUrl(request)} ${this.#traceFormatter.serializeEvent(request)}`;
     }
     #formatScriptUrl(script) {
         if (script.request) {
@@ -388,7 +388,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
         for (const font of insight.fonts) {
             let fontName = font.name;
             if (!fontName) {
-                const url = new Common.ParsedURL.ParsedURL(font.request.args.data.url);
+                const url = new Common.ParsedURL.ParsedURL(this.#traceFormatter.formatRequestUrl(font.request));
                 fontName = url.isValid ? url.lastPathComponent : '(not available)';
             }
             output += `\n - Font name: ${fontName}, URL: ${this.#formatRequestUrl(font.request)}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;

@@ -222,6 +222,41 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
             domTree.detach();
         }
     });
+    it('populates Copy submenu and Hide element for pseudo-elements', async () => {
+        const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
+        try {
+            const node = createTestNode();
+            sinon.stub(node, 'pseudoType').returns('before');
+            const copyCSSPathSpy = sinon.spy(domTree, 'copyCSSPath');
+            const copyStylesSpy = sinon.spy(domTree, 'copyStyles');
+            const hideSpy = sinon.spy(domTree, 'toggleHideElement');
+            const event = createContextMenuEvent();
+            const contextMenu = await domTree.showContextMenu(node, event);
+            assert.exists(contextMenu);
+            const descriptor = contextMenu.buildDescriptor();
+            const labels = getFlatLabels(descriptor.subItems);
+            assert.include(labels, 'Copy');
+            assert.include(labels, 'Copy selector');
+            assert.include(labels, 'Copy styles');
+            assert.include(labels, 'Hide element');
+            assert.include(labels, 'Scroll into view');
+            const copySelectorItem = findItem(descriptor.subItems, 'Copy selector');
+            assert.exists(copySelectorItem?.id);
+            contextMenu.invokeHandler(copySelectorItem.id);
+            sinon.assert.calledOnceWithExactly(copyCSSPathSpy, node);
+            const copyStylesItem = findItem(descriptor.subItems, 'Copy styles');
+            assert.exists(copyStylesItem?.id);
+            contextMenu.invokeHandler(copyStylesItem.id);
+            sinon.assert.calledOnceWithExactly(copyStylesSpy, node);
+            const hideItem = findItem(descriptor.subItems, 'Hide element');
+            assert.exists(hideItem?.id);
+            contextMenu.invokeHandler(hideItem.id);
+            sinon.assert.calledOnceWithExactly(hideSpy, node);
+        }
+        finally {
+            domTree.detach();
+        }
+    });
     it('expandRecursively calls getSubtree on the node', async () => {
         const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
         try {
