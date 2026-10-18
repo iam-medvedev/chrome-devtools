@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { assertElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { Icon } from '../../kit/kit.js';
 import * as IconButton from './icon_button.js';

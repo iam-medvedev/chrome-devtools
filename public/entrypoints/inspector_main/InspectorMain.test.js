@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
@@ -28,7 +29,6 @@ describeWithEnvironment('FocusDebuggeeActionDelegate', () => {
 describeWithEnvironment('InspectorMainImpl', () => {
     const DEBUGGER_ID = 'debuggerId';
     let connection;
-    let createTargetStub;
     const runForTabTarget = async () => {
         const inspectorMain = new InspectorMain.InspectorMain.InspectorMainImpl();
         const runPromise = inspectorMain.run();
@@ -42,15 +42,13 @@ describeWithEnvironment('InspectorMainImpl', () => {
         sinon.stub(ProtocolClient.ConnectionTransport.ConnectionTransport, 'setFactory');
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const originalCreateTarget = targetManager.createTarget;
-        createTargetStub =
-            sinon.stub(targetManager, 'createTarget')
-                .callsFake((id, name, type, parentTarget, sessionId, waitForDebuggerInPage, conn, targetInfo) => {
-                return originalCreateTarget.call(targetManager, id, name, type, parentTarget, sessionId, waitForDebuggerInPage, conn || connection, targetInfo);
-            });
+        sinon.stub(targetManager, 'createTarget')
+            .callsFake((id, name, type, parentTarget, sessionId, waitForDebuggerInPage, conn, targetInfo) => {
+            return originalCreateTarget.call(targetManager, id, name, type, parentTarget, sessionId, waitForDebuggerInPage, conn || connection, targetInfo);
+        });
     });
     afterEach(() => {
         SDK.TargetManager.TargetManager.removeInstance();
-        createTargetStub.restore();
     });
     it('continues only after primary page target is available', async () => {
         Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');

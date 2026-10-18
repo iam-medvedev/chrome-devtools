@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Emulation from './emulation.js';
 describeWithEnvironment('MediaQueryInspector', () => {
     let target;
@@ -40,6 +42,26 @@ describeWithEnvironment('MediaQueryInspector', () => {
         await work();
         await inspector.updateComplete;
         assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 1);
+    });
+    it('only listens to CSS models and zoom changes while shown', () => {
+        const cssModel = target.model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const zoomManager = UI.ZoomManager.ZoomManager.instance();
+        inspector = new Emulation.MediaQueryInspector.MediaQueryInspector();
+        renderElementIntoDOM(inspector);
+        assert.isTrue(cssModel.hasEventListeners(SDK.CSSModel.Events.MediaQueryResultChanged));
+        assert.isTrue(zoomManager.hasEventListeners("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */));
+        inspector.detach();
+        assert.isFalse(cssModel.hasEventListeners(SDK.CSSModel.Events.MediaQueryResultChanged));
+        assert.isFalse(zoomManager.hasEventListeners("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */));
+        const modelAdded = sinon.spy(inspector, 'modelAdded');
+        const childCSSModel = createTarget({ parentTarget: target }).model(SDK.CSSModel.CSSModel);
+        assert.exists(childCSSModel);
+        sinon.assert.notCalled(modelAdded);
+        renderElementIntoDOM(inspector);
+        sinon.assert.calledWith(modelAdded, childCSSModel);
+        assert.isTrue(cssModel.hasEventListeners(SDK.CSSModel.Events.MediaQueryResultChanged));
+        assert.isTrue(zoomManager.hasEventListeners("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */));
     });
 });
 //# sourceMappingURL=MediaQueryInspector.test.js.map

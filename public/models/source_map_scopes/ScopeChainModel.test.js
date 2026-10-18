@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -19,9 +20,7 @@ describe('ScopeChainModel', () => {
         sinon.stub(universe.debuggerWorkspaceBinding, 'pluginManager').value(stubPluginManager);
     });
     afterEach(async () => {
-        clock.restore();
         await deinitializeGlobalVars();
-        sinon.restore();
     });
     it('emits an event after it was constructed with the scope chain', async () => {
         const target = universe.createTarget();

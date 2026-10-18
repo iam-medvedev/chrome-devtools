@@ -115,7 +115,7 @@ export default `/*
   }
 
   .screencast-glasspane {
-    background-color: var(--color-background-opacity-80);
+    background-color: color-mix(in srgb, var(--sys-color-cdt-base-container) 80%, transparent);
     font-size: 30px;
     z-index: 100;
     display: flex;

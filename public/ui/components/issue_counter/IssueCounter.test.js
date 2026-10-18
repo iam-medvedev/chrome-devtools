@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import { assertElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';

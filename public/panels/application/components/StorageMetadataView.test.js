@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../../ui/kit/kit.js';
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
@@ -252,7 +253,6 @@ describe('StorageMetadataView', () => {
         const revealArg = revealStub.firstCall.args[0];
         assert.instanceOf(revealArg, ApplicationComponents.StorageMetadataView.StorageBucketRevealInfo);
         assert.deepEqual(revealArg.bucketInfo, bucketInfo);
-        revealStub.restore();
     });
 });
 //# sourceMappingURL=StorageMetadataView.test.js.map

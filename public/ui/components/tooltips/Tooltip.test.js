@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as UI from '../../legacy/legacy.js';
@@ -161,7 +162,6 @@ describe('Tooltip', () => {
         button?.dispatchEvent(new MouseEvent('mouseenter', { buttons: 1 }));
         clock.runAll();
         assert.isFalse(container.querySelector('devtools-tooltip')?.open);
-        clock.restore();
     });
     it('should not be activated if un-focused', async () => {
         const container = renderTooltip();
@@ -182,7 +182,6 @@ describe('Tooltip', () => {
         button?.dispatchEvent(new MouseEvent('mouseenter'));
         clock.runAll();
         assert.isFalse(container.querySelector('devtools-tooltip')?.open);
-        clock.restore();
     });
     it('should not open on focus if `trigger` is set to `click`', () => {
         const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
@@ -191,7 +190,6 @@ describe('Tooltip', () => {
         button?.dispatchEvent(new FocusEvent('focus'));
         clock.runAll();
         assert.isFalse(container.querySelector('devtools-tooltip')?.open);
-        clock.restore();
     });
     it('should open with click if `trigger` is set to `click`', () => {
         const container = renderTooltip({ trigger: 'click' });
@@ -206,7 +204,6 @@ describe('Tooltip', () => {
         button?.dispatchEvent(new MouseEvent('mouseenter'));
         clock.runAll();
         assert.isTrue(container.querySelector('devtools-tooltip')?.open);
-        clock.restore();
     });
     it('should open on focus if `trigger` is set to `both`', () => {
         const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
@@ -215,7 +212,6 @@ describe('Tooltip', () => {
         button?.dispatchEvent(new FocusEvent('focus'));
         clock.runAll();
         assert.isTrue(container.querySelector('devtools-tooltip')?.open);
-        clock.restore();
     });
     it('should open with click if `trigger` is set to `both`', () => {
         const container = renderTooltip({ trigger: 'both' });

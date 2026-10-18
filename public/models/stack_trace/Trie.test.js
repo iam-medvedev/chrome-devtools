@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { protocolCallFrame } from '../../testing/StackTraceHelpers.js';
 // TODO(crbug.com/444191656): Expose a `testing` bundle.
 // eslint-disable-next-line @devtools/es-modules-import

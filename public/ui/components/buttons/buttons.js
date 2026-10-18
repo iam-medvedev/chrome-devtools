@@ -50,6 +50,10 @@ var button_css_default = `/*
   width: fit-content;
 }
 
+::slotted(devtools-button) {
+  display: none;
+}
+
 button {
   --hover-layer-color: var(--sys-color-state-hover-on-subtle);
   --active-layer-color: var(--sys-color-state-ripple-neutral-on-subtle);
@@ -402,7 +406,7 @@ button {
 /*# sourceURL=${import.meta.resolve("./button.css")} */`;
 
 // ../../front_end/ui/components/buttons/Button.ts
-var { html, Directives: { ifDefined, ref, classMap } } = Lit;
+var { html, Directives: { ifDefined, ref, repeat, classMap } } = Lit;
 var Variant = /* @__PURE__ */ ((Variant2) => {
   Variant2["PRIMARY"] = "primary";
   Variant2["TONAL"] = "tonal";
@@ -426,7 +430,7 @@ var ToggleType = /* @__PURE__ */ ((ToggleType2) => {
   ToggleType2["RED"] = "red-toggle";
   return ToggleType2;
 })(ToggleType || {});
-var Button = class extends HTMLElement {
+var Button = class _Button extends HTMLElement {
   static formAssociated = true;
   #shadow = this.attachShadow({ mode: "open", delegatesFocus: true });
   #boundOnClick = this.#onClick.bind(this);
@@ -589,6 +593,9 @@ var Button = class extends HTMLElement {
     this.#props.jslogContext = jslogContext;
     this.#render();
   }
+  get longClickable() {
+    return Boolean(this.#props.longClickable);
+  }
   set longClickable(longClickable) {
     this.#props.longClickable = longClickable;
     this.#render();
@@ -629,7 +636,9 @@ var Button = class extends HTMLElement {
   }
   #render() {
     const nodes = this.#slotRef.value?.assignedNodes();
-    const isEmpty = !Boolean(nodes?.length);
+    const isEmpty = nodes?.every(
+      (node) => node instanceof _Button || node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()
+    ) ?? true;
     if (!this.#props.variant) {
       throw new Error("Button requires a variant to be defined");
     }
@@ -677,29 +686,35 @@ var Button = class extends HTMLElement {
       spinner: true
     };
     const jslog = this.#props.jslogContext && VisualLogging.action().track({ click: true }).context(this.#props.jslogContext);
+    const innerButtonHadFocus = this.#shadow.activeElement !== null;
     Lit.render(
       html`
         <style>${button_css_default}</style>
-        <button title=${ifDefined(this.buttonTitle || this.title || void 0)}
-                ?disabled=${this.#props.disabled}
-                class=${classMap(classes)}
-                aria-pressed=${ifDefined(this.#props.toggled)}
-                aria-expanded=${ifDefined(this.#props.accessibleExpanded)}
-                aria-label=${ifDefined(this.accessibleLabel || this.title || void 0)}
-                jslog=${ifDefined(jslog)}>
-          ${hasIcon ? html`
-            <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>
-            </devtools-icon>` : ""}
-          ${this.#props.longClickable ? html`
-              <devtools-icon name="triangle-bottom-right" class="long-click">
+        ${repeat([this.#props.jslogContext], (context) => context, () => html`
+          <button title=${ifDefined(this.buttonTitle || this.title || void 0)}
+                  ?disabled=${this.#props.disabled}
+                  class=${classMap(classes)}
+                  aria-pressed=${ifDefined(this.#props.toggled)}
+                  aria-expanded=${ifDefined(this.#props.accessibleExpanded)}
+                  aria-label=${ifDefined(this.accessibleLabel || this.title || void 0)}
+                  jslog=${ifDefined(jslog)}>
+            ${hasIcon ? html`
+              <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>
               </devtools-icon>` : ""}
-          ${this.#props.spinner ? html`<span class=${classMap(spinnerClasses)}></span>` : ""}
-          <slot @slotchange=${this.#render} ${ref(this.#slotRef)}></slot>
-        </button>
+            ${this.#props.longClickable ? html`
+                <devtools-icon name="triangle-bottom-right" class="long-click">
+                </devtools-icon>` : ""}
+            ${this.#props.spinner ? html`<span class=${classMap(spinnerClasses)}></span>` : ""}
+            <slot @slotchange=${this.#render} ${ref(this.#slotRef)}></slot>
+          </button>
+        `)}
       `,
       this.#shadow,
       { host: this }
     );
+    if (innerButtonHadFocus && this.#shadow.activeElement === null) {
+      this.focus();
+    }
   }
   // Based on https://web.dev/more-capable-form-controls/ to make custom elements form-friendly.
   // Form controls usually expose a "value" property.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import sinon from 'sinon';
+import { beforeEach, describe, it } from 'mocha';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
@@ -23,9 +23,6 @@ describe('FunctionCodeResolver', function () {
         backend = new MockDebuggerBackend();
         void backend.universe.debuggerWorkspaceBinding;
         target = backend.createTarget();
-    });
-    afterEach(() => {
-        sinon.restore();
     });
     // This was minified with 'esbuild --sourcemap=linked --minify' v0.25.9.
     const exampleSource = `"use strict";function fibonacci(e){return e<=1?1:fibonacci(e-1)+fibonacci(e-2)}const btn=document.querySelector("button"),params=new URLSearchParams(location.search);btn.addEventListener("click",()=>{console.log(fibonacci(Number(params.get("x")))),btn.style.backgroundColor="red"});const input=document.querySelector('input[type="text"]');input.addEventListener("input",()=>{console.log(fibonacci(Number(params.get("x"))))});\n//# sourceMappingURL=file:///tmp/example.js.min.map`;

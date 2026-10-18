@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Root from '../../../core/root/root.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';

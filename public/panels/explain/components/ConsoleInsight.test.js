@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -63,7 +64,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.strictEqual(nextInput.state.type, "insight" /* Explain.State.INSIGHT */);
     });
     it('shows opt-in teaser when setting is disabled via isAvailable', async () => {
-        const stub = sinon.stub(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, 'isAvailable').returns({
+        sinon.stub(AiAssistanceModel.AiUtils.consoleInsightsEnabledSettingDescriptor, 'isAvailable').returns({
             status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
             reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
         });
@@ -72,7 +73,6 @@ describeWithEnvironment('ConsoleInsight', () => {
         component.wasShown();
         const nextInput = await view.nextInput;
         assert.strictEqual(nextInput.state.type, "setting-is-not-true" /* Explain.State.SETTING_IS_NOT_TRUE */);
-        stub.restore();
     });
     it('shows reminder on first run of console insights', async () => {
         Common.Settings.Settings.instance().settingForTest('console-insights-onboarding-finished').set(false);

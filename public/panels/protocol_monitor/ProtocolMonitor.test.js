@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -131,7 +132,6 @@ describe('ProtocolMonitor', () => {
         assert.isTrue(fileManager.save.calledOnceWith(FILENAME, TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA, /* forceSaveAs=*/ true));
         await fileManagerCloseCall;
         assert.isTrue(fileManager.append.calledOnceWith(FILENAME, sinon.match('"method": "Test.test"')));
-        clock.restore();
     });
     describe('context menu', () => {
         let menu;

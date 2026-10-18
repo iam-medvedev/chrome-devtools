@@ -4,6 +4,7 @@ import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK from "../../core/sdk/sdk.js";
+import * as Bindings from "../../models/bindings/bindings.js";
 import * as Breakpoints from "../../models/breakpoints/breakpoints.js";
 import * as StackTrace from "../../models/stack_trace/stack_trace.js";
 import * as Workspace from "../../models/workspace/workspace.js";
@@ -1766,31 +1767,26 @@ SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.inlineVaria
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(
+  SettingsUI.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor,
+  {
+    category: Common.Settings.SettingCategory.SOURCES,
+    title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused),
+    options: [
+      {
+        value: true,
+        title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused)
+      },
+      {
+        value: false,
+        title: i18nLazyString(UIStrings.disableAutoFocusOnDebuggerPaused)
+      }
+    ]
+  }
+);
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.autoPrettyPrintMinifiedSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused),
-  settingName: "auto-focus-on-debugger-paused-enabled",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
-  options: [
-    {
-      value: true,
-      title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused)
-    },
-    {
-      value: false,
-      title: i18nLazyString(UIStrings.disableAutoFocusOnDebuggerPaused)
-    }
-  ]
-});
-Common.Settings.registerSettingExtension({
-  category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.automaticallyPrettyPrintMinifiedSources),
-  settingName: "auto-pretty-print-minified",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1802,13 +1798,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.SourcesSettings.allowScrollPastEofSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.allowScrollingPastEndOfFile),
-  settingName: "allow-scroll-past-eof",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,
@@ -1820,13 +1812,9 @@ Common.Settings.registerSettingExtension({
     }
   ]
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(Bindings.DebuggerWorkspaceBinding.wasmAutoSteppingSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.LOCAL,
   title: i18nLazyString(UIStrings.wasmAutoStepping),
-  settingName: "wasm-auto-stepping",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true,
   options: [
     {
       value: true,

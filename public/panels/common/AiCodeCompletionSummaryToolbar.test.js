@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -14,9 +15,6 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
         sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').callsFake(async () => { });
         aidaAvailabilityStub = sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'aidaAvailability')
             .get(() => "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
-    });
-    afterEach(() => {
-        aidaAvailabilityStub.restore();
     });
     async function createToolbar() {
         const view = createViewFunctionStub(Common.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar);

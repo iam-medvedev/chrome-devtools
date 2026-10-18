@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Formatter from '../../entrypoints/formatter_worker/formatter_worker.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -408,7 +409,7 @@ describe('SourceMapScopesInfo', () => {
         //  6: }
         //  7: function o(){}        outlined part of F (hidden)
         //  8: function h(){}        helper without original scope (hidden)
-        //  9: function G(){}        G
+        //  9: function G(){}        G (authored nested inside F)
         // 10: function p(){}        outlined part of G (hidden, unless `outlined` is false)
         function createInfo({ outlined = true } = {}) {
             const builder = new ScopeInfoBuilder();
@@ -417,11 +418,11 @@ describe('SourceMapScopesInfo', () => {
                 .startScope(0, 10, { kind: 'function', name: 'F', key: 'F', isStackFrame: true })
                 .startScope(2, 2, { kind: 'block', key: 'block' })
                 .endScope(3, 3)
-                .endScope(10, 1)
                 .startScope(12, 10, { kind: 'function', name: 'G', key: 'G', isStackFrame: true })
                 .startScope(13, 2, { kind: 'block', key: 'blockG' })
                 .endScope(14, 3)
                 .endScope(15, 1)
+                .endScope(16, 1)
                 .endScope(20, 0)
                 .endSource();
             builder.startRange(0, 0, { scopeKey: 'global' })
@@ -472,6 +473,7 @@ describe('SourceMapScopesInfo', () => {
         });
         it('outlinedFunctionRanges returns the outlined parts of the current function', () => {
             const info = createInfo();
+            // Excludes the outlined part of G, even though G is nested inside F.
             assert.deepEqual(info.outlinedFunctionRanges(0, 5), [range(7, 0, 7, 14)]);
             // From within the outlined part itself.
             assert.deepEqual(info.outlinedFunctionRanges(7, 3), [range(7, 0, 7, 14)]);

@@ -62,11 +62,11 @@ export class ScreencastApp {
         }
         this.screenCaptureModel = screenCaptureModel;
         this.toggleButton.setEnabled(true);
-        this.screencastView = new ScreencastView(screenCaptureModel);
+        this.screencastView = new ScreencastView();
+        this.screencastView.screenCaptureModel = screenCaptureModel;
         if (this.rootSplitWidget) {
             this.rootSplitWidget.setMainWidget(this.screencastView);
         }
-        this.screencastView.initialize();
         this.onScreencastEnabledChanged();
     }
     modelRemoved(screenCaptureModel) {

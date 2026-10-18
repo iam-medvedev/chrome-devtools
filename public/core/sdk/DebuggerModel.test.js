@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -399,6 +400,90 @@ describe('DebuggerModel', () => {
             await stepIntoRequestPromise;
         });
     });
+    describe('step context', () => {
+        const CALL_FRAME = {
+            callFrameId: '0',
+            functionName: 'foo',
+            functionLocation: { scriptId: SCRIPT_ID_ONE, lineNumber: 0, columnNumber: 0 },
+            location: { scriptId: SCRIPT_ID_ONE, lineNumber: 0, columnNumber: 5 },
+            url: 'http://localhost/foo.js',
+            scopeChain: [],
+            this: { type: 'object' },
+            canBeRestarted: false,
+        };
+        async function setUpTarget() {
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Debugger.enable', () => ({ debuggerId: 'debugger-id' }));
+            const stepOver = sinon.stub().returns({});
+            connection.setSuccessHandler('Debugger.stepOver', stepOver);
+            const resume = sinon.stub().returns({});
+            connection.setSuccessHandler('Debugger.resume', resume);
+            const target = universe.createTarget({ connection });
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            if (!debuggerModel.isReadyToPause()) {
+                await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+            }
+            connection.dispatchEvent('Debugger.scriptParsed', {
+                scriptId: SCRIPT_ID_ONE,
+                url: 'http://localhost/foo.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 1,
+                endColumn: 10,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                sourceMapURL: undefined,
+                hasSourceURL: false,
+                length: 10,
+            }, target.sessionId);
+            debuggerModel.setComputeAutoStepCallback(null);
+            const contexts = [];
+            debuggerModel.setBeforePausedCallback(async (_details, context) => {
+                contexts.push(context);
+                return null;
+            });
+            const pause = async (reason) => {
+                const paused = debuggerModel.once(SDK.DebuggerModel.Events.DebuggerPaused);
+                connection.dispatchEvent('Debugger.paused', { callFrames: [CALL_FRAME], reason }, target.sessionId);
+                await paused;
+            };
+            const pauseOnInstrumentation = async () => {
+                const resumed = new Promise(resolve => resume.callsFake(() => {
+                    resolve();
+                    return {};
+                }));
+                connection.dispatchEvent('Debugger.paused', {
+                    callFrames: [],
+                    reason: "instrumentation" /* Protocol.Debugger.PausedEventReason.Instrumentation */,
+                    data: { scriptId: SCRIPT_ID_TWO },
+                }, target.sessionId);
+                await resumed;
+            };
+            return { debuggerModel, stepOver, contexts, pause, pauseOnInstrumentation };
+        }
+        it('keeps the step context across instrumentation pauses', async () => {
+            const { debuggerModel, stepOver, contexts, pause, pauseOnInstrumentation } = await setUpTarget();
+            await pause("other" /* Protocol.Debugger.PausedEventReason.Other */);
+            await debuggerModel.stepOver();
+            sinon.assert.calledOnce(stepOver);
+            await pauseOnInstrumentation();
+            await pause("step" /* Protocol.Debugger.PausedEventReason.Step */);
+            assert.lengthOf(contexts, 2);
+            const [, context] = contexts;
+            assert.strictEqual(context?.mode, "StepOver" /* SDK.DebuggerModel.StepMode.STEP_OVER */);
+            assert.lengthOf(context?.callFrames ?? [], 1);
+        });
+        it('clears the step context when the user resumes', async () => {
+            const { debuggerModel, contexts, pause } = await setUpTarget();
+            await pause("other" /* Protocol.Debugger.PausedEventReason.Other */);
+            await debuggerModel.stepOver();
+            debuggerModel.resume();
+            await pause("other" /* Protocol.Debugger.PausedEventReason.Other */);
+            assert.deepEqual(contexts, [null, null]);
+        });
+    });
     describe('ignoring sourcemaps', () => {
         it('ignores sourcemaps when DWARF symbols are present', () => {
             const connection = new MockCDPConnection();
@@ -452,6 +537,71 @@ describe('DebuggerModel', () => {
                 length: 10,
             }, target.sessionId);
             sinon.assert.called(attachSourceMapSpy);
+        });
+    });
+    describe('dispose', () => {
+        const SCRIPT_URL = urlString `http://example.com/worker.js`;
+        const SOURCE_MAP_URL = `${SCRIPT_URL}.map`;
+        const SOURCE_MAP_LOAD_RESULT = {
+            success: true,
+            content: JSON.stringify({ version: 3, file: 'worker.js', mappings: '', sources: ['worker.ts'] }),
+            errorDescription: { message: '', statusCode: 0, netError: 0, netErrorName: '', urlValid: true },
+        };
+        function createWorkerTarget(loadOverride) {
+            const testUniverse = new TestUniverse({ pageResourceLoaderOptions: { loadOverride } });
+            // Mirror production, where the bindings observe all debugger models and their source maps.
+            void testUniverse.debuggerWorkspaceBinding;
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Debugger.enable', () => ({ debuggerId: 'worker-debugger' }));
+            const frameTarget = testUniverse.createTarget({ connection });
+            const workerTarget = testUniverse.createTarget({ type: SDK.Target.Type.Worker, parentTarget: frameTarget });
+            const debuggerModel = workerTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            connection.dispatchEvent('Debugger.scriptParsed', {
+                scriptId: SCRIPT_ID_ONE,
+                url: SCRIPT_URL,
+                startLine: 0,
+                startColumn: 0,
+                endLine: 1,
+                endColumn: 10,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                sourceMapURL: SOURCE_MAP_URL,
+                hasSourceURL: false,
+                length: 10,
+            }, workerTarget.sessionId);
+            const script = debuggerModel.scriptForId(SCRIPT_ID_ONE);
+            assert.exists(script);
+            return { workerTarget, debuggerModel, script };
+        }
+        it('drops scripts and detaches their source maps when the target is disposed', async () => {
+            const { workerTarget, debuggerModel, script } = createWorkerTarget(async () => SOURCE_MAP_LOAD_RESULT);
+            const sourceMapManager = debuggerModel.sourceMapManager();
+            const sourceMap = await sourceMapManager.sourceMapForClientPromise(script);
+            assert.exists(sourceMap);
+            assert.strictEqual(sourceMapManager.sourceMapForClient(script), sourceMap);
+            assert.deepEqual(debuggerModel.scripts(), [script]);
+            workerTarget.dispose('test');
+            assert.isEmpty(debuggerModel.scripts());
+            assert.isNull(debuggerModel.scriptForId(SCRIPT_ID_ONE));
+            assert.isEmpty(debuggerModel.scriptsForSourceURL(SCRIPT_URL));
+            assert.isUndefined(sourceMapManager.sourceMapForClient(script));
+            assert.isUndefined(sourceMapManager.clientForSourceMap(sourceMap));
+        });
+        it('does not attach source maps that finish loading after the target is disposed', async () => {
+            const { promise: loadPromise, resolve: resolveLoad } = Promise.withResolvers();
+            const { workerTarget, debuggerModel, script } = createWorkerTarget(() => loadPromise);
+            const sourceMapManager = debuggerModel.sourceMapManager();
+            const sourceMapAttached = sinon.spy();
+            sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, sourceMapAttached);
+            const sourceMapPromise = sourceMapManager.sourceMapForClientPromise(script);
+            workerTarget.dispose('test');
+            resolveLoad(SOURCE_MAP_LOAD_RESULT);
+            // The load itself still completes, but the result must not be attached to the disposed script.
+            assert.exists(await sourceMapPromise);
+            sinon.assert.notCalled(sourceMapAttached);
+            assert.isUndefined(sourceMapManager.sourceMapForClient(script));
         });
     });
 });

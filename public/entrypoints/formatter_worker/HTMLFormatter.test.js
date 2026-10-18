@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as FormatterWorker from './formatter_worker.js';
 function formatHTML(text) {
     return FormatterWorker.FormatterWorker.format('text/html', text, '  ').content;
@@ -87,8 +88,7 @@ describe('HTMLFormatter', () => {
         assert.strictEqual(formattedCode, `<ul>
   <li>foo
   <li>
-    hello <b>world</b>
-    !
+    hello <b>world</b>!
   <li>
     hello <b>world</b>
     <b>i'm here</b>
@@ -351,6 +351,14 @@ describe('HTMLFormatter', () => {
         <!-- comment -->
         text
     </div>
+`);
+    });
+    it('does not insert spurious line breaks after leaf elements followed by text', () => {
+        assert.strictEqual(formatHTML('<span>Some text</span>}'), '<span>Some text</span>}\n');
+        assert.strictEqual(formatHTML('<span>Some text</span> more text'), '<span>Some text</span> more text\n');
+        assert.strictEqual(formatHTML('<p>Hello <b>world</b> and <i>universe</i>!</p>'), `<p>
+  Hello <b>world</b> and <i>universe</i>!
+</p>
 `);
     });
 });

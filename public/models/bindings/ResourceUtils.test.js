@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -41,9 +42,6 @@ describe('ResourceUtils', () => {
             uiSourceCodeForURLStub = sinon.stub(universe.workspace, 'uiSourceCodeForURL').returns(null);
             sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(universe.workspace);
             sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
-        });
-        afterEach(() => {
-            sinon.restore();
         });
         it('favors displayName from UISourceCode', () => {
             const resource = sinon.createStubInstance(SDK.Resource.Resource);

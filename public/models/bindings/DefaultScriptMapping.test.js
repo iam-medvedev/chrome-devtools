@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
@@ -148,6 +149,14 @@ describe('DefaultScriptMapping', () => {
         const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
         assert.exists(uiSourceCode);
         assert.strictEqual(uiSourceCode.mimeType(), 'application/wasm');
+    });
+    it('associates created UISourceCodes with their script and target', async () => {
+        const script = await backend.addScript(target, { content: 'console.log(1);', url, startLine: 0, startColumn: 0, hasSourceURL: false }, null);
+        const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
+        assert.exists(uiSourceCode);
+        assert.strictEqual(defaultScriptMapping.scriptForUISourceCode(uiSourceCode), script);
+        assert.strictEqual(Bindings.DefaultScriptMapping.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode), script);
+        assert.strictEqual(Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode), target);
     });
 });
 //# sourceMappingURL=DefaultScriptMapping.test.js.map

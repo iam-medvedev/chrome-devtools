@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, before, describe, it } from 'mocha';
 import { createContextForNavigation, getFirstOrError, getInsightOrError, processTrace, } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';

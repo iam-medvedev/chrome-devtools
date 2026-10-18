@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { before, describe, it } from 'mocha';
 import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { Icon } from '../../kit/kit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';

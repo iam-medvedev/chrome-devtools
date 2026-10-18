@@ -336,7 +336,8 @@ devtools-icon.open-in-animations-panel {
 }
 
 devtools-icon.bezier-swatch-icon,
-devtools-icon.position-area-swatch-icon {
+devtools-icon.position-area-swatch-icon,
+devtools-icon.position-try-swatch-icon {
   position: relative;
   transform: scale(0.7);
   margin: -5px calc(-1 * var(--sys-size-2)) -3px calc(-1 * var(--sys-size-3));
@@ -344,12 +345,16 @@ devtools-icon.position-area-swatch-icon {
   color: var(--icon-css);
   cursor: default;
 
+  &.toggled {
+    color: var(--icon-toggled);
+  }
+
   &:hover {
     color: var(--icon-css-hover);
   }
 }
 
-span.bezier-icon-and-text {
+.bezier-icon-and-text {
   white-space: nowrap;
 }
 

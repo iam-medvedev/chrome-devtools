@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
-import { getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
+import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, describeWithEnvironment, expectConsoleLogs, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
@@ -420,6 +421,65 @@ describeWithEnvironment('IndexedDBTreeElement live update', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isNull(os1View.element.querySelector('.stale-data-warning'));
         assert.isNull(index1View.element.querySelector('.stale-data-warning'));
+    });
+    it('refreshes object store and index data views when database is refreshed', async () => {
+        const MAIN_FRAME_ID = 'main';
+        const storageKey = `test-storage-key|${MAIN_FRAME_ID}|http://www.example.com`;
+        const loadObjectStoreDataStub = sinon.stub(model, 'loadObjectStoreData')
+            .callsFake((_dbId, _storeName, _keyRange, _skipCount, _pageSize, callback) => {
+            callback([], false);
+        });
+        const loadIndexDataStub = sinon.stub(model, 'loadIndexData')
+            .callsFake((_dbId, _storeName, _indexName, _keyRange, _skipCount, _pageSize, callback) => {
+            callback([], false);
+        });
+        sinon.stub(model, 'getMetadata').resolves({ entriesCount: 0, keyGeneratorValue: 0 });
+        const refreshDatabaseStub = model.refreshDatabase;
+        const dbId = new Application.IndexedDBModel.DatabaseId({ storageKey }, 'testDatabase');
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseAdded, { databaseId: dbId, model });
+        const db = new Application.IndexedDBModel.Database(dbId, 1);
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseLoaded, { database: db, model, entriesUpdated: false });
+        await UI.Widget.Widget.allUpdatesComplete;
+        const dbTreeElement = indexedDBTreeElement.children()[0];
+        // Add two object stores with indexes and emit DatabaseLoaded with entriesUpdated: false.
+        const os1 = new Application.IndexedDBModel.ObjectStore('testObjectStore1', 'testKey', false);
+        os1.indexes.set('testIndex', new Application.IndexedDBModel.Index('testIndex', 'testKey', false, false));
+        const os2 = new Application.IndexedDBModel.ObjectStore('testObjectStore2', 'testKey', false);
+        os2.indexes.set('testIndex', new Application.IndexedDBModel.Index('testIndex', 'testKey', false, false));
+        db.objectStores.set('testObjectStore1', os1);
+        db.objectStores.set('testObjectStore2', os2);
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseLoaded, { database: db, model, entriesUpdated: false });
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.strictEqual(dbTreeElement.childCount(), 2);
+        const os1TreeElement = dbTreeElement.children()[0];
+        const os2TreeElement = dbTreeElement.children()[1];
+        const index1TreeElement = os1TreeElement.children()[0];
+        const index2TreeElement = os2TreeElement.children()[0];
+        os1TreeElement.onselect(false);
+        index1TreeElement.onselect(false);
+        os2TreeElement.onselect(false);
+        index2TreeElement.onselect(false);
+        await UI.Widget.Widget.allUpdatesComplete;
+        sinon.assert.calledTwice(loadObjectStoreDataStub);
+        sinon.assert.calledTwice(loadIndexDataStub);
+        loadObjectStoreDataStub.resetHistory();
+        loadIndexDataStub.resetHistory();
+        // Emitting DatabaseLoaded with entriesUpdated: false does not reload object store or index data.
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseLoaded, { database: db, model, entriesUpdated: false });
+        await UI.Widget.Widget.allUpdatesComplete;
+        sinon.assert.notCalled(loadObjectStoreDataStub);
+        sinon.assert.notCalled(loadIndexDataStub);
+        // Right-clicking the database tree element and selecting Refresh IndexedDB refreshes the database and data views.
+        refreshDatabaseStub.resetHistory();
+        const contextMenu = getContextMenuForElement(dbTreeElement.listItemElement);
+        const refreshItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Refresh IndexedDB');
+        assert.exists(refreshItem);
+        contextMenu.invokeHandler(refreshItem.id());
+        sinon.assert.calledOnceWithExactly(refreshDatabaseStub, dbId);
+        model.dispatchEventToListeners(Application.IndexedDBModel.Events.DatabaseLoaded, { database: db, model, entriesUpdated: true });
+        await UI.Widget.Widget.allUpdatesComplete;
+        sinon.assert.calledTwice(loadObjectStoreDataStub);
+        sinon.assert.calledTwice(loadIndexDataStub);
     });
     describe('ResourcesPanel toolbar', () => {
         it('hides toolbar when view.toolbarItems() resolves to nothing', async () => {

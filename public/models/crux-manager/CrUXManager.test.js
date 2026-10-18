@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -112,8 +113,6 @@ describe('CrUXManager', () => {
             mockConsoleError = sinon.stub(console, 'error');
         });
         afterEach(() => {
-            mockFetch?.restore();
-            mockConsoleError?.restore();
             cruxManager?.getConfigSetting().set({ enabled: false });
         });
         it('should request data for all scopes', async () => {
@@ -328,7 +327,6 @@ describe('CrUXManager', () => {
             });
         });
         afterEach(() => {
-            getFieldDataMock.restore();
             cruxManager?.getConfigSetting().set({ enabled: false });
         });
         it('should use main document URL if available', async () => {
@@ -478,7 +476,6 @@ describe('CrUXManager', () => {
             });
         });
         afterEach(() => {
-            getFieldDataMock.restore();
             cruxManager?.getConfigSetting().set({ enabled: false });
         });
         it('should update when enabled setting changes', async () => {

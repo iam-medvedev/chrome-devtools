@@ -47,12 +47,11 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class ScreencastView extends UI.Widget.Widget implements SDK.OverlayModel.Highlighter {
     #private;
-    private readonly screenCaptureModel;
     private domModel;
-    private readonly overlayModel;
+    private overlayModel;
     private resourceTreeModel;
     private networkManager;
-    private readonly inputModel;
+    private inputModel;
     private shortcuts;
     private scrollOffsetX;
     private scrollOffsetY;
@@ -74,8 +73,9 @@ export declare class ScreencastView extends UI.Widget.Widget implements SDK.Over
     private historyEntries?;
     private isCasting;
     private screencastOperationId?;
-    constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel, element?: HTMLElement, view?: View);
-    initialize(): void;
+    constructor(element?: HTMLElement, view?: View);
+    get screenCaptureModel(): SDK.ScreenCaptureModel.ScreenCaptureModel | undefined;
+    set screenCaptureModel(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel | undefined);
     wasShown(): void;
     performUpdate(): void;
     willHide(): void;

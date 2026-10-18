@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
@@ -569,7 +570,7 @@ describe('AiHistoryStorage', () => {
         const snapshotTester = new SnapshotTester(this, import.meta);
         it('should generate markdown from a conversation', function () {
             const fakeTime = new Date('2024-01-01T00:00:00.000Z');
-            const clock = sinon.useFakeTimers(fakeTime);
+            sinon.useFakeTimers(fakeTime);
             const history = [
                 {
                     type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
@@ -629,7 +630,6 @@ describe('AiHistoryStorage', () => {
             });
             const markdown = conversation.getConversationMarkdown();
             snapshotTester.assert(this, markdown);
-            clock.restore();
         });
     });
 });

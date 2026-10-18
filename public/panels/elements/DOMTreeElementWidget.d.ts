@@ -1,0 +1,246 @@
+import '../../ui/components/adorners/adorners.js';
+import '../../ui/components/buttons/buttons.js';
+import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../core/text_utils/text_utils.js';
+import * as Protocol from '../../generated/protocol.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
+import * as Elements from '../../models/elements/elements.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import type { DirectiveResult } from '../../ui/lit/lit.js';
+/**
+ * Returns the CSS selector of `node` that is used as the text signature of the anchor a change is
+ * recorded on, or `undefined` if `tracker` is absent or not recording changes.
+ *
+ * Resolving the selector walks the ancestor chain and scans sibling lists, so it is skipped
+ * entirely while change tracking is disabled.
+ */
+export declare function buildChangeSelector(tracker: ChangeTracker.ChangeTracker.ChangeTracker | undefined, node: SDK.DOMModel.DOMNode): string | undefined;
+declare const enum TagType {
+    OPENING = "OPENING_TAG",
+    CLOSING = "CLOSING_TAG"
+}
+interface OpeningTagContext {
+    tagType: TagType.OPENING;
+    canAddAttributes: boolean;
+}
+interface ClosingTagContext {
+    tagType: TagType.CLOSING;
+}
+export type TagTypeContext = OpeningTagContext | ClosingTagContext;
+export declare function isOpeningTag(context: TagTypeContext): context is OpeningTagContext;
+export interface ViewInput {
+    node: SDK.DOMModel.DOMNode | null;
+    isClosingTag: boolean;
+    expanded: boolean;
+    isExpandable: boolean;
+    isXMLMimeType: boolean;
+    updateRecord: Elements.ElementUpdateRecord.ElementUpdateRecord | null;
+    onHighlightSearchResults: () => void;
+    onExpand: () => void;
+    issues?: IssuesManager.Issue.Issue[];
+    containerAdornerActive: boolean;
+    flexAdornerActive: boolean;
+    gridAdornerActive: boolean;
+    popoverAdornerActive: boolean;
+    interestAdornerActive: boolean;
+    adProvenance?: Protocol.Network.AdProvenance;
+    target?: SDK.Target.Target;
+    adTooltipId: string;
+    showContainerAdorner: boolean;
+    containerType?: string;
+    showFlexAdorner: boolean;
+    showGridAdorner: boolean;
+    showGridLanesAdorner: boolean;
+    showMediaAdorner: boolean;
+    showPopoverAdorner: boolean;
+    showInterestAdorner: boolean;
+    showTopLayerAdorner: boolean;
+    isSubgrid: boolean;
+    showViewSourceAdorner: boolean;
+    showScrollAdorner: boolean;
+    showScrollSnapAdorner: boolean;
+    topLayerIndex: number;
+    scrollSnapAdornerActive: boolean;
+    onGutterClick: (e: Event) => void;
+    onContainerAdornerClick: (e: Event) => void;
+    onFlexAdornerClick: (e: Event) => void;
+    onGridAdornerClick: (e: Event) => void;
+    onMediaAdornerClick: (e: Event) => void;
+    onPopoverAdornerClick: (e: Event) => void;
+    onInterestAdornerClick: (e: Event) => void;
+    onScrollSnapAdornerClick: (e: Event) => void;
+    onTopLayerAdornerClick: (e: Event) => void;
+    onViewSourceAdornerClick: () => void;
+    onSlotAdornerClick: (e: Event) => void;
+    showSlotAdorner: boolean;
+    showCustomElementAdorner: boolean;
+    onCustomElementAdornerClick: (e: Event) => void;
+    slotName?: string;
+    showStartingStyleAdorner: boolean;
+    startingStyleAdornerActive: boolean;
+    onStartingStyleAdornerClick: (e: Event) => void;
+    isHovered: boolean;
+    isSelected: boolean;
+    canInspect: boolean;
+    showAiButton: boolean;
+    aiButtonTitle?: string;
+    onAiButtonClick: (e: Event) => void;
+    decorations: Decoration[];
+    descendantDecorations: Decoration[];
+    decorationsTooltip: string;
+    indent: number;
+    renderSelection?: boolean;
+    /**
+     * When true, the view clears the previously rendered DOM before rendering
+     * (e.g. to restore the attributes structure after inline editing).
+     */
+    clearDOM: boolean;
+    onDblClick: (event: MouseEvent) => void;
+    editorState: CodeMirror.EditorState | null;
+    editorWidth: number | null;
+}
+export interface ViewOutput {
+    contentElement?: HTMLElement;
+    editorRef?: TextEditor.TextEditor.TextEditor;
+}
+/**
+ * A view input that renders no node and no adorners. The widget renders it
+ * when it is unbound so that its adorners get deregistered from the
+ * ElementsPanel; tests use it as a baseline to override individual fields.
+ */
+export declare function emptyViewInput(): ViewInput;
+export declare function adornerRef(): DirectiveResult;
+export interface Decoration {
+    title: string;
+    color: string;
+}
+export declare function handleAdornerKeydown(cb: (event: Event) => void): (event: KeyboardEvent) => void;
+export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+type View = typeof DEFAULT_VIEW;
+export interface InitialEditState {
+    attributeName?: string;
+    isNewAttribute?: boolean;
+    isProcessingInstruction?: boolean;
+    isTextNode?: boolean;
+    isEditAsHTML?: boolean;
+    editAsHTMLCallback?: (success: boolean) => void;
+}
+export declare class DOMTreeElementWidget extends UI.Widget.Widget {
+    #private;
+    static readonly INJECT: readonly [
+        typeof IssuesManager.DOMIssuesManager.DOMIssuesManager,
+        typeof ChangeTracker.ChangeTracker.ChangeTracker
+    ];
+    isXMLMimeType: boolean;
+    disableEdits: boolean;
+    showAIButton: boolean;
+    renderSelection: boolean;
+    isDOMNodeSelected: boolean;
+    initialEdit?: InitialEditState | null;
+    onInitialEditCompleted?: () => void;
+    attributeToHighlight?: string | null;
+    onAttributeHighlighted?: () => void;
+    get adornersUpdateVersion(): number;
+    set adornersUpdateVersion(version: number);
+    computeLeftIndent?: number | (() => number);
+    /** Expands the node in the parent tree. Invoked by the `…` button of a collapsed element. */
+    expandNode?: () => void;
+    selectDOMNode?: (node: SDK.DOMModel.DOMNode, selectedByUser?: boolean) => void;
+    revealInTopLayer?: (node: SDK.DOMModel.DOMNode) => void;
+    showContextMenu?: (event: Event) => void;
+    toggleHideElement?: (node: SDK.DOMModel.DOMNode) => Promise<void>;
+    isToggledToHidden?: (node: SDK.DOMModel.DOMNode) => boolean;
+    selectNodeAfterEdit?: (wasExpanded: boolean, error: string | null, newNode: SDK.DOMModel.DOMNode | null, moveDirection?: string) => void;
+    setMultilineEditing?: (multilineEditing: EditorHandles | null, node?: SDK.DOMModel.DOMNode) => void;
+    visibleWidth?: () => number;
+    editing: EditorHandles | null;
+    get popoverAdornerActive(): boolean;
+    set popoverAdornerActive(active: boolean);
+    get interestAdornerActive(): boolean;
+    set interestAdornerActive(active: boolean);
+    onPopoverAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
+    onInterestAdornerToggled?: (node: SDK.DOMModel.DOMNode, active: boolean) => void;
+    get updateRecord(): Elements.ElementUpdateRecord.ElementUpdateRecord | null;
+    set updateRecord(updateRecord: Elements.ElementUpdateRecord.ElementUpdateRecord | null);
+    get node(): SDK.DOMModel.DOMNode;
+    set node(node: SDK.DOMModel.DOMNode);
+    get isClosingTag(): boolean;
+    set isClosingTag(isClosingTag: boolean);
+    get expanded(): boolean;
+    set expanded(expanded: boolean);
+    get isExpandable(): boolean;
+    set isExpandable(isExpandable: boolean);
+    get selected(): boolean;
+    set selected(selected: boolean);
+    get searchQuery(): string | null;
+    set searchQuery(query: string | null);
+    get tagTypeContext(): TagTypeContext;
+    get issues(): IssuesManager.Issue.Issue[];
+    get changeTracker(): ChangeTracker.ChangeTracker.ChangeTracker | undefined;
+    constructor(element?: HTMLElement, [domIssuesManager, changeTracker]?: UI.Widget.WidgetDependencies<typeof DOMTreeElementWidget> | [
+        IssuesManager.DOMIssuesManager.DOMIssuesManager?,
+        ChangeTracker.ChangeTracker.ChangeTracker?
+    ], view?: View);
+    static visibleShadowRoots(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode[];
+    static canShowInlineText(node: SDK.DOMModel.DOMNode): boolean;
+    static canEditTextNode(node: SDK.DOMModel.DOMNode): boolean;
+    static populateForcedPseudoStateItems(contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
+    wasShown(): void;
+    willHide(): void;
+    performUpdate(): void;
+    highlightAttribute(attributeName: string): void;
+    get isEditing(): boolean;
+    highlightSearchResults(searchQuery: string): void;
+    hideSearchHighlights(): void;
+    get hovered(): boolean;
+    set hovered(isHovered: boolean);
+    onbind(): void;
+    clearView(): void;
+    onunbind(): void;
+    private insertInLastAttributePosition;
+    private startEditingTarget;
+    private revealHTMLInSources;
+    private isAiButtonEnabled;
+    startEditing(): boolean | undefined;
+    startEditingProcessingInstructionValue(): boolean | undefined;
+    addNewAttribute(): boolean;
+    triggerEditAttribute(attributeName: string): boolean | undefined;
+    startEditingAttribute(attribute: Element, elementForSelection: Element): boolean;
+    startEditingTextNode(textNodeElement: Element): boolean;
+    startEditingTagName(element?: Element): boolean;
+    private updateEditorHandles;
+    private startEditingAsHTML;
+    private attributeEditingCommitted;
+    private tagNameEditingCommitted;
+    private textNodeEditingCommitted;
+    editingCancelled(_element: Element, _tagName: string | null): void;
+    private distinctClosingTagElement;
+    updateTitle(updateRecord?: Elements.ElementUpdateRecord.ElementUpdateRecord | null): void;
+    updateDecorations(): void;
+    remove(): Promise<void>;
+    toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
+    updateAdorners(): void;
+}
+export declare const InitialChildrenLimit = 500;
+export declare const MaxEditableTextSize = 10000;
+/**
+ * A union of HTML4 and HTML5-Draft elements that explicitly
+ * or implicitly (for HTML5) forbid the closing tag.
+ **/
+export declare const ForbiddenClosingTagElements: Set<string>;
+/** These tags we do not allow editing their tag name. **/
+export declare const EditTagBlocklist: Set<string>;
+export declare const MappedCharToEntity: Map<string, string>;
+export declare function convertUnicodeCharsToHTMLEntities(text: string): {
+    text: string;
+    entityRanges: TextUtils.TextRange.SourceRange[];
+};
+export interface EditorHandles {
+    commit: () => void;
+    cancel: () => void;
+    resize: () => void;
+}
+export {};

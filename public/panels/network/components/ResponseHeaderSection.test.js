@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -10,7 +11,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Persistence from '../../../models/persistence/persistence.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchInputEvent, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
@@ -1016,6 +1017,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await raf();
         assert.isFalse(isRowFocused(component, 0));
         assert.isTrue(isRowFocused(component, 1));
         component.remove();

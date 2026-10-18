@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -214,9 +215,55 @@ describeWithEnvironment('DOMTreeContextMenu', () => {
             const descriptor = contextMenu.buildDescriptor();
             const editItem = findItem(descriptor.subItems, 'Edit text');
             assert.exists(editItem);
+            assert.isTrue(editItem.enabled);
             assert.exists(editItem.id);
             contextMenu.invokeHandler(editItem.id);
             sinon.assert.calledOnceWithExactly(startEditingTextNodeSpy, node);
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('disables Edit text when text node value exceeds MaxEditableTextSize', async () => {
+        const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
+        try {
+            const node = createTestNode(Node.TEXT_NODE);
+            sinon.stub(node, 'nodeValue').returns('a'.repeat(Elements.DOMTreeElementWidget.MaxEditableTextSize) + '\u2026');
+            const textSpan = document.createElement('span');
+            textSpan.className = 'webkit-html-text-node';
+            const event = new MouseEvent('contextmenu');
+            Object.defineProperty(event, 'target', { value: textSpan });
+            const contextMenu = await domTree.showContextMenu(node, event);
+            assert.exists(contextMenu);
+            const descriptor = contextMenu.buildDescriptor();
+            const editItem = findItem(descriptor.subItems, 'Edit text');
+            assert.exists(editItem);
+            assert.isFalse(editItem.enabled);
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('enables Edit data for processing instruction nodes up to MaxEditableTextSize and disables it above', async () => {
+        const domTree = new Elements.DOMTreeWidget.DOMTreeWidget();
+        try {
+            const editableNode = createTestNode(Node.PROCESSING_INSTRUCTION_NODE);
+            sinon.stub(editableNode, 'nodeValue').returns('a'.repeat(Elements.DOMTreeElementWidget.MaxEditableTextSize));
+            const editableMenu = await domTree.showContextMenu(editableNode, createContextMenuEvent());
+            assert.exists(editableMenu);
+            const editableDescriptor = editableMenu.buildDescriptor();
+            const editableItem = findItem(editableDescriptor.subItems, 'Edit data');
+            assert.exists(editableItem);
+            assert.isTrue(editableItem.enabled);
+            const truncatedNode = createTestNode(Node.PROCESSING_INSTRUCTION_NODE);
+            sinon.stub(truncatedNode, 'nodeValue')
+                .returns('a'.repeat(Elements.DOMTreeElementWidget.MaxEditableTextSize) + '\u2026');
+            const truncatedMenu = await domTree.showContextMenu(truncatedNode, createContextMenuEvent());
+            assert.exists(truncatedMenu);
+            const truncatedDescriptor = truncatedMenu.buildDescriptor();
+            const truncatedItem = findItem(truncatedDescriptor.subItems, 'Edit data');
+            assert.exists(truncatedItem);
+            assert.isFalse(truncatedItem.enabled);
         }
         finally {
             domTree.detach();

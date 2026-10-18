@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -657,10 +658,10 @@ describe('Automapping', () => {
         assert.strictEqual(bindings[0].fileSystem, fileSystemSourceCode);
         // Stub renameFile on the platform file system to succeed.
         const platformFileSystem = fileSystemProject.fileSystem();
-        const renameStub = sinon.stub(platformFileSystem, 'renameFile').callsFake((path, newName, callback) => {
+        sinon.stub(platformFileSystem, 'renameFile').callsFake((path, newName, callback) => {
             callback(true, newName);
         });
-        const contentTypeStub = sinon.stub(platformFileSystem, 'contentType').returns(Common.ResourceType.resourceTypes.Script);
+        sinon.stub(platformFileSystem, 'contentType').returns(Common.ResourceType.resourceTypes.Script);
         // 3. Rename the file system resource to bar.js.
         const newName = 'bar.js';
         const renameSuccess = await fileSystemSourceCode.rename(newName);
@@ -679,8 +680,6 @@ describe('Automapping', () => {
         assert.strictEqual(bindings[1].network, networkSourceCode);
         assert.strictEqual(bindings[1].fileSystem, fileSystemSourceCode);
         assert.strictEqual(fileSystemSourceCode.url(), fileURL);
-        renameStub.restore();
-        contentTypeStub.restore();
     });
     it('correctly maps sourcemap sources with non-exact match', async () => {
         const cssContent = 'body { color: red; }';

@@ -205,7 +205,7 @@ __export(GlobalAiButton_exports, {
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
-import * as AIAssistance from "../../models/ai_assistance/ai_assistance.js";
+import * as AIAssistance from "../../models/ai-utils/ai-utils.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
@@ -464,7 +464,7 @@ import * as ProtocolClient from "../../core/protocol_client/protocol_client.js";
 import * as Root2 from "../../core/root/root.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Foundation from "../../foundation/foundation.js";
-import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
+import * as AiAssistanceModel from "../../models/ai-utils/ai-utils.js";
 import * as Badges from "../../models/badges/badges.js";
 import * as CommentManager from "../../models/comment_manager/comment_manager.js";
 import * as CrUXManager from "../../models/crux-manager/crux-manager.js";
@@ -561,16 +561,10 @@ var WINDOW_LOCAL_STORAGE = {
   },
   clear: () => window.localStorage.clear()
 };
-var isCustomDevtoolsFrontendInternal;
-function isCustomDevtoolsFrontend() {
-  if (typeof isCustomDevtoolsFrontendInternal === "undefined") {
-    isCustomDevtoolsFrontendInternal = window.location.toString().startsWith("devtools://devtools/custom/");
-  }
-  return isCustomDevtoolsFrontendInternal;
-}
 var MainImpl = class _MainImpl {
   #readyForTestPromise = Promise.withResolvers();
   #veStartPromise;
+  #toolbarsPromise;
   #universe;
   #supportsEmulation = false;
   constructor(opts) {
@@ -687,8 +681,10 @@ var MainImpl = class _MainImpl {
   createSettingsStorage(prefs) {
     this.#initializeExperiments();
     let storagePrefix = "";
-    if (isCustomDevtoolsFrontend()) {
+    if (Host.Platform.isCustomDevtoolsFrontend()) {
       storagePrefix = "__custom__";
+    } else if (Host.Platform.isRemoteDevtoolsFrontend()) {
+      storagePrefix = "__remote__";
     } else if (!Root2.Runtime.Runtime.queryParam("can_dock") && Boolean(Root2.Runtime.Runtime.queryParam("debugFrontend")) && !Host.InspectorFrontendHost.isUnderTest()) {
       storagePrefix = "__bundled__";
     }
@@ -882,7 +878,7 @@ var MainImpl = class _MainImpl {
         inspectorView.displaySelectOverrideFolderInfobar(event.data);
       }
     );
-    await inspectorView.createToolbars();
+    this.#toolbarsPromise = inspectorView.createToolbars();
     inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
     this.#universe.commentManager.addEventListener(
       CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED,
@@ -894,6 +890,7 @@ var MainImpl = class _MainImpl {
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
     window.setTimeout(this.#initializeTarget.bind(this), 0);
+    await this.#toolbarsPromise;
     _MainImpl.timeEnd("Main._showAppUI");
   }
   async #initializeTarget() {
@@ -902,6 +899,7 @@ var MainImpl = class _MainImpl {
       await runnableInstanceFunction().run();
     }
     await this.#veStartPromise;
+    await this.#toolbarsPromise;
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
     this.#readyForTestPromise.resolve();
     window.setTimeout(this.#lateInitialization.bind(this), 100);

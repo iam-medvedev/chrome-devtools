@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from './common.js';
 describe('Debouncer', () => {
@@ -20,7 +21,6 @@ describe('Debouncer', () => {
         // Then wait a while before checking the value.
         clock.tick(10);
         assert.strictEqual(count, 1);
-        clock.restore();
     });
     it('can be cancelled', () => {
         const clock = sinon.useFakeTimers();
@@ -35,7 +35,6 @@ describe('Debouncer', () => {
         // Then wait a while before checking the value.
         clock.tick(10);
         assert.strictEqual(count, 0);
-        clock.restore();
     });
 });
 //# sourceMappingURL=Debouncer.test.js.map

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -317,7 +318,6 @@ describeWithEnvironment('ConsoleView', () => {
             assert.instanceOf(messagesElement, HTMLElement);
             dispatchPasteEvent(messagesElement, { clipboardData: dt, bubbles: true });
             assert.lengthOf(Common.Console.Console.instance().messages(), 0);
-            stub.restore();
         });
     });
     it('appends commands to the history right away', async () => {

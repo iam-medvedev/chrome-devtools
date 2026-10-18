@@ -1744,7 +1744,6 @@ var WalkthroughView = class extends UI.Widget.Widget {
 var { html: html5, Directives: { ref: ref2, ifDefined } } = Lit5;
 var lockedString2 = i18n3.i18n.lockedString;
 var { widget } = UI2.Widget;
-var REPORT_URL = "https://crbug.com/508304827";
 var SCROLL_ROUNDING_OFFSET = 1;
 var UIStringsNotTranslate = {
   /**
@@ -2338,7 +2337,7 @@ function renderSideEffectStepsUI(input, steps) {
   }
   const showPermissionPrompt = AiAssistanceModel4.AiUtils.isNaturalLanguageInterfaceEnabled();
   return html5`
-    ${sideEffectSteps.map((step) => html5`
+    ${Lit5.Directives.repeat(sideEffectSteps, (step) => step, (step) => html5`
       <div class="side-effect-container">
         ${showPermissionPrompt ? renderPermissionPrompt(step) : renderStep({
     step,
@@ -2853,12 +2852,7 @@ async function makeSourceCodeWidget(widgetData) {
   let code = widgetData.data.code;
   if (TextUtils.TextUtils.isMinified(code)) {
     const canonicalMimeType = uiSourceCode?.contentType().canonicalMimeType() || "text/javascript";
-    const formatted = await Formatter.ScriptFormatter.formatScriptContent(
-      Common3.Settings.Settings.instance(),
-      canonicalMimeType,
-      code,
-      "  "
-    );
+    const formatted = await Formatter.ScriptFormatter.formatScriptContent(canonicalMimeType, code, "  ");
     code = formatted.formattedContent;
   }
   const renderedWidget = html5`
@@ -3051,7 +3045,7 @@ function getWidgetSignature(widget5) {
     case "PERFORMANCE_TRACE":
       return `${widget5.name}`;
     case "PERF_INSIGHT":
-      return `${widget5.name}:${widget5.data.insight}:${widget5.data.insightData.insightKey}:${widget5.data.insightData.navigation?.args?.data?.navigationId ?? "no-nav-id"}`;
+      return `${widget5.name}:${widget5.data.insight}:${widget5.data.insightData.insightKey}:${Trace2.Helpers.Trace.navigationIDForEvent(widget5.data.insightData.navigation) ?? "no-nav-id"}`;
     case "TIMELINE_RANGE_SUMMARY":
       return `${widget5.name}:${widget5.data.track}:${widget5.data.bounds.min}-${widget5.data.bounds.max}`;
     case "BOTTOM_UP_TREE":
@@ -3462,7 +3456,7 @@ var ChatMessage = class extends UI2.Widget.Widget {
         prompt: this.prompt,
         onSuggestionClick: this.onSuggestionClick,
         onRatingClick: this.#handleRateClick.bind(this),
-        onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
+        onReportClick: () => UIHelpers.openInNewTab(AiAssistanceModel4.AiUtils.REPORT_LEGAL_ISSUE_URL),
         onCopyResponseClick: () => {
           if (this.message.entity === "model" /* MODEL */) {
             this.onCopyResponseClick(this.message);
@@ -5531,8 +5525,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -5541,6 +5533,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -9571,6 +9564,7 @@ var AI_ASSISTANCE_SEND_FEEDBACK = "https://crbug.com/364805393";
 var AI_ASSISTANCE_HELP = "https://developer.chrome.com/docs/devtools/ai-assistance";
 var WALKTHROUGH_SIDEBAR_BREAKPOINT = 700;
 var WALKTHROUGH_SIDEBAR_INITIAL_WIDTH = 400;
+var PERMISSION_PROMPT_INPUT_PROTECTION_MS = 500;
 var UIStrings6 = {
   /**
    * @description AI assistance UI text for creating a new chat.
@@ -10972,6 +10966,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
     }
     this.#cancel();
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceQuerySubmitted);
+    if (AiAssistanceModel7.AiUtils.isAiV2Enabled()) {
+      void VisualLogging7.logFunctionCall(
+        "ai-v2-query-submitted",
+        getContextTypeString(this.#conversation.selectedContext)
+      );
+    }
     const signal = this.#runAbortController.signal;
     if (this.#conversation.isEmpty) {
       Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
@@ -11098,6 +11098,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             step = stepForCall(data.callId);
             const approvalStep = step;
             approvalStep.code ??= data.code;
+            const promptShownAt = performance.now();
             approvalStep.state = {
               type: "needs_approval",
               sideEffectDialog: {
@@ -11105,6 +11106,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
                 permissionPrompt: data.permissionPrompt,
                 permissionTitle: data.permissionTitle,
                 onAnswer: (decision) => {
+                  if (decision !== AiAssistanceModel7.Tool.PermissionDecision.REJECT && performance.now() - promptShownAt < PERMISSION_PROMPT_INPUT_PROTECTION_MS) {
+                    return;
+                  }
                   data.confirm(decision);
                   approvalStep.state = { type: "completed" };
                   this.requestUpdate();
@@ -11121,6 +11125,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             step.output ??= data.output;
             step.widgets ??= data.widgets;
             commitStep();
+            if (AiAssistanceModel7.AiUtils.isAiV2Enabled() && !this.#conversation?.isReadOnly) {
+              if (data.toolName === "learnSkills") {
+                for (const skill of data.loadedSkills ?? []) {
+                  void VisualLogging7.logFunctionCall("ai-v2-learn-skill", skill);
+                }
+              } else if (data.toolName) {
+                void VisualLogging7.logFunctionCall(
+                  "ai-v2-tool-call",
+                  Platform5.StringUtilities.toKebabCase(data.toolName)
+                );
+              }
+            }
             break;
           }
           case AiAssistanceModel7.AiAgent.ResponseType.ANSWER: {
@@ -11158,6 +11174,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
           }
           case AiAssistanceModel7.AiAgent.ResponseType.ERROR: {
             systemMessage.error = data.error;
+            if (AiAssistanceModel7.AiUtils.isAiV2Enabled() && !this.#conversation?.isReadOnly && data.error !== AiAssistanceModel7.AiAgent.ErrorType.ABORT) {
+              void VisualLogging7.logFunctionCall("ai-v2-error", data.error);
+            }
             const lastPart = systemMessage.parts.at(-1);
             if (lastPart?.type === "step") {
               const lastStep = lastPart.step;
@@ -11176,6 +11195,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI9.Panel.Panel {
             break;
           }
           case AiAssistanceModel7.AiAgent.ResponseType.CONTEXT_CHANGE: {
+            if (AiAssistanceModel7.AiUtils.isAiV2Enabled() && !this.#conversation?.isReadOnly && data.toolName) {
+              void VisualLogging7.logFunctionCall(
+                "ai-v2-tool-call",
+                Platform5.StringUtilities.toKebabCase(data.toolName)
+              );
+            }
             this.#handleConversationContextChange(data.context);
             step.state = { type: "completed" };
             step.widgets = data.widgets;

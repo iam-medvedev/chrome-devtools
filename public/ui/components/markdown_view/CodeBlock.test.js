@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
@@ -11,9 +12,6 @@ describeWithEnvironment('CodeBlock', () => {
     let clock;
     beforeEach(() => {
         clock = sinon.useFakeTimers();
-    });
-    afterEach(() => {
-        clock.restore();
     });
     it('copies the code to clipboard', async () => {
         const component = new MarkdownView.CodeBlock.CodeBlock();

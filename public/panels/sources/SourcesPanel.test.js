@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -12,6 +13,7 @@ import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment, registerActions, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode, } from '../../testing/UISourceCodeHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 import * as Sources from './sources.js';
@@ -138,7 +140,6 @@ describeWithEnvironment('SourcesPanel', () => {
             'Debugger sidebar hidden',
             'Debugger sidebar shown',
         ]);
-        alertSpy.restore();
     });
     describe('handleBeforeUnload', () => {
         function createBeforeUnloadEvent(returnValue = false) {
@@ -196,6 +197,87 @@ describeWithEnvironment('SourcesPanel', () => {
             const event = createBeforeUnloadEvent(true);
             sources.handleBeforeUnload(event);
             sinon.assert.notCalled(uiSourceCodesSpy);
+        });
+    });
+    it('passes layout and sidebar state to view and updates on toggles and position changes', () => {
+        setUpEnvironment();
+        const view = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+        const sources = new Sources.SourcesPanel.SourcesPanel(view);
+        assert.isTrue(view.input.isNavigatorSidebarOpen);
+        assert.isTrue(view.input.isDebuggerSidebarOpen);
+        assert.isFalse(view.input.isVertical);
+        assert.exists(view.input.debuggerSidebarTabbedPane);
+        assert.strictEqual(view.input.sourcesView, sources.sourcesView());
+        sources.toggleNavigatorSidebar();
+        assert.isFalse(view.input.isNavigatorSidebarOpen);
+        sources.toggleDebuggerSidebar();
+        assert.isFalse(view.input.isDebuggerSidebarOpen);
+        Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.sidebarPositionSettingDescriptor).set('right');
+        assert.isTrue(view.input.isVertical);
+        assert.isNull(view.input.debuggerSidebarTabbedPane);
+        const reloadedView = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+        new Sources.SourcesPanel.SourcesPanel(reloadedView);
+        assert.isFalse(reloadedView.input.isNavigatorSidebarOpen);
+        assert.isFalse(reloadedView.input.isDebuggerSidebarOpen);
+    });
+    it('restores sidebar open states from existing split view settings', () => {
+        setUpEnvironment();
+        Common.Settings.Settings.instance().createSetting('sources-panel-navigator-split-view-state', {}).set({
+            vertical: { size: 200, showMode: "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */ },
+        });
+        Common.Settings.Settings.instance().createSetting('sources-panel-split-view-state', {}).set({
+            vertical: { size: 300, showMode: "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */ },
+            horizontal: { size: 300, showMode: "Both" /* UI.SplitWidget.ShowMode.BOTH */ },
+        });
+        Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.sidebarPositionSettingDescriptor).set('right');
+        const rightView = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+        new Sources.SourcesPanel.SourcesPanel(rightView);
+        assert.isFalse(rightView.input.isNavigatorSidebarOpen);
+        assert.isFalse(rightView.input.isDebuggerSidebarOpen);
+        Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.sidebarPositionSettingDescriptor).set('bottom');
+        const bottomView = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+        new Sources.SourcesPanel.SourcesPanel(bottomView);
+        assert.isFalse(bottomView.input.isNavigatorSidebarOpen);
+        assert.isTrue(bottomView.input.isDebuggerSidebarOpen);
+    });
+    it('invokes long resume and terminate execution when view callbacks are triggered', () => {
+        setUpEnvironment();
+        const view = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+        new Sources.SourcesPanel.SourcesPanel(view);
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+        const runtimeModel = sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel);
+        debuggerModel.runtimeModel.returns(runtimeModel);
+        debuggerModel.target.returns(target);
+        debuggerModel.isPaused.returns(true);
+        debuggerModel.debuggerPausedDetails.returns(sinon.createStubInstance(SDK.DebuggerModel.DebuggerPausedDetails));
+        target.model.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel);
+        UI.Context.Context.instance().setFlavor(SDK.Target.Target, target);
+        view.input.onLongResume();
+        sinon.assert.calledOnceWithExactly(debuggerModel.skipAllPausesUntilReloadOrTimeout, 500);
+        sinon.assert.calledOnce(debuggerModel.resume);
+        UI.Context.Context.instance().setFlavor(SDK.Target.Target, null);
+        UI.Context.Context.instance().setFlavor(SDK.Target.Target, target);
+        view.input.onTerminateExecution();
+        sinon.assert.calledOnce(runtimeModel.terminateExecution);
+        sinon.assert.calledTwice(debuggerModel.resume);
+    });
+    describe('QuickSourceView', () => {
+        it('passes sourcesView to view when shown in wrapper and clears it when hidden', () => {
+            setUpEnvironment();
+            const panelView = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+            const panel = new Sources.SourcesPanel.SourcesPanel(panelView);
+            sinon.stub(Sources.SourcesPanel.SourcesPanel, 'instance').returns(panel);
+            const view = createViewFunctionStub(Sources.SourcesPanel.QuickSourceView);
+            const quickSourceView = new Sources.SourcesPanel.QuickSourceView(view);
+            assert.isNull(view.input.sourcesView);
+            assert.strictEqual(panelView.input.sourcesView, panel.sourcesView());
+            quickSourceView.showViewInWrapper();
+            assert.strictEqual(view.input.sourcesView, panel.sourcesView());
+            assert.isNull(panelView.input.sourcesView);
+            quickSourceView.hideViewInWrapper();
+            assert.isNull(view.input.sourcesView);
+            assert.strictEqual(panelView.input.sourcesView, panel.sourcesView());
         });
     });
 });

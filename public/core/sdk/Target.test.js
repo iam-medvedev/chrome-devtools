@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
@@ -116,6 +117,57 @@ describe('Target', () => {
         assert.isTrue(target.suspended());
         await target.resume();
         assert.isFalse(target.suspended());
+    });
+    describe('dispose', () => {
+        /**
+         * Returns the number of change listeners per setting name.
+         *
+         * All settings share a single event target owned by `Settings`, which lives as long as the
+         * DevTools session. A change listener that a model forgets to remove in `dispose` keeps the
+         * disposed target and all of its models (scripts, source maps, console messages, ...) alive.
+         */
+        function settingsListenerCounts(settings) {
+            const counts = new Map();
+            for (const [name, listeners] of settings.eventTargetForTest.listeners ?? []) {
+                counts.set(String(name), listeners.size);
+            }
+            return counts;
+        }
+        /** Returns the names of the settings that have more change listeners in `after` than in `before`. */
+        function settingsWithAddedListeners(before, after) {
+            return [...after].filter(([name, count]) => count > (before.get(name) ?? 0)).map(([name]) => name).sort();
+        }
+        /**
+         * `TestUniverse` doesn't autostart any models by default. Mirror production instead, so that
+         * a newly registered autostart model is covered automatically.
+         */
+        function createUniverseWithProductionAutoStartModels() {
+            const autoStartModels = new Set([...SDK.SDKModel.SDKModel.registeredModels].filter(([, info]) => info.autostart).map(([model]) => model));
+            return new TestUniverse({ overrideAutoStartModels: autoStartModels });
+        }
+        const WORKER_TYPES = [
+            SDK.Target.Type.Worker,
+            SDK.Target.Type.SHARED_WORKER,
+            SDK.Target.Type.ServiceWorker,
+            SDK.Target.Type.WORKLET,
+        ];
+        for (const type of WORKER_TYPES) {
+            for (const parentType of [SDK.Target.Type.FRAME, SDK.Target.Type.BROWSER]) {
+                it(`removes all settings listeners when a "${type}" target with a "${parentType}" parent is disposed`, () => {
+                    const testUniverse = createUniverseWithProductionAutoStartModels();
+                    const parentTarget = testUniverse.createTarget({ type: parentType });
+                    // Session-wide singletons (e.g. the `MultitargetNetworkManager`) are created lazily
+                    // together with the first target and are expected to stay around. Create and dispose a
+                    // first target so that only listeners added per target are measured.
+                    testUniverse.createTarget({ type, parentTarget }).dispose('test');
+                    const countsBefore = settingsListenerCounts(testUniverse.settings);
+                    const target = testUniverse.createTarget({ type, parentTarget });
+                    assert.isNotEmpty(settingsWithAddedListeners(countsBefore, settingsListenerCounts(testUniverse.settings)), 'Expected the models of the target to listen to settings');
+                    target.dispose('test');
+                    assert.deepEqual(settingsWithAddedListeners(countsBefore, settingsListenerCounts(testUniverse.settings)), [], 'Settings with change listeners that outlive the disposed target');
+                });
+            }
+        }
     });
 });
 //# sourceMappingURL=Target.test.js.map

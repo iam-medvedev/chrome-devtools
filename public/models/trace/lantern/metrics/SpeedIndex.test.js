@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { before, describe, it } from 'mocha';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture } from '../testing/testing.js';

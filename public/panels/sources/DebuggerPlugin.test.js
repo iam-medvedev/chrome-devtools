@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import * as sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -12,13 +13,17 @@ import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, deinitializeGlobalVars, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { expectCalled, spyCall } from '../../testing/ExpectStubCall.js';
 import { MockDebuggerBackend, parseScopeChain } from '../../testing/MockScopeChain.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
+import { stubFrame } from '../../testing/StackTraceHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
@@ -36,7 +41,6 @@ describe('Inline variable view scope helpers', () => {
             .returns(backend.universe.scopeChainResolver);
     });
     afterEach(async () => {
-        sinon.restore();
         await deinitializeGlobalVars();
     });
     async function toOffsetWithSourceMap(sourceMap, location) {
@@ -529,7 +533,7 @@ describeWithEnvironment('ScopeMappingsCache', () => {
         const cache = new Sources.DebuggerPlugin.ScopeMappingsCache(uiSourceCode);
         const compute = sinon.stub().resolves(scopeMappings);
         const sdkFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
-        const frame = StackTrace.StackTrace.DebuggableFrameFlavor.for({ sdkFrame, line: 0, column: 0 });
+        const frame = StackTrace.StackTrace.DebuggableFrameFlavor.for(stubFrame({ sdkFrame, line: 0, column: 0 }));
         return { uiSourceCode, cache, compute, sdkFrame, frame };
     }
     it('computes the scope mappings once per frame', async () => {
@@ -542,7 +546,7 @@ describeWithEnvironment('ScopeMappingsCache', () => {
         const { cache, compute, sdkFrame, frame } = setup();
         await cache.get(frame, compute);
         // E.g. a source map got attached and the frame now points somewhere else.
-        const retranslatedFrame = StackTrace.StackTrace.DebuggableFrameFlavor.for({ sdkFrame, line: 5, column: 2 });
+        const retranslatedFrame = StackTrace.StackTrace.DebuggableFrameFlavor.for(stubFrame({ sdkFrame, line: 5, column: 2 }));
         assert.notStrictEqual(retranslatedFrame, frame);
         await cache.get(retranslatedFrame, compute);
         sinon.assert.calledTwice(compute);
@@ -790,7 +794,7 @@ globalThis.foo = bar + baz;
             const evaluateStub = sinon.stub(callFrame, 'evaluate').resolves({ object: new SDK.RemoteObject.LocalJSONObject(99) });
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             sinon.stub(debuggerModel, 'isPaused').returns(true);
-            const frameFlavor = StackTrace.StackTrace.DebuggableFrameFlavor.for({ sdkFrame: callFrame, line: 0, column: 23 });
+            const frameFlavor = StackTrace.StackTrace.DebuggableFrameFlavor.for(stubFrame({ sdkFrame: callFrame, line: 0, column: 23 }));
             UI.Context.Context.instance().setFlavor(SDK.Target.Target, target);
             UI.Context.Context.instance().setFlavor(StackTrace.StackTrace.DebuggableFrameFlavor, frameFlavor);
             const plugin = new Sources.DebuggerPlugin.DebuggerPlugin(uiSourceCode, {
@@ -822,6 +826,49 @@ globalThis.foo = bar + baz;
             plugin.dispose();
         });
     });
+    describeWithEnvironment('breakpoint gutter markers', () => {
+        it('updates the condition tooltip when the condition of a breakpoint is edited', async () => {
+            const backend = new MockDebuggerBackend();
+            const { breakpointManager } = backend.universe;
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+                .returns(backend.universe.debuggerWorkspaceBinding);
+            sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
+            sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance')
+                .returns(sinon.createStubInstance(UI.ShortcutRegistry.ShortcutRegistry, {
+                getShortcutListener: () => { },
+            }));
+            sinon.stub(Sources.SourcesPanel.SourcesPanel, 'instance')
+                .returns(sinon.createStubInstance(Sources.SourcesPanel.SourcesPanel));
+            sinon.stub(Breakpoints.BreakpointManager.BreakpointManager, 'instance').returns(breakpointManager);
+            const source = 'const x = 1;\nconsole.log(x);\n';
+            const { uiSourceCode } = createContentProviderUISourceCode({
+                url: urlString `http://example.com/script.js`,
+                mimeType: 'text/javascript',
+                content: source,
+                universe: backend.universe,
+            });
+            const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 1, 0, 'x === 1', /* enabled */ true, 
+            /* isLogpoint */ false, "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */);
+            assert.exists(breakpoint);
+            const plugin = new Sources.DebuggerPlugin.DebuggerPlugin(uiSourceCode, {
+                editorLocationToUILocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+                uiLocationToEditorLocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+            });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState(source, [CodeMirror.lineNumbers(), plugin.editorExtension()]));
+            renderElementIntoDOM(editor);
+            const conditionTooltipText = () => editor.editor.dom.querySelector('.cm-breakpoint-conditional devtools-tooltip')?.textContent;
+            let breakpointDecorationsDispatched = spyCall(editor, 'dispatch');
+            plugin.editorInitialized(editor);
+            await breakpointDecorationsDispatched;
+            assert.strictEqual(conditionTooltipText(), 'x === 1');
+            breakpointDecorationsDispatched = spyCall(editor, 'dispatch');
+            breakpoint.setCondition('x === 2', /* isLogpoint */ false);
+            await breakpointDecorationsDispatched;
+            assert.strictEqual(conditionTooltipText(), 'x === 2');
+            plugin.dispose();
+        });
+    });
     describeWithEnvironment('dispose', () => {
         it('removes all event listeners it added', () => {
             const backend = new MockDebuggerBackend();
@@ -846,6 +893,230 @@ globalThis.foo = bar + baz;
             const added = listenersOf(addSpy);
             assert.isTrue(added.some(([target]) => target === backend.universe.pageResourceLoader));
             assert.sameDeepMembers(listenersOf(removeSpy), added);
+        });
+    });
+    describe('BreakpointInlineMarker', () => {
+        function createBreakpoint({ condition = '', isLogpoint = false, enabled = true } = {}) {
+            return sinon.createStubInstance(Breakpoints.BreakpointManager.Breakpoint, {
+                condition: condition,
+                isLogpoint,
+                enabled,
+            });
+        }
+        it('renders a span with classes reflecting the breakpoint state', () => {
+            const parent = sinon.createStubInstance(Sources.DebuggerPlugin.DebuggerPlugin);
+            const cases = [
+                [createBreakpoint(), 'cm-inlineBreakpoint'],
+                [createBreakpoint({ condition: 'x > 1' }), 'cm-inlineBreakpoint cm-inlineBreakpoint-conditional'],
+                [createBreakpoint({ condition: 'x', isLogpoint: true }), 'cm-inlineBreakpoint cm-inlineBreakpoint-logpoint'],
+                [createBreakpoint({ enabled: false }), 'cm-inlineBreakpoint cm-inlineBreakpoint-disabled'],
+                [null, 'cm-inlineBreakpoint cm-inlineBreakpoint-disabled'],
+            ];
+            for (const [breakpoint, expectedClassName] of cases) {
+                const element = new Sources.DebuggerPlugin.BreakpointInlineMarker(breakpoint, parent).toDOM();
+                assert.strictEqual(element.localName, 'span');
+                assert.strictEqual(element.className, expectedClassName);
+                assert.include(element.getAttribute('jslog'), 'BreakpointMarker');
+            }
+        });
+        it('forwards click and contextmenu events to the plugin and stops their propagation', () => {
+            const parent = sinon.createStubInstance(Sources.DebuggerPlugin.DebuggerPlugin);
+            const breakpoint = createBreakpoint();
+            const element = new Sources.DebuggerPlugin.BreakpointInlineMarker(breakpoint, parent).toDOM();
+            const container = document.createElement('div');
+            container.appendChild(element);
+            const containerListener = sinon.spy();
+            container.addEventListener('click', containerListener);
+            container.addEventListener('contextmenu', containerListener);
+            const click = new MouseEvent('click', { bubbles: true });
+            element.dispatchEvent(click);
+            sinon.assert.calledOnceWithExactly(parent.onInlineBreakpointMarkerClick, click, breakpoint);
+            const contextmenu = new MouseEvent('contextmenu', { bubbles: true });
+            element.dispatchEvent(contextmenu);
+            sinon.assert.calledOnceWithExactly(parent.onInlineBreakpointMarkerContextMenu, contextmenu, breakpoint);
+            sinon.assert.notCalled(containerListener);
+        });
+    });
+    describe('BreakpointGutterMarker', () => {
+        function createView(doc, extensions = []) {
+            return new CodeMirror.EditorView({ state: CodeMirror.EditorState.create({ doc, extensions }) });
+        }
+        it('renders the line number of its position', () => {
+            const view = createView('a\nb\nc');
+            const marker = new Sources.DebuggerPlugin.BreakpointGutterMarker('cm-breakpoint', view.state.doc.line(2).from);
+            const element = marker.toDOM(view);
+            assert.strictEqual(element.localName, 'div');
+            assert.strictEqual(element.textContent, '2');
+            assert.include(element.getAttribute('jslog'), 'BreakpointMarker');
+            assert.isFalse(element.hasAttribute('aria-details'));
+            assert.isNull(element.querySelector('devtools-tooltip'));
+            view.destroy();
+        });
+        it('formats the line number using the LINE_NUMBER_FORMATTER facet', () => {
+            const view = createView('a\nb\nc', SourceFrame.SourceFrame.LINE_NUMBER_FORMATTER.of(lineNumber => `0x${lineNumber.toString(16)}`));
+            const marker = new Sources.DebuggerPlugin.BreakpointGutterMarker('cm-breakpoint', view.state.doc.line(3).from);
+            assert.strictEqual(marker.toDOM(view).textContent, '0x3');
+            view.destroy();
+        });
+        it('renders a tooltip with the condition for conditional breakpoints', () => {
+            const view = createView('a\nb\nc');
+            const condition = 'x > 1';
+            const marker = new Sources.DebuggerPlugin.BreakpointGutterMarker('cm-breakpoint cm-breakpoint-conditional', view.state.doc.line(2).from, condition);
+            const container = marker.toDOM(view);
+            assert.lengthOf(container.children, 2);
+            const [lineNumber, tooltip] = container.children;
+            assert.strictEqual(lineNumber.localName, 'div');
+            assert.strictEqual(lineNumber.textContent, '2');
+            assert.include(lineNumber.getAttribute('jslog'), 'BreakpointMarker');
+            assert.strictEqual(tooltip.localName, 'devtools-tooltip');
+            assert.isNotEmpty(tooltip.id);
+            assert.strictEqual(lineNumber.getAttribute('aria-details'), tooltip.id);
+            assert.strictEqual(tooltip.textContent, condition);
+            view.destroy();
+        });
+    });
+    describeWithEnvironment('ValueDecoration', () => {
+        it('renders comma separated name/value pairs', () => {
+            const decoration = new Sources.DebuggerPlugin.ValueDecoration([
+                ['a', new SDK.RemoteObject.LocalJSONObject(42)],
+                ['b', new SDK.RemoteObject.LocalJSONObject(true)],
+            ]);
+            const element = decoration.toDOM();
+            assert.strictEqual(element.localName, 'div');
+            assert.strictEqual(element.className, 'cm-variableValues');
+            assert.deepEqual([...element.children].map(child => child.textContent), ['a = 42', 'b = true']);
+            assert.strictEqual(element.textContent, 'a = 42, b = true');
+        });
+        it('renders object previews for objects with few properties', () => {
+            const preview = {
+                type: "object" /* Protocol.Runtime.ObjectPreviewType.Object */,
+                overflow: false,
+                properties: [
+                    { name: 'x', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '1' },
+                    { name: 'y', type: "number" /* Protocol.Runtime.PropertyPreviewType.Number */, value: '2' },
+                ],
+            };
+            const object = { preview };
+            const element = new Sources.DebuggerPlugin.ValueDecoration([['point', object]]).toDOM();
+            assert.lengthOf(element.children, 1);
+            assert.strictEqual(element.textContent, 'point = {x: 1, y: 2}');
+        });
+    });
+    describeWithEnvironment('missing debug info infobar', () => {
+        it('lists missing debug files and offers to show loaded requests', async () => {
+            const backend = new MockDebuggerBackend();
+            backend.createTarget();
+            sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(backend.universe.targetManager);
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+                .returns(backend.universe.debuggerWorkspaceBinding);
+            sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
+            sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+            sinon.stub(Sources.SourcesPanel.SourcesPanel, 'instance')
+                .returns(sinon.createStubInstance(Sources.SourcesPanel.SourcesPanel));
+            sinon.stub(Breakpoints.BreakpointManager.BreakpointManager, 'instance')
+                .returns(sinon.createStubInstance(Breakpoints.BreakpointManager.BreakpointManager));
+            const reveal = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal').resolves();
+            const { uiSourceCode } = createContentProviderUISourceCode({ url: urlString `http://example.com/app.wasm`, mimeType: 'application/wasm', content: '' });
+            const initiator = {
+                target: null,
+                frameId: null,
+                initiatorUrl: urlString `http://example.com/app.wasm`,
+                extensionId: 'chrome-extension-id',
+            };
+            const loadedResource = { resourceUrl: urlString `http://example.com/app.dwp`, initiator };
+            const missingResource = { resourceUrl: urlString `http://example.com/lib/other.dwp`, initiator };
+            const loadedKey = SDK.PageResourceLoader.PageResourceLoader.makeExtensionKey(loadedResource.resourceUrl, initiator);
+            sinon.stub(backend.universe.pageResourceLoader, 'getResourcesLoaded')
+                .returns(new Map([[loadedKey, {}]]));
+            const scriptFile = sinon.createStubInstance(Bindings.ResourceScriptMapping.ResourceScriptFile, {
+                missingSymbolFiles: Promise.resolve([loadedResource, missingResource]),
+                hasSourceMapURL: false,
+            });
+            Object.defineProperty(scriptFile, 'uiSourceCode', { value: uiSourceCode });
+            sinon.stub(backend.universe.debuggerWorkspaceBinding, 'scriptFile').returns(scriptFile);
+            const attachInfobar = sinon.stub(Sources.DebuggerPlugin.DebuggerPlugin.prototype, 'attachInfobar');
+            const plugin = new Sources.DebuggerPlugin.DebuggerPlugin(uiSourceCode, {
+                editorLocationToUILocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+                uiLocationToEditorLocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+            });
+            const [infobar] = await expectCalled(attachInfobar);
+            const shadowRoot = infobar.element.shadowRoot;
+            assert.exists(shadowRoot);
+            assert.strictEqual(shadowRoot.querySelector('.infobar-info-text')?.textContent, 'Failed to load any debug info for http://example.com/app.wasm');
+            const rows = [...shadowRoot.querySelectorAll('.infobar-details-row .infobar-row-message')];
+            assert.lengthOf(rows, 2);
+            for (const row of rows) {
+                assert.exists(row.closest('.infobar-selectable') ?? row.querySelector('.infobar-selectable'));
+            }
+            assert.include(rows[0].textContent, 'Failed to load debug file "app.dwp"');
+            assert.include(rows[1].textContent, 'Failed to load debug file "other.dwp"');
+            assert.isNull(rows[1].querySelector('devtools-button'));
+            const showRequest = rows[0].querySelector('devtools-button');
+            assert.exists(showRequest);
+            assert.strictEqual(showRequest.textContent?.trim(), 'Show request');
+            assert.strictEqual(showRequest.title, 'Opens the request in the Developer resources panel');
+            showRequest.click();
+            sinon.assert.calledOnce(reveal);
+            const [revealed] = reveal.firstCall.args;
+            assert.instanceOf(revealed, SDK.PageResourceLoader.ResourceKey);
+            assert.strictEqual(revealed.key, loadedKey);
+            plugin.dispose();
+        });
+    });
+    describeWithEnvironment('breakpoint edit dialog', () => {
+        it('shows the dialog as a block widget below the line and removes it when editing finishes', async () => {
+            const backend = new MockDebuggerBackend();
+            backend.createTarget();
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+                .returns(backend.universe.debuggerWorkspaceBinding);
+            sinon.stub(SDK.PageResourceLoader.PageResourceLoader, 'instance').returns(backend.universe.pageResourceLoader);
+            sinon.stub(Workspace.IgnoreListManager.IgnoreListManager, 'instance').returns(backend.universe.ignoreListManager);
+            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance')
+                .returns(sinon.createStubInstance(UI.ShortcutRegistry.ShortcutRegistry, {
+                getShortcutListener: () => { },
+            }));
+            sinon.stub(Sources.SourcesPanel.SourcesPanel, 'instance')
+                .returns(sinon.createStubInstance(Sources.SourcesPanel.SourcesPanel));
+            sinon.stub(Breakpoints.BreakpointManager.BreakpointManager, 'instance')
+                .returns(sinon.createStubInstance(Breakpoints.BreakpointManager.BreakpointManager, {
+                breakpointLocationsForUISourceCode: [],
+            }));
+            const breakpointsSidebarController = sinon.createStubInstance(Sources.BreakpointsView.BreakpointsSidebarController);
+            sinon.stub(Sources.BreakpointsView.BreakpointsSidebarController, 'instance')
+                .returns(breakpointsSidebarController);
+            const source = 'let a = 1;\nlet b = 2;\nlet c = 3;\n';
+            const { uiSourceCode } = createContentProviderUISourceCode({ url: urlString `http://example.com/script.js`, mimeType: 'text/javascript', content: source });
+            const plugin = new Sources.DebuggerPlugin.DebuggerPlugin(uiSourceCode, {
+                editorLocationToUILocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+                uiLocationToEditorLocation: (lineNumber, columnNumber) => ({ lineNumber, columnNumber: columnNumber ?? 0 }),
+            });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState(source, [CodeMirror.javascript.javascript(), plugin.editorExtension()]));
+            const container = new UI.Widget.Widget();
+            container.contentElement.appendChild(editor);
+            renderElementIntoDOM(container);
+            plugin.editorInitialized(editor);
+            const breakpoint = sinon.createStubInstance(Breakpoints.BreakpointManager.Breakpoint, {
+                condition: 'b > 1',
+                isLogpoint: false,
+                enabled: true,
+            });
+            plugin.editBreakpointLocation({ breakpoint, uiLocation: new Workspace.UISourceCode.UILocation(uiSourceCode, 1, 0) });
+            const dialogElement = editor.editor.contentDOM.querySelector('.sources-edit-breakpoint-dialog');
+            assert.exists(dialogElement);
+            assert.isTrue(dialogElement.isConnected);
+            const blockWidget = [...editor.editor.contentDOM.children].find(child => child.contains(dialogElement));
+            assert.exists(blockWidget);
+            assert.include(blockWidget.previousElementSibling?.textContent, 'let b = 2;');
+            const dialog = UI.Widget.Widget.get(dialogElement);
+            assert.instanceOf(dialog, Sources.BreakpointEditDialog.BreakpointEditDialog);
+            assert.strictEqual(dialog.oldCondition, 'b > 1');
+            assert.strictEqual(dialog.editorLineNumber, 1);
+            await dialog.updateComplete;
+            dialog.finishEditing(false, '');
+            sinon.assert.calledOnceWithExactly(breakpointsSidebarController.breakpointEditFinished, breakpoint, false);
+            assert.isNull(editor.editor.contentDOM.querySelector('.sources-edit-breakpoint-dialog'));
+            assert.isFalse(dialogElement.isConnected);
+            plugin.dispose();
         });
     });
 });

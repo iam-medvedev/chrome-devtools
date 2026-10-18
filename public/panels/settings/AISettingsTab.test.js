@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -37,9 +38,6 @@ describeWithEnvironment('AISettingsTab', () => {
         });
         aidaAccessStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
         aidaAccessStub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
-    });
-    afterEach(async () => {
-        aidaAccessStub.restore();
     });
     function mockHostConfigWithExplainThisResourceEnabled() {
         updateHostConfig({
@@ -199,7 +197,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, [notLoggedInExplainer]);
     });
     it('updates disabled reason', async () => {
-        const isAvailableStub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+        sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
             status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
             reason: ["wrong-locale" /* AiAssistanceModel.AiUtils.DisabledReason.WRONG_LOCALE */],
         });
@@ -207,7 +205,6 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.deepEqual(view.input.disabledReasons, [
             'To use this feature, set your language preference to English in DevTools settings',
         ]);
-        isAvailableStub.restore();
     });
     it('can turn feature off and clear history', async () => {
         Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);

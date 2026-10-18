@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';

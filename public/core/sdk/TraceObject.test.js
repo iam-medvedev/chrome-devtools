@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as Trace from '../../models/trace/trace.js';
 import * as SDK from './sdk.js';
 describe('TraceObject', () => {
@@ -14,9 +15,7 @@ describe('TraceObject', () => {
                 pid: Trace.Types.Events.ProcessID(1),
                 tid: Trace.Types.Events.ThreadID(4),
                 ts: Trace.Types.Timing.Micro(5e7),
-                args: {
-                    data: { frame: '0xA' },
-                },
+                args: {},
             };
             const traceEvents = [event];
             const traceObj = new SDK.TraceObject.TraceObject(traceEvents);

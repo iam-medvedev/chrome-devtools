@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import sinon from 'sinon';
+import { describe, it } from '../../../test/api/mocha-interface.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
 describe('CSSModel API Test', () => {

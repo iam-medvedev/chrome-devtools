@@ -481,7 +481,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                   @keydown=${onKeyDown}
                   .value=${item5.selectorType}
                   jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item5.selectorType}`)}
-                  ?checked=${item5.checked}
+                  .checked=${item5.checked}
                   type="checkbox"
                   @change=${(e) => onUpdate({
         selectorType: item5.selectorType,
@@ -1503,7 +1503,7 @@ var recordingView_css_default = `/*
     font-family: inherit;
     field-sizing: content;
     font-size: var(--sys-typescale-headline3-size);
-    line-height: 22px;
+    line-height: var(--sys-typescale-headline3-line-height);
     letter-spacing: 0.02em;
     padding: var(--sys-size-1) var(--sys-size-3);
     border: var(--sys-size-1) solid transparent;
@@ -1853,7 +1853,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                       <option
                         .title=${item5.label()}
                         value=${item5.value}
-                        ?selected=${selected}
+                        .selected=${selected}
                         jslog=${VisualLogging4.item(Platform.StringUtilities.toKebabCase(item5.value)).track({ click: true })}
                       >
                         ${selected && item5.buttonLabel ? item5.buttonLabel() : item5.label()}
@@ -4757,7 +4757,7 @@ function renderSettings({
             @change=${onNetworkConditionsChange}>
       ${networkConditionPresets.map((condition) => html10`
         <option jslog=${VisualLogging8.item(Platform5.StringUtilities.toKebabCase(condition.i18nTitleKey || ""))}
-                value=${condition.i18nTitleKey || ""} ?selected=${selectedOption === condition.i18nTitleKey}>
+                value=${condition.i18nTitleKey || ""} .selected=${selectedOption === condition.i18nTitleKey}>
                 ${condition.title instanceof Function ? condition.title() : condition.title}
         </option>`)}
     </select>
@@ -4854,7 +4854,7 @@ function renderTimelineArea(input, output) {
                 ${input.builtInConverters.map((converter) => {
     return html10`<option
                     value=${converter.getId()}
-                    ?selected=${input.converterId === converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
                     jslog=${VisualLogging8.item(`converter-${Platform5.StringUtilities.toKebabCase(converter.getId())}`)}>
                     ${converter.getFormatName()}
                   </option>`;
@@ -4862,7 +4862,7 @@ function renderTimelineArea(input, output) {
                 ${input.extensionConverters.map((converter) => {
     return html10`<option
                     value=${converter.getId()}
-                    ?selected=${input.converterId === converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
                     jslog=${VisualLogging8.item("converter-extension")}>
                     ${converter.getFormatName()}
                   </option>`;
@@ -6161,7 +6161,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     if (this.#storage.getRecordings().length) {
       this.#setCurrentPage("AllRecordingsPage" /* ALL_RECORDINGS_PAGE */);
     }
-    const textEditorIndent = Common2.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
+    const textEditorIndent = Common2.Settings.Settings.instance().resolve(SDK3.SDKSettings.textEditorIndentSettingDescriptor).get();
     this.#builtInConverters = Object.freeze([
       new Converters.JSONConverter.JSONConverter(textEditorIndent),
       new Converters.PuppeteerReplayConverter.PuppeteerReplayConverter(textEditorIndent),

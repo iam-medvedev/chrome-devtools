@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import * as sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -81,7 +82,6 @@ describeWithEnvironment('AdsView', () => {
         // this timeout is tracked by TrackAsyncOperations. If we don't advance the clock,
         // the test runner will fail, complaining about a dangling setTimeout promise.
         clock.tick(1500);
-        sinon.restore();
         globalThis.ResizeObserver = originalResizeObserver;
     });
     it('renders initial state correctly', async () => {

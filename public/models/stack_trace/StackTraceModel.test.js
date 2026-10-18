@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -482,6 +483,46 @@ describe('StackTraceModel', () => {
             await model.scriptInfoChanged(script, translateSpy);
             sinon.assert.notCalled(translateSpy);
             sinon.assert.notCalled(updatedSpy);
+        });
+        it('coalesces concurrent calls into a single update', async () => {
+            const { model, translateSpy } = setup();
+            const callFrames = [
+                'foo.js:id1:foo:1:10',
+                'bar.js:id2:bar:2:20',
+                'baz.js:id3:baz:3:30',
+            ].map(protocolCallFrame);
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames }, identityTranslateFn);
+            const updatedSpy = createUpdatedSpy(stackTrace);
+            const script1 = { scriptId: 'id1', sourceURL: 'foo.js' };
+            const script3 = { scriptId: 'id3', sourceURL: 'baz.js' };
+            const promise1 = model.scriptInfoChanged(script1, translateSpy);
+            const promise3 = model.scriptInfoChanged(script3, translateSpy);
+            await Promise.all([promise1, promise3]);
+            sinon.assert.calledOnce(translateSpy);
+            assert.sameMembers(translatedNames(translateSpy)[0], ['foo', 'baz']);
+            sinon.assert.calledOnce(updatedSpy);
+        });
+        it('does not coalesce calls that arrive while an update is running', async () => {
+            const { model } = setup();
+            const callFrames = [
+                'foo.js:id1:foo:1:10',
+                'bar.js:id2:bar:2:20',
+            ].map(protocolCallFrame);
+            await model.createFromProtocolRuntime({ callFrames }, identityTranslateFn);
+            const { promise: translatePromise, resolve: resolveTranslate } = Promise.withResolvers();
+            const delayedTranslateFn = async (frames, target) => {
+                await translatePromise;
+                return await identityTranslateFn(frames, target);
+            };
+            const translateSpy = sinon.spy(delayedTranslateFn);
+            const script1 = { scriptId: 'id1', sourceURL: 'foo.js' };
+            const script2 = { scriptId: 'id2', sourceURL: 'bar.js' };
+            const promise1 = model.scriptInfoChanged(script1, translateSpy);
+            await new Promise(r => setTimeout(r, 0)); // Let the first update acquire the mutex.
+            const promise2 = model.scriptInfoChanged(script2, translateSpy);
+            resolveTranslate();
+            await Promise.all([promise1, promise2]);
+            assert.deepEqual(translatedNames(translateSpy), [['foo'], ['bar']]);
         });
         it('does not re-translate fragments that are a complete sub-set of another fragment (but notifies stack traces)', async () => {
             const { model, translateSpy } = setup();

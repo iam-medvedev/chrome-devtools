@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -194,9 +195,6 @@ describe('ExecuteJavaScriptTool', () => {
         beforeEach(() => {
             clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
         });
-        afterEach(() => {
-            clock.restore();
-        });
         it('clears the timeout after execution completes', async () => {
             const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
             const mockExecJs = sinon.stub().resolves('{"success": true}');
@@ -293,32 +291,69 @@ describe('ExecuteJavaScriptTool', () => {
             assert.strictEqual(result.formattedCode, 'const a = 1;\nconst b = 2;');
             assert.isUndefined(result.error);
         });
-        it('returns an error when formatted code exceeds 40 lines', async () => {
+        it('returns the original code when the formatter fails', async () => {
+            formatStub.rejects(new Error('Unexpected token'));
+            const result = await validateAndFormatCode('const a = ;');
+            assert.isUndefined(result.error);
+            assert.strictEqual(result.formattedCode, 'const a = ;');
+        });
+        const SIZE_ERROR_HEADER = 'Error: The code was not run because it exceeds size limits after formatting (indented with 2 spaces):';
+        const LONG_LINES_ADVICE = '- Lines longer than 120 characters. Break them into shorter lines, ' +
+            'for example by splitting long strings or selectors with concatenation, ' +
+            'or by putting arguments on separate lines:';
+        it('returns an error with the line count when formatted code exceeds 40 lines', async () => {
             const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
-            formatStub.resolves({
-                content: longCode,
-                mapping: { original: [], formatted: [] },
-            });
             const result = await validateAndFormatCode(longCode);
-            assert.match(result.error ?? '', /exceeds maximum allowed size/);
+            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+                '- The code is 45 lines (max 40). Split the logic into smaller calls and return intermediate results in `data`.');
         });
-        it('returns an error when a line exceeds 120 characters', async () => {
-            const longLineCode = `const longVar = "${'a'.repeat(130)}";`;
-            formatStub.resolves({
-                content: longLineCode,
-                mapping: { original: [], formatted: [] },
-            });
+        it('returns an error with the line number, length, and preview when a line exceeds 120 characters', async () => {
+            const longLineCode = `if (true) {\n  const longVar = "${'a'.repeat(130)}";\n}`;
             const result = await validateAndFormatCode(longLineCode);
-            assert.match(result.error ?? '', /exceeds maximum allowed size/);
+            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
+                `  - Line 2 is 151 characters: \`const longVar = "${'a'.repeat(42)}…\``);
         });
-        it('returns an error when total character count exceeds 2500', async () => {
+        it('reports at most 3 long lines and counts the rest', async () => {
+            const longLinesCode = Array.from({ length: 5 }, (_, i) => `const v${i} = "${'b'.repeat(120)}";`).join('\n');
+            const result = await validateAndFormatCode(longLinesCode);
+            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
+                `  - Line 1 is 134 characters: \`const v0 = "${'b'.repeat(47)}…\`\n` +
+                `  - Line 2 is 134 characters: \`const v1 = "${'b'.repeat(47)}…\`\n` +
+                `  - Line 3 is 134 characters: \`const v2 = "${'b'.repeat(47)}…\`\n` +
+                '  - 2 more lines not shown.');
+        });
+        it('returns an error with the character count when total character count exceeds 2500', async () => {
             const bulkCode = Array.from({ length: 30 }, (_, i) => `const var${i} = "${'x'.repeat(75)}";`).join('\n');
-            formatStub.resolves({
-                content: bulkCode,
-                mapping: { original: [], formatted: [] },
-            });
             const result = await validateAndFormatCode(bulkCode);
-            assert.match(result.error ?? '', /exceeds maximum allowed size/);
+            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+                '- The code is 2779 characters (max 2500). Remove unneeded code or split the logic into smaller calls.');
+        });
+        it('reports every exceeded limit in one error', async () => {
+            const code = [
+                `const longVar = "${'a'.repeat(130)}";`,
+                ...Array.from({ length: 40 }, (_, i) => `const var${i} = "${'x'.repeat(50)}";`),
+            ].join('\n');
+            const result = await validateAndFormatCode(code);
+            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+                '- The code is 41 lines (max 40). Split the logic into smaller calls and return intermediate results in `data`.\n' +
+                `${LONG_LINES_ADVICE}\n` +
+                `  - Line 1 is 149 characters: \`const longVar = "${'a'.repeat(42)}…\`\n` +
+                '- The code is 2859 characters (max 2500). Remove unneeded code or split the logic into smaller calls.');
+        });
+        it('accepts code that is exactly 40 lines', async () => {
+            const code = Array.from({ length: 40 }, (_, i) => `const var${i} = ${i};`).join('\n');
+            const result = await validateAndFormatCode(code);
+            assert.isUndefined(result.error);
+            assert.strictEqual(result.formattedCode, code);
+        });
+        it('accepts lines of exactly 120 characters and exactly 2500 characters in total', async () => {
+            const code = [
+                ...Array.from({ length: 20 }, () => `// ${'x'.repeat(117)}`),
+                `// ${'x'.repeat(77)}`,
+            ].join('\n');
+            const result = await validateAndFormatCode(code);
+            assert.isUndefined(result.error);
+            assert.strictEqual(result.formattedCode, code);
         });
     });
     it('formats code and executes successfully when V2 architecture is enabled', async () => {
@@ -377,7 +412,7 @@ describe('ExecuteJavaScriptTool', () => {
             code: longCode,
         }, context);
         assertIsError(response);
-        assert.match(response.error, /exceeds maximum allowed size/);
+        assert.match(response.error, /The code is 45 lines \(max 40\)/);
     });
     describe('origin locking', () => {
         function createContext(originLock) {

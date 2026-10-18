@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, setColorScheme } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from './data_grid.js';
 describeWithEnvironment('DataGrid', () => {
@@ -12,6 +14,79 @@ describeWithEnvironment('DataGrid', () => {
     beforeEach(() => {
         container = document.createElement('div');
         renderElementIntoDOM(container);
+    });
+    describe('focus indicator', () => {
+        afterEach(() => setColorScheme('light'));
+        function createGrid() {
+            const dataGrid = new DataGrid.DataGrid.DataGridImpl({
+                displayName: 'Test',
+                columns: [{ id: 'key', title: i18n.i18n.lockedString('Key'), sortable: false, editable: true }],
+            });
+            const token = { token: 'DataGridInternalToken' };
+            dataGrid.setEditCallback(sinon.stub(), token);
+            const widget = dataGrid.asWidget();
+            widget.markAsRoot();
+            widget.show(container);
+            dataGrid.element.style.height = '100px';
+            dataGrid.setStriped(true);
+            const nodes = ['first', 'second', 'third'].map(key => new DataGrid.DataGrid.DataGridNode({ key }));
+            for (const node of nodes) {
+                dataGrid.rootNode().appendChild(node);
+            }
+            nodes[0].select();
+            const outsideInput = document.createElement('input');
+            container.appendChild(outsideInput);
+            outsideInput.focus();
+            return { dataGrid, nodes, outsideInput };
+        }
+        for (const theme of ['light', 'dark']) {
+            it(`outlines the selected row only during keyboard focus in the ${theme} theme`, () => {
+                setColorScheme(theme);
+                const { dataGrid, nodes, outsideInput } = createGrid();
+                const selected = nodes[0].element();
+                const blurredBackground = getComputedStyle(selected).backgroundColor;
+                assert.strictEqual(getComputedStyle(selected).outlineStyle, 'none');
+                dataGrid.element.focus();
+                assert.isTrue(dataGrid.element.matches(':focus-visible'));
+                const style = getComputedStyle(selected);
+                assert.strictEqual(style.outlineStyle, 'solid');
+                assert.strictEqual(style.outlineWidth, '2px');
+                assert.strictEqual(style.outlineOffset, '-2px');
+                const outline = Common.Color.parse(style.outlineColor);
+                assert.exists(outline);
+                for (const node of nodes) {
+                    const background = Common.Color.parse(getComputedStyle(node.element()).backgroundColor);
+                    assert.exists(background);
+                    assert.isAtLeast(Common.ColorUtils.contrastRatio(outline.asLegacyColor().rgba(), background.asLegacyColor().rgba()), 3);
+                }
+                dataGrid.element.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+                assert.strictEqual(dataGrid.selectedNode, nodes[1]);
+                assert.strictEqual(getComputedStyle(selected).outlineStyle, 'none');
+                assert.strictEqual(getComputedStyle(nodes[1].element()).outlineStyle, 'solid');
+                outsideInput.focus();
+                assert.strictEqual(dataGrid.selectedNode, nodes[1]);
+                assert.strictEqual(getComputedStyle(nodes[1].element()).outlineStyle, 'none');
+                assert.strictEqual(getComputedStyle(nodes[1].element()).backgroundColor, blurredBackground);
+            });
+            it(`preserves cell focus without a row outline in the ${theme} theme`, () => {
+                setColorScheme(theme);
+                const { dataGrid, nodes } = createGrid();
+                dataGrid.element.focus();
+                const selected = nodes[0].element();
+                assert.strictEqual(getComputedStyle(selected).outlineStyle, 'solid');
+                const cell = selected.querySelector('td');
+                assert.exists(cell);
+                cell.focus();
+                assert.isTrue(cell.matches(':focus-visible'));
+                assert.strictEqual(dataGrid.selectedNode, nodes[0]);
+                assert.strictEqual(getComputedStyle(selected).outlineStyle, 'none');
+                assert.strictEqual(getComputedStyle(cell).outlineStyle, 'solid');
+                assert.strictEqual(getComputedStyle(cell).outlineWidth, '2px');
+                dataGrid.element.focus();
+                assert.strictEqual(getComputedStyle(cell).outlineStyle, 'none');
+                assert.strictEqual(getComputedStyle(selected).outlineStyle, 'solid');
+            });
+        }
     });
     it('tests long text in datagrid', () => {
         const columns = [
@@ -128,6 +203,33 @@ describeWithEnvironment('DataGrid', () => {
         assert.exists(headerElement);
         headerElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, button: 2 }));
         sinon.assert.calledOnce(tableContextMenuCallback);
+    });
+    it('keeps focus on data grid when removing a selected node with a focused editable cell', () => {
+        const columns = [
+            { id: 'key', title: i18n.i18n.lockedString('Key'), editable: true, sortable: false },
+        ];
+        const dataGrid = new DataGrid.DataGrid.DataGridImpl({
+            displayName: 'Test',
+            columns,
+            deleteCallback: (node) => {
+                node.remove();
+            },
+        });
+        const token = { token: 'DataGridInternalToken' };
+        dataGrid.setEditCallback(sinon.stub(), token);
+        container.appendChild(dataGrid.element);
+        const node1 = new DataGrid.DataGrid.DataGridNode({ key: 'item1' });
+        const node2 = new DataGrid.DataGrid.DataGridNode({ key: 'item2' });
+        dataGrid.rootNode().appendChild(node1);
+        dataGrid.rootNode().appendChild(node2);
+        node1.select();
+        const cell1 = node1.existingElement()?.querySelector('td');
+        assert.exists(cell1);
+        cell1.focus();
+        assert.strictEqual(document.activeElement, cell1);
+        node1.remove();
+        assert.strictEqual(dataGrid.selectedNode, node2);
+        assert.strictEqual(document.activeElement, dataGrid.element);
     });
 });
 //# sourceMappingURL=DataGrid.test.js.map

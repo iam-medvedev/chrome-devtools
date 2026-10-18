@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { allThreadEntriesInTrace, getBaseTraceHandlerData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall, } from '../../../testing/TraceHelpersCore.js';
+import { afterEach, beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceHandlerData, makeCompleteEvent, makeConsoleTimeStamp, makeMockRendererHandlerData, makeProfileCall, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function shapeStackTraceAsArray(stackTrace) {
@@ -21,6 +23,7 @@ function parsedTraceFromEvents(events) {
     return getBaseTraceHandlerData({ Renderer: makeMockRendererHandlerData(events) });
 }
 describe('StackTraceForTraceEvent', function () {
+    setupLocaleHooks();
     let parsedTrace;
     let data;
     beforeEach(async function () {
@@ -196,7 +199,6 @@ describe('StackTraceForTraceEvent', function () {
         const extensionEntryStart = 0;
         const extensionEntryEnd = 100;
         const entryName = 'Entry';
-        const timestamp = makeInstantEvent(Trace.Types.Events.Name.TIME_STAMP, extensionEntryEnd, '', pid, tid);
         const extensionData = {
             color: 'tertiary-dark',
             frame: 'frame',
@@ -206,7 +208,7 @@ describe('StackTraceForTraceEvent', function () {
             start: extensionEntryStart,
             track: 'track',
         };
-        timestamp.args = { data: extensionData };
+        const timestamp = makeConsoleTimeStamp(entryName, extensionEntryEnd, extensionData, pid, tid);
         const parsedTrace = parsedTraceFromEvents([profileCall, timestamp]);
         const mockExtensionEntry = {
             ts: timestamp.ts,

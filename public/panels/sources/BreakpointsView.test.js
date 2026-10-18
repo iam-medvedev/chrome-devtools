@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -591,7 +592,6 @@ describe('BreakpointsSidebarController', () => {
         });
     });
     afterEach(async () => {
-        sinon.restore();
         await deinitializeGlobalVars();
     });
     const DEFAULT_BREAKPOINT = [
@@ -750,7 +750,6 @@ describe('BreakpointsView', () => {
         });
     });
     afterEach(async () => {
-        sinon.restore();
         await deinitializeGlobalVars();
     });
     it('correctly expands breakpoint groups', async () => {

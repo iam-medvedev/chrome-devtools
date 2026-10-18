@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
@@ -54,7 +55,6 @@ describeWithEnvironment('AiCodeGenerationTeaser', () => {
         // Wait to ensure no more updates happen after loading is false.
         clock.tick(1100);
         assert.strictEqual(timerCallCount, setTimerText.callCount);
-        clock.restore();
     });
     it('disclaimerTextVariant is updated', async () => {
         const { view, widget } = await createTeaser();

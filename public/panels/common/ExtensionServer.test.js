@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -986,6 +987,158 @@ describe('Runtime hosts policy', () => {
         assert.notInclude(addedUrls, `${blockedUrl}/bundle.min.js`);
         assert.deepEqual(committedUrls, [allowedSourceUrl]);
     });
+    it('does not notify onResourceAdded or onResourceContentCommitted for DefaultScriptMapping debugger:// resources of blocked scripts', async () => {
+        const backend = getBackend(context);
+        mockResourceTree(backend.cdpConnection);
+        const target = backend.createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+        const addedUrls = [];
+        const committedUrls = [];
+        context.chrome.devtools?.inspectedWindow.onResourceAdded.addListener(r => addedUrls.push(r.url));
+        context.chrome.devtools?.inspectedWindow.onResourceContentCommitted.addListener(r => committedUrls.push(r.url));
+        await waitForFunction(() => PanelCommon.ExtensionServer.ExtensionServer.instance().hasSubscribers("resource-added" /* Extensions.ExtensionAPI.PrivateAPI.Events.ResourceAdded */) &&
+            PanelCommon.ExtensionServer.ExtensionServer.instance().hasSubscribers("resource-content-committed" /* Extensions.ExtensionAPI.PrivateAPI.Events.ResourceContentCommitted */));
+        const blockedScript = await backend.addScript(target, { url: `${blockedUrl}/secret.js`, content: 'const SECRET = 1;' }, null);
+        const blockedScriptWithSourceURL = await backend.addScript(target, {
+            url: 'webpack://app/spoofed.js',
+            hasSourceURL: true,
+            embedderName: `${blockedUrl}/secret-embedder.js`,
+            content: 'const SECRET = 2;',
+        }, null);
+        const allowedScript = await backend.addScript(target, { url: `${allowedUrl}allowed.js`, content: 'const ALLOWED = 1;' }, null);
+        const blockedVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedScript);
+        const blockedSourceUrlVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedScriptWithSourceURL);
+        const allowedVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(allowedScript);
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const blockedVmUISourceCode = workspace.uiSourceCodeForURL(blockedVmUrl);
+        const allowedVmUISourceCode = workspace.uiSourceCodeForURL(allowedVmUrl);
+        assert.exists(blockedVmUISourceCode);
+        assert.exists(allowedVmUISourceCode);
+        blockedVmUISourceCode.setWorkingCopy('modified secret');
+        blockedVmUISourceCode.commitWorkingCopy();
+        allowedVmUISourceCode.setWorkingCopy('modified allowed');
+        allowedVmUISourceCode.commitWorkingCopy();
+        await waitForFunction(() => committedUrls.includes(allowedVmUrl));
+        assert.include(addedUrls, allowedVmUrl);
+        assert.notInclude(addedUrls, blockedVmUrl);
+        assert.notInclude(addedUrls, blockedSourceUrlVmUrl);
+        assert.deepEqual(committedUrls, [allowedVmUrl]);
+    });
+    /**
+     * Registers the test extension on a fresh MessageChannel and returns a function that sends
+     * GetResourceContent requests through it.
+     */
+    function registerExtensionForResourceContent() {
+        const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+        const channel = new MessageChannel();
+        server.registerExtension(urlString `${getExtensionOrigin()}`, channel.port1);
+        let nextRequestId = 1;
+        return (url) => {
+            const requestId = nextRequestId++;
+            return new Promise(resolve => {
+                const listener = (event) => {
+                    if (event.data.command === 'callback' && event.data.requestId === requestId) {
+                        channel.port2.removeEventListener('message', listener);
+                        resolve(event.data.result);
+                    }
+                };
+                channel.port2.addEventListener('message', listener);
+                channel.port2.start();
+                channel.port2.postMessage({
+                    command: "getResourceContent" /* Extensions.ExtensionAPI.PrivateAPI.Commands.GetResourceContent */,
+                    url,
+                    requestId,
+                });
+            });
+        };
+    }
+    function assertPermissionDenied(response, url) {
+        const record = response;
+        assert.isTrue(record.isError, `expected error for ${url}`);
+        assert.strictEqual(record.code, 'E_FAILED');
+        assert.deepEqual(record.details, ['Permission denied']);
+    }
+    it('blocks getResourceContent on DefaultScriptMapping debugger:// resources of blocked scripts or blocked targets', async () => {
+        const backend = getBackend(context);
+        mockResourceTree(backend.cdpConnection);
+        const target = backend.createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+        const blockedTarget = backend.createTarget({ id: 'blocked-subframe', parentTarget: target });
+        // ResourceTreeModel resets inspectedURL to MAIN_FRAME's URL once the frame tree loads.
+        sinon.stub(blockedTarget, 'inspectedURL').returns(blockedUrl);
+        const blockedScript = await backend.addScript(target, { url: `${blockedUrl}/secret.js`, content: 'const SECRET = 1;' }, null);
+        const blockedScriptWithSourceURL = await backend.addScript(target, {
+            url: 'webpack://app/spoofed.js',
+            hasSourceURL: true,
+            embedderName: `${blockedUrl}/secret-embedder.js`,
+            content: 'const SECRET = 2;',
+        }, null);
+        const blockedTargetScript = await backend.addScript(blockedTarget, { url: `${allowedUrl}in-blocked-target.js`, content: 'const SECRET = 3;' }, null);
+        const allowedScript = await backend.addScript(target, { url: `${allowedUrl}allowed.js`, content: 'const ALLOWED = 1;' }, null);
+        const blockedVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedScript);
+        const blockedSourceUrlVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedScriptWithSourceURL);
+        const blockedTargetVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedTargetScript);
+        const allowedVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(allowedScript);
+        const getResourceContent = registerExtensionForResourceContent();
+        assert.deepEqual(await getResourceContent(allowedVmUrl), { content: 'const ALLOWED = 1;', encoding: '' });
+        for (const url of [blockedVmUrl, blockedSourceUrlVmUrl, blockedTargetVmUrl]) {
+            assertPermissionDenied(await getResourceContent(url), url);
+        }
+    });
+    it('checks anonymous scripts against their target and non-sourceURL scripts against their embedderName', async () => {
+        const backend = getBackend(context);
+        mockResourceTree(backend.cdpConnection);
+        const target = backend.createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(backend.universe.debuggerWorkspaceBinding);
+        const blockedTarget = backend.createTarget({ id: 'blocked-subframe', parentTarget: target });
+        // ResourceTreeModel resets inspectedURL to MAIN_FRAME's URL once the frame tree loads.
+        sinon.stub(blockedTarget, 'inspectedURL').returns(blockedUrl);
+        // Anonymous scripts (e.g. eval without sourceURL) have neither a URL nor an embedderName.
+        const anonymousScript = await backend.addScript(target, { url: '', content: 'const ANONYMOUS = 1;' }, null);
+        const anonymousBlockedTargetScript = await backend.addScript(blockedTarget, { url: '', content: 'const SECRET = 1;' }, null);
+        // A regular script on an allowed URL whose embedderName points to a blocked URL.
+        const blockedEmbedderScript = await backend.addScript(target, {
+            url: `${allowedUrl}allowed-url.js`,
+            embedderName: `${blockedUrl}/secret-embedder.js`,
+            content: 'const SECRET = 2;',
+        }, null);
+        const anonymousVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(anonymousScript);
+        const anonymousBlockedTargetVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(anonymousBlockedTargetScript);
+        const blockedEmbedderVmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(blockedEmbedderScript);
+        const getResourceContent = registerExtensionForResourceContent();
+        assert.deepEqual(await getResourceContent(anonymousVmUrl), { content: 'const ANONYMOUS = 1;', encoding: '' });
+        for (const url of [anonymousBlockedTargetVmUrl, blockedEmbedderVmUrl]) {
+            assertPermissionDenied(await getResourceContent(url), url);
+        }
+    });
+    it('blocks getResourceContent on UISourceCodes of service projects without a backing script', async () => {
+        const target = getBackend(context).createTarget({ id: 'target' });
+        target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [], sourceMapURLsForUISourceCode: [] }));
+        const addProjectWithUISourceCode = async (projectType, isServiceProject, url) => {
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), `${projectType}:${target.id()}`, projectType, '', isServiceProject);
+            Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
+            await createUISourceCode(project, url, Common.ResourceType.resourceTypes.Script);
+        };
+        const networkUrl = urlString `${allowedUrl}network.js`;
+        const debuggerUrl = urlString `${allowedUrl}debugger.js`;
+        const serviceUrl = urlString `${allowedUrl}service.js`;
+        await addProjectWithUISourceCode(Workspace.Workspace.projectTypes.Network, false, networkUrl);
+        await addProjectWithUISourceCode(Workspace.Workspace.projectTypes.Debugger, true, debuggerUrl);
+        await addProjectWithUISourceCode(Workspace.Workspace.projectTypes.Service, true, serviceUrl);
+        const getResourceContent = registerExtensionForResourceContent();
+        assert.deepEqual(await getResourceContent(networkUrl), { content: 'content', encoding: '' });
+        for (const url of [debuggerUrl, serviceUrl]) {
+            assertPermissionDenied(await getResourceContent(url), url);
+        }
+    });
     it('allows scripts with sourceURL comments if the embedderName is not a URL', async () => {
         const target = getBackend(context).createTarget({ id: 'target' });
         target.setInspectedURL(allowedUrl);
@@ -1286,6 +1439,28 @@ describe('Runtime hosts policy', () => {
         await context.chrome.devtools.network.getHAR();
         sinon.assert.notCalled(setHeadersSpy);
     });
+    it('blocks inspectedWindow.reload userAgent override when runtime_blocked_hosts is set', async () => {
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        assert.exists(context.chrome.devtools);
+        const setUserAgentSpy = sinon.spy(SDK.NetworkManager.MultitargetNetworkManager.instance(), 'setUserAgentOverride');
+        context.chrome.devtools.inspectedWindow.reload({ userAgent: 'Evil/1.0' });
+        // Round-trip a command on the same MessagePort to ensure the reload message has been processed.
+        await context.chrome.devtools.network.getHAR();
+        sinon.assert.notCalled(setUserAgentSpy);
+    });
+    it('allows inspectedWindow.reload without userAgent when runtime_blocked_hosts is set', async () => {
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(allowedUrl);
+        assert.exists(context.chrome.devtools);
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const reloadPageSpy = sinon.spy(resourceTreeModel, 'reloadPage');
+        context.chrome.devtools.inspectedWindow.reload({ ignoreCache: true });
+        // Round-trip a command on the same MessagePort to ensure the reload message has been processed.
+        await context.chrome.devtools.network.getHAR();
+        sinon.assert.calledOnce(reloadPageSpy);
+    });
     it('rejects recorder extension plugin and view registration when runtime_blocked_hosts is set', async () => {
         const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL(allowedUrl);
@@ -1363,6 +1538,87 @@ describe('addRequestHeaders security', () => {
     });
     it('extension-injected headers must not leak to file:// targets without file access', async () => {
         await assertHeadersNotAppliedAfterNavigation(urlString `file:///etc/passwd`, { 'X-Injected': 'value' });
+    });
+});
+describe('inspectedWindow.reload userAgent security', () => {
+    const context = setupDevtoolsExtensionHooks();
+    afterEach(() => {
+        SDK.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride('', null);
+    });
+    async function assertUserAgentNotAppliedAfterNavigation(navigateToUrl, injectedUserAgent) {
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(urlString `http://example.com`);
+        assert.exists(context.chrome.devtools);
+        const multitargetManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        // Set user agent while on a permitted page.
+        const uaCall = spyCall(multitargetManager, 'setUserAgentOverride');
+        context.chrome.devtools.inspectedWindow.reload({ userAgent: injectedUserAgent });
+        await uaCall;
+        // Navigate to a URL where extensions should NOT have access.
+        target.setInspectedURL(navigateToUrl);
+        // Simulate a new target attaching (e.g. OOPIF, worker, or navigation target).
+        const newTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: target });
+        const networkAgent = newTarget.networkAgent();
+        const cdpSpy = sinon.spy(networkAgent, 'invoke_setUserAgentOverride');
+        const networkManager = newTarget.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(cdpSpy);
+        assert.exists(networkManager);
+        assert.exists(multitargetManager);
+        multitargetManager.modelAdded(networkManager);
+        // Confirm that the injected UA is no longer active and not applied to the new target.
+        assert.notStrictEqual(multitargetManager.currentUserAgent(), injectedUserAgent);
+        if (cdpSpy.called) {
+            const appliedUA = cdpSpy.lastCall.args[0].userAgent;
+            assert.notStrictEqual(appliedUA, injectedUserAgent, `User agent override "${injectedUserAgent}" persisted across navigation to ${navigateToUrl}`);
+        }
+    }
+    it('extension-set user agent override must not leak to chrome:// targets after navigation', async () => {
+        await assertUserAgentNotAppliedAfterNavigation(urlString `chrome://settings`, 'Evil/1.0');
+    });
+    it('extension-set user agent override must not leak to forbidden-origin targets after navigation', async () => {
+        const oldDevToolsAPI = window.DevToolsAPI;
+        try {
+            window.DevToolsAPI = {
+                getOriginsForbiddenForExtensions: () => ['https://addons.example.com'],
+            };
+            await assertUserAgentNotAppliedAfterNavigation(urlString `https://addons.example.com/extensions`, 'Evil/1.0');
+        }
+        finally {
+            window.DevToolsAPI = oldDevToolsAPI;
+        }
+    });
+    it('extension-set user agent override must not leak to Chrome Web Store after navigation', async () => {
+        await assertUserAgentNotAppliedAfterNavigation(urlString `https://chromewebstore.google.com/`, 'Evil/1.0');
+    });
+    it('does not allow an extension to reset a DevTools-set user agent override on reload', async () => {
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(urlString `http://example.com`);
+        assert.exists(context.chrome.devtools);
+        const multitargetManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        multitargetManager.setUserAgentOverride('DevTools/1.0', null);
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.exists(resourceTreeModel);
+        const reloadCall = spyCall(resourceTreeModel, 'reloadPage');
+        context.chrome.devtools.inspectedWindow.reload({ userAgent: '' });
+        await reloadCall;
+        assert.strictEqual(multitargetManager.currentUserAgent(), 'DevTools/1.0');
+    });
+    it('does not clear a DevTools-set user agent override when extensions get disabled', async () => {
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(urlString `http://example.com`);
+        assert.exists(context.chrome.devtools);
+        const multitargetManager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        // First, the extension sets a UA override.
+        const uaCall = spyCall(multitargetManager, 'setUserAgentOverride');
+        context.chrome.devtools.inspectedWindow.reload({ userAgent: 'Extension/1.0' });
+        await uaCall;
+        assert.strictEqual(multitargetManager.currentUserAgent(), 'Extension/1.0');
+        // Then DevTools sets its own UA override (e.g., via Device Mode).
+        multitargetManager.setUserAgentOverride('DevTools/1.0', null);
+        assert.strictEqual(multitargetManager.currentUserAgent(), 'DevTools/1.0');
+        // Navigating to a protected URL disables extensions, which must not clear DevTools' override.
+        target.setInspectedURL(urlString `chrome://settings`);
+        assert.strictEqual(multitargetManager.currentUserAgent(), 'DevTools/1.0');
     });
 });
 describe('ExtensionServer', () => {

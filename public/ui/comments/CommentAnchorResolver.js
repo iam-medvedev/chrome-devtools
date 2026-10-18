@@ -13,6 +13,7 @@ const DISALLOWED_COMMENT_TARGETS = new Set([
     VisualLogging.VisualElements.Resizer,
     VisualLogging.VisualElements.Menu,
     VisualLogging.VisualElements.Popover,
+    VisualLogging.VisualElements.Dialog,
     // Minor controls and toolbars
     VisualLogging.VisualElements.Link,
     VisualLogging.VisualElements.Section,
@@ -31,6 +32,7 @@ const DISALLOWED_COMMENT_ANCESTORS = new Set([
     VisualLogging.VisualElements.Toolbar,
     VisualLogging.VisualElements.Menu,
     VisualLogging.VisualElements.Popover,
+    VisualLogging.VisualElements.Dialog,
     VisualLogging.VisualElements.PanelTabHeader,
 ]);
 /**
@@ -555,7 +557,7 @@ export function rematchCommentAnchor(comment, root = document, cachedJslogElemen
             return VisualLogging.getVePath(cmEditor) === anchor.vePath;
         });
         for (const cmEditor of matchingEditors) {
-            if (checkCodeMirrorLineMatch(cmEditor, lineNumber, anchor.textSignature)) {
+            if (anchor.textSignature !== undefined && checkCodeMirrorLineMatch(cmEditor, lineNumber, anchor.textSignature)) {
                 return cmEditor;
             }
         }

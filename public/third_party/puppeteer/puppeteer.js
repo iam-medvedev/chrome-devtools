@@ -2627,7 +2627,7 @@ function mergeUint8Arrays(items) {
 }
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.12.0";
+var packageVersion = "25.14.0";
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/Errors.js
 var PuppeteerError = class extends Error {
@@ -5439,8 +5439,8 @@ var Page = (() => {
         }
         return await this.mainFrame().isolatedRealm().evaluate(() => {
           return [
-            window.visualViewport.width * window.devicePixelRatio,
-            window.visualViewport.height * window.devicePixelRatio,
+            Math.round(window.visualViewport.width * window.devicePixelRatio),
+            Math.round(window.visualViewport.height * window.devicePixelRatio),
             window.devicePixelRatio
           ];
         });
@@ -6033,10 +6033,11 @@ var ConsoleMessage = class {
   #frame;
   #rawStackTrace;
   #targetId;
+  #worker;
   /**
    * @internal
    */
-  constructor(type, text, args, stackTraceLocations, frame, rawStackTrace, targetId) {
+  constructor(type, text, args, stackTraceLocations, frame, rawStackTrace, targetId, worker) {
     this.#type = type;
     this.#text = text;
     this.#args = args;
@@ -6044,6 +6045,34 @@ var ConsoleMessage = class {
     this.#frame = frame;
     this.#rawStackTrace = rawStackTrace;
     this.#targetId = targetId;
+    this.#worker = worker;
+  }
+  /**
+   * The {@link WebWorker} that initiated the console message, or `null` if the
+   * message originated from a frame.
+   *
+   * @public
+   */
+  worker() {
+    return this.#worker ?? null;
+  }
+  /**
+   * The {@link Page} that the console message originated from, or `null` if the
+   * message originated from a worker or outside of a frame context.
+   *
+   * @public
+   */
+  page() {
+    return this.#frame?.page() ?? null;
+  }
+  /**
+   * The {@link Frame} that initiated the console message, or `null` if the
+   * message originated from a worker.
+   *
+   * @public
+   */
+  frame() {
+    return this.#frame ?? null;
   }
   /**
    * The type of the console message.
@@ -7527,7 +7556,7 @@ var EmulationManager = (() => {
   let _private_setJavaScriptEnabled_descriptor;
   let _private_emulateFocus_decorators;
   let _private_emulateFocus_descriptor;
-  return class EmulationManager {
+  return class EmulationManager2 {
     static {
       const _metadata = typeof Symbol === "function" && Symbol.metadata ? /* @__PURE__ */ Object.create(null) : void 0;
       _private_applyViewport_decorators = [invokeAtMostOnceForArguments];
@@ -7836,11 +7865,19 @@ var EmulationManager = (() => {
     get #emulateMediaFeatures() {
       return _private_emulateMediaFeatures_descriptor.value;
     }
+    static #supportedMediaFeatures = /* @__PURE__ */ new Set([
+      "prefers-color-scheme",
+      "prefers-reduced-motion",
+      "prefers-contrast",
+      "prefers-reduced-transparency",
+      "color-gamut",
+      "forced-colors"
+    ]);
     async emulateMediaFeatures(features) {
       if (Array.isArray(features)) {
         for (const mediaFeature of features) {
           const name = mediaFeature.name;
-          assert(/^(?:prefers-(?:color-scheme|reduced-motion)|color-gamut)$/.test(name), "Unsupported media feature: " + name);
+          assert(EmulationManager2.#supportedMediaFeatures.has(name), "Unsupported media feature: " + name);
         }
       }
       await this.#mediaFeaturesState.setState({
@@ -8384,7 +8421,7 @@ var CSSQueryHandler = class extends QueryHandler {
 };
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/generated/injected.js
-var source = '"use strict";var g=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var Y=Object.getOwnPropertyNames;var G=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)g(t,r,{get:e[r],enumerable:!0})},J=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let n of Y(e))!G.call(t,n)&&n!==r&&g(t,n,{get:()=>e[n],enumerable:!(o=X(e,n))||o.enumerable});return t};var z=t=>J(g({},"__esModule",{value:!0}),t);var Se={};l(Se,{default:()=>Te});module.exports=z(Se);var b=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends b{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(n=>n instanceof t?(n.#s&&r.add(n),n.valueOrThrow()):n);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#t;#o;#n=new Promise(e=>{this.#o=e});#s;#l;constructor(e){e&&e.timeout>0&&(this.#l=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#l)},e.timeout))}#i(e){clearTimeout(this.#s),this.#t=e,this.#o()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#i(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#i(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#t}#a;valueOrThrow(){return this.#a||(this.#a=(async()=>{if(await this.#n,this.#r)throw this.#t;return this.#t})()),this.#a}};var W=new Map,F=t=>{let e=W.get(t);return e||(e=new Function(`return ${t}`)(),W.set(t,e),e)};var E={};l(E,{ariaQuerySelector:()=>K,ariaQuerySelectorAll:()=>x});var K=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var v={};l(v,{cssQuerySelector:()=>Z,cssQuerySelectorAll:()=>ee});var Z=(t,e)=>t.querySelector(e),ee=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{CustomQuerySelectorRegistry:()=>y,customQuerySelectors:()=>P});var y=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(n,i)=>{for(let s of o(n,i))return s;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(n,i)=>{let s=o(n,i);return s?[s]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new y;var R={};l(R,{pierceQuerySelector:()=>te,pierceQuerySelectorAll:()=>re});var te=(t,e)=>{let r=null,o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&!r&&s.matches(e)&&(r=s)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},re=(t,e)=>{let r=[],o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&s.matches(e)&&r.push(s)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var oe={childList:!0,subtree:!0,attributes:!0};function ne(t){return t.nodeType===Node.ELEMENT_NODE||t.nodeType===Node.DOCUMENT_FRAGMENT_NODE}function se(t){return t.parentNode??t.host??null}function ie(t,e){let r=t,o;for(;o=se(r);){if(e.has(o))return!0;r=o}return!1}var w=class{#e;#r;#t;#o=new WeakSet;#n;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#n=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new WeakSet,this.#t=new MutationObserver(async o=>{this.#l(o);let n=await this.#e();n&&(e.resolve(n),await this.stop())}),this.#s(this.#r)}#s(e){!this.#t||this.#o.has(e)||(this.#o.add(e),this.#t.observe(e,oe),this.#i(e))}#l(e){let r=new Set;for(let o of e)for(let n of o.addedNodes)ne(n)&&r.add(n);for(let o of r)ie(o,r)||this.#i(o)}#i(e){let r=document.createTreeWalker(e,NodeFilter.SHOW_ELEMENT);do{let{shadowRoot:o}=r.currentNode;o&&this.#s(o)}while(r.nextNode())}async stop(){u(this.#n,"Polling never started."),this.#n.finished()||this.#n.reject(new Error("Polling stopped")),this.#t&&(this.#t.disconnect(),this.#t=void 0)}result(){return u(this.#n,"Polling never started."),this.#n.valueOrThrow()}},N=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let n=await this.#e();if(!n){window.requestAnimationFrame(o);return}e.resolve(n),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},T=class{#e;#r;#t;#o;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#o=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#t=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#o,"Polling never started."),this.#o.finished()||this.#o.reject(new Error("Polling stopped")),this.#t&&(clearInterval(this.#t),this.#t=void 0)}result(){return u(this.#o,"Polling never started."),this.#o.valueOrThrow()}};var L={};l(L,{PCombinator:()=>V,pQuerySelector:()=>we,pQuerySelectorAll:()=>B});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var le=new Set(["checkbox","image","radio"]),ae=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!le.has(t.type),ce=new Set(["SCRIPT","STYLE"]),f=t=>!ce.has(t.nodeName)&&!document.head?.contains(t),O=new WeakMap,H=t=>{for(;t;)O.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,I,ue=()=>{let t=globalThis.MutationObserver;if(!t)throw new Error("MutationObserver is not available in this environment.");return I||(I=new t(e=>{for(let r of e)H(r.target)})),I},d=t=>{let e=O.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(ae(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{H(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ue().observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return O.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let n;o.shadowRoot?n=m(o.shadowRoot,e):n=m(o,e);for(let i of n)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>fe,pierce:()=>S,pierceAll:()=>M});var de=["hidden","collapse"],fe=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement:t;if(!r)return e===!1;let o=window.getComputedStyle(r),n=o&&!de.includes(o.visibility)&&!me(r);return e===n?t:!1};function me(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var he=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*S(t){he(t)?yield t.shadowRoot:yield t}function*M(t){t=S(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var _={};l(_,{xpathQuerySelectorAll:()=>D});var D=function*(t,e,r=-1){let n=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],s;for(;(s=n.iterateNext())&&(i.push(s),!(r&&i.length===r)););for(let h=0;h<i.length;h++)s=i[h],yield s,i[h]=null};var pe=/[-\\w\\P{ASCII}*]/u,V=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(V||{}),U=t=>"querySelectorAll"in t,q=class{#e;#r=[];#t=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#o()}async run(){for(typeof this.#t=="string"&&this.#t.trimStart()===":scope"&&this.#o();this.#t!==void 0;this.#o()){let e=this.#t;typeof e=="string"?e[0]&&pe.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){U(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!U(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let n of r.parentElement.children)if(++o,n===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*D(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#o(){if(this.#r.length!==0){this.#t=this.#r.shift();return}if(this.#e.length===0){this.#t=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,S),this.#o();break}case">>>":{this.elements=a.flatMap(this.elements,M),this.#o();break}default:this.#r=e,this.#o();break}}},Q=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let n=0;for(let s=e.previousSibling;s;s=s.previousSibling)++n;let i=this.calculate(e.parentNode,[n]);return this.#e.set(e,i),[...i,...r]}},$=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[n=-1,...i]=e;return r===n?$(o,i):r<n?-1:1},ye=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new Q;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,n])=>$(o,n)).map(([o])=>o)},B=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let n=0;return o.some(i=>(typeof i=="string"?++n:n=0,n>1))}))throw new Error("Multiple deep combinators found in sequence.");return ye(a.flatMap(r,o=>{let n=new q(t,o);return n.run(),n.elements}))},we=async function(t,e){for await(let r of B(t,e))return r;return null};var Ne=Object.freeze({...E,...A,...R,...L,...C,...k,..._,...v,Deferred:c,createFunction:F,createTextContent:d,IntervalPoller:T,isSuitableNodeForTextMatching:f,MutationPoller:w,RAFPoller:N}),Te=Ne;\n';
+var source = '"use strict";var g=Object.defineProperty;var X=Object.getOwnPropertyDescriptor;var Y=Object.getOwnPropertyNames;var G=Object.prototype.hasOwnProperty;var l=(t,e)=>{for(var r in e)g(t,r,{get:e[r],enumerable:!0})},J=(t,e,r,o)=>{if(e&&typeof e=="object"||typeof e=="function")for(let n of Y(e))!G.call(t,n)&&n!==r&&g(t,n,{get:()=>e[n],enumerable:!(o=X(e,n))||o.enumerable});return t};var z=t=>J(g({},"__esModule",{value:!0}),t);var Se={};l(Se,{default:()=>Te});module.exports=z(Se);var b=class extends Error{constructor(e,r){super(e,r),this.name=this.constructor.name}get[Symbol.toStringTag](){return this.constructor.name}},p=class extends b{};var c=class t{static create(e){return new t(e)}static async race(e){let r=new Set;try{let o=e.map(n=>n instanceof t?(n.#s&&r.add(n),n.valueOrThrow()):n);return await Promise.race(o)}finally{for(let o of r)o.reject(new Error("Timeout cleared"))}}#e=!1;#r=!1;#t;#o;#n=new Promise(e=>{this.#o=e});#s;#l;constructor(e){e&&e.timeout>0&&(this.#l=new p(e.message),this.#s=setTimeout(()=>{this.reject(this.#l)},e.timeout))}#i(e){clearTimeout(this.#s),this.#t=e,this.#o()}resolve(e){this.#r||this.#e||(this.#e=!0,this.#i(e))}reject(e){this.#r||this.#e||(this.#r=!0,this.#i(e))}resolved(){return this.#e}finished(){return this.#e||this.#r}value(){return this.#t}#a;valueOrThrow(){return this.#a||(this.#a=(async()=>{if(await this.#n,this.#r)throw this.#t;return this.#t})()),this.#a}};var W=new Map,F=t=>{let e=W.get(t);return e||(e=new Function(`return ${t}`)(),W.set(t,e),e)};var E={};l(E,{ariaQuerySelector:()=>K,ariaQuerySelectorAll:()=>x});var K=(t,e)=>globalThis.__ariaQuerySelector(t,e),x=async function*(t,e){yield*await globalThis.__ariaQuerySelectorAll(t,e)};var v={};l(v,{cssQuerySelector:()=>Z,cssQuerySelectorAll:()=>ee});var Z=(t,e)=>t.querySelector(e),ee=function(t,e){return t.querySelectorAll(e)};var A={};l(A,{CustomQuerySelectorRegistry:()=>y,customQuerySelectors:()=>P});var y=class{#e=new Map;register(e,r){if(!r.queryOne&&r.queryAll){let o=r.queryAll;r.queryOne=(n,i)=>{for(let s of o(n,i))return s;return null}}else if(r.queryOne&&!r.queryAll){let o=r.queryOne;r.queryAll=(n,i)=>{let s=o(n,i);return s?[s]:[]}}else if(!r.queryOne||!r.queryAll)throw new Error("At least one query method must be defined.");this.#e.set(e,{querySelector:r.queryOne,querySelectorAll:r.queryAll})}unregister(e){this.#e.delete(e)}get(e){return this.#e.get(e)}clear(){this.#e.clear()}},P=new y;var R={};l(R,{pierceQuerySelector:()=>te,pierceQuerySelectorAll:()=>re});var te=(t,e)=>{let r=null,o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&!r&&s.matches(e)&&(r=s)}while(!r&&i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r},re=(t,e)=>{let r=[],o=n=>{let i=document.createTreeWalker(n,NodeFilter.SHOW_ELEMENT);do{let s=i.currentNode;s.shadowRoot&&o(s.shadowRoot),!(s instanceof ShadowRoot)&&s!==n&&s.matches(e)&&r.push(s)}while(i.nextNode())};return t instanceof Document&&(t=t.documentElement),o(t),r};var u=(t,e)=>{if(!t)throw new Error(e)};var oe={childList:!0,subtree:!0,attributes:!0};function ne(t){return t.nodeType===Node.ELEMENT_NODE||t.nodeType===Node.DOCUMENT_FRAGMENT_NODE}function se(t){return t.parentNode??t.host??null}function ie(t,e){let r=t,o;for(;o=se(r);){if(e.has(o))return!0;r=o}return!1}var w=class{#e;#r;#t;#o=new WeakSet;#n;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#n=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#o=new WeakSet,this.#t=new MutationObserver(async o=>{this.#l(o);let n=await this.#e();n&&(e.resolve(n),await this.stop())}),this.#s(this.#r)}#s(e){!this.#t||this.#o.has(e)||(this.#o.add(e),this.#t.observe(e,oe),this.#i(e))}#l(e){let r=new Set;for(let o of e)for(let n of o.addedNodes)ne(n)&&r.add(n);for(let o of r)ie(o,r)||this.#i(o)}#i(e){let r=document.createTreeWalker(e,NodeFilter.SHOW_ELEMENT);do{let{shadowRoot:o}=r.currentNode;o&&this.#s(o)}while(r.nextNode())}async stop(){u(this.#n,"Polling never started."),this.#n.finished()||this.#n.reject(new Error("Polling stopped")),this.#t&&(this.#t.disconnect(),this.#t=void 0)}result(){return u(this.#n,"Polling never started."),this.#n.valueOrThrow()}},N=class{#e;#r;constructor(e){this.#e=e}async start(){let e=this.#r=c.create(),r=await this.#e();if(r){e.resolve(r);return}let o=async()=>{if(e.finished())return;let n=await this.#e();if(!n){window.requestAnimationFrame(o);return}e.resolve(n),await this.stop()};window.requestAnimationFrame(o)}async stop(){u(this.#r,"Polling never started."),this.#r.finished()||this.#r.reject(new Error("Polling stopped"))}result(){return u(this.#r,"Polling never started."),this.#r.valueOrThrow()}},T=class{#e;#r;#t;#o;constructor(e,r){this.#e=e,this.#r=r}async start(){let e=this.#o=c.create(),r=await this.#e();if(r){e.resolve(r);return}this.#t=setInterval(async()=>{let o=await this.#e();o&&(e.resolve(o),await this.stop())},this.#r)}async stop(){u(this.#o,"Polling never started."),this.#o.finished()||this.#o.reject(new Error("Polling stopped")),this.#t&&(clearInterval(this.#t),this.#t=void 0)}result(){return u(this.#o,"Polling never started."),this.#o.valueOrThrow()}};var L={};l(L,{PCombinator:()=>V,pQuerySelector:()=>we,pQuerySelectorAll:()=>B});var a=class{static async*map(e,r){for await(let o of e)yield await r(o)}static async*flatMap(e,r){for await(let o of e)yield*r(o)}static async collect(e){let r=[];for await(let o of e)r.push(o);return r}static async first(e){for await(let r of e)return r}};var C={};l(C,{textQuerySelectorAll:()=>m});var le=new Set(["checkbox","image","radio"]),ae=t=>t instanceof HTMLSelectElement||t instanceof HTMLTextAreaElement||t instanceof HTMLInputElement&&!le.has(t.type),ce=new Set(["SCRIPT","STYLE"]),f=t=>!ce.has(t.nodeName)&&!document.head?.contains(t),O=new WeakMap,H=t=>{for(;t;)O.delete(t),t instanceof ShadowRoot?t=t.host:t=t.parentNode},j=new WeakSet,I,ue=()=>{let t=globalThis.MutationObserver;if(!t)throw new Error("MutationObserver is not available in this environment.");return I||(I=new t(e=>{for(let r of e)H(r.target)})),I},d=t=>{let e=O.get(t);if(e||(e={full:"",immediate:[]},!f(t)))return e;let r="";if(ae(t))e.full=t.value,e.immediate.push(t.value),t.addEventListener("input",o=>{H(o.target)},{once:!0,capture:!0});else{for(let o=t.firstChild;o;o=o.nextSibling){if(o.nodeType===Node.TEXT_NODE){e.full+=o.nodeValue??"",r+=o.nodeValue??"";continue}r&&e.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(e.full+=d(o).full)}r&&e.immediate.push(r),t instanceof Element&&t.shadowRoot&&(e.full+=d(t.shadowRoot).full),j.has(t)||(ue().observe(t,{childList:!0,characterData:!0,subtree:!0}),j.add(t))}return O.set(t,e),e};var m=function*(t,e){let r=!1;for(let o of t.childNodes)if(o instanceof Element&&f(o)){let n;o.shadowRoot?n=m(o.shadowRoot,e):n=m(o,e);for(let i of n)yield i,r=!0}r||t instanceof Element&&f(t)&&d(t).full.includes(e)&&(yield t)};var k={};l(k,{checkVisibility:()=>fe,pierce:()=>S,pierceAll:()=>M});var de=["hidden","collapse"],fe=(t,e)=>{if(!t)return e===!1;if(e===void 0)return t;let r=t.nodeType===Node.TEXT_NODE?t.parentElement??t.parentNode?.host:t;if(!r)return e===!1;let o=window.getComputedStyle(r),n=o&&!de.includes(o.visibility)&&!me(r);return e===n?t:!1};function me(t){let e=t.getBoundingClientRect();return e.width===0||e.height===0}var he=t=>"shadowRoot"in t&&t.shadowRoot instanceof ShadowRoot;function*S(t){he(t)?yield t.shadowRoot:yield t}function*M(t){t=S(t).next().value,yield t;let e=[document.createTreeWalker(t,NodeFilter.SHOW_ELEMENT)];for(let r of e){let o;for(;o=r.nextNode();)o.shadowRoot&&(yield o.shadowRoot,e.push(document.createTreeWalker(o.shadowRoot,NodeFilter.SHOW_ELEMENT)))}}var _={};l(_,{xpathQuerySelectorAll:()=>D});var D=function*(t,e,r=-1){let n=(t.ownerDocument||document).evaluate(e,t,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE),i=[],s;for(;(s=n.iterateNext())&&(i.push(s),!(r&&i.length===r)););for(let h=0;h<i.length;h++)s=i[h],yield s,i[h]=null};var pe=/[-\\w\\P{ASCII}*]/u,V=(r=>(r.Descendent=">>>",r.Child=">>>>",r))(V||{}),U=t=>"querySelectorAll"in t,q=class{#e;#r=[];#t=void 0;elements;constructor(e,r){this.elements=[e],this.#e=r,this.#o()}async run(){for(typeof this.#t=="string"&&this.#t.trimStart()===":scope"&&this.#o();this.#t!==void 0;this.#o()){let e=this.#t;typeof e=="string"?e[0]&&pe.test(e[0])?this.elements=a.flatMap(this.elements,async function*(r){U(r)&&(yield*r.querySelectorAll(e))}):this.elements=a.flatMap(this.elements,async function*(r){if(!r.parentElement){if(!U(r))return;yield*r.querySelectorAll(e);return}let o=0;for(let n of r.parentElement.children)if(++o,n===r)break;yield*r.parentElement.querySelectorAll(`:scope>:nth-child(${o})${e}`)}):this.elements=a.flatMap(this.elements,async function*(r){switch(e.name){case"text":yield*m(r,e.value);break;case"xpath":yield*D(r,e.value);break;case"aria":yield*x(r,e.value);break;default:let o=P.get(e.name);if(!o)throw new Error(`Unknown selector type: ${e.name}`);yield*o.querySelectorAll(r,e.value)}})}}#o(){if(this.#r.length!==0){this.#t=this.#r.shift();return}if(this.#e.length===0){this.#t=void 0;return}let e=this.#e.shift();switch(e){case">>>>":{this.elements=a.flatMap(this.elements,S),this.#o();break}case">>>":{this.elements=a.flatMap(this.elements,M),this.#o();break}default:this.#r=e,this.#o();break}}},Q=class{#e=new WeakMap;calculate(e,r=[]){if(e===null)return r;e instanceof ShadowRoot&&(e=e.host);let o=this.#e.get(e);if(o)return[...o,...r];let n=0;for(let s=e.previousSibling;s;s=s.previousSibling)++n;let i=this.calculate(e.parentNode,[n]);return this.#e.set(e,i),[...i,...r]}},$=(t,e)=>{if(t.length+e.length===0)return 0;let[r=-1,...o]=t,[n=-1,...i]=e;return r===n?$(o,i):r<n?-1:1},ye=async function*(t){let e=new Set;for await(let o of t)e.add(o);let r=new Q;yield*[...e.values()].map(o=>[o,r.calculate(o)]).sort(([,o],[,n])=>$(o,n)).map(([o])=>o)},B=function(t,e){let r=JSON.parse(e);if(r.some(o=>{let n=0;return o.some(i=>(typeof i=="string"?++n:n=0,n>1))}))throw new Error("Multiple deep combinators found in sequence.");return ye(a.flatMap(r,o=>{let n=new q(t,o);return n.run(),n.elements}))},we=async function(t,e){for await(let r of B(t,e))return r;return null};var Ne=Object.freeze({...E,...A,...R,...L,...C,...k,..._,...v,Deferred:c,createFunction:F,createTextContent:d,IntervalPoller:T,isSuitableNodeForTextMatching:f,MutationPoller:w,RAFPoller:N}),Te=Ne;\n';
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/ScriptInjector.js
 var ScriptInjector = class {
@@ -8499,7 +8536,7 @@ var CustomQueryHandlerRegistry = class {
    * Unregisters all custom query handlers.
    */
   clear() {
-    for (const [registerScript] of this.#handlers) {
+    for (const [registerScript] of this.#handlers.values()) {
       scriptInjector.pop(registerScript);
     }
     this.#handlers.clear();
@@ -9670,191 +9707,789 @@ var Frame = (() => {
   };
 })();
 
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpIssue.js
-var CdpIssue = class {
-  #code;
-  #details;
-  constructor(issue) {
-    this.#code = issue.code;
-    this.#details = issue.details;
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Accessibility.js
+var __addDisposableResource9 = function(env, value, async2) {
+  if (value !== null && value !== void 0) {
+    if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
+    var dispose, inner;
+    if (async2) {
+      if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
+      dispose = value[Symbol.asyncDispose];
+    }
+    if (dispose === void 0) {
+      if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
+      dispose = value[Symbol.dispose];
+      if (async2) inner = dispose;
+    }
+    if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
+    if (inner) dispose = function() {
+      try {
+        inner.call(this);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+    env.stack.push({ value, dispose, async: async2 });
+  } else if (async2) {
+    env.stack.push({ async: true });
   }
-  get code() {
-    return this.#code;
-  }
-  get details() {
-    return this.#details;
-  }
+  return value;
 };
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpPreloadScript.js
-var CdpPreloadScript = class {
+var __disposeResources9 = /* @__PURE__ */ (function(SuppressedError3) {
+  return function(env) {
+    function fail(e) {
+      env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
+      env.hasError = true;
+    }
+    var r, s = 0;
+    function next() {
+      while (r = env.stack.pop()) {
+        try {
+          if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
+          if (r.dispose) {
+            var result = r.dispose.call(r.value);
+            if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
+              fail(e);
+              return next();
+            });
+          } else s |= 1;
+        } catch (e) {
+          fail(e);
+        }
+      }
+      if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
+      if (env.hasError) throw env.error;
+    }
+    return next();
+  };
+})(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+  var e = new Error(message);
+  return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+});
+var Accessibility = class {
+  #realm;
+  #frameId;
+  #logger;
   /**
-   * This is the ID of the preload script returned by
-   * Page.addScriptToEvaluateOnNewDocument in the main frame.
+   * @internal
+   */
+  constructor(realm, frameId = "", logger) {
+    this.#realm = realm;
+    this.#frameId = frameId;
+    this.#logger = logger;
+  }
+  /**
+   * Captures the current state of the accessibility tree.
+   * The returned object represents the root accessible node of the page.
    *
-   * Sub-frames would get a different CDP ID because
-   * addScriptToEvaluateOnNewDocument is called for each subframe. But
-   * users only see this ID and subframe IDs are internal to Puppeteer.
+   * @remarks
+   *
+   * **NOTE** The Chrome accessibility tree contains nodes that go unused on
+   * most platforms and by most screen readers. Puppeteer will discard them as
+   * well for an easier to process tree, unless `interestingOnly` is set to
+   * `false`.
+   *
+   * @example
+   * An example of dumping the entire accessibility tree:
+   *
+   * ```ts
+   * const snapshot = await page.accessibility.snapshot();
+   * console.log(snapshot);
+   * ```
+   *
+   * @example
+   * An example of logging the focused node's name:
+   *
+   * ```ts
+   * const snapshot = await page.accessibility.snapshot();
+   * const node = findFocusedNode(snapshot);
+   * console.log(node && node.name);
+   *
+   * function findFocusedNode(node) {
+   *   if (node.focused) return node;
+   *   for (const child of node.children || []) {
+   *     const foundNode = findFocusedNode(child);
+   *     return foundNode;
+   *   }
+   *   return null;
+   * }
+   * ```
+   *
+   * @returns An AXNode object representing the snapshot.
    */
-  #id;
-  #source;
-  #frameToId = /* @__PURE__ */ new WeakMap();
-  constructor(mainFrame, id, source2) {
-    this.#id = id;
-    this.#source = source2;
-    this.#frameToId.set(mainFrame, id);
+  async snapshot(options = {}) {
+    const { interestingOnly = true, root = null, includeIframes = false } = options;
+    const { nodes } = await this.#realm.environment.client.send("Accessibility.getFullAXTree", {
+      frameId: this.#frameId
+    });
+    let backendNodeId;
+    if (root) {
+      const { node } = await this.#realm.environment.client.send("DOM.describeNode", {
+        objectId: root.id
+      });
+      backendNodeId = node.backendNodeId;
+    }
+    const defaultRoot = AXNode.createTree(this.#realm, nodes);
+    const populateIframes = async (root2) => {
+      if (root2.payload.role?.value === "Iframe") {
+        const env_1 = { stack: [], error: void 0, hasError: false };
+        try {
+          if (!root2.payload.backendDOMNodeId) {
+            return;
+          }
+          const handle = __addDisposableResource9(env_1, await this.#realm.adoptBackendNode(root2.payload.backendDOMNodeId), false);
+          if (!handle || !("contentFrame" in handle)) {
+            return;
+          }
+          const frame = await handle.contentFrame();
+          if (!frame) {
+            return;
+          }
+          try {
+            const iframeSnapshot = await frame.accessibility.snapshot(options);
+            root2.iframeSnapshot = iframeSnapshot ?? void 0;
+          } catch (error) {
+            this.#logger?.(DEBUG_PREFIXES.error)?.(error);
+          }
+        } catch (e_1) {
+          env_1.error = e_1;
+          env_1.hasError = true;
+        } finally {
+          __disposeResources9(env_1);
+        }
+      }
+      await Promise.all(root2.children.map((child) => {
+        return populateIframes(child);
+      }));
+    };
+    let needle = defaultRoot;
+    if (!defaultRoot) {
+      return null;
+    }
+    if (includeIframes) {
+      await populateIframes(defaultRoot);
+    }
+    if (backendNodeId) {
+      needle = defaultRoot.find((node) => {
+        return node.payload.backendDOMNodeId === backendNodeId;
+      });
+    }
+    if (!needle) {
+      return null;
+    }
+    if (!interestingOnly) {
+      return this.serializeTree(needle)[0] ?? null;
+    }
+    const interestingNodes = /* @__PURE__ */ new Set();
+    this.collectInterestingNodes(interestingNodes, defaultRoot, false);
+    return this.serializeTree(needle, interestingNodes)[0] ?? null;
   }
-  get id() {
-    return this.#id;
+  serializeTree(node, interestingNodes) {
+    const children = [];
+    for (const child of node.children) {
+      children.push(...this.serializeTree(child, interestingNodes));
+    }
+    if (interestingNodes && !interestingNodes.has(node)) {
+      return children;
+    }
+    const serializedNode = node.serialize();
+    if (children.length) {
+      serializedNode.children = children;
+    }
+    if (node.iframeSnapshot) {
+      if (!serializedNode.children) {
+        serializedNode.children = [];
+      }
+      serializedNode.children.push(node.iframeSnapshot);
+    }
+    return [serializedNode];
   }
-  get source() {
-    return this.#source;
-  }
-  getIdForFrame(frame) {
-    return this.#frameToId.get(frame);
-  }
-  setIdForFrame(frame, identifier) {
-    this.#frameToId.set(frame, identifier);
-  }
-};
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/DeviceRequestPrompt.js
-var DeviceRequestPrompt = class {
-  /**
-   * Current list of selectable devices.
-   */
-  devices = [];
-};
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/DeviceRequestPrompt.js
-var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
-  #client;
-  #timeoutSettings;
-  #id;
-  #handled = false;
-  #waitForDevicePromises = /* @__PURE__ */ new Set();
-  #subscriptions = new DisposableStack();
-  constructor(client, timeoutSettings, firstEvent) {
-    super();
-    this.#client = client;
-    this.#timeoutSettings = timeoutSettings;
-    this.#id = firstEvent.id;
-    const clientEmitter = this.#subscriptions.use(new EventEmitter(this.#client));
-    clientEmitter.on("DeviceAccess.deviceRequestPrompted", this.#updateDevices.bind(this));
-    this.#updateDevices(firstEvent);
-  }
-  #updateDevices(event) {
-    if (event.id !== this.#id) {
+  collectInterestingNodes(collection, node, insideControl) {
+    if (node.isInteresting(insideControl) || node.iframeSnapshot) {
+      collection.add(node);
+    }
+    if (node.isLeafNode()) {
       return;
     }
-    for (const rawDevice of event.devices) {
-      if (this.devices.some((device) => {
-        return device.id === rawDevice.id;
-      })) {
-        continue;
+    insideControl = insideControl || node.isControl();
+    for (const child of node.children) {
+      this.collectInterestingNodes(collection, child, insideControl);
+    }
+  }
+};
+var AXNode = class _AXNode {
+  payload;
+  children = [];
+  iframeSnapshot;
+  #richlyEditable = false;
+  #editable = false;
+  #focusable = false;
+  #hidden = false;
+  #busy = false;
+  #modal = false;
+  #hasErrormessage = false;
+  #hasDetails = false;
+  #name;
+  #role;
+  #description;
+  #roledescription;
+  #live;
+  #ignored;
+  #cachedHasFocusableChild;
+  #realm;
+  constructor(realm, payload) {
+    this.payload = payload;
+    this.#role = this.payload.role ? this.payload.role.value : "Unknown";
+    this.#ignored = this.payload.ignored;
+    this.#name = this.payload.name ? this.payload.name.value : "";
+    this.#description = this.payload.description ? this.payload.description.value : void 0;
+    this.#realm = realm;
+    for (const property of this.payload.properties || []) {
+      if (property.name === "editable") {
+        this.#richlyEditable = property.value.value === "richtext";
+        this.#editable = true;
       }
-      const newDevice = { id: rawDevice.id, name: rawDevice.name };
-      this.devices.push(newDevice);
-      for (const waitForDevicePromise of this.#waitForDevicePromises) {
-        if (waitForDevicePromise.filter(newDevice)) {
-          waitForDevicePromise.promise.resolve(newDevice);
+      if (property.name === "focusable") {
+        this.#focusable = property.value.value;
+      }
+      if (property.name === "hidden") {
+        this.#hidden = property.value.value;
+      }
+      if (property.name === "busy") {
+        this.#busy = property.value.value;
+      }
+      if (property.name === "live") {
+        this.#live = property.value.value;
+      }
+      if (property.name === "modal") {
+        this.#modal = property.value.value;
+      }
+      if (property.name === "roledescription") {
+        this.#roledescription = property.value.value;
+      }
+      if (property.name === "errormessage") {
+        this.#hasErrormessage = true;
+      }
+      if (property.name === "details") {
+        this.#hasDetails = true;
+      }
+    }
+  }
+  #isPlainTextField() {
+    if (this.#richlyEditable) {
+      return false;
+    }
+    if (this.#editable) {
+      return true;
+    }
+    return this.#role === "textbox" || this.#role === "searchbox";
+  }
+  #isTextOnlyObject() {
+    const role = this.#role;
+    return role === "LineBreak" || role === "text" || role === "InlineTextBox" || role === "StaticText";
+  }
+  #hasFocusableChild() {
+    if (this.#cachedHasFocusableChild === void 0) {
+      this.#cachedHasFocusableChild = false;
+      for (const child of this.children) {
+        if (child.#focusable || child.#hasFocusableChild()) {
+          this.#cachedHasFocusableChild = true;
+          break;
         }
       }
     }
+    return this.#cachedHasFocusableChild;
   }
-  async waitForDevice(filter2, options = {}) {
-    for (const device of this.devices) {
-      if (filter2(device)) {
-        return device;
+  find(predicate) {
+    if (predicate(this)) {
+      return this;
+    }
+    for (const child of this.children) {
+      const result = child.find(predicate);
+      if (result) {
+        return result;
       }
     }
-    const { timeout: timeout2 = this.#timeoutSettings.timeout() } = options;
-    const deferred = Deferred.create({
-      message: `Waiting for \`DeviceRequestPromptDevice\` failed: ${timeout2}ms exceeded`,
-      timeout: timeout2
-    });
-    if (options.signal) {
-      options.signal.addEventListener("abort", () => {
-        deferred.reject(options.signal?.reason);
-      }, { once: true });
+    return null;
+  }
+  isLeafNode() {
+    if (!this.children.length) {
+      return true;
     }
-    const handle = { filter: filter2, promise: deferred };
-    this.#waitForDevicePromises.add(handle);
-    try {
-      return await deferred.valueOrThrow();
-    } finally {
-      this.#waitForDevicePromises.delete(handle);
+    if (this.#isPlainTextField() || this.#isTextOnlyObject()) {
+      return true;
+    }
+    switch (this.#role) {
+      case "doc-cover":
+      case "graphics-symbol":
+      case "img":
+      case "image":
+      case "Meter":
+      case "scrollbar":
+      case "slider":
+      case "separator":
+      case "progressbar":
+        return true;
+      default:
+        break;
+    }
+    if (this.#hasFocusableChild()) {
+      return false;
+    }
+    if (this.#role === "heading" && this.#name) {
+      return true;
+    }
+    return false;
+  }
+  isControl() {
+    switch (this.#role) {
+      case "button":
+      case "checkbox":
+      case "ColorWell":
+      case "combobox":
+      case "DisclosureTriangle":
+      case "listbox":
+      case "menu":
+      case "menubar":
+      case "menuitem":
+      case "menuitemcheckbox":
+      case "menuitemradio":
+      case "radio":
+      case "scrollbar":
+      case "searchbox":
+      case "slider":
+      case "spinbutton":
+      case "switch":
+      case "tab":
+      case "textbox":
+      case "tree":
+      case "treeitem":
+        return true;
+      default:
+        return false;
     }
   }
-  async select(device) {
-    assert(this.devices.includes(device), "Cannot select unknown device!");
-    assert(!this.#handled, "Cannot select DeviceRequestPrompt which is already handled!");
-    this.#subscriptions.dispose();
-    this.#handled = true;
-    await this.#client.send("DeviceAccess.selectPrompt", {
-      id: this.#id,
-      deviceId: device.id
-    });
+  isLandmark() {
+    switch (this.#role) {
+      case "banner":
+      case "complementary":
+      case "contentinfo":
+      case "form":
+      case "main":
+      case "navigation":
+      case "region":
+      case "search":
+        return true;
+      default:
+        return false;
+    }
   }
-  async cancel() {
-    assert(!this.#handled, "Cannot cancel DeviceRequestPrompt which is already handled!");
-    this.#subscriptions.dispose();
-    this.#handled = true;
-    await this.#client.send("DeviceAccess.cancelPrompt", { id: this.#id });
+  isInteresting(insideControl) {
+    const role = this.#role;
+    if (role === "Ignored" || this.#hidden || this.#ignored) {
+      return false;
+    }
+    if (this.isLandmark()) {
+      return true;
+    }
+    if (this.#focusable || this.#richlyEditable || this.#busy || this.#live && this.#live !== "off" || this.#modal || this.#hasErrormessage || this.#hasDetails || this.#roledescription) {
+      return true;
+    }
+    if (this.isControl()) {
+      return true;
+    }
+    if (insideControl) {
+      return false;
+    }
+    return this.isLeafNode() && (!!this.#name || !!this.#description);
+  }
+  serialize() {
+    const properties = /* @__PURE__ */ new Map();
+    for (const property of this.payload.properties || []) {
+      properties.set(property.name.toLowerCase(), property.value.value);
+    }
+    if (this.payload.name) {
+      properties.set("name", this.payload.name.value);
+    }
+    if (this.payload.value) {
+      properties.set("value", this.payload.value.value);
+    }
+    if (this.payload.description) {
+      properties.set("description", this.payload.description.value);
+    }
+    const node = {
+      role: this.#role,
+      elementHandle: async () => {
+        const env_2 = { stack: [], error: void 0, hasError: false };
+        try {
+          if (!this.payload.backendDOMNodeId) {
+            return null;
+          }
+          const handle = __addDisposableResource9(env_2, await this.#realm.adoptBackendNode(this.payload.backendDOMNodeId), false);
+          return await handle.evaluateHandle((node2) => {
+            if (node2.nodeType !== Node.TEXT_NODE) {
+              return node2;
+            }
+            return node2.parentElement ?? node2.parentNode?.host ?? null;
+          });
+        } catch (e_2) {
+          env_2.error = e_2;
+          env_2.hasError = true;
+        } finally {
+          __disposeResources9(env_2);
+        }
+      },
+      backendNodeId: this.payload.backendDOMNodeId,
+      // LoaderId is an experimental mechanism to establish unique IDs across
+      // navigations.
+      loaderId: this.#realm.environment._loaderId
+    };
+    const userStringProperties = [
+      "name",
+      "value",
+      "description",
+      "keyshortcuts",
+      "roledescription",
+      "valuetext",
+      "url"
+    ];
+    const getUserStringPropertyValue = (key) => {
+      return properties.get(key);
+    };
+    for (const userStringProperty of userStringProperties) {
+      if (!properties.has(userStringProperty)) {
+        continue;
+      }
+      node[userStringProperty] = getUserStringPropertyValue(userStringProperty);
+    }
+    const booleanProperties = [
+      "disabled",
+      "expanded",
+      "focused",
+      "modal",
+      "multiline",
+      "multiselectable",
+      "readonly",
+      "required",
+      "selected",
+      "busy",
+      "atomic"
+    ];
+    const getBooleanPropertyValue = (key) => {
+      return !!properties.get(key);
+    };
+    for (const booleanProperty of booleanProperties) {
+      if (booleanProperty === "focused" && this.#role === "RootWebArea") {
+        continue;
+      }
+      if (!properties.has(booleanProperty)) {
+        continue;
+      }
+      node[booleanProperty] = getBooleanPropertyValue(booleanProperty);
+    }
+    const tristateProperties = ["checked", "pressed"];
+    for (const tristateProperty of tristateProperties) {
+      if (!properties.has(tristateProperty)) {
+        continue;
+      }
+      const value = properties.get(tristateProperty);
+      node[tristateProperty] = value === "mixed" ? "mixed" : value === "true" ? true : false;
+    }
+    const numericalProperties = [
+      "level",
+      "valuemax",
+      "valuemin"
+    ];
+    const getNumericalPropertyValue = (key) => {
+      return properties.get(key);
+    };
+    for (const numericalProperty of numericalProperties) {
+      if (!properties.has(numericalProperty)) {
+        continue;
+      }
+      node[numericalProperty] = getNumericalPropertyValue(numericalProperty);
+    }
+    const tokenProperties = [
+      "autocomplete",
+      "haspopup",
+      "invalid",
+      "orientation",
+      "live",
+      "relevant",
+      "errormessage",
+      "details"
+    ];
+    const getTokenPropertyValue = (key) => {
+      return properties.get(key);
+    };
+    for (const tokenProperty of tokenProperties) {
+      const value = getTokenPropertyValue(tokenProperty);
+      if (!value || value === "false") {
+        continue;
+      }
+      node[tokenProperty] = getTokenPropertyValue(tokenProperty);
+    }
+    return node;
+  }
+  static createTree(realm, payloads) {
+    const nodeById = /* @__PURE__ */ new Map();
+    for (const payload of payloads) {
+      nodeById.set(payload.nodeId, new _AXNode(realm, payload));
+    }
+    for (const node of nodeById.values()) {
+      for (const childId of node.payload.childIds || []) {
+        const child = nodeById.get(childId);
+        if (child) {
+          node.children.push(child);
+        }
+      }
+    }
+    return nodeById.values().next().value ?? null;
   }
 };
-var CdpDeviceRequestPromptManager = class {
-  #client;
-  #timeoutSettings;
-  #deviceRequestPromptDeferreds = /* @__PURE__ */ new Set();
-  constructor(client, timeoutSettings) {
-    this.#client = client;
-    this.#timeoutSettings = timeoutSettings;
-    this.#client.on("DeviceAccess.deviceRequestPrompted", (event) => {
-      this.#onDeviceRequestPrompted(event);
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManagerEvents.js
+var FrameManagerEvent;
+(function(FrameManagerEvent2) {
+  FrameManagerEvent2.FrameAttached = /* @__PURE__ */ Symbol("FrameManager.FrameAttached");
+  FrameManagerEvent2.FrameNavigated = /* @__PURE__ */ Symbol("FrameManager.FrameNavigated");
+  FrameManagerEvent2.FrameDetached = /* @__PURE__ */ Symbol("FrameManager.FrameDetached");
+  FrameManagerEvent2.FrameSwapped = /* @__PURE__ */ Symbol("FrameManager.FrameSwapped");
+  FrameManagerEvent2.LifecycleEvent = /* @__PURE__ */ Symbol("FrameManager.LifecycleEvent");
+  FrameManagerEvent2.FrameNavigatedWithinDocument = /* @__PURE__ */ Symbol("FrameManager.FrameNavigatedWithinDocument");
+  FrameManagerEvent2.ConsoleApiCalled = /* @__PURE__ */ Symbol("FrameManager.ConsoleApiCalled");
+  FrameManagerEvent2.BindingCalled = /* @__PURE__ */ Symbol("FrameManager.BindingCalled");
+})(FrameManagerEvent || (FrameManagerEvent = {}));
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/WaitTask.js
+var WaitTask = class {
+  #world;
+  #polling;
+  #root;
+  #fn;
+  #args;
+  #timeout;
+  #genericError = new Error("Waiting failed");
+  #timeoutError;
+  #result = Deferred.create();
+  #poller;
+  #signal;
+  #reruns = [];
+  constructor(world, options, fn, ...args) {
+    this.#world = world;
+    this.#polling = options.polling;
+    this.#root = options.root;
+    this.#signal = options.signal;
+    this.#signal?.addEventListener("abort", this.#onAbortSignal, {
+      once: true
     });
-    this.#client.on("Target.detachedFromTarget", () => {
-      this.#client = null;
-    });
+    switch (typeof fn) {
+      case "string":
+        this.#fn = `() => {return (${fn});}`;
+        break;
+      default:
+        this.#fn = stringifyFunction(fn);
+        break;
+    }
+    this.#args = args;
+    this.#world.taskManager.add(this);
+    if (options.timeout) {
+      this.#timeoutError = new TimeoutError(`Waiting failed: ${options.timeout}ms exceeded`);
+      this.#timeout = setTimeout(() => {
+        void this.terminate(this.#timeoutError);
+      }, options.timeout);
+    }
+    void this.rerun();
   }
-  async waitForDevicePrompt(options = {}) {
-    assert(this.#client !== null, "Cannot wait for device prompt through detached session!");
-    const needsEnable = this.#deviceRequestPromptDeferreds.size === 0;
-    let enablePromise;
-    if (needsEnable) {
-      enablePromise = this.#client.send("DeviceAccess.enable");
+  get result() {
+    return this.#result.valueOrThrow();
+  }
+  async rerun() {
+    for (const prev of this.#reruns) {
+      prev.abort();
     }
-    const { timeout: timeout2 = this.#timeoutSettings.timeout() } = options;
-    const deferred = Deferred.create({
-      message: `Waiting for \`DeviceRequestPrompt\` failed: ${timeout2}ms exceeded`,
-      timeout: timeout2
-    });
-    if (options.signal) {
-      options.signal.addEventListener("abort", () => {
-        deferred.reject(options.signal?.reason);
-      }, { once: true });
-    }
-    this.#deviceRequestPromptDeferreds.add(deferred);
+    this.#reruns.length = 0;
+    const controller = new AbortController();
+    this.#reruns.push(controller);
     try {
-      const [result] = await Promise.all([
-        deferred.valueOrThrow(),
-        enablePromise
-      ]);
-      return result;
-    } finally {
-      this.#deviceRequestPromptDeferreds.delete(deferred);
+      switch (this.#polling) {
+        case "raf":
+          this.#poller = await this.#world.evaluateHandle(({ RAFPoller, createFunction: createFunction2 }, fn, ...args) => {
+            const fun = createFunction2(fn);
+            return new RAFPoller(() => {
+              return fun(...args);
+            });
+          }, LazyArg.create((context2) => {
+            return context2.puppeteerUtil;
+          }), this.#fn, ...this.#args);
+          break;
+        case "mutation":
+          this.#poller = await this.#world.evaluateHandle(({ MutationPoller, createFunction: createFunction2 }, root, fn, ...args) => {
+            const fun = createFunction2(fn);
+            return new MutationPoller(() => {
+              return fun(...args);
+            }, root || document);
+          }, LazyArg.create((context2) => {
+            return context2.puppeteerUtil;
+          }), this.#root, this.#fn, ...this.#args);
+          break;
+        default:
+          this.#poller = await this.#world.evaluateHandle(({ IntervalPoller, createFunction: createFunction2 }, ms, fn, ...args) => {
+            const fun = createFunction2(fn);
+            return new IntervalPoller(() => {
+              return fun(...args);
+            }, ms);
+          }, LazyArg.create((context2) => {
+            return context2.puppeteerUtil;
+          }), this.#polling, this.#fn, ...this.#args);
+          break;
+      }
+      await this.#poller.evaluate((poller) => {
+        void poller.start();
+      });
+      const result = await this.#poller.evaluateHandle((poller) => {
+        return poller.result();
+      });
+      this.#result.resolve(result);
+      await this.terminate();
+    } catch (error) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      const badError = this.getBadError(error);
+      if (badError) {
+        this.#genericError.cause = badError;
+        await this.terminate(this.#genericError);
+      }
     }
   }
-  #onDeviceRequestPrompted(event) {
-    if (!this.#deviceRequestPromptDeferreds.size) {
-      return;
+  async terminate(error) {
+    this.#world.taskManager.delete(this);
+    this.#signal?.removeEventListener("abort", this.#onAbortSignal);
+    clearTimeout(this.#timeout);
+    if (error && !this.#result.finished()) {
+      this.#result.reject(error);
     }
-    assert(this.#client !== null);
-    const devicePrompt = new CdpDeviceRequestPrompt(this.#client, this.#timeoutSettings, event);
-    for (const promise of this.#deviceRequestPromptDeferreds) {
-      promise.resolve(devicePrompt);
+    if (this.#poller) {
+      try {
+        await this.#poller.evaluate(async (poller) => {
+          await poller.stop();
+        });
+        if (this.#poller) {
+          await this.#poller.dispose();
+          this.#poller = void 0;
+        }
+      } catch {
+      }
     }
-    this.#deviceRequestPromptDeferreds.clear();
+  }
+  /**
+   * Not all errors lead to termination. They usually imply we need to rerun the task.
+   */
+  getBadError(error) {
+    if (isErrorLike(error)) {
+      if (error.message.includes("Execution context is not available in detached frame")) {
+        return new Error("Waiting failed: Frame detached");
+      }
+      if (error.message.includes("Execution context was destroyed")) {
+        return;
+      }
+      if (error.message.includes("Cannot find context with specified id")) {
+        return;
+      }
+      if (error.message.includes("DiscardedBrowsingContextError")) {
+        return;
+      }
+      return error;
+    }
+    return new Error("WaitTask failed with an error", {
+      cause: error
+    });
+  }
+  #onAbortSignal = () => {
+    void this.terminate(this.#signal?.reason);
+  };
+};
+var TaskManager = class {
+  #tasks = /* @__PURE__ */ new Set();
+  add(task) {
+    this.#tasks.add(task);
+  }
+  delete(task) {
+    this.#tasks.delete(task);
+  }
+  terminateAll(error) {
+    for (const task of this.#tasks) {
+      void task.terminate(error);
+    }
+    this.#tasks.clear();
+  }
+  async rerunAll() {
+    await Promise.all([...this.#tasks].map((task) => {
+      return task.rerun();
+    }));
+  }
+};
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/Realm.js
+var Realm = class {
+  /** @internal */
+  timeoutSettings;
+  /** @internal */
+  taskManager = new TaskManager();
+  /** @internal */
+  constructor(timeoutSettings) {
+    this.timeoutSettings = timeoutSettings;
+  }
+  /**
+   * Waits for a function to return a truthy value when evaluated in
+   * the realm's context.
+   *
+   * Arguments can be passed from Node.js to `pageFunction`.
+   *
+   * @example
+   *
+   * ```ts
+   * const selector = '.foo';
+   * await realm.waitForFunction(
+   *   selector => !!document.querySelector(selector),
+   *   {},
+   *   selector,
+   * );
+   * ```
+   *
+   * @param pageFunction - A function to evaluate in the realm.
+   * @param options - Options for polling and timeouts.
+   * @param args - Arguments to pass to the function.
+   * @returns A promise that resolves when the function returns a truthy
+   * value.
+   * @public
+   */
+  async waitForFunction(pageFunction, options = {}, ...args) {
+    const { polling = "raf", timeout: timeout2 = this.timeoutSettings.timeout(), root, signal } = options;
+    if (typeof polling === "number" && polling < 0) {
+      throw new Error("Cannot poll with non-positive interval");
+    }
+    const waitTask = new WaitTask(this, {
+      polling,
+      root,
+      timeout: timeout2,
+      signal
+    }, pageFunction, ...args);
+    return await waitTask.result;
+  }
+  /** @internal */
+  get disposed() {
+    return this.#disposed;
+  }
+  #disposed = false;
+  /** @internal */
+  dispose() {
+    this.#disposed = true;
+    this.taskManager.terminateAll(new Error("waitForFunction failed: frame got detached."));
+  }
+  [disposeSymbol]() {
+    this.dispose();
   }
 };
 
@@ -9898,7 +10533,7 @@ var __esDecorate5 = function(ctor, descriptorIn, decorators, contextIn, initiali
   if (target) Object.defineProperty(target, contextIn.name, descriptor);
   done = true;
 };
-var __addDisposableResource9 = function(env, value, async2) {
+var __addDisposableResource10 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
     var dispose, inner;
@@ -9925,7 +10560,7 @@ var __addDisposableResource9 = function(env, value, async2) {
   }
   return value;
 };
-var __disposeResources9 = /* @__PURE__ */ (function(SuppressedError3) {
+var __disposeResources10 = /* @__PURE__ */ (function(SuppressedError3) {
   return function(env) {
     function fail(e) {
       env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
@@ -10301,7 +10936,7 @@ var ElementHandle = (() => {
       const env_1 = { stack: [], error: void 0, hasError: false };
       try {
         pageFunction = withSourcePuppeteerURLIfNone(this.$eval.name, pageFunction);
-        const elementHandle = __addDisposableResource9(env_1, await this.$(selector), false);
+        const elementHandle = __addDisposableResource10(env_1, await this.$(selector), false);
         if (!elementHandle) {
           throw new Error(`Error: failed to find element matching selector "${selector}"`);
         }
@@ -10310,7 +10945,7 @@ var ElementHandle = (() => {
         env_1.error = e_1;
         env_1.hasError = true;
       } finally {
-        __disposeResources9(env_1);
+        __disposeResources10(env_1);
       }
     }
     /**
@@ -10366,7 +11001,7 @@ var ElementHandle = (() => {
       try {
         pageFunction = withSourcePuppeteerURLIfNone(this.$$eval.name, pageFunction);
         const results = await this.$$(selector);
-        const elements = __addDisposableResource9(env_2, await this.evaluateHandle((_2, ...elements2) => {
+        const elements = __addDisposableResource10(env_2, await this.evaluateHandle((_2, ...elements2) => {
           return elements2;
         }, ...results), false);
         const [result] = await Promise.all([
@@ -10380,7 +11015,7 @@ var ElementHandle = (() => {
         env_2.error = e_2;
         env_2.hasError = true;
       } finally {
-        __disposeResources9(env_2);
+        __disposeResources10(env_2);
       }
     }
     /**
@@ -10815,7 +11450,7 @@ var ElementHandle = (() => {
       while (parentFrame = frame?.parentFrame()) {
         const env_3 = { stack: [], error: void 0, hasError: false };
         try {
-          const handle = __addDisposableResource9(env_3, await frame.frameElement(), false);
+          const handle = __addDisposableResource10(env_3, await frame.frameElement(), false);
           if (!handle) {
             throw new Error("Unsupported frame type");
           }
@@ -10843,7 +11478,7 @@ var ElementHandle = (() => {
           env_3.error = e_3;
           env_3.hasError = true;
         } finally {
-          __disposeResources9(env_3);
+          __disposeResources10(env_3);
         }
       }
       const box = boxes.find((box2) => {
@@ -11005,7 +11640,7 @@ var ElementHandle = (() => {
       while (parentFrame = frame?.parentFrame()) {
         const env_4 = { stack: [], error: void 0, hasError: false };
         try {
-          const handle = __addDisposableResource9(env_4, await frame.frameElement(), false);
+          const handle = __addDisposableResource10(env_4, await frame.frameElement(), false);
           if (!handle) {
             throw new Error("Unsupported frame type");
           }
@@ -11030,7 +11665,7 @@ var ElementHandle = (() => {
           env_4.error = e_4;
           env_4.hasError = true;
         } finally {
-          __disposeResources9(env_4);
+          __disposeResources10(env_4);
         }
       }
       return point;
@@ -11109,7 +11744,7 @@ var ElementHandle = (() => {
       try {
         await this.assertConnectedElement();
         const handle = await this.#asSVGElementHandle();
-        const target = __addDisposableResource9(env_5, handle && await handle.#getOwnerSVGElement(), false);
+        const target = __addDisposableResource10(env_5, handle && await handle.#getOwnerSVGElement(), false);
         return await (target ?? this).evaluate(async (element, threshold) => {
           const visibleRatio = await new Promise((resolve) => {
             const observer = new IntersectionObserver((entries) => {
@@ -11124,7 +11759,7 @@ var ElementHandle = (() => {
         env_5.error = e_5;
         env_5.hasError = true;
       } finally {
-        __disposeResources9(env_5);
+        __disposeResources10(env_5);
       }
     }
     /**
@@ -11180,7 +11815,7 @@ function intersectBoundingBox(box, width, height) {
 }
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/utils.js
-function createConsoleMessage(event, values, targetId) {
+function createConsoleMessage(event, values, targetId, frame, worker) {
   const textTokens = [];
   for (const arg of values) {
     textTokens.push(valueFromJSHandle(arg));
@@ -11195,7 +11830,7 @@ function createConsoleMessage(event, values, targetId) {
       });
     }
   }
-  return new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, void 0, event.stackTrace, targetId);
+  return new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, frame, event.stackTrace, targetId, worker);
 }
 function createEvaluationError(details) {
   let name;
@@ -11633,8 +12268,47 @@ var CdpElementHandle = (() => {
   };
 })();
 
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/IsolatedWorlds.js
+var MAIN_WORLD = /* @__PURE__ */ Symbol("mainWorld");
+var PUPPETEER_WORLD = /* @__PURE__ */ Symbol("puppeteerWorld");
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/Target.js
+var TargetType;
+(function(TargetType2) {
+  TargetType2["PAGE"] = "page";
+  TargetType2["BACKGROUND_PAGE"] = "background_page";
+  TargetType2["SERVICE_WORKER"] = "service_worker";
+  TargetType2["SHARED_WORKER"] = "shared_worker";
+  TargetType2["BROWSER"] = "browser";
+  TargetType2["WEBVIEW"] = "webview";
+  TargetType2["OTHER"] = "other";
+  TargetType2["TAB"] = "tab";
+})(TargetType || (TargetType = {}));
+var Target = class {
+  logger;
+  /**
+   * @internal
+   */
+  constructor(logger) {
+    this.logger = logger;
+  }
+  /**
+   * If the target is not of type `"service_worker"` or `"shared_worker"`, returns `null`.
+   */
+  async worker() {
+    return null;
+  }
+  /**
+   * If the target is not of type `"page"`, `"webview"` or `"background_page"`,
+   * returns `null`.
+   */
+  async page() {
+    return null;
+  }
+};
+
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/ExecutionContext.js
-var __addDisposableResource10 = function(env, value, async2) {
+var __addDisposableResource11 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
     if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
     var dispose, inner;
@@ -11661,7 +12335,7 @@ var __addDisposableResource10 = function(env, value, async2) {
   }
   return value;
 };
-var __disposeResources10 = /* @__PURE__ */ (function(SuppressedError3) {
+var __disposeResources11 = /* @__PURE__ */ (function(SuppressedError3) {
   return function(env) {
     function fail(e) {
       env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
@@ -11759,7 +12433,7 @@ var ExecutionContext = class _ExecutionContext extends EventEmitter {
       if (this.#bindings.has(binding.name)) {
         return;
       }
-      const _2 = __addDisposableResource10(env_1, await this.#mutex.acquire(), false);
+      const _2 = __addDisposableResource11(env_1, await this.#mutex.acquire(), false);
       try {
         await this.#client.send("Runtime.addBinding", this.#name ? {
           name: CDP_BINDING_PREFIX + binding.name,
@@ -11785,7 +12459,7 @@ var ExecutionContext = class _ExecutionContext extends EventEmitter {
       env_1.error = e_1;
       env_1.hasError = true;
     } finally {
-      __disposeResources10(env_1);
+      __disposeResources11(env_1);
     }
   }
   async #onBindingCalled(event) {
@@ -12072,831 +12746,6 @@ var rewriteError2 = (error) => {
   throw error;
 };
 
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Accessibility.js
-var __addDisposableResource11 = function(env, value, async2) {
-  if (value !== null && value !== void 0) {
-    if (typeof value !== "object" && typeof value !== "function") throw new TypeError("Object expected.");
-    var dispose, inner;
-    if (async2) {
-      if (!Symbol.asyncDispose) throw new TypeError("Symbol.asyncDispose is not defined.");
-      dispose = value[Symbol.asyncDispose];
-    }
-    if (dispose === void 0) {
-      if (!Symbol.dispose) throw new TypeError("Symbol.dispose is not defined.");
-      dispose = value[Symbol.dispose];
-      if (async2) inner = dispose;
-    }
-    if (typeof dispose !== "function") throw new TypeError("Object not disposable.");
-    if (inner) dispose = function() {
-      try {
-        inner.call(this);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
-    env.stack.push({ value, dispose, async: async2 });
-  } else if (async2) {
-    env.stack.push({ async: true });
-  }
-  return value;
-};
-var __disposeResources11 = /* @__PURE__ */ (function(SuppressedError3) {
-  return function(env) {
-    function fail(e) {
-      env.error = env.hasError ? new SuppressedError3(e, env.error, "An error was suppressed during disposal.") : e;
-      env.hasError = true;
-    }
-    var r, s = 0;
-    function next() {
-      while (r = env.stack.pop()) {
-        try {
-          if (!r.async && s === 1) return s = 0, env.stack.push(r), Promise.resolve().then(next);
-          if (r.dispose) {
-            var result = r.dispose.call(r.value);
-            if (r.async) return s |= 2, Promise.resolve(result).then(next, function(e) {
-              fail(e);
-              return next();
-            });
-          } else s |= 1;
-        } catch (e) {
-          fail(e);
-        }
-      }
-      if (s === 1) return env.hasError ? Promise.reject(env.error) : Promise.resolve();
-      if (env.hasError) throw env.error;
-    }
-    return next();
-  };
-})(typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
-  var e = new Error(message);
-  return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
-});
-var Accessibility = class {
-  #realm;
-  #frameId;
-  #logger;
-  /**
-   * @internal
-   */
-  constructor(realm, frameId = "", logger) {
-    this.#realm = realm;
-    this.#frameId = frameId;
-    this.#logger = logger;
-  }
-  /**
-   * Captures the current state of the accessibility tree.
-   * The returned object represents the root accessible node of the page.
-   *
-   * @remarks
-   *
-   * **NOTE** The Chrome accessibility tree contains nodes that go unused on
-   * most platforms and by most screen readers. Puppeteer will discard them as
-   * well for an easier to process tree, unless `interestingOnly` is set to
-   * `false`.
-   *
-   * @example
-   * An example of dumping the entire accessibility tree:
-   *
-   * ```ts
-   * const snapshot = await page.accessibility.snapshot();
-   * console.log(snapshot);
-   * ```
-   *
-   * @example
-   * An example of logging the focused node's name:
-   *
-   * ```ts
-   * const snapshot = await page.accessibility.snapshot();
-   * const node = findFocusedNode(snapshot);
-   * console.log(node && node.name);
-   *
-   * function findFocusedNode(node) {
-   *   if (node.focused) return node;
-   *   for (const child of node.children || []) {
-   *     const foundNode = findFocusedNode(child);
-   *     return foundNode;
-   *   }
-   *   return null;
-   * }
-   * ```
-   *
-   * @returns An AXNode object representing the snapshot.
-   */
-  async snapshot(options = {}) {
-    const { interestingOnly = true, root = null, includeIframes = false } = options;
-    const { nodes } = await this.#realm.environment.client.send("Accessibility.getFullAXTree", {
-      frameId: this.#frameId
-    });
-    let backendNodeId;
-    if (root) {
-      const { node } = await this.#realm.environment.client.send("DOM.describeNode", {
-        objectId: root.id
-      });
-      backendNodeId = node.backendNodeId;
-    }
-    const defaultRoot = AXNode.createTree(this.#realm, nodes);
-    const populateIframes = async (root2) => {
-      if (root2.payload.role?.value === "Iframe") {
-        const env_1 = { stack: [], error: void 0, hasError: false };
-        try {
-          if (!root2.payload.backendDOMNodeId) {
-            return;
-          }
-          const handle = __addDisposableResource11(env_1, await this.#realm.adoptBackendNode(root2.payload.backendDOMNodeId), false);
-          if (!handle || !("contentFrame" in handle)) {
-            return;
-          }
-          const frame = await handle.contentFrame();
-          if (!frame) {
-            return;
-          }
-          try {
-            const iframeSnapshot = await frame.accessibility.snapshot(options);
-            root2.iframeSnapshot = iframeSnapshot ?? void 0;
-          } catch (error) {
-            this.#logger?.(DEBUG_PREFIXES.error)?.(error);
-          }
-        } catch (e_1) {
-          env_1.error = e_1;
-          env_1.hasError = true;
-        } finally {
-          __disposeResources11(env_1);
-        }
-      }
-      await Promise.all(root2.children.map((child) => {
-        return populateIframes(child);
-      }));
-    };
-    let needle = defaultRoot;
-    if (!defaultRoot) {
-      return null;
-    }
-    if (includeIframes) {
-      await populateIframes(defaultRoot);
-    }
-    if (backendNodeId) {
-      needle = defaultRoot.find((node) => {
-        return node.payload.backendDOMNodeId === backendNodeId;
-      });
-    }
-    if (!needle) {
-      return null;
-    }
-    if (!interestingOnly) {
-      return this.serializeTree(needle)[0] ?? null;
-    }
-    const interestingNodes = /* @__PURE__ */ new Set();
-    this.collectInterestingNodes(interestingNodes, defaultRoot, false);
-    return this.serializeTree(needle, interestingNodes)[0] ?? null;
-  }
-  serializeTree(node, interestingNodes) {
-    const children = [];
-    for (const child of node.children) {
-      children.push(...this.serializeTree(child, interestingNodes));
-    }
-    if (interestingNodes && !interestingNodes.has(node)) {
-      return children;
-    }
-    const serializedNode = node.serialize();
-    if (children.length) {
-      serializedNode.children = children;
-    }
-    if (node.iframeSnapshot) {
-      if (!serializedNode.children) {
-        serializedNode.children = [];
-      }
-      serializedNode.children.push(node.iframeSnapshot);
-    }
-    return [serializedNode];
-  }
-  collectInterestingNodes(collection, node, insideControl) {
-    if (node.isInteresting(insideControl) || node.iframeSnapshot) {
-      collection.add(node);
-    }
-    if (node.isLeafNode()) {
-      return;
-    }
-    insideControl = insideControl || node.isControl();
-    for (const child of node.children) {
-      this.collectInterestingNodes(collection, child, insideControl);
-    }
-  }
-};
-var AXNode = class _AXNode {
-  payload;
-  children = [];
-  iframeSnapshot;
-  #richlyEditable = false;
-  #editable = false;
-  #focusable = false;
-  #hidden = false;
-  #busy = false;
-  #modal = false;
-  #hasErrormessage = false;
-  #hasDetails = false;
-  #name;
-  #role;
-  #description;
-  #roledescription;
-  #live;
-  #ignored;
-  #cachedHasFocusableChild;
-  #realm;
-  constructor(realm, payload) {
-    this.payload = payload;
-    this.#role = this.payload.role ? this.payload.role.value : "Unknown";
-    this.#ignored = this.payload.ignored;
-    this.#name = this.payload.name ? this.payload.name.value : "";
-    this.#description = this.payload.description ? this.payload.description.value : void 0;
-    this.#realm = realm;
-    for (const property of this.payload.properties || []) {
-      if (property.name === "editable") {
-        this.#richlyEditable = property.value.value === "richtext";
-        this.#editable = true;
-      }
-      if (property.name === "focusable") {
-        this.#focusable = property.value.value;
-      }
-      if (property.name === "hidden") {
-        this.#hidden = property.value.value;
-      }
-      if (property.name === "busy") {
-        this.#busy = property.value.value;
-      }
-      if (property.name === "live") {
-        this.#live = property.value.value;
-      }
-      if (property.name === "modal") {
-        this.#modal = property.value.value;
-      }
-      if (property.name === "roledescription") {
-        this.#roledescription = property.value.value;
-      }
-      if (property.name === "errormessage") {
-        this.#hasErrormessage = true;
-      }
-      if (property.name === "details") {
-        this.#hasDetails = true;
-      }
-    }
-  }
-  #isPlainTextField() {
-    if (this.#richlyEditable) {
-      return false;
-    }
-    if (this.#editable) {
-      return true;
-    }
-    return this.#role === "textbox" || this.#role === "searchbox";
-  }
-  #isTextOnlyObject() {
-    const role = this.#role;
-    return role === "LineBreak" || role === "text" || role === "InlineTextBox" || role === "StaticText";
-  }
-  #hasFocusableChild() {
-    if (this.#cachedHasFocusableChild === void 0) {
-      this.#cachedHasFocusableChild = false;
-      for (const child of this.children) {
-        if (child.#focusable || child.#hasFocusableChild()) {
-          this.#cachedHasFocusableChild = true;
-          break;
-        }
-      }
-    }
-    return this.#cachedHasFocusableChild;
-  }
-  find(predicate) {
-    if (predicate(this)) {
-      return this;
-    }
-    for (const child of this.children) {
-      const result = child.find(predicate);
-      if (result) {
-        return result;
-      }
-    }
-    return null;
-  }
-  isLeafNode() {
-    if (!this.children.length) {
-      return true;
-    }
-    if (this.#isPlainTextField() || this.#isTextOnlyObject()) {
-      return true;
-    }
-    switch (this.#role) {
-      case "doc-cover":
-      case "graphics-symbol":
-      case "img":
-      case "image":
-      case "Meter":
-      case "scrollbar":
-      case "slider":
-      case "separator":
-      case "progressbar":
-        return true;
-      default:
-        break;
-    }
-    if (this.#hasFocusableChild()) {
-      return false;
-    }
-    if (this.#role === "heading" && this.#name) {
-      return true;
-    }
-    return false;
-  }
-  isControl() {
-    switch (this.#role) {
-      case "button":
-      case "checkbox":
-      case "ColorWell":
-      case "combobox":
-      case "DisclosureTriangle":
-      case "listbox":
-      case "menu":
-      case "menubar":
-      case "menuitem":
-      case "menuitemcheckbox":
-      case "menuitemradio":
-      case "radio":
-      case "scrollbar":
-      case "searchbox":
-      case "slider":
-      case "spinbutton":
-      case "switch":
-      case "tab":
-      case "textbox":
-      case "tree":
-      case "treeitem":
-        return true;
-      default:
-        return false;
-    }
-  }
-  isLandmark() {
-    switch (this.#role) {
-      case "banner":
-      case "complementary":
-      case "contentinfo":
-      case "form":
-      case "main":
-      case "navigation":
-      case "region":
-      case "search":
-        return true;
-      default:
-        return false;
-    }
-  }
-  isInteresting(insideControl) {
-    const role = this.#role;
-    if (role === "Ignored" || this.#hidden || this.#ignored) {
-      return false;
-    }
-    if (this.isLandmark()) {
-      return true;
-    }
-    if (this.#focusable || this.#richlyEditable || this.#busy || this.#live && this.#live !== "off" || this.#modal || this.#hasErrormessage || this.#hasDetails || this.#roledescription) {
-      return true;
-    }
-    if (this.isControl()) {
-      return true;
-    }
-    if (insideControl) {
-      return false;
-    }
-    return this.isLeafNode() && (!!this.#name || !!this.#description);
-  }
-  serialize() {
-    const properties = /* @__PURE__ */ new Map();
-    for (const property of this.payload.properties || []) {
-      properties.set(property.name.toLowerCase(), property.value.value);
-    }
-    if (this.payload.name) {
-      properties.set("name", this.payload.name.value);
-    }
-    if (this.payload.value) {
-      properties.set("value", this.payload.value.value);
-    }
-    if (this.payload.description) {
-      properties.set("description", this.payload.description.value);
-    }
-    const node = {
-      role: this.#role,
-      elementHandle: async () => {
-        const env_2 = { stack: [], error: void 0, hasError: false };
-        try {
-          if (!this.payload.backendDOMNodeId) {
-            return null;
-          }
-          const handle = __addDisposableResource11(env_2, await this.#realm.adoptBackendNode(this.payload.backendDOMNodeId), false);
-          return await handle.evaluateHandle((node2) => {
-            if (node2.nodeType !== Node.TEXT_NODE) {
-              return node2;
-            }
-            return node2.parentElement ?? node2.parentNode?.host ?? null;
-          });
-        } catch (e_2) {
-          env_2.error = e_2;
-          env_2.hasError = true;
-        } finally {
-          __disposeResources11(env_2);
-        }
-      },
-      backendNodeId: this.payload.backendDOMNodeId,
-      // LoaderId is an experimental mechanism to establish unique IDs across
-      // navigations.
-      loaderId: this.#realm.environment._loaderId
-    };
-    const userStringProperties = [
-      "name",
-      "value",
-      "description",
-      "keyshortcuts",
-      "roledescription",
-      "valuetext",
-      "url"
-    ];
-    const getUserStringPropertyValue = (key) => {
-      return properties.get(key);
-    };
-    for (const userStringProperty of userStringProperties) {
-      if (!properties.has(userStringProperty)) {
-        continue;
-      }
-      node[userStringProperty] = getUserStringPropertyValue(userStringProperty);
-    }
-    const booleanProperties = [
-      "disabled",
-      "expanded",
-      "focused",
-      "modal",
-      "multiline",
-      "multiselectable",
-      "readonly",
-      "required",
-      "selected",
-      "busy",
-      "atomic"
-    ];
-    const getBooleanPropertyValue = (key) => {
-      return !!properties.get(key);
-    };
-    for (const booleanProperty of booleanProperties) {
-      if (booleanProperty === "focused" && this.#role === "RootWebArea") {
-        continue;
-      }
-      if (!properties.has(booleanProperty)) {
-        continue;
-      }
-      node[booleanProperty] = getBooleanPropertyValue(booleanProperty);
-    }
-    const tristateProperties = ["checked", "pressed"];
-    for (const tristateProperty of tristateProperties) {
-      if (!properties.has(tristateProperty)) {
-        continue;
-      }
-      const value = properties.get(tristateProperty);
-      node[tristateProperty] = value === "mixed" ? "mixed" : value === "true" ? true : false;
-    }
-    const numericalProperties = [
-      "level",
-      "valuemax",
-      "valuemin"
-    ];
-    const getNumericalPropertyValue = (key) => {
-      return properties.get(key);
-    };
-    for (const numericalProperty of numericalProperties) {
-      if (!properties.has(numericalProperty)) {
-        continue;
-      }
-      node[numericalProperty] = getNumericalPropertyValue(numericalProperty);
-    }
-    const tokenProperties = [
-      "autocomplete",
-      "haspopup",
-      "invalid",
-      "orientation",
-      "live",
-      "relevant",
-      "errormessage",
-      "details"
-    ];
-    const getTokenPropertyValue = (key) => {
-      return properties.get(key);
-    };
-    for (const tokenProperty of tokenProperties) {
-      const value = getTokenPropertyValue(tokenProperty);
-      if (!value || value === "false") {
-        continue;
-      }
-      node[tokenProperty] = getTokenPropertyValue(tokenProperty);
-    }
-    return node;
-  }
-  static createTree(realm, payloads) {
-    const nodeById = /* @__PURE__ */ new Map();
-    for (const payload of payloads) {
-      nodeById.set(payload.nodeId, new _AXNode(realm, payload));
-    }
-    for (const node of nodeById.values()) {
-      for (const childId of node.payload.childIds || []) {
-        const child = nodeById.get(childId);
-        if (child) {
-          node.children.push(child);
-        }
-      }
-    }
-    return nodeById.values().next().value ?? null;
-  }
-};
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameManagerEvents.js
-var FrameManagerEvent;
-(function(FrameManagerEvent2) {
-  FrameManagerEvent2.FrameAttached = /* @__PURE__ */ Symbol("FrameManager.FrameAttached");
-  FrameManagerEvent2.FrameNavigated = /* @__PURE__ */ Symbol("FrameManager.FrameNavigated");
-  FrameManagerEvent2.FrameDetached = /* @__PURE__ */ Symbol("FrameManager.FrameDetached");
-  FrameManagerEvent2.FrameSwapped = /* @__PURE__ */ Symbol("FrameManager.FrameSwapped");
-  FrameManagerEvent2.LifecycleEvent = /* @__PURE__ */ Symbol("FrameManager.LifecycleEvent");
-  FrameManagerEvent2.FrameNavigatedWithinDocument = /* @__PURE__ */ Symbol("FrameManager.FrameNavigatedWithinDocument");
-  FrameManagerEvent2.ConsoleApiCalled = /* @__PURE__ */ Symbol("FrameManager.ConsoleApiCalled");
-  FrameManagerEvent2.BindingCalled = /* @__PURE__ */ Symbol("FrameManager.BindingCalled");
-})(FrameManagerEvent || (FrameManagerEvent = {}));
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/WaitTask.js
-var WaitTask = class {
-  #world;
-  #polling;
-  #root;
-  #fn;
-  #args;
-  #timeout;
-  #genericError = new Error("Waiting failed");
-  #timeoutError;
-  #result = Deferred.create();
-  #poller;
-  #signal;
-  #reruns = [];
-  constructor(world, options, fn, ...args) {
-    this.#world = world;
-    this.#polling = options.polling;
-    this.#root = options.root;
-    this.#signal = options.signal;
-    this.#signal?.addEventListener("abort", this.#onAbortSignal, {
-      once: true
-    });
-    switch (typeof fn) {
-      case "string":
-        this.#fn = `() => {return (${fn});}`;
-        break;
-      default:
-        this.#fn = stringifyFunction(fn);
-        break;
-    }
-    this.#args = args;
-    this.#world.taskManager.add(this);
-    if (options.timeout) {
-      this.#timeoutError = new TimeoutError(`Waiting failed: ${options.timeout}ms exceeded`);
-      this.#timeout = setTimeout(() => {
-        void this.terminate(this.#timeoutError);
-      }, options.timeout);
-    }
-    void this.rerun();
-  }
-  get result() {
-    return this.#result.valueOrThrow();
-  }
-  async rerun() {
-    for (const prev of this.#reruns) {
-      prev.abort();
-    }
-    this.#reruns.length = 0;
-    const controller = new AbortController();
-    this.#reruns.push(controller);
-    try {
-      switch (this.#polling) {
-        case "raf":
-          this.#poller = await this.#world.evaluateHandle(({ RAFPoller, createFunction: createFunction2 }, fn, ...args) => {
-            const fun = createFunction2(fn);
-            return new RAFPoller(() => {
-              return fun(...args);
-            });
-          }, LazyArg.create((context2) => {
-            return context2.puppeteerUtil;
-          }), this.#fn, ...this.#args);
-          break;
-        case "mutation":
-          this.#poller = await this.#world.evaluateHandle(({ MutationPoller, createFunction: createFunction2 }, root, fn, ...args) => {
-            const fun = createFunction2(fn);
-            return new MutationPoller(() => {
-              return fun(...args);
-            }, root || document);
-          }, LazyArg.create((context2) => {
-            return context2.puppeteerUtil;
-          }), this.#root, this.#fn, ...this.#args);
-          break;
-        default:
-          this.#poller = await this.#world.evaluateHandle(({ IntervalPoller, createFunction: createFunction2 }, ms, fn, ...args) => {
-            const fun = createFunction2(fn);
-            return new IntervalPoller(() => {
-              return fun(...args);
-            }, ms);
-          }, LazyArg.create((context2) => {
-            return context2.puppeteerUtil;
-          }), this.#polling, this.#fn, ...this.#args);
-          break;
-      }
-      await this.#poller.evaluate((poller) => {
-        void poller.start();
-      });
-      const result = await this.#poller.evaluateHandle((poller) => {
-        return poller.result();
-      });
-      this.#result.resolve(result);
-      await this.terminate();
-    } catch (error) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      const badError = this.getBadError(error);
-      if (badError) {
-        this.#genericError.cause = badError;
-        await this.terminate(this.#genericError);
-      }
-    }
-  }
-  async terminate(error) {
-    this.#world.taskManager.delete(this);
-    this.#signal?.removeEventListener("abort", this.#onAbortSignal);
-    clearTimeout(this.#timeout);
-    if (error && !this.#result.finished()) {
-      this.#result.reject(error);
-    }
-    if (this.#poller) {
-      try {
-        await this.#poller.evaluate(async (poller) => {
-          await poller.stop();
-        });
-        if (this.#poller) {
-          await this.#poller.dispose();
-          this.#poller = void 0;
-        }
-      } catch {
-      }
-    }
-  }
-  /**
-   * Not all errors lead to termination. They usually imply we need to rerun the task.
-   */
-  getBadError(error) {
-    if (isErrorLike(error)) {
-      if (error.message.includes("Execution context is not available in detached frame")) {
-        return new Error("Waiting failed: Frame detached");
-      }
-      if (error.message.includes("Execution context was destroyed")) {
-        return;
-      }
-      if (error.message.includes("Cannot find context with specified id")) {
-        return;
-      }
-      if (error.message.includes("DiscardedBrowsingContextError")) {
-        return;
-      }
-      return error;
-    }
-    return new Error("WaitTask failed with an error", {
-      cause: error
-    });
-  }
-  #onAbortSignal = () => {
-    void this.terminate(this.#signal?.reason);
-  };
-};
-var TaskManager = class {
-  #tasks = /* @__PURE__ */ new Set();
-  add(task) {
-    this.#tasks.add(task);
-  }
-  delete(task) {
-    this.#tasks.delete(task);
-  }
-  terminateAll(error) {
-    for (const task of this.#tasks) {
-      void task.terminate(error);
-    }
-    this.#tasks.clear();
-  }
-  async rerunAll() {
-    await Promise.all([...this.#tasks].map((task) => {
-      return task.rerun();
-    }));
-  }
-};
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/Realm.js
-var Realm = class {
-  /** @internal */
-  timeoutSettings;
-  /** @internal */
-  taskManager = new TaskManager();
-  /** @internal */
-  constructor(timeoutSettings) {
-    this.timeoutSettings = timeoutSettings;
-  }
-  /**
-   * Waits for a function to return a truthy value when evaluated in
-   * the realm's context.
-   *
-   * Arguments can be passed from Node.js to `pageFunction`.
-   *
-   * @example
-   *
-   * ```ts
-   * const selector = '.foo';
-   * await realm.waitForFunction(
-   *   selector => !!document.querySelector(selector),
-   *   {},
-   *   selector,
-   * );
-   * ```
-   *
-   * @param pageFunction - A function to evaluate in the realm.
-   * @param options - Options for polling and timeouts.
-   * @param args - Arguments to pass to the function.
-   * @returns A promise that resolves when the function returns a truthy
-   * value.
-   * @public
-   */
-  async waitForFunction(pageFunction, options = {}, ...args) {
-    const { polling = "raf", timeout: timeout2 = this.timeoutSettings.timeout(), root, signal } = options;
-    if (typeof polling === "number" && polling < 0) {
-      throw new Error("Cannot poll with non-positive interval");
-    }
-    const waitTask = new WaitTask(this, {
-      polling,
-      root,
-      timeout: timeout2,
-      signal
-    }, pageFunction, ...args);
-    return await waitTask.result;
-  }
-  /** @internal */
-  get disposed() {
-    return this.#disposed;
-  }
-  #disposed = false;
-  /** @internal */
-  dispose() {
-    this.#disposed = true;
-    this.taskManager.terminateAll(new Error("waitForFunction failed: frame got detached."));
-  }
-  [disposeSymbol]() {
-    this.dispose();
-  }
-};
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/IsolatedWorlds.js
-var MAIN_WORLD = /* @__PURE__ */ Symbol("mainWorld");
-var PUPPETEER_WORLD = /* @__PURE__ */ Symbol("puppeteerWorld");
-
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/Target.js
-var TargetType;
-(function(TargetType2) {
-  TargetType2["PAGE"] = "page";
-  TargetType2["BACKGROUND_PAGE"] = "background_page";
-  TargetType2["SERVICE_WORKER"] = "service_worker";
-  TargetType2["SHARED_WORKER"] = "shared_worker";
-  TargetType2["BROWSER"] = "browser";
-  TargetType2["WEBVIEW"] = "webview";
-  TargetType2["OTHER"] = "other";
-  TargetType2["TAB"] = "tab";
-})(TargetType || (TargetType = {}));
-var Target = class {
-  logger;
-  /**
-   * @internal
-   */
-  constructor(logger) {
-    this.logger = logger;
-  }
-  /**
-   * If the target is not of type `"service_worker"` or `"shared_worker"`, returns `null`.
-   */
-  async worker() {
-    return null;
-  }
-  /**
-   * If the target is not of type `"page"`, `"webview"` or `"background_page"`,
-   * returns `null`.
-   */
-  async page() {
-    return null;
-  }
-};
-
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/WebWorker.js
 var CdpWebWorker = class extends WebWorker {
   #world;
@@ -12938,7 +12787,7 @@ var CdpWebWorker = class extends WebWorker {
           }
           return;
         }
-        const consoleMessages = createConsoleMessage(event, values, this.#id);
+        const consoleMessages = createConsoleMessage(event, values, this.#id, void 0, this);
         this.#emitter.emit(WebWorkerEvent.Console, consoleMessages);
         if (!noWorkerListeners) {
           this.emit(WebWorkerEvent.Console, consoleMessages);
@@ -12949,6 +12798,7 @@ var CdpWebWorker = class extends WebWorker {
     });
     this.#client.on("Runtime.exceptionThrown", exceptionThrown);
     this.#client.once(CDPSessionEvent.Disconnected, () => {
+      this.#workerLoaded.reject(new TargetCloseError("Worker was closed before its script finished loading"));
       this.#world.dispose();
     });
     networkManager?.addClient(this.#client).catch((err) => {
@@ -12982,7 +12832,7 @@ var CdpWebWorker = class extends WebWorker {
         break;
       }
       default:
-        await this.evaluate(() => {
+        await this.#world.evaluate(() => {
           self.close();
         });
     }
@@ -13654,6 +13504,194 @@ function referrerPolicyToProtocol(referrerPolicy) {
   });
 }
 
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpIssue.js
+var CdpIssue = class {
+  #code;
+  #details;
+  constructor(issue) {
+    this.#code = issue.code;
+    this.#details = issue.details;
+  }
+  get code() {
+    return this.#code;
+  }
+  get details() {
+    return this.#details;
+  }
+};
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/CdpPreloadScript.js
+var CdpPreloadScript = class {
+  /**
+   * This is the ID of the preload script returned by
+   * Page.addScriptToEvaluateOnNewDocument in the main frame.
+   *
+   * Sub-frames would get a different CDP ID because
+   * addScriptToEvaluateOnNewDocument is called for each subframe. But
+   * users only see this ID and subframe IDs are internal to Puppeteer.
+   */
+  #id;
+  #source;
+  #frameToId = /* @__PURE__ */ new WeakMap();
+  constructor(mainFrame, id, source2) {
+    this.#id = id;
+    this.#source = source2;
+    this.#frameToId.set(mainFrame, id);
+  }
+  get id() {
+    return this.#id;
+  }
+  get source() {
+    return this.#source;
+  }
+  getIdForFrame(frame) {
+    return this.#frameToId.get(frame);
+  }
+  setIdForFrame(frame, identifier) {
+    this.#frameToId.set(frame, identifier);
+  }
+};
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/DeviceRequestPrompt.js
+var DeviceRequestPrompt = class {
+  /**
+   * Current list of selectable devices.
+   */
+  devices = [];
+};
+
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/DeviceRequestPrompt.js
+var CdpDeviceRequestPrompt = class extends DeviceRequestPrompt {
+  #client;
+  #timeoutSettings;
+  #id;
+  #handled = false;
+  #waitForDevicePromises = /* @__PURE__ */ new Set();
+  #subscriptions = new DisposableStack();
+  constructor(client, timeoutSettings, firstEvent) {
+    super();
+    this.#client = client;
+    this.#timeoutSettings = timeoutSettings;
+    this.#id = firstEvent.id;
+    const clientEmitter = this.#subscriptions.use(new EventEmitter(this.#client));
+    clientEmitter.on("DeviceAccess.deviceRequestPrompted", this.#updateDevices.bind(this));
+    this.#updateDevices(firstEvent);
+  }
+  #updateDevices(event) {
+    if (event.id !== this.#id) {
+      return;
+    }
+    for (const rawDevice of event.devices) {
+      if (this.devices.some((device) => {
+        return device.id === rawDevice.id;
+      })) {
+        continue;
+      }
+      const newDevice = { id: rawDevice.id, name: rawDevice.name };
+      this.devices.push(newDevice);
+      for (const waitForDevicePromise of this.#waitForDevicePromises) {
+        if (waitForDevicePromise.filter(newDevice)) {
+          waitForDevicePromise.promise.resolve(newDevice);
+        }
+      }
+    }
+  }
+  async waitForDevice(filter2, options = {}) {
+    for (const device of this.devices) {
+      if (filter2(device)) {
+        return device;
+      }
+    }
+    const { timeout: timeout2 = this.#timeoutSettings.timeout() } = options;
+    const deferred = Deferred.create({
+      message: `Waiting for \`DeviceRequestPromptDevice\` failed: ${timeout2}ms exceeded`,
+      timeout: timeout2
+    });
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        deferred.reject(options.signal?.reason);
+      }, { once: true });
+    }
+    const handle = { filter: filter2, promise: deferred };
+    this.#waitForDevicePromises.add(handle);
+    try {
+      return await deferred.valueOrThrow();
+    } finally {
+      this.#waitForDevicePromises.delete(handle);
+    }
+  }
+  async select(device) {
+    assert(this.devices.includes(device), "Cannot select unknown device!");
+    assert(!this.#handled, "Cannot select DeviceRequestPrompt which is already handled!");
+    this.#subscriptions.dispose();
+    this.#handled = true;
+    await this.#client.send("DeviceAccess.selectPrompt", {
+      id: this.#id,
+      deviceId: device.id
+    });
+  }
+  async cancel() {
+    assert(!this.#handled, "Cannot cancel DeviceRequestPrompt which is already handled!");
+    this.#subscriptions.dispose();
+    this.#handled = true;
+    await this.#client.send("DeviceAccess.cancelPrompt", { id: this.#id });
+  }
+};
+var CdpDeviceRequestPromptManager = class {
+  #client;
+  #timeoutSettings;
+  #deviceRequestPromptDeferreds = /* @__PURE__ */ new Set();
+  constructor(client, timeoutSettings) {
+    this.#client = client;
+    this.#timeoutSettings = timeoutSettings;
+    this.#client.on("DeviceAccess.deviceRequestPrompted", (event) => {
+      this.#onDeviceRequestPrompted(event);
+    });
+    this.#client.on("Target.detachedFromTarget", () => {
+      this.#client = null;
+    });
+  }
+  async waitForDevicePrompt(options = {}) {
+    assert(this.#client !== null, "Cannot wait for device prompt through detached session!");
+    const needsEnable = this.#deviceRequestPromptDeferreds.size === 0;
+    let enablePromise;
+    if (needsEnable) {
+      enablePromise = this.#client.send("DeviceAccess.enable");
+    }
+    const { timeout: timeout2 = this.#timeoutSettings.timeout() } = options;
+    const deferred = Deferred.create({
+      message: `Waiting for \`DeviceRequestPrompt\` failed: ${timeout2}ms exceeded`,
+      timeout: timeout2
+    });
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        deferred.reject(options.signal?.reason);
+      }, { once: true });
+    }
+    this.#deviceRequestPromptDeferreds.add(deferred);
+    try {
+      const [result] = await Promise.all([
+        deferred.valueOrThrow(),
+        enablePromise
+      ]);
+      return result;
+    } finally {
+      this.#deviceRequestPromptDeferreds.delete(deferred);
+    }
+  }
+  #onDeviceRequestPrompted(event) {
+    if (!this.#deviceRequestPromptDeferreds.size) {
+      return;
+    }
+    assert(this.#client !== null);
+    const devicePrompt = new CdpDeviceRequestPrompt(this.#client, this.#timeoutSettings, event);
+    for (const promise of this.#deviceRequestPromptDeferreds) {
+      promise.resolve(devicePrompt);
+    }
+    this.#deviceRequestPromptDeferreds.clear();
+  }
+};
+
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/FrameTree.js
 var FrameTree = class {
   #frames = /* @__PURE__ */ new Map();
@@ -13730,6 +13768,28 @@ var FrameTree = class {
 };
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/api/HTTPRequest.js
+function normalizeHeadersInput(headers) {
+  if (headers instanceof Headers) {
+    const result = {};
+    headers.forEach((value, key) => {
+      const existing = result[key];
+      if (existing === void 0) {
+        result[key] = value;
+      } else if (Array.isArray(existing)) {
+        existing.push(value);
+      } else {
+        result[key] = [existing, value];
+      }
+    });
+    return result;
+  }
+  return headers;
+}
+function headersInputToRecord(headers) {
+  return Object.fromEntries(Object.entries(normalizeHeadersInput(headers)).map(([key, value]) => {
+    return [key, Array.isArray(value) ? value.join(", ") : value];
+  }));
+}
 var HTTPRequest = class {
   /**
    * @internal
@@ -13850,6 +13910,33 @@ var HTTPRequest = class {
     }
   }
   /**
+   * Converts the request to a Fetch API Request instance.
+   *
+   * @remarks
+   *
+   * Headers are copied to the new Request instance. The request URL and
+   * method are preserved. The body is built from
+   * {@link HTTPRequest.fetchPostData} when the request has post data,
+   * otherwise the Request is created without a body. For `GET` and
+   * `HEAD` requests the body is always omitted, as required by the
+   * Fetch API.
+   *
+   * @returns A promise which resolves to a Fetch API Request object.
+   */
+  async asFetchRequest() {
+    const method = this.method();
+    const headers = new Headers(this.headers());
+    let body = null;
+    if (method !== "GET" && method !== "HEAD" && this.hasPostData()) {
+      body = await this.fetchPostData() ?? null;
+    }
+    return new Request(this.url(), {
+      method,
+      headers,
+      body
+    });
+  }
+  /**
    * @internal
    */
   verifyInterception() {
@@ -13889,10 +13976,17 @@ var HTTPRequest = class {
     if (!this.canBeIntercepted()) {
       return;
     }
+    const { headers, ...rest } = overrides;
+    const normalizedOverrides = {
+      ...rest,
+      ...headers && {
+        headers: headersInputToRecord(headers)
+      }
+    };
     if (priority === void 0) {
-      return await this._continue(overrides);
+      return await this._continue(normalizedOverrides);
     }
-    this.interception.requestOverrides = overrides;
+    this.interception.requestOverrides = normalizedOverrides;
     if (this.interception.resolutionState.priority === void 0 || priority > this.interception.resolutionState.priority) {
       this.interception.resolutionState = {
         action: InterceptResolutionAction.Continue,
@@ -13945,10 +14039,14 @@ var HTTPRequest = class {
     if (!this.canBeIntercepted()) {
       return;
     }
+    const normalizedResponse = {
+      ...response,
+      headers: response.headers instanceof Headers ? normalizeHeadersInput(response.headers) : response.headers
+    };
     if (priority === void 0) {
-      return await this._respond(response);
+      return await this._respond(normalizedResponse);
     }
-    this.interception.response = response;
+    this.interception.response = normalizedResponse;
     if (this.interception.resolutionState.priority === void 0 || priority > this.interception.resolutionState.priority) {
       this.interception.resolutionState = {
         action: InterceptResolutionAction.Respond,
@@ -14256,8 +14354,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
     }
     const responseHeaders = {};
     if (response.headers) {
-      for (const header of Object.keys(response.headers)) {
-        const value = response.headers[header];
+      for (const [header, value] of Object.entries(response.headers)) {
         responseHeaders[header.toLowerCase()] = Array.isArray(value) ? value.map((item) => {
           return String(item);
         }) : String(value);
@@ -14341,6 +14438,41 @@ var HTTPResponse = class {
   async json() {
     const content = await this.text();
     return JSON.parse(content);
+  }
+  /**
+   * Converts the response to a Fetch API Response instance.
+   *
+   * @remarks
+   *
+   * Headers are copied to the new Response instance, with multi-line
+   * `set-cookie` headers parsed into individual header entries.
+   * For responses with null body statuses (101, 204, 205, 304), the body is
+   * omitted.
+   *
+   * @returns A promise which resolves to a Fetch API Response object.
+   */
+  async asFetchResponse() {
+    const headers = new Headers();
+    for (const [key, value] of Object.entries(this.headers())) {
+      if (key === "set-cookie") {
+        for (const cookie of value.split("\n")) {
+          const trimmed = cookie.trim();
+          if (trimmed) {
+            headers.append(key, trimmed);
+          }
+        }
+      } else {
+        headers.append(key, value);
+      }
+    }
+    const status = this.status();
+    const isNullBodyStatus = status === 101 || status === 204 || status === 205 || status === 304;
+    const body = isNullBodyStatus ? null : await this.content();
+    return new Response(body, {
+      status,
+      statusText: this.statusText(),
+      headers
+    });
   }
 };
 
@@ -14757,7 +14889,7 @@ var NetworkManager = class extends EventEmitter {
   }
   async setExtraHTTPHeaders(headers) {
     const extraHTTPHeaders = {};
-    for (const [key, value] of Object.entries(headers)) {
+    for (const [key, value] of Object.entries(headersInputToRecord(headers))) {
       assert(isString(value), `Expected value of header "${key}" to be String, but "${typeof value}" is found.`);
       extraHTTPHeaders[key.toLowerCase()] = value;
     }
@@ -14806,9 +14938,9 @@ var NetworkManager = class extends EventEmitter {
         latency: 0
       };
     }
-    this.#emulatedNetworkConditions.upload = networkConditions ? networkConditions.upload : -1;
-    this.#emulatedNetworkConditions.download = networkConditions ? networkConditions.download : -1;
-    this.#emulatedNetworkConditions.latency = networkConditions ? networkConditions.latency : 0;
+    this.#emulatedNetworkConditions.upload = networkConditions?.upload ?? -1;
+    this.#emulatedNetworkConditions.download = networkConditions?.download ?? -1;
+    this.#emulatedNetworkConditions.latency = networkConditions?.latency ?? 0;
     this.#emulatedNetworkConditions.offline = networkConditions?.offline ?? false;
     await this.#applyToAllClients(this.#applyNetworkConditions.bind(this));
   }
@@ -14821,12 +14953,26 @@ var NetworkManager = class extends EventEmitter {
     if (this.#emulatedNetworkConditions === void 0) {
       return;
     }
+    if (client.connection()?.rejectEmulateNetworkConditionsCalls) {
+      throw new Error("Cannot reset network conditions: rule-based emulation is enabled.");
+    }
     try {
-      await client.send("Network.emulateNetworkConditions", {
+      await client.send("Network.overrideNetworkState", {
         offline: this.#emulatedNetworkConditions.offline,
         latency: this.#emulatedNetworkConditions.latency,
         uploadThroughput: this.#emulatedNetworkConditions.upload,
         downloadThroughput: this.#emulatedNetworkConditions.download
+      });
+      await client.send("Network.emulateNetworkConditionsByRule", {
+        matchedNetworkConditions: [
+          {
+            urlPattern: "",
+            offline: this.#emulatedNetworkConditions.offline,
+            latency: this.#emulatedNetworkConditions.latency,
+            downloadThroughput: this.#emulatedNetworkConditions.download,
+            uploadThroughput: this.#emulatedNetworkConditions.upload
+          }
+        ]
       });
     } catch (error) {
       if (this.#canIgnoreError(error)) {
@@ -17615,7 +17761,7 @@ var CdpPage = class _CdpPage extends Page {
       });
     }
     if (source2 !== "worker") {
-      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace, this.#primaryTarget._targetId));
+      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace, this.#primaryTarget._targetId, void 0));
     }
   }
   mainFrame() {
@@ -17878,7 +18024,11 @@ var CdpPage = class _CdpPage extends Page {
     if (world.environment.client instanceof CdpCDPSession) {
       targetId = world.environment.client.target()._targetId;
     }
-    this.emit("console", createConsoleMessage(event, values, targetId));
+    let frame;
+    if (world.environment instanceof CdpFrame) {
+      frame = world.environment;
+    }
+    this.emit("console", createConsoleMessage(event, values, targetId, frame));
   }
   async #onBindingCalled(world, event) {
     let payload;
@@ -19706,13 +19856,16 @@ var TargetManager = class extends EventEmitter {
       return;
     }
     if (targetInfo.type === "service_worker") {
-      if (!this.isUrlAllowed(targetInfo.url)) {
-        await Promise.all([
-          this.#maybeSetupNetworkConditions(session, targetInfo),
-          session.send("Runtime.runIfWaitingForDebugger")
-        ]).catch((error) => {
+      if (this.#hasNetworkRules()) {
+        const networkConditionsSetUp = this.#maybeSetupNetworkConditions(session, targetInfo);
+        await session.send("Runtime.runIfWaitingForDebugger").catch((error) => {
           this.#logger?.(DEBUG_PREFIXES.error)?.(error);
         });
+        await networkConditionsSetUp;
+        if (!this.isUrlAllowed(targetInfo.url) || this.#ignoredTargets.has(targetInfo.targetId) || !this.#discoveredTargetsByTargetId.has(targetInfo.targetId)) {
+          return;
+        }
+        this.#attachServiceWorkerTarget(targetInfo, session, parentSession);
         return;
       }
       await this.#silentDetach(session, parentSession);
@@ -19772,6 +19925,31 @@ var TargetManager = class extends EventEmitter {
       this.#logger?.(DEBUG_PREFIXES.error)?.(error);
     });
   };
+  /**
+   * Registers a service worker session that is kept open (see the
+   * blocklist/allowlist handling in {@link TargetManager.#onAttachedToTarget})
+   * so that the session is visible to the manager's bookkeeping and
+   * `WorkerTarget.worker()` reuses it instead of opening a second one.
+   */
+  #attachServiceWorkerTarget(targetInfo, session, parentSession) {
+    let target = this.#attachedTargetsByTargetId.get(targetInfo.targetId);
+    const isExistingTarget = target !== void 0;
+    if (!target) {
+      target = this.#targetFactory(targetInfo, session, parentSession instanceof CdpCDPSession ? parentSession : void 0);
+    }
+    this.#setupAttachmentListeners(session);
+    if (isExistingTarget) {
+      session.setTarget(target);
+    } else {
+      target._initialize();
+      this.#attachedTargetsByTargetId.set(targetInfo.targetId, target);
+    }
+    this.#attachedTargetsBySessionId.set(session.id(), target);
+    this.#getParentTarget(parentSession)?._addChildTarget(target);
+    if (!isExistingTarget) {
+      this.emit("targetAvailable", target);
+    }
+  }
   #finishInitializationIfReady(targetId) {
     if (targetId !== void 0) {
       this.#targetsIdsForInit.delete(targetId);
@@ -19795,11 +19973,14 @@ var TargetManager = class extends EventEmitter {
     this.#attachedTargetsByTargetId.delete(target._targetId);
     this.emit("targetGone", target);
   };
+  #hasNetworkRules() {
+    return this.#blocklist.length > 0 || this.#allowlist.length > 0;
+  }
   /**
    * Helper to validate URL against blocklist patterns
    */
   isUrlAllowed = (url) => {
-    if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
+    if (!this.#hasNetworkRules()) {
       return true;
     }
     if (!url || url === "about:blank") {
@@ -19827,9 +20008,17 @@ var TargetManager = class extends EventEmitter {
     }
     return result;
   }
-  #maybeSetupNetworkConditions = async (session, targetInfo) => {
-    if (this.#blocklist.length === 0 && this.#allowlist.length === 0) {
-      return;
+  /**
+   * Issues the `Network.*` commands that enforce the blocklist/allowlist on
+   * `session`. The commands are sent synchronously (before this function
+   * returns), so callers can rely on them being dispatched ahead of any command
+   * they send afterwards. The returned promise settles once the commands are
+   * acknowledged; for worker targets that only happens once the worker is
+   * running, so it must not be awaited before `Runtime.runIfWaitingForDebugger`.
+   */
+  #maybeSetupNetworkConditions = (session, targetInfo) => {
+    if (!this.#hasNetworkRules()) {
+      return Promise.resolve();
     }
     const matchedNetworkConditions = [];
     for (const item of this.#blocklist) {
@@ -19868,7 +20057,7 @@ var TargetManager = class extends EventEmitter {
       offline: this.#blocklist.length > 0 ? true : void 0,
       matchedNetworkConditions
     }));
-    await Promise.all(promises).catch((error) => {
+    return Promise.all(promises).catch((error) => {
       this.#logger?.(DEBUG_PREFIXES.error)?.(error);
     });
   };
@@ -20236,8 +20425,13 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     return version.userAgent;
   }
   async close() {
-    await this.#closeCallback.call(null);
-    await this.disconnect();
+    try {
+      await this.#closeCallback.call(null);
+    } catch (error) {
+      this.logger?.(DEBUG_PREFIXES.error)?.(error);
+    } finally {
+      await this.disconnect();
+    }
   }
   disconnect() {
     this.#targetManager.dispose();

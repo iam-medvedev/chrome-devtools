@@ -4,13 +4,16 @@ import * as CommentManager from '../../models/comment_manager/comment_manager.js
 import * as UI from '../../ui/legacy/legacy.js';
 import * as CommonPanels from '../common/common.js';
 type Title = CommonPanels.CommentThreadWidget.Title;
+export type Tab = 'queued' | 'sent';
 export interface ThreadViewData {
     thread: CommentManager.CommentManager.CommentThread;
     title: Title;
     commentText: string;
 }
 export interface ViewInput {
+    activeTab: Tab;
     threads: ThreadViewData[];
+    onTabSelect: (tab: Tab) => void;
     onClearAll: () => void;
     onThreadClick: (thread: CommentManager.CommentManager.CommentThread) => void;
     onDeleteThread: (threadId: string) => void;

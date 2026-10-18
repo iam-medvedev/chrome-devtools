@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -125,9 +126,9 @@ describeWithEnvironment('TextEditor', () => {
             const editor = new TextEditor.TextEditor.TextEditor(makeState(''));
             renderElementIntoDOM(editor);
             assert.strictEqual(editor.state.facet(CodeMirror.indentUnit), '    ');
-            Common.Settings.Settings.instance().moduleSetting('text-editor-indent').set('\t');
+            Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).set('\t');
             assert.strictEqual(editor.state.facet(CodeMirror.indentUnit), '\t');
-            Common.Settings.Settings.instance().moduleSetting('text-editor-indent').set('    ');
+            Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).set('    ');
         });
         it('does not treat dashes as word chars in CSS', () => {
             const state = makeState('.some-selector {}', CodeMirror.css.cssLanguage);

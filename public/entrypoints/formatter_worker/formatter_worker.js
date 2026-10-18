@@ -4484,7 +4484,24 @@ var HTMLFormatter = class {
     this.#builder.decreaseNestingLevel();
     this.#builder.addNewLine();
   }
-  #afterCloseTag(_element) {
+  #afterCloseTag(element) {
+    if (!this.#model) {
+      return;
+    }
+    if (!element.children.length && element !== this.#model.document()) {
+      const nextToken = this.#model.peekToken();
+      if (nextToken) {
+        if (isTextToken(nextToken)) {
+          return;
+        }
+        const followingToken = this.#model.peekToken(1);
+        if (Platform2.StringUtilities.isWhitespace(nextToken.value) && !/[\r\n]/.test(nextToken.value) && followingToken && isTextToken(followingToken)) {
+          this.#model.nextToken();
+          this.#builder.addToken(nextToken.value, nextToken.startOffset);
+          return;
+        }
+      }
+    }
     this.#builder.addNewLine();
   }
   #formatToken(element, token) {
@@ -4594,6 +4611,9 @@ function scriptTagIsJSON(element) {
 function hasTokenInSet(tokenTypes, type) {
   return tokenTypes.has(type) || tokenTypes.has(`xml-${type}`);
 }
+function isTextToken(token) {
+  return !Platform2.StringUtilities.isWhitespace(token.value) && !hasTokenInSet(token.type, "tag") && !hasTokenInSet(token.type, "attribute") && !hasTokenInSet(token.type, "bracket") && !hasTokenInSet(token.type, "comment") && !hasTokenInSet(token.type, "meta");
+}
 var HTMLModel = class {
   #state = "Initial" /* INITIAL */;
   #document;
@@ -4624,7 +4644,7 @@ var HTMLModel = class {
       if (element && (hasTokenInSet(token.type, "comment") || hasTokenInSet(token.type, "meta"))) {
         element.hasComments = true;
       }
-      if (element && !Platform2.StringUtilities.isWhitespace(token.value) && !hasTokenInSet(token.type, "tag") && !hasTokenInSet(token.type, "attribute") && !hasTokenInSet(token.type, "bracket") && !hasTokenInSet(token.type, "comment") && !hasTokenInSet(token.type, "meta")) {
+      if (element && isTextToken(token)) {
         element.hasContent = true;
       }
       if (element && (element.name === "script" || element.name === "style") && element.openTag?.endOffset === lastOffset) {
@@ -4804,8 +4824,8 @@ var HTMLModel = class {
     newElement.openTag = openTag;
     this.#stack.push(newElement);
   }
-  peekToken() {
-    return this.#tokenIndex < this.#tokens.length ? this.#tokens[this.#tokenIndex] : null;
+  peekToken(offset = 0) {
+    return this.#tokenIndex + offset < this.#tokens.length ? this.#tokens[this.#tokenIndex + offset] : null;
   }
   nextToken() {
     return this.#tokens[this.#tokenIndex++];
@@ -5716,6 +5736,7 @@ var cssTrimEnd = (tokenValue) => {
 };
 var CSSFormatter = class {
   #builder;
+  #text;
   #toOffset;
   #fromOffset;
   #lineEndings;
@@ -5726,6 +5747,7 @@ var CSSFormatter = class {
     this.#builder = builder;
   }
   format(text, lineEndings, fromOffset, toOffset) {
+    this.#text = text;
     this.#lineEndings = lineEndings;
     this.#fromOffset = fromOffset;
     this.#toOffset = toOffset;
@@ -5736,6 +5758,47 @@ var CSSFormatter = class {
     const oldEnforce = this.#builder.setEnforceSpaceBetweenWords(false);
     tokenize(text.substring(this.#fromOffset, this.#toOffset), this.#tokenCallback.bind(this));
     this.#builder.setEnforceSpaceBetweenWords(oldEnforce);
+  }
+  #isSelectorPseudoColon(colonOffset) {
+    let parenDepth = 0;
+    for (let i = colonOffset + 1; i < this.#toOffset; ++i) {
+      const ch = this.#text[i];
+      if (ch === "/" && this.#text[i + 1] === "*") {
+        const commentEnd = this.#text.indexOf("*/", i + 2);
+        if (commentEnd === -1) {
+          break;
+        }
+        i = commentEnd + 1;
+        continue;
+      }
+      if (ch === "'" || ch === '"') {
+        const quote = ch;
+        for (++i; i < this.#toOffset; ++i) {
+          if (this.#text[i] === "\\") {
+            ++i;
+          } else if (this.#text[i] === quote) {
+            break;
+          }
+        }
+        continue;
+      }
+      if (ch === "(") {
+        ++parenDepth;
+      } else if (ch === ")") {
+        if (parenDepth === 0) {
+          return false;
+        }
+        --parenDepth;
+      } else if (parenDepth === 0) {
+        if (ch === "{") {
+          return true;
+        }
+        if (ch === ";" || ch === "}") {
+          return false;
+        }
+      }
+    }
+    return false;
   }
   #tokenCallback(token, type, startPosition) {
     startPosition += this.#fromOffset;
@@ -5774,14 +5837,20 @@ var CSSFormatter = class {
       this.#builder.decreaseNestingLevel();
       this.#state.afterClosingBrace = true;
       this.#state.inPropertyValue = false;
-    } else if (token === ":" && !this.#state.inPropertyValue && this.#state.seenProperty) {
-      this.#builder.addToken(token, startPosition);
-      this.#builder.addSoftSpace();
-      this.#state.eatWhitespace = true;
-      this.#state.inPropertyValue = true;
       this.#state.seenProperty = false;
-      return;
+    } else if (token === ":" && !this.#state.inPropertyValue && this.#state.seenProperty) {
+      if (this.#isSelectorPseudoColon(startPosition)) {
+        this.#state.seenProperty = false;
+      } else {
+        this.#builder.addToken(token, startPosition);
+        this.#builder.addSoftSpace();
+        this.#state.eatWhitespace = true;
+        this.#state.inPropertyValue = true;
+        this.#state.seenProperty = false;
+        return;
+      }
     } else if (token === "{") {
+      this.#state.seenProperty = false;
       this.#builder.addSoftSpace();
       this.#builder.addToken(token, startPosition);
       this.#builder.addNewLine();

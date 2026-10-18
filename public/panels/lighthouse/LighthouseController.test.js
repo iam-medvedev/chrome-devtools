@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -87,6 +88,30 @@ describeWithEnvironment('LighthouseController', () => {
             const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
             await controller.startLighthouse({ isAIControlled: true, categoryIds: ['accessibility'] });
             assert.deepEqual(controller.getCurrentRun()?.categoryIDs, ['accessibility']);
+        });
+    });
+    describe('error recovery', () => {
+        it('rejects startLighthouse when the run fails to start, and starts the next run', async () => {
+            const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
+            protocolService.attach.onFirstCall().rejects(new Error('attach failed'));
+            const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
+            const startError = await controller.startLighthouse({ mode: 'snapshot' }).then(() => null, (err) => err);
+            assert.instanceOf(startError, Error);
+            assert.strictEqual(startError.message, 'attach failed');
+            await controller.startLighthouse({ mode: 'snapshot' });
+            assert.exists(controller.getCurrentRun());
+        });
+        it('resolves cancelLighthouse after a run failed to start', async () => {
+            const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
+            protocolService.attach.rejects(new Error('attach failed'));
+            const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
+            const startError = await controller.startLighthouse({ mode: 'snapshot' }).then(() => null, (err) => err);
+            assert.instanceOf(startError, Error);
+            const cancelOutcome = await Promise.race([
+                controller.cancelLighthouse().then(() => 'resolved'),
+                new Promise(resolve => setTimeout(() => resolve('pending'), 0)),
+            ]);
+            assert.strictEqual(cancelOutcome, 'resolved');
         });
     });
 });

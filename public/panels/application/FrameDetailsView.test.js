@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -66,6 +67,7 @@ const makeFrame = (target) => {
             },
         ]),
         getPermissionsPolicyState: () => Promise.resolve(null),
+        getSpellCheckCustomDictionary: async () => [],
         parentFrame: () => null,
     };
     return newFrame;
@@ -223,6 +225,43 @@ report-uri: https://www.example.com/csp`,
         const adScriptsText = Array.from(adScriptAncestryItems).map(adScript => adScript.textContent?.trim());
         assert.deepEqual(adScriptsText, ['ad-script1.js:1', 'ad-script2.js:1']);
     });
+    it('does not render the spell check custom dictionary section when it is empty', async () => {
+        const frame = makeFrame(createTarget());
+        const component = new Application.FrameDetailsView.FrameDetailsReportView();
+        component.frame = frame;
+        renderElementIntoDOM(component);
+        await component.updateComplete;
+        assert.notExists(component.contentElement.querySelector('.spell-check-custom-dictionary-list'));
+    });
+    it('renders the spell check custom dictionary words', async () => {
+        const frame = makeFrame(createTarget());
+        const getWords = sinon.stub().resolves(['Charmander', 'Pikachu']);
+        frame.getSpellCheckCustomDictionary = getWords;
+        const component = new Application.FrameDetailsView.FrameDetailsReportView();
+        component.frame = frame;
+        renderElementIntoDOM(component);
+        await component.updateComplete;
+        await raf();
+        const keys = [...component.contentElement.querySelectorAll('devtools-report-key')].map(k => k.deepInnerText());
+        assert.include(keys, 'Words');
+        const list = component.contentElement.querySelector('devtools-report-value.spell-check-custom-dictionary-list devtools-expandable-list');
+        assert.exists(list);
+        list.shadowRoot.querySelector('button').click();
+        await raf();
+        const words = [...list.shadowRoot.querySelectorAll('.expandable-list-items > div')].map(word => word.textContent?.trim());
+        assert.deepEqual(words, ['Charmander', 'Pikachu']);
+        getWords.resolves(['Pikachu']);
+        const callCount = getWords.callCount;
+        const refreshButton = component.contentElement.querySelector('devtools-report-value.spell-check-custom-dictionary-list devtools-button');
+        assert.exists(refreshButton);
+        refreshButton.click();
+        await component.updateComplete;
+        await raf();
+        sinon.assert.callCount(getWords, callCount + 1);
+        const refreshedList = component.contentElement.querySelector('devtools-report-value.spell-check-custom-dictionary-list devtools-expandable-list');
+        const refreshedWords = [...refreshedList.shadowRoot.querySelectorAll('.expandable-list-items > div')].map(word => word.textContent?.trim());
+        assert.deepEqual(refreshedWords, ['Pikachu']);
+    });
     it('renders icon buttons fully when narrow', async () => {
         const target = createTarget();
         const frame = makeFrame(target);
@@ -239,8 +278,10 @@ report-uri: https://www.example.com/csp`,
             protocolMonitorExperimentEnabled: false,
             trials: null,
             securityIsolationInfo: null,
+            spellCheckCustomDictionaryWords: [],
             onRevealInNetwork: () => { },
             onRevealInSources: () => { },
+            onRefreshSpellCheckCustomDictionary: () => { },
         };
         Application.FrameDetailsView.DEFAULT_VIEW(input, undefined, container);
         await assertScreenshot('application/frame-details-narrow.png');
@@ -261,8 +302,10 @@ report-uri: https://www.example.com/csp`,
             protocolMonitorExperimentEnabled: false,
             trials: null,
             securityIsolationInfo: null,
+            spellCheckCustomDictionaryWords: [],
             onRevealInNetwork: () => { },
             onRevealInSources: () => { },
+            onRefreshSpellCheckCustomDictionary: () => { },
         };
         Application.FrameDetailsView.DEFAULT_VIEW(input, undefined, container);
         await assertScreenshot('application/frame-details-wide.png');

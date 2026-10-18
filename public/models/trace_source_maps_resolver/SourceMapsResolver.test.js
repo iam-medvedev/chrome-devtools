@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -98,7 +99,6 @@ describe('SourceMapsResolver', () => {
             .returns(backend.universe.debuggerWorkspaceBinding);
     });
     afterEach(() => {
-        sinon.restore();
         Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
     describe('function name resolving', () => {

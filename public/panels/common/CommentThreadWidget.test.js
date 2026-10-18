@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -25,6 +26,7 @@ function renderView(inputOverrides = {}, target) {
         comments: [],
         status: 'SENT_TO_AGENT',
         commentText: '',
+        isEditing: false,
         isQueueModifierPressed: false,
         textAreaRef: Lit.Directives.createRef(),
         onAddComment: () => { },
@@ -32,6 +34,8 @@ function renderView(inputOverrides = {}, target) {
         onCommentTextChange: () => { },
         onQueueComment: () => { },
         onQueueModifierChange: () => { },
+        onSetEditMode: () => { },
+        onSaveEdit: () => { },
         ...inputOverrides,
     }, undefined, target);
     return target;
@@ -62,6 +66,19 @@ describeWithEnvironment('CommentThreadWidget DEFAULT_VIEW', () => {
         const target = renderView({ comments, status: 'ACTIVE' });
         renderElementIntoDOM(target, { includeCommonStyles: true });
         await assertScreenshot('comments/comment_thread_widget_queued.png');
+    });
+    it('renders a queued developer comment in editing mode', async () => {
+        const comments = [
+            { author: 'DEVELOPER', text: 'Align this to the grid', timestamp: 0 },
+        ];
+        const target = renderView({
+            comments,
+            status: 'ACTIVE',
+            isEditing: true,
+            commentText: 'Align this to the grid',
+        });
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        await assertScreenshot('comments/comment_thread_widget_editing.png');
     });
     it('renders a developer comment with an agent response', async () => {
         const comments = [
@@ -199,6 +216,55 @@ describeWithEnvironment('CommentThreadWidget queue interactions in DEFAULT_VIEW'
         assert.isFalse(onQueueModifierChange.thirdCall.args[0]);
     });
 });
+describeWithEnvironment('CommentThreadWidget edit interactions in DEFAULT_VIEW', () => {
+    const comments = [
+        { author: 'DEVELOPER', text: 'Queued note', timestamp: 0 },
+    ];
+    it('replaces the comment with a prefilled textarea and a "Save" button while editing', () => {
+        const target = renderView({ comments, status: 'ACTIVE', isEditing: true, commentText: 'Queued note' });
+        assert.isNull(target.querySelector('.comment-text'));
+        const textarea = target.querySelector('textarea');
+        assert.isNotNull(textarea);
+        assert.strictEqual(textarea.value, 'Queued note');
+        const button = target.querySelector('.footer devtools-button');
+        assert.isNotNull(button);
+        assert.strictEqual(button.textContent?.trim(), 'Save');
+    });
+    it('calls onSetEditMode(true) when the developer comment is clicked', () => {
+        const onSetEditMode = sinon.spy();
+        const target = renderView({ comments, status: 'ACTIVE', onSetEditMode });
+        const commentText = target.querySelector('.comment-text');
+        assert.isNotNull(commentText);
+        commentText.click();
+        sinon.assert.calledOnceWithExactly(onSetEditMode, true);
+    });
+    it('routes Enter, Cmd/Ctrl+Enter and the button to onSaveEdit while editing', () => {
+        const onSaveEdit = sinon.spy();
+        const onAddComment = sinon.spy();
+        const onQueueComment = sinon.spy();
+        const target = renderView({
+            comments,
+            status: 'ACTIVE',
+            isEditing: true,
+            commentText: 'Edited note',
+            onSaveEdit,
+            onAddComment,
+            onQueueComment,
+        });
+        const textarea = target.querySelector('textarea');
+        assert.isNotNull(textarea);
+        textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+        const { metaKey, ctrlKey } = queueModifier();
+        textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', metaKey, ctrlKey, bubbles: true, cancelable: true }));
+        const button = target.querySelector('.footer devtools-button');
+        assert.isNotNull(button);
+        button.click();
+        sinon.assert.callCount(onSaveEdit, 3);
+        sinon.assert.alwaysCalledWithExactly(onSaveEdit, 'Edited note');
+        sinon.assert.notCalled(onAddComment);
+        sinon.assert.notCalled(onQueueComment);
+    });
+});
 describeWithEnvironment('CommentThreadWidget presenter', () => {
     async function createShownWidget() {
         const view = createViewFunctionStub(CommentThreadWidget);
@@ -305,6 +371,56 @@ describeWithEnvironment('CommentThreadWidget presenter', () => {
         widget.detach();
         widget.performUpdate();
         assert.isFalse(view.input.isQueueModifierPressed);
+    });
+    it('enters edit mode with the comment text for an ACTIVE thread', async () => {
+        const { view, widget } = await createShownWidget();
+        try {
+            widget.status = 'ACTIVE';
+            widget.comments = [{ author: 'DEVELOPER', text: 'Queued note', timestamp: 0 }];
+            assert.isFalse((await view.nextInput).isEditing);
+            view.input.onSetEditMode(true);
+            const input = await view.nextInput;
+            assert.isTrue(input.isEditing);
+            assert.strictEqual(input.commentText, 'Queued note');
+        }
+        finally {
+            widget.detach();
+        }
+    });
+    it('calls onStartEdit when entering edit mode for an ACTIVE thread', async () => {
+        const { view, widget } = await createShownWidget();
+        try {
+            const onStartEdit = sinon.spy();
+            widget.onStartEdit = onStartEdit;
+            widget.status = 'ACTIVE';
+            widget.comments = [{ author: 'DEVELOPER', text: 'Queued note', timestamp: 0 }];
+            await view.nextInput;
+            view.input.onSetEditMode(true);
+            sinon.assert.calledOnce(onStartEdit);
+        }
+        finally {
+            widget.detach();
+        }
+    });
+    it('forwards the trimmed edited text to onSaveEdit and leaves edit mode', async () => {
+        const { view, widget } = await createShownWidget();
+        try {
+            const onSaveEdit = sinon.spy();
+            widget.onSaveEdit = onSaveEdit;
+            widget.status = 'ACTIVE';
+            widget.comments = [{ author: 'DEVELOPER', text: 'Queued note', timestamp: 0 }];
+            await view.nextInput;
+            view.input.onSetEditMode(true);
+            await view.nextInput;
+            view.input.onSaveEdit('  Edited note  ');
+            const input = await view.nextInput;
+            sinon.assert.calledOnceWithExactly(onSaveEdit, 'Edited note');
+            assert.isFalse(input.isEditing);
+            assert.strictEqual(input.commentText, '');
+        }
+        finally {
+            widget.detach();
+        }
     });
 });
 //# sourceMappingURL=CommentThreadWidget.test.js.map

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { createTarget, describeWithEnvironment, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled, spyCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStyles, getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet, } from '../../testing/StyleHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { Icon } from '../../ui/kit/kit.js';
+import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as LegacyUI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -27,6 +30,7 @@ const { html } = Lit;
 describeWithEnvironment('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
     let computedStyleModel;
+    let changeTracker;
     let connection;
     let mockVariableMap;
     let matchedStyles;
@@ -36,7 +40,8 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
     beforeEach(async () => {
         connection = new MockCDPConnection();
         computedStyleModel = new ComputedStyle.ComputedStyleModel.ComputedStyleModel();
-        stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        changeTracker = sinon.createStubInstance(ChangeTracker.ChangeTracker.ChangeTracker);
+        stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker);
         mockVariableMap = {
             '--a': 'red',
             '--b': 'blue',
@@ -403,6 +408,271 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         assert.deepEqual(stylePropertyTreeElement.renderedPropertyText(), `color: ${expectedColorString}`);
         sinon.assert.alwaysCalledWith(applyStyleTextStub, `color: ${expectedColorString}`, false);
     });
+    describe('edits through the renderers', () => {
+        // These tests change a property the way a user does: through the swatches and the editors they open. After every
+        // edit they check the property text of the tree element, which is what gets applied to the style. Applying the style
+        // is stubbed out, so nothing re-renders in between and the edits accumulate on a single tree element.
+        //
+        // The color picker looks up the shortcut of the eye dropper.
+        setupActionRegistry();
+        let applyStyleText;
+        let showPopover;
+        beforeEach(() => {
+            applyStyleText =
+                sinon.stub(Elements.StylePropertyTreeElement.StylePropertyTreeElement.prototype, 'applyStyleText').resolves();
+            // Captures the editors instead of showing them.
+            showPopover = sinon.stub(stylesSidebarPane.swatchPopoverHelper(), 'show');
+        });
+        // Closes the editor that was opened last, accepting its edits.
+        function hideLastPopover() {
+            const hide = showPopover.lastCall.args[2];
+            assert.exists(hide);
+            hide(true);
+        }
+        function renderEditable(name, value) {
+            const treeElement = getTreeElement(name, value);
+            treeElement.updateTitle();
+            const { valueElement } = treeElement;
+            assert.exists(valueElement);
+            const check = (message, expected) => {
+                assert.strictEqual(treeElement.renderedPropertyText(), expected, message);
+            };
+            check('initial property text', `${name}: ${value}`);
+            return {
+                treeElement,
+                valueElement,
+                check,
+                // Runs `action`, which edits the property with one of the editors, and checks that the edit is previewed.
+                edit(message, expected, action) {
+                    applyStyleText.resetHistory();
+                    action();
+                    check(message, expected);
+                    sinon.assert.alwaysCalledWith(applyStyleText, expected, false);
+                },
+                // Accepts the edits of an editor by closing it, which by default is the editor that was opened last.
+                commit(expected, close = hideLastPopover) {
+                    applyStyleText.resetHistory();
+                    close();
+                    sinon.assert.calledOnceWithExactly(applyStyleText, expected, true);
+                },
+            };
+        }
+        function openColorPicker(swatch) {
+            showPopover.resetHistory();
+            const target = swatch.shadowRoot?.querySelector('.color-swatch-inner');
+            assert.exists(target);
+            dispatchClickEvent(target);
+            sinon.assert.calledOnce(showPopover);
+            const [spectrum] = showPopover.firstCall.args;
+            assert.instanceOf(spectrum, ColorPicker.Spectrum.Spectrum);
+            return spectrum;
+        }
+        function pickColor(swatch, color) {
+            openColorPicker(swatch).dispatchEventToListeners("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, color);
+        }
+        it('applies the edits of all color swatches and the bezier editor of a custom property', async () => {
+            const colorSchemes = sinon.spy(Elements.StylePropertyTreeElement.LightDarkColorRenderer.prototype, 'applyColorScheme');
+            // The parts of the value that the edits below replace, in order.
+            const parts = [
+                'red',
+                'var(--a)',
+                'light-dark(red, blue)',
+                'contrast-color(black)',
+                'color-mix(in srgb, red, blue)',
+                'cubic-bezier(0.1, 0.2, 0.3, 0.4)',
+            ];
+            const text = () => `--x: ${parts.join(' ')}`;
+            // The colors and the bezier editor are the only renderers that edit this value.
+            const { valueElement, edit, commit } = renderEditable('--x', parts.join(' '));
+            await Promise.all(colorSchemes.returnValues);
+            const swatches = valueElement.querySelectorAll('devtools-color-swatch');
+            assert.lengthOf(swatches, 9);
+            const [plain, variable, lightDark, light, dark, contrast, contrastArgument, mixFirst, mixSecond] = swatches;
+            parts[0] = '#00ff00';
+            edit('picking a plain color', text(), () => pickColor(plain, '#00ff00'));
+            const hsl = plain.color?.as("hsl" /* Common.Color.Format.HSL */);
+            assert.exists(hsl);
+            parts[0] = 'hsl(120deg 100% 50%)';
+            edit('changing the format of a plain color', text(), () => plain.dispatchEvent(new InlineEditor.ColorSwatch.ColorFormatChangedEvent(hsl)));
+            // The swatches of var() and the like represent the whole function, so picking a color replaces all of it.
+            parts[1] = '#0000ff';
+            edit('picking a color for var()', text(), () => pickColor(variable, '#0000ff'));
+            parts[2] = 'light-dark(#ff00ff, blue)';
+            edit('picking the light color of light-dark()', text(), () => pickColor(light, '#ff00ff'));
+            parts[2] = 'light-dark(#ff00ff, #00ffff)';
+            edit('picking the dark color of light-dark()', text(), () => pickColor(dark, '#00ffff'));
+            parts[2] = '#123456';
+            edit('picking a color for light-dark()', text(), () => pickColor(lightDark, '#123456'));
+            parts[3] = 'contrast-color(#654321)';
+            edit('picking the argument of contrast-color()', text(), () => pickColor(contrastArgument, '#654321'));
+            parts[3] = '#abcdef';
+            edit('picking a color for contrast-color()', text(), () => pickColor(contrast, '#abcdef'));
+            parts[4] = 'color-mix(in srgb, #111111, blue)';
+            edit('picking the first color of color-mix()', text(), () => pickColor(mixFirst, '#111111'));
+            parts[4] = 'color-mix(in srgb, #111111, #222222)';
+            edit('picking the second color of color-mix()', text(), () => pickColor(mixSecond, '#222222'));
+            const bezierIcon = valueElement.querySelector('.bezier-swatch-icon');
+            assert.exists(bezierIcon);
+            showPopover.resetHistory();
+            dispatchClickEvent(bezierIcon);
+            sinon.assert.calledOnce(showPopover);
+            const [bezierEditor] = showPopover.firstCall.args;
+            assert.instanceOf(bezierEditor, InlineEditor.BezierEditor.BezierEditor);
+            parts[5] = 'cubic-bezier(0.1, 0.7, 1, 0.1)';
+            edit('changing the bezier curve', text(), () => bezierEditor.dispatchEventToListeners("BezierChanged" /* InlineEditor.BezierEditor.Events.BEZIER_CHANGED */, 'cubic-bezier(0.1, 0.7, 1, 0.1)'));
+            commit(text());
+        });
+        function openShadowEditor(swatch) {
+            showPopover.resetHistory();
+            swatch.iconElement().click();
+            sinon.assert.calledOnce(showPopover);
+            const [editor] = showPopover.firstCall.args;
+            assert.instanceOf(editor, InlineEditor.CSSShadowEditor.CSSShadowEditor);
+            return editor;
+        }
+        function typeIntoShadowEditor(editor, input, value) {
+            const textInputs = editor.contentElement.querySelectorAll('.shadow-editor-text-input');
+            const textInput = textInputs[['x', 'y', 'blur', 'spread'].indexOf(input)];
+            assert.exists(textInput);
+            textInput.value = value;
+            textInput.dispatchEvent(new InputEvent('input', { data: value }));
+        }
+        it('applies the edits of the shadow editor, the hue and the colors of a box-shadow', () => {
+            mockVariableMap['--y-color'] = '2px red';
+            // The parts of the value that the edits below replace, in order.
+            const parts = ['10px 11px hsl(120deg, 50%, 25%)', '1px var(--y-color)'];
+            const text = () => `box-shadow: ${parts.join(', ')}`;
+            // The shadow renderer puts the text of the value together from the shadow editor and the renderers of the parts.
+            const { valueElement, edit, commit } = renderEditable('box-shadow', parts.join(', '));
+            const [first, second] = valueElement.querySelectorAll('css-shadow-swatch');
+            assert.exists(first);
+            assert.exists(second);
+            const firstEditor = openShadowEditor(first);
+            parts[0] = 'inset 10px 11px hsl(120deg, 50%, 25%)';
+            edit('toggling inset', text(), () => firstEditor.contentElement.querySelector('.shadow-editor-button-right')?.click());
+            parts[0] = 'inset 12px 11px hsl(120deg, 50%, 25%)';
+            edit('changing the x offset', text(), () => typeIntoShadowEditor(firstEditor, 'x', '12px'));
+            parts[0] = 'inset 12px 13px hsl(120deg, 50%, 25%)';
+            edit('changing the y offset', text(), () => typeIntoShadowEditor(firstEditor, 'y', '13px'));
+            parts[0] = 'inset 12px 13px 14px hsl(120deg, 50%, 25%)';
+            edit('adding a blur radius', text(), () => typeIntoShadowEditor(firstEditor, 'blur', '14px'));
+            parts[0] = 'inset 12px 13px 14px 15px hsl(120deg, 50%, 25%)';
+            edit('adding a spread radius', text(), () => typeIntoShadowEditor(firstEditor, 'spread', '15px'));
+            commit(text());
+            // The shadow editor renders the colors of its shadow anew with every change, which discards edits made to them
+            // before. In the app, opening the color picker closes the shadow editor, so the colors are only edited once the
+            // shadow editor is done with the shadow here as well. For that reason, the swatches are looked up late.
+            const angle = first.nextElementSibling?.querySelector('devtools-css-angle');
+            assert.exists(angle);
+            parts[0] = 'inset 12px 13px 14px 15px hsl(200deg, 50%, 25%)';
+            edit('changing the hue', text(), () => angle.updateAngle({ value: 200, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            const secondEditor = openShadowEditor(second);
+            // Inserting the blur radius between the y offset and the color of --y-color expands the var().
+            parts[1] = '1px 2px 3px red';
+            edit('adding a blur radius to the second shadow', text(), () => typeIntoShadowEditor(secondEditor, 'blur', '3px'));
+            commit(text());
+            const color = second.nextElementSibling?.querySelector('devtools-color-swatch');
+            assert.exists(color);
+            parts[1] = '1px 2px 3px #ff8000';
+            edit('picking a color for the second shadow', text(), () => pickColor(color, '#ff8000'));
+            commit(text());
+        });
+        it('applies the edits of the angles of a transform', () => {
+            // The parts of the value that the edits below replace, in order.
+            const parts = ['45deg', '10deg'];
+            const transform = () => `rotate(${parts[0]}) skew(${parts[1]})`;
+            const text = () => `transform: ${transform()}`;
+            // The angles are the only renderers that edit this value.
+            const { valueElement, check, edit, commit } = renderEditable('transform', transform());
+            const [first, second] = valueElement.querySelectorAll('devtools-css-angle');
+            assert.exists(first);
+            assert.exists(second);
+            const secondSwatch = second.querySelector('devtools-css-angle-swatch');
+            assert.exists(secondSwatch);
+            parts[0] = '180deg';
+            edit('changing the first angle', text(), () => first.updateAngle({ value: 180, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            parts[1] = '90deg';
+            edit('changing the second angle', text(), () => second.updateAngle({ value: 90, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            // Shift-clicking the swatch switches the angle to the next unit. Nothing is applied for that, the new unit becomes
+            // part of the property with the next edit.
+            parts[1] = '100grad';
+            dispatchClickEvent(secondSwatch, { shiftKey: true });
+            check('changing the unit of the second angle', text());
+            // The second angle is edited in the new unit from now on, whereas the first angle keeps its unit.
+            parts[1] = '200grad';
+            edit('changing the second angle in the new unit', text(), () => second.updateAngle({ value: 180, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            parts[0] = '270deg';
+            edit('changing the first angle again', text(), () => first.updateAngle({ value: 270, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            commit(text(), () => second.dispatchEvent(new InlineEditor.CSSAngle.PopoverToggledEvent(false)));
+        });
+        it('applies the edits of the angle and the colors of a gradient', () => {
+            // The parts of the value that the edits below replace, in order.
+            const parts = ['45deg', 'red', 'blue'];
+            const gradient = () => `linear-gradient(${parts.join(', ')})`;
+            const text = () => `background: ${gradient()}`;
+            // The angle and the colors are the only renderers that edit this value.
+            const { valueElement, check, edit, commit } = renderEditable('background', gradient());
+            const angle = valueElement.querySelector('devtools-css-angle');
+            assert.exists(angle);
+            const angleSwatch = angle.querySelector('devtools-css-angle-swatch');
+            assert.exists(angleSwatch);
+            const [first, second] = valueElement.querySelectorAll('devtools-color-swatch');
+            assert.exists(first);
+            assert.exists(second);
+            parts[0] = '90deg';
+            edit('changing the angle', text(), () => angle.updateAngle({ value: 90, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            // Shift-clicking the swatch switches the angle to the next unit. Nothing is applied for that, the new unit becomes
+            // part of the property with the next edit.
+            parts[0] = '100grad';
+            dispatchClickEvent(angleSwatch, { shiftKey: true });
+            check('changing the unit of the angle', text());
+            // The angle is edited in the new unit from now on.
+            parts[0] = '200grad';
+            edit('changing the angle in the new unit', text(), () => angle.updateAngle({ value: 180, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ }));
+            commit(text(), () => angle.dispatchEvent(new InlineEditor.CSSAngle.PopoverToggledEvent(false)));
+            parts[1] = '#ff8000';
+            edit('picking the first color', text(), () => pickColor(first, '#ff8000'));
+            parts[2] = '#8000ff';
+            edit('picking the second color', text(), () => pickColor(second, '#8000ff'));
+            commit(text());
+        });
+        it('applies the edits of the position area editor', async () => {
+            // The position area editor is the only renderer that edits this value.
+            const { treeElement, valueElement, edit, commit } = renderEditable('position-area', 'bottom right');
+            const section = treeElement.section();
+            assert.exists(section);
+            const icon = valueElement.querySelector('devtools-icon.position-area-swatch-icon');
+            assert.exists(icon);
+            showPopover.resetHistory();
+            dispatchClickEvent(icon);
+            sinon.assert.calledOnce(showPopover);
+            const [editor] = showPopover.firstCall.args;
+            assert.instanceOf(editor, InlineEditor.PositionAreaEditor.PositionAreaEditor);
+            const selectArea = (area) => {
+                const parsed = InlineEditor.PositionAreaEditor.parsePositionArea(area);
+                assert.exists(parsed);
+                editor.dispatchEventToListeners("positionAreaChanged" /* InlineEditor.PositionAreaEditor.Events.POSITION_AREA_CHANGED */, parsed);
+            };
+            edit('selecting an area', 'position-area: top left', () => selectArea('top left'));
+            edit('selecting another area', 'position-area: bottom center', () => selectArea('bottom center'));
+            // The editor also edits the alignment of the element. That is not part of position-area, but done with properties
+            // of their own, which get added to the same section.
+            applyStyleText.resetHistory();
+            editor.dispatchEventToListeners("propertyChanged" /* InlineEditor.PositionAreaEditor.Events.PROPERTY_CHANGED */, { propertyName: 'align-self', value: 'center' });
+            sinon.assert.calledOnceWithExactly(applyStyleText, 'align-self: center', false);
+            const [alignSelf] = section.propertiesTreeOutline.rootElement().children();
+            assert.instanceOf(alignSelf, Elements.StylePropertyTreeElement.StylePropertyTreeElement);
+            assert.strictEqual(alignSelf.property.name, 'align-self');
+            sinon.assert.calledOn(applyStyleText, alignSelf);
+            await applyStyleText.lastCall.returnValue;
+            applyStyleText.resetHistory();
+            editor.dispatchEventToListeners("propertyChanged" /* InlineEditor.PositionAreaEditor.Events.PROPERTY_CHANGED */, { propertyName: 'align-self', value: undefined });
+            sinon.assert.calledOnceWithExactly(applyStyleText, '', false);
+            sinon.assert.calledOn(applyStyleText, alignSelf);
+            await applyStyleText.lastCall.returnValue;
+            commit('position-area: bottom center');
+        });
+    });
     describe('Context menu', () => {
         const expectedHeaderSectionItemsLabels = ['Copy declaration', 'Copy property', 'Copy value', 'Copy rule', 'Copy declaration as JS'];
         const expectedClipboardSectionItemsLabels = ['Copy all declarations', 'Copy all declarations as JS'];
@@ -736,7 +1006,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             assert.exists(stylePropertyTreeElement.valueElement);
             renderElementIntoDOM(stylePropertyTreeElement.valueElement, { allowMultipleChildren: true });
-            assert.strictEqual(stylePropertyTreeElement.renderedPropertyText(), 'color: var(--blue, )');
+            assert.strictEqual(stylePropertyTreeElement.renderedPropertyText(), 'color: var(--blue,)');
         });
     });
     describe('VariableNameRenderer', () => {
@@ -871,7 +1141,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         it('renders the easing function swatch', () => {
             const stylePropertyTreeElement = getTreeElement('animation-timing-function', 'ease-out');
             stylePropertyTreeElement.updateTitle();
-            assert.instanceOf(stylePropertyTreeElement.valueElement?.firstElementChild?.firstChild, Icon);
+            assert.instanceOf(stylePropertyTreeElement.valueElement?.firstElementChild?.firstElementChild, Icon);
         });
     });
     describe('UrlRenderer', () => {
@@ -1564,7 +1834,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const swatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-angle');
             assert.exists(swatch);
             swatch.data = {
-                angleText: swatch.innerText ?? '',
+                angleText: '45deg',
                 containingPane: document.createElement('div'),
             };
             sinon.stub(swatch, 'dispatchEvent');
@@ -1710,6 +1980,76 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.isTrue(values[0].classList.contains('inactive-value'));
             assert.isFalse(values[1].classList.contains('inactive-value'));
             assert.isTrue(values[2].classList.contains('inactive-value'));
+        });
+        it('renders the position-try swatch in default and forced states', () => {
+            const forcedOptionStub = sinon.stub(matchedStyles.cssModel(), 'forcedPositionTryOption').returns(undefined);
+            const stylePropertyTreeElement = getTreeElement('position-try-fallbacks', '--top, --left');
+            stylePropertyTreeElement.updateTitle();
+            let swatch = stylePropertyTreeElement.valueElement?.querySelector('.position-try-swatch-icon');
+            assert.exists(swatch);
+            assert.strictEqual(swatch.name, 'layers');
+            assert.isFalse(swatch.classList.contains('toggled'));
+            forcedOptionStub.returns(0);
+            stylePropertyTreeElement.updateTitle();
+            swatch = stylePropertyTreeElement.valueElement?.querySelector('.position-try-swatch-icon');
+            assert.exists(swatch);
+            assert.strictEqual(swatch.name, 'layers-filled');
+            assert.isTrue(swatch.classList.contains('toggled'));
+            forcedOptionStub.returns(2);
+            stylePropertyTreeElement.updateTitle();
+            swatch = stylePropertyTreeElement.valueElement?.querySelector('.position-try-swatch-icon');
+            assert.exists(swatch);
+            assert.strictEqual(swatch.name, 'layers-filled');
+            assert.isTrue(swatch.classList.contains('toggled'));
+            stylePropertyTreeElement.setOverloaded(true);
+            stylePropertyTreeElement.updateTitle();
+            swatch = stylePropertyTreeElement.valueElement?.querySelector('.position-try-swatch-icon');
+            assert.isNull(swatch);
+        });
+        it('opens a context menu with fallback options and forces the selected option', () => {
+            const node = matchedStyles.node();
+            assert.exists(node);
+            const forcedOptionStub = sinon.stub(matchedStyles.cssModel(), 'forcedPositionTryOption').returns(undefined);
+            const forceOptionSpy = sinon.stub(matchedStyles.cssModel(), 'forcePositionTryOption');
+            let shownMenu;
+            sinon.stub(LegacyUI.ContextMenu.ContextMenu.prototype, 'show')
+                .callsFake(async function () {
+                shownMenu = this;
+            });
+            const stylePropertyTreeElement = getTreeElement('position-try', '/* comment */ most-height --top, flip-block, --bottom');
+            stylePropertyTreeElement.updateTitle();
+            const swatch = stylePropertyTreeElement.valueElement?.querySelector('.position-try-swatch-icon');
+            assert.exists(swatch);
+            swatch.click();
+            assert.exists(shownMenu);
+            const items = shownMenu.defaultSection().items;
+            assert.deepEqual(items.map(item => {
+                const descriptor = item.buildDescriptor();
+                return { type: descriptor.type, label: descriptor.label, checked: descriptor.checked };
+            }), [
+                { type: 'checkbox', label: 'Default', checked: true },
+                { type: 'checkbox', label: 'Base', checked: false },
+                { type: 'separator', label: undefined, checked: undefined },
+                { type: 'checkbox', label: '--top', checked: false },
+                { type: 'checkbox', label: 'flip-block', checked: false },
+                { type: 'checkbox', label: '--bottom', checked: false },
+            ]);
+            shownMenu.invokeHandler(items[1].id());
+            sinon.assert.calledOnceWithExactly(forceOptionSpy, node, 0);
+            shownMenu.invokeHandler(items[3].id());
+            sinon.assert.calledWithExactly(forceOptionSpy, node, 1);
+            shownMenu.invokeHandler(items[4].id());
+            sinon.assert.calledWithExactly(forceOptionSpy, node, 2);
+            shownMenu.invokeHandler(items[0].id());
+            sinon.assert.calledWithExactly(forceOptionSpy, node, undefined);
+            forcedOptionStub.returns(0);
+            swatch.click();
+            assert.exists(shownMenu);
+            assert.deepEqual(shownMenu.defaultSection().items.map(item => item.buildDescriptor().checked), [false, true, undefined, false, false, false]);
+            forcedOptionStub.returns(2);
+            swatch.click();
+            assert.exists(shownMenu);
+            assert.deepEqual(shownMenu.defaultSection().items.map(item => item.buildDescriptor().checked), [false, false, undefined, false, true, false]);
         });
     });
     describe('LengthRenderer', () => {
@@ -3162,6 +3502,8 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const style = stylePayload(cssText);
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             node.id = 1;
+            node.backendNodeId.returns(1);
+            node.domModel.returns(liveCSSModel.domModel());
             node.nodeType.returns(Node.ELEMENT_NODE);
             const liveMatchedStyles = await getMatchedStylesWithStylesheet({
                 cssModel: liveCSSModel,
@@ -3418,6 +3760,89 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             sinon.assert.calledOnce(markUndoableStateStub);
             await SDK.DOMModel.DOMModelUndoStack.instance().undo();
             sinon.assert.calledOnce(undoStub);
+        });
+        describe('Change tracking', () => {
+            beforeEach(() => {
+                sinon.stub(changeTracker, 'isTracking').get(() => true);
+            });
+            it('tracks adding a new property only when committed', async () => {
+                const section = await createLiveSection('font-size: 12px;', { inline: true });
+                const first = section.addNewBlankProperty(0);
+                first.startEditingName();
+                assert.exists(first.nameElement);
+                first.nameElement.textContent = 'margin-left';
+                pressKey(first.nameElement, { key: 'Enter' });
+                selectAllText(first.valueElement, '1px');
+                pressKey(first.valueElement, { key: 'ArrowUp' });
+                await waitFor(() => setStyleTextsStub.callCount === 1);
+                pressKey(first.valueElement, { key: 'ArrowUp' });
+                await waitFor(() => setStyleTextsStub.callCount === 2);
+                // Live previews should not be recorded in ChangeTracker.
+                sinon.assert.notCalled(changeTracker.trackChange);
+                // Commit the edit.
+                pressKey(first.valueElement, { key: 'Enter' });
+                await waitFor(() => isEditingName(treeElementAt(section, 1)));
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Added style property "margin-left: 3px" to rule "element.style"', sinon.match.object);
+            });
+            it('tracks modifying an existing property value', async () => {
+                const section = await createLiveSection('color: red;');
+                const color = treeElementAt(section, 0);
+                color.startEditingValue();
+                assert.exists(color.valueElement);
+                color.valueElement.textContent = 'green';
+                await color.kickFreeFlowStyleEditForTest();
+                sinon.assert.notCalled(changeTracker.trackChange);
+                selectAllText(color.valueElement, 'blue');
+                pressKey(color.valueElement, { key: 'Enter' });
+                // Pressing enter will commit the edit and create a new blank property.
+                await waitFor(() => section.propertiesTreeOutline.rootElement().childCount() === 2);
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed style property "color" from "red" to "blue" in rule "div"', sinon.match.object);
+            });
+            it('tracks renaming an existing property', async () => {
+                const section = await createLiveSection('color: red; margin: 1px;');
+                const color = treeElementAt(section, 0);
+                color.startEditingName();
+                setTextWithCaretAtEnd(color.nameElement, 'background-color');
+                typeCharacter(color.nameElement, ':');
+                await waitFor(() => isEditingValue(treeElementAt(section, 0)));
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed style property from "color: red" to "background-color: red" in rule "div"', sinon.match.object);
+            });
+            it('tracks removing an existing property when its value is cleared', async () => {
+                const section = await createLiveSection('color: red; margin: 1px;');
+                const color = treeElementAt(section, 0);
+                color.startEditingValue();
+                assert.exists(color.valueElement);
+                color.valueElement.textContent = '';
+                pressKey(color.valueElement, { key: 'Enter' });
+                await waitFor(() => section.propertiesTreeOutline.rootElement().childCount() === 1);
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Removed style property "color: red" from rule "div"', sinon.match.object);
+            });
+            it('does not track anything when a previewed edit is cancelled with Escape', async () => {
+                const section = await createLiveSection('color: blue;');
+                const color = treeElementAt(section, 0);
+                color.startEditingValue();
+                assert.exists(color.valueElement);
+                color.valueElement.textContent = 'red';
+                await color.kickFreeFlowStyleEditForTest();
+                assert.deepEqual(declarations(), ['color: red']);
+                pressKey(color.valueElement, { key: 'Escape' });
+                await waitFor(() => declarations()[0] === 'color: blue');
+                sinon.assert.notCalled(changeTracker.trackChange);
+            });
+            it('tracks disabling and enabling a property through its checkbox', async () => {
+                const section = await createLiveSection('font-weight: bold;', { inline: true });
+                const checkbox = treeElementAt(section, 0).listItemElement.querySelector('.enabled-button');
+                assert.instanceOf(checkbox, HTMLInputElement);
+                checkbox.click();
+                await waitFor(() => treeElementAt(section, 0).listItemElement.classList.contains('disabled'));
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Disabled style property "font-weight: bold" in rule "element.style"', sinon.match.object);
+                changeTracker.trackChange.resetHistory();
+                const disabledCheckbox = treeElementAt(section, 0).listItemElement.querySelector('.enabled-button');
+                assert.instanceOf(disabledCheckbox, HTMLInputElement);
+                disabledCheckbox.click();
+                await waitFor(() => !treeElementAt(section, 0).listItemElement.classList.contains('disabled'));
+                sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Enabled style property "font-weight: bold" in rule "element.style"', sinon.match.object);
+            });
         });
     });
     describe('PositionAreaRenderer', () => {

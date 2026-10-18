@@ -12,6 +12,7 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
     static instance(opts?: {
         forceNew: boolean | null;
     }): SettingsScreen;
+    static removeInstanceForTesting(): void;
     private static revealSettingsScreen;
     static showSettingsScreen(options?: ShowSettingsScreenOptions): Promise<void>;
     resolveLocation(_locationName: string): UI.View.ViewLocation | null;

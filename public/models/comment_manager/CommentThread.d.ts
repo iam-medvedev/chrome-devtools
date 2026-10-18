@@ -29,7 +29,7 @@ export interface CommentAnchorSignature {
     /** Visual logging tree path, e.g. "Panel: elements > Pane: styles > TreeOutline > TreeItem: color" */
     vePath: string;
     /** Normalized text content of the target node */
-    textSignature: string;
+    textSignature?: string;
     /** Text content of the parent container VE node for sibling disambiguation */
     parentTextSignature?: string;
     /** 0-indexed position among siblings sharing the same visual logging path */
@@ -74,6 +74,7 @@ export declare class CommentThread extends Common.ObjectWrapper.ObjectWrapper<Ev
     constructor(options: CommentThreadOptions);
     get index(): number;
     save(text?: string, author?: 'DEVELOPER' | 'AGENT'): void;
+    editComment(text: string): void;
     sendToAgent(text?: string, author?: 'DEVELOPER' | 'AGENT'): void;
     resolve(replyText?: string): void;
 }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { it } from 'mocha';
 import sinon from 'sinon';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';

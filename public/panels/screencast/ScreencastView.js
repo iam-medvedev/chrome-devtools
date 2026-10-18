@@ -300,12 +300,12 @@ function clampTooltipPosition(canvas, titleElement, model) {
 export class ScreencastView extends UI.Widget.Widget {
     #view;
     #viewOutput;
-    screenCaptureModel;
-    domModel;
-    overlayModel;
-    resourceTreeModel;
-    networkManager;
-    inputModel;
+    #screenCaptureModel;
+    domModel = null;
+    overlayModel = null;
+    resourceTreeModel = null;
+    networkManager = null;
+    inputModel = null;
     shortcuts;
     scrollOffsetX;
     scrollOffsetY;
@@ -338,18 +338,15 @@ export class ScreencastView extends UI.Widget.Widget {
     #viewportHeight = '';
     #progressPercent = 0;
     #elementTitleData = { visible: false };
-    constructor(screenCaptureModel, element, view = DEFAULT_VIEW) {
+    constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
         this.#viewOutput = {};
-        this.screenCaptureModel = screenCaptureModel;
-        this.domModel = screenCaptureModel.target().model(SDK.DOMModel.DOMModel);
-        this.overlayModel = screenCaptureModel.target().model(SDK.OverlayModel.OverlayModel);
-        this.resourceTreeModel = screenCaptureModel.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
-        this.networkManager = screenCaptureModel.target().model(SDK.NetworkManager.NetworkManager);
-        this.inputModel = screenCaptureModel.target().model(InputModel);
         this.setMinimumSize(150, 150);
+        this.imageElement = new Image();
         this.shortcuts = {};
+        this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl.value)] =
+            this.focusNavigationBar.bind(this);
         this.scrollOffsetX = 0;
         this.scrollOffsetY = 0;
         this.screenZoom = 1;
@@ -357,21 +354,57 @@ export class ScreencastView extends UI.Widget.Widget {
         this.pageScaleFactor = 1;
         this.imageZoom = 1;
     }
-    initialize() {
-        this.createNavigationBar();
-        this.imageElement = new Image();
-        this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl.value)] =
-            this.focusNavigationBar.bind(this);
-        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
-        this.updateGlasspane();
+    get screenCaptureModel() {
+        return this.#screenCaptureModel;
     }
-    wasShown() {
-        super.wasShown();
+    set screenCaptureModel(screenCaptureModel) {
+        if (this.#screenCaptureModel === screenCaptureModel) {
+            return;
+        }
+        this.stopCasting();
+        this.#cleanup();
+        this.#screenCaptureModel = screenCaptureModel;
+        if (screenCaptureModel) {
+            this.domModel = screenCaptureModel.target().model(SDK.DOMModel.DOMModel);
+            this.overlayModel = screenCaptureModel.target().model(SDK.OverlayModel.OverlayModel);
+            this.resourceTreeModel = screenCaptureModel.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
+            this.networkManager = screenCaptureModel.target().model(SDK.NetworkManager.NetworkManager);
+            this.inputModel = screenCaptureModel.target().model(InputModel);
+            this.createNavigationBar();
+            this.updateGlasspane();
+            if (this.isShowing()) {
+                this.#scheduleCasting();
+            }
+        }
+        else {
+            this.domModel = null;
+            this.overlayModel = null;
+            this.resourceTreeModel = null;
+            this.networkManager = null;
+            this.inputModel = null;
+        }
+    }
+    #scheduleCasting() {
         if (this.deferredCasting) {
             clearTimeout(this.deferredCasting);
             delete this.deferredCasting;
         }
         this.deferredCasting = window.setTimeout(this.startCasting.bind(this), 100);
+    }
+    #cleanup() {
+        this.navigationProgressBar?.dispose();
+        this.navigationProgressBar = undefined;
+        if (this.resourceTreeModel) {
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
+            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigatedWithinDocument, this.onFrameNavigated, this);
+        }
+    }
+    wasShown() {
+        super.wasShown();
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
+        this.updateGlasspane();
+        this.#scheduleCasting();
         this.requestUpdate();
     }
     performUpdate() {
@@ -408,18 +441,20 @@ export class ScreencastView extends UI.Widget.Widget {
     }
     willHide() {
         super.willHide();
+        if (this.deferredCasting) {
+            clearTimeout(this.deferredCasting);
+            delete this.deferredCasting;
+        }
         this.stopCasting();
+        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
     }
     onDetach() {
-        this.navigationProgressBar?.dispose();
-        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
-        if (this.resourceTreeModel) {
-            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.requestNavigationHistoryEvent, this);
-            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.requestNavigationHistoryEvent, this);
-            this.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigatedWithinDocument, this.onFrameNavigated, this);
-        }
+        this.#cleanup();
     }
     async startCasting() {
+        if (!this.#screenCaptureModel) {
+            return;
+        }
         if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
             return;
         }
@@ -436,16 +471,16 @@ export class ScreencastView extends UI.Widget.Widget {
         dimensions.width *= window.devicePixelRatio;
         dimensions.height *= window.devicePixelRatio;
         // Note: startScreencast width and height are expected to be integers so must be floored.
-        this.screencastOperationId = await this.screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)), Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this.screencastFrame.bind(this), this.screencastVisibilityChanged.bind(this));
+        this.screencastOperationId = await this.#screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)), Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this.screencastFrame.bind(this), this.screencastVisibilityChanged.bind(this));
         if (this.overlayModel) {
             this.overlayModel.setHighlighter(this);
         }
     }
     stopCasting() {
-        if (!this.screencastOperationId) {
+        if (!this.screencastOperationId || !this.#screenCaptureModel) {
             return;
         }
-        this.screenCaptureModel.stopScreencast(this.screencastOperationId);
+        this.#screenCaptureModel.stopScreencast(this.screencastOperationId);
         this.screencastOperationId = undefined;
         this.isCasting = false;
         for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
@@ -597,12 +632,8 @@ export class ScreencastView extends UI.Widget.Widget {
         };
     }
     onResize() {
-        if (this.deferredCasting) {
-            clearTimeout(this.deferredCasting);
-            delete this.deferredCasting;
-        }
         this.stopCasting();
-        this.deferredCasting = window.setTimeout(this.startCasting.bind(this), 100);
+        this.#scheduleCasting();
     }
     highlightInOverlay(data, config) {
         void this.updateHighlightInOverlayAndRepaint(data, config);

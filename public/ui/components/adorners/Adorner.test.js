@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as Adorners from './adorners.js';
 const ADORNER_TAG_NAME = 'DEVTOOLS-ADORNER';
 describe('Adorner', () => {
@@ -24,7 +25,7 @@ describe('Adorner', () => {
         assert.isNull(adorner.getAttribute('role'), 'non-interactive adorner had wrong aria role value');
         adorner.setAttribute('toggleable', 'true');
         // Adorner no longer handles clicks and keydowns automatically.
-        // We simulate the consumer (like ElementsTreeElement) handling logic.
+        // We simulate the consumer (like DOMTreeElementWidget) handling logic.
         const clickListener = () => {
             if (adorner.isActive()) {
                 adorner.setAttribute('active', 'false');

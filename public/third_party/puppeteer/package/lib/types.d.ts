@@ -1459,6 +1459,11 @@ export declare interface ConnectOptions {
    * For complete network sandboxing, we recommend using
    * container/OS-level sandbox mechanism.
    *
+   * To enforce the patterns for requests made by service workers (including
+   * requests they forward on behalf of controlled pages), Puppeteer stays
+   * attached to every service worker while this option is set. As a
+   * consequence, the browser never idle-terminates service workers.
+   *
    * Cannot be used along with {@link ConnectOptions.allowlist}.
    *
    * @experimental
@@ -1498,6 +1503,11 @@ export declare interface ConnectOptions {
    * For complete network sandboxing, we recommend using
    * container/OS-level sandbox mechanism.
    *
+   * To enforce the patterns for requests made by service workers (including
+   * requests they forward on behalf of controlled pages), Puppeteer stays
+   * attached to every service worker while this option is set. As a
+   * consequence, the browser never idle-terminates service workers.
+   *
    * Cannot be used along with {@link ConnectOptions.blocklist}.
    *
    * @experimental
@@ -1530,6 +1540,27 @@ export declare interface ConnectOptions {
  */
 export declare class ConsoleMessage {
   #private;
+  /**
+   * The {@link WebWorker} that initiated the console message, or `null` if the
+   * message originated from a frame.
+   *
+   * @public
+   */
+  worker(): WebWorker | null;
+  /**
+   * The {@link Page} that the console message originated from, or `null` if the
+   * message originated from a worker or outside of a frame context.
+   *
+   * @public
+   */
+  page(): Page | null;
+  /**
+   * The {@link Frame} that initiated the console message, or `null` if the
+   * message originated from a worker.
+   *
+   * @public
+   */
+  frame(): Frame | null;
   /**
    * The type of the console message.
    */
@@ -1605,7 +1636,12 @@ export declare interface ContinueRequestOverrides {
   url?: string;
   method?: string;
   postData?: string;
-  headers?: Record<string, string>;
+  /**
+   * Optional headers to set on the request. Either a
+   * {@link https://developer.mozilla.org/en-US/docs/Web/API/Headers | Headers}
+   * instance or a plain record of headers.
+   */
+  headers?: HeadersInput;
 }
 
 /**
@@ -3891,6 +3927,11 @@ export declare type HandleOr<T> = HandleFor<T> | JSHandle<T> | T;
 export declare type Handler<T = unknown> = (event: T) => void;
 
 /**
+ * @public
+ */
+export declare type HeadersInput = Headers | Record<string, string>;
+
+/**
  * Options for {@link Page.captureHeapSnapshot}.
  *
  * @public
@@ -4020,6 +4061,21 @@ export declare abstract class HTTPRequest {
    * header names are lower-case.
    */
   abstract headers(): Record<string, string>;
+  /**
+   * Converts the request to a Fetch API Request instance.
+   *
+   * @remarks
+   *
+   * Headers are copied to the new Request instance. The request URL and
+   * method are preserved. The body is built from
+   * {@link HTTPRequest.fetchPostData} when the request has post data,
+   * otherwise the Request is created without a body. For `GET` and
+   * `HEAD` requests the body is always omitted, as required by the
+   * Fetch API.
+   *
+   * @returns A promise which resolves to a Fetch API Request object.
+   */
+  asFetchRequest(): Promise<Request>;
   /**
    * A matching `HTTPResponse` object, or null if the response has not
    * been received yet.
@@ -4252,6 +4308,19 @@ export declare abstract class HTTPResponse {
    */
   json(): Promise<any>;
   /**
+   * Converts the response to a Fetch API Response instance.
+   *
+   * @remarks
+   *
+   * Headers are copied to the new Response instance, with multi-line
+   * `set-cookie` headers parsed into individual header entries.
+   * For responses with null body statuses (101, 204, 205, 304), the body is
+   * omitted.
+   *
+   * @returns A promise which resolves to a Fetch API Response object.
+   */
+  asFetchResponse(): Promise<Response>;
+  /**
    * A matching {@link HTTPRequest} object.
    */
   abstract request(): HTTPRequest;
@@ -4339,6 +4408,9 @@ export declare interface InterceptResolutionState {
  */
 export declare interface InternalNetworkConditions extends NetworkConditions {
   offline: boolean;
+  download: number;
+  upload: number;
+  latency: number;
 }
 
 /**
@@ -5905,17 +5977,19 @@ export declare interface NetworkConditions {
    */
   offline?: boolean;
   /**
-   * Download speed (bytes/s)
+   * Download speed (bytes/s). If not provided, download throttling is
+   * disabled and only the offline mode is emulated.
    */
-  download: number;
+  download?: number;
   /**
-   * Upload speed (bytes/s)
+   * Upload speed (bytes/s). If not provided, upload throttling is
+   * disabled and only the offline mode is emulated.
    */
-  upload: number;
+  upload?: number;
   /**
-   * Latency (ms)
+   * Latency (ms). If not provided, no latency is emulated.
    */
-  latency: number;
+  latency?: number;
 }
 
 /**
@@ -6762,10 +6836,12 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
    *
    * :::
    *
-   * @param headers - An object containing additional HTTP headers to be sent
-   * with every request. All header values must be strings.
+   * @param headers - Additional HTTP headers to be sent with every request.
+   * Either a {@link https://developer.mozilla.org/en-US/docs/Web/API/Headers | Headers}
+   * instance or a record of additional HTTP headers. All header values must be
+   * strings.
    */
-  abstract setExtraHTTPHeaders(headers: Record<string, string>): Promise<void>;
+  abstract setExtraHTTPHeaders(headers: HeadersInput): Promise<void>;
   /**
    * @param userAgent - Specific user agent to use in this page
    * @param userAgentData - Specific user agent client hint data to use in this
@@ -7141,6 +7217,26 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
    * // → true
    * await page.evaluate(() => matchMedia('(color-gamut: rec2020)').matches);
    * // → false
+   *
+   * await page.emulateMediaFeatures([
+   *   {name: 'prefers-contrast', value: 'more'},
+   * ]);
+   * await page.evaluate(() => matchMedia('(prefers-contrast: more)').matches);
+   * // → true
+   *
+   * await page.emulateMediaFeatures([
+   *   {name: 'forced-colors', value: 'active'},
+   * ]);
+   * await page.evaluate(() => matchMedia('(forced-colors: active)').matches);
+   * // → true
+   *
+   * await page.emulateMediaFeatures([
+   *   {name: 'prefers-reduced-transparency', value: 'reduce'},
+   * ]);
+   * await page.evaluate(() => {
+   *   return matchMedia('(prefers-reduced-transparency: reduce)').matches;
+   * });
+   * // → true
    * ```
    */
   abstract emulateMediaFeatures(features?: MediaFeature[]): Promise<void>;
@@ -8548,6 +8644,7 @@ declare namespace Puppeteer_2 {
     FrameAddScriptTagOptions,
     FrameAddStyleTagOptions,
     FrameEvents,
+    HeadersInput,
     ContinueRequestOverrides,
     InterceptResolutionState,
     ResponseForRequest,
@@ -9145,14 +9242,16 @@ export declare type ResourceType = Lowercase<Protocol.Network.ResourceType>;
 export declare interface ResponseForRequest {
   status: number;
   /**
-   * Optional response headers.
+   * Optional response headers. Either a
+   * {@link https://developer.mozilla.org/en-US/docs/Web/API/Headers | Headers}
+   * instance or a plain record.
    *
    * The record values will be converted to string following:
    * Arrays' values will be mapped to String
    * (Used when you need multiple headers with the same name).
    * Non-arrays will be converted to String.
    */
-  headers: Record<string, string | string[] | unknown>;
+  headers: Headers | Record<string, string | string[] | unknown>;
   contentType: string;
   body: string | Uint8Array;
 }
@@ -10374,6 +10473,14 @@ export declare interface WsOptions {
    * @defaultValue `30_000`
    */
   keepAliveIntervalMs?: number;
+  /**
+   * Maximum size in bytes of a single message received from the browser.
+   * Messages exceeding it close the connection. Raise it when a protocol
+   * response, such as a large PDF, does not fit.
+   *
+   * @defaultValue `256 * 1024 * 1024`
+   */
+  maxPayload?: number;
 }
 
 export {};

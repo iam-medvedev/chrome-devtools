@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
-import { addChildFrame, createResource, getInitializedResourceTreeModel, getMainFrame, LOADER_ID, MAIN_FRAME_ID, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
+import { addChildFrame, createResource, FRAME, getEffectivePayload, getInitializedResourceTreeModel, getMainFrame, LOADER_ID, MAIN_FRAME_ID, mockResourceTree, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as SDK from './sdk.js';
@@ -115,6 +117,64 @@ describe('ResourceTreeModel', () => {
         assert.strictEqual(await mainFrame.getStorageKey(false), testKey);
         assert.strictEqual(manager.mainStorageKey(), testKey);
     });
+    it('adds the document resource on navigation', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const mainFrame = getMainFrame(target);
+        const url = urlString `http://example.com/page.html`;
+        const resourceAdded = sinon.spy();
+        resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, resourceAdded);
+        navigate(mainFrame, { url, loaderId: 'loader-2', mimeType: 'text/html' });
+        const resource = mainFrame.resourceForURL(url);
+        assert.exists(resource);
+        assert.isNull(resource.request);
+        assert.strictEqual(resource.resourceType(), Common.ResourceType.resourceTypes.Document);
+        assert.strictEqual(resource.mimeType, 'text/html');
+        assert.strictEqual(resource.frameId, mainFrame.id);
+        assert.strictEqual(resource.loaderId, 'loader-2');
+        assert.isFalse(resource.isGenerated);
+        sinon.assert.calledOnceWithExactly(resourceAdded, sinon.match({ data: resource }));
+    });
+    it('adds a generated document resource when the document is opened', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const mainFrame = getMainFrame(target);
+        const url = urlString `http://example.com/page.html`;
+        const resourceAdded = sinon.spy();
+        resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, resourceAdded);
+        resourceTreeModel.documentOpened(getEffectivePayload(mainFrame.id, FRAME, { url }));
+        const resource = mainFrame.resourceForURL(url);
+        assert.exists(resource);
+        assert.isTrue(resource.isGenerated);
+        sinon.assert.calledOnceWithExactly(resourceAdded, sinon.match({ data: resource }));
+    });
+    it('adds a generated document resource when the document is opened with a tracked request', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const mainFrame = getMainFrame(target);
+        const url = urlString `http://example.com/page.html`;
+        sinon.stub(SDK.NetworkManager.NetworkManager.prototype, 'requestForLoaderId')
+            .returns(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest));
+        resourceTreeModel.documentOpened(getEffectivePayload(mainFrame.id, FRAME, { url }));
+        const resource = mainFrame.resourceForURL(url);
+        assert.exists(resource);
+        assert.isTrue(resource.isGenerated);
+    });
+    it('does not add the document resource on navigation while the document request is in flight', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const mainFrame = getMainFrame(target);
+        const url = urlString `http://example.com/page.html`;
+        const loaderId = 'loader-2';
+        const requestForLoaderId = sinon.stub(SDK.NetworkManager.NetworkManager.prototype, 'requestForLoaderId')
+            .returns(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest));
+        const resourceAdded = sinon.spy();
+        resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, resourceAdded);
+        navigate(mainFrame, { url, loaderId });
+        sinon.assert.calledWithExactly(requestForLoaderId, loaderId);
+        assert.isNull(mainFrame.resourceForURL(url));
+        sinon.assert.notCalled(resourceAdded);
+    });
     function getResourceTreeModel(target) {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
@@ -138,6 +198,38 @@ describe('ResourceTreeModel', () => {
         resourceTreeModel.reloadPage();
         sinon.assert.calledOnce(reload);
         assert.deepEqual(reload.args[0], [{ ignoreCache: undefined, loaderId: LOADER_ID, scriptToEvaluateOnLoad: undefined }]);
+    });
+    it('issues a deferred reload once reloading is resumed if the document did not change', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const reload = sinon.spy(target.pageAgent(), 'invoke_reload');
+        resourceTreeModel.suspendReload();
+        resourceTreeModel.reloadPage(true, 'console.log("injected")');
+        sinon.assert.notCalled(reload);
+        resourceTreeModel.resumeReload();
+        sinon.assert.calledOnce(reload);
+        assert.deepEqual(reload.args[0], [{ ignoreCache: true, loaderId: LOADER_ID, scriptToEvaluateOnLoad: 'console.log("injected")' }]);
+    });
+    it('drops a deferred reload if the main frame navigated while reloading was suspended', async () => {
+        const target = universe.createTarget({ connection });
+        const resourceTreeModel = await getInitializedResourceTreeModel(target);
+        const reload = sinon.spy(target.pageAgent(), 'invoke_reload');
+        resourceTreeModel.suspendReload();
+        resourceTreeModel.reloadPage(true, 'console.log("injected")');
+        sinon.assert.notCalled(reload);
+        // Cross-document navigation to a different origin while the reload is pending.
+        navigate(getMainFrame(target), {
+            url: 'https://other.example.com/',
+            securityOrigin: 'https://other.example.com',
+            loaderId: 'OTHER_LOADER_ID',
+        });
+        assert.strictEqual(resourceTreeModel.mainFrame?.loaderId, 'OTHER_LOADER_ID');
+        resourceTreeModel.resumeReload();
+        sinon.assert.notCalled(reload);
+        // The stale request must not linger: a later suspend/resume cycle must not replay it either.
+        resourceTreeModel.suspendReload();
+        resourceTreeModel.resumeReload();
+        sinon.assert.notCalled(reload);
     });
     it('resourceForURL can find resource', async () => {
         const target = universe.createTarget({ connection });

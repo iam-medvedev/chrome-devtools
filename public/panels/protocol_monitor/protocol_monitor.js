@@ -968,7 +968,7 @@ function renderTargetSelectorRow(input) {
             @change=${input.onTargetSelected}>
       ${input.targets.map((target) => html`
         <option jslog=${VisualLogging.item("target").track({ click: true, resize: true })}
-                value=${target.id()} ?selected=${target.id() === input.targetId}>
+                value=${target.id()} .selected=${target.id() === input.targetId}>
           ${target.name()} (${target.inspectedURL()})
         </option>`)}
     </select>
@@ -1525,7 +1525,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                       @change=${(e) => input.onTargetChange(e.target.value)}>
                 ${input.targets.map((target2) => html2`
                   <option jslog=${VisualLogging2.item("target").track({ click: true })}
-                          value=${target2.id()} ?selected=${target2.id() === input.selectedTargetId}>
+                          value=${target2.id()} .selected=${target2.id() === input.selectedTargetId}>
                     ${target2.name()} (${target2.inspectedURL()})
                   </option>`)}
               </select>
@@ -1809,7 +1809,7 @@ var INFO_WIDGET_VIEW = (input, _output, target) => {
   render2(html2`
     <devtools-tabbed-pane>${input.type === void 0 ? html2`
       <devtools-widget
-          id="request" title=${i18nString2(UIStrings2.request)}
+          id="request" label=${i18nString2(UIStrings2.request)}
           ?selected=${input.selectedTab === "request"} disabled
           ${widget(UI2.EmptyWidget.EmptyWidget, {
     header: i18nString2(UIStrings2.noMessageSelected),
@@ -1817,7 +1817,7 @@ var INFO_WIDGET_VIEW = (input, _output, target) => {
   })}>
       </devtools-widget>
       <devtools-widget
-          id="response" title=${i18nString2(UIStrings2.response)}
+          id="response" label=${i18nString2(UIStrings2.response)}
           ?selected=${input.selectedTab === "response"}
           ${widget(UI2.EmptyWidget.EmptyWidget, {
     header: i18nString2(UIStrings2.noMessageSelected),
@@ -1825,12 +1825,12 @@ var INFO_WIDGET_VIEW = (input, _output, target) => {
   })}>
       </devtools-widget>` : html2`
       <devtools-widget
-          id="request" title=${i18nString2(UIStrings2.request)}
+          id="request" label=${i18nString2(UIStrings2.request)}
           ?selected=${input.selectedTab === "request"} ?disabled=${input.type !== "sent"}
           ${widget(SourceFrame.JSONView.SearchableJsonView, { jsonObject: input.request })}>
       </devtools-widget>
       <devtools-widget
-          id="response" title=${i18nString2(UIStrings2.response)}
+          id="response" label=${i18nString2(UIStrings2.response)}
           ?selected=${input.selectedTab === "response"}
           ${widget(SourceFrame.JSONView.SearchableJsonView, { jsonObject: input.response })}>
       </devtools-widget>`}

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -69,9 +70,6 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
         sinon.stub(UI.UIUtils.PromotionManager.instance(), 'maybeShowPromotion').returns(true);
         generateCodeStub = sinon.stub(AiCodeGeneration.AiCodeGeneration.AiCodeGeneration.prototype, 'generateCode');
         sinon.stub(AiCodeGenerationTeaser.AiCodeGenerationTeaser.prototype, 'displayState').set(_ => { });
-    });
-    afterEach(() => {
-        clock.restore();
     });
     it('does not create a provider when the feature is disabled', () => {
         updateHostConfig({

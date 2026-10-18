@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import * as Platform from '../../../core/platform/platform.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
@@ -337,7 +338,7 @@ describe('generatePreconnectCandidates', () => {
     setupLocaleHooks();
     const mockParsedTrace = {
         NetworkRequests: {
-            incompleteInitiator: new Map(),
+            incompleteInitiator: new WeakMap(),
             byTime: [],
             byId: new Map(),
             linkPreconnectEvents: [],
@@ -409,7 +410,6 @@ describe('generatePreconnectCandidates', () => {
         },
     };
     beforeEach(() => {
-        mockParsedTrace.NetworkRequests.incompleteInitiator.clear();
         mockParsedTrace.NetworkRequests.byTime.length = 0;
         mockParsedTrace.NetworkRequests.byId.clear();
         mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;

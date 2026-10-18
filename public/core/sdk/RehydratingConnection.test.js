@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { SnapshotTester } from '../../testing/SnapshotTester.js';
@@ -292,17 +293,11 @@ describeWithEnvironment('RehydratingConnection ?traceURL loading', () => {
     }
     let queryParamStub;
     let fetchStub;
-    let revealStub;
     beforeEach(() => {
         queryParamStub = sinon.stub(Root.Runtime.Runtime, 'queryParam');
         queryParamStub.callThrough();
         fetchStub = sinon.stub(globalThis, 'fetch');
-        revealStub = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal').resolves();
-    });
-    afterEach(() => {
-        queryParamStub.restore();
-        fetchStub.restore();
-        revealStub.restore();
+        sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal').resolves();
     });
     function respondWith(trace) {
         // Served as plain (non-gzipped) JSON; arrayBufferToString handles both.

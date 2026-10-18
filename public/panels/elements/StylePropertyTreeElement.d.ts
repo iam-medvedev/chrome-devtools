@@ -74,7 +74,7 @@ export declare class ColorRenderer extends ColorRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.ColorMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
-    renderColorSwatch(color: Common.Color.Color | undefined, valueChild: Node): InlineEditor.ColorSwatch.ColorSwatch;
+    renderColorSwatch(color: Common.Color.Color | undefined, valueChild: Node, match: SDK.CSSPropertyParser.Match, context: RenderingContext): InlineEditor.ColorSwatch.ColorSwatch;
 }
 declare const LightDarkColorRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.LightDarkColorMatch>;
 export declare class LightDarkColorRenderer extends LightDarkColorRendererBase {
@@ -99,7 +99,7 @@ declare const AngleRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.Angl
 export declare class AngleRenderer extends AngleRendererBase {
     #private;
     constructor(treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.AngleMatch, context: RenderingContext): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.AngleMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const LinkableNameRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.LinkableNameMatch>;
 export declare class LinkableNameRenderer extends LinkableNameRendererBase {
@@ -111,7 +111,7 @@ declare const BezierRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.Bez
 export declare class BezierRenderer extends BezierRendererBase {
     #private;
     constructor(treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.BezierMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
+    render(match: SDK.CSSPropertyParserMatchers.BezierMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const AutoBaseRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.AutoBaseMatch>;
 export declare class AutoBaseRenderer extends AutoBaseRendererBase {
@@ -154,6 +154,7 @@ export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShad
     setBlurRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     renderContents(span: HTMLSpanElement): void;
+    text(): string;
 }
 declare const ShadowRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.ShadowMatch>;
 export declare class ShadowRenderer extends ShadowRendererBase {
@@ -213,7 +214,7 @@ export declare class PositionAreaRenderer extends PositionAreaRendererBase {
 declare const PositionTryRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.PositionTryMatch>;
 export declare class PositionTryRenderer extends PositionTryRendererBase {
     #private;
-    constructor(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles);
+    constructor(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.PositionTryMatch, context: RenderingContext): Lit.LitTemplate;
 }
 export declare function getPropertyRenderers(propertyName: string, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, stylesContainer: StylesContainer, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, treeElement: StylePropertyTreeElement | null, computedStyles: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null): Array<MatchRenderer<SDK.CSSPropertyParser.Match>>;

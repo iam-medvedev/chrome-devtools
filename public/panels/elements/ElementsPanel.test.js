@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -221,7 +222,6 @@ describeWithEnvironment('ElementsPanel', () => {
         hideStub.resetHistory();
         panel.onSearchCanceled();
         sinon.assert.calledWith(hideStub, SDK.TargetManager.TargetManager.instance());
-        hideStub.restore();
     });
     // Causes unit test execution to abort
     it('deleting a node unhides it if it was hidden', async () => {
@@ -268,8 +268,6 @@ describeWithEnvironment('ElementsPanel', () => {
         const mockResolveToObject = sinon.mock().twice().returns({ callFunction: () => { }, release: () => { } });
         selectedNode.resolveToObject = mockResolveToObject;
         // Mock out a few things in the UI that's not necessary for this test.
-        const animateOnDOMUpdate = sinon.mock().atLeast(1).returns(undefined);
-        Elements.ElementsTreeElement.ElementsTreeElement.animateOnDOMUpdate = animateOnDOMUpdate;
         const stylesSidebarPaneUpdate = sinon.mock().atLeast(1).returns(undefined);
         panel.stylesWidget.performUpdate = stylesSidebarPaneUpdate;
         await domTree.toggleHideElement(selectedNode);

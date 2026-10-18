@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Badges from '../../models/badges/badges.js';
@@ -162,9 +163,6 @@ describeWithEnvironment('BadgeNotification', () => {
         let clock;
         beforeEach(() => {
             clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-        });
-        afterEach(() => {
-            clock.restore();
         });
         it('a starter badge notification calls `snoozeStarterBadge`', async () => {
             const snoozeStarterBadgeSpy = sinon.spy(Badges.UserBadges.instance(), 'snoozeStarterBadge');

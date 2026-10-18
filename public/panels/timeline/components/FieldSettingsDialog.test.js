@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
@@ -56,10 +57,9 @@ function createFieldSettingsDialog() {
 describeWithEnvironment('FieldSettingsDialog', () => {
     let cruxManager;
     let mockFieldData;
-    let getFieldDataStub;
     beforeEach(async () => {
         cruxManager = CrUXManager.CrUXManager.instance({ forceNew: true });
-        getFieldDataStub = sinon.stub(cruxManager, 'getFieldDataForPage').callsFake(async () => mockFieldData);
+        sinon.stub(cruxManager, 'getFieldDataForPage').callsFake(async () => mockFieldData);
         mockFieldData = {
             'origin-ALL': null,
             'origin-DESKTOP': null,
@@ -73,9 +73,6 @@ describeWithEnvironment('FieldSettingsDialog', () => {
             normalizedUrl: '',
         };
         cruxManager.getConfigSetting().set({ enabled: false, override: '' });
-    });
-    afterEach(async () => {
-        getFieldDataStub.restore();
     });
     it('should enable field when enable button clicked', async () => {
         const view = createFieldSettingsDialog();

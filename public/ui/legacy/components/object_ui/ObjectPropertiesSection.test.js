@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
@@ -212,7 +213,7 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
             section.element.querySelector('.object-properties-section-root-element');
         assert.exists(rootElement);
         const event = new MouseEvent('contextmenu');
-        const showSpy = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+        sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
         const appendCheckboxItemSpy = sinon.spy(UI.ContextMenu.Section.prototype, 'appendCheckboxItem');
         rootElement.dispatchEvent(event);
         sinon.assert.called(appendCheckboxItemSpy);
@@ -223,8 +224,6 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
         const showAllItem = appendCheckboxItemSpy.args.find(args => args[0] === 'Show all');
         assert.exists(showAllItem);
         assert.isTrue(showAllItem[2]?.checked);
-        showSpy.restore();
-        appendCheckboxItemSpy.restore();
     });
     describe('getMemoryIcon', () => {
         it('returns a memory icon for inspectable object types', () => {

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function extractUrlsFromSummaries(summaries) {
     return summaries.map(s => {
         const uniqueUrls = new Set();
         s.relatedEvents.forEach(e => {
-            const url = e.args?.data?.url;
+            const url = Trace.Handlers.Helpers.getNonResolvedURL(e);
             if (url) {
                 uniqueUrls.add(url);
             }
@@ -17,6 +19,7 @@ function extractUrlsFromSummaries(summaries) {
     });
 }
 describe('ThirdParties', function () {
+    setupLocaleHooks();
     describe('summarizeByThirdParty', function () {
         it('full trace bounds', async function () {
             const { data } = await TraceLoader.traceEngine(this, 'load-simple.json.gz');

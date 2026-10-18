@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -17,7 +18,7 @@ import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { ContextSelectionAgent, DOMNodeContext, FileContext, PerformanceTraceContext, RequestContext, StorageContext, StorageItem, } from '../ai_assistance.js';
+import { ContextSelectionAgent, DOMNodeContext, FileContext, LighthouseContext, PerformanceTraceContext, RequestContext, StorageContext, StorageItem, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describe('ContextSelectionAgent', function () {
     const snapshotTester = new SnapshotTester(this, import.meta);
@@ -127,6 +128,38 @@ describe('ContextSelectionAgent', function () {
             assert.exists(contextChange);
             assert.instanceOf(contextChange.context, PerformanceTraceContext.PerformanceTraceContext);
             assert.strictEqual(contextChange.context.getItem().parsedTrace, trace);
+        });
+        it('selects the report recorded by the runLighthouseAudits tool', async () => {
+            const report = { finalDisplayedUrl: 'https://example.com' };
+            const lighthouseRecording = sinon.stub().resolves({ status: 'completed', report });
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{ functionCalls: [{ name: 'runLighthouseAudits', args: { mode: 'snapshot' } }], explanation: '' }],
+                    [{ explanation: 'Lighthouse audit completed' }],
+                ]),
+                lighthouseRecording,
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            sinon.assert.calledOnceWithExactly(lighthouseRecording, { mode: 'snapshot' });
+            const contextChange = responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */);
+            assert.exists(contextChange);
+            assert.instanceOf(contextChange.context, LighthouseContext.LighthouseContext);
+            assert.strictEqual(contextChange.context.getItem(), report);
+        });
+        it('tells the model not to retry when the user cancels runLighthouseAudits', async () => {
+            const lighthouseRecording = sinon.stub().resolves({ status: 'cancelled' });
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{ functionCalls: [{ name: 'runLighthouseAudits', args: { mode: 'snapshot' } }], explanation: '' }],
+                    [{ explanation: 'The audit was cancelled' }],
+                ]),
+                lighthouseRecording,
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            const actionResponse = responses.find(r => r.type === "action" /* AiAgent.ResponseType.ACTION */);
+            assert.exists(actionResponse);
+            assert.strictEqual(actionResponse.output, 'The user cancelled the Lighthouse audit. Do not run it again unless the user asks you to.');
+            assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
         });
     });
     describe('listNetworkRequests', () => {

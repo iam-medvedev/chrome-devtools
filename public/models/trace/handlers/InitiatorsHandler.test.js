@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { before, beforeEach, describe, it } from 'mocha';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('InitiatorsHandler', () => {
+    beforeEach(() => {
+        Trace.Handlers.ModelHandlers.AsyncJSCalls.reset();
+        Trace.Handlers.ModelHandlers.Flows.reset();
+        Trace.Handlers.ModelHandlers.Initiators.reset();
+    });
     describe('for web-dev-with-commit trace', () => {
         let traceEvents;
         let eventToInitiator;
@@ -20,7 +26,7 @@ describe('InitiatorsHandler', () => {
         });
         it('for an RecalcStyle event it sets the initiator to the previous ScheduledStyleRecalculation event', () => {
             const recalcStyleEvent = traceEvents.find(event => {
-                return Trace.Types.Events.isRecalcStyle(event) && event.ts === 122411039965;
+                return (Trace.Types.Events.isRecalcStyle(event) && event.ts === 122411039965);
             });
             if (!recalcStyleEvent || !Trace.Types.Events.isRecalcStyle(recalcStyleEvent)) {
                 throw new Error('Could not find layout tree event.');
@@ -29,9 +35,9 @@ describe('InitiatorsHandler', () => {
             if (!initiator) {
                 throw new Error('Did not find expected initiator for recalcStyleEvent');
             }
-            assert.isTrue(Trace.Types.Events.isScheduleStyleRecalculation(initiator));
+            assert(Trace.Types.Events.isScheduleStyleRecalculation(initiator));
             assert.strictEqual(recalcStyleEvent.args.beginData?.frame, '25D2F12F1818C70B5BD4325CC9ACD8FF');
-            assert.strictEqual(recalcStyleEvent.args.beginData?.frame, initiator.args?.data?.frame);
+            assert.strictEqual(recalcStyleEvent.args.beginData?.frame, initiator.args.data?.frame);
         });
         it('for a Layout event it sets the initiator to the last InvalidateLayout event on that frame', () => {
             const layoutEvent = traceEvents.find(event => {
@@ -148,7 +154,9 @@ describe('InitiatorsHandler', () => {
                 throw new Error('Could not find TimerInstall event');
             }
             assert.strictEqual(eventToInitiator.get(timerFireEvent), timerInstallEvent);
-            assert.deepEqual(initiatorToEvents.get(timerInstallEvent), [timerFireEvent]);
+            assert.deepEqual(initiatorToEvents.get(timerInstallEvent), [
+                timerFireEvent,
+            ]);
         });
         it('for a FireIdleCallback event sets the initiator to the RequestIdleCallback', () => {
             const fireIdleCallbackEvent = traceEvents.find(Trace.Types.Events.isFireIdleCallback);
@@ -160,7 +168,9 @@ describe('InitiatorsHandler', () => {
                 throw new Error('Could not find RequestIdleCallback event');
             }
             assert.strictEqual(eventToInitiator.get(fireIdleCallbackEvent), requestIdleCallbackEvent);
-            assert.deepEqual(initiatorToEvents.get(requestIdleCallbackEvent), [fireIdleCallbackEvent]);
+            assert.deepEqual(initiatorToEvents.get(requestIdleCallbackEvent), [
+                fireIdleCallbackEvent,
+            ]);
         });
     });
     describe('for web-sockets trace', () => {
@@ -203,7 +213,10 @@ describe('InitiatorsHandler', () => {
                 throw new Error('Could not find WebSocketSendHandshakeRequest');
             }
             assert.strictEqual(eventToInitiator.get(webSocketReceieveHandshakeResponseEvent), webSocketCreateEvent);
-            assert.deepEqual(initiatorToEvents.get(webSocketCreateEvent), [webSocketSendHandshakeRequestEvent, webSocketReceieveHandshakeResponseEvent]);
+            assert.deepEqual(initiatorToEvents.get(webSocketCreateEvent), [
+                webSocketSendHandshakeRequestEvent,
+                webSocketReceieveHandshakeResponseEvent,
+            ]);
         });
     });
     it('for a PostMessage Handler event the initiator is the PostMessage Dispatch event', async function () {
@@ -224,7 +237,9 @@ describe('InitiatorsHandler', () => {
             throw new Error('Could not find handlePostMessageEvent event');
         }
         assert.strictEqual(eventToInitiator.get(handlePostMessageEvent), schedulePostMessageEvent);
-        assert.deepEqual(initiatorToEvents.get(schedulePostMessageEvent), [handlePostMessageEvent]);
+        assert.deepEqual(initiatorToEvents.get(schedulePostMessageEvent), [
+            handlePostMessageEvent,
+        ]);
     });
     it('pairs the postTask-scheduled tasks with their scheduling initiators', async function () {
         const traceEvents = await TraceLoader.rawEvents(this, 'scheduler-post-task.json.gz');
@@ -239,7 +254,9 @@ describe('InitiatorsHandler', () => {
         assert.isNotEmpty(runEvents, 'Could not find RunPostTaskCallback events');
         const cancelEvents = traceEvents.filter(Trace.Types.Events.isAbortPostTaskCallback);
         assert.isNotEmpty(cancelEvents, 'Could not find AbortPostTaskCallback events');
-        assert.containsAllKeys(initiatorToEvents, scheduleEvents, 'Not all schedule events in initiators');
+        for (const scheduleEvent of scheduleEvents) {
+            assert.isTrue(initiatorToEvents.has(scheduleEvent), 'Not all schedule events in initiators');
+        }
         // All end events have a SchedulePostTaskCallback initiator.
         for (const endEvent of [...runEvents, ...cancelEvents]) {
             const initiator = eventToInitiator.get(endEvent);
@@ -254,8 +271,8 @@ describe('InitiatorsHandler', () => {
             if (!endEvents || endEvents.length < 2) {
                 return false;
             }
-            return endEvents.some(Trace.Types.Events.isRunPostTaskCallback) &&
-                endEvents.some(Trace.Types.Events.isAbortPostTaskCallback);
+            return (endEvents.some(Trace.Types.Events.isRunPostTaskCallback) &&
+                endEvents.some(Trace.Types.Events.isAbortPostTaskCallback));
         });
         assert(doubleEvents, 'initiator with both run and cancel initiated events not found');
     });

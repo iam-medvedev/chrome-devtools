@@ -1771,6 +1771,9 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
   themeChangeHandlers = /* @__PURE__ */ new Map();
   recorderViewPortMap;
   #pendingExtensions = [];
+  // Origin of the extension that currently owns the extension-set user agent
+  // override in MultitargetNetworkManager, if any.
+  userAgentOverrideOwner = null;
   constructor() {
     super();
     this.clientObjects = /* @__PURE__ */ new Map();
@@ -1913,6 +1916,11 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
       this.inspectedURLChanged,
       this
     );
+    SDK3.NetworkManager.MultitargetNetworkManager.instance().removeEventListener(
+      SDK3.NetworkManager.MultitargetNetworkManager.Events.USER_AGENT_CHANGED,
+      this.#onUserAgentChanged,
+      this
+    );
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(
       Host5.InspectorFrontendHostAPI.Events.SetInspectedTabId,
       this.setInspectedTabId,
@@ -1920,6 +1928,9 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     );
     window.removeEventListener("message", this.onWindowMessage, false);
   }
+  #onUserAgentChanged = () => {
+    this.userAgentOverrideOwner = null;
+  };
   #onThemeChange = () => {
     const themeName = ThemeSupport.ThemeSupport.instance().themeName();
     for (const port of this.themeChangeHandlers.values()) {
@@ -2089,11 +2100,10 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
         `expected ${Extensions2.ExtensionAPI.PrivateAPI.Commands.RegisterRecorderExtensionPlugin}`
       );
     }
-    const extensionOrigin = this.getExtensionOrigin(_shared_port);
-    const extension = this.registeredExtensions.get(extensionOrigin);
-    if (!extension || extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
+    if (!this.checkBlockedHosts(_shared_port)) {
       return this.status.E_FAILED("Permission denied");
     }
+    const extensionOrigin = this.getExtensionOrigin(_shared_port);
     const { pluginName, mediaType, port, capabilities } = message;
     const recorderPluginManager = Extensions2.RecorderPluginManager.RecorderPluginManager.instance();
     recorderPluginManager.addPlugin(new Extensions2.RecorderExtensionEndpoint.RecorderExtensionEndpoint(
@@ -2187,11 +2197,10 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     if (this.clientObjects.has(id)) {
       return this.status.E_EXISTS(id);
     }
-    const extensionOrigin = this.getExtensionOrigin(port);
-    const extension = this.registeredExtensions.get(extensionOrigin);
-    if (!extension || extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
+    if (!this.checkBlockedHosts(port)) {
       return this.status.E_FAILED("Permission denied");
     }
+    const extensionOrigin = this.getExtensionOrigin(port);
     const pagePath = _ExtensionServer.expandResourcePath(extensionOrigin, message.pagePath);
     if (pagePath === void 0) {
       return this.status.E_BADARG("pagePath", "Resources paths cannot point to non-extension resources");
@@ -2219,6 +2228,7 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     this.requests = /* @__PURE__ */ new Map();
     this.clearExtensionHeaders(event.data.inspectedURL());
+    this.clearExtensionUserAgentOverride(event.data.inspectedURL());
     this.enableExtensions();
     const url = event.data.inspectedURL();
     this.postNotification(Extensions2.ExtensionAPI.PrivateAPI.Events.InspectedURLChanged, [url]);
@@ -2296,14 +2306,10 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
         `expected ${Extensions2.ExtensionAPI.PrivateAPI.Commands.AddRequestHeaders}`
       );
     }
+    if (!this.checkBlockedHosts(port)) {
+      return this.status.E_FAILED("Permission denied");
+    }
     const id = this.getExtensionOrigin(port);
-    const extension = this.registeredExtensions.get(id);
-    if (!extension) {
-      return this.status.E_FAILED("Permission denied");
-    }
-    if (extension.hostsPolicy.runtimeBlockedHosts.length > 0) {
-      return this.status.E_FAILED("Permission denied");
-    }
     let extensionHeaders = this.extraHeaders.get(id);
     if (!extensionHeaders) {
       extensionHeaders = /* @__PURE__ */ new Map();
@@ -2576,11 +2582,11 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     return Boolean(extension?.isAllowedOnTarget(url));
   }
   extensionAllowedOnScript(script, portOrExtension) {
-    if (script.hasSourceURL) {
-      const embedderName = script.embedderName();
-      if (embedderName && URL.canParse(embedderName) && !this.extensionAllowedOnURL(embedderName, portOrExtension)) {
-        return false;
-      }
+    const embedderName = script.embedderName();
+    if (embedderName && URL.canParse(embedderName) && !this.extensionAllowedOnURL(embedderName, portOrExtension)) {
+      return false;
+    }
+    if (script.hasSourceURL || !script.contentURL()) {
       return this.extensionAllowedOnTarget(script.target(), portOrExtension);
     }
     return this.extensionAllowedOnURL(script.contentURL(), portOrExtension) && this.extensionAllowedOnTarget(script.target(), portOrExtension);
@@ -2610,6 +2616,8 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
           const uiSourceCodeTarget = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider) ?? void 0;
           return !uiSourceCodeTarget || this.extensionAllowedOnTarget(uiSourceCodeTarget, portOrExtension);
         }
+      } else if (contentProvider.project().isServiceProject()) {
+        return false;
       }
     }
     if (!this.extensionAllowedOnURL(contentProvider.contentURL(), portOrExtension)) {
@@ -2648,6 +2656,16 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     return this.extensionAllowedOnURL(target.inspectedURL(), portOrExtension);
   }
+  /**
+   * Checks whether the extension associated with the port is registered and has
+   * no enterprise runtime_blocked_hosts restrictions. Returns true if permitted,
+   * false if blocked or if the extension is not registered.
+   */
+  checkBlockedHosts(port) {
+    const origin = extensionOrigins.get(port);
+    const extension = origin && this.registeredExtensions.get(origin);
+    return Boolean(extension && extension.hostsPolicy.runtimeBlockedHosts.length === 0);
+  }
   onReload(message, port) {
     if (message.command !== Extensions2.ExtensionAPI.PrivateAPI.Commands.Reload) {
       return this.status.E_BADARG("command", `expected ${Extensions2.ExtensionAPI.PrivateAPI.Commands.Reload}`);
@@ -2665,10 +2683,18 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     if (!this.extensionAllowedOnTarget(target, port)) {
       return this.status.E_FAILED("Permission denied");
     }
-    SDK3.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(
-      typeof options.userAgent === "string" ? options.userAgent : "",
-      null
-    );
+    const userAgent = typeof options.userAgent === "string" ? options.userAgent : "";
+    const extensionOrigin = this.getExtensionOrigin(port);
+    if (userAgent) {
+      if (!this.checkBlockedHosts(port)) {
+        return this.status.E_FAILED("Permission denied");
+      }
+      SDK3.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(userAgent, null);
+      this.userAgentOverrideOwner = extensionOrigin;
+    } else if (this.userAgentOverrideOwner === extensionOrigin) {
+      this.userAgentOverrideOwner = null;
+      SDK3.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride("", null);
+    }
     resourceTreeModel?.reloadPage(Boolean(options.ignoreCache), injectedScript);
     return this.status.OK();
   }
@@ -3038,6 +3064,11 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
       this.inspectedURLChanged,
       this
     );
+    SDK3.NetworkManager.MultitargetNetworkManager.instance().addEventListener(
+      SDK3.NetworkManager.MultitargetNetworkManager.Events.USER_AGENT_CHANGED,
+      this.#onUserAgentChanged,
+      this
+    );
   }
   notifyResourceAdded(event) {
     const uiSourceCode = event.data;
@@ -3390,6 +3421,7 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
   disableExtensions() {
     this.extensionsEnabled = false;
     this.clearExtensionHeaders();
+    this.clearExtensionUserAgentOverride();
   }
   enableExtensions() {
     this.extensionsEnabled = true;
@@ -3419,6 +3451,23 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     if (cleared) {
       this.syncExtraHeaders();
+    }
+  }
+  /**
+   * Reset the extension-set user agent override when the extension that
+   * installed it is no longer allowed on the inspected URL (or
+   * unconditionally, when no URL is given). The override lives in the
+   * MultitargetNetworkManager singleton and would otherwise fan out to every
+   * future target even after the owning extension's authority ended.
+   */
+  clearExtensionUserAgentOverride(inspectedURL) {
+    if (!this.userAgentOverrideOwner) {
+      return;
+    }
+    const extension = this.registeredExtensions.get(this.userAgentOverrideOwner);
+    if (!this.extensionsEnabled || !inspectedURL || !extension || !extension.isAllowedOnTarget(inspectedURL)) {
+      this.userAgentOverrideOwner = null;
+      SDK3.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride("", null);
     }
   }
   /**
@@ -4057,7 +4106,7 @@ var commentThreadWidget_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./commentThreadWidget.css")} */`;
 
 // ../../front_end/panels/common/CommentThreadWidget.ts
-var { html: html8, render: render7, Directives: { createRef, ref: ref2 } } = Lit3;
+var { html: html8, render: render7, Directives: { classMap: classMap2, createRef, ref: ref2 } } = Lit3;
 var { widget: widget3 } = UI9.Widget;
 var UIStrings7 = {
   /**
@@ -4079,6 +4128,10 @@ var UIStrings7 = {
    * @description Label for the agent response section in the comment thread.
    */
   response: "Response:",
+  /**
+   * @description Label for the aria-label of the save edited comment button.
+   */
+  save: "Save",
   /**
    * @description Label for the aria-label of the add comment button.
    */
@@ -4104,8 +4157,18 @@ var i18nString7 = i18n17.i18n.getLocalizedString.bind(void 0, str_7);
 var lockedString3 = i18n17.i18n.lockedString;
 var DEFAULT_VIEW6 = (input, _output, target) => {
   const hasComment = input.comments.length > 0;
-  const buttonText = input.isQueueModifierPressed ? i18nString7(UIStrings7.queueComment) : i18nString7(UIStrings7.sendToAgent);
+  const showCommentInput = !hasComment || input.isEditing;
+  let buttonText;
+  if (input.isEditing) {
+    buttonText = i18nString7(UIStrings7.save);
+  } else {
+    buttonText = input.isQueueModifierPressed ? i18nString7(UIStrings7.queueComment) : i18nString7(UIStrings7.sendToAgent);
+  }
   const submit = (queue) => {
+    if (input.isEditing) {
+      input.onSaveEdit(input.commentText);
+      return;
+    }
     if (queue) {
       input.onQueueComment(input.commentText);
     } else {
@@ -4149,7 +4212,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   render7(html8`
     <style>${Input.textInputStyles}${commentThreadWidget_css_default}</style>
     <div
-      class="comment-thread-widget ${hasComment ? "submitted" : ""}"
+      class="comment-thread-widget ${classMap2({ submitted: !showCommentInput })}"
       jslog=${VisualLogging4.popover("comment-thread")}>
       <div class="header">
         <span class="selected-item">
@@ -4160,26 +4223,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
         </div>
       </div>
 
-      ${hasComment ? html8`
-        ${input.comments.map((comment) => comment.author === "DEVELOPER" ? html8`
-          <div class="comment-text">
-            ${comment.text}
-          </div>
-        ` : html8`
-          <div class="agent-response">
-            <div class="elbow"></div>
-            <div class="response-content">
-              <div class="response-header">${i18nString7(UIStrings7.response)}</div>
-              ${MarkdownView.MarkdownView.renderTextAsMarkdown(
-    comment.text,
-    new MarkdownView.MarkdownView.MarkdownInsightRenderer()
-  )}
-            </div>
-          </div>
-        `)}
-      ` : Lit3.nothing}
-
-      ${!hasComment ? html8`
+      ${showCommentInput ? html8`
         <textarea
           ${ref2(input.textAreaRef)}
           class="devtools-text-input input"
@@ -4228,7 +4272,27 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
             ${buttonText}
           </devtools-button>
         </div>
-      ` : Lit3.nothing}
+      ` : html8`${input.comments.map((comment) => comment.author === "DEVELOPER" ? html8`
+          <div class="comment-text"
+            @click=${() => {
+    input.onSetEditMode(true);
+  }}
+          >
+            ${comment.text}
+          </div>
+        ` : html8`
+          <div class="agent-response">
+            <div class="elbow"></div>
+            <div class="response-content">
+              <div class="response-header">${i18nString7(UIStrings7.response)}</div>
+              ${MarkdownView.MarkdownView.renderTextAsMarkdown(
+    comment.text,
+    new MarkdownView.MarkdownView.MarkdownInsightRenderer()
+  )}
+            </div>
+          </div>
+        `)}
+      `}
     </div>
   `, target);
 };
@@ -4240,9 +4304,12 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
   #isQueueModifierPressed = false;
   #textAreaRef = createRef();
   #view;
+  #isEditing = false;
   onAddComment;
   onQueueComment;
   onDeleteQueuedComment;
+  onSaveEdit;
+  onStartEdit;
   constructor(element, view = DEFAULT_VIEW6) {
     super(element);
     this.#view = view;
@@ -4266,6 +4333,16 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
     this.#status = commentStatus;
     this.requestUpdate();
   }
+  #onSetEditMode = (value) => {
+    const commentText = this.#comments.find((c) => c.author === "DEVELOPER")?.text;
+    if (this.#status !== "ACTIVE" || !commentText) {
+      return;
+    }
+    this.onStartEdit?.();
+    this.#commentText = commentText;
+    this.#isEditing = value;
+    this.requestUpdate();
+  };
   #handleQueueModifierChange = (pressed) => {
     if (this.#isQueueModifierPressed !== pressed) {
       this.#isQueueModifierPressed = pressed;
@@ -4289,6 +4366,11 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
   #handleDeleteQueuedComment = () => {
     this.onDeleteQueuedComment?.();
   };
+  #handleOnSaveEdit = (text) => {
+    this.#isEditing = false;
+    this.#submit(text, this.onSaveEdit);
+    this.requestUpdate();
+  };
   #handleCommentTextChange = (event) => {
     const input = event.target;
     this.#commentText = input.value;
@@ -4306,7 +4388,10 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
       onQueueComment: this.#handleQueueComment,
       onCommentTextChange: this.#handleCommentTextChange,
       onDeleteQueuedComment: this.#handleDeleteQueuedComment,
-      onQueueModifierChange: this.#handleQueueModifierChange
+      onQueueModifierChange: this.#handleQueueModifierChange,
+      onSaveEdit: this.#handleOnSaveEdit,
+      onSetEditMode: this.#onSetEditMode,
+      isEditing: this.#isEditing
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -4518,7 +4603,9 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         status: item2.thread.status,
         onAddComment: input.onAddComment,
         onDeleteQueuedComment: input.onDeleteQueuedComment,
-        onQueueComment: input.onQueueComment
+        onQueueComment: input.onQueueComment,
+        onSaveEdit: input.onSaveEdit,
+        onStartEdit: input.onStartEdit
       })}
             </div>
           `;
@@ -4741,6 +4828,10 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
         onDeleteQueuedComment: () => {
         },
         onQueueComment: () => {
+        },
+        onSaveEdit: () => {
+        },
+        onStartEdit: () => {
         }
       },
       void 0,
@@ -4779,7 +4870,14 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
         }
         activeThread.save(text);
         this.#scheduleAutoClose(activeThread.id);
-      }
+      },
+      onSaveEdit: (text) => {
+        if (!activeThread) {
+          return;
+        }
+        activeThread.editComment(text);
+      },
+      onStartEdit: () => this.#clearCloseTimeout()
     };
     this.#view(viewInput, void 0, this.contentElement);
   }

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -946,8 +947,56 @@ describe('DeviceModeModel', () => {
         assert.strictEqual(deviceModeModel.scaleSetting().get(), 0.01);
         assert.strictEqual(deviceModeModel.scale(), 0.01);
     });
+    it('calculates fit scale using maximum integer percentage that fits preferred size', () => {
+        const em = target.model(SDK.EmulationModel.EmulationModel);
+        assert.exists(em);
+        deviceModeModel.modelAdded(em);
+        try {
+            const device = new EmulationModel.EmulatedDevices.EmulatedDevice();
+            device.userAgent = 'test-ua';
+            // iPhone 12 Pro dimensions (390x844)
+            device.vertical = { width: 390, height: 844, hinge: null };
+            const mode = {
+                title: 'default',
+                orientation: EmulationModel.EmulatedDevices.Vertical,
+            };
+            deviceModeModel.setAvailableSize(new Platform.Size(500, 590), new Platform.Size(500, 590));
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, mode, undefined);
+            // 590 / 844 = 0.699 -> 69% (0.69), not 50% (0.5).
+            assert.strictEqual(deviceModeModel.fitScale(), 0.69);
+            assert.strictEqual(deviceModeModel.scale(), 0.69);
+            // Avoid IEEE-754 float truncation on exact fits like 570 / 1000 (0.57 * 100 = 56.99999999999999).
+            device.vertical = { width: 1000, height: 1000, hinge: null };
+            deviceModeModel.setAvailableSize(new Platform.Size(570, 570), new Platform.Size(570, 570));
+            assert.strictEqual(deviceModeModel.fitScale(), 0.57);
+            // Clamp minimum fit scale to 1% (0.01) so scale is never 0.
+            device.vertical = { width: 2560, height: 1440, hinge: null };
+            deviceModeModel.setAvailableSize(new Platform.Size(10, 10), new Platform.Size(10, 10));
+            assert.strictEqual(deviceModeModel.fitScale(), 0.01);
+        }
+        finally {
+            deviceModeModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        }
+    });
     describe('saveScreenshot', () => {
         const { urlString } = Platform.DevToolsPath;
+        it('copies a captured screenshot to the clipboard', async () => {
+            const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
+            assert.exists(emulationModel);
+            deviceModeModel.modelAdded(emulationModel);
+            const screenCaptureModel = target.model(SDK.ScreenCaptureModel.ScreenCaptureModel);
+            assert.exists(screenCaptureModel);
+            sinon.stub(screenCaptureModel, 'captureScreenshot').resolves('fake-base64');
+            sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'saveScreenshot').resolves();
+            const copyScreenshotStub = sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'copyScreenshot').resolves();
+            const copiedSpy = sinon.spy();
+            deviceModeModel.addEventListener("ScreenshotCopied" /* EmulationModel.DeviceModeModel.Events.SCREENSHOT_COPIED */, copiedSpy);
+            await deviceModeModel.captureScreenshot();
+            await Promise.resolve();
+            sinon.assert.calledOnce(copyScreenshotStub);
+            assert.strictEqual(copyScreenshotStub.firstCall.args[0].base64Png, 'fake-base64');
+            sinon.assert.calledOnce(copiedSpy);
+        });
         it('triggers a download with the correct filename and revokes the previous blob URL on subsequent save or dispose', async () => {
             const url = urlString `https://example.test/path/to/page.html#section`;
             sinon.stub(deviceModeModel, 'inspectedURL').returns(url);

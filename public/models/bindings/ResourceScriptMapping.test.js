@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
@@ -136,6 +137,26 @@ describe('ResourceScriptMapping', () => {
             const newScript = await backend.addScript(target, { content, url: sourceURL, hasSourceURL: true }, null);
             assert.exists(resourceScriptMapping.uiSourceCodeForScript(newScript));
             assert.isNull(resourceScriptMapping.uiSourceCodeForScript(oldScript));
+        });
+        it('re-resolves relative annotations when the inspected URL changes', async () => {
+            target.setInspectedURL(urlString `${`${SECURITY_ORIGIN}/app/index.html`}`);
+            const script = await backend.addScript(target, { content, url: 'mod/relative.js', hasSourceURL: true }, null);
+            assert.strictEqual(resourceScriptMapping.uiSourceCodeForScript(script)?.url(), `${SECURITY_ORIGIN}/app/mod/relative.js`);
+            target.setInspectedURL(urlString `${`${SECURITY_ORIGIN}/other/index.html`}`);
+            assert.strictEqual(resourceScriptMapping.uiSourceCodeForScript(script)?.url(), `${SECURITY_ORIGIN}/other/mod/relative.js`);
+        });
+        it('keeps the UISourceCode when the resolved URL does not change', async () => {
+            target.setInspectedURL(urlString `${`${SECURITY_ORIGIN}/app/index.html`}`);
+            const absoluteScript = await backend.addScript(target, { content, url: `${SECURITY_ORIGIN}/absolute.js`, hasSourceURL: true }, null);
+            const relativeScript = await backend.addScript(target, { content, url: 'relative.js', hasSourceURL: true }, null);
+            const absoluteUISourceCode = resourceScriptMapping.uiSourceCodeForScript(absoluteScript);
+            const relativeUISourceCode = resourceScriptMapping.uiSourceCodeForScript(relativeScript);
+            assert.exists(absoluteUISourceCode);
+            assert.exists(relativeUISourceCode);
+            // E.g. `history.pushState()` within the same directory.
+            target.setInspectedURL(urlString `${`${SECURITY_ORIGIN}/app/other.html`}`);
+            assert.strictEqual(resourceScriptMapping.uiSourceCodeForScript(absoluteScript), absoluteUISourceCode);
+            assert.strictEqual(resourceScriptMapping.uiSourceCodeForScript(relativeScript), relativeUISourceCode);
         });
     });
 });

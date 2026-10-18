@@ -22,10 +22,10 @@ class AutoWidthSelectDirective extends Directive.Directive {
         }
     }
     update(part, [text]) {
-        /* eslint-disable @devtools/no-imperative-dom-api */
         const select = part.element;
         let widthPx = AutoWidthSelectDirective.itemWidthCache.get(text);
         if (!widthPx) {
+            // eslint-disable-next-line @devtools/no-imperative-dom-api
             const measuringElement = document.createElement('select');
             measuringElement.className = select.className;
             measuringElement.style.width = 'fit-content';
@@ -44,7 +44,6 @@ class AutoWidthSelectDirective extends Directive.Directive {
             }
         }
         select.style.width = widthPx;
-        /* eslint-enable @devtools/no-imperative-dom-api */
         return this.render(text);
     }
     render(_text) {
@@ -245,17 +244,17 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 @change=${input.onDeviceChange}
                 .value=${live(input.selectedDeviceOption === input.deviceModeOptions.responsive ? 'Responsive' : (input.selectedDeviceOption?.title || 'Responsive'))}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context('device')}>
-          <option value="Responsive" ?selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
+          <option value="Responsive" .selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
             ${input.deviceModeOptions.responsive.title}
           </option>
           ${input.deviceModeOptions.standard.map(group => html `
             <optgroup label=${EmulationModel.EmulatedDevices.getCategoryTitle(group.category)}>
-              ${group.options.map(o => html `<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+              ${group.options.map(o => html `<option value=${o.title} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
             </optgroup>
           `)}
           ${input.deviceModeOptions.custom.length > 0 ? html `
             <optgroup label="Custom">
-              ${input.deviceModeOptions.custom.map(o => html `<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+              ${input.deviceModeOptions.custom.map(o => html `<option value=${o.title} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
             </optgroup>
           ` : ''}
           <option value="Edit" jslog=${VisualLogging.item(input.deviceModeOptions.edit.jslogContext).track({ click: true })}>
@@ -276,7 +275,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
               @change=${input.onScaleChange}
               .value=${String(input.scaleOptions.find(o => o.selected)?.value ?? '')}
               jslog=${VisualLogging.dropDown().track({ change: true }).context('scale')}>
-        ${input.scaleOptions.map(o => html `<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+        ${input.scaleOptions.map(o => html `<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
       </select>
 
       <div class="device-mode-empty-toolbar-element"></div>
@@ -293,7 +292,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                     .value=${String(input.dprOptions.find(o => o.selected)?.value ?? '')}
                     jslog=${VisualLogging.dropDown().track({ change: true }).context('device-pixel-ratio')}
                     ?disabled=${!input.isResponsive}>
-                ${input.dprOptions.map(o => html `<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+                ${input.dprOptions.map(o => html `<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
               </select>`,
     })}
         </div>` : ''}
@@ -308,7 +307,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 .value=${input.uaOptions.find(o => o.selected)?.value || ''}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context('device-type')}
                 ?disabled=${!input.isResponsive}>
-          ${input.uaOptions.map(o => html `<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+          ${input.uaOptions.map(o => html `<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
         </select>` : ''}
       <select class="dark-text" ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
         title: i18nString(UIStrings.throttling),
@@ -344,7 +343,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 @change=${input.onPostureChange}
                 .value=${input.postureOptions.find(o => o.selected)?.value || ''}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context('device-posture')}>
-          ${input.postureOptions.map(o => html `<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
+          ${input.postureOptions.map(o => html `<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
         </select>` : ''}
     </devtools-toolbar>
     <devtools-toolbar class="device-mode-toolbar-options" wrappable>
@@ -376,23 +375,16 @@ export class DeviceModeToolbar extends UI.Widget.Widget {
         super(element);
         this.view = view;
         this.showMediaInspectorSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showMediaQueryInspectorSettingDescriptor);
-        this.showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
         this.showRulersSetting =
             Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showRulersSettingDescriptor);
-        this.showRulersSetting.addChangeListener(this.requestUpdate, this);
         this.showDeviceScaleFactorSetting =
             Common.Settings.Settings.instance().createSetting('emulation.show-device-scale-factor', false);
-        this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
         this.showUserAgentTypeSetting =
             Common.Settings.Settings.instance().createSetting('emulation.show-user-agent-type', false);
-        this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
         this.autoAdjustScaleSetting =
             Common.Settings.Settings.instance().createSetting('emulation.auto-adjust-scale', true);
-        this.autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
         this.lastMode = new Map();
         this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
-        this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */, this.deviceListChanged, this);
-        this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED */, this.deviceListChanged, this);
         this.persistenceSetting = Common.Settings.Settings.instance().createSetting('emulation.device-mode-value', { device: '', orientation: '', mode: '' });
     }
     get model() {
@@ -402,26 +394,59 @@ export class DeviceModeToolbar extends UI.Widget.Widget {
         if (this.#model === model) {
             return;
         }
-        if (this.#model) {
-            this.#model.toolbarControlsEnabledSetting().removeChangeListener(this.requestUpdate, this);
-            this.#model.scaleSetting().removeChangeListener(this.requestUpdate, this);
-            this.#model.uaSetting().removeChangeListener(this.requestUpdate, this);
-            this.#model.deviceScaleFactorSetting().removeChangeListener(this.requestUpdate, this);
-            this.#model.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.requestUpdate, this);
+        if (this.isShowing()) {
+            this.#removeModelListeners();
         }
         this.#model = model;
+        if (this.isShowing()) {
+            this.#addModelListeners();
+        }
+        this.requestUpdate();
+    }
+    #addModelListeners() {
+        if (!this.#model) {
+            return;
+        }
         this.#model.toolbarControlsEnabledSetting().addChangeListener(this.requestUpdate, this);
         this.#model.scaleSetting().addChangeListener(this.requestUpdate, this);
         this.#model.uaSetting().addChangeListener(this.requestUpdate, this);
         this.#model.deviceScaleFactorSetting().addChangeListener(this.requestUpdate, this);
         this.#model.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.requestUpdate, this);
-        this.requestUpdate();
+    }
+    #removeModelListeners() {
+        if (!this.#model) {
+            return;
+        }
+        this.#model.toolbarControlsEnabledSetting().removeChangeListener(this.requestUpdate, this);
+        this.#model.scaleSetting().removeChangeListener(this.requestUpdate, this);
+        this.#model.uaSetting().removeChangeListener(this.requestUpdate, this);
+        this.#model.deviceScaleFactorSetting().removeChangeListener(this.requestUpdate, this);
+        this.#model.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.requestUpdate, this);
     }
     wasShown() {
         super.wasShown();
+        this.showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
+        this.showRulersSetting.addChangeListener(this.requestUpdate, this);
+        this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
+        this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
+        this.autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
+        this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */, this.deviceListChanged, this);
+        this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED */, this.deviceListChanged, this);
+        this.#addModelListeners();
         // TODO(crbug.com/407750803): Revisit once DeviceModeView is migrated.
         this.performUpdate(); // Trigger a manual update eagerly, DeviceModeView needs to measure our height.
         this.restore();
+    }
+    willHide() {
+        super.willHide();
+        this.showMediaInspectorSetting.removeChangeListener(this.requestUpdate, this);
+        this.showRulersSetting.removeChangeListener(this.requestUpdate, this);
+        this.showDeviceScaleFactorSetting.removeChangeListener(this.requestUpdate, this);
+        this.showUserAgentTypeSetting.removeChangeListener(this.requestUpdate, this);
+        this.autoAdjustScaleSetting.removeChangeListener(this.requestUpdate, this);
+        this.emulatedDevicesList.removeEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */, this.deviceListChanged, this);
+        this.emulatedDevicesList.removeEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED */, this.deviceListChanged, this);
+        this.#removeModelListeners();
     }
     performUpdate() {
         if (!this.model) {
@@ -916,12 +941,6 @@ export class DeviceModeToolbar extends UI.Widget.Widget {
             const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();
             model.emulate(model.type(), model.device(), mode, scale);
         }
-    }
-    getPrettyFitZoomPercentage() {
-        return !this.model ? '' : `${(this.model.fitScale() * 100).toFixed(0)}`;
-    }
-    getPrettyZoomPercentage() {
-        return !this.model ? '' : `${(this.model.scale() * 100).toFixed(0)}`;
     }
     restore() {
         if (!this.model) {

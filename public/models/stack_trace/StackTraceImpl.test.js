@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
+import sinon from 'sinon';
+import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { protocolCallFrame, stringifyFragment } from '../../testing/StackTraceHelpers.js';
+import * as Workspace from '../workspace/workspace.js';
 // TODO(crbug.com/444191656): Expose a `testing` bundle.
 // eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from './stack_trace_impl.js';
+const { urlString } = Platform.DevToolsPath;
 const VISIBLE = "VISIBLE" /* StackTraceImpl.Trie.FrameKind.VISIBLE */;
 const OUTLINED = "OUTLINED" /* StackTraceImpl.Trie.FrameKind.OUTLINED */;
 const HIDDEN = "HIDDEN" /* StackTraceImpl.Trie.FrameKind.HIDDEN */;
@@ -348,6 +354,53 @@ describe('ParsedErrorStackFragmentImpl', () => {
         const frames = parsedFrames(callStack(node('_o2', OUTLINED, ['g@2:4'], { keys: 'g/g' }), node('_o1', OUTLINED, ['g@3:0', 'outer@4:2'], { keys: 'g/outer', info: { isAsync: true } }), node('main', VISIBLE, ['outer@5:2', 'main@9:2'], { keys: 'outer/main', info: { isAsync: false } })));
         assert.deepEqual(frames.map(f => f.name), ['g', 'outer', 'main']);
         assert.deepEqual(frames.map(f => f.isAsync), [undefined, true, false]);
+    });
+});
+describe('toUiLocation', () => {
+    const { FrameImpl, DebuggableFrameImpl, ParsedErrorStackFrameImpl } = StackTraceImpl.StackTraceImpl;
+    function setup() {
+        const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+        const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, 42, 21);
+        uiSourceCode.uiLocation.returns(uiLocation);
+        const workspace = sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl);
+        return { uiSourceCode, uiLocation, workspace };
+    }
+    it('uses the frame\'s uiSourceCode if present', () => {
+        const { uiSourceCode, uiLocation, workspace } = setup();
+        const frame = new FrameImpl('foo.js', uiSourceCode, 'foo', 42, 21);
+        assert.strictEqual(frame.toUiLocation(workspace), uiLocation);
+        sinon.assert.calledOnceWithExactly(uiSourceCode.uiLocation, 42, 21);
+        sinon.assert.notCalled(workspace.uiSourceCodeForURL);
+    });
+    it('looks up the uiSourceCode by url if the frame has no uiSourceCode', () => {
+        const { uiSourceCode, uiLocation, workspace } = setup();
+        workspace.uiSourceCodeForURL.returns(uiSourceCode);
+        const frame = new FrameImpl('foo.js', undefined, 'foo', 42, 21);
+        assert.strictEqual(frame.toUiLocation(workspace), uiLocation);
+        sinon.assert.calledOnceWithExactly(workspace.uiSourceCodeForURL, urlString `foo.js`);
+        sinon.assert.calledOnceWithExactly(uiSourceCode.uiLocation, 42, 21);
+    });
+    it('returns null if no uiSourceCode for the url exists', () => {
+        const { workspace } = setup();
+        workspace.uiSourceCodeForURL.returns(null);
+        const frame = new FrameImpl('foo.js', undefined, 'foo', 42, 21);
+        assert.isNull(frame.toUiLocation(workspace));
+    });
+    it('returns null if the frame has neither a uiSourceCode nor a url', () => {
+        const { workspace } = setup();
+        const frame = new FrameImpl(undefined, undefined, 'foo', 42, 21);
+        assert.isNull(frame.toUiLocation(workspace));
+        sinon.assert.notCalled(workspace.uiSourceCodeForURL);
+    });
+    it('is forwarded by DebuggableFrameImpl', () => {
+        const { uiSourceCode, uiLocation, workspace } = setup();
+        const frame = new DebuggableFrameImpl(new FrameImpl('foo.js', uiSourceCode, 'foo', 42, 21), sinon.createStubInstance(SDK.DebuggerModel.CallFrame));
+        assert.strictEqual(frame.toUiLocation(workspace), uiLocation);
+    });
+    it('is forwarded by ParsedErrorStackFrameImpl', () => {
+        const { uiSourceCode, uiLocation, workspace } = setup();
+        const frame = new ParsedErrorStackFrameImpl(new FrameImpl('foo.js', uiSourceCode, 'foo', 42, 21));
+        assert.strictEqual(frame.toUiLocation(workspace), uiLocation);
     });
 });
 //# sourceMappingURL=StackTraceImpl.test.js.map
