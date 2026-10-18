@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, before, describe, it } from 'mocha';
 import * as Trace from '../../models/trace/trace.js';
 import { assertScreenshot } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';

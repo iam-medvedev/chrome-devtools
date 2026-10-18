@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -2174,7 +2175,6 @@ describe('StylesSidebarPane', () => {
                 sinon.assert.calledOnce(triggerAiCodeCompletionStub);
                 assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[0], 'backgrou');
                 assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[1], 8);
-                clock.restore();
             });
             it('cancels pending requests and clears suggestions on deletion', async () => {
                 const clock = sinon.useFakeTimers();
@@ -2192,7 +2192,6 @@ describe('StylesSidebarPane', () => {
                 sinon.assert.notCalled(triggerAiCodeCompletionStub);
                 // Verify active suggestion was cleared
                 assert.isUndefined(mockTreeItem.section().activeAiSuggestion);
-                clock.restore();
             });
             it('triggerAiCodeCompletion calls the provider with correct arguments', () => {
                 const clock = sinon.useFakeTimers();
@@ -2204,7 +2203,6 @@ describe('StylesSidebarPane', () => {
                 sinon.assert.calledOnce(triggerAiCodeCompletionStub);
                 assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[0], 'backgrou');
                 assert.strictEqual(triggerAiCodeCompletionStub.firstCall.args[1], 8);
-                clock.restore();
             });
             it('setAiAutoCompletion sets activeAiSuggestion on the section', async () => {
                 cssPropertyPrompt.attachAndStartEditing(attachedElement, noop);

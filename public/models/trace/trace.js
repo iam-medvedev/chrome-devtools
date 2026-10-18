@@ -147,6 +147,17 @@ var EventsSerializer = class _EventsSerializer {
       return null;
     }
     const rawEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+    if (Types.Events.isSyntheticLayoutShiftCluster(event)) {
+      const firstShift = event.events.at(0);
+      if (!firstShift) {
+        return null;
+      }
+      const firstShiftIndex = rawEvents.indexOf(firstShift.rawSourceEvent);
+      if (firstShiftIndex === -1) {
+        return null;
+      }
+      return `${Types.File.EventKeyType.LAYOUT_SHIFT_CLUSTER}-${firstShiftIndex}`;
+    }
     const isSynthetic = Types.Events.isSyntheticBased(event);
     const index = rawEvents.indexOf(isSynthetic ? event.rawSourceEvent : event);
     if (index === -1) {
@@ -170,6 +181,20 @@ var EventsSerializer = class _EventsSerializer {
       }
       return event;
     }
+    if (_EventsSerializer.isLayoutShiftClusterKey(eventValues)) {
+      const rawEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+      const firstShiftRawEvent = rawEvents.at(eventValues.rawIndex);
+      const cluster = parsedTrace.data.LayoutShifts.clusters.find((cluster2) => {
+        const firstShift = cluster2.events.at(0);
+        return firstShift !== void 0 && firstShift.rawSourceEvent === firstShiftRawEvent;
+      });
+      if (!cluster) {
+        throw new Error(
+          `Unknown trace event. Could not find layout shift cluster with first shift index ${eventValues.rawIndex}`
+        );
+      }
+      return cluster;
+    }
     if (_EventsSerializer.isSyntheticEventKey(eventValues)) {
       const syntheticEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
       const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
@@ -189,6 +214,9 @@ var EventsSerializer = class _EventsSerializer {
   }
   static isLegacyTimelineFrameKey(key) {
     return key.type === Types.File.EventKeyType.LEGACY_TIMELINE_FRAME;
+  }
+  static isLayoutShiftClusterKey(key) {
+    return key.type === Types.File.EventKeyType.LAYOUT_SHIFT_CLUSTER;
   }
   static isRawEventKey(key) {
     return key.type === Types.File.EventKeyType.RAW_EVENT;
@@ -2031,8 +2059,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -2041,6 +2067,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -3176,15 +3203,6 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
   } else if (request.args.data.initiator?.fetchType === "fetch") {
     resourceType = "Fetch";
   }
-  let resourceSize = request.args.data.decodedBodyLength ?? 0;
-  if (url.protocol === "data:" && resourceSize === 0) {
-    const commaIndex = url.pathname.indexOf(",");
-    if (url.pathname.substring(0, commaIndex).includes(";base64")) {
-      resourceSize = atob(url.pathname.substring(commaIndex + 1)).length;
-    } else {
-      resourceSize = url.pathname.length - commaIndex - 1;
-    }
-  }
   const hasExplicitRenderBlocking = request.rawSourceEvent.args.data.renderBlocking !== void 0 || request.args.data.renderBlocking !== "non_blocking";
   const renderBlocking = hasExplicitRenderBlocking ? request.args.data.renderBlocking : void 0;
   return {
@@ -3201,7 +3219,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     responseHeadersEndTime: request.args.data.syntheticData.downloadStart / 1e3,
     networkEndTime: request.args.data.syntheticData.finishTime / 1e3,
     transferSize: request.args.data.encodedDataLength,
-    resourceSize,
+    resourceSize: request.args.data.decodedBodyLength ?? 0,
     fromDiskCache: request.args.data.syntheticData.isDiskCached,
     fromMemoryCache: request.args.data.syntheticData.isMemoryCached,
     isLinkPreload: request.args.data.isLinkPreload,
@@ -3302,8 +3320,8 @@ function createNetworkRequests(trace, data, startTime = 0, endTime = Number.POSI
       redirectedRequest.responseHeadersEndTime = redirectedRequest.networkEndTime;
       redirectedRequest.timing = {
         requestTime: redirectedRequest.networkRequestTime / 1e3,
-        receiveHeadersStart: redirectedRequest.responseHeadersEndTime,
-        receiveHeadersEnd: redirectedRequest.responseHeadersEndTime,
+        receiveHeadersStart: redirectedRequest.responseHeadersEndTime - redirectedRequest.networkRequestTime,
+        receiveHeadersEnd: redirectedRequest.responseHeadersEndTime - redirectedRequest.networkRequestTime,
         proxyStart: -1,
         proxyEnd: -1,
         dnsStart: -1,
@@ -3328,6 +3346,9 @@ function createNetworkRequests(trace, data, startTime = 0, endTime = Number.POSI
       redirectedRequest.transferSize = 400;
       requestChain.push(redirectedRequest);
       lanternRequests.push(redirectedRequest);
+    }
+    if (requestChain.length) {
+      request.rendererStartTime = requestChain[requestChain.length - 1].networkEndTime;
     }
     requestChain.push(request);
     lanternRequests.push(request);
@@ -3424,8 +3445,8 @@ var TraceParseProgressEvent = class _TraceParseProgressEvent extends Event {
   static eventName = "traceparseprogress";
 };
 function calculateProgress(value, phase) {
-  if (phase === 0.8 /* FINALIZE */) {
-    return value * (0.8 /* FINALIZE */ - 0.2 /* HANDLE_EVENT */) + 0.2 /* HANDLE_EVENT */;
+  if (phase === 1 /* FINALIZE */) {
+    return value * (1 /* FINALIZE */ - 0.25 /* HANDLE_EVENT */) + 0.25 /* HANDLE_EVENT */;
   }
   return value * phase;
 }
@@ -3547,7 +3568,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     const handleEventFns = sortedHandlers.map(([, handler]) => handler.handleEvent);
     for (let i = 0; i < traceEvents.length; ++i) {
       if (options.yieldToMain !== false && i % eventsPerChunk === 0 && i) {
-        const percent = calculateProgress(i / traceEvents.length, 0.2 /* HANDLE_EVENT */);
+        const percent = calculateProgress(i / traceEvents.length, 0.25 /* HANDLE_EVENT */);
         this.dispatchEvent(new TraceParseProgressEvent({ percent }));
         await new Promise((resolve) => setTimeout(resolve, 0));
       }
@@ -3571,7 +3592,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
         await handler.finalize(finalizeOptions);
         options.logger?.end(`parse:${name}:finalize`);
       }
-      const percent = calculateProgress(i / sortedHandlers.length, 0.8 /* FINALIZE */);
+      const percent = calculateProgress(i / sortedHandlers.length, 1 /* FINALIZE */);
       this.dispatchEvent(new TraceParseProgressEvent({ percent }));
     }
     options.logger?.start("parse:handler.data()");
@@ -3580,7 +3601,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       Object.assign(parsedTrace, { [name]: handler.data() });
     }
     options.logger?.end("parse:handler.data()");
-    this.dispatchEvent(new TraceParseProgressEvent({ percent: 1 /* CLONE */ }));
+    this.dispatchEvent(new TraceParseProgressEvent({ percent: 1 /* FINALIZE */ }));
     this.#data = parsedTrace;
   }
   get data() {
@@ -3745,7 +3766,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
         logger?.start(`insights:${name}`);
         const model = insight.generateInsight(data, context);
         model.frameId = context.frameId;
-        const navId = context.navigation?.args.data?.navigationId;
+        const navId = Helpers4.Trace.navigationIDForEvent(context.navigation);
         if (navId) {
           model.navigation = context.navigation;
         }

@@ -40,7 +40,6 @@
       "../../../../../../node_modules"
     ],
     "types": [
-      "mocha",
       "node",
       "undici-types"
     ],
@@ -52,6 +51,9 @@
   "references": [
     {
       "path": "bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../core/host/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../testing/testing-tsconfig.ref.json"

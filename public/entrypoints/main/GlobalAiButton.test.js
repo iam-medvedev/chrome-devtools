@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
@@ -22,9 +23,6 @@ describe('GlobalAiButton', () => {
     let clock;
     beforeEach(() => {
         Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(0);
-    });
-    afterEach(() => {
-        clock?.restore();
     });
     async function createWidget() {
         const view = createViewFunctionStub(GlobalAiButton);

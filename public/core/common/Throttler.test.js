@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from './common.js';
 const { Throttler, Scheduling } = Common.Throttler;
@@ -17,10 +18,6 @@ describe('Throttler class', () => {
         // With mock time, current time is also 0 initially. Advance the clock
         // to get more realistic initial state.
         await ensureNoRecentRun();
-    });
-    afterEach(() => {
-        clock.restore();
-        consoleStub.restore();
     });
     function ensureNoRecentRun() {
         clock.tick(TIMEOUT + 1);

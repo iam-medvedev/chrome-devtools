@@ -2198,8 +2198,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -2208,6 +2206,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -6828,11 +6827,11 @@ var PromptBuilder = class {
     const text = !content?.isEncoded && content?.content ? content.content : "";
     const firstNewline = text.indexOf("\n");
     if (text.length > MAX_CODE_SIZE && (firstNewline < 0 || firstNewline > MAX_CODE_SIZE)) {
-      const settings = runtimeModel.target().targetManager().settings;
+      const indent = runtimeModel.target().targetManager().settings.resolve(SDK4.SDKSettings.textEditorIndentSettingDescriptor).get();
       const { formattedContent, formattedMapping } = await Formatter.ScriptFormatter.formatScriptContent(
-        settings,
         mappedLocation?.uiSourceCode.mimeType() ?? "text/javascript",
-        text
+        text,
+        indent
       );
       const [lineNumber, columnNumber] = formattedMapping.originalToFormatted(mappedLocation?.lineNumber ?? 0, mappedLocation?.columnNumber ?? 0);
       return { text: formattedContent, columnNumber, lineNumber };

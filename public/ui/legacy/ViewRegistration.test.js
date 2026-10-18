@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, before, describe, it } from 'mocha';
 import * as i18n from '../../core/i18n/i18n.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';

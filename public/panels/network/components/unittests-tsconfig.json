@@ -41,12 +41,13 @@
       "../../../../../../../node_modules"
     ],
     "types": [
-      "mocha"
+
     ],
     "useUnknownInCatchVariables": false
   },
   "files": [
     "../../../../../../../front_end/panels/network/components/DirectSocketConnectionView.test.ts",
+    "../../../../../../../front_end/panels/network/components/EditableSpan.test.ts",
     "../../../../../../../front_end/panels/network/components/HeaderSectionRow.test.ts",
     "../../../../../../../front_end/panels/network/components/RequestHeaderSection.test.ts",
     "../../../../../../../front_end/panels/network/components/RequestTrustTokensView.test.ts",

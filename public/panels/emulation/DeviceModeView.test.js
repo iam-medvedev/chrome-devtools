@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -213,6 +214,44 @@ describeWithEnvironment('DeviceModeView', () => {
             await ruler.updateComplete;
             const markers = ruler.contentElement.querySelectorAll('.device-mode-ruler-marker');
             assert.lengthOf(markers, 0);
+        });
+    });
+    describe('InspectedPagePlaceholder', () => {
+        it('does not report bounds while it is detached from the document', () => {
+            const placeholder = Emulation.InspectedPagePlaceholder.InspectedPagePlaceholder.instance({ forceNew: true });
+            const onUpdate = sinon.spy();
+            placeholder.addEventListener("Update" /* Emulation.InspectedPagePlaceholder.Events.UPDATE */, onUpdate);
+            placeholder.update();
+            placeholder.update(/* force= */ true);
+            sinon.assert.notCalled(onUpdate);
+            renderElementIntoDOM(placeholder, { includeCommonStyles: true, width: 800, height: 600 });
+            placeholder.update();
+            sinon.assert.calledOnce(onUpdate);
+            assert.deepEqual(onUpdate.firstCall.args[0].data, { x: 0, y: 0, width: 800, height: 600 });
+        });
+        it('does not report bounds while detached when device mode is turned off', async () => {
+            // Like the root SplitWidget in AdvancedApp, the parent lays out the DeviceModeView synchronously whenever the
+            // placeholder's constraints change, which happens while the DeviceModeView re-renders.
+            const parent = new UI.Widget.VBox();
+            renderElementIntoDOM(parent, { includeCommonStyles: true, width: 800, height: 600 });
+            const view = new Emulation.DeviceModeView.DeviceModeView();
+            view.show(parent.contentElement);
+            const model = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
+            model.enabledSetting().set(true);
+            await UI.Widget.Widget.allUpdatesComplete;
+            const placeholder = Emulation.InspectedPagePlaceholder.InspectedPagePlaceholder.instance();
+            const updates = [];
+            placeholder.addEventListener("Update" /* Emulation.InspectedPagePlaceholder.Events.UPDATE */, ({ data }) => {
+                updates.push({ connected: placeholder.element.isConnected, bounds: data });
+            });
+            model.enabledSetting().set(false);
+            await UI.Widget.Widget.allUpdatesComplete;
+            assert.isNotEmpty(updates);
+            for (const { connected, bounds } of updates) {
+                assert.isTrue(connected);
+                assert.isAbove(bounds.width, 1);
+                assert.isAbove(bounds.height, 1);
+            }
         });
     });
 });

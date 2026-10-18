@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -83,9 +84,6 @@ describe('isIgnoreListedEntry', () => {
     setupRuntimeHooks();
     setupSettingsHooks();
     setupLocaleHooks();
-    afterEach(() => {
-        sinon.restore();
-    });
     it('uses url mappings to determine if an url is ignore listed', async () => {
         const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario();
         const LINE_NUMBER = 0;

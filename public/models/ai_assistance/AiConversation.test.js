@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -613,6 +614,7 @@ describe('AiConversation', () => {
             code: 'code',
             output: 'output',
             canceled: false,
+            loadedSkills: ['styling'],
             widgets: [{
                     name: 'COMPUTED_STYLES',
                     data: {
@@ -639,9 +641,10 @@ describe('AiConversation', () => {
         // ContextResponse should have widgets removed
         assert.strictEqual(serialized.history[1].type, "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
         assert.isUndefined(serialized.history[1].widgets);
-        // ActionResponse should have widgets removed
+        // ActionResponse should have widgets and loadedSkills removed.
         assert.strictEqual(serialized.history[2].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.isUndefined(serialized.history[2].widgets);
+        assert.isUndefined(serialized.history[2].loadedSkills);
     });
     it('redacts action outputs of tools annotated with REDACT_FROM_HISTORY', () => {
         const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });

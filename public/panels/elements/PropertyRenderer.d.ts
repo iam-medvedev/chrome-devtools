@@ -1,6 +1,7 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
 export declare function precedingSpace(node: CodeMirror.SyntaxNode, ast: SDK.CSSPropertyParser.SyntaxTree, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching): string;
 export type RendererBase<MatchT extends SDK.CSSPropertyParser.Match> = abstract new () => MatchRenderer<MatchT>;
@@ -65,6 +66,40 @@ export declare class TracingContext {
 }
 export declare const CSSControlMap: MapConstructor;
 export type CSSControlMap = Map<string, HTMLElement[]>;
+/**
+ * Tracks the changes that renderers make to the text of the value of a declaration, e.g. because the user picked a
+ * color, and puts the text of the value together from them. It wraps a `ComputedText` over the authored text of the
+ * declaration, in which a change takes the place of the match that it replaces.
+ **/
+export declare class ValueUpdateTracking {
+    #private;
+    constructor(ast: SDK.CSSPropertyParser.SyntaxTree);
+    recordEdit(match: SDK.CSSPropertyParser.Match, value: string | (() => string)): void;
+    valueText(): string;
+    getEdit(match: SDK.CSSPropertyParser.Match): string | undefined;
+    textRange(from: CodeMirror.SyntaxNode | undefined, to: CodeMirror.SyntaxNode | undefined): string;
+}
+export declare class ValueEditEvent extends CustomEvent<string> {
+    static readonly eventName = "valueedit";
+    constructor(value: string);
+}
+interface EditableContentViewInput {
+    editedValue: string | null;
+    onValueEdit: (event: ValueEditEvent) => void;
+}
+type EditableContentView = (input: EditableContentViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+/**
+ * Hosts a value part that can be edited through an inline swatch or icon.
+ *
+ * The swatch or icon goes into the `icon` slot, and the initial rendered AST nodes go into the default slot. When the
+ * swatch or icon dispatches a `ValueEditEvent`, the default slot is replaced with the new text while the `icon` slot
+ * stays in place.
+ **/
+export declare class EditableContent extends UI.Widget.Widget<DocumentFragment> {
+    #private;
+    constructor(element?: HTMLElement, view?: EditableContentView);
+    performUpdate(): void;
+}
 export declare class RenderingContext {
     readonly ast: SDK.CSSPropertyParser.SyntaxTree;
     readonly property: SDK.CSSProperty.CSSProperty | null;
@@ -76,9 +111,11 @@ export declare class RenderingContext {
     };
     readonly tracing?: TracingContext | undefined;
     readonly signal?: AbortSignal | undefined;
+    readonly edits?: ValueUpdateTracking | undefined;
     constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls?: CSSControlMap | undefined, options?: {
         readonly?: boolean;
-    }, tracing?: TracingContext | undefined, signal?: AbortSignal | undefined);
+    }, tracing?: TracingContext | undefined, signal?: AbortSignal | undefined, edits?: ValueUpdateTracking | undefined);
+    recordEdit(match: SDK.CSSPropertyParser.Match, value: string | (() => string)): void;
     addControl(cssType: string, control: HTMLElement): void;
     getComputedLonghandName(node: CodeMirror.SyntaxNode): string | null;
     findParent<MatchT extends SDK.CSSPropertyParser.Match>(node: CodeMirror.SyntaxNode | null, matchType: Platform.Constructor.Constructor<MatchT>): MatchT | null;
@@ -87,7 +124,7 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #private;
     constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls: CSSControlMap, options: {
         readonly?: boolean;
-    }, tracing: TracingContext | undefined, signal: AbortSignal | undefined);
+    }, tracing: TracingContext | undefined, signal: AbortSignal | undefined, edits: ValueUpdateTracking | undefined);
     static render(nodeOrNodes: CodeMirror.SyntaxNode | CodeMirror.SyntaxNode[], context: RenderingContext): {
         nodes: LitTemplate;
         cssControls: CSSControlMap;
@@ -102,14 +139,14 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     static renderValueElement(property: SDK.CSSProperty.CSSProperty | {
         name: string;
         value: string;
-    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal): {
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): {
         valueElement: HTMLElement;
         cssControls: CSSControlMap;
     };
     static renderValueNodes(property: SDK.CSSProperty.CSSProperty | {
         name: string;
         value: string;
-    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal): {
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): {
         nodes: LitTemplate;
         cssControls: CSSControlMap;
     };

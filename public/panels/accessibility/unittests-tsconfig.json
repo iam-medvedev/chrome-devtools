@@ -41,7 +41,7 @@
       "../../../../../../node_modules"
     ],
     "types": [
-      "mocha"
+
     ],
     "useUnknownInCatchVariables": false
   },
@@ -73,6 +73,12 @@
     },
     {
       "path": "../../generated/generated-tsconfig.ref.json"
+    },
+    {
+      "path": "../../models/bindings/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../models/workspace/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../testing/testing-tsconfig.ref.json"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { createContextForNavigation, getFirstOrError, getInsightOrError, processTrace, } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -38,14 +39,14 @@ async function generateInsightWithOverrides(testContext, overrides) {
     traceEvents[lcpSendRequestEventIndex] = lcpSendRequest;
     if (overrides.loadingAttr !== undefined) {
         const lcpEventIndex = traceEvents.findIndex(event => {
-            return Types.Events.isAnyLargestContentfulPaintCandidate(event) &&
+            return Types.Events.isLargestContentfulPaintCandidate(event) &&
                 event.args.data?.navigationId === seedNavigationId && event.args.data?.nodeId === seedLcpNodeId;
         });
         if (lcpEventIndex === -1) {
             throw new Error('missing LCP candidate event');
         }
         const lcpEvent = structuredClone(traceEvents[lcpEventIndex]);
-        assert(Types.Events.isAnyLargestContentfulPaintCandidate(lcpEvent));
+        assert(Types.Events.isLargestContentfulPaintCandidate(lcpEvent));
         if (!lcpEvent.args.data) {
             throw new Error('missing LCP candidate data');
         }

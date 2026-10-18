@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -28,9 +29,6 @@ describe('ServiceWorkerCacheTreeElement', () => {
         universe.targetManager.setScopeTarget(target);
         model = target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);
         panel = sinon.createStubInstance(Application.ResourcesPanel.ResourcesPanel);
-    });
-    afterEach(() => {
-        sinon.restore();
     });
     it('does not duplicate cache tree elements on re-initialization', () => {
         const cacheTreeElement = new Application.ServiceWorkerCacheTreeElement.ServiceWorkerCacheTreeElement(panel);

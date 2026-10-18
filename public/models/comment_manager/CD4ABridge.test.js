@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -198,7 +199,6 @@ describe('CD4ABridge', () => {
             };
         });
         afterEach(() => {
-            sinon.restore();
             Common.Revealer.RevealerRegistry.removeInstance();
         });
         it('shows panel for any given panel name', async () => {

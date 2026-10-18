@@ -290,6 +290,11 @@ var dataGrid_css_default = `/*
   background-color: var(--sys-color-tonal-container);
 }
 
+.data-grid:focus-visible tbody tr.revealed.selected {
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+  outline-offset: calc(-1 * var(--sys-size-2));
+}
+
 .data-grid tbody tr.revealed:not(.data-grid-filler-row, .selected):hover {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
@@ -431,6 +436,10 @@ var dataGrid_css_default = `/*
   .data-grid tbody tr.revealed:focus *,
   .data-grid tbody tr.revealed:hover .heap-object-tag {
     color: HighlightText;
+  }
+
+  .data-grid:focus-visible tbody tr.revealed.selected {
+    outline-color: HighlightText;
   }
 
   .data-grid th {
@@ -2257,6 +2266,7 @@ var DataGridNode = class {
     if (child.parent !== this) {
       throw new Error("removeChild: Node is not a child of this node.");
     }
+    const hadFocus = this.dataGrid?.element.hasFocus() ?? false;
     if (this.dataGrid) {
       this.dataGrid.updateSelectionBeforeRemoval(child, false);
     }
@@ -2265,6 +2275,9 @@ var DataGridNode = class {
     Platform2.ArrayUtilities.removeElement(this.children, child, true);
     if (this.children.length <= 0) {
       this.setHasChildren(false);
+    }
+    if (hadFocus && this.dataGrid && !this.dataGrid.element.hasFocus()) {
+      this.dataGrid.element.focus();
     }
   }
   removeChildren() {
@@ -3852,13 +3865,16 @@ function nodeMixin(base) {
       }
     }
     #onRowMouseEvent(event) {
+      if (!(event.target instanceof Element) || !(event.currentTarget instanceof HTMLElement)) {
+        return;
+      }
       const targetInConfigRow = UI3.UIUtils.HTMLElementWithLightDOMTemplate.findCorrespondingElement(
         event.target,
         event.currentTarget,
         this.#configElement
       );
       if (!targetInConfigRow) {
-        throw new Error("Cell click event target not found in the data grid");
+        return;
       }
       if (targetInConfigRow instanceof HTMLElement) {
         targetInConfigRow?.dispatchEvent(new MouseEvent(event.type, { bubbles: true, composed: true }));

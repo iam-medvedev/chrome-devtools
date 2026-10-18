@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -65,7 +66,6 @@ describe('CookieItemsView', () => {
         const cookie = new SDK.Cookie.Cookie('cookie-name', 'value');
         viewFunction.input.onAiButtonClick?.(cookie, dummyEvent);
         sinon.assert.calledOnce(executeStub);
-        executeStub.restore();
     });
     it('populates context menu with Debug with AI submenu and expected items', () => {
         cookieItemsView.performUpdate();
@@ -80,7 +80,6 @@ describe('CookieItemsView', () => {
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain this cookie']);
-        contextFlavorStub.restore();
     });
     it('sets StorageItem flavor on select', () => {
         cookieItemsView.performUpdate();

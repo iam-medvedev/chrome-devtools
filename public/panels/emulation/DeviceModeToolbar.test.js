@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Emulation from './emulation.js';
@@ -99,15 +102,16 @@ describeWithEnvironment('DeviceModeToolbar', () => {
     }
     describe('UI updates on model changes', () => {
         let renderSpy;
-        beforeEach(() => {
+        beforeEach(async () => {
             renderSpy = sinon.spy(Emulation.DeviceModeToolbar.DeviceModeToolbar.prototype, 'performUpdate');
             // Re-create toolbar so that it registers the spied update method.
-            toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar();
+            // Stub the view, as rendering the default view into the DOM caches select widths across tests.
+            toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar(undefined, createViewFunctionStub(Emulation.DeviceModeToolbar.DeviceModeToolbar));
             toolbar.model = deviceModeModel;
+            // The toolbar only listens to model changes while it is shown.
+            renderElementIntoDOM(toolbar);
+            await UI.Widget.Widget.allUpdatesComplete;
             renderSpy.resetHistory();
-        });
-        afterEach(() => {
-            renderSpy.restore();
         });
         it('updates UI when scale changes', async () => {
             deviceModeModel.scaleSetting().set(1.5);
@@ -129,6 +133,32 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             await toolbar.updateComplete;
             sinon.assert.called(renderSpy);
         });
+    });
+    it('only reacts to model, settings and device list changes while shown', async () => {
+        // Stub the view, as the default view renders child widgets that have their own listeners.
+        const view = createViewFunctionStub(Emulation.DeviceModeToolbar.DeviceModeToolbar);
+        toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar(undefined, view);
+        toolbar.model = deviceModeModel;
+        renderElementIntoDOM(toolbar);
+        await UI.Widget.Widget.allUpdatesComplete;
+        const { showUserAgentTypeSetting } = view.input;
+        function triggerChanges() {
+            deviceModeModel.dispatchEventToListeners("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */);
+            deviceModeModel.scaleSetting().set(deviceModeModel.scaleSetting().get() + 1);
+            showUserAgentTypeSetting.set(!showUserAgentTypeSetting.get());
+            EmulationModel.EmulatedDevices.EmulatedDevicesList.instance().dispatchEventToListeners("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */);
+        }
+        toolbar.detach();
+        view.resetHistory();
+        triggerChanges();
+        await UI.Widget.Widget.allUpdatesComplete;
+        sinon.assert.notCalled(view);
+        renderElementIntoDOM(toolbar);
+        await UI.Widget.Widget.allUpdatesComplete;
+        view.resetHistory();
+        triggerChanges();
+        await UI.Widget.Widget.allUpdatesComplete;
+        sinon.assert.called(view);
     });
     describe('screen orientation lock', () => {
         it('disables the rotate button when screen orientation is locked', async () => {
@@ -208,6 +238,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             const select = toolbar.element.querySelector('.toolbar-has-dropdown-shrinkable');
             select.value = 'Responsive';
             select.dispatchEvent(new Event('change'));
+            toolbar.requestUpdate();
             await toolbar.updateComplete;
             assert.strictEqual(deviceModeModel.type(), EmulationModel.DeviceModeModel.Type.Responsive);
             assert.isNull(deviceModeModel.device());
@@ -221,6 +252,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             assert.isNull(deviceModeModel.device());
             select.value = fakePhone.title;
             select.dispatchEvent(new Event('change'));
+            toolbar.requestUpdate();
             await toolbar.updateComplete;
             assert.strictEqual(deviceModeModel.type(), EmulationModel.DeviceModeModel.Type.Device);
             assert.strictEqual(deviceModeModel.device(), fakePhone);
@@ -230,6 +262,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             assert.isTrue(widthInput.disabled);
             select.value = 'Responsive';
             select.dispatchEvent(new Event('change'));
+            toolbar.requestUpdate();
             await toolbar.updateComplete;
             assert.strictEqual(deviceModeModel.type(), EmulationModel.DeviceModeModel.Type.Responsive);
             assert.isNull(deviceModeModel.device());
@@ -239,6 +272,7 @@ describeWithEnvironment('DeviceModeToolbar', () => {
             assert.isFalse(widthInput.disabled);
             select.value = fakePhone.title;
             select.dispatchEvent(new Event('change'));
+            toolbar.requestUpdate();
             await toolbar.updateComplete;
             assert.strictEqual(deviceModeModel.type(), EmulationModel.DeviceModeModel.Type.Device);
             assert.strictEqual(deviceModeModel.device(), fakePhone);

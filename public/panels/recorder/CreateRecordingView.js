@@ -193,7 +193,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                   @keydown=${onKeyDown}
                   .value=${item.selectorType}
                   jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item.selectorType}`)}
-                  ?checked=${item.checked}
+                  .checked=${item.checked}
                   type="checkbox"
                   @change=${(e) => onUpdate({
             selectorType: item.selectorType,

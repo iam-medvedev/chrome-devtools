@@ -89,7 +89,9 @@ var __disposeResources = (this && this.__disposeResources) || (function (Suppres
     var e = new Error(message);
     return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 });
+import * as Bidi from 'webdriver-bidi-protocol';
 import { firstValueFrom, from, raceWith } from '../../third_party/rxjs/rxjs.js';
+import { headersInputToRecord } from '../api/HTTPRequest.js';
 import { Page, } from '../api/Page.js';
 import { Coverage } from '../cdp/Coverage.js';
 import { EmulationManager } from '../cdp/EmulationManager.js';
@@ -392,11 +394,11 @@ let BidiPage = (() => {
                 const screenOrientation = viewport
                     ? viewport.isLandscape
                         ? {
-                            natural: "landscape" /* Bidi.Emulation.ScreenOrientationNatural.Landscape */,
+                            natural: Bidi.Emulation.ScreenOrientationNatural.Landscape,
                             type: 'landscape-primary',
                         }
                         : {
-                            natural: "portrait" /* Bidi.Emulation.ScreenOrientationNatural.Portrait */,
+                            natural: Bidi.Emulation.ScreenOrientationNatural.Portrait,
                             type: 'portrait-primary',
                         }
                     : null;
@@ -620,13 +622,13 @@ let BidiPage = (() => {
         }
         #requestInterception;
         async setRequestInterception(enable) {
-            this.#requestInterception = await this.#toggleInterception(["beforeRequestSent" /* Bidi.Network.InterceptPhase.BeforeRequestSent */], this.#requestInterception, enable);
+            this.#requestInterception = await this.#toggleInterception([Bidi.Network.InterceptPhase.BeforeRequestSent], this.#requestInterception, enable);
         }
         /**
          * @internal
          */
         async setExtraHTTPHeaders(headers) {
-            await this.#frame.browsingContext.setExtraHTTPHeaders(headers);
+            await this.#frame.browsingContext.setExtraHTTPHeaders(headersInputToRecord(headers));
         }
         /**
          * @internal
@@ -634,7 +636,7 @@ let BidiPage = (() => {
         _credentials = null;
         #authInterception;
         async authenticate(credentials) {
-            this.#authInterception = await this.#toggleInterception(["authRequired" /* Bidi.Network.InterceptPhase.AuthRequired */], this.#authInterception, Boolean(credentials));
+            this.#authInterception = await this.#toggleInterception([Bidi.Network.InterceptPhase.AuthRequired], this.#authInterception, Boolean(credentials));
             this._credentials = credentials;
         }
         async #toggleInterception(phases, interception, expected) {
@@ -689,15 +691,10 @@ let BidiPage = (() => {
                     latency: 0,
                 };
             }
-            this.#emulatedNetworkConditions.upload = networkConditions
-                ? networkConditions.upload
-                : -1;
-            this.#emulatedNetworkConditions.download = networkConditions
-                ? networkConditions.download
-                : -1;
-            this.#emulatedNetworkConditions.latency = networkConditions
-                ? networkConditions.latency
-                : 0;
+            this.#emulatedNetworkConditions.upload = networkConditions?.upload ?? -1;
+            this.#emulatedNetworkConditions.download =
+                networkConditions?.download ?? -1;
+            this.#emulatedNetworkConditions.latency = networkConditions?.latency ?? 0;
             this.#emulatedNetworkConditions.offline =
                 networkConditions?.offline ?? false;
             return await this.#applyNetworkConditions();
@@ -706,11 +703,27 @@ let BidiPage = (() => {
             if (!this.#emulatedNetworkConditions) {
                 return;
             }
-            await this._client().send('Network.emulateNetworkConditions', {
+            // `Network.emulateNetworkConditions` is deprecated by Chromium in favor
+            // of `Network.emulateNetworkConditionsByRule`. Rules only shape the
+            // network traffic, so `Network.overrideNetworkState` is also sent to
+            // emulate the network state exposed to the page via `navigator.onLine`
+            // and `navigator.connection`.
+            await this._client().send('Network.overrideNetworkState', {
                 offline: this.#emulatedNetworkConditions.offline,
                 latency: this.#emulatedNetworkConditions.latency,
                 uploadThroughput: this.#emulatedNetworkConditions.upload,
                 downloadThroughput: this.#emulatedNetworkConditions.download,
+            });
+            await this._client().send('Network.emulateNetworkConditionsByRule', {
+                matchedNetworkConditions: [
+                    {
+                        urlPattern: '',
+                        offline: this.#emulatedNetworkConditions.offline,
+                        latency: this.#emulatedNetworkConditions.latency,
+                        downloadThroughput: this.#emulatedNetworkConditions.download,
+                        uploadThroughput: this.#emulatedNetworkConditions.upload,
+                    },
+                ],
             });
         }
         async setCookie(...cookies) {
@@ -960,13 +973,13 @@ function convertCookiesSameSiteBiDiToCdp(sameSite) {
 export function convertCookiesSameSiteCdpToBiDi(sameSite) {
     switch (sameSite) {
         case 'Strict':
-            return "strict" /* Bidi.Network.SameSite.Strict */;
+            return Bidi.Network.SameSite.Strict;
         case 'Lax':
-            return "lax" /* Bidi.Network.SameSite.Lax */;
+            return Bidi.Network.SameSite.Lax;
         case 'None':
-            return "none" /* Bidi.Network.SameSite.None */;
+            return Bidi.Network.SameSite.None;
         default:
-            return "default" /* Bidi.Network.SameSite.Default */;
+            return Bidi.Network.SameSite.Default;
     }
 }
 export function convertCookiesExpiryCdpToBiDi(expiry) {

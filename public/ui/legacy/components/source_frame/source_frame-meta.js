@@ -1,6 +1,8 @@
 // ../../front_end/ui/legacy/components/source_frame/source_frame-meta.ts
 import * as Common from "../../../../core/common/common.js";
 import * as i18n from "../../../../core/i18n/i18n.js";
+import * as SDK from "../../../../core/sdk/sdk.js";
+import * as SettingsUI from "../../../settings/settings.js";
 var UIStrings = {
   /**
    * @description Title of a setting under the Sources category in settings.
@@ -41,13 +43,9 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/source_frame/source_frame-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SDK.SDKSettings.textEditorIndentSettingDescriptor, {
   category: Common.Settings.SettingCategory.SOURCES,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
   title: i18nLazyString(UIStrings.defaultIndentation),
-  settingName: "text-editor-indent",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "    ",
   options: [
     {
       title: i18nLazyString(UIStrings.setIndentationToSpaces),

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import sinon from 'sinon';
+import { after, describe, it } from 'mocha';
 import * as Common from '../../core/common/common.js';
 import * as Formatter from '../formatter/formatter.js';
 describe('ScriptFormatter', () => {
     const indentString = '  ';
-    const dummySettings = sinon.createStubInstance(Common.Settings.Settings);
     after(() => {
         Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
@@ -16,7 +15,7 @@ describe('ScriptFormatter', () => {
             // Bug fix test: JSON files should be formatted when using the format() function.
             // Previously, format() only formatted documents/scripts/stylesheets, skipping JSON.
             const originalContent = '{"a":{"b":{"c":1}}}';
-            const { formattedContent } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('application/json'), 'application/json', originalContent, indentString);
+            const { formattedContent } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('application/json'), 'application/json', originalContent, indentString);
             const expectedContent = `{
   "a": {
     "b": {
@@ -28,7 +27,7 @@ describe('ScriptFormatter', () => {
         });
         it('can format a JSON document via formatScriptContent()', async () => {
             const originalContent = '{"a":{"b":{"c":1}}}';
-            const { formattedContent } = await Formatter.ScriptFormatter.formatScriptContent(dummySettings, 'application/json', originalContent, indentString);
+            const { formattedContent } = await Formatter.ScriptFormatter.formatScriptContent('application/json', originalContent, indentString);
             const expectedContent = `{
   "a": {
     "b": {
@@ -41,7 +40,7 @@ describe('ScriptFormatter', () => {
         it('can toggle JSON formatting (format then restore original)', async () => {
             // Test that demonstrates the reversibility requirement from issue 378870233
             const originalContent = '{"keys":[{"k1":"v1"},{"k2":"v2"}]}';
-            const { formattedContent, formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('application/json'), 'application/json', originalContent, indentString);
+            const { formattedContent, formattedMapping } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('application/json'), 'application/json', originalContent, indentString);
             // Should be formatted
             assert.notStrictEqual(formattedContent, originalContent);
             assert.include(formattedContent, '\n');
@@ -50,7 +49,7 @@ describe('ScriptFormatter', () => {
         });
     });
     it('can format a HTML document', async () => {
-        const { formattedContent } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
+        const { formattedContent } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
         assert.strictEqual(formattedContent, `<html>
   <head></head>
   <body></body>
@@ -58,23 +57,23 @@ describe('ScriptFormatter', () => {
 `);
     });
     it('can map original locations to formatted locations for HTML documents', async () => {
-        const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
+        const { formattedMapping } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
         // The start of <head>
         assert.deepEqual(formattedMapping.originalToFormatted(0, 6), [1, 2]);
     });
     it('can map original lines to formatted locations for HTML documents', async () => {
-        const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', `<html><head>
+        const { formattedMapping } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', `<html><head>
 </head><body></body></html>`, indentString);
         // The start of </head>
         assert.deepEqual(formattedMapping.originalToFormatted(1), [1, 8]);
     });
     it('can map formatted locations to original locations for HTML documents', async () => {
-        const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
+        const { formattedMapping } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
         // The start of <head>
         assert.deepEqual(formattedMapping.formattedToOriginal(1, 2), [0, 6]);
     });
     it('can map formatted lines to original locations for HTML documents', async () => {
-        const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
+        const { formattedMapping } = await Formatter.ScriptFormatter.format(Common.ResourceType.ResourceType.fromMimeType('text/html'), 'text/html', '<html><head></head><body></body></html>', indentString);
         // The start of <head>
         assert.deepEqual(formattedMapping.formattedToOriginal(1), [0, 6]);
     });
@@ -86,23 +85,23 @@ describe('ScriptFormatter', () => {
         const mimeType = 'image/svg';
         const resourceType = Common.ResourceType.ResourceType.fromMimeType(mimeType);
         it('returns the original content', async () => {
-            const { formattedContent } = await Formatter.ScriptFormatter.format(dummySettings, resourceType, mimeType, originalContent, indentString);
+            const { formattedContent } = await Formatter.ScriptFormatter.format(resourceType, mimeType, originalContent, indentString);
             assert.deepEqual(formattedContent, originalContent);
         });
         it('maps to the same locations from formatted locations', async () => {
-            const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, resourceType, mimeType, originalContent, indentString);
+            const { formattedMapping } = await Formatter.ScriptFormatter.format(resourceType, mimeType, originalContent, indentString);
             assert.deepEqual(formattedMapping.formattedToOriginal(1, 2), [1, 2]);
         });
         it('defaults column number to zero from formatted locations', async () => {
-            const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, resourceType, mimeType, originalContent, indentString);
+            const { formattedMapping } = await Formatter.ScriptFormatter.format(resourceType, mimeType, originalContent, indentString);
             assert.deepEqual(formattedMapping.formattedToOriginal(1), [1, 0]);
         });
         it('maps to the same locations from original locations', async () => {
-            const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, resourceType, mimeType, originalContent, indentString);
+            const { formattedMapping } = await Formatter.ScriptFormatter.format(resourceType, mimeType, originalContent, indentString);
             assert.deepEqual(formattedMapping.originalToFormatted(1, 4), [1, 4]);
         });
         it('defaults column number to zero from original locations', async () => {
-            const { formattedMapping } = await Formatter.ScriptFormatter.format(dummySettings, resourceType, mimeType, originalContent, indentString);
+            const { formattedMapping } = await Formatter.ScriptFormatter.format(resourceType, mimeType, originalContent, indentString);
             assert.deepEqual(formattedMapping.originalToFormatted(1), [1, 0]);
         });
     });

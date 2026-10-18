@@ -3,6 +3,45 @@ import { isString } from '../common/util.js';
 import { assert } from '../util/assert.js';
 import { typedArrayToBase64 } from '../util/encoding.js';
 /**
+ * Converts a Fetch API {@link https://developer.mozilla.org/en-US/docs/Web/API/Headers | Headers}
+ * instance into a plain record. Plain records are returned as-is.
+ *
+ * Header values provided by a `Headers` instance that repeat the same name
+ * (e.g., `set-cookie`) are collected into an array so that the information
+ * is not lost.
+ *
+ * @internal
+ */
+export function normalizeHeadersInput(headers) {
+    if (headers instanceof Headers) {
+        const result = {};
+        headers.forEach((value, key) => {
+            const existing = result[key];
+            if (existing === undefined) {
+                result[key] = value;
+            }
+            else if (Array.isArray(existing)) {
+                existing.push(value);
+            }
+            else {
+                result[key] = [existing, value];
+            }
+        });
+        return result;
+    }
+    return headers;
+}
+/**
+ * Converts header input into a plain record with string values.
+ *
+ * @internal
+ */
+export function headersInputToRecord(headers) {
+    return Object.fromEntries(Object.entries(normalizeHeadersInput(headers)).map(([key, value]) => {
+        return [key, Array.isArray(value) ? value.join(', ') : value];
+    }));
+}
+/**
  * The default cooperative request interception resolution priority
  *
  * @public
@@ -159,6 +198,33 @@ export class HTTPRequest {
         }
     }
     /**
+     * Converts the request to a Fetch API Request instance.
+     *
+     * @remarks
+     *
+     * Headers are copied to the new Request instance. The request URL and
+     * method are preserved. The body is built from
+     * {@link HTTPRequest.fetchPostData} when the request has post data,
+     * otherwise the Request is created without a body. For `GET` and
+     * `HEAD` requests the body is always omitted, as required by the
+     * Fetch API.
+     *
+     * @returns A promise which resolves to a Fetch API Request object.
+     */
+    async asFetchRequest() {
+        const method = this.method();
+        const headers = new Headers(this.headers());
+        let body = null;
+        if (method !== 'GET' && method !== 'HEAD' && this.hasPostData()) {
+            body = ((await this.fetchPostData()) ?? null);
+        }
+        return new Request(this.url(), {
+            method,
+            headers,
+            body,
+        });
+    }
+    /**
      * @internal
      */
     verifyInterception() {
@@ -198,10 +264,17 @@ export class HTTPRequest {
         if (!this.canBeIntercepted()) {
             return;
         }
+        const { headers, ...rest } = overrides;
+        const normalizedOverrides = {
+            ...rest,
+            ...(headers && {
+                headers: headersInputToRecord(headers),
+            }),
+        };
         if (priority === undefined) {
-            return await this._continue(overrides);
+            return await this._continue(normalizedOverrides);
         }
-        this.interception.requestOverrides = overrides;
+        this.interception.requestOverrides = normalizedOverrides;
         if (this.interception.resolutionState.priority === undefined ||
             priority > this.interception.resolutionState.priority) {
             this.interception.resolutionState = {
@@ -257,10 +330,16 @@ export class HTTPRequest {
         if (!this.canBeIntercepted()) {
             return;
         }
+        const normalizedResponse = {
+            ...response,
+            headers: response.headers instanceof Headers
+                ? normalizeHeadersInput(response.headers)
+                : response.headers,
+        };
         if (priority === undefined) {
-            return await this._respond(response);
+            return await this._respond(normalizedResponse);
         }
-        this.interception.response = response;
+        this.interception.response = normalizedResponse;
         if (this.interception.resolutionState.priority === undefined ||
             priority > this.interception.resolutionState.priority) {
             this.interception.resolutionState = {

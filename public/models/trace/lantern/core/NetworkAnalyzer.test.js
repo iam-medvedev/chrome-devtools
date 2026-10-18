@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { before, beforeEach, describe, it } from 'mocha';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Trace from '../../trace.js';
 import * as Lantern from '../lantern.js';
@@ -349,8 +350,13 @@ describe('NetworkAnalyzer', () => {
             const result = estimateThroughput([
                 createThroughputRecord(0, 2),
                 createThroughputRecord(3, 4, { statusCode: 304 }),
+                createThroughputRecord(4, 5, { fromDiskCache: true }),
+                createThroughputRecord(5, 6, { fromMemoryCache: true }),
             ]);
             assert.strictEqual(result, 500 * 8);
+        });
+        it('should return null when total duration is 0', () => {
+            assert.isNull(estimateThroughput([createThroughputRecord(1, 1)]));
         });
         it('should exclude unfinished records', () => {
             const result = estimateThroughput([
@@ -410,6 +416,21 @@ describe('NetworkAnalyzer', () => {
                 ],
             ]);
         });
+        it('should include additionalRttByOrigin for origins without server response time estimates', () => {
+            const records = [
+                createRecord({
+                    url: 'https://fast.com/app.js',
+                    timing: { connectStart: 0, connectEnd: 10, sendStart: 10, receiveHeadersEnd: 30 },
+                }),
+                createRecord({
+                    url: 'https://slow-no-headers.com/app.js',
+                    timing: { connectStart: 0, connectEnd: 50, sendStart: -1, receiveHeadersEnd: -1 },
+                }),
+            ];
+            const result = NetworkAnalyzer.computeRTTAndServerResponseTime(records);
+            assert.strictEqual(result.rtt, 10);
+            assert.strictEqual(result.additionalRttByOrigin.get('https://slow-no-headers.com'), 40);
+        });
     });
     describe('#findMainDocument', () => {
         it('should find the main document', () => {
@@ -421,6 +442,49 @@ describe('NetworkAnalyzer', () => {
             const mainDocument = NetworkAnalyzer.findResourceForUrl(requests, 'https://www.paulirish.com/#info');
             assert.isOk(mainDocument);
             assert.strictEqual(mainDocument.url, 'https://www.paulirish.com/');
+        });
+        it('should match redirect request when cross-origin redirect URL path was scrubbed to origin in trace', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'cross-origin-redirect.json.gz');
+            const trace = toLanternTrace(parsedTrace.traceEvents);
+            const crossOriginRequests = Trace.LanternComputationData.createNetworkRequests(trace, parsedTrace.data);
+            // The navigation requested `http://127.0.0.1:54321/docs/start?foo=bar`, which redirected 301 to
+            // `http://localhost:54322/final`. Chromium scrubs the cross-origin pre-redirect URL in the trace to
+            // `http://127.0.0.1:54321/`.
+            const rootRequest = NetworkAnalyzer.findResourceForUrl(crossOriginRequests, 'http://127.0.0.1:54321/docs/start?foo=bar');
+            assert.isOk(rootRequest);
+            assert.strictEqual(rootRequest.url, 'http://127.0.0.1:54321/');
+            const finalDocument = NetworkAnalyzer.resolveRedirects(rootRequest);
+            assert.strictEqual(finalDocument.url, 'http://localhost:54322/final');
+            const graph = Trace.LanternComputationData.createGraph(crossOriginRequests, trace, parsedTrace.data, {
+                requestedUrl: 'http://127.0.0.1:54321/docs/start?foo=bar',
+                mainDocumentUrl: 'http://localhost:54322/final',
+            });
+            if (graph.type !== 'network') {
+                assert.fail('Expected network node');
+            }
+            assert.strictEqual(graph.request.url, 'http://127.0.0.1:54321/');
+        });
+        it('should not fall back to an unrelated non-document or same-origin redirecting request', () => {
+            const subresourceFinal = createRecord({ url: 'https://other-host.com/final', resourceType: 'Other' });
+            const subresourceRedirect = createRecord({
+                url: 'https://host.com/',
+                resourceType: undefined,
+            });
+            subresourceRedirect.redirectDestination = subresourceFinal;
+            const sameOriginDocFinal = createRecord({ url: 'https://host.com/home', resourceType: 'Document' });
+            const sameOriginDocRedirect = createRecord({
+                url: 'https://host.com/',
+                resourceType: undefined,
+            });
+            sameOriginDocRedirect.redirectDestination = sameOriginDocFinal;
+            const mockRecords = [
+                subresourceRedirect,
+                subresourceFinal,
+                sameOriginDocRedirect,
+                sameOriginDocFinal,
+            ];
+            const result = NetworkAnalyzer.findResourceForUrl(mockRecords, 'https://host.com/some/path');
+            assert.isUndefined(result);
         });
     });
     describe('#resolveRedirects', () => {
@@ -437,6 +501,17 @@ describe('NetworkAnalyzer', () => {
             const finalDocument = NetworkAnalyzer.resolveRedirects(mainDocument);
             assert.notEqual(mainDocument.url, finalDocument.url);
             assert.strictEqual(finalDocument.url, 'https://m.vk.com/');
+        });
+        it('should set relative receiveHeadersEnd and monotonically increasing rendererStartTime on redirects', () => {
+            const r0 = requestsWithRedirect[0];
+            const r1 = requestsWithRedirect[1];
+            const r2 = requestsWithRedirect[2];
+            const finalDoc = requestsWithRedirect[3];
+            assert.strictEqual(r0.timing?.receiveHeadersEnd, r0.responseHeadersEndTime - r0.networkRequestTime);
+            assert.isBelow(r0.rendererStartTime, r1.rendererStartTime);
+            assert.isBelow(r1.rendererStartTime, r2.rendererStartTime);
+            assert.strictEqual(finalDoc.rendererStartTime, r2.networkEndTime);
+            assert.isAbove(finalDoc.rendererStartTime, r2.rendererStartTime);
         });
     });
 });

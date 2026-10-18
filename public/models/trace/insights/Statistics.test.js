@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as Insights from './insights.js';
 const { getLogNormalScore } = Insights.Statistics;
 describe('statistics', () => {

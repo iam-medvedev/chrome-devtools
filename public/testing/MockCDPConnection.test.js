@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
 import { MockCDPConnection } from './MockCDPConnection.js';
 describe('MockCDPConnection', () => {

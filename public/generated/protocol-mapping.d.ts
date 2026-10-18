@@ -4,7 +4,7 @@
 
 /**
  * This file is auto-generated, do not edit manually. *
- * Re-generate with: npm run generate-protocol-resources.
+ * Re-generate with: scripts/tools/dt.py generate-protocol-resources.
  */
 
 
@@ -4581,6 +4581,13 @@ export namespace ProtocolMapping {
     'Page.getAnnotatedPageContent': {
       paramsType: [Protocol.Page.GetAnnotatedPageContentRequest?];
       returnType: Protocol.Page.GetAnnotatedPageContentResponse;
+    };
+    /**
+     * Configures input visualization on the page.
+     */
+    'Page.setInputVisualization': {
+      paramsType: [Protocol.Page.SetInputVisualizationRequest?];
+      returnType: void;
     };
     /**
      * Disable collecting and reporting metrics.

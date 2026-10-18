@@ -30,6 +30,7 @@ import * as i18n5 from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as EmulationModel2 from "../../models/emulation/emulation.js";
+import * as Snackbars from "../../ui/components/snackbars/snackbars.js";
 import * as Geometry from "../../ui/geometry/geometry.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
 import { Directives as Directives3, html as html3, nothing as nothing2, render as render3 } from "../../ui/lit/lit.js";
@@ -282,17 +283,17 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 @change=${input.onDeviceChange}
                 .value=${live(input.selectedDeviceOption === input.deviceModeOptions.responsive ? "Responsive" : input.selectedDeviceOption?.title || "Responsive")}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context("device")}>
-          <option value="Responsive" ?selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
+          <option value="Responsive" .selected=${input.deviceModeOptions.responsive.selected} jslog=${VisualLogging.item(input.deviceModeOptions.responsive.jslogContext).track({ click: true })}>
             ${input.deviceModeOptions.responsive.title}
           </option>
           ${input.deviceModeOptions.standard.map((group) => html`
             <optgroup label=${EmulationModel.EmulatedDevices.getCategoryTitle(group.category)}>
-              ${group.options.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+              ${group.options.map((o) => html`<option value=${o.title} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
             </optgroup>
           `)}
           ${input.deviceModeOptions.custom.length > 0 ? html`
             <optgroup label="Custom">
-              ${input.deviceModeOptions.custom.map((o) => html`<option value=${o.title} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+              ${input.deviceModeOptions.custom.map((o) => html`<option value=${o.title} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
             </optgroup>
           ` : ""}
           <option value="Edit" jslog=${VisualLogging.item(input.deviceModeOptions.edit.jslogContext).track({ click: true })}>
@@ -313,7 +314,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
               @change=${input.onScaleChange}
               .value=${String(input.scaleOptions.find((o) => o.selected)?.value ?? "")}
               jslog=${VisualLogging.dropDown().track({ change: true }).context("scale")}>
-        ${input.scaleOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+        ${input.scaleOptions.map((o) => html`<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
       </select>
 
       <div class="device-mode-empty-toolbar-element"></div>
@@ -330,7 +331,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                     .value=${String(input.dprOptions.find((o) => o.selected)?.value ?? "")}
                     jslog=${VisualLogging.dropDown().track({ change: true }).context("device-pixel-ratio")}
                     ?disabled=${!input.isResponsive}>
-                ${input.dprOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+                ${input.dprOptions.map((o) => html`<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
               </select>`
   })}
         </div>` : ""}
@@ -345,7 +346,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 .value=${input.uaOptions.find((o) => o.selected)?.value || ""}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context("device-type")}
                 ?disabled=${!input.isResponsive}>
-          ${input.uaOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
+          ${input.uaOptions.map((o) => html`<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.jslogContext).track({ click: true })}>${o.title}</option>`)}
         </select>` : ""}
       <select class="dark-text" ${widget(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect, {
     title: i18nString(UIStrings.throttling),
@@ -383,7 +384,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 @change=${input.onPostureChange}
                 .value=${input.postureOptions.find((o) => o.selected)?.value || ""}
                 jslog=${VisualLogging.dropDown().track({ change: true }).context("device-posture")}>
-          ${input.postureOptions.map((o) => html`<option value=${o.value} ?selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
+          ${input.postureOptions.map((o) => html`<option value=${o.value} .selected=${o.selected} jslog=${VisualLogging.item(o.value.toLowerCase()).track({ click: true })}>${o.title}</option>`)}
         </select>` : ""}
     </devtools-toolbar>
     <devtools-toolbar class="device-mode-toolbar-options" wrappable>
@@ -417,27 +418,12 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     this.showMediaInspectorSetting = Common.Settings.Settings.instance().resolve(
       SettingsUI.EmulationSettings.showMediaQueryInspectorSettingDescriptor
     );
-    this.showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
     this.showRulersSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showRulersSettingDescriptor);
-    this.showRulersSetting.addChangeListener(this.requestUpdate, this);
     this.showDeviceScaleFactorSetting = Common.Settings.Settings.instance().createSetting("emulation.show-device-scale-factor", false);
-    this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
     this.showUserAgentTypeSetting = Common.Settings.Settings.instance().createSetting("emulation.show-user-agent-type", false);
-    this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
     this.autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting("emulation.auto-adjust-scale", true);
-    this.autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
     this.lastMode = /* @__PURE__ */ new Map();
     this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
-    this.emulatedDevicesList.addEventListener(
-      EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
-      this.deviceListChanged,
-      this
-    );
-    this.emulatedDevicesList.addEventListener(
-      EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
-      this.deviceListChanged,
-      this
-    );
     this.persistenceSetting = Common.Settings.Settings.instance().createSetting(
       "emulation.device-mode-value",
       { device: "", orientation: "", mode: "" }
@@ -450,25 +436,74 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     if (this.#model === model) {
       return;
     }
-    if (this.#model) {
-      this.#model.toolbarControlsEnabledSetting().removeChangeListener(this.requestUpdate, this);
-      this.#model.scaleSetting().removeChangeListener(this.requestUpdate, this);
-      this.#model.uaSetting().removeChangeListener(this.requestUpdate, this);
-      this.#model.deviceScaleFactorSetting().removeChangeListener(this.requestUpdate, this);
-      this.#model.removeEventListener(EmulationModel.DeviceModeModel.Events.UPDATED, this.requestUpdate, this);
+    if (this.isShowing()) {
+      this.#removeModelListeners();
     }
     this.#model = model;
+    if (this.isShowing()) {
+      this.#addModelListeners();
+    }
+    this.requestUpdate();
+  }
+  #addModelListeners() {
+    if (!this.#model) {
+      return;
+    }
     this.#model.toolbarControlsEnabledSetting().addChangeListener(this.requestUpdate, this);
     this.#model.scaleSetting().addChangeListener(this.requestUpdate, this);
     this.#model.uaSetting().addChangeListener(this.requestUpdate, this);
     this.#model.deviceScaleFactorSetting().addChangeListener(this.requestUpdate, this);
     this.#model.addEventListener(EmulationModel.DeviceModeModel.Events.UPDATED, this.requestUpdate, this);
-    this.requestUpdate();
+  }
+  #removeModelListeners() {
+    if (!this.#model) {
+      return;
+    }
+    this.#model.toolbarControlsEnabledSetting().removeChangeListener(this.requestUpdate, this);
+    this.#model.scaleSetting().removeChangeListener(this.requestUpdate, this);
+    this.#model.uaSetting().removeChangeListener(this.requestUpdate, this);
+    this.#model.deviceScaleFactorSetting().removeChangeListener(this.requestUpdate, this);
+    this.#model.removeEventListener(EmulationModel.DeviceModeModel.Events.UPDATED, this.requestUpdate, this);
   }
   wasShown() {
     super.wasShown();
+    this.showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
+    this.showRulersSetting.addChangeListener(this.requestUpdate, this);
+    this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
+    this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
+    this.autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
+    this.emulatedDevicesList.addEventListener(
+      EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
+      this.deviceListChanged,
+      this
+    );
+    this.emulatedDevicesList.addEventListener(
+      EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
+      this.deviceListChanged,
+      this
+    );
+    this.#addModelListeners();
     this.performUpdate();
     this.restore();
+  }
+  willHide() {
+    super.willHide();
+    this.showMediaInspectorSetting.removeChangeListener(this.requestUpdate, this);
+    this.showRulersSetting.removeChangeListener(this.requestUpdate, this);
+    this.showDeviceScaleFactorSetting.removeChangeListener(this.requestUpdate, this);
+    this.showUserAgentTypeSetting.removeChangeListener(this.requestUpdate, this);
+    this.autoAdjustScaleSetting.removeChangeListener(this.requestUpdate, this);
+    this.emulatedDevicesList.removeEventListener(
+      EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
+      this.deviceListChanged,
+      this
+    );
+    this.emulatedDevicesList.removeEventListener(
+      EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
+      this.deviceListChanged,
+      this
+    );
+    this.#removeModelListeners();
   }
   performUpdate() {
     if (!this.model) {
@@ -994,12 +1029,6 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       model.emulate(model.type(), model.device(), mode, scale);
     }
   }
-  getPrettyFitZoomPercentage() {
-    return !this.model ? "" : `${(this.model.fitScale() * 100).toFixed(0)}`;
-  }
-  getPrettyZoomPercentage() {
-    return !this.model ? "" : `${(this.model.scale() * 100).toFixed(0)}`;
-  }
   restore() {
     if (!this.model) {
       return;
@@ -1374,11 +1403,11 @@ devtools-toolbar.device-mode-toolbar-options {
 }
 
 .device-mode-ruler-left .device-mode-ruler-marker.device-mode-ruler-marker-medium {
-  width: 10px;
+  width: var(--sys-size-5);
 }
 
 .device-mode-ruler-left .device-mode-ruler-marker.device-mode-ruler-marker-large {
-  width: 15px;
+  width: var(--sys-size-7);
 }
 
 .device-mode-ruler-text {
@@ -1398,7 +1427,7 @@ devtools-toolbar.device-mode-toolbar-options {
 
 .device-mode-ruler-left .device-mode-ruler-text {
   left: calc(-1 * var(--sys-size-3));
-  top: -15px;
+  top: calc(-1 * var(--sys-size-8));
   transform: rotate(270deg);
 }
 
@@ -1461,6 +1490,9 @@ var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Inspected
     return { x: left, y: top, width: right - left, height: bottom - top };
   }
   update(force) {
+    if (!this.element.isConnected) {
+      return;
+    }
     const rect = this.dipPageRect();
     const bounds = {
       x: Math.round(rect.x),
@@ -1738,6 +1770,8 @@ function renderLabel(expression, atLeft, leftAlign) {
 var MediaQueryInspector = class extends UI3.Widget.Widget {
   view;
   mediaThrottler = new Common3.Throttler.Throttler(0);
+  #targetManager = SDK.TargetManager.TargetManager.instance();
+  #zoomManager = UI3.ZoomManager.ZoomManager.instance();
   #getWidthCallback;
   #setWidthCallback;
   #scale;
@@ -1747,12 +1781,6 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     super(element, { useShadowDom: "pure" });
     this.view = view;
     this.#scale = 1;
-    SDK.TargetManager.TargetManager.instance().observeModels(SDK.CSSModel.CSSModel, this);
-    UI3.ZoomManager.ZoomManager.instance().addEventListener(
-      UI3.ZoomManager.Events.ZOOM_CHANGED,
-      this.requestUpdate.bind(this),
-      this
-    );
   }
   get getWidthCallback() {
     return this.#getWidthCallback;
@@ -1939,8 +1967,18 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
+    this.#targetManager.observeModels(SDK.CSSModel.CSSModel, this);
+    this.#zoomManager.addEventListener(UI3.ZoomManager.Events.ZOOM_CHANGED, this.requestUpdate, this);
     this.scheduleMediaQueriesUpdate();
     this.performUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#targetManager.unobserveModels(SDK.CSSModel.CSSModel, this);
+    if (this.cssModel) {
+      this.modelRemoved(this.cssModel);
+    }
+    this.#zoomManager.removeEventListener(UI3.ZoomManager.Events.ZOOM_CHANGED, this.requestUpdate, this);
   }
   performUpdate() {
     if (!this.isShowing() || !this.getWidthCallback || !this.setWidthCallback) {
@@ -2135,7 +2173,15 @@ var UIStrings3 = {
    * @description Name of a device that the user can select to emulate. Large laptop device.
    * Translation of this phrase should be limited to 10 characters.
    */
-  laptopL: "Laptop L"
+  laptopL: "Laptop L",
+  /**
+   * @description Message shown after a screenshot is copied to the clipboard.
+   */
+  screenshotCopied: "Screenshot copied to clipboard",
+  /**
+   * @description Message shown when a screenshot cannot be copied to the clipboard.
+   */
+  screenshotCopyFailed: "Couldn\u2019t copy screenshot to clipboard"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/emulation/DeviceModeView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -2308,6 +2354,12 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
     this.registerRequiredCSS(deviceModeView_css_default);
     this.model = EmulationModel2.DeviceModeModel.DeviceModeModel.instance();
     this.model.addEventListener(EmulationModel2.DeviceModeModel.Events.UPDATED, this.updateUI, this);
+    this.model.addEventListener(EmulationModel2.DeviceModeModel.Events.SCREENSHOT_COPIED, this.screenshotCopied, this);
+    this.model.addEventListener(
+      EmulationModel2.DeviceModeModel.Events.SCREENSHOT_COPY_FAILED,
+      this.screenshotCopyFailed,
+      this
+    );
     this.showMediaInspectorSetting = Common4.Settings.Settings.instance().resolve(
       SettingsUI2.EmulationSettings.showMediaQueryInspectorSettingDescriptor
     );
@@ -2327,6 +2379,12 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
     );
     this.performUpdate();
     UI4.ZoomManager.ZoomManager.instance().addEventListener(UI4.ZoomManager.Events.ZOOM_CHANGED, this.zoomChanged, this);
+  }
+  screenshotCopied() {
+    Snackbars.Snackbar.Snackbar.show({ message: i18nString3(UIStrings3.screenshotCopied) });
+  }
+  screenshotCopyFailed() {
+    Snackbars.Snackbar.Snackbar.show({ message: i18nString3(UIStrings3.screenshotCopyFailed) });
   }
   #showDeviceModeChanged() {
     if (!this.#showDeviceModeSetting.get()) {

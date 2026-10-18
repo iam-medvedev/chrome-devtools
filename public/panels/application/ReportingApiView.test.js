@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -183,7 +184,6 @@ describeWithEnvironment('ReportingApiView', () => {
     });
     describe('view', () => {
         let target;
-        let stub;
         beforeEach(async () => {
             Root.Runtime.experiments.register({
                 name: Root.ExperimentNames.ExperimentName.PROTOCOL_MONITOR,
@@ -193,7 +193,7 @@ describeWithEnvironment('ReportingApiView', () => {
                 requiresChromeRestart: false,
             });
             const original = Date.prototype.toLocaleString;
-            stub = sinon.stub(Date.prototype, 'toLocaleString').callsFake(function () {
+            sinon.stub(Date.prototype, 'toLocaleString').callsFake(function () {
                 return original.call(this, 'en-US', { timeZone: 'UTC' });
             });
             const container = document.createElement('div');
@@ -207,7 +207,6 @@ describeWithEnvironment('ReportingApiView', () => {
             target.style.height = '400px';
         });
         afterEach(async () => {
-            stub.restore();
             cleanTestDOM();
             await raf();
         });

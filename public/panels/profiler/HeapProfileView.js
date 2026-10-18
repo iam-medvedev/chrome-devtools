@@ -368,13 +368,13 @@ export class HeapProfileView extends UI.View.SimpleView {
               @change=${this.changeView.bind(this)}
               jslog=${VisualLogging.dropDown('profile-view.selected-view').track({ change: true })}
               ${ref(e => { this.viewSelectComboBox = e; })}>
-        <option value=${"Flame" /* ViewTypes.FLAME */} ?selected=${currentViewType === "Flame" /* ViewTypes.FLAME */}>
+        <option value=${"Flame" /* ViewTypes.FLAME */} .selected=${currentViewType === "Flame" /* ViewTypes.FLAME */}>
           ${i18nString(UIStrings.chart)}
         </option>
-        <option value=${"Heavy" /* ViewTypes.HEAVY */} ?selected=${currentViewType === "Heavy" /* ViewTypes.HEAVY */}>
+        <option value=${"Heavy" /* ViewTypes.HEAVY */} .selected=${currentViewType === "Heavy" /* ViewTypes.HEAVY */}>
           ${i18nString(UIStrings.heavyBottomUp)}
         </option>
-        <option value=${"Tree" /* ViewTypes.TREE */} ?selected=${currentViewType === "Tree" /* ViewTypes.TREE */}>
+        <option value=${"Tree" /* ViewTypes.TREE */} .selected=${currentViewType === "Tree" /* ViewTypes.TREE */}>
           ${i18nString(UIStrings.treeTopDown)}
         </option>
       </select>

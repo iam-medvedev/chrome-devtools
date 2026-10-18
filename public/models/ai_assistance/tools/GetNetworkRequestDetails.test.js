@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
@@ -33,6 +34,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
             requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);
@@ -97,6 +99,7 @@ describe('GetNetworkRequestDetailsTool', () => {
                 { name: 'WWW-Authenticate', value: 'Bearer realm="secret"' },
             ],
             requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{"sensitive":"secret"}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);
@@ -131,6 +134,7 @@ describe('GetNetworkRequestDetailsTool', () => {
                 { name: 'Location', value: '/allowed-redirect' },
             ],
             requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{"user":"alice"}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);
@@ -155,6 +159,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             documentURL: 'https://example.com/index.html',
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{"har":"data"}', false, 'application/json', 'utf-8'),
             isImportedHar: true,
         });
@@ -179,6 +184,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             documentURL: 'https://example.com/index.html',
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{"secret":"har-leak"}', false, 'application/json', 'utf-8'),
             isImportedHar: true,
         });
@@ -202,6 +208,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             documentURL: '',
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{"data":"ok"}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);
@@ -222,6 +229,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
             requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);
@@ -239,6 +247,7 @@ describe('GetNetworkRequestDetailsTool', () => {
             statusCode: 200,
             responseHeaders: [{ name: 'Content-Type', value: 'application/json' }],
             requestHeaders: [{ name: 'Accept', value: 'application/json' }],
+            finished: true,
             contentData: new TextUtils.ContentData.ContentData('{}', false, 'application/json', 'utf-8'),
         });
         sinon.stub(networkLog, 'requests').returns([request]);

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as Common from './common.js';
 function assertAlmostEqual(array1, array2, delta = 0.01) {
     const almostEqual = array1.every((n, i) => {

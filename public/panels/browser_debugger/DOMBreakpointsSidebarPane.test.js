@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -18,9 +19,6 @@ describe('DOMBreakpointsSidebarPane', () => {
     let linkifierStub;
     beforeEach(() => {
         linkifierStub = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify');
-    });
-    afterEach(() => {
-        linkifierStub.restore();
     });
     it('renders correctly with no breakpoints (Sources)', async () => {
         const container = document.createElement('div');
@@ -139,7 +137,7 @@ describe('DOMBreakpointsSidebarPane', () => {
         const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         const breakpoint = new SDK.DOMDebuggerModel.DOMBreakpoint(domDebuggerModel, node, "subtree-modified" /* Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified */, true);
         const removeStub = sinon.stub(domDebuggerModel, 'removeDOMBreakpoint');
-        const contextMenuStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+        sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
         const appendItemStub = sinon.stub(UI.ContextMenu.Section.prototype, 'appendItem');
         pane.performUpdate();
         const input = await view.nextInput;
@@ -149,8 +147,6 @@ describe('DOMBreakpointsSidebarPane', () => {
         assert.exists(removeCallback);
         removeCallback();
         sinon.assert.calledWith(removeStub, node, "subtree-modified" /* Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified */);
-        contextMenuStub.restore();
-        appendItemStub.restore();
     });
     it('calls removeAllDOMBreakpoints when remove all option is selected from context menu', async () => {
         const view = createViewFunctionStub(BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane);
@@ -158,7 +154,7 @@ describe('DOMBreakpointsSidebarPane', () => {
         const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
         const breakpoint = new SDK.DOMDebuggerModel.DOMBreakpoint(domDebuggerModel, node, "subtree-modified" /* Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified */, true);
         const removeAllStub = sinon.stub(domDebuggerModel, 'removeAllDOMBreakpoints');
-        const contextMenuStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+        sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
         const appendItemStub = sinon.stub(UI.ContextMenu.Section.prototype, 'appendItem');
         pane.performUpdate();
         const input = await view.nextInput;
@@ -168,8 +164,6 @@ describe('DOMBreakpointsSidebarPane', () => {
         assert.exists(removeAllCallback);
         removeAllCallback();
         sinon.assert.calledOnce(removeAllStub);
-        contextMenuStub.restore();
-        appendItemStub.restore();
     });
 });
 //# sourceMappingURL=DOMBreakpointsSidebarPane.test.js.map

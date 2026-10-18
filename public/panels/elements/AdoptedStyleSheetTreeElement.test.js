@@ -2,91 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
-import { renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
-describeWithEnvironment('AdoptedStyleSheetTreeElement highlighting', () => {
-    let domModel;
-    let treeOutline;
-    let containerNode;
-    let shadowRootNode;
-    let shadowRootTreeElement;
+describeWithEnvironment('AdoptedStyleSheetContentsWidget', () => {
     const sheetId = 'sheet-id';
-    beforeEach(async () => {
-        const universe = new TestUniverse();
-        setTestUniverseForWidgets(universe);
-        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
-            .returns(universe.debuggerWorkspaceBinding);
-        sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
+    let cssModel;
+    beforeEach(() => {
         const target = createTarget();
-        domModel = target.model(SDK.DOMModel.DOMModel);
-        const containerPayload = {
-            nodeId: 1,
-            backendNodeId: 2,
-            nodeType: Node.ELEMENT_NODE,
-            nodeName: 'DIV',
-            localName: 'div',
-            nodeValue: '',
-            attributes: [],
-            childNodeCount: 0,
-            shadowRoots: [{
-                    nodeId: 3,
-                    backendNodeId: 4,
-                    parentId: 1,
-                    nodeType: Node.DOCUMENT_FRAGMENT_NODE,
-                    shadowRootType: "open" /* Protocol.DOM.ShadowRootType.Open */,
-                    adoptedStyleSheets: [sheetId],
-                    nodeName: 'SHADOW-ROOT',
-                    localName: '#shadow-root',
-                    nodeValue: '',
-                }],
-        };
-        containerNode = SDK.DOMModel.DOMNode.create(domModel, null, false, containerPayload);
-        shadowRootNode = containerNode.shadowRoots()[0];
-        treeOutline = new Elements.DOMTreeWidget.ElementsTreeOutline();
-        treeOutline.wireToDOMModel(domModel);
-        const containerTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(containerNode);
-        treeOutline.appendChild(containerTreeElement);
-        shadowRootTreeElement = new Elements.ElementsTreeElement.ElementsTreeElement(shadowRootNode);
-        containerTreeElement.appendChild(shadowRootTreeElement);
-        treeOutline.setVisible(true);
-        renderElementIntoDOM(treeOutline.element);
-        containerTreeElement.expand();
+        cssModel = target.model(SDK.CSSModel.CSSModel);
     });
-    afterEach(() => {
-        treeOutline.removeChildren();
-        treeOutline.setVisible(false);
-    });
-    it('adds a .selection div for the highlight', async () => {
-        const adoptedSheet = shadowRootNode.adoptedStyleSheetsForNode[0];
-        const adoptedStyleSheetSetTreeElement = new Elements.AdoptedStyleSheetTreeElement.AdoptedStyleSheetSetTreeElement([adoptedSheet]);
-        shadowRootTreeElement.appendChild(adoptedStyleSheetSetTreeElement);
-        await shadowRootTreeElement.onpopulate();
-        shadowRootTreeElement.expand();
-        // Assert .selection div exists
-        const selectionDiv = adoptedStyleSheetSetTreeElement.listItemElement.querySelector('.selection');
-        assert.exists(selectionDiv, 'selection div must exist to show highlight');
-    });
-    it('edits an adopted style sheet', async () => {
-        const adoptedSheet = shadowRootNode.adoptedStyleSheetsForNode[0];
-        const initialCSS = '/* comment */';
-        let resolveWaitForText;
-        const waitForText = new Promise(resolve => {
-            resolveWaitForText = resolve;
-        })
-            .then(() => { })
-            .then(() => { });
-        const getStyleSheetTextStub = sinon.stub(adoptedSheet.cssModel, 'getStyleSheetText');
-        getStyleSheetTextStub.onFirstCall().resolves(initialCSS);
-        getStyleSheetTextStub.onSecondCall().callsFake(() => new Promise(resolve => {
-            resolve(initialCSS);
-            resolveWaitForText(null);
-        }));
-        adoptedSheet.cssModel.styleSheetAdded({
+    function addStyleSheet(text) {
+        cssModel.styleSheetAdded({
             styleSheetId: sheetId,
             frameId: '',
             sourceURL: '',
@@ -99,44 +30,62 @@ describeWithEnvironment('AdoptedStyleSheetTreeElement highlighting', () => {
             startLine: 0,
             startColumn: 0,
             endLine: 0,
-            endColumn: initialCSS.length,
-            length: initialCSS.length,
+            endColumn: text.length,
+            length: text.length,
             loadingFailed: false,
         });
-        const adoptedStyleSheetSetTreeElement = new Elements.AdoptedStyleSheetTreeElement.AdoptedStyleSheetSetTreeElement([adoptedSheet]);
-        shadowRootTreeElement.appendChild(adoptedStyleSheetSetTreeElement);
-        await shadowRootTreeElement.onpopulate();
-        shadowRootTreeElement.expand();
-        assert.strictEqual(shadowRootTreeElement.childCount(), 1);
-        assert.strictEqual(shadowRootTreeElement.children()[0], adoptedStyleSheetSetTreeElement);
-        await adoptedStyleSheetSetTreeElement.onpopulate();
-        adoptedStyleSheetSetTreeElement.expand();
-        assert.strictEqual(adoptedStyleSheetSetTreeElement.childCount(), 1);
-        const adoptedStyleSheetTreeElement = adoptedStyleSheetSetTreeElement.children()[0];
-        await adoptedStyleSheetTreeElement.onpopulate();
-        adoptedStyleSheetTreeElement.expand();
-        assert.strictEqual(adoptedStyleSheetTreeElement.childCount(), 1);
-        const adoptedStyleSheetContentsTreeElement = adoptedStyleSheetTreeElement.children()[0];
-        const setTextStub = sinon.stub(adoptedSheet.cssModel, 'setStyleSheetText').resolves(null);
-        await adoptedStyleSheetContentsTreeElement.onpopulate();
-        const textElementDOM = adoptedStyleSheetContentsTreeElement.listItemElement.querySelector('.webkit-html-text-node');
+        const header = cssModel.styleSheetHeaderForId(sheetId);
+        assert.exists(header);
+        return header;
+    }
+    it('renders the style sheet text', async () => {
+        const initialCSS = '.foo { color: blue; }';
+        sinon.stub(cssModel, 'getStyleSheetText').resolves(initialCSS);
+        const header = addStyleSheet(initialCSS);
+        const widget = new Elements.AdoptedStyleSheetTreeElement.AdoptedStyleSheetContentsWidget();
+        widget.markAsRoot();
+        renderElementIntoDOM(widget);
+        widget.styleSheetHeader = header;
+        await widget.fetchContent();
+        await widget.updateComplete;
+        const textElement = widget.contentElement.querySelector('.webkit-html-text-node');
+        assert.exists(textElement);
+        assert.strictEqual(textElement.textContent, initialCSS);
+        widget.detach();
+    });
+    it('edits an adopted style sheet', async () => {
+        const initialCSS = '/* comment */';
+        const getStyleSheetTextStub = sinon.stub(cssModel, 'getStyleSheetText').resolves(initialCSS);
+        const setTextStub = sinon.stub(cssModel, 'setStyleSheetText').resolves(null);
+        const header = addStyleSheet(initialCSS);
+        const widget = new Elements.AdoptedStyleSheetTreeElement.AdoptedStyleSheetContentsWidget();
+        widget.markAsRoot();
+        renderElementIntoDOM(widget);
+        widget.styleSheetHeader = header;
+        await widget.fetchContent();
+        await widget.updateComplete;
+        const textElementDOM = widget.contentElement.querySelector('.webkit-html-text-node');
         assert.exists(textElementDOM);
-        // Start editing by calling ondblclick
-        const event = new MouseEvent('dblclick', { bubbles: true, cancelable: true });
-        Object.defineProperty(event, 'target', { value: textElementDOM });
-        assert.isFalse(adoptedStyleSheetContentsTreeElement.ondblclick(event));
-        await waitForText;
+        assert.strictEqual(textElementDOM.textContent, initialCSS);
+        // Start editing by double clicking the text node.
+        textElementDOM.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+        assert.isTrue(widget.isEditing());
+        // startEditing re-requests the content before the inplace editor is attached.
+        for (let i = 0; i < 10 && !UI.UIUtils.isBeingEdited(textElementDOM); i++) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+        assert.isTrue(UI.UIUtils.isBeingEdited(textElementDOM));
         sinon.assert.calledTwice(getStyleSheetTextStub);
-        assert.isTrue(adoptedStyleSheetContentsTreeElement.isEditing());
         assert.strictEqual(textElementDOM.textContent, initialCSS);
         // The inplace editor is now active on textElementDOM.
         const newCSS = '.foo { color: red; }';
         textElementDOM.textContent = newCSS;
         // The commit is triggered by blur or enter.
         textElementDOM.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-        assert.isFalse(adoptedStyleSheetContentsTreeElement.isEditing());
+        assert.isFalse(widget.isEditing());
         sinon.assert.calledOnce(setTextStub);
         sinon.assert.calledWith(setTextStub, sheetId, newCSS, false);
+        widget.detach();
     });
 });
 //# sourceMappingURL=AdoptedStyleSheetTreeElement.test.js.map

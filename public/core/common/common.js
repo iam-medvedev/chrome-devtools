@@ -3654,7 +3654,7 @@ var ParsedURL = class _ParsedURL {
     }
     const schemeRegex = /([A-Za-z][A-Za-z0-9+.-]*):\/\//;
     const userRegex = /(?:([A-Za-z0-9\-._~%!$&'()*+,;=:]*)@)?/;
-    const hostRegex = /((?:\[::\d?\])|(?:[^\s\/:]*))/;
+    const hostRegex = /((?:\[[0-9a-fA-F:.]*:[0-9a-fA-F:.]*\])|(?:[^\s\/:]*))/;
     const portRegex = /(?::([\d]+))?/;
     const pathRegex = /(\/[^#?]*)?/;
     const queryRegex = /(?:\?([^#]*))?/;
@@ -5773,6 +5773,10 @@ var Settings = class _Settings {
       throw new Error("No setting registered: " + settingName);
     }
     return setting;
+  }
+  /** The event target shared by all settings. Change listeners are registered with the setting name as event type. */
+  get eventTargetForTest() {
+    return this.#eventSupport;
   }
   /**
    * Get setting via key, and create a new setting if the requested setting does not exist.

@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -16,9 +17,6 @@ describeWithEnvironment('ImagePreviewPopover', () => {
         // show and hide timing. Using fake timers allows us to control these
         // timeouts synchronously in the test without real-world delays or flakiness.
         clock = sinon.useFakeTimers();
-    });
-    afterEach(() => {
-        clock.restore();
     });
     /**
      * Periodically ticks the fake clock and flushes microtasks until the given

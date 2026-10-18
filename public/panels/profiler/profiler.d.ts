@@ -1,5 +1,4 @@
 import * as BottomUpProfileDataGrid from './BottomUpProfileDataGrid.js';
-import * as HeapDetachedElementsDataGrid from './HeapDetachedElementsDataGrid.js';
 import * as HeapDetachedElementsView from './HeapDetachedElementsView.js';
 import * as HeapProfilerPanel from './HeapProfilerPanel.js';
 import * as HeapProfileView from './HeapProfileView.js';
@@ -17,4 +16,4 @@ import * as ProfilesPanel from './ProfilesPanel.js';
 import * as ProfileTypeRegistry from './ProfileTypeRegistry.js';
 import * as TopDownProfileDataGrid from './TopDownProfileDataGrid.js';
 import * as WritableProfileHeader from './WritableProfileHeader.js';
-export { BottomUpProfileDataGrid, HeapDetachedElementsDataGrid, HeapDetachedElementsView, HeapProfilerPanel, HeapProfileView, HeapSnapshotDataGrids, HeapSnapshotGridNodes, HeapSnapshotView, HeapTimelineOverview, IsolateSelector, ProfileDataGrid, ProfileFlameChart, ProfileHeader, ProfileLauncherView, ProfileSidebarTreeElement, ProfilesPanel, ProfileTypeRegistry, TopDownProfileDataGrid, WritableProfileHeader, };
+export { BottomUpProfileDataGrid, HeapDetachedElementsView, HeapProfilerPanel, HeapProfileView, HeapSnapshotDataGrids, HeapSnapshotGridNodes, HeapSnapshotView, HeapTimelineOverview, IsolateSelector, ProfileDataGrid, ProfileFlameChart, ProfileHeader, ProfileLauncherView, ProfileSidebarTreeElement, ProfilesPanel, ProfileTypeRegistry, TopDownProfileDataGrid, WritableProfileHeader, };

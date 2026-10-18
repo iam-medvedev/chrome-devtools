@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';

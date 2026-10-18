@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
@@ -19,9 +20,8 @@ function createCallbacks() {
 describe('AiCodeCompletion', () => {
     setupLocaleHooks();
     setupRuntimeHooks();
-    let clock;
     beforeEach(() => {
-        clock = sinon.useFakeTimers();
+        sinon.useFakeTimers();
         updateHostConfig({
             devToolsAiCodeCompletion: {
                 enabled: true,
@@ -30,9 +30,6 @@ describe('AiCodeCompletion', () => {
                 userTier: 'BETA',
             },
         });
-    });
-    afterEach(() => {
-        clock.restore();
     });
     it('builds a request and calls the AIDA client on text changed', async () => {
         const completeCodeResponse = {

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, dispatchCopyEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { cleanTestDOM } from '../../testing/DOMHooks.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
@@ -170,6 +172,43 @@ describeWithEnvironment('RequestHeadersView', () => {
         component.request = request;
         const input = await view.nextInput;
         assert.isTrue(input.cacheDisabled);
+    });
+    it('only listens to the request, the workspace and the overrides setting while shown', async () => {
+        const request = createNetworkRequest({ url: 'https://www.example.com/foo.html' });
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const overridesSettingName = Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor.name;
+        const countListeners = () => {
+            return [
+                request.listeners?.get(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED)?.size ?? 0,
+                workspace.listeners?.get(Workspace.Workspace.Events.UISourceCodeAdded)?.size ?? 0,
+                Common.Settings.Settings.instance().eventTargetForTest.listeners?.get(overridesSettingName)?.size ?? 0,
+            ];
+        };
+        const initialCounts = countListeners();
+        const view = createViewFunctionStub(Network.RequestHeadersView.RequestHeadersView);
+        const component = new Network.RequestHeadersView.RequestHeadersView(undefined, view);
+        component.request = request;
+        assert.deepEqual(countListeners(), initialCounts);
+        renderElementIntoDOM(component);
+        await view.nextInput;
+        assert.deepEqual(countListeners(), initialCounts.map(count => count + 1));
+        component.detach();
+        assert.deepEqual(countListeners(), initialCounts);
+    });
+    it('moves its listeners to a request that is set while shown', async () => {
+        const oldRequest = createNetworkRequest({ url: 'https://www.example.com/foo.html' });
+        const newRequest = createNetworkRequest({ url: 'https://www.example.com/bar.html' });
+        const view = createViewFunctionStub(Network.RequestHeadersView.RequestHeadersView);
+        const component = new Network.RequestHeadersView.RequestHeadersView(undefined, view);
+        component.request = oldRequest;
+        renderElementIntoDOM(component);
+        await view.nextInput;
+        component.request = newRequest;
+        await component.updateComplete;
+        assert.strictEqual(view.input.request, newRequest);
+        assert.isFalse(oldRequest.hasEventListeners(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED));
+        assert.strictEqual(newRequest.listeners?.get(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED)?.size, 1);
+        component.detach();
     });
     it('warns for Early Hints preloads only when cache is disabled', async () => {
         const cases = [

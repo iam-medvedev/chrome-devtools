@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as Root from '../../../../core/root/root.js';
@@ -9,6 +10,7 @@ import * as TextUtils from '../../../../core/text_utils/text_utils.js';
 import { dispatchInputEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../../testing/ExpectStubCall.js';
+import { createViewFunctionStub } from '../../../../testing/ViewFunctionHelpers.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
 import { render } from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
@@ -92,7 +94,6 @@ describeWithEnvironment('SourceFrame', () => {
         await pasteIntoSourceFrame();
         const dialogContainer = document.body.querySelector('[data-devtools-glass-pane]');
         assert.isNull(dialogContainer);
-        stub.restore();
     });
     it('disassembles wasm', async () => {
         const contentData = new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/wasm');
@@ -102,6 +103,23 @@ describeWithEnvironment('SourceFrame', () => {
         const content = await expectCall(setContentStub);
         assert.strictEqual(content.toString(), '(module\n  (func $bar (;0;) (export \"bar\") (result i32)\n    i32.const 2\n  )\n)');
         sourceFrame.detach();
+    });
+    it('passes textEditor and onKeyDown handler to injected view function', () => {
+        const view = createViewFunctionStub(SourceFrame.SourceFrame.SourceFrameImpl);
+        const sourceFrame = new SourceFrame.SourceFrame.SourceFrameImpl(async () => TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA, {}, undefined, view);
+        assert.strictEqual(view.input.textEditor, sourceFrame.textEditor);
+        const nonPreventedStopPropagationSpy = sinon.spy();
+        const nonPreventedEvent = new KeyboardEvent('keydown', { cancelable: true });
+        nonPreventedEvent.stopPropagation = nonPreventedStopPropagationSpy;
+        view.input.onKeyDown(nonPreventedEvent);
+        sinon.assert.notCalled(nonPreventedStopPropagationSpy);
+        const stopPropagationSpy = sinon.spy();
+        const defaultPreventedEvent = new KeyboardEvent('keydown', { cancelable: true });
+        defaultPreventedEvent.preventDefault();
+        defaultPreventedEvent.stopPropagation = stopPropagationSpy;
+        view.input.onKeyDown(defaultPreventedEvent);
+        sinon.assert.calledOnce(stopPropagationSpy);
+        sourceFrame.disposeView();
     });
     describe('toolbarItems', () => {
         async function renderToolbar(sourceFrame) {

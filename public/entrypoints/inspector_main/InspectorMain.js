@@ -97,7 +97,6 @@ export class InspectorMainImpl {
         });
     }
 }
-Common.Runnable.registerEarlyInitializationRunnable(() => new InspectorMainImpl());
 export class ReloadActionDelegate {
     handleAction(_context, actionId) {
         switch (actionId) {

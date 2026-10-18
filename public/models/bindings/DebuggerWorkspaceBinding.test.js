@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -215,6 +216,17 @@ describe('DebuggerWorkspaceBinding', () => {
                 assert.strictEqual(stackTrace.syncFragment.frames[0].uiSourceCode?.url(), 'http://example.com/foo.ts');
             });
         });
+    });
+    it('returns the backing script for DefaultScriptMapping debugger:// UISourceCodes in scriptsForUISourceCode', async () => {
+        const backend = new MockDebuggerBackend();
+        const { debuggerWorkspaceBinding, workspace } = backend.universe;
+        const target = backend.createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
+        const script = await backend.addScript(target, { url: urlString `http://example.com/script.js`, content: 'console.log(1);' }, null);
+        const vmUrl = Bindings.DefaultScriptMapping.DefaultScriptMapping.createV8ScriptURL(script);
+        const vmUISourceCode = workspace.uiSourceCodeForURL(vmUrl);
+        assert.exists(vmUISourceCode);
+        assert.deepEqual(debuggerWorkspaceBinding.scriptsForUISourceCode(vmUISourceCode), [script]);
+        assert.strictEqual(Bindings.NetworkProject.NetworkProject.targetForUISourceCode(vmUISourceCode), target);
     });
 });
 //# sourceMappingURL=DebuggerWorkspaceBinding.test.js.map

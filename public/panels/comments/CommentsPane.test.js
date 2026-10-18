@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
@@ -39,6 +40,7 @@ describeWithEnvironment('CommentsPane', () => {
     }
     it('initializes with empty threads list if no threads exist', async () => {
         const { view, commentManager } = await createWidget();
+        assert.strictEqual(view.input.activeTab, 'queued');
         assert.lengthOf(view.input.threads, 0);
         assert.lengthOf(commentManager.getCommentThreads(), 0);
     });
@@ -95,18 +97,41 @@ describeWithEnvironment('CommentsPane', () => {
         assert.strictEqual(t1.status, 'ACTIVE');
         assert.strictEqual(t2.status, 'ACTIVE');
         view.input.onSendToAgent();
-        await view.nextInput;
+        const updatedInput = await view.nextInput;
         assert.strictEqual(t1.status, 'SENT_TO_AGENT');
         assert.strictEqual(t2.status, 'SENT_TO_AGENT');
+        assert.lengthOf(updatedInput.threads, 0);
+    });
+    it('filters threads between Queued and Sent tabs', async () => {
+        const commentManager = new CommentManager.CommentManager.CommentManager();
+        const [t1, t2, t3] = seedThreads(commentManager);
+        t2.sendToAgent();
+        t3.resolve('Done');
+        const { view } = await createWidget(commentManager);
+        assert.strictEqual(view.input.activeTab, 'queued');
+        assert.deepEqual(view.input.threads.map(item => item.thread.id), [t1.id]);
+        view.input.onTabSelect('sent');
+        const sentInput = await view.nextInput;
+        assert.strictEqual(sentInput.activeTab, 'sent');
+        assert.deepEqual(sentInput.threads.map(item => item.thread.id), [t2.id, t3.id]);
+        sentInput.onTabSelect('queued');
+        const queuedInput = await view.nextInput;
+        assert.strictEqual(queuedInput.activeTab, 'queued');
+        assert.deepEqual(queuedInput.threads.map(item => item.thread.id), [t1.id]);
     });
 });
 describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
+    beforeEach(() => {
+        CommentManager.CommentThread.CommentThread.resetIndex();
+    });
     function renderView(inputOverrides = {}) {
         const target = document.createElement('div');
         target.style.width = '360px';
         target.style.height = '480px';
         DEFAULT_VIEW({
+            activeTab: 'queued',
             threads: [],
+            onTabSelect: () => { },
             onClearAll: () => { },
             onThreadClick: () => { },
             onDeleteThread: () => { },
@@ -146,36 +171,20 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         await assertScreenshot('comments/comments_pane_list.png');
     });
-    it('renders delete button for active threads, spinner for pending threads, and See response button for resolved threads', () => {
-        const onThreadClick = sinon.spy();
-        const activeThread = createMockThread(1, 'a.queued', 'Queued comment');
-        activeThread.thread.save();
-        const pendingThread = createMockThread(2, 'div.pending', 'Pending comment');
+    it('renders comments list in the sent tab', async () => {
+        const pendingThread = createMockThread(1, 'a.cta', 'Left align this button with H2 and use the primary pink colour for the button.');
         pendingThread.thread.sendToAgent();
-        const resolvedThread = createMockThread(3, 'span.resolved', 'Resolved comment');
-        resolvedThread.thread.resolve('Agent reply');
+        const resolvedThread = createMockThread(2, 'div.list', 'Remove the animation from H1.');
+        resolvedThread.thread.resolve('Done');
         const target = renderView({
-            threads: [activeThread, pendingThread, resolvedThread],
-            onThreadClick,
+            activeTab: 'sent',
+            threads: [pendingThread, resolvedThread],
         });
-        renderElementIntoDOM(target);
-        const items = target.querySelectorAll('.comment-thread-item');
-        assert.lengthOf(items, 3);
-        const deleteButton = items[0].querySelector('devtools-button');
-        assert.isNotNull(deleteButton);
-        assert.strictEqual(deleteButton.getAttribute('title'), 'Delete comment');
-        assert.isNull(items[0].querySelector('.thread-status-working'));
-        const workingStatus = items[1].querySelector('.thread-status-working');
-        assert.isNotNull(workingStatus);
-        assert.isNotNull(workingStatus.querySelector('devtools-spinner'));
-        assert.strictEqual(workingStatus.querySelector('span')?.textContent, 'Working');
-        assert.isNull(items[1].querySelector('devtools-button'));
-        const seeResponseButton = items[2].querySelector('devtools-button');
-        assert.isNotNull(seeResponseButton);
-        assert.strictEqual(seeResponseButton.textContent?.trim(), 'See response');
-        assert.isNull(items[2].querySelector('.thread-status-working'));
-        seeResponseButton.click();
-        sinon.assert.calledOnceWithExactly(onThreadClick, resolvedThread.thread);
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        const spinner = target.querySelector('devtools-spinner');
+        assert.isNotNull(spinner);
+        spinner.active = false;
+        await assertScreenshot('comments/comments_pane_sent.png');
     });
     it('does not trigger thread selection when pressing Enter or Space on the delete button', () => {
         const onThreadClick = sinon.spy();

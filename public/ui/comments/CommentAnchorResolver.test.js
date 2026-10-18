@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -320,6 +321,21 @@ describeWithEnvironment('CommentAnchorResolver', () => {
             link.textContent = 'Learn more';
             container.appendChild(link);
             assert.isNull(Comments.CommentAnchorResolver.resolveCommentAnchorElement(link));
+        });
+        it('excludes elements inside a Dialog (e.g. Settings or Command Menu across shadow DOM) from commenting', () => {
+            const dialog = document.createElement('div');
+            dialog.setAttribute('jslog', 'Dialog; context: settings; track: resize, keydown: Escape');
+            const host = document.createElement('div');
+            const shadow = host.attachShadow({ mode: 'open' });
+            const treeItem = document.createElement('div');
+            treeItem.setAttribute('jslog', 'TreeItem; context: setting-item');
+            treeItem.textContent = 'Enable setting';
+            shadow.appendChild(treeItem);
+            dialog.appendChild(host);
+            container.appendChild(dialog);
+            assert.isTrue(Comments.CommentAnchorResolver.hasDisallowedCommentAncestor(treeItem));
+            assert.isNull(Comments.CommentAnchorResolver.resolveCommentAnchorElement(treeItem));
+            assert.isNull(Comments.CommentAnchorResolver.resolveCommentAnchorElement(dialog));
         });
     });
     describe('resolveCommentAnchor', () => {

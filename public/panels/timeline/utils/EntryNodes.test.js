@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -264,6 +265,9 @@ describeWithEnvironment('EntryNodes', function () {
             const connection = new MockCDPConnection();
             // Create a mock target, dom model, document and node, using the ID of 2 to match with the event above
             const target = createTarget({ connection });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            resourceTreeModel.frameAttached('main-frame', null);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             assert.exists(domModel);
             const documentNode = { nodeId: nodeId(1) };
@@ -279,6 +283,37 @@ describeWithEnvironment('EntryNodes', function () {
             assert.isNotNull(result);
             const entries = Array.from(result.entries());
             assert.deepEqual(entries, [[backendNodeId(2), domNode]]);
+        });
+        it('returns an empty map if the event specifies a frame that does not exist in ResourceTreeModel', async () => {
+            const layoutEvent = {
+                ...makeCompleteEvent(Trace.Types.Events.Name.LAYOUT, 0, 1000),
+                name: Trace.Types.Events.Name.LAYOUT,
+                args: {
+                    beginData: {
+                        frame: 'unknown-frame',
+                        dirtyObjects: 1,
+                        totalObjects: 1,
+                        partialLayout: false,
+                    },
+                    endData: {
+                        layoutRoots: [{
+                                nodeId: 2,
+                                depth: 1,
+                                quads: [],
+                            }],
+                    },
+                },
+            };
+            const connection = new MockCDPConnection();
+            const target = createTarget({ connection });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.exists(resourceTreeModel);
+            resourceTreeModel.frameAttached('main-frame', null);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            assert.exists(domModel);
+            const result = await Utils.EntryNodes.relatedDOMNodesForEvent(dummyParsedTrace, layoutEvent);
+            assert.isNotNull(result);
+            assert.deepEqual(Array.from(result.entries()), []);
         });
     });
 });

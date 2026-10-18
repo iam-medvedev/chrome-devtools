@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -23,9 +24,6 @@ describe('UISourceCodeFrame', () => {
     setupRuntimeHooks();
     setupSettingsHooks();
     setupLocaleHooks();
-    afterEach(() => {
-        sinon.restore();
-    });
     function setup() {
         const backend = new MockDebuggerBackend();
         const target = backend.createTarget();

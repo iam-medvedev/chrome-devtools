@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as TextUtils from './text_utils.js';
 describe('StreamingContentData', () => {
     it('notifies listeners when new chunks are added', () => {

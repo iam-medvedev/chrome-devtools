@@ -1832,8 +1832,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -1842,6 +1840,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -2941,7 +2940,7 @@ var ApplicationPanelTreeElement = class _ApplicationPanelTreeElement extends UI.
     if (!actionRegistry.hasAction(STORAGE_FLOATING_BUTTON_ACTION_ID2)) {
       return;
     }
-    const action7 = actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID2);
+    const action8 = actionRegistry.getAction(STORAGE_FLOATING_BUTTON_ACTION_ID2);
     if (!this.aiButtonContainer) {
       this.aiButtonContainer = this.listItemElement.createChild("span", "ai-button-container");
       const icon = AiAssistance.AiUtils.getIconName();
@@ -2950,13 +2949,13 @@ var ApplicationPanelTreeElement = class _ApplicationPanelTreeElement extends UI.
         const item4 = storageItemProvider();
         if (item4) {
           UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, item4);
-          void action7.execute();
+          void action8.execute();
         }
       };
       Lit.render(html`
             <devtools-floating-button
               icon-name=${icon}
-              title=${action7.title()}
+              title=${action8.title()}
               jslogcontext="ask-ai"
               @click=${onClick}
               @mousedown=${(ev) => ev.stopPropagation()}>
@@ -3220,6 +3219,14 @@ var UIStrings = {
    * @description Label for the computed app ID in the manifest view of the Application panel.
    */
   computedAppId: "Computed app ID",
+  /**
+   * @description Label for the Bundle ID of an Isolated Web App in the manifest view of the Application panel.
+   */
+  bundleId: "Bundle ID",
+  /**
+   * @description Label for the parent app name of a Sub-App in the manifest view of the Application panel.
+   */
+  parentAppName: "Parent app name",
   /**
    * @description Tooltip text explaining what the app ID is used for in the manifest view of the Application panel.
    */
@@ -3604,7 +3611,7 @@ function renderErrors(warnings, manifestErrors, imageErrors, output) {
     </div>`;
 }
 function renderIdentity(identityData, onCopy, output) {
-  const { name, shortName, description, appId, recommendedId, hasId } = identityData;
+  const { name, shortName, description, appId, recommendedId, bundleId, parentAppName, hasId } = identityData;
   return html2`${renderSectionHeader(i18nString(UIStrings.identity), output)}
   <div class="report-section" jslog=${VisualLogging.section("identity")}>
     <devtools-report-key>${i18nString(UIStrings.name)}</devtools-report-key>
@@ -3639,6 +3646,14 @@ function renderIdentity(identityData, onCopy, output) {
   })}
         </div>` : nothing}
       </devtools-report-value>` : nothing}
+    ${bundleId ? html2`
+      <devtools-report-key>${i18nString(UIStrings.bundleId)}</devtools-report-key>
+      <devtools-report-value>${bundleId}</devtools-report-value>
+    ` : nothing}
+    ${parentAppName ? html2`
+      <devtools-report-key>${i18nString(UIStrings.parentAppName)}</devtools-report-key>
+      <devtools-report-value>${parentAppName}</devtools-report-value>
+    ` : nothing}
     </div>`;
 }
 function renderPresentation(presentationData, output) {
@@ -4127,6 +4142,8 @@ var AppManifestView = class extends AppManifestViewBase {
     const appIdResponse = this.appIdResponse;
     const appId = appIdResponse?.appId || null;
     const recommendedId = appIdResponse?.recommendedId || null;
+    const bundleId = appIdResponse?.bundleId || null;
+    const parentAppName = appIdResponse?.parentAppName || null;
     if ((!data || data === "{}") && !errors.length) {
       this.view({ isEmpty: true }, this.output, this.contentElement);
       this.dispatchEventToListeners("ManifestDetected" /* MANIFEST_DETECTED */, false);
@@ -4141,7 +4158,7 @@ var AppManifestView = class extends AppManifestViewBase {
       data = data.slice(1);
     }
     const parsedManifest = JSON.parse(data);
-    const identityData = this.processIdentity(parsedManifest, appId, recommendedId);
+    const identityData = this.processIdentity(parsedManifest, appId, recommendedId, bundleId, parentAppName);
     const presentationData = this.processPresentation(parsedManifest, url);
     const protocolHandlersData = this.processProtocolHandlers(parsedManifest, url);
     const iconsData = await this.processIcons(parsedManifest, url);
@@ -4226,7 +4243,7 @@ var AppManifestView = class extends AppManifestViewBase {
     } catch {
       return null;
     }
-    const image = document.createElement("img");
+    const image = new Image();
     const result = new Promise((resolve, reject) => {
       image.onload = resolve;
       image.onerror = reject;
@@ -4383,7 +4400,7 @@ var AppManifestView = class extends AppManifestViewBase {
       await this.overlayModel.toggleWindowControlsToolbar(this.wcoToolbarEnabled);
     }
   }
-  processIdentity(parsedManifest, appId, recommendedId) {
+  processIdentity(parsedManifest, appId, recommendedId, bundleId, parentAppName) {
     const description = this.stringProperty(parsedManifest, "description");
     const warnings = [];
     if (description.length > 300) {
@@ -4395,6 +4412,8 @@ var AppManifestView = class extends AppManifestViewBase {
       description: this.stringProperty(parsedManifest, "description"),
       appId,
       recommendedId,
+      bundleId,
+      parentAppName,
       hasId: Boolean(this.stringProperty(parsedManifest, "id")),
       warnings
     };
@@ -5079,6 +5098,16 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.Widg
       this.#model.removeEventListener("RecordingStateChanged" /* RecordingStateChanged */, this.onRecordingStateChanged, this);
       this.#model.removeEventListener("BackgroundServiceEventReceived" /* BackgroundServiceEventReceived */, this.onEventReceived, this);
     }
+    this.#securityOriginManager?.removeEventListener(
+      SDK4.SecurityOriginManager.Events.MainSecurityOriginChanged,
+      this.onOriginChanged,
+      this
+    );
+    this.#storageKeyManager?.removeEventListener(
+      SDK4.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED,
+      this.onStorageKeyChanged,
+      this
+    );
     this.#model = model;
     this.#model.addEventListener("RecordingStateChanged" /* RecordingStateChanged */, this.onRecordingStateChanged, this);
     this.#model.addEventListener("BackgroundServiceEventReceived" /* BackgroundServiceEventReceived */, this.onEventReceived, this);
@@ -5087,19 +5116,17 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.Widg
     }
     this.#serviceWorkerManager = this.#model.target().model(SDK4.ServiceWorkerManager.ServiceWorkerManager) ?? void 0;
     this.#securityOriginManager = this.#model.target().model(SDK4.SecurityOriginManager.SecurityOriginManager) ?? void 0;
-    if (this.#securityOriginManager) {
-      this.#securityOriginManager.addEventListener(
-        SDK4.SecurityOriginManager.Events.MainSecurityOriginChanged,
-        () => this.onOriginChanged()
-      );
-    }
+    this.#securityOriginManager?.addEventListener(
+      SDK4.SecurityOriginManager.Events.MainSecurityOriginChanged,
+      this.onOriginChanged,
+      this
+    );
     this.#storageKeyManager = this.#model.target().model(SDK4.StorageKeyManager.StorageKeyManager) ?? void 0;
-    if (this.#storageKeyManager) {
-      this.#storageKeyManager.addEventListener(
-        SDK4.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED,
-        () => this.onStorageKeyChanged()
-      );
-    }
+    this.#storageKeyManager?.addEventListener(
+      SDK4.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED,
+      this.onStorageKeyChanged,
+      this
+    );
     this.requestUpdate();
   }
   wasShown() {
@@ -5645,11 +5672,6 @@ var RootTreeElement = class extends ApplicationPanelTreeElement {
     const isSiteAllowed = this.#model.isSiteVisible(site);
     if (isSiteAllowed && !isElementPresent) {
       this.appendChild(siteTreeElement);
-      const children = [...siteTreeElement.children()];
-      siteTreeElement.removeChildren();
-      for (const child of children) {
-        siteTreeElement.appendChild(child);
-      }
     } else if (!isSiteAllowed && isElementPresent) {
       this.removeChild(siteTreeElement);
     }
@@ -6715,7 +6737,24 @@ var UIStrings7 = {
   /**
    * @description Explanation of origin trials in the origin trials section of the frame details view.
    */
-  originTrialsExplanation: "Origin trials give you access to a new or experimental feature"
+  originTrialsExplanation: "Origin trials give you access to a new or experimental feature",
+  /**
+   * @description Section header in the Frame Details view for the words that the document added to its spell check
+   * custom dictionary (https://github.com/Igalia/explainers/tree/main/spell-check-dictionary).
+   */
+  spellCheckCustomDictionary: "Spell check custom dictionary",
+  /**
+   * @description Explanation of the spell check custom dictionary section in the Frame Details view
+   */
+  spellCheckCustomDictionaryExplanation: "Words added with `document.spellCheckCustomDictionary.addWords()`. The spell checker doesn\u2019t flag them in this document.",
+  /**
+   * @description Label for the list of words in the spell check custom dictionary section of the Frame Details view
+   */
+  words: "Words",
+  /**
+   * @description Accessible label for a button that reloads the words in the spell check custom dictionary section
+   */
+  refreshSpellCheckCustomDictionary: "Refresh spell check custom dictionary"
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/application/FrameDetailsView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
@@ -6731,6 +6770,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
       ${renderIsolationSection(input)}
       ${renderApiAvailabilitySection(input.frame)}
       ${renderOriginTrial(input.trials)}
+      ${renderSpellCheckCustomDictionary(input.spellCheckCustomDictionaryWords, input.onRefreshSpellCheckCustomDictionary)}
       ${input.permissionsPolicies ? widget3(ApplicationComponents4.PermissionsPolicySection.PermissionsPolicySection, {
     policies: input.permissionsPolicies,
     showDetails: false
@@ -6759,6 +6799,38 @@ function renderOriginTrial(trials) {
     </devtools-report-section>
     <devtools-widget class="span-cols" ${widget3(OriginTrialTreeView, { data })}>
     </devtools-widget>
+    <devtools-report-divider></devtools-report-divider>`;
+}
+function renderSpellCheckCustomDictionary(words, onRefresh) {
+  if (!words.length) {
+    return nothing3;
+  }
+  const rows = words.map((word) => html5`<div>${word}</div>`);
+  return html5`
+    <devtools-report-section-header>
+      ${i18nString7(UIStrings7.spellCheckCustomDictionary)}
+    </devtools-report-section-header>
+    <devtools-report-section>
+      <span class="report-section">
+        ${i18nString7(UIStrings7.spellCheckCustomDictionaryExplanation)}
+      </span>
+    </devtools-report-section>
+    <devtools-report-key>${i18nString7(UIStrings7.words)}</devtools-report-key>
+    <devtools-report-value class="spell-check-custom-dictionary-list"
+        jslog=${VisualLogging3.section("spell-check-custom-dictionary")}>
+      <div class="inline-items">
+        <devtools-expandable-list .data=${{ rows, title: i18nString7(UIStrings7.words) }}>
+        </devtools-expandable-list>
+        <devtools-button
+          .iconName=${"refresh"}
+          .accessibleLabel=${i18nString7(UIStrings7.refreshSpellCheckCustomDictionary)}
+          .variant=${Buttons3.Button.Variant.ICON}
+          .size=${Buttons3.Button.Size.SMALL}
+          @click=${onRefresh}
+          jslog=${VisualLogging3.action("refresh").track({ click: true })}
+        ></devtools-button>
+      </div>
+    </devtools-report-value>
     <devtools-report-divider></devtools-report-divider>`;
 }
 function renderDocumentSection(input) {
@@ -7189,6 +7261,7 @@ var FrameDetailsReportView = class extends UI8.Widget.Widget {
   #permissionsPolicies = null;
   #linkifier = new Components2.Linkifier.Linkifier();
   #adScriptAncestry = null;
+  #spellCheckCustomDictionaryWords = [];
   #view;
   constructor(element, view = DEFAULT_VIEW4) {
     super(element, { useShadowDom: true });
@@ -7221,7 +7294,26 @@ var FrameDetailsReportView = class extends UI8.Widget.Widget {
       this.#trials = trials;
       this.requestUpdate();
     });
+    this.#spellCheckCustomDictionaryWords = [];
+    this.#refreshSpellCheckCustomDictionary();
     this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.#refreshSpellCheckCustomDictionary();
+  }
+  #refreshSpellCheckCustomDictionary() {
+    const frame = this.#frame;
+    if (!frame) {
+      return;
+    }
+    void frame.getSpellCheckCustomDictionary().then((words) => {
+      if (frame !== this.#frame) {
+        return;
+      }
+      this.#spellCheckCustomDictionaryWords = words;
+      this.requestUpdate();
+    });
   }
   get frame() {
     return this.#frame;
@@ -7248,6 +7340,8 @@ var FrameDetailsReportView = class extends UI8.Widget.Widget {
       linkTargetDOMNode: this.#linkTargetDOMNode,
       trials: this.#trials,
       securityIsolationInfo: this.#securityIsolationInfo,
+      spellCheckCustomDictionaryWords: this.#spellCheckCustomDictionaryWords,
+      onRefreshSpellCheckCustomDictionary: () => this.#refreshSpellCheckCustomDictionary(),
       onRevealInNetwork: frameRequest ? () => {
         const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
           frameRequest,
@@ -8906,6 +9000,7 @@ var emptyWidget_css_default = `/*
 // ../../front_end/panels/application/preloading/PreloadingView.ts
 import * as UI11 from "../../ui/legacy/legacy.js";
 import { Directives as Directives4, html as html7, render as render7 } from "../../ui/lit/lit.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as PreloadingComponents from "./preloading/components/components.js";
 import * as PreloadingHelper from "./preloading/helper/helper.js";
@@ -9128,7 +9223,7 @@ var PreloadingRuleSetView = class extends UI11.Widget.VBox {
   ruleSetGrid = new PreloadingComponents.RuleSetGrid.RuleSetGrid();
   ruleSetGridContainerRef = createRef();
   ruleSetDetailsRef;
-  shouldPrettyPrint = Common8.Settings.Settings.instance().moduleSetting("auto-pretty-print-minified").get();
+  shouldPrettyPrint = Common8.Settings.Settings.instance().resolve(SettingsUI.SourcesSettings.autoPrettyPrintMinifiedSettingDescriptor).get();
   constructor(model) {
     super({ useShadowDom: true });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
@@ -9286,7 +9381,7 @@ function applyFilterText(filterText, rows) {
   return rows.filter((row) => {
     const attempt = row.pipeline.getOriginallyTriggered();
     const url = attempt.key.url.toLowerCase();
-    const action7 = PreloadingComponents.PreloadingString.capitalizedAction(
+    const action8 = PreloadingComponents.PreloadingString.capitalizedAction(
       attempt.action
     ).toLowerCase();
     const status = PreloadingUIUtils.status(attempt.status).toLowerCase();
@@ -9300,13 +9395,13 @@ function applyFilterText(filterText, rows) {
         case "url":
           return url.includes(searchText);
         case "action":
-          return action7.includes(searchText);
+          return action8.includes(searchText);
         case "status": {
           const statusValues = searchText.split(",");
           return statusValues.some((v) => status.includes(v));
         }
         case void 0:
-          return url.includes(searchText) || action7.includes(searchText) || status.includes(searchText);
+          return url.includes(searchText) || action8.includes(searchText) || status.includes(searchText);
         default:
           return false;
       }
@@ -11269,7 +11364,7 @@ var serviceWorkersView_css_default = `/*
 
 .service-worker-subtitle {
   padding-left: var(--sys-size-7);
-  line-height: 14px;
+  line-height: var(--sys-typescale-body4-line-height);
   color: var(--sys-color-state-disabled);
 }
 
@@ -12821,7 +12916,7 @@ import * as SDK22 from "../../core/sdk/sdk.js";
 import * as uiI18n from "../../ui/i18n/i18n.js";
 import { Icon, Link } from "../../ui/kit/kit.js";
 import * as PerfUI from "../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as SettingsUI2 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI27 from "../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "../../ui/visual_logging/visual_logging.js";
 
@@ -13412,13 +13507,13 @@ var CookieItemsView = class extends UI21.Widget.VBox {
     if (this.isAiButtonEnabled() && UI21.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
       this.#updateAiAssistanceContext(cookie);
       if (UI21.Context.Context.instance().flavor(AiAssistanceModel.StorageItem.StorageItem)) {
-        const action7 = UI21.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action7.title(), false, openAiAssistanceId);
+        const action8 = UI21.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
         submenu.defaultSection().appendAction(openAiAssistanceId, i18nString21(UIStrings21.startAChat));
         submenu.defaultSection().appendItem(
           i18nString21(UIStrings21.explainCookie),
-          () => action7.execute({ prompt: "What is the purpose of this cookie?" }),
-          { disabled: !action7.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
+          () => action8.execute({ prompt: "What is the purpose of this cookie?" }),
+          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
         );
       }
     }
@@ -15118,13 +15213,13 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const actionRegistry = UI24.ActionRegistry.ActionRegistry.instance();
     if (actionRegistry.hasAction(openAiAssistanceId)) {
       this.#setAiStorageContext(item4);
-      const action7 = actionRegistry.getAction(openAiAssistanceId);
-      const submenu = contextMenu.footerSection().appendSubMenuItem(action7.title(), false, openAiAssistanceId);
+      const action8 = actionRegistry.getAction(openAiAssistanceId);
+      const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
       submenu.defaultSection().appendAction(openAiAssistanceId, i18nString24(UIStrings24.startAChat));
       submenu.defaultSection().appendItem(
         i18nString24(UIStrings24.explainItem),
-        () => action7.execute({ prompt: "Explain this storage item." }),
-        { disabled: !action7.enabled(), jslogContext: openAiAssistanceId + ".storage" }
+        () => action8.execute({ prompt: "Explain this storage item." }),
+        { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".storage" }
       );
     }
   }
@@ -15972,7 +16067,7 @@ var StorageView = class _StorageView extends UI27.Widget.VBox {
     );
     cookiesCheckbox.classList.add("cookies-row");
     const includeThirdPartyCookiesRow = rightColumn.createChild("div", "include-third-party-cookies-row");
-    this.includeThirdPartyCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(
+    this.includeThirdPartyCookiesCheckbox = SettingsUI2.SettingsUI.createSettingCheckbox(
       i18nString26(UIStrings26.thirdPartyCookies),
       this.includeThirdPartyCookiesSetting
     );
@@ -16067,7 +16162,7 @@ var StorageView = class _StorageView extends UI27.Widget.VBox {
     if (!setting) {
       throw new Error(`Missing setting for storage type: ${settingName}`);
     }
-    const checkbox = SettingsUI.SettingsUI.createSettingCheckbox(title, setting);
+    const checkbox = SettingsUI2.SettingsUI.createSettingCheckbox(title, setting);
     if (className) {
       checkbox.classList.add(className);
     }
@@ -17407,19 +17502,19 @@ var DEFAULT_VIEW12 = (input, output, target) => {
                 <devtools-widget
                   id=${"webmcp.tool-details" /* DETAILS */}
                   ?selected=${Directives7.live(input.selectedTab === "webmcp.tool-details" /* DETAILS */)}
-                  title=${i18nString28(UIStrings28.toolDetails)}
+                  label=${i18nString28(UIStrings28.toolDetails)}
                   ${widget11(ToolDetailsWidget, { tool: input.selectedCall?.tool, isUnregistered: input.selectedCall ? !input.tools.includes(input.selectedCall.tool) : false })}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-inputs" /* INPUT */}
                   ?selected=${Directives7.live(input.selectedTab === "webmcp.call-inputs" /* INPUT */)}
-                  title=${i18nString28(UIStrings28.input)}
+                  label=${i18nString28(UIStrings28.input)}
                   ${widget11(PayloadWidget, parsePayload(input.selectedCall?.input))}>
                 </devtools-widget>
                 <devtools-widget
                   id=${"webmcp.call-outputs" /* OUTPUT */}
                   ?selected=${Directives7.live(input.selectedTab === "webmcp.call-outputs" /* OUTPUT */)}
-                  title=${i18nString28(UIStrings28.output)}
+                  label=${i18nString28(UIStrings28.output)}
                   ${widget11(PayloadWidget, {
     valueObject: input.selectedCall?.result?.output,
     errorText: input.selectedCall?.result?.errorText,
@@ -19750,13 +19845,13 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
       const openAiAssistanceId = "ai-assistance.application-panel-context";
       if (UI31.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
         UI31.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
-        const action7 = UI31.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action7.title(), false, openAiAssistanceId);
+        const action8 = UI31.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
         submenu.defaultSection().appendAction(openAiAssistanceId, i18nString29(UIStrings29.startAChat));
         submenu.defaultSection().appendItem(
           i18nString29(UIStrings29.explainStorage),
-          () => action7.execute({ prompt: "What is the purpose of this storage bucket?" }),
-          { disabled: !action7.enabled(), jslogContext: openAiAssistanceId + ".storage" }
+          () => action8.execute({ prompt: "What is the purpose of this storage bucket?" }),
+          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".storage" }
         );
       }
     }
@@ -19863,13 +19958,13 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
       const openAiAssistanceId = "ai-assistance.application-panel-context";
       if (UI31.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
         UI31.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
-        const action7 = UI31.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action7.title(), false, openAiAssistanceId);
+        const action8 = UI31.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
         submenu.defaultSection().appendAction(openAiAssistanceId, i18nString29(UIStrings29.startAChat));
         submenu.defaultSection().appendItem(
           i18nString29(UIStrings29.explainCookies),
-          () => action7.execute({ prompt: "What is the purpose of these cookies?" }),
-          { disabled: !action7.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
+          () => action8.execute({ prompt: "What is the purpose of these cookies?" }),
+          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
         );
       }
     }

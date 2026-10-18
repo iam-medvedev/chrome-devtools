@@ -310,6 +310,9 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     currentSearchResultIndex = -1;
     currentSearch;
     #registry;
+    // Profiles on which `updateControls` listens for title changes. Other
+    // profiles can outlive this view, so `dispose()` removes the listeners.
+    #profilesWithTitleListener = new Set();
     get currentQuery() {
         return this.currentSearch?.query;
     }
@@ -440,12 +443,13 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.searchThrottler = new Common.Throttler.Throttler(0);
         for (const existingProfile of this.profiles()) {
             existingProfile.addEventListener("ProfileTitleChanged" /* ProfileHeaderEvents.PROFILE_TITLE_CHANGED */, this.updateControls, this);
+            this.#profilesWithTitleListener.add(existingProfile);
         }
     }
     createOverview() {
         const profileType = this.profile.profileType();
         this.trackingOverviewGrid = new HeapTimelineOverview();
-        this.trackingOverviewGrid.addEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged.bind(this));
+        this.trackingOverviewGrid.addEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged, this);
         if (!this.profile.fromFile() && profileType.profileBeingRecorded() === this.profile) {
             profileType
                 .addEventListener("HeapStatsUpdate" /* TrackingHeapSnapshotProfileTypeEvents.HEAP_STATS_UPDATE */, this.onHeapStatsUpdate, this);
@@ -1002,10 +1006,12 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.updateControls();
         const profile = event.data;
         profile.addEventListener("ProfileTitleChanged" /* ProfileHeaderEvents.PROFILE_TITLE_CHANGED */, this.updateControls, this);
+        this.#profilesWithTitleListener.add(profile);
     }
     onProfileHeaderRemoved(event) {
         const profile = event.data;
         profile.removeEventListener("ProfileTitleChanged" /* ProfileHeaderEvents.PROFILE_TITLE_CHANGED */, this.updateControls, this);
+        this.#profilesWithTitleListener.delete(profile);
         if (this.profile === profile) {
             this.detach();
             this.profile.profileType().removeEventListener("SnapshotReceived" /* HeapSnapshotProfileTypeEvents.SNAPSHOT_RECEIVED */, this.onReceiveSnapshot, this);
@@ -1027,8 +1033,12 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         }
         this.onStopTracking();
         if (this.trackingOverviewGrid) {
-            this.trackingOverviewGrid.removeEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged.bind(this));
+            this.trackingOverviewGrid.removeEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged, this);
         }
+        for (const profile of this.#profilesWithTitleListener) {
+            profile.removeEventListener("ProfileTitleChanged" /* ProfileHeaderEvents.PROFILE_TITLE_CHANGED */, this.updateControls, this);
+        }
+        this.#profilesWithTitleListener.clear();
     }
 }
 export class Perspective {

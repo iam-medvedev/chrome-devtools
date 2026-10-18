@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
+import * as Host from '../../core/host/host.js';
 import * as CommentManager from './comment_manager.js';
 describe('CommentThread', () => {
     const defaultAnchor = {
@@ -130,6 +133,116 @@ describe('CommentThread', () => {
         thread2.sendToAgent();
         assert.strictEqual(thread2.status, 'SENT_TO_AGENT');
         assert.strictEqual(thread2.index, 2);
+    });
+    it('editComment() replaces the developer comment text of an ACTIVE thread and dispatches CHANGED', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({
+            anchor: defaultAnchor,
+        });
+        thread.save('Original');
+        let changeCount = 0;
+        thread.addEventListener("Changed" /* CommentManager.CommentThread.Events.CHANGED */, () => {
+            changeCount++;
+        });
+        thread.editComment('  Edited  ');
+        assert.strictEqual(thread.status, 'ACTIVE');
+        assert.lengthOf(thread.comments, 1);
+        assert.strictEqual(thread.comments[0].author, 'DEVELOPER');
+        assert.strictEqual(thread.comments[0].text, 'Edited');
+        assert.strictEqual(changeCount, 1);
+    });
+    it('editComment() is a no-op for a SENT_TO_AGENT thread', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({
+            anchor: defaultAnchor,
+        });
+        thread.sendToAgent('Sent');
+        let changeCount = 0;
+        thread.addEventListener("Changed" /* CommentManager.CommentThread.Events.CHANGED */, () => {
+            changeCount++;
+        });
+        thread.editComment('Edited');
+        assert.strictEqual(thread.comments[0].text, 'Sent');
+        assert.strictEqual(changeCount, 0);
+    });
+    it('editComment() does not dispatch CHANGED when the text is unchanged', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({
+            anchor: defaultAnchor,
+        });
+        thread.save('Original');
+        let changeCount = 0;
+        thread.addEventListener("Changed" /* CommentManager.CommentThread.Events.CHANGED */, () => {
+            changeCount++;
+        });
+        thread.editComment('Original');
+        thread.editComment('  Original  ');
+        assert.strictEqual(thread.comments[0].text, 'Original');
+        assert.strictEqual(changeCount, 0);
+    });
+    it('editComment() ignores empty or whitespace-only text', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({
+            anchor: defaultAnchor,
+        });
+        thread.save('Original');
+        let changeCount = 0;
+        thread.addEventListener("Changed" /* CommentManager.CommentThread.Events.CHANGED */, () => {
+            changeCount++;
+        });
+        thread.editComment('');
+        thread.editComment('   ');
+        assert.strictEqual(thread.status, 'ACTIVE');
+        assert.lengthOf(thread.comments, 1);
+        assert.strictEqual(thread.comments[0].text, 'Original');
+        assert.strictEqual(changeCount, 0);
+    });
+});
+describe('CommentThread UMA', () => {
+    const anchor = {
+        vePath: 'Panel: elements > TreeItem: rule',
+    };
+    let commentCreated;
+    let commentSize;
+    beforeEach(() => {
+        commentCreated = sinon.stub(Host.userMetrics, 'commentCreated');
+        commentSize = sinon.stub(Host.userMetrics, 'commentSize');
+    });
+    it('records CommentCreated and CommentSize once when a draft is saved', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({ anchor });
+        thread.save('  Make this blue  ');
+        thread.save('Follow-up');
+        thread.sendToAgent();
+        sinon.assert.calledOnceWithExactly(commentCreated, 1);
+        sinon.assert.calledOnceWithExactly(commentSize, 'Make this blue'.length);
+    });
+    it('records CommentCreated and CommentSize when a draft is sent to the agent directly', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({ anchor });
+        thread.sendToAgent('Fix padding');
+        sinon.assert.calledOnceWithExactly(commentCreated, 1);
+        sinon.assert.calledOnceWithExactly(commentSize, 'Fix padding'.length);
+    });
+    it('does not record CommentCreated for generated comments', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({
+            anchor,
+            comments: [{ author: 'DEVELOPER', text: 'Changed color', timestamp: 0 }],
+            isGeneratedComment: true,
+        });
+        thread.save();
+        sinon.assert.notCalled(commentCreated);
+        sinon.assert.notCalled(commentSize);
+    });
+    it('does not record CommentCreated or CommentSize for drafts without developer text', () => {
+        const whitespaceThread = new CommentManager.CommentThread.CommentThread({
+            anchor,
+            comments: [{ author: 'DEVELOPER', text: '   ', timestamp: 0 }],
+        });
+        whitespaceThread.save();
+        const emptyThread = new CommentManager.CommentThread.CommentThread({ anchor });
+        emptyThread.save();
+        sinon.assert.notCalled(commentCreated);
+        sinon.assert.notCalled(commentSize);
+    });
+    it('does not record CommentCreated for drafts that are never saved', () => {
+        const thread = new CommentManager.CommentThread.CommentThread({ anchor });
+        thread.editComment('ignored');
+        sinon.assert.notCalled(commentCreated);
     });
 });
 //# sourceMappingURL=CommentThread.test.js.map

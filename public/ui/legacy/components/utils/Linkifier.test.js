@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
@@ -12,6 +13,7 @@ import { findMenuItemWithLabel } from '../../../../testing/ContextMenuHelpers.js
 import { describeWithEnvironment, } from '../../../../testing/EnvironmentHelpers.js';
 import { dispatchEvent } from '../../../../testing/MockConnection.js';
 import { MockDebuggerBackend } from '../../../../testing/MockScopeChain.js';
+import { stubFrame } from '../../../../testing/StackTraceHelpers.js';
 import { TestUniverse } from '../../../../testing/TestUniverse.js';
 import * as UI from '../../legacy.js';
 import * as Components from './utils.js';
@@ -320,12 +322,11 @@ describeWithEnvironment('Linkifier', () => {
             const ignoreListManager = universe.ignoreListManager;
             const url = Platform.DevToolsPath.urlString `http://example.com/script.js`;
             ignoreListManager.ignoreListURL(url);
-            const frame = {
+            const frame = stubFrame({
                 url,
                 line: 1,
                 column: 1,
-                uiSourceCode: null,
-            };
+            });
             const anchor = Components.Linkifier.Linkifier.linkifyStackTraceFrame(frame, { ignoreListManager });
             assert.exists(anchor);
             assert.isTrue(anchor.classList.contains('ignore-list-link'));

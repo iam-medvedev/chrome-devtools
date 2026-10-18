@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -80,13 +81,33 @@ describeWithEnvironment('LighthousePanel', () => {
     it('can receive an external request and trigger a recording', async () => {
         const REPORT_JSON = {};
         sinon.stub(Lighthouse.LighthousePanel.LighthousePanel.prototype, 'handleCompleteRun').callsFake(() => {
-            return Promise.resolve({ report: REPORT_JSON });
+            return Promise.resolve({ status: 'completed', report: REPORT_JSON });
         });
         const viewManager = UI.ViewManager.ViewManager.instance();
         const showViewStub = sinon.stub(viewManager, 'showView');
         const result = await Lighthouse.LighthousePanel.LighthousePanel.executeLighthouseRecording();
         sinon.assert.calledOnceWithExactly(showViewStub, 'lighthouse');
-        assert.strictEqual(result, REPORT_JSON);
+        assert.deepEqual(result, { status: 'completed', report: REPORT_JSON });
+    });
+    it('returns the report when the run completes', async () => {
+        const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });
+        const result = await instance.handleCompleteRun();
+        assert.deepEqual(result, { status: 'completed', report: LH_REPORT.lhr });
+    });
+    it('returns a cancelled result when the user cancels the run', async () => {
+        protocolService.collectLighthouseResults
+            .rejects(new Lighthouse.LighthouseProtocolService.CancelledError());
+        const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });
+        const result = await instance.handleCompleteRun();
+        assert.deepEqual(result, { status: 'cancelled' });
+    });
+    it('returns a failed result when the run fails to start, and can run again afterwards', async () => {
+        protocolService.attach.onFirstCall().rejects(new Error('attach failed'));
+        const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });
+        const failedResult = await instance.handleCompleteRun();
+        assert.deepEqual(failedResult, { status: 'failed' });
+        const secondResult = await instance.handleCompleteRun();
+        assert.deepEqual(secondResult, { status: 'completed', report: LH_REPORT.lhr });
     });
     it('can select a specific report', async () => {
         const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });

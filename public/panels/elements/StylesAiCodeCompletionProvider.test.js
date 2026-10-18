@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -57,9 +58,6 @@ describeWithEnvironment('StylesAiCodeCompletionProvider', () => {
         sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'aidaAvailability')
             .get(() => "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
-    });
-    afterEach(() => {
-        clock.restore();
     });
     it('does not create a provider when the feature is disabled', () => {
         updateHostConfig({

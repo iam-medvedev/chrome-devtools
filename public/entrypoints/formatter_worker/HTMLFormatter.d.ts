@@ -7,7 +7,7 @@ export declare class HTMLFormatter {
 export declare class HTMLModel {
     #private;
     constructor(text: string);
-    peekToken(): Token | null;
+    peekToken(offset?: number): Token | null;
     nextToken(): Token | null;
     document(): FormatterElement;
 }

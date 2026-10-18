@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
@@ -89,6 +90,19 @@ describe('GenericIssue', () => {
         assert.isNotNull(genericIssue.getDescription());
         const requests = Array.from(genericIssue.requests());
         assert.strictEqual(requests[0].url, 'https://skippablePage.com');
+    });
+    it('adds a geolocation requested without user gesture issue with valid details', () => {
+        const issueDetails = {
+            errorType: "GeolocationPromptWithoutUserGesture" /* Protocol.Audits.GenericIssueErrorType.GeolocationPromptWithoutUserGesture */,
+        };
+        const issue = createProtocolIssueWithDetails(issueDetails);
+        const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
+        assert.lengthOf(genericIssues, 1);
+        const genericIssue = genericIssues[0];
+        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
+        assert.strictEqual(genericIssue.primaryKey(), 'GenericIssue::GeolocationPromptWithoutUserGesture-(undefined)-(undefined)-(undefined)-(no-request)');
+        assert.strictEqual(genericIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
+        assert.isNotNull(genericIssue.getDescription());
     });
 });
 //# sourceMappingURL=GenericIssue.test.js.map

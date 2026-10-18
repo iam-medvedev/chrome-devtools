@@ -1,4 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { AccessibilitySubPane } from './AccessibilitySubPane.js';
 export declare const BINDING_NAME = "__announcementsRecorderBinding";
 export declare enum AnnouncementApi {
@@ -59,6 +60,7 @@ export declare const TEARDOWN_SCRIPT_SOURCE: string;
 export declare function checkForBlockedPayload(payload: unknown): string | null;
 export declare function validateAndSanitizeAnnouncement(payload: unknown): A11yAnnouncement | null;
 export declare function buildCsvContent(announcements: readonly A11yAnnouncement[]): string;
+export declare function parseFirstCallSite(target: SDK.Target.Target, stack: string): Promise<Workspace.UISourceCode.UILocation | null>;
 export declare class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane implements SDK.TargetManager.Observer {
     #private;
     constructor(element?: HTMLElement, view?: View);
@@ -72,6 +74,7 @@ export declare class AccessibilityAnnouncementRecordingView extends Accessibilit
     setRecordTypeFilter(type: RecordTypeFilter): void;
     setTextFilter(text: string): void;
     exportCsvForTest(): string;
+    revealSourceForAnnouncementForTest(item: A11yAnnouncement): Promise<void>;
     revealElementForTest(item: A11yAnnouncement, targetPanel: RevealTargetPanel): Promise<void>;
     selectedAnnouncementForTest(): A11yAnnouncement | null;
     performUpdate(): void;

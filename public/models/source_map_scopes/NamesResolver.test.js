@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -32,7 +33,6 @@ describe('NameResolver', () => {
     });
     afterEach(() => {
         Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
-        sinon.restore();
     });
     /** Resolves the function name at the start of `callFrame`'s local scope, i.e. where V8 reports a function's location. */
     async function resolveFunctionNameAtScopeStart(callFrame) {

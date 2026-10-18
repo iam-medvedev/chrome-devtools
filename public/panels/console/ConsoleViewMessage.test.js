@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -213,7 +214,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const widgetElement = tree.shadowRoot.querySelector('devtools-widget');
             assert.exists(widgetElement);
             const treeWidget = UI.Widget.Widget.get(widgetElement);
-            assert.instanceOf(treeWidget, Elements.ElementsTreeElement.ElementsTreeWidget);
+            assert.instanceOf(treeWidget, Elements.DOMTreeElementWidget.DOMTreeElementWidget);
             assert.strictEqual(treeWidget.node, node);
             assert.include(tree.shadowRoot.textContent, 'logged');
             sinon.assert.called(onResize);
@@ -247,7 +248,7 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const widgetElement = tree.shadowRoot.querySelector('devtools-widget');
             assert.exists(widgetElement);
             const treeWidget = UI.Widget.Widget.get(widgetElement);
-            assert.instanceOf(treeWidget, Elements.ElementsTreeElement.ElementsTreeWidget);
+            assert.instanceOf(treeWidget, Elements.DOMTreeElementWidget.DOMTreeElementWidget);
             assert.strictEqual(treeWidget.node, node);
             assert.include(tree.shadowRoot.textContent, 'logged');
         });
@@ -278,6 +279,28 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             message.wasShown();
             assert.strictEqual(activeHighlightListeners(), 1);
             message.willHide();
+        });
+        it('opens the DOM node context menu and stops propagation when right-clicking a logged node', async () => {
+            const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+            UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
+            const { node, message } = createDOMNodeMessage();
+            const messageElement = message.toMessageElement();
+            renderElementIntoDOM(messageElement);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const showSpy = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const appendApplicableItemsSpy = sinon.spy(UI.ContextMenu.ContextMenu.prototype, 'appendApplicableItems');
+            const tree = messageElement.querySelector('devtools-tree');
+            assert.exists(tree?.shadowRoot);
+            const treeItem = tree.shadowRoot.querySelector('li[role="treeitem"]');
+            assert.exists(treeItem);
+            const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            const stopPropagationSpy = sinon.spy(event, 'stopPropagation');
+            treeItem.dispatchEvent(event);
+            await raf();
+            sinon.assert.called(stopPropagationSpy);
+            sinon.assert.calledWith(appendApplicableItemsSpy, node);
+            sinon.assert.calledOnce(showSpy);
         });
         it('formats console.dir(document.__proto__) without exception', async () => {
             const target = createTarget();
@@ -876,9 +899,6 @@ describeWithEnvironment('ConsoleViewMessage', () => {
         let copyTextStub;
         beforeEach(() => {
             copyTextStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText');
-        });
-        afterEach(() => {
-            copyTextStub.restore();
         });
         function createConsoleTableMessageView(rawMessage) {
             const linkifier = sinon.createStubInstance(Components.Linkifier.Linkifier);

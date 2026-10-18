@@ -702,7 +702,8 @@ var CompilerScriptMapping = class {
    * and copies over all the mappings from the other source maps that were registered for the
    * same URL and which are compatible (agree on the content and ignore-list hint for the given
    * URL). If they are considered incompatible, the original `UISourceCode` will simply be
-   * removed and a new mapping will be established.
+   * removed and a new mapping will be established, unless the original `UISourceCode` is
+   * mapped by a newer script, which happens when source maps finish loading out of parse order.
    *
    * @param event holds the {@link SDK.Script.Script} and its {@link SDK.SourceMap.SourceMap}.
    */
@@ -731,7 +732,12 @@ var CompilerScriptMapping = class {
       this.#projects.set(projectId, project);
     }
     this.#sourceMapToProject.set(sourceMap, project);
+    const scriptParseOrder = new Map(this.#debuggerModel.scripts().map((script2, index) => [script2, index]));
     for (const url of sourceMap.sourceURLs()) {
+      const existingUISourceCode = project.uiSourceCodeForURL(url);
+      if (!this.#shouldUseSourceMapForURL(existingUISourceCode, url, script, sourceMap, scriptParseOrder)) {
+        continue;
+      }
       const contentType = Common2.ResourceType.resourceTypes.SourceMapScript;
       const uiSourceCode = project.createUISourceCode(url, contentType);
       if (sourceMap.hasIgnoreListHint(url)) {
@@ -752,15 +758,14 @@ var CompilerScriptMapping = class {
       const mimeType = Common2.ResourceType.ResourceType.mimeFromURL(url) ?? contentType.canonicalMimeType();
       this.#uiSourceCodeToSourceMaps.set(uiSourceCode, sourceMap);
       NetworkProject.setInitialFrameAttribution(uiSourceCode, script.frameId);
-      const otherUISourceCode = project.uiSourceCodeForURL(url);
-      if (otherUISourceCode !== null) {
-        for (const otherSourceMap of this.#uiSourceCodeToSourceMaps.get(otherUISourceCode)) {
-          this.#uiSourceCodeToSourceMaps.delete(otherUISourceCode, otherSourceMap);
+      if (existingUISourceCode !== null) {
+        for (const otherSourceMap of this.#uiSourceCodeToSourceMaps.get(existingUISourceCode)) {
+          this.#uiSourceCodeToSourceMaps.delete(existingUISourceCode, otherSourceMap);
           const otherScript = this.#sourceMapManager.clientForSourceMap(otherSourceMap);
           if (!otherScript) {
             continue;
           }
-          NetworkProject.removeFrameAttribution(otherUISourceCode, otherScript.frameId);
+          NetworkProject.removeFrameAttribution(existingUISourceCode, otherScript.frameId);
           if (sourceMap.compatibleForURL(url, otherSourceMap)) {
             this.#uiSourceCodeToSourceMaps.set(uiSourceCode, otherSourceMap);
             NetworkProject.addFrameAttribution(uiSourceCode, otherScript.frameId);
@@ -772,6 +777,22 @@ var CompilerScriptMapping = class {
       project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType);
     }
     void Promise.all([...scripts].map((script2) => this.#debuggerWorkspaceBinding.updateLocations(script2))).then(() => this.sourceMapAttachedForTest(sourceMap));
+  }
+  #shouldUseSourceMapForURL(existingUISourceCode, url, script, sourceMap, scriptParseOrder) {
+    if (existingUISourceCode === null) {
+      return true;
+    }
+    for (const existingSourceMap of this.#uiSourceCodeToSourceMaps.get(existingUISourceCode)) {
+      const existingScript = this.#sourceMapManager.clientForSourceMap(existingSourceMap);
+      if (!existingScript || sourceMap.compatibleForURL(url, existingSourceMap)) {
+        continue;
+      }
+      const isExistingScriptNewer = (scriptParseOrder.get(existingScript) ?? -1) > (scriptParseOrder.get(script) ?? -1);
+      if (isExistingScriptNewer) {
+        return false;
+      }
+    }
+    return true;
   }
   /**
    * Invoked by the {@link SDK.SourceMapManager.SourceMapManager} when the source map for a given
@@ -3542,8 +3563,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -3552,6 +3571,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -5605,8 +5625,10 @@ var ModelData = class {
 var DebuggerWorkspaceBinding_exports = {};
 __export(DebuggerWorkspaceBinding_exports, {
   DebuggerWorkspaceBinding: () => DebuggerWorkspaceBinding,
-  Location: () => Location
+  Location: () => Location,
+  wasmAutoSteppingSettingDescriptor: () => wasmAutoSteppingSettingDescriptor
 });
+import * as Common11 from "../../core/common/common.js";
 import * as Platform6 from "../../core/platform/platform.js";
 import * as Root4 from "../../core/root/root.js";
 import * as SDK12 from "../../core/sdk/sdk.js";
@@ -5638,6 +5660,7 @@ var DefaultScriptMapping = class _DefaultScriptMapping {
       true
       /* isServiceProject */
     );
+    NetworkProject.setTargetForProject(this.#project, debuggerModel.target());
     this.#eventListeners = [
       debuggerModel.addEventListener(SDK8.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
       debuggerModel.addEventListener(SDK8.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this),
@@ -5657,12 +5680,15 @@ var DefaultScriptMapping = class _DefaultScriptMapping {
   }
   static scriptForUISourceCode(uiSourceCode) {
     for (const defaultScriptMapping of defaultScriptMappings) {
-      const script = defaultScriptMapping.#uiSourceCodeToScript.get(uiSourceCode);
-      if (script !== void 0) {
+      const script = defaultScriptMapping.scriptForUISourceCode(uiSourceCode);
+      if (script !== null) {
         return script;
       }
     }
     return null;
+  }
+  scriptForUISourceCode(uiSourceCode) {
+    return this.#uiSourceCodeToScript.get(uiSourceCode) ?? null;
   }
   uiSourceCodeForScript(script) {
     return this.#scriptToUISourceCode.get(script) ?? null;
@@ -5861,10 +5887,23 @@ var ResourceScriptMapping = class {
         return;
       }
     }
-    for (const script of Array.from(this.#scriptToUISourceCode.keys())) {
-      this.removeScripts([script]);
+    const scripts = Array.from(this.#scriptToUISourceCode).filter(([script, uiSourceCode]) => this.#resolvedSourceURLChanged(script, uiSourceCode)).map(([script]) => script);
+    this.removeScripts(scripts);
+    for (const script of scripts) {
       this.addScript(script);
     }
+  }
+  /**
+   * Whether `uiSourceCode` no longer reflects the `//# sourceURL=` annotation of `script` when
+   * resolved against the current inspected URL. Scripts without such an annotation are not
+   * affected by changes to the inspected URL.
+   */
+  #resolvedSourceURLChanged(script, uiSourceCode) {
+    if (!script.hasSourceURL) {
+      return false;
+    }
+    const url = SDK9.SourceMapManager.SourceMapManager.resolveRelativeSourceURL(script.debuggerModel.target(), script.sourceURL);
+    return url !== uiSourceCode.url() || !this.#isTrustworthySourceURL(script, url);
   }
   async functionBoundsAtRawLocation(rawLocation) {
     const script = rawLocation.script();
@@ -6138,6 +6177,18 @@ function inlinedFunctionRanges(frame) {
   const range = position?.sourceMap.inlinedFunctionRange(position.line, position.column);
   return position && range ? toLocationRanges(position, [range]) : [];
 }
+function isSameInlinedCall(a, b) {
+  const range = (frame) => {
+    const position = scopedPosition(frame);
+    return position?.sourceMap.inlinedFunctionRange(position.line, position.column) ?? null;
+  };
+  const rangeA = range(a);
+  const rangeB = range(b);
+  if (!rangeA || !rangeB) {
+    return rangeA === rangeB;
+  }
+  return a.script === b.script && SDK10.SourceMapScopesInfo.comparePositions(rangeA.start, rangeB.start) === 0 && SDK10.SourceMapScopesInfo.comparePositions(rangeA.end, rangeB.end) === 0;
+}
 function inlinedCalleeRanges(frame) {
   const position = scopedPosition(frame);
   return position ? toLocationRanges(position, position.sourceMap.inlinedCalleeRanges(position.line, position.column)) : [];
@@ -6168,7 +6219,7 @@ async function nextAutoStep(details, context, computeAutoStep) {
     case SDK10.DebuggerModel.StepMode.STEP_OVER: {
       const startDepth = logicalDepth(start);
       const depth = logicalDepth(frames);
-      if (isUnmapped(frames[0]) || depth === startDepth && isSameOriginalLocation(frames[0], start[0])) {
+      if (isUnmapped(frames[0]) || depth === startDepth && isSameOriginalLocation(frames[0], start[0]) && isSameInlinedCall(frames[0], start[0])) {
         return await computeAutoStep(SDK10.DebuggerModel.StepMode.STEP_OVER, frames);
       }
       return null;
@@ -6297,6 +6348,12 @@ var Events2 = /* @__PURE__ */ ((Events3) => {
 })(Events2 || {});
 
 // ../../front_end/models/bindings/DebuggerWorkspaceBinding.ts
+var wasmAutoSteppingSettingDescriptor = {
+  name: "wasm-auto-stepping",
+  type: Common11.Settings.SettingType.BOOLEAN,
+  defaultValue: true,
+  storageType: Common11.Settings.SettingStorageType.LOCAL
+};
 var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   resourceMapping;
   #debuggerModelToData;
@@ -6654,6 +6711,10 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
     const scripts = /* @__PURE__ */ new Set();
     this.pluginManager.scriptsForUISourceCode(uiSourceCode).forEach((script) => scripts.add(script));
     for (const modelData of this.#debuggerModelToData.values()) {
+      const defaultScript = modelData.defaultMapping.scriptForUISourceCode(uiSourceCode);
+      if (defaultScript) {
+        scripts.add(defaultScript);
+      }
       const resourceScriptFile = modelData.getResourceScriptMapping().scriptFile(uiSourceCode);
       if (resourceScriptFile?.script) {
         scripts.add(resourceScriptFile.script);
@@ -6702,7 +6763,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
     const autoSteppingContext = context?.mode === SDK12.DebuggerModel.StepMode.STEP_OVER ? context.callFrames[0]?.functionLocation() : null;
     const { callFrames: [frame] } = debuggerPausedDetails;
     const functionLocation = frame.functionLocation();
-    if (!autoSteppingContext || debuggerPausedDetails.reason !== Debugger.PausedEventReason.Step || !functionLocation || !this.#settings.moduleSetting("wasm-auto-stepping").get() || !this.pluginManager.hasPluginForScript(frame.script)) {
+    if (!autoSteppingContext || debuggerPausedDetails.reason !== Debugger.PausedEventReason.Step || !functionLocation || !this.#settings.resolve(wasmAutoSteppingSettingDescriptor).get() || !this.pluginManager.hasPluginForScript(frame.script)) {
       return true;
     }
     const uiLocation = await this.pluginManager.rawLocationToUILocation(frame.location());
@@ -6735,7 +6796,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
 var ModelData2 = class {
   #debuggerModel;
   #debuggerWorkspaceBinding;
-  #defaultMapping;
+  defaultMapping;
   #resourceMapping;
   #resourceScriptMapping;
   compilerMapping;
@@ -6744,7 +6805,7 @@ var ModelData2 = class {
     this.#debuggerModel = debuggerModel;
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     const { workspace } = debuggerWorkspaceBinding.resourceMapping;
-    this.#defaultMapping = new DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
+    this.defaultMapping = new DefaultScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this.#resourceMapping = debuggerWorkspaceBinding.resourceMapping;
     this.#resourceScriptMapping = new ResourceScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this.compilerMapping = new CompilerScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
@@ -6774,28 +6835,28 @@ var ModelData2 = class {
   #nonCompilerRawLocationToUILocation(rawLocation) {
     let uiLocation = this.#resourceScriptMapping.rawLocationToUILocation(rawLocation);
     uiLocation = uiLocation || this.#resourceMapping.jsLocationToUILocation(rawLocation);
-    uiLocation = uiLocation || this.#defaultMapping.rawLocationToUILocation(rawLocation);
+    uiLocation = uiLocation || this.defaultMapping.rawLocationToUILocation(rawLocation);
     return uiLocation;
   }
   uiSourceCodeForScript(script) {
     let uiSourceCode = null;
     uiSourceCode = uiSourceCode || this.#resourceScriptMapping.uiSourceCodeForScript(script);
     uiSourceCode = uiSourceCode || this.#resourceMapping.uiSourceCodeForScript(script);
-    uiSourceCode = uiSourceCode || this.#defaultMapping.uiSourceCodeForScript(script);
+    uiSourceCode = uiSourceCode || this.defaultMapping.uiSourceCodeForScript(script);
     return uiSourceCode;
   }
   uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber = 0) {
     let locations = this.compilerMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
     locations = locations.length ? locations : this.#resourceScriptMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
     locations = locations.length ? locations : this.#resourceMapping.uiLocationToJSLocations(uiSourceCode, lineNumber, columnNumber);
-    locations = locations.length ? locations : this.#defaultMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
+    locations = locations.length ? locations : this.defaultMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
     return locations;
   }
   uiLocationRangeToRawLocationRanges(uiSourceCode, textRange) {
     let ranges = this.compilerMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
     ranges ??= this.#resourceScriptMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
     ranges ??= this.#resourceMapping.uiLocationRangeToJSLocationRanges(uiSourceCode, textRange);
-    ranges ??= this.#defaultMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
+    ranges ??= this.defaultMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
     return ranges;
   }
   async functionBoundsAtRawLocation(rawLocation) {
@@ -6831,7 +6892,7 @@ var ModelData2 = class {
     this.#debuggerModel.setBeforePausedCallback(null);
     this.compilerMapping.dispose();
     this.#resourceScriptMapping.dispose();
-    this.#defaultMapping.dispose();
+    this.defaultMapping.dispose();
   }
   getResourceScriptMapping() {
     return this.#resourceScriptMapping;
@@ -6920,7 +6981,7 @@ __export(FileUtils_exports, {
   ChunkedFileReader: () => ChunkedFileReader,
   FileOutputStream: () => FileOutputStream
 });
-import * as Common11 from "../../core/common/common.js";
+import * as Common12 from "../../core/common/common.js";
 import * as TextUtils7 from "../../core/text_utils/text_utils.js";
 import * as Workspace19 from "../workspace/workspace.js";
 var ChunkedFileReader = class {
@@ -6951,7 +7012,7 @@ var ChunkedFileReader = class {
     }
     if (this.#file?.type.endsWith("gzip")) {
       const fileStream = this.#file.stream();
-      const stream = Common11.Gzip.decompressStream(fileStream);
+      const stream = Common12.Gzip.decompressStream(fileStream);
       this.#streamReader = stream.getReader();
     }
     this.#output = output;
@@ -7400,7 +7461,7 @@ var ResourceMapping_exports = {};
 __export(ResourceMapping_exports, {
   ResourceMapping: () => ResourceMapping
 });
-import * as Common12 from "../../core/common/common.js";
+import * as Common13 from "../../core/common/common.js";
 import * as SDK14 from "../../core/sdk/sdk.js";
 import * as TextUtils9 from "../../core/text_utils/text_utils.js";
 import * as Formatter2 from "../formatter/formatter.js";
@@ -7755,16 +7816,16 @@ var ModelInfo2 = class {
   }
   acceptsResource(resource) {
     const resourceType = resource.resourceType();
-    if (resourceType !== Common12.ResourceType.resourceTypes.Image && resourceType !== Common12.ResourceType.resourceTypes.Font && resourceType !== Common12.ResourceType.resourceTypes.Document && resourceType !== Common12.ResourceType.resourceTypes.Manifest && resourceType !== Common12.ResourceType.resourceTypes.Fetch && resourceType !== Common12.ResourceType.resourceTypes.XHR) {
+    if (resourceType !== Common13.ResourceType.resourceTypes.Image && resourceType !== Common13.ResourceType.resourceTypes.Font && resourceType !== Common13.ResourceType.resourceTypes.Document && resourceType !== Common13.ResourceType.resourceTypes.Manifest && resourceType !== Common13.ResourceType.resourceTypes.Fetch && resourceType !== Common13.ResourceType.resourceTypes.XHR) {
       return false;
     }
-    if (resourceType === Common12.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
+    if (resourceType === Common13.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
       return false;
     }
-    if (resourceType === Common12.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
+    if (resourceType === Common13.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
       return false;
     }
-    if ((resourceType === Common12.ResourceType.resourceTypes.Image || resourceType === Common12.ResourceType.resourceTypes.Font) && Common12.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
+    if ((resourceType === Common13.ResourceType.resourceTypes.Image || resourceType === Common13.ResourceType.resourceTypes.Font) && Common13.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
       return false;
     }
     return true;
@@ -7814,7 +7875,7 @@ var ModelInfo2 = class {
     this.#bindings.clear();
   }
   dispose() {
-    Common12.EventTarget.removeEventListeners(this.#eventListeners);
+    Common13.EventTarget.removeEventListeners(this.#eventListeners);
     for (const binding of this.#bindings.values()) {
       binding.dispose();
     }

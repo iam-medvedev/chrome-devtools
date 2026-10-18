@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { it } from 'mocha';
 import { assertScreenshot, getCleanTextContentFromElements, raf, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { microsecondsTraceWindow, } from '../../../../testing/TraceHelpers.js';

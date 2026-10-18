@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
@@ -277,7 +278,7 @@ describe('StylesSourceMapping', () => {
         const styleSheetId = 'inspector-sheet';
         const uiSourceCode = await addInspectorStyleSheet(target, cssModel, styleSheetId);
         const setStyleSheetTextSpy = sinon.spy(cssModel, 'setStyleSheetText');
-        const { promise: syncPromise, stub: syncStub } = stubStyleFileSynced();
+        const { promise: syncPromise } = stubStyleFileSynced();
         const newContent = '#inspected { background-color: green; }';
         uiSourceCode.setWorkingCopy(newContent);
         uiSourceCode.commitWorkingCopy();
@@ -287,7 +288,6 @@ describe('StylesSourceMapping', () => {
         assert.deepEqual(setStyleSheetTextCalls, [{ styleSheetId, text: newContent }]);
         assert.isFalse(uiSourceCode.isDirty());
         assert.strictEqual(uiSourceCode.workingCopy(), newContent);
-        syncStub.restore();
     });
     it('mirrors CSS edits of an inline stylesheet with sourceURL into the UISourceCode working copy', async () => {
         const sourceURL = urlString `http://localhost:8000/inspector/elements/styles/foo.css`;
@@ -336,7 +336,7 @@ describe('StylesSourceMapping', () => {
         // The sourceURL comment is stripped from the UISourceCode content.
         assert.strictEqual(uiSourceCode.workingCopy(), '#inspected {\n    color: red;\n}');
         assert.isFalse(uiSourceCode.isDirty());
-        const { promise: syncPromise, stub: syncStub } = stubStyleFileSynced();
+        const { promise: syncPromise } = stubStyleFileSynced();
         const success = await cssModel.setStyleText(styleSheetId, new TextUtils.TextRange.TextRange(1, 4, 1, 15), 'color: green;', /* majorChange */ true);
         assert.isTrue(success);
         await syncPromise;
@@ -348,7 +348,6 @@ describe('StylesSourceMapping', () => {
         assert.strictEqual(uiSourceCode.uiLocation(0).linkText(), '*foo.css:1');
         // The edit came from the only header, so it is not pushed back to the backend.
         sinon.assert.notCalled(setStyleSheetTextStub);
-        syncStub.restore();
     });
     it('updates the inspector stylesheet UISourceCode when rules are added to it', async () => {
         const connection = new MockCDPConnection();
@@ -393,7 +392,6 @@ describe('StylesSourceMapping', () => {
         assert.isTrue(uiSourceCode.isDirty());
         // The change originates from the backend, so it is not echoed back via setStyleSheetText.
         sinon.assert.notCalled(setStyleSheetTextStub);
-        syncStub.restore();
     });
 });
 //# sourceMappingURL=StylesSourceMapping.test.js.map

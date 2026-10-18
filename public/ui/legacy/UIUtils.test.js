@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createFakeSetting } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
+import * as Buttons from '../components/buttons/buttons.js';
 import * as Lit from '../lit/lit.js';
 import * as UI from './legacy.js';
 const { html, nothing } = Lit;
@@ -53,7 +56,6 @@ describe('UIUtils', () => {
             controller.dispose();
             el.dispatchEvent(new PointerEvent('pointerdown'));
             sinon.assert.calledOnce(callback);
-            clock.restore();
         });
     });
     describe('measuredScrollbarWidth', () => {
@@ -96,8 +98,12 @@ describe('UIUtils', () => {
         });
     });
     describe('bindToAction', () => {
+        setupLocaleHooks();
+        setupSettingsHooks();
         const actionId = 'mock.action.bind.to.action';
-        before(() => {
+        const toggleActionId = 'mock.toggle.action.bind.to.action';
+        beforeEach(() => {
+            UI.GlassPane.GlassPane.setContainer(document.body);
             const mockHandleAction = sinon.stub();
             UI.ActionRegistration.registerActionExtension({
                 actionId,
@@ -105,6 +111,22 @@ describe('UIUtils', () => {
                 title: i18n.i18n.lockedLazyString('Mock action for bindToAction'),
                 loadActionDelegate: async () => ({ handleAction: mockHandleAction }),
             });
+            UI.ActionRegistration.registerActionExtension({
+                actionId: toggleActionId,
+                category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+                title: i18n.i18n.lockedLazyString('Mock toggle action for bindToAction'),
+                iconClass: "pause" /* UI.ActionRegistration.IconClass.LARGEICON_PAUSE */,
+                toggledIconClass: "resume" /* UI.ActionRegistration.IconClass.LARGEICON_RESUME */,
+                toggleable: true,
+                loadActionDelegate: async () => ({ handleAction: mockHandleAction }),
+            });
+            const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+            UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
+        });
+        afterEach(() => {
+            UI.ActionRegistration.reset();
+            UI.ActionRegistry.ActionRegistry.reset();
+            UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
         });
         function setup() {
             const { bindToAction } = UI.UIUtils;
@@ -121,6 +143,7 @@ describe('UIUtils', () => {
             const { button, action } = setup();
             const innerButton = button.shadowRoot?.querySelector('button');
             assert.strictEqual(innerButton.title, action.title());
+            assert.strictEqual(button.getAttribute('aria-label'), action.title());
             assert.strictEqual(button.disabled, !action.enabled());
         });
         it('updates the button when the action\'s enabled state changes', () => {
@@ -136,6 +159,54 @@ describe('UIUtils', () => {
             Lit.render(nothing, container);
             assert.isFalse(button.isConnected);
             sinon.assert.calledWith(spy, "Enabled" /* UI.ActionRegistration.Events.ENABLED */);
+        });
+        it('supports child devtools-buttons as long-press options when toggled', () => {
+            const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
+            try {
+                const { bindToAction } = UI.UIUtils;
+                const container = document.createElement('div');
+                renderElementIntoDOM(container);
+                const buttonRef = Lit.Directives.createRef();
+                const onOptionClick = sinon.spy();
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(toggleActionId);
+                action.setToggled(false);
+                // clang-format off
+                Lit.render(html `
+          <devtools-button ${Lit.Directives.ref(buttonRef)} ${bindToAction(toggleActionId)}>
+            <devtools-button title="Alternative option"
+                             .iconName=${'stop'}
+                             .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+                             @click=${onOptionClick}></devtools-button>
+          </devtools-button>`, container);
+                // clang-format on
+                const button = buttonRef.value;
+                assert.exists(button);
+                assert.isFalse(button.longClickable);
+                action.setToggled(true);
+                assert.isTrue(button.longClickable);
+                button.dispatchEvent(new PointerEvent('pointerdown', { button: 0 }));
+                clock.runAll();
+                const floatingToolbar = Array.from(document.body.children)
+                    .map(el => el.shadowRoot?.querySelector('devtools-toolbar[floating]'))
+                    .find(Boolean);
+                assert.exists(floatingToolbar);
+                const optionClones = floatingToolbar.querySelectorAll('devtools-button');
+                assert.lengthOf(optionClones, 2);
+                const altClone = Array.from(optionClones).find(b => b.title === 'Alternative option');
+                assert.exists(altClone);
+                for (const clone of optionClones) {
+                    clone.classList.remove('emulate-active');
+                }
+                altClone.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, which: 1 }));
+                assert.isTrue(altClone.classList.contains('emulate-active'));
+                document.documentElement.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, which: 1 }));
+                sinon.assert.calledOnce(onOptionClick);
+                action.setToggled(false);
+                assert.isFalse(button.longClickable);
+            }
+            finally {
+                clock.restore();
+            }
         });
     });
     describe('HTMLElementWithLightDOMTemplate', () => {
@@ -159,6 +230,16 @@ describe('UIUtils', () => {
             }
         }
         customElements.define('test-element', TestElement);
+        it('returns null when corresponding tree structures do not match', () => {
+            const sourceRoot = document.createElement('div');
+            const sourceRow = document.createElement('div');
+            const sourceCell = document.createElement('div');
+            sourceCell.textContent = 'cell';
+            sourceRow.appendChild(sourceCell);
+            sourceRoot.appendChild(sourceRow);
+            const targetRoot = document.createElement('div');
+            assert.isNull(UI.UIUtils.HTMLElementWithLightDOMTemplate.findCorrespondingElement(sourceCell, sourceRoot, targetRoot));
+        });
         it('renders its input into a template', async () => {
             const container = document.createElement('div');
             Lit.render(html `
@@ -738,42 +819,6 @@ describe('bindCheckbox', () => {
                 { description: 'await', frames: [] },
             ]);
             assert.strictEqual(UI.UIUtils.asyncFragmentLabel(stackTrace, stackTrace.asyncFragments[1]), 'await in asyncFunction');
-        });
-    });
-    describe('createHistoryInput', () => {
-        it('navigates query history on ArrowUp and ArrowDown without dispatching redundant input events at boundaries', () => {
-            const inputElement = UI.UIUtils.createHistoryInput('search');
-            const inputEventSpy = sinon.spy();
-            inputElement.addEventListener('input', inputEventSpy);
-            inputElement.value = 'first';
-            inputElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true }));
-            inputElement.value = 'second';
-            inputElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, bubbles: true, cancelable: true }));
-            // Navigate up to the previous history entry ('first', historyPosition 0)
-            const arrowUpEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', keyCode: 38, shiftKey: false, bubbles: true, cancelable: true });
-            inputElement.dispatchEvent(arrowUpEvent);
-            assert.strictEqual(inputElement.value, 'first');
-            sinon.assert.calledOnce(inputEventSpy);
-            inputEventSpy.resetHistory();
-            // Hitting the boundary (historyPosition 0), no input event should be dispatched
-            inputElement.dispatchEvent(arrowUpEvent);
-            assert.strictEqual(inputElement.value, 'first');
-            sinon.assert.notCalled(inputEventSpy);
-            // Navigate down to the next history entry ('second', historyPosition 1)
-            const arrowDownEvent = new KeyboardEvent('keydown', { key: 'ArrowDown', keyCode: 40, shiftKey: false, bubbles: true, cancelable: true });
-            inputElement.dispatchEvent(arrowDownEvent);
-            assert.strictEqual(inputElement.value, 'second');
-            sinon.assert.calledOnce(inputEventSpy);
-            inputEventSpy.resetHistory();
-            // Navigate down to the empty search string (historyPosition 2)
-            inputElement.dispatchEvent(arrowDownEvent);
-            assert.strictEqual(inputElement.value, '');
-            sinon.assert.calledOnce(inputEventSpy);
-            inputEventSpy.resetHistory();
-            // Hitting the boundary (historyPosition 2), no input event should be dispatched
-            inputElement.dispatchEvent(arrowDownEvent);
-            assert.strictEqual(inputElement.value, '');
-            sinon.assert.notCalled(inputEventSpy);
         });
     });
 });

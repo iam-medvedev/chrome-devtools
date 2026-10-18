@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -159,7 +160,6 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         await input.onTellMeMoreClick(new Event('click'));
         sinon.assert.calledOnce(show);
         Common.Settings.Settings.instance().settingForTest('console-insights-enabled').set(true);
-        show.restore();
     });
     it('disables teasers on "Dont show" change', async () => {
         const view = createViewFunctionStub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser);
@@ -197,7 +197,6 @@ describeWithEnvironment('ConsoleInsightTeaser', () => {
         assert.isEmpty(input.mainText);
         assert.strictEqual(input.headerText, 'message text string');
         assert.isTrue(input.isSlowGeneration);
-        clock.restore();
     });
     it('can show error state', async () => {
         const consoleViewMessage = setupBuiltInAi(async function* () {

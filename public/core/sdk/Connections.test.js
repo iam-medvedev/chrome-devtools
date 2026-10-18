@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import * as Platform from '../platform/platform.js';
@@ -22,9 +23,6 @@ describe('WebSocketTransport', () => {
         sinon.stub(globalThis, 'WebSocket').callsFake(function () {
             return mockSocket;
         });
-    });
-    afterEach(() => {
-        sinon.restore();
     });
     it('reports connection failed and mentions --remote-allow-origins on connection error', () => {
         const onWebSocketDisconnect = sinon.spy();

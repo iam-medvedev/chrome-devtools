@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -13,9 +14,6 @@ describe('ServiceWorkerUpdateCycleView', () => {
     setupLocaleHooks();
     let versionId = 0;
     const registrationId = 'fake-sw-id';
-    afterEach(() => {
-        sinon.restore();
-    });
     it('calculates update cycle ranges', () => {
         const payload = { registrationId, scopeURL: '', isDeleted: false };
         const registration = new SDK.ServiceWorkerManager.ServiceWorkerRegistration(payload);

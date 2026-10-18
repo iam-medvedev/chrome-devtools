@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars, initializeGlobalVars, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { makeCompleteEvent } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -59,7 +61,14 @@ describe('TimelinePanel', function () {
         Timeline.ModificationsManager.ModificationsManager.reset();
         traceModel = Trace.TraceModel.Model.createWithAllHandlers();
         resourceLoader = { loadResource: sinon.stub() };
-        timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager, traceModel });
+        timeline = Timeline.TimelinePanel.TimelinePanel.instance({
+            forceNew: true,
+            resourceLoader,
+            targetManager,
+            isolateManager,
+            commentManager: new CommentManager.CommentManager.CommentManager(),
+            traceModel,
+        });
         renderElementIntoDOM(timeline);
     });
     afterEach(() => {
@@ -235,7 +244,14 @@ describe('TimelinePanel', function () {
         }
         it('opens the sidebar once a trace is imported if the user has not seen it before', async function () {
             setupStubs({ sidebarHasBeenOpened: false, sidebarIsShowing: false });
-            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager, traceModel });
+            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({
+                forceNew: true,
+                resourceLoader,
+                targetManager,
+                isolateManager,
+                commentManager: new CommentManager.CommentManager.CommentManager(),
+                traceModel,
+            });
             const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
             const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
             await timeline.loadingComplete(events, null, null);
@@ -243,7 +259,14 @@ describe('TimelinePanel', function () {
         });
         it('does not open the sidebar if the user has seen it already', async function () {
             setupStubs({ sidebarHasBeenOpened: true, sidebarIsShowing: false });
-            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, resourceLoader, targetManager, isolateManager, traceModel });
+            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({
+                forceNew: true,
+                resourceLoader,
+                targetManager,
+                isolateManager,
+                commentManager: new CommentManager.CommentManager.CommentManager(),
+                traceModel,
+            });
             const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
             const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
             await timeline.loadingComplete(events, null, null);
@@ -462,6 +485,72 @@ describe('TimelinePanel', function () {
         const parsedTrace = traceModel.parsedTrace();
         assert.isOk(parsedTrace);
         assert.isTrue(Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+    });
+    it('uses primaryPageTarget and scriptUrl for departed frames and does not retry failed source map loads', async function () {
+        const primaryTarget = createTarget({ targetManager });
+        try {
+            const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json');
+            // Add a cross-origin //# sourceURL= to verify #createSourceMapResolver uses
+            // script.url rather than script.sourceUrl as initiator.initiatorUrl.
+            const eventsWithSpoofedSourceUrl = traceEvents.map(event => {
+                if (Trace.Types.Events.isRundownScript(event)) {
+                    return {
+                        ...event,
+                        args: {
+                            ...event.args,
+                            data: {
+                                ...event.args.data,
+                                hasSourceUrl: true,
+                                sourceUrl: 'https://spoofed-origin.example.com/spoofed.js',
+                            },
+                        },
+                    };
+                }
+                return event;
+            });
+            const loadResourceStub = resourceLoader.loadResource;
+            loadResourceStub.rejects(new Error('CSP violation'));
+            timeline['setState']("Recording" /* Timeline.TimelinePanel.State.RECORDING */);
+            await timeline.loadingStarted();
+            await timeline.loadingComplete(eventsWithSpoofedSourceUrl, null, metadata);
+            // http://localhost:8080/source.map.json was already attempted during #createSourceMapResolver,
+            // so #retainSourceMapsForEnhancedTrace must not retry it after it failed.
+            sinon.assert.calledOnce(loadResourceStub);
+            assert.strictEqual(loadResourceStub.firstCall.args[0], 'http://localhost:8080/source.map.json');
+            const initiator = loadResourceStub.firstCall.args[1];
+            assert.strictEqual(initiator.target, primaryTarget, 'Expected initiator.target to be primaryPageTarget, not null');
+            assert.strictEqual(initiator.initiatorUrl, 'http://localhost:8080/index.html');
+        }
+        finally {
+            primaryTarget.dispose('test');
+        }
+    });
+    it('uses primaryPageTarget in retainSourceMapsForEnhancedTrace for scripts skipped by ScriptsHandler', async function () {
+        const primaryTarget = createTarget({ targetManager });
+        try {
+            const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json');
+            // Filter out the RundownScriptCompiled event that associates a script with a frame so that ScriptsHandler
+            // skips source map resolution, leaving the unassociated-frame scripts to #retainSourceMapsForEnhancedTrace.
+            const eventsWithoutAssociatedFrameScript = traceEvents.filter(event => {
+                return !(Trace.Types.Events.isRundownScriptCompiled(event) &&
+                    event.args?.data?.frame === '21D58E83A5C17916277166140F6A464B');
+            });
+            const loadResourceStub = resourceLoader.loadResource;
+            loadResourceStub.resolves({
+                content: JSON.stringify({ version: 3, sources: [], names: [], mappings: '' }),
+            });
+            timeline['setState']("Recording" /* Timeline.TimelinePanel.State.RECORDING */);
+            await timeline.loadingStarted();
+            await timeline.loadingComplete(eventsWithoutAssociatedFrameScript, null, metadata ?? {});
+            sinon.assert.calledOnce(loadResourceStub);
+            assert.strictEqual(loadResourceStub.firstCall.args[0], 'http://localhost:8080/source.map.json');
+            const initiator = loadResourceStub.firstCall.args[1];
+            assert.strictEqual(initiator.target, primaryTarget, 'Expected initiator.target to be primaryPageTarget, not null');
+            assert.strictEqual(initiator.initiatorUrl, 'http://localhost:8080/index.html');
+        }
+        finally {
+            primaryTarget.dispose('test');
+        }
     });
     describe('console.profile confirmation dialog', () => {
         it('loads CPU profile when user accepts confirmation dialog', async function () {

@@ -41,7 +41,7 @@ import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Foundation from '../../foundation/foundation.js';
-import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as AiAssistanceModel from '../../models/ai-utils/ai-utils.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as Persistence from '../../models/persistence/persistence.js';
@@ -137,16 +137,10 @@ const WINDOW_LOCAL_STORAGE = {
     },
     clear: () => window.localStorage.clear(),
 };
-let isCustomDevtoolsFrontendInternal;
-function isCustomDevtoolsFrontend() {
-    if (typeof isCustomDevtoolsFrontendInternal === 'undefined') {
-        isCustomDevtoolsFrontendInternal = window.location.toString().startsWith('devtools://devtools/custom/');
-    }
-    return isCustomDevtoolsFrontendInternal;
-}
 export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
     #veStartPromise;
+    #toolbarsPromise;
     #universe;
     #supportsEmulation = false;
     constructor(opts) {
@@ -275,11 +269,14 @@ export class MainImpl {
     createSettingsStorage(prefs) {
         this.#initializeExperiments();
         let storagePrefix = '';
-        if (isCustomDevtoolsFrontend()) {
+        if (Host.Platform.isCustomDevtoolsFrontend()) {
             storagePrefix = '__custom__';
         }
-        else if (!Root.Runtime.Runtime.queryParam('can_dock') && Boolean(Root.Runtime.Runtime.queryParam('debugFrontend')) &&
-            !Host.InspectorFrontendHost.isUnderTest()) {
+        else if (Host.Platform.isRemoteDevtoolsFrontend()) {
+            storagePrefix = '__remote__';
+        }
+        else if (!Root.Runtime.Runtime.queryParam('can_dock') &&
+            Boolean(Root.Runtime.Runtime.queryParam('debugFrontend')) && !Host.InspectorFrontendHost.isUnderTest()) {
             storagePrefix = '__bundled__';
         }
         let localStorage;
@@ -463,7 +460,7 @@ export class MainImpl {
         this.#universe.networkPersistenceManager.addEventListener("LocalOverridesRequested" /* Persistence.NetworkPersistenceManager.Events.LOCAL_OVERRIDES_REQUESTED */, event => {
             inspectorView.displaySelectOverrideFolderInfobar(event.data);
         });
-        await inspectorView.createToolbars();
+        this.#toolbarsPromise = inspectorView.createToolbars();
         inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
         this.#universe.commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
             inspectorView.renderStatusBar(event.data);
@@ -474,6 +471,7 @@ export class MainImpl {
         UI.DockController.DockController.instance().announceDockLocation();
         // Allow UI cycles to repaint prior to creating connection.
         window.setTimeout(this.#initializeTarget.bind(this), 0);
+        await this.#toolbarsPromise;
         _a.timeEnd('Main._showAppUI');
     }
     async #initializeTarget() {
@@ -485,6 +483,7 @@ export class MainImpl {
             await runnableInstanceFunction().run();
         }
         await this.#veStartPromise;
+        await this.#toolbarsPromise;
         // Used for browser tests.
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
         this.#readyForTestPromise.resolve();
@@ -567,7 +566,7 @@ export class MainImpl {
     }
     #redispatchClipboardEvent(event) {
         const eventCopy = new CustomEvent('clipboard-' + event.type, { bubbles: true, composed: true });
-        // @ts-expect-error Used in ElementsTreeOutline
+        // @ts-expect-error Used in DOMTreeWidget
         eventCopy['original'] = event;
         const document = event.target && event.target.ownerDocument;
         const target = document ? UI.DOMUtilities.deepActiveElement(document) : null;

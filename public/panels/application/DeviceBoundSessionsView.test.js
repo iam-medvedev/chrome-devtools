@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -13,15 +14,13 @@ import * as Application from './application.js';
 describeWithEnvironment('DeviceBoundSessionsView', () => {
     const mockSessionId = 'session-id-123';
     const mockSite = 'https://example.com';
-    let toLocaleStringStub;
     beforeEach(async () => {
         const original = Date.prototype.toLocaleString;
-        toLocaleStringStub = sinon.stub(Date.prototype, 'toLocaleString').callsFake(function () {
+        sinon.stub(Date.prototype, 'toLocaleString').callsFake(function () {
             return original.call(this, 'en-US', { timeZone: 'UTC' });
         });
     });
     afterEach(async () => {
-        toLocaleStringStub.restore();
         cleanTestDOM();
         await raf();
     });
@@ -374,7 +373,6 @@ describeWithEnvironment('DeviceBoundSessionsView', () => {
         sinon.assert.notCalled(deselectSpy);
         Application.DeviceBoundSessionsView.DEFAULT_VIEW(viewInput, {}, targetWidget.contentElement);
         sinon.assert.calledOnce(deselectSpy);
-        deselectSpy.restore();
     });
     it('renders session correctly', async () => {
         const viewInput = {

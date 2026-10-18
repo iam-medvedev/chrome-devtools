@@ -762,7 +762,6 @@ __export(UIUtils_exports, {
   copyLinkAddressLabel: () => copyLinkAddressLabel,
   copyTextToClipboard: () => copyTextToClipboard,
   createFileSelectorElement: () => createFileSelectorElement,
-  createHistoryInput: () => createHistoryInput,
   createIconLabel: () => createIconLabel,
   createInput: () => createInput,
   createLabel: () => createLabel,
@@ -3775,6 +3774,9 @@ var WrapperWidget = class extends Widget {
       );
     }
   }
+  calculateConstraints() {
+    return this.#widget ? this.#widget.constraints() : super.calculateConstraints();
+  }
   focus() {
     if (this.#widget) {
       this.#widget.focus();
@@ -4399,15 +4401,14 @@ var SplitWidget = class extends SplitWidgetBase {
     return mainConstraints.widthToMax(sidebarConstraints).addHeight(sidebarConstraints);
   }
   #maybeAutoAdjustOrientation() {
-    if (this.#autoAdjustOrientation) {
-      const width = this.isVertical() ? this.#totalSizeCSS : this.#totalSizeOtherDimensionCSS;
-      const height = this.isVertical() ? this.#totalSizeOtherDimensionCSS : this.#totalSizeCSS;
-      if (width <= 600 && height >= 600) {
-        this.setVertical(false);
-      } else {
-        this.setVertical(true);
-      }
+    if (!this.#autoAdjustOrientation) {
+      return;
     }
+    const { width, height } = this.contentElement.getBoundingClientRect();
+    if (!width || !height) {
+      return;
+    }
+    this.setVertical(width > 600 || height < width);
   }
   #onResizeStart() {
     this.#resizeStartSizeDIP = this.#sidebarSizeDIP;
@@ -4570,7 +4571,7 @@ var SplitWidgetElement = class extends WidgetElement {
       const autoAdjustOrientation = element.getAttribute("direction") === "auto";
       const secondIsSidebar = element.getAttribute("sidebar-position") === "second";
       const settingName = element.getAttribute("name") ?? void 0;
-      const sidebarSize = parseInt(element.getAttribute("sidebar-initial-size") || "", 10);
+      const sidebarSize = parseFloat(element.getAttribute("sidebar-initial-size") || "");
       const defaultSidebarWidth = !isNaN(sidebarSize) ? sidebarSize : void 0;
       const defaultSidebarHeight = !isNaN(sidebarSize) ? sidebarSize : void 0;
       const widget2 = new SplitWidget(
@@ -5194,6 +5195,7 @@ var TabbedPane = class extends TabbedPaneBase {
   #rightToolbar;
   #trailingSlot;
   #lastDispatchedHiddenTabIds = "";
+  #zoomManager = ZoomManager.instance();
   allowTabReorder;
   automaticReorder;
   constructor(element) {
@@ -5244,7 +5246,6 @@ var TabbedPane = class extends TabbedPaneBase {
     this.triggerDropDownTimeout = null;
     this.dropDownButton = this.createDropDownButton();
     this.currentDevicePixelRatio = window.devicePixelRatio;
-    ZoomManager.instance().addEventListener("ZoomChanged" /* ZOOM_CHANGED */, this.zoomChanged, this);
     this.makeTabSlider();
   }
   setAccessibleName(name) {
@@ -5588,12 +5589,18 @@ var TabbedPane = class extends TabbedPaneBase {
   }
   wasShown() {
     super.wasShown();
+    this.#zoomManager.addEventListener("ZoomChanged" /* ZOOM_CHANGED */, this.zoomChanged, this);
+    this.clearMeasuredWidths();
     const effectiveTab = this.currentTab || this.tabsHistory[0];
     if (effectiveTab && this.autoSelectFirstItemOnShow) {
       this.selectTab(effectiveTab.id);
     }
     this.requestUpdate();
     this.dispatchEventToListeners("PaneVisibilityChanged" /* PaneVisibilityChanged */, { isVisible: true });
+  }
+  willHide() {
+    super.willHide();
+    this.#zoomManager.removeEventListener("ZoomChanged" /* ZOOM_CHANGED */, this.zoomChanged, this);
   }
   wasHidden() {
     this.dispatchEventToListeners("PaneVisibilityChanged" /* PaneVisibilityChanged */, { isVisible: false });
@@ -6646,7 +6653,16 @@ var TabbedPaneElement = class extends WidgetElement {
     for (const child of nodes) {
       this.#tabObserver.observe(child, {
         attributes: true,
-        attributeFilter: ["title", "jslogcontext", "selected", "disabled", "closeable", "uncloseable"]
+        attributeFilter: [
+          "label",
+          "title",
+          "tab-tooltip",
+          "jslogcontext",
+          "selected",
+          "disabled",
+          "closeable",
+          "uncloseable"
+        ]
       });
     }
   }
@@ -6661,7 +6677,8 @@ var TabbedPaneElement = class extends WidgetElement {
     const nodes = this.#getTabNodes(widget2);
     for (const child of nodes) {
       const id2 = child.id;
-      const title = child.getAttribute("title") || "";
+      const title = child.getAttribute("label") || child.getAttribute("title") || "";
+      const tabTooltip = child.getAttribute("tab-tooltip") ?? void 0;
       const jslogContext = child.getAttribute("jslogcontext") || void 0;
       const selected = child.hasAttribute("selected");
       const enabled = !child.hasAttribute("disabled");
@@ -6675,6 +6692,7 @@ var TabbedPaneElement = class extends WidgetElement {
         id: id2,
         title,
         view,
+        tabTooltip,
         jslogContext,
         selected,
         enabled,
@@ -8381,6 +8399,13 @@ var statusBar_css_default = `/* Copyright 2026 The Chromium Authors
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
     background: var(--sys-color-cdt-base-container);
   }
+
+  /* Hide the bar when no visible item renders anything besides its style tag.
+   * Status bar items are expected to be light DOM widgets (see
+   * docs/ui_engineering.md "Styling"); content in a shadow root is not detected. */
+  .status-bar:not(:has(> :not(.hidden) > :not(style))) {
+    display: none;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./statusBar.css")} */`;
@@ -8623,8 +8648,8 @@ var InspectorView = class _InspectorView extends VBox {
   #drawerShowModeBeforeDockSideChange = null;
   #drawerMinimizedBeforeDockSideChange = null;
   #statusBarContainer;
-  constructor() {
-    super();
+  constructor(element) {
+    super(element);
     GlassPane.setContainer(this.element);
     this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
     this.drawerOrientationByDockSetting = Common11.Settings.Settings.instance().createSetting("inspector.drawer-orientation-by-dock-mode", {
@@ -8740,9 +8765,9 @@ var InspectorView = class _InspectorView extends VBox {
     this.#drawerView.restoreMinimizedStateFromSettings();
   }
   static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
+    const { forceNew, element } = opts;
     if (!inspectorViewInstance || forceNew) {
-      inspectorViewInstance = new _InspectorView();
+      inspectorViewInstance = new _InspectorView(element);
     }
     return inspectorViewInstance;
   }
@@ -8835,8 +8860,10 @@ var InspectorView = class _InspectorView extends VBox {
     return null;
   }
   async createToolbars() {
-    await this.tabbedPane.leftToolbar().appendItemsAtLocation("main-toolbar-left");
-    await this.tabbedPane.rightToolbar().appendItemsAtLocation("main-toolbar-right");
+    await Promise.all([
+      this.tabbedPane.leftToolbar().appendItemsAtLocation("main-toolbar-left"),
+      this.tabbedPane.rightToolbar().appendItemsAtLocation("main-toolbar-right")
+    ]);
   }
   addPanel(view) {
     this.tabbedLocation.appendView(view);
@@ -9079,17 +9106,17 @@ var InspectorView = class _InspectorView extends VBox {
     this.ownerSplitWidget = splitWidget;
   }
   ownerSplit() {
-    return this.ownerSplitWidget || null;
+    if (this.ownerSplitWidget) {
+      return this.ownerSplitWidget;
+    }
+    const parent = this.parentWidget();
+    return parent instanceof SplitWidget ? parent : null;
   }
   minimize() {
-    if (this.ownerSplitWidget) {
-      this.ownerSplitWidget.setSidebarMinimized(true);
-    }
+    this.ownerSplit()?.setSidebarMinimized(true);
   }
   restore() {
-    if (this.ownerSplitWidget) {
-      this.ownerSplitWidget.setSidebarMinimized(false);
-    }
+    this.ownerSplit()?.setSidebarMinimized(false);
   }
   displayDebuggedTabReloadRequiredWarning(message) {
     if (!this.#debuggedTabReloadRequiredInfobar) {
@@ -13409,93 +13436,6 @@ var Toolbar = class _Toolbar extends HTMLElement {
       item8.setCompactLayout(enable);
     }
   }
-  static createLongPressActionButton(action6, toggledOptions, untoggledOptions) {
-    const button = _Toolbar.createActionButton(action6);
-    const mainButtonClone = _Toolbar.createActionButton(action6);
-    let longClickController = null;
-    let longClickButtons = null;
-    action6.addEventListener("Toggled" /* TOGGLED */, updateOptions);
-    updateOptions();
-    return button;
-    function updateOptions() {
-      const buttons = action6.toggled() ? toggledOptions || null : untoggledOptions || null;
-      if (buttons?.length) {
-        if (!longClickController) {
-          longClickController = new LongClickController(button.element, showOptions);
-          button.setLongClickable(true);
-          longClickButtons = buttons;
-        }
-      } else if (longClickController) {
-        longClickController.dispose();
-        longClickController = null;
-        button.setLongClickable(false);
-        longClickButtons = null;
-      }
-    }
-    function showOptions() {
-      let buttons = longClickButtons ? longClickButtons.slice() : [];
-      buttons.push(mainButtonClone);
-      const document2 = button.element.ownerDocument;
-      document2.documentElement.addEventListener("mouseup", mouseUp, false);
-      const optionsGlassPane = new GlassPane();
-      optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* BLOCKED_BY_GLASS_PANE */);
-      optionsGlassPane.show(document2);
-      const optionsBar = optionsGlassPane.contentElement.createChild("devtools-toolbar");
-      optionsBar.floating = true;
-      const buttonHeight = 26;
-      const hostButtonPosition = button.element.boxInWindow().relativeToElement(GlassPane.container(document2));
-      const topNotBottom = hostButtonPosition.y + buttonHeight * buttons.length < document2.documentElement.offsetHeight;
-      if (topNotBottom) {
-        buttons = buttons.reverse();
-      }
-      optionsBar.style.height = buttonHeight * buttons.length + "px";
-      if (topNotBottom) {
-        optionsBar.style.top = hostButtonPosition.y - 5 + "px";
-      } else {
-        optionsBar.style.top = hostButtonPosition.y - buttonHeight * (buttons.length - 1) - 6 + "px";
-      }
-      optionsBar.style.left = hostButtonPosition.x - 5 + "px";
-      for (let i = 0; i < buttons.length; ++i) {
-        buttons[i].element.addEventListener("mousemove", mouseOver, false);
-        buttons[i].element.addEventListener("mouseout", mouseOut, false);
-        optionsBar.appendToolbarItem(buttons[i]);
-      }
-      const hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
-      buttons[hostButtonIndex].element.classList.add("emulate-active");
-      function mouseOver(e) {
-        if (e.which !== 1) {
-          return;
-        }
-        if (e.target instanceof HTMLElement) {
-          const buttonElement = e.target.enclosingNodeOrSelfWithClass("toolbar-button");
-          buttonElement.classList.add("emulate-active");
-        }
-      }
-      function mouseOut(e) {
-        if (e.which !== 1) {
-          return;
-        }
-        if (e.target instanceof HTMLElement) {
-          const buttonElement = e.target.enclosingNodeOrSelfWithClass("toolbar-button");
-          buttonElement.classList.remove("emulate-active");
-        }
-      }
-      function mouseUp(e) {
-        if (e.which !== 1) {
-          return;
-        }
-        optionsGlassPane.hide();
-        document2.documentElement.removeEventListener("mouseup", mouseUp, false);
-        for (let i = 0; i < buttons.length; ++i) {
-          if (buttons[i].element.classList.contains("emulate-active")) {
-            buttons[i].element.classList.remove("emulate-active");
-            buttons[i].clicked(e);
-            break;
-          }
-        }
-      }
-    }
-  }
   static createActionButton(actionOrActionId, options = {}) {
     const action6 = typeof actionOrActionId === "string" ? ActionRegistry.instance().getAction(actionOrActionId) : actionOrActionId;
     const button = action6.toggleable() ? makeToggle() : makeButton();
@@ -16867,47 +16807,6 @@ function createInput(className, type, jslogContext) {
   }
   return element;
 }
-function createHistoryInput(type = "search", className) {
-  const history = [""];
-  let historyPosition = 0;
-  const historyInput = document.createElement("input");
-  historyInput.type = type;
-  if (className) {
-    historyInput.className = className;
-  }
-  historyInput.addEventListener("input", onInput, false);
-  historyInput.addEventListener("keydown", onKeydown, false);
-  return historyInput;
-  function onInput(_event) {
-    if (history.length === historyPosition + 1) {
-      history[historyPosition] = historyInput.value;
-    }
-  }
-  function onKeydown(event) {
-    if (event.keyCode === Keys.Up.code) {
-      if (historyPosition > 0) {
-        historyPosition--;
-        historyInput.value = history[historyPosition];
-        historyInput.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-      }
-      event.consume(true);
-    } else if (event.keyCode === Keys.Down.code) {
-      if (historyPosition < history.length - 1) {
-        historyPosition++;
-        historyInput.value = history[historyPosition];
-        historyInput.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-      }
-      event.consume(true);
-    } else if (event.keyCode === Keys.Enter.code) {
-      if (history.length > 1 && history[history.length - 2] === historyInput.value) {
-        return;
-      }
-      history[history.length - 1] = historyInput.value;
-      historyPosition = history.length - 1;
-      history.push("");
-    }
-  }
-}
 function createSelect(name, options) {
   const select = document.createElement("select");
   setLabel(select, name);
@@ -17554,6 +17453,7 @@ function bindToAction(actionName) {
   const action6 = ActionRegistry.instance().getAction(actionName);
   let setEnabled;
   let toggled;
+  let longClickController = null;
   function actionEnabledChanged(event) {
     setEnabled(event.data);
   }
@@ -17561,6 +17461,8 @@ function bindToAction(actionName) {
     if (!e || !(e instanceof Buttons6.Button.Button)) {
       action6.removeEventListener("Enabled" /* ENABLED */, actionEnabledChanged);
       action6.removeEventListener("Toggled" /* TOGGLED */, toggled);
+      longClickController?.dispose();
+      longClickController = null;
       return;
     }
     setEnabled = (enabled) => {
@@ -17573,13 +17475,100 @@ function bindToAction(actionName) {
     const jslogContext = action6.id();
     const toggledIconName = action6.toggledIcon() ?? iconName;
     const toggleType = action6.toggleWithRedColor() ? Buttons6.Button.ToggleType.RED : Buttons6.Button.ToggleType.PRIMARY;
-    if (e.childNodes.length) {
+    const hasContentChildren = Array.from(e.childNodes).some((node) => !(node instanceof Buttons6.Button.Button) && (node.nodeType !== Node.TEXT_NODE || Boolean(node.textContent?.trim())));
+    const updateLongClickOptions = () => {
+      const optionButtons = Array.from(e.querySelectorAll("devtools-button"));
+      if (optionButtons.length > 0 && (!toggleable || action6.toggled())) {
+        if (!longClickController) {
+          longClickController = new LongClickController(e, showOptions);
+          e.longClickable = true;
+        }
+      } else if (longClickController) {
+        longClickController.dispose();
+        longClickController = null;
+        e.longClickable = false;
+      }
+    };
+    function showOptions() {
+      if (!(e instanceof Buttons6.Button.Button)) {
+        return;
+      }
+      let buttons = [...e.querySelectorAll("devtools-button"), e];
+      const document2 = e.ownerDocument;
+      document2.documentElement.addEventListener("mouseup", mouseUp, false);
+      const optionsGlassPane = new GlassPane();
+      optionsGlassPane.setPointerEventsBehavior("BlockedByGlassPane" /* BLOCKED_BY_GLASS_PANE */);
+      optionsGlassPane.show(document2);
+      const optionsBar = optionsGlassPane.contentElement.createChild("devtools-toolbar");
+      optionsBar.floating = true;
+      const buttonHeight = 26;
+      const hostButtonPosition = e.boxInWindow().relativeToElement(GlassPane.container(document2));
+      const topNotBottom = hostButtonPosition.y + buttonHeight * buttons.length < document2.documentElement.offsetHeight;
+      if (topNotBottom) {
+        buttons = buttons.reverse();
+      }
+      optionsBar.style.height = buttonHeight * buttons.length + "px";
+      if (topNotBottom) {
+        optionsBar.style.top = hostButtonPosition.y - 5 + "px";
+      } else {
+        optionsBar.style.top = hostButtonPosition.y - buttonHeight * (buttons.length - 1) - 6 + "px";
+      }
+      optionsBar.style.left = hostButtonPosition.x - 5 + "px";
+      const buttonClones = [];
+      for (const button of buttons) {
+        const clone = button.cloneNode(false);
+        clone.longClickable = false;
+        clone.classList.add("toolbar-button");
+        clone.addEventListener("mousemove", mouseOver, false);
+        clone.addEventListener("mouseout", mouseOut, false);
+        optionsBar.appendChild(clone);
+        buttonClones.push(clone);
+      }
+      const hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
+      buttonClones[hostButtonIndex].classList.add("emulate-active");
+      function mouseOver(ev) {
+        if (ev.which !== 1) {
+          return;
+        }
+        if (ev.target instanceof HTMLElement) {
+          const buttonElement = ev.target.enclosingNodeOrSelfWithClass("toolbar-button");
+          buttonElement?.classList.add("emulate-active");
+        }
+      }
+      function mouseOut(ev) {
+        if (ev.which !== 1) {
+          return;
+        }
+        if (ev.target instanceof HTMLElement) {
+          const buttonElement = ev.target.enclosingNodeOrSelfWithClass("toolbar-button");
+          buttonElement?.classList.remove("emulate-active");
+        }
+      }
+      function mouseUp(ev) {
+        if (ev.which !== 1) {
+          return;
+        }
+        optionsGlassPane.hide();
+        document2.documentElement.removeEventListener("mouseup", mouseUp, false);
+        for (let i = 0; i < buttonClones.length; ++i) {
+          if (buttonClones[i].classList.contains("emulate-active")) {
+            buttonClones[i].classList.remove("emulate-active");
+            buttons[i].click();
+            break;
+          }
+        }
+      }
+    }
+    if (hasContentChildren) {
       e.jslogContext = jslogContext;
+      updateLongClickOptions();
     } else if (toggleable) {
       toggled = () => {
         e.toggled = action6.toggled();
+        updateLongClickOptions();
         if (action6.title()) {
-          e.title = action6.title();
+          setLabel(e, action6.title());
+          e.accessibleLabel = action6.title();
           Tooltip.installWithActionBinding(e, action6.title(), action6.id());
         }
       };
@@ -17587,17 +17576,28 @@ function bindToAction(actionName) {
       e.data = {
         jslogContext,
         title,
+        accessibleLabel: title,
         variant: Buttons6.Button.Variant.ICON_TOGGLE,
         iconName,
         toggledIconName,
         toggleType,
-        toggled: action6.toggled()
+        toggled: action6.toggled(),
+        toggleOnClick: false
       };
       toggled();
     } else if (iconName) {
-      e.data = { iconName, jslogContext, title, variant: Buttons6.Button.Variant.ICON };
+      e.data = { iconName, jslogContext, title, accessibleLabel: title, variant: Buttons6.Button.Variant.ICON };
+      if (title) {
+        setLabel(e, title);
+        Tooltip.installWithActionBinding(e, title, action6.id());
+      }
+      updateLongClickOptions();
     } else {
-      e.data = { jslogContext, title, variant: Buttons6.Button.Variant.TEXT };
+      e.data = { jslogContext, title, accessibleLabel: title, variant: Buttons6.Button.Variant.TEXT };
+      if (title) {
+        setLabel(e, title);
+      }
+      updateLongClickOptions();
     }
     setEnabled(action6.enabled());
     e.onclick = () => action6.execute();
@@ -17830,16 +17830,22 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   static findCorrespondingElement(sourceElement, sourceRootElement, targetRootElement) {
     let currentElement = sourceElement;
     const childIndexesOnPathToRoot = [];
-    while (currentElement?.parentElement && currentElement !== sourceRootElement) {
-      childIndexesOnPathToRoot.push([...currentElement.parentElement.children].indexOf(currentElement));
+    while (currentElement.parentElement && currentElement !== sourceRootElement) {
+      let childIndex = 0;
+      let sibling = currentElement.previousElementSibling;
+      while (sibling) {
+        childIndex++;
+        sibling = sibling.previousElementSibling;
+      }
+      childIndexesOnPathToRoot.push(childIndex);
       currentElement = currentElement.parentElement;
     }
-    if (!currentElement) {
+    if (currentElement !== sourceRootElement) {
       return null;
     }
     let targetElement = targetRootElement;
     for (const index of childIndexesOnPathToRoot.reverse()) {
-      targetElement = targetElement.children[index];
+      targetElement = targetElement?.children[index] ?? null;
     }
     return targetElement;
   }
@@ -18292,7 +18298,7 @@ var MarginBehavior = /* @__PURE__ */ ((MarginBehavior2) => {
   MarginBehavior2["NO_MARGIN"] = "NoMargin";
   return MarginBehavior2;
 })(MarginBehavior || {});
-var containers = /* @__PURE__ */ new Map();
+var containers = /* @__PURE__ */ new WeakMap();
 var panes = /* @__PURE__ */ new Set();
 var GlassPanePanes = panes;
 
@@ -18941,7 +18947,7 @@ var dropTarget_css_default = `/*
   position: absolute;
   inset: 0;
   display: flex;
-  background-color: var(--color-background-opacity-80);
+  background-color: color-mix(in srgb, var(--sys-color-cdt-base-container) 80%, transparent);
   z-index: 1000;
 }
 
@@ -21025,6 +21031,7 @@ var progressIndicator_css_default = `/*
 
 // ../../front_end/ui/legacy/ProgressIndicator.ts
 var ProgressIndicator = class extends HTMLElement {
+  static observedAttributes = ["label", "total-work", "worked"];
   #shadowRoot;
   #contentElement;
   #labelElement;
@@ -21040,6 +21047,22 @@ var ProgressIndicator = class extends HTMLElement {
     this.#labelElement = this.#contentElement.createChild("div", "title");
     this.#progressElement = this.#contentElement.createChild("progress");
     this.#progressElement.value = 0;
+  }
+  // Attributes initialize or update the underlying properties without reflecting subsequent property mutations back.
+  attributeChangedCallback(name, _oldValue, newValue) {
+    if (name === "label") {
+      this.title = newValue ?? "";
+    } else if (name === "total-work") {
+      const value = Number(newValue);
+      if (Number.isFinite(value)) {
+        this.totalWork = value;
+      }
+    } else if (name === "worked") {
+      const value = Number(newValue);
+      if (Number.isFinite(value)) {
+        this.worked = value;
+      }
+    }
   }
   connectedCallback() {
     this.classList.add("progress-indicator");
@@ -21598,6 +21621,7 @@ var RootView = class extends VBox {
 // ../../front_end/ui/legacy/SearchableView.ts
 var SearchableView_exports = {};
 __export(SearchableView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   SearchConfig: () => SearchConfig,
   SearchableView: () => SearchableView
 });
@@ -21606,7 +21630,7 @@ import * as i18n37 from "../../core/i18n/i18n.js";
 import * as Platform22 from "../../core/platform/platform.js";
 import * as VisualLogging24 from "../visual_logging/visual_logging.js";
 import * as Buttons10 from "../components/buttons/buttons.js";
-import { createIcon as createIcon8 } from "../kit/kit.js";
+import * as Lit5 from "../lit/lit.js";
 import * as Settings12 from "../settings/settings.js";
 
 // gen/front_end/ui/legacy/searchableView.css.js
@@ -21776,6 +21800,7 @@ var searchableView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./searchableView.css")} */`;
 
 // ../../front_end/ui/legacy/SearchableView.ts
+var { html: html9, nothing: nothing9, render: render14, Directives: Directives5 } = Lit5;
 var UIStrings19 = {
   /**
    * @description Button text and placeholder to replace the current search match in the search bar.
@@ -21849,41 +21874,171 @@ var UIStrings19 = {
 };
 var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/SearchableView.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
-function createClearButton(jslogContext) {
-  const button = new Buttons10.Button.Button();
-  button.data = {
+function renderClearButton(jslogContext, onClick) {
+  return html9`
+    <devtools-button class="clear-button" tabindex="-1" aria-label=${i18nString19(UIStrings19.clearInput)}
+        .data=${{
     variant: Buttons10.Button.Variant.ICON,
     size: Buttons10.Button.Size.SMALL,
     jslogContext,
     title: i18nString19(UIStrings19.clearInput),
     iconName: "cross-circle-filled"
-  };
-  button.ariaLabel = i18nString19(UIStrings19.clearInput);
-  button.classList.add("clear-button");
-  button.tabIndex = -1;
-  return button;
+  }}
+        @click=${onClick}></devtools-button>`;
 }
+function renderConfigToggle(iconName, label, toggled, onClick) {
+  return html9`
+    <devtools-button aria-label=${label}
+        .data=${{
+    variant: Buttons10.Button.Variant.ICON_TOGGLE,
+    size: Buttons10.Button.Size.SMALL,
+    iconName,
+    toggledIconName: iconName,
+    toggled,
+    toggleType: Buttons10.Button.ToggleType.PRIMARY,
+    title: label,
+    jslogContext: iconName
+  }}
+        @click=${onClick}></devtools-button>`;
+}
+var DEFAULT_VIEW4 = (input, output, target) => {
+  const replaceLabel = input.secondRowVisible ? i18nString19(UIStrings19.disableFindAndReplace) : i18nString19(UIStrings19.enableFindAndReplace);
+  render14(html9`
+    <style>${searchableView_css_default}</style>
+    <slot></slot>
+    <div class="search-bar ${input.searchIsVisible ? "" : "hidden"} ${input.secondRowVisible ? "replaceable" : ""}"
+        style="order: 100"
+        ${Directives5.ref((el) => {
+    output.footerElementContainer = el;
+  })}>
+      <div class="toolbar-search" jslog=${VisualLogging24.toolbar("search").track({ resize: true })}>
+        <devtools-toolbar class="replace-toggle-toolbar">
+          <devtools-button class="toolbar-item" ?hidden=${!input.replaceable} aria-label=${replaceLabel}
+              .data=${{
+    variant: Buttons10.Button.Variant.ICON_TOGGLE,
+    size: Buttons10.Button.Size.REGULAR,
+    iconName: "replace",
+    toggledIconName: "replace",
+    toggleType: Buttons10.Button.ToggleType.PRIMARY,
+    toggled: input.secondRowVisible,
+    title: replaceLabel,
+    jslogContext: "replace"
+  }}
+              @click=${input.onToggleReplace}></devtools-button>
+        </devtools-toolbar>
+        <div class="search-inputs">
+          <div class="icon-and-input">
+            <devtools-icon name="search"></devtools-icon>
+            <input type="search" id="search-input-field" class="search-replace search" autocomplete="off"
+                placeholder=${input.placeholder}
+                aria-label=${input.searchAriaLabel ?? nothing9}
+                jslog=${VisualLogging24.textField("search").track({ change: true, keydown: "ArrowUp|ArrowDown|Enter|Escape" })}
+                @keydown=${input.onSearchKeyDown}
+                @input=${input.onSearchInput}
+                ${Directives5.ref((el) => {
+    output.searchInputElement = el;
+  })}>
+          </div>
+          <div class="replace-element input-line">
+            <input class="search-replace" placeholder=${i18nString19(UIStrings19.replace)}
+                jslog=${VisualLogging24.textField("replace").track({ change: true, keydown: "Enter" })}
+                @keydown=${input.onReplaceKeyDown}
+                ${Directives5.ref((el) => {
+    output.replaceInputElement = el;
+  })}>
+            ${renderClearButton("clear-replace-input", input.onClearReplaceInput)}
+          </div>
+          <div class="search-config-buttons">
+            ${renderClearButton("clear-search-input", input.onClearSearchInput)}
+            ${input.supportsCaseSensitive ? renderConfigToggle(
+    "match-case",
+    i18nString19(UIStrings19.matchCase),
+    input.caseSensitiveToggled,
+    input.onToggleCaseSensitive
+  ) : nothing9}
+            ${input.supportsWholeWord ? renderConfigToggle(
+    "match-whole-word",
+    i18nString19(UIStrings19.matchWholeWord),
+    input.wholeWordToggled,
+    input.onToggleWholeWord
+  ) : nothing9}
+            ${input.supportsRegex ? renderConfigToggle(
+    "regular-expression",
+    i18nString19(UIStrings19.useRegularExpression),
+    input.regexToggled,
+    input.onToggleRegex
+  ) : nothing9}
+          </div>
+          <div class="input-line search-input-background"></div>
+        </div>
+        <div class="toolbar-search-buttons">
+          <div class="first-row-buttons">
+            <devtools-toolbar class="toolbar-search-options">
+              <devtools-button class="toolbar-item" aria-label=${i18nString19(UIStrings19.searchPrevious)} ?disabled=${!input.navEnabled}
+                  .data=${{
+    variant: Buttons10.Button.Variant.TOOLBAR,
+    iconName: "chevron-up",
+    title: i18nString19(UIStrings19.searchPrevious),
+    jslogContext: "select-previous",
+    disabled: !input.navEnabled
+  }}
+                  @click=${input.onPrevClick}></devtools-button>
+              <devtools-button class="toolbar-item" aria-label=${i18nString19(UIStrings19.searchNext)} ?disabled=${!input.navEnabled}
+                  .data=${{
+    variant: Buttons10.Button.Variant.TOOLBAR,
+    iconName: "chevron-down",
+    title: i18nString19(UIStrings19.searchNext),
+    jslogContext: "select-next",
+    disabled: !input.navEnabled
+  }}
+                  @click=${input.onNextClick}></devtools-button>
+              <div class="toolbar-item toolbar-text search-results-matches"
+                  style="font-variant-numeric: tabular-nums; color: var(--sys-color-on-surface-subtle); padding: 0 var(--sys-size-3)"
+                  aria-live="polite" aria-atomic="false" aria-label=${input.matchesAriaLabel || nothing9}>
+                <span aria-hidden="true">${input.matchesText}</span>
+              </div>
+            </devtools-toolbar>
+            <devtools-button class="close-search-button"
+                .data=${{
+    variant: Buttons10.Button.Variant.TOOLBAR,
+    size: Buttons10.Button.Size.REGULAR,
+    iconName: "cross",
+    title: i18nString19(UIStrings19.closeSearchBar),
+    jslogContext: "close-search"
+  }}
+                @click=${input.onCloseClick}></devtools-button>
+          </div>
+          <div class="second-row-buttons replace-element">
+            <devtools-button class="search-action-button" ?disabled=${!input.replaceEnabled}
+                .data=${{
+    variant: Buttons10.Button.Variant.OUTLINED,
+    title: i18nString19(UIStrings19.replace),
+    jslogContext: "replace",
+    disabled: !input.replaceEnabled
+  }}
+                @click=${input.onReplaceClick}>${i18nString19(UIStrings19.replace)}</devtools-button>
+            <devtools-button class="search-action-button" ?disabled=${!input.replaceEnabled}
+                .data=${{
+    variant: Buttons10.Button.Variant.OUTLINED,
+    title: i18nString19(UIStrings19.replaceAll),
+    jslogContext: "replace-all",
+    disabled: !input.replaceEnabled
+  }}
+                @click=${input.onReplaceAllClick}>${i18nString19(UIStrings19.replaceAll)}</devtools-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `, target);
+};
 var SearchableView = class extends VBox {
+  #view;
+  #viewOutput = {};
   #searchProvider;
   #searchTarget = null;
   replaceProvider = null;
   #setting = null;
   #replaceable = false;
-  footerElementContainer;
-  footerElement;
-  replaceToggleButton;
-  searchInputElement;
-  matchesElement;
-  matchesElementValue;
-  searchNavigationPrevElement;
-  searchNavigationNextElement;
-  replaceInputElement;
-  #searchConfigButtons;
-  #caseSensitiveButton;
-  #wholeWordButton;
-  #regexButton;
-  replaceButtonElement;
-  replaceAllButtonElement;
   minimalSearchQuerySize = 3;
   searchIsVisible;
   #secondRowVisible = false;
@@ -21899,109 +22054,87 @@ var SearchableView = class extends VBox {
   #historyPosition = 0;
   currentQuery;
   valueChangedTimeoutId;
-  constructor(searchableOrElement, replaceable = null, settingName, element) {
+  constructor(searchableOrElement, replaceableOrView, settingName, element, view = DEFAULT_VIEW4) {
     const isElement = searchableOrElement instanceof HTMLElement || searchableOrElement === void 0;
     super(isElement ? searchableOrElement : element, { useShadowDom: true });
-    this.registerRequiredCSS(searchableView_css_default);
+    this.#view = isElement && typeof replaceableOrView === "function" ? replaceableOrView : view;
     searchableViewsByElement.set(this.element, this);
-    this.contentElement.createChild("slot");
-    this.footerElementContainer = this.contentElement.createChild("div", "search-bar hidden");
-    this.footerElementContainer.style.order = "100";
-    this.footerElement = this.footerElementContainer.createChild("div", "toolbar-search");
-    this.footerElement.setAttribute("jslog", `${VisualLogging24.toolbar("search").track({ resize: true })}`);
-    const replaceToggleToolbar = this.footerElement.createChild("devtools-toolbar", "replace-toggle-toolbar");
-    this.replaceToggleButton = new ToolbarToggle(i18nString19(UIStrings19.enableFindAndReplace), "replace", void 0, "replace");
-    setLabel(this.replaceToggleButton.element, i18nString19(UIStrings19.enableFindAndReplace));
-    this.replaceToggleButton.addEventListener(ToolbarButton.Events.CLICK, this.toggleReplace, this);
-    replaceToggleToolbar.appendToolbarItem(this.replaceToggleButton);
-    const searchInputElements = this.footerElement.createChild("div", "search-inputs");
-    const iconAndInput = searchInputElements.createChild("div", "icon-and-input");
-    const searchIcon = createIcon8("search");
-    iconAndInput.appendChild(searchIcon);
-    this.searchInputElement = iconAndInput.createChild("input", "search-replace search");
-    this.searchInputElement.type = "search";
-    this.searchInputElement.id = "search-input-field";
-    this.searchInputElement.autocomplete = "off";
-    this.searchInputElement.placeholder = i18nString19(UIStrings19.findString);
-    this.searchInputElement.setAttribute(
-      "jslog",
-      `${VisualLogging24.textField("search").track({ change: true, keydown: "ArrowUp|ArrowDown|Enter|Escape" })}`
-    );
-    this.searchInputElement.addEventListener("keydown", this.onSearchKeyDown.bind(this), true);
-    this.searchInputElement.addEventListener("input", this.onInput.bind(this), false);
-    const replaceInputElements = searchInputElements.createChild("div", "replace-element input-line");
-    this.replaceInputElement = replaceInputElements.createChild("input", "search-replace");
-    this.replaceInputElement.addEventListener("keydown", this.onReplaceKeyDown.bind(this), true);
-    this.replaceInputElement.placeholder = i18nString19(UIStrings19.replace);
-    this.replaceInputElement.setAttribute(
-      "jslog",
-      `${VisualLogging24.textField("replace").track({ change: true, keydown: "Enter" })}`
-    );
-    const replaceInputClearButton = createClearButton("clear-replace-input");
-    replaceInputClearButton.addEventListener("click", () => {
-      this.replaceInputElement.value = "";
-      this.replaceInputElement.focus();
-    });
-    replaceInputElements.appendChild(replaceInputClearButton);
-    this.#searchConfigButtons = searchInputElements.createChild("div", "search-config-buttons");
-    const clearButton = createClearButton("clear-search-input");
-    clearButton.addEventListener("click", () => {
-      this.searchInputElement.value = "";
-      this.clearSearch();
-      this.searchInputElement.focus();
-    });
-    this.#searchConfigButtons.appendChild(clearButton);
-    searchInputElements.createChild("div", "input-line search-input-background");
-    const buttonsContainer = this.footerElement.createChild("div", "toolbar-search-buttons");
-    const firstRowButtons = buttonsContainer.createChild("div", "first-row-buttons");
-    const toolbar5 = firstRowButtons.createChild("devtools-toolbar", "toolbar-search-options");
-    this.searchNavigationPrevElement = new ToolbarButton(i18nString19(UIStrings19.searchPrevious), "chevron-up", void 0, "select-previous");
-    this.searchNavigationPrevElement.addEventListener(ToolbarButton.Events.CLICK, () => this.onPrevButtonSearch());
-    toolbar5.appendToolbarItem(this.searchNavigationPrevElement);
-    setLabel(this.searchNavigationPrevElement.element, i18nString19(UIStrings19.searchPrevious));
-    this.searchNavigationNextElement = new ToolbarButton(i18nString19(UIStrings19.searchNext), "chevron-down", void 0, "select-next");
-    this.searchNavigationNextElement.addEventListener(ToolbarButton.Events.CLICK, () => this.onNextButtonSearch());
-    setLabel(this.searchNavigationNextElement.element, i18nString19(UIStrings19.searchNext));
-    toolbar5.appendToolbarItem(this.searchNavigationNextElement);
-    const matchesText = new ToolbarText();
-    this.matchesElement = matchesText.element;
-    this.matchesElement.style.fontVariantNumeric = "tabular-nums";
-    this.matchesElement.style.color = "var(--sys-color-on-surface-subtle)";
-    this.matchesElement.style.padding = "0 var(--sys-size-3)";
-    this.matchesElement.classList.add("search-results-matches");
-    markAsPoliteLiveRegion(this.matchesElement, false);
-    this.matchesElementValue = this.matchesElement.createChild("span");
-    setHidden(this.matchesElementValue, true);
-    toolbar5.appendToolbarItem(matchesText);
-    const cancelButtonElement = new Buttons10.Button.Button();
-    cancelButtonElement.data = {
-      variant: Buttons10.Button.Variant.TOOLBAR,
-      size: Buttons10.Button.Size.REGULAR,
-      iconName: "cross",
-      title: i18nString19(UIStrings19.closeSearchBar),
-      jslogContext: "close-search"
-    };
-    cancelButtonElement.classList.add("close-search-button");
-    cancelButtonElement.addEventListener("click", () => this.closeSearch());
-    firstRowButtons.appendChild(cancelButtonElement);
-    const secondRowButtons = buttonsContainer.createChild("div", "second-row-buttons replace-element");
-    this.replaceButtonElement = createTextButton(i18nString19(UIStrings19.replace), this.replace.bind(this), {
-      className: "search-action-button",
-      jslogContext: "replace"
-    });
-    this.replaceButtonElement.disabled = true;
-    secondRowButtons.appendChild(this.replaceButtonElement);
-    this.replaceAllButtonElement = createTextButton(i18nString19(UIStrings19.replaceAll), this.replaceAll.bind(this), {
-      className: "search-action-button",
-      jslogContext: "replace-all"
-    });
-    secondRowButtons.appendChild(this.replaceAllButtonElement);
-    this.replaceAllButtonElement.disabled = true;
     if (!isElement) {
       this.settingName = settingName;
-      this.replaceProvider = replaceable;
+      this.replaceProvider = replaceableOrView ?? null;
       this.searchProvider = searchableOrElement;
     }
+    this.performUpdate();
+  }
+  get footerElementContainer() {
+    return this.#viewOutput.footerElementContainer;
+  }
+  get searchInputElement() {
+    return this.#viewOutput.searchInputElement;
+  }
+  get replaceInputElement() {
+    return this.#viewOutput.replaceInputElement;
+  }
+  performUpdate() {
+    const navEnabled = this.#searchProvider?.supportsMatchCounts?.() === true ? this.#hasMatches : true;
+    this.#view(
+      {
+        searchIsVisible: Boolean(this.searchIsVisible),
+        replaceable: this.#replaceable,
+        secondRowVisible: this.#secondRowVisible,
+        placeholder: this.#placeholder,
+        searchAriaLabel: this.#searchAriaLabel,
+        supportsCaseSensitive: Boolean(this.#searchProvider?.supportsCaseSensitiveSearch()),
+        caseSensitiveToggled: this.#caseSensitiveToggled,
+        supportsWholeWord: Boolean(this.#searchProvider?.supportsWholeWordSearch()),
+        wholeWordToggled: this.#wholeWordToggled,
+        supportsRegex: Boolean(this.#searchProvider?.supportsRegexSearch()),
+        regexToggled: this.#regexToggled,
+        matchesText: this.#matchesText,
+        matchesAriaLabel: this.#matchesAriaLabel,
+        navEnabled,
+        replaceEnabled: this.#hasMatches,
+        onToggleReplace: () => this.toggleReplace(),
+        onSearchKeyDown: (event) => this.onSearchKeyDown(event),
+        onSearchInput: () => this.onInput(),
+        onClearSearchInput: () => {
+          if (this.searchInputElement) {
+            this.searchInputElement.value = "";
+            this.searchInputElement.focus();
+          }
+          this.clearSearch();
+        },
+        onReplaceKeyDown: (event) => this.onReplaceKeyDown(event),
+        onClearReplaceInput: () => {
+          if (this.replaceInputElement) {
+            this.replaceInputElement.value = "";
+            this.replaceInputElement.focus();
+          }
+        },
+        onToggleCaseSensitive: () => this.#onToggleConfig("case"),
+        onToggleWholeWord: () => this.#onToggleConfig("word"),
+        onToggleRegex: () => this.#onToggleConfig("regex"),
+        onPrevClick: () => this.onPrevButtonSearch(),
+        onNextClick: () => this.onNextButtonSearch(),
+        onCloseClick: () => this.closeSearch(),
+        onReplaceClick: () => this.replace(),
+        onReplaceAllClick: () => this.replaceAll()
+      },
+      this.#viewOutput,
+      this.contentElement
+    );
+  }
+  #onToggleConfig(type) {
+    if (type === "case") {
+      this.#caseSensitiveToggled = !this.#caseSensitiveToggled;
+    } else if (type === "word") {
+      this.#wholeWordToggled = !this.#wholeWordToggled;
+    } else {
+      this.#regexToggled = !this.#regexToggled;
+    }
+    this.#saveSetting();
+    this.performSearch(false, true);
+    this.performUpdate();
   }
   get searchProvider() {
     return this.#searchProvider;
@@ -22011,7 +22144,8 @@ var SearchableView = class extends VBox {
       return;
     }
     this.#searchProvider = searchable;
-    this.#updateSearchConfigButtons();
+    this.#loadSetting();
+    this.performUpdate();
   }
   get searchTarget() {
     return this.#searchTarget;
@@ -22031,6 +22165,7 @@ var SearchableView = class extends VBox {
     }
     this.#setting = settingName ? Common18.Settings.Settings.instance().createSetting(settingName, {}) : null;
     this.#loadSetting();
+    this.performUpdate();
   }
   get replaceable() {
     return this.#replaceable;
@@ -22043,54 +22178,7 @@ var SearchableView = class extends VBox {
     if (this.searchIsVisible) {
       this.updateReplaceVisibility();
     }
-  }
-  #createConfigToggleButton(iconName, label, onToggle) {
-    const button = new Buttons10.Button.Button();
-    button.data = {
-      variant: Buttons10.Button.Variant.ICON_TOGGLE,
-      size: Buttons10.Button.Size.SMALL,
-      iconName,
-      toggledIconName: iconName,
-      toggled: false,
-      toggleType: Buttons10.Button.ToggleType.PRIMARY,
-      title: label,
-      jslogContext: iconName
-    };
-    setLabel(button, label);
-    button.addEventListener("click", () => {
-      onToggle();
-      this.#saveSetting();
-      this.performSearch(false, true);
-    });
-    this.#searchConfigButtons.appendChild(button);
-    return button;
-  }
-  #updateSearchConfigButtons() {
-    this.#caseSensitiveButton?.remove();
-    this.#caseSensitiveButton = void 0;
-    this.#wholeWordButton?.remove();
-    this.#wholeWordButton = void 0;
-    this.#regexButton?.remove();
-    this.#regexButton = void 0;
-    if (!this.#searchProvider) {
-      return;
-    }
-    if (this.#searchProvider.supportsCaseSensitiveSearch()) {
-      this.#caseSensitiveButton = this.#createConfigToggleButton("match-case", i18nString19(UIStrings19.matchCase), () => {
-        this.#caseSensitiveToggled = Boolean(this.#caseSensitiveButton?.toggled);
-      });
-    }
-    if (this.#searchProvider.supportsWholeWordSearch()) {
-      this.#wholeWordButton = this.#createConfigToggleButton("match-whole-word", i18nString19(UIStrings19.matchWholeWord), () => {
-        this.#wholeWordToggled = Boolean(this.#wholeWordButton?.toggled);
-      });
-    }
-    if (this.#searchProvider.supportsRegexSearch()) {
-      this.#regexButton = this.#createConfigToggleButton("regular-expression", i18nString19(UIStrings19.useRegularExpression), () => {
-        this.#regexToggled = Boolean(this.#regexButton?.toggled);
-      });
-    }
-    this.#loadSetting();
+    this.performUpdate();
   }
   static fromElement(element) {
     let view = null;
@@ -22101,10 +22189,8 @@ var SearchableView = class extends VBox {
     return view;
   }
   toggleReplace() {
-    this.#secondRowVisible = this.replaceToggleButton.isToggled();
-    const label = this.#secondRowVisible ? i18nString19(UIStrings19.disableFindAndReplace) : i18nString19(UIStrings19.enableFindAndReplace);
-    setLabel(this.replaceToggleButton.element, label);
-    this.replaceToggleButton.element.title = label;
+    this.#secondRowVisible = !this.#secondRowVisible;
+    this.performUpdate();
     this.updateSecondRowVisibility();
   }
   #saveSetting() {
@@ -22128,33 +22214,23 @@ var SearchableView = class extends VBox {
     this.#caseSensitiveToggled = Boolean(this.#searchProvider?.supportsCaseSensitiveSearch() && settingValue.caseSensitive);
     this.#wholeWordToggled = Boolean(this.#searchProvider?.supportsWholeWordSearch() && settingValue.wholeWord);
     this.#regexToggled = Boolean(this.#searchProvider?.supportsRegexSearch() && settingValue.isRegex);
-    if (this.#caseSensitiveButton) {
-      this.#caseSensitiveButton.toggled = this.#caseSensitiveToggled;
-    }
-    if (this.#wholeWordButton) {
-      this.#wholeWordButton.toggled = this.#wholeWordToggled;
-    }
-    if (this.#regexButton) {
-      this.#regexButton.toggled = this.#regexToggled;
-    }
   }
   setMinimalSearchQuerySize(minimalSearchQuerySize) {
     this.minimalSearchQuerySize = minimalSearchQuerySize;
   }
   setPlaceholder(placeholder, ariaLabel) {
     this.#placeholder = placeholder;
-    this.#searchAriaLabel = ariaLabel;
-    this.searchInputElement.placeholder = placeholder;
-    if (this.#searchAriaLabel) {
-      setLabel(this.searchInputElement, this.#searchAriaLabel);
+    if (ariaLabel) {
+      this.#searchAriaLabel = ariaLabel;
     }
+    this.performUpdate();
   }
   get placeholder() {
     return this.#placeholder;
   }
   set placeholder(placeholder) {
     this.#placeholder = placeholder;
-    this.searchInputElement.placeholder = placeholder;
+    this.performUpdate();
   }
   setReplaceable(replaceable) {
     this.replaceable = replaceable;
@@ -22180,7 +22256,8 @@ var SearchableView = class extends VBox {
     this.searchProvider.onSearchClosed?.();
   }
   toggleSearchBar(toggled) {
-    this.footerElementContainer.classList.toggle("hidden", !toggled);
+    this.searchIsVisible = toggled;
+    this.performUpdate();
     this.doResize();
   }
   cancelSearch() {
@@ -22195,8 +22272,7 @@ var SearchableView = class extends VBox {
     this.clearSearch();
     this.updateReplaceVisibility();
     this.#matchesText = "";
-    this.#matchesAriaLabel = "";
-    this.matchesElementValue.textContent = "";
+    this.performUpdate();
   }
   refreshSearch() {
     if (!this.searchIsVisible) {
@@ -22230,19 +22306,9 @@ var SearchableView = class extends VBox {
     this.closeSearch();
     return true;
   }
-  updateSearchNavigationButtonState(enabled) {
-    this.#hasMatches = enabled;
-    this.replaceButtonElement.disabled = !this.#hasMatches;
-    this.replaceAllButtonElement.disabled = !this.#hasMatches;
-    if (this.searchProvider.supportsMatchCounts?.() === true) {
-      this.searchNavigationPrevElement.setEnabled(this.#hasMatches);
-      this.searchNavigationNextElement.setEnabled(this.#hasMatches);
-    }
-  }
   updateSearchMatchesCountAndCurrentMatchIndex(matches, currentMatchIndex) {
     if (!this.currentQuery) {
       this.#matchesText = "";
-      this.#matchesAriaLabel = "";
     } else if (matches === 0 || currentMatchIndex >= 0) {
       this.#matchesText = i18nString19(UIStrings19.dOfD, { PH1: currentMatchIndex + 1, PH2: matches });
       this.#matchesAriaLabel = i18nString19(UIStrings19.accessibledOfD, { PH1: currentMatchIndex + 1, PH2: matches });
@@ -22253,11 +22319,8 @@ var SearchableView = class extends VBox {
       this.#matchesText = i18nString19(UIStrings19.dMatches, { PH1: matches });
       this.#matchesAriaLabel = i18nString19(UIStrings19.dMatches, { PH1: matches });
     }
-    this.matchesElementValue.textContent = this.#matchesText;
-    if (this.#matchesAriaLabel) {
-      setLabel(this.matchesElement, this.#matchesAriaLabel);
-    }
-    this.updateSearchNavigationButtonState(matches > 0);
+    this.#hasMatches = matches > 0;
+    this.performUpdate();
   }
   showSearchField() {
     if (this.searchIsVisible) {
@@ -22281,10 +22344,9 @@ var SearchableView = class extends VBox {
     this.searchIsVisible = true;
   }
   updateReplaceVisibility() {
-    this.replaceToggleButton.setVisible(this.replaceable);
     if (!this.replaceable) {
       this.#secondRowVisible = false;
-      this.replaceToggleButton.setToggled(false);
+      this.performUpdate();
       this.updateSecondRowVisibility();
     }
   }
@@ -22371,7 +22433,6 @@ var SearchableView = class extends VBox {
     return new SearchConfig(query, this.#caseSensitiveToggled, this.#wholeWordToggled, this.#regexToggled);
   }
   updateSecondRowVisibility() {
-    this.footerElementContainer.classList.toggle("replaceable", this.#secondRowVisible);
     if (this.#secondRowVisible) {
       this.replaceInputElement?.focus();
     } else {
@@ -22470,7 +22531,7 @@ __export(SoftDropDown_exports, {
 });
 import * as i18n39 from "../../core/i18n/i18n.js";
 import * as Geometry6 from "../geometry/geometry.js";
-import { createIcon as createIcon9 } from "../kit/kit.js";
+import { createIcon as createIcon8 } from "../kit/kit.js";
 import * as VisualLogging25 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/softDropDown.css.js
@@ -22608,7 +22669,7 @@ var SoftDropDown = class {
     this.element.classList.add("soft-dropdown");
     appendStyle(this.element, softDropDownButton_css_default);
     this.titleElement = this.element.createChild("span", "title");
-    const dropdownArrowIcon = createIcon9("triangle-down");
+    const dropdownArrowIcon = createIcon8("triangle-down");
     this.element.appendChild(dropdownArrowIcon);
     setExpanded(this.element, false);
     this.glassPane = new GlassPane();
@@ -22866,7 +22927,7 @@ var StackPane_exports = {};
 __export(StackPane_exports, {
   StackPaneElement: () => StackPaneElement
 });
-import * as Lit5 from "../lit/lit.js";
+import * as Lit6 from "../lit/lit.js";
 
 // ../../front_end/ui/legacy/View.ts
 var View_exports = {};
@@ -22874,7 +22935,7 @@ __export(View_exports, {
   SimpleView: () => SimpleView
 });
 import * as Platform23 from "../../core/platform/platform.js";
-import { nothing as nothing9 } from "../lit/lit.js";
+import { nothing as nothing10 } from "../lit/lit.js";
 var SimpleView = class extends VBox {
   #title;
   #viewId;
@@ -22900,7 +22961,7 @@ var SimpleView = class extends VBox {
     return false;
   }
   toolbarItems() {
-    return Promise.resolve(nothing9);
+    return Promise.resolve(nothing10);
   }
   widget() {
     return Promise.resolve(this);
@@ -22919,9 +22980,9 @@ var SimpleView = class extends VBox {
 };
 
 // ../../front_end/ui/legacy/StackPane.ts
-var { html: html9, render: render14 } = Lit5;
+var { html: html10, render: render15 } = Lit6;
 var SLOT_VIEW = (input, _output, target) => {
-  render14(html9`<slot name=${input.name}></slot>`, target);
+  render15(html10`<slot name=${input.name}></slot>`, target);
 };
 var SlotView = class extends SimpleView {
   #pane;
@@ -22946,7 +23007,7 @@ var SlotView = class extends SimpleView {
   }
 };
 var STACK_VIEW = (input, _output, target) => {
-  render14(html9`<devtools-widget ${widget(WrapperWidget, { widget: input.location.widget() })}></devtools-widget>`, target);
+  render15(html10`<devtools-widget ${widget(WrapperWidget, { widget: input.location.widget() })}></devtools-widget>`, target);
 };
 var StackPaneElement = class extends HTMLElement {
   #location = ViewManager.instance().createStackLocation();
@@ -23011,11 +23072,11 @@ customElements.define("devtools-stack-pane", StackPaneElement);
 // ../../front_end/ui/legacy/TargetCrashedScreen.ts
 var TargetCrashedScreen_exports = {};
 __export(TargetCrashedScreen_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n41 from "../../core/i18n/i18n.js";
-import { html as html10, render as render15 } from "../lit/lit.js";
+import { html as html11, render as render16 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -23050,9 +23111,9 @@ var UIStrings21 = {
 };
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
-var DEFAULT_VIEW4 = (input, _output, target) => {
-  render15(
-    html10`
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render16(
+    html11`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString21(UIStrings21.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString21(UIStrings21.oncePageIsReloadedDevtoolsWill)}</div>`,
@@ -23061,7 +23122,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
 };
 var TargetCrashedScreen = class extends VBox {
   hideCallback;
-  constructor(hideCallback, view = DEFAULT_VIEW4) {
+  constructor(hideCallback, view = DEFAULT_VIEW5) {
     super({ useShadowDom: true });
     view({}, {}, this.contentElement);
     this.hideCallback = hideCallback;
@@ -23092,7 +23153,7 @@ import * as i18n43 from "../../core/i18n/i18n.js";
 import * as Platform25 from "../../core/platform/platform.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as Highlighting from "../components/highlighting/highlighting.js";
-import * as Lit6 from "../lit/lit.js";
+import * as Lit7 from "../lit/lit.js";
 import * as VisualLogging26 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -23436,7 +23497,7 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("ui/legacy/Treeoutline.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render16 } = Lit6;
+var { render: render17 } = Lit7;
 var Events11 = /* @__PURE__ */ ((Events12) => {
   Events12["ElementAttached"] = "ElementAttached";
   Events12["ElementsDetached"] = "ElementsDetached";
@@ -24095,7 +24156,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render16(icons, this.leadingIconsElement);
+    render17(icons, this.leadingIconsElement);
   }
   setTrailingIcons(icons) {
     if (!this.trailingIconsElement && !icons.length) {
@@ -24108,7 +24169,7 @@ var TreeElement = class {
       this.listItemNode.appendChild(this.trailingIconsElement);
       this.ensureSelection();
     }
-    render16(icons, this.trailingIconsElement);
+    render17(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -24628,7 +24689,7 @@ var TreeSearch = class _TreeSearch extends Common19.ObjectWrapper.ObjectWrapper 
     return this.#getNodeMatchMap().get(node) ?? [];
   }
   static highlight(ranges, selectedRange) {
-    return Lit6.Directives.ref((element) => {
+    return Lit7.Directives.ref((element) => {
       if (!(element instanceof HTMLElement)) {
         return;
       }
@@ -24788,7 +24849,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.updateAttributes();
     const childUl = this.configElement.querySelector(':scope > ul[role="group"]');
     const templateElements = childUl ? [this.configElement, childUl] : [this.configElement];
-    Lit6.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
+    Lit7.CustomDirectives.InterceptBindingDirective.setEventListeners(templateElements, this.listItemElement);
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
         continue;
@@ -25139,10 +25200,10 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
   }
   TreeViewElement2.TreeElementExpandEvent = TreeElementExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
-var IfExpandedDirective = class extends Lit6.Directive.Directive {
+var IfExpandedDirective = class extends Lit7.Directive.Directive {
   #partInfo;
   constructor(partInfo) {
-    if (partInfo.type !== Lit6.Directive.PartType.CHILD) {
+    if (partInfo.type !== Lit7.Directive.PartType.CHILD) {
       throw new Error("ifExpanded directive must be used in a child node");
     }
     super(partInfo);
@@ -25150,7 +25211,7 @@ var IfExpandedDirective = class extends Lit6.Directive.Directive {
   }
   render(content) {
     if (!this.#isInExpandedRow(this.#partInfo.startNode)) {
-      return Lit6.nothing;
+      return Lit7.nothing;
     }
     if (typeof content === "function") {
       return content();
@@ -25181,7 +25242,7 @@ var IfExpandedDirective = class extends Lit6.Directive.Directive {
     return node.expanded;
   }
 };
-var ifExpanded = Lit6.Directive.directive(IfExpandedDirective);
+var ifExpanded = Lit7.Directive.directive(IfExpandedDirective);
 var TreeElementWrapper = class extends HTMLElement {
   #treeElement;
   set treeElement(treeElement) {

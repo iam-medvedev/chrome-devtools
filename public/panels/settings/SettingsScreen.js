@@ -118,6 +118,9 @@ export class SettingsScreen extends UI.Widget.VBox {
         }
         return settingsScreenInstance;
     }
+    static removeInstanceForTesting() {
+        settingsScreenInstance = undefined;
+    }
     static revealSettingsScreen() {
         const settingsScreen = SettingsScreen.instance();
         if (settingsScreen.isShowing()) {
@@ -125,6 +128,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         }
         settingsScreen.reportTabOnReveal = true;
         const dialog = new UI.Dialog.Dialog('settings');
+        dialog.setAriaLabel(i18nString(UIStrings.settings));
         dialog.contentElement.removeAttribute('aria-modal');
         dialog.contentElement.tabIndex = -1;
         dialog.addCloseButton();

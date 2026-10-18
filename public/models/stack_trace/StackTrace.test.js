@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { protocolCallFrame } from '../../testing/StackTraceHelpers.js';
+import { protocolCallFrame, stubFrame } from '../../testing/StackTraceHelpers.js';
 import * as StackTrace from './stack_trace.js';
 describe('DebuggableFrameFlavor for', () => {
     it('returns the exact same instance for subsequent identical (deep equal) DebuggableFrames', () => {
-        const frameTemplate = {
+        const frameTemplate = stubFrame({
             line: 20,
             column: 10,
             sdkFrame: sinon.createStubInstance(SDK.DebuggerModel.CallFrame),
-        };
+        });
         assert.strictEqual(StackTrace.StackTrace.DebuggableFrameFlavor.for({ ...frameTemplate }), StackTrace.StackTrace.DebuggableFrameFlavor.for({ ...frameTemplate }));
     });
     it('returns a different instance if the same DebuggableFrame object changes', () => {
-        const frame = {
+        const frame = stubFrame({
             line: 20,
             column: 10,
             sdkFrame: sinon.createStubInstance(SDK.DebuggerModel.CallFrame),
-        };
+        });
         const flavor1 = StackTrace.StackTrace.DebuggableFrameFlavor.for(frame);
         const flavor2 = StackTrace.StackTrace.DebuggableFrameFlavor.for({ ...frame, line: 30 });
         assert.notStrictEqual(flavor2, flavor1);

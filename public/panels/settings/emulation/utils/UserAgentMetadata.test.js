@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as EmulationUtils from './utils.js';
 const UserAgentMetadata = EmulationUtils.UserAgentMetadata;
 const errParse = 'syntax error';

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';

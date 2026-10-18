@@ -4,6 +4,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare const HeapTimelineOverviewBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
 export declare class HeapTimelineOverview extends HeapTimelineOverviewBase {
+    #private;
     readonly overviewCalculator: OverviewCalculator;
     overviewContainer: HTMLElement;
     overviewGrid: PerfUI.OverviewGrid.OverviewGrid;
@@ -23,6 +24,8 @@ export declare class HeapTimelineOverview extends HeapTimelineOverviewBase {
     stop(): void;
     setSamples(samples: Samples): void;
     drawOverviewCanvas(width: number, height: number): void;
+    wasShown(): void;
+    willHide(): void;
     onResize(): void;
     onWindowChanged(): void;
     scheduleUpdate(): void;

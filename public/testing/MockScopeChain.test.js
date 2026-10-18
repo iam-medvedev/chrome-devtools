@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { parseScopeChain } from './MockScopeChain.js';
 describe('Scope test string parser', () => {
     it('test helper parses scopes from test descriptor', () => {

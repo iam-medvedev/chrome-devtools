@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { after, afterEach, before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -59,6 +60,8 @@ function cleanup() {
         panel.detach();
     }
     panels = [];
+    now = 0;
+    performanceNowStub = null;
 }
 function openHistoryContextMenu(lastUpdate, item) {
     const contextMenu = new UI.ContextMenu.ContextMenu(new MouseEvent('click'));
@@ -93,6 +96,30 @@ async function waitForLoadingToFinish(view) {
         nextInput = await view.nextInput;
     }
     return nextInput;
+}
+let now = 0;
+let performanceNowStub = null;
+function stubPerformanceNow(initialTime = 0) {
+    now = initialTime;
+    performanceNowStub = sinon.stub(performance, 'now').callsFake(() => now);
+}
+/**
+ * Advances the clock past the input protection window before answering the permission dialog.
+ * The test must call `stubPerformanceNow()` before the prompt appears, because the panel reads
+ * the clock when it shows the prompt.
+ */
+function approveSideEffect(dialog, decision = "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */) {
+    assert.isNotNull(performanceNowStub, 'Call stubPerformanceNow() before the permission prompt appears.');
+    now += 500;
+    dialog.onAnswer(decision);
+}
+function summarizeSteps(viewInput) {
+    assert(viewInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+    const lastMessage = viewInput.props.messages.at(-1);
+    assert.exists(lastMessage);
+    assert(lastMessage.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
+    return lastMessage.parts.filter(part => part.type === 'step')
+        .map(part => ({ title: part.step.title, output: part.step.output, state: part.step.state.type }));
 }
 /**
  * Creates a stubbed element node belonging to a document at `documentUrl`.
@@ -214,13 +241,12 @@ describeWithEnvironment('AI Assistance Panel', () => {
         });
         it('should render the disabled view when the setting is disabled', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
-            const stub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+            sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
                 status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
                 reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
             });
             const { view } = await createAiAssistancePanel();
             assert(view.input.state === "disabled-view" /* AiAssistancePanel.ViewState.DISABLED_VIEW */);
-            stub.restore();
         });
         it('should render the disabled view when blocked by age', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
@@ -674,6 +700,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.callCount(view, callCount);
         });
         it('should clean up the abort event listener when inspect element finishes', async () => {
+            stubPerformanceNow();
             updateHostConfig({
                 devToolsAiAssistanceContextSelectionAgent: { enabled: true },
             });
@@ -696,7 +723,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             const removeEventListenerSpy = sinon.spy(AbortSignal.prototype, 'removeEventListener');
             view.input.props.onTextSubmit('inspect element');
             const sideEffectDialog = await waitForSideEffectDialog(view);
-            sideEffectDialog.onAnswer("allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            approveSideEffect(sideEffectDialog, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
             // Allow microtasks to run so handleInspectElement registers its listeners.
             await new Promise(resolve => setTimeout(resolve, 10));
             sinon.assert.calledWith(addEventListenerSpy, 'abort');
@@ -974,6 +1001,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedAgentChange }));
         });
         it('should log ai-v2-context-agent-change when agent changes context', async () => {
+            stubPerformanceNow();
             updateHostConfig({
                 devToolsAiV2Architecture: { enabled: false },
                 devToolsAiAssistanceContextSelectionAgent: { enabled: true },
@@ -996,7 +1024,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             recordFunctionCallStub.resetHistory();
             view.input.props.onTextSubmit('inspect element');
             const sideEffectDialog = await waitForSideEffectDialog(view);
-            sideEffectDialog.onAnswer("allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            approveSideEffect(sideEffectDialog, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
             // Allow microtasks to run so handleInspectElement registers its listeners.
             await new Promise(resolve => setTimeout(resolve, 10));
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
@@ -1008,6 +1036,222 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 name: expectedAgentChange,
                 context: expectedContextDomNode,
             });
+        });
+    });
+    describe('AI V2 telemetry', () => {
+        let recordFunctionCallStub;
+        let expectedQuerySubmitted;
+        let expectedLearnSkill;
+        let expectedToolCall;
+        let expectedError;
+        let expectedContextDomNode;
+        let expectedContextNone;
+        let expectedStylingSkill;
+        let expectedGetStylesTool;
+        let expectedInspectDomTool;
+        let expectedLearnSkillsTool;
+        let expectedMaxStepsError;
+        beforeEach(async () => {
+            await enableAllFeatureAndSetting();
+            updateHostConfig({
+                devToolsAiV2Architecture: {
+                    enabled: true,
+                },
+            });
+            recordFunctionCallStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordFunctionCall');
+            expectedQuerySubmitted = await getVeHash('ai-v2-query-submitted');
+            expectedLearnSkill = await getVeHash('ai-v2-learn-skill');
+            expectedToolCall = await getVeHash('ai-v2-tool-call');
+            expectedError = await getVeHash('ai-v2-error');
+            expectedContextDomNode = await getVeHash('ai-context-dom-node');
+            expectedContextNone = await getVeHash('ai-context-none');
+            expectedStylingSkill = await getVeHash('styling');
+            expectedGetStylesTool = await getVeHash('get-styles');
+            expectedInspectDomTool = await getVeHash('inspect-dom');
+            expectedLearnSkillsTool = await getVeHash('learn-skills');
+            expectedMaxStepsError = await getVeHash('max-steps');
+        });
+        it('logs ai-v2-query-submitted on every turn with the active context type', async () => {
+            const node = createStubbedElementNodeInDocument('https://example.com');
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            const { panel, view } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([
+                    [{ explanation: 'turn 1 response' }],
+                    [{ explanation: 'turn 2 response' }],
+                ]),
+            });
+            void panel.handleAction('freestyler.elements-floating-button');
+            const turn1Input = await view.nextInput;
+            assert(turn1Input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            turn1Input.props.onTextSubmit('turn 1');
+            const turn1Done = await waitForLoadingToFinish(view);
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedQuerySubmitted,
+                context: expectedContextDomNode,
+            });
+            recordFunctionCallStub.resetHistory();
+            assert(turn1Done.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            turn1Done.props.onContextRemoved?.();
+            const afterRemove = await view.nextInput;
+            assert(afterRemove.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            afterRemove.props.onTextSubmit('turn 2');
+            await waitForLoadingToFinish(view);
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedQuerySubmitted,
+                context: expectedContextNone,
+            });
+        });
+        it('logs ai-v2-learn-skill and ai-v2-tool-call for learned skills, data tools, and context tools', async () => {
+            const node = createStubbedElementNodeInDocument('https://example.com');
+            const newDomContext = new AiAssistanceModel.DOMNodeContext.DOMNodeContext(node);
+            const runStub = sinon.stub(AiAssistanceModel.AiAgent2.AiAgent2.prototype, 'run');
+            runStub.onFirstCall().returns((async function* () {
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    code: 'learnSkills(\'styling\')',
+                    output: 'Loaded styling skill.',
+                    canceled: false,
+                    toolName: 'learnSkills',
+                    loadedSkills: ['styling'],
+                };
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    code: 'getStyles()',
+                    output: 'color: red;',
+                    canceled: false,
+                    toolName: 'getStyles',
+                };
+                yield {
+                    type: "context-change" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT_CHANGE */,
+                    context: newDomContext,
+                    description: 'Inspected element',
+                    toolName: 'inspectDom',
+                };
+            })());
+            runStub.onSecondCall().returns((async function* () {
+                yield {
+                    type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */,
+                    text: 'Done',
+                    complete: true,
+                };
+            })());
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            nextInput.props.onTextSubmit('test tools');
+            await waitForLoadingToFinish(view);
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedLearnSkill,
+                context: expectedStylingSkill,
+            });
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedToolCall,
+                context: expectedGetStylesTool,
+            });
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedToolCall,
+                context: expectedInspectDomTool,
+            });
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall, context: expectedLearnSkillsTool }));
+        });
+        it('logs ai-v2-error for non-abort errors and skips abort errors', async () => {
+            const runStub = sinon.stub(AiAssistanceModel.AiAgent2.AiAgent2.prototype, 'run');
+            runStub.onFirstCall().returns((async function* () {
+                yield {
+                    type: "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */,
+                    error: "max-steps" /* AiAssistanceModel.AiAgent.ErrorType.MAX_STEPS */,
+                };
+            })());
+            runStub.onSecondCall().returns((async function* () {
+                yield {
+                    type: "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */,
+                    error: "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */,
+                };
+            })());
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const turn1Input = await view.nextInput;
+            assert(turn1Input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            turn1Input.props.onTextSubmit('trigger max steps');
+            const turn1Done = await waitForLoadingToFinish(view);
+            sinon.assert.calledWith(recordFunctionCallStub, {
+                name: expectedError,
+                context: expectedMaxStepsError,
+            });
+            recordFunctionCallStub.resetHistory();
+            assert(turn1Done.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            turn1Done.props.onTextSubmit('trigger abort');
+            await waitForLoadingToFinish(view);
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedError }));
+        });
+        it('does not log tool, skill, or error telemetry when replaying a read-only historic conversation', async () => {
+            AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance({ forceNew: true });
+            await AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().upsertHistoryEntry({
+                id: 'historic-1',
+                type: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
+                history: [
+                    {
+                        type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */,
+                        query: 'Past question?',
+                    },
+                    {
+                        type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                        code: 'getStyles()',
+                        output: 'color: blue;',
+                        canceled: false,
+                        toolName: 'getStyles',
+                    },
+                    {
+                        type: "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */,
+                        error: "max-steps" /* AiAssistanceModel.AiAgent.ErrorType.MAX_STEPS */,
+                    },
+                ],
+            });
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const nextInput = await view.nextInput;
+            assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            recordFunctionCallStub.resetHistory();
+            const { contextMenu, id } = openHistoryContextMenu(nextInput, 'Past question?');
+            assert.isDefined(id);
+            contextMenu.invokeHandler(id);
+            const historicView = await view.nextInput;
+            assert(historicView.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.isTrue(historicView.props.isReadOnly);
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedLearnSkill }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedError }));
+        });
+        it('does not log ai-v2 query, tool, or error telemetry when devToolsAiV2Architecture is disabled', async () => {
+            updateHostConfig({
+                devToolsAiV2Architecture: { enabled: false },
+                devToolsAiAssistanceContextSelectionAgent: { enabled: true },
+            });
+            sinon.stub(AiAssistanceModel.ContextSelectionAgent.ContextSelectionAgent.prototype, 'run')
+                .returns((async function* () {
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    code: 'listSourceFiles()',
+                    output: 'files',
+                    canceled: false,
+                    toolName: 'listSourceFiles',
+                };
+                yield {
+                    type: "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */,
+                    error: "max-steps" /* AiAssistanceModel.AiAgent.ErrorType.MAX_STEPS */,
+                };
+            })());
+            const { view } = await createAiAssistancePanel();
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            view.input.props.onContextRemoved?.();
+            recordFunctionCallStub.resetHistory();
+            view.input.props.onTextSubmit('test v1 context selection');
+            await waitForLoadingToFinish(view);
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedQuerySubmitted }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedLearnSkill }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedError }));
         });
     });
     describe('opt-in change dialog', () => {
@@ -1080,14 +1324,13 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.calledWith(stub, 'chrome-ai');
         });
         it('should not show chat, delete history and export conversation actions when ai assistance enabled setting is disabled', async () => {
-            const stub = sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
+            sinon.stub(AiAssistanceModel.AiUtils.aiAssistanceEnabledSettingDescriptor, 'isAvailable').returns({
                 status: 3 /* Common.Settings.SettingAvailability.DISABLED */,
                 reason: ["policy-restricted" /* AiAssistanceModel.AiUtils.DisabledReason.POLICY_RESTRICTED */],
             });
             const { view } = await createAiAssistancePanel();
             assert.isFalse(view.input.showChatActions);
             assert.isFalse(view.input.showActiveConversationActions);
-            stub.restore();
         });
         it('should not show chat, delete history and export conversation actions when ai assistance setting is marked as false', async () => {
             Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(false);
@@ -2794,6 +3037,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             ]);
         });
         it('keeps an earlier step unchanged while a later call in the same response waits for approval', async () => {
+            stubPerformanceNow();
             const { promise: decision, resolve: confirm } = Promise.withResolvers();
             sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run').returns((async function* () {
                 yield { type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */, query: 'test' };
@@ -2825,20 +3069,113 @@ describeWithEnvironment('AI Assistance Panel', () => {
             const input = await view.nextInput;
             assert(input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
             input.props.onTextSubmit('test');
-            function summarizeSteps(viewInput) {
-                assert(viewInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-                const lastMessage = viewInput.props.messages.at(-1);
-                assert.exists(lastMessage);
-                assert(lastMessage.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
-                return lastMessage.parts.filter(part => part.type === 'step')
-                    .map(part => ({ title: part.step.title, output: part.step.output, state: part.step.state.type }));
-            }
             const sideEffectDialog = await waitForSideEffectDialog(view);
             assert.deepEqual(summarizeSteps(view.input), [
                 { title: 'Call A', output: 'a-output', state: 'completed' },
                 { title: 'Call B', output: undefined, state: 'needs_approval' },
             ]);
-            sideEffectDialog.onAnswer("allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            approveSideEffect(sideEffectDialog, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            const finalInput = await waitForLoadingToFinish(view);
+            assert.deepEqual(summarizeSteps(finalInput), [
+                { title: 'Call A', output: 'a-output', state: 'completed' },
+                { title: 'Call B', output: 'b-output', state: 'completed' },
+            ]);
+        });
+    });
+    describe('permission prompt input protection', () => {
+        beforeEach(async () => {
+            await enableAllFeatureAndSetting();
+            stubPerformanceNow(0);
+        });
+        it('honors REJECT immediately', async () => {
+            const { promise: decision, resolve: confirmResolver } = Promise.withResolvers();
+            const confirm = sinon.spy((decision) => {
+                confirmResolver(decision);
+            });
+            sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run').returns((async function* () {
+                yield { type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */, query: 'test' };
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A', callId: 'a' };
+                yield { type: "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */, description: null, confirm, callId: 'a' };
+                await decision;
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */, text: 'Done', complete: true };
+            })());
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const input = await view.nextInput;
+            assert(input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            input.props.onTextSubmit('test');
+            const sideEffectDialog = await waitForSideEffectDialog(view);
+            sideEffectDialog.onAnswer("reject" /* AiAssistanceModel.Tool.PermissionDecision.REJECT */);
+            sinon.assert.calledOnceWithExactly(confirm, "reject" /* AiAssistanceModel.Tool.PermissionDecision.REJECT */);
+        });
+        it('ignores approvals within 500 ms of each prompt in one model response', async () => {
+            const { promise: decisionA, resolve: confirmResolverA } = Promise.withResolvers();
+            const confirmA = sinon.spy((decision) => {
+                confirmResolverA(decision);
+            });
+            const { promise: decisionB, resolve: confirmResolverB } = Promise.withResolvers();
+            const confirmB = sinon.spy((decision) => {
+                confirmResolverB(decision);
+            });
+            sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run').returns((async function* () {
+                yield { type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */, query: 'test' };
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A', callId: 'a' };
+                yield {
+                    type: "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */,
+                    description: null,
+                    confirm: confirmA,
+                    callId: 'a',
+                };
+                await decisionA;
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    code: 'a()',
+                    output: 'a-output',
+                    canceled: false,
+                    callId: 'a',
+                };
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call B', callId: 'b' };
+                yield {
+                    type: "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */,
+                    description: null,
+                    confirm: confirmB,
+                    callId: 'b',
+                };
+                await decisionB;
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    code: 'b()',
+                    output: 'b-output',
+                    canceled: false,
+                    callId: 'b',
+                };
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */, text: 'Done', complete: true };
+            })());
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const input = await view.nextInput;
+            assert(input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            input.props.onTextSubmit('test');
+            const dialogA = await waitForSideEffectDialog(view);
+            approveSideEffect(dialogA, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            sinon.assert.calledOnceWithExactly(confirmA, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            const dialogB = await waitForSideEffectDialog(view);
+            // An approval that arrives just inside prompt B's 500 ms window is ignored.
+            now += 499;
+            dialogB.onAnswer("allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            sinon.assert.notCalled(confirmB);
+            assert.deepEqual(summarizeSteps(view.input), [
+                { title: 'Call A', output: 'a-output', state: 'completed' },
+                { title: 'Call B', output: undefined, state: 'needs_approval' },
+            ]);
+            // Approving prompt B after its protection window elapses succeeds.
+            approveSideEffect(dialogB, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
+            sinon.assert.calledOnceWithExactly(confirmB, "allow-once" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */);
             const finalInput = await waitForLoadingToFinish(view);
             assert.deepEqual(summarizeSteps(finalInput), [
                 { title: 'Call A', output: 'a-output', state: 'completed' },
@@ -3013,7 +3350,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 });
                 void panel.handleAction('freestyler.elements-floating-button');
                 // Start in wide mode
-                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 1000);
+                const offsetWidthStub = sinon.stub(panel.contentElement, 'offsetWidth').get(() => 1000);
                 panel.onResize();
                 let nextInput = await view.nextInput;
                 assertChatViewState(nextInput);
@@ -3031,7 +3368,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 assert.isTrue(nextInput.props.walkthrough.isExpanded);
                 assert.strictEqual(nextInput.props.walkthrough.activeSidebarMessage, msg);
                 // Resize to narrow
-                sinon.restore();
+                offsetWidthStub.restore();
                 sinon.stub(panel.contentElement, 'offsetWidth').get(() => 600);
                 panel.onResize();
                 nextInput = await view.nextInput;
@@ -3049,7 +3386,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                     ]),
                 });
                 // Start in narrow mode
-                sinon.stub(panel.contentElement, 'offsetWidth').get(() => 600);
+                const offsetWidthStub = sinon.stub(panel.contentElement, 'offsetWidth').get(() => 600);
                 panel.onResize();
                 void panel.handleAction('freestyler.elements-floating-button');
                 let nextInput = await view.nextInput;
@@ -3083,7 +3420,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                     msg2,
                 ]);
                 // Resize to wide
-                sinon.restore();
+                offsetWidthStub.restore();
                 sinon.stub(panel.contentElement, 'offsetWidth').get(() => 1000);
                 panel.onResize();
                 nextInput = await view.nextInput;

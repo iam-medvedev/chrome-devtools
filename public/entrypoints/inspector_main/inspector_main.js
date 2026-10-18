@@ -534,7 +534,6 @@ var InspectorMainImpl = class {
     );
   }
 };
-Common2.Runnable.registerEarlyInitializationRunnable(() => new InspectorMainImpl());
 var ReloadActionDelegate2 = class {
   handleAction(_context, actionId) {
     switch (actionId) {

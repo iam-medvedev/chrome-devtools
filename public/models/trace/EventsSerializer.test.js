@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { getMainThread } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -53,6 +54,23 @@ describe('EventsSerializer', () => {
         assert.strictEqual(frameKey, 'l-0');
         const resolvedFrame = eventsSerializer.eventForKey(frameKey, parsedTrace);
         assert.strictEqual(resolvedFrame, frame);
+    });
+    it('can serialize a layout shift cluster', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
+        const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+        const cluster = parsedTrace.data.LayoutShifts.clusters.at(0);
+        assert.isOk(cluster);
+        const clusterKey = eventsSerializer.keyForEvent(cluster);
+        assert.isOk(clusterKey);
+        assert.strictEqual(clusterKey, 'c-3257');
+        const resolvedCluster = eventsSerializer.eventForKey(clusterKey, parsedTrace);
+        assert.strictEqual(resolvedCluster, cluster);
+    });
+    it('throws for a layout shift cluster key that does not match the first shift of a cluster', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
+        const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+        // Raw event 0 is not the first layout shift of any cluster.
+        assert.throws(() => eventsSerializer.eventForKey('c-0', parsedTrace), 'Unknown trace event. Could not find layout shift cluster with first shift index 0');
     });
     it('returns null for a JSSample event', async function () {
         const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();

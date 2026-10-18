@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { microsecondsTraceWindow } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
@@ -9,6 +11,7 @@ function milliToMicro(value) {
     return Trace.Types.Timing.Micro(value * 1000);
 }
 describe('Timing helpers', () => {
+    setupLocaleHooks();
     describe('Timing conversions', () => {
         it('can convert milliseconds to microseconds', () => {
             const input = Trace.Types.Timing.Milli(1);
@@ -76,14 +79,14 @@ describe('Timing helpers', () => {
         });
         it('can use the frame ID to adjust the time correctly', async function () {
             const { data } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const dclEvent = data.PageLoadMetrics.allMarkerEvents.find(event => {
-                return event.name === 'MarkDOMContent' && event.args.data?.frame === data.Meta.mainFrameId;
+            const dclEvent = data.PageLoadMetrics.allMarkerEvents.find((event) => {
+                return Trace.Types.Events.isMarkDOMContent(event) && event.args.data?.frame === data.Meta.mainFrameId;
             });
             if (!dclEvent) {
                 throw new Error('Could not find DCL event');
             }
             // Ensure we are testing the frameID path!
-            assert.isUndefined(dclEvent.args.data?.navigationId);
+            assert.isUndefined(Trace.Helpers.Trace.navigationIDForEvent(dclEvent));
             const unadjustedTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(dclEvent.ts - data.Meta.traceBounds.min));
             assert.strictEqual(unadjustedTime.toFixed(2), String(190.79));
             const adjustedTime = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(dclEvent, data.Meta.traceBounds, data.Meta.navigationsByNavigationId, data.Meta.softNavigationsById, data.Meta.navigationsByFrameId);

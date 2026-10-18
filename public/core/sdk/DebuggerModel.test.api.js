@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from '../../../test/api/mocha-interface.js';
 import * as SDK from './sdk.js';
 describe('DebuggerModel API Test', () => {
     it('verifies that skipAllPauses setting works when navigating to a page with a debugger stmt', async ({ inspectedPage, universe }) => {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import * as FormatterWorker from './formatter_worker.js';
 function formatCSS(text) {
     return FormatterWorker.FormatterWorker.format('text/css', text, '  ').content;
@@ -193,6 +194,19 @@ span {
         assert.strictEqual(formattedCode, `p {
   font: 16px/1.5em sans-serif;
   background: url(images/bg.png);
+}
+`);
+    });
+    it('formats pseudo-classes like :where() inside @layer without inserting space after colon', () => {
+        const formattedCode = formatCSS('@layer { h1:where(.h1class) { background-color: revert-layer; } } h1:where(.h1class) { background-color: blue; }');
+        assert.strictEqual(formattedCode, `@layer {
+  h1:where(.h1class) {
+    background-color: revert-layer;
+  }
+}
+
+h1:where(.h1class) {
+  background-color: blue;
 }
 `);
     });

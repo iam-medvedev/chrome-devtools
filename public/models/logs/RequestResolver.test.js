@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import { MockNetworkLog } from '../../testing/MockNetworkLog.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import * as Logs from '../logs/logs.js';

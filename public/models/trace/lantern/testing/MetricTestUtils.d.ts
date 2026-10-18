@@ -1,3 +1,4 @@
+import type * as Mocha from 'mocha';
 import * as Trace from '../../trace.js';
 import * as Lantern from '../lantern.js';
 declare function toLanternTrace(traceEvents: readonly Trace.Types.Events.Event[]): Lantern.Types.Trace;

@@ -82,10 +82,24 @@ export declare class SecurityMainView extends UI.Widget.VBox {
     private addMixedContentExplanation;
     showNetworkFilter(filterKey: string, e: Event): void;
 }
+export interface SecurityOriginViewInput {
+    origin: Platform.DevToolsPath.UrlString;
+    securityState: Protocol.Security.SecurityState;
+    securityDetails: Protocol.Network.SecurityDetails | null;
+    loadedFromCache: boolean;
+    isSanListTruncated: boolean;
+    isCertificateTransparencyDetailsShown: boolean;
+    onRevealInNetwork: (event: Event) => void;
+    onToggleSanTruncation: () => void;
+    onToggleCertificateTransparencyDetails: () => void;
+    onViewCertificate: (event: Event) => void;
+}
+export type SecurityOriginViewFunction = (input: SecurityOriginViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_SECURITY_ORIGIN_VIEW: SecurityOriginViewFunction;
 export declare class SecurityOriginView extends UI.Widget.VBox {
     #private;
-    constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState);
-    setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
+    constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState, view?: SecurityOriginViewFunction);
+    setSecurityState(newSecurityState: Protocol.Security.SecurityState, securityDetails: Protocol.Network.SecurityDetails | null): void;
 }
 export interface OriginState {
     securityState: Protocol.Security.SecurityState;

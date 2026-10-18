@@ -5,13 +5,14 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as AiUtils from '../../ai-utils/ai-utils.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { LighthouseFormatter } from '../data_formatters/LighthouseFormatter.js';
-import { debugLog } from '../debug.js';
 import { ExtensionScope } from '../ExtensionScope.js';
 import { ToolRegistry } from '../tools/ToolRegistry.js';
 import { AiAgent, } from './AiAgent.js';
 import { executeJsCode, } from './ExecuteJavascript.js';
+const { debugLog } = AiUtils.Debug;
 /**
  * WARNING: preamble defined in code is only used when userTier is
  * TESTERS. Otherwise, a server-side preamble is used (see
@@ -254,14 +255,20 @@ export class AccessibilityAgent extends AiAgent {
                 if (!this.#lighthouseRecording) {
                     return { error: 'Lighthouse recording is not available.' };
                 }
-                const report = await this.#lighthouseRecording({
+                const result = await this.#lighthouseRecording({
                     mode: 'snapshot',
                     categoryIds: ['accessibility'],
                     isAIControlled: true,
                 });
-                if (!report) {
+                if (result.status === 'cancelled') {
+                    return {
+                        error: 'The user cancelled the accessibility audits. Do not run them again unless the user asks you to.',
+                    };
+                }
+                if (result.status === 'failed') {
                     return { error: 'Failed to run accessibility audits.' };
                 }
+                const { report } = result;
                 const audits = new LighthouseFormatter().audits(report, 'accessibility');
                 return {
                     result: { audits },

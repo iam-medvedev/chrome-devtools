@@ -25,6 +25,7 @@ export class HeapTimelineOverview extends HeapTimelineOverviewBase {
     updateGridTimerId;
     updateTimerId;
     windowWidthRatio;
+    #onThemeChanged = () => this.update();
     constructor(element) {
         super(element, { jslog: `${VisualLogging.section('heap-tracking-overview')}` });
         this.element.id = 'heap-recording-view';
@@ -42,7 +43,6 @@ export class HeapTimelineOverview extends HeapTimelineOverviewBase {
         this.yScale = new SmoothScale();
         this.xScale = new SmoothScale();
         this.profileSamples = new Samples();
-        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => this.update());
     }
     start() {
         this.running = true;
@@ -170,6 +170,17 @@ export class HeapTimelineOverview extends HeapTimelineOverviewBase {
             context.fill();
             context.closePath();
         }
+    }
+    wasShown() {
+        super.wasShown();
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChanged);
+        // Theme changes are only observed while shown, so repaint in case the
+        // theme changed while the overview was hidden.
+        this.scheduleUpdate();
+    }
+    willHide() {
+        ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChanged);
+        super.willHide();
     }
     onResize() {
         this.updateOverviewCanvas = true;

@@ -5,6 +5,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -690,6 +692,26 @@ export function buildCsvContent(announcements) {
     }
     return csvRows.join('\r\n');
 }
+export async function parseFirstCallSite(target, stack) {
+    if (!stack) {
+        return null;
+    }
+    const stackTrace = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+        .createStackTraceFromErrorStackLikeString(target, stack);
+    if (!stackTrace) {
+        return null;
+    }
+    return stackTrace.syncFragment.frames
+        .find(frame => {
+        if (frame.name?.includes(BINDING_NAME) || frame.name?.includes('ariaNotify')) {
+            return false;
+        }
+        // Mirrors the isBuiltin check.
+        return frame.line >= 0 && frame.column >= 0 && (Boolean(frame.uiSourceCode) || Boolean(frame.url));
+    })
+        ?.toUiLocation(Workspace.Workspace.WorkspaceImpl.instance()) ??
+        null;
+}
 export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane {
     #announcements = [];
     #filteredAnnouncements = null;
@@ -958,7 +980,27 @@ export class AccessibilityAnnouncementRecordingView extends AccessibilitySubPane
     #onSelectAnnouncement = (item) => {
         this.#selectedAnnouncement = item;
         this.requestUpdate();
+        if (item && item.api === AnnouncementApi.JS_TRIGGERED && item.stack) {
+            void this.#revealSourceForAnnouncement(item);
+        }
     };
+    async #revealSourceForAnnouncement(item) {
+        if (!item.stack) {
+            return;
+        }
+        const target = item.target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!target) {
+            return;
+        }
+        const callSite = await parseFirstCallSite(target, item.stack);
+        if (!callSite) {
+            return;
+        }
+        await Common.Revealer.reveal(callSite);
+    }
+    revealSourceForAnnouncementForTest(item) {
+        return this.#revealSourceForAnnouncement(item);
+    }
     async #revealElement(item, targetPanel) {
         const target = item.target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!target) {

@@ -40,7 +40,6 @@ import { walkthroughCloseTitle, walkthroughTitle, WalkthroughView } from './Walk
 const { html, Directives: { ref, ifDefined } } = Lit;
 const lockedString = i18n.i18n.lockedString;
 const { widget } = UI.Widget;
-const REPORT_URL = 'https://crbug.com/508304827';
 const SCROLL_ROUNDING_OFFSET = 1;
 /*
 * Strings that don't need to be translated at this time.
@@ -677,9 +676,13 @@ function renderSideEffectStepsUI(input, steps) {
     // With the natural language interface the approval is rendered as a
     // dedicated permission prompt instead of the side-effect confirmation UI.
     const showPermissionPrompt = AiAssistanceModel.AiUtils.isNaturalLanguageInterfaceEnabled();
+    // Key each prompt by its step so that a new prompt always gets new DOM.
+    // Without the key, Lit reuses the previous prompt's buttons when one prompt
+    // replaces another in a single render, and keyboard focus on the previous
+    // approve button would carry over to the new prompt.
     // clang-format off
     return html `
-    ${sideEffectSteps.map(step => html `
+    ${Lit.Directives.repeat(sideEffectSteps, step => step, step => html `
       <div class="side-effect-container">
         ${showPermissionPrompt ?
         renderPermissionPrompt(step) :
@@ -1236,7 +1239,7 @@ async function makeSourceCodeWidget(widgetData) {
     let code = widgetData.data.code;
     if (TextUtils.TextUtils.isMinified(code)) {
         const canonicalMimeType = uiSourceCode?.contentType().canonicalMimeType() || 'text/javascript';
-        const formatted = await Formatter.ScriptFormatter.formatScriptContent(Common.Settings.Settings.instance(), canonicalMimeType, code, '  ');
+        const formatted = await Formatter.ScriptFormatter.formatScriptContent(canonicalMimeType, code, '  ');
         code = formatted.formattedContent;
     }
     const renderedWidget = html `
@@ -1458,7 +1461,7 @@ export function getWidgetSignature(widget) {
         case 'PERFORMANCE_TRACE':
             return `${widget.name}`;
         case 'PERF_INSIGHT':
-            return `${widget.name}:${widget.data.insight}:${widget.data.insightData.insightKey}:${widget.data.insightData.navigation?.args?.data?.navigationId ?? 'no-nav-id'}`;
+            return `${widget.name}:${widget.data.insight}:${widget.data.insightData.insightKey}:${Trace.Helpers.Trace.navigationIDForEvent(widget.data.insightData.navigation) ?? 'no-nav-id'}`;
         case 'TIMELINE_RANGE_SUMMARY':
             return `${widget.name}:${widget.data.track}:${widget.data.bounds.min}-${widget.data.bounds.max}`;
         case 'BOTTOM_UP_TREE':
@@ -1865,7 +1868,7 @@ export class ChatMessage extends UI.Widget.Widget {
             prompt: this.prompt,
             onSuggestionClick: this.onSuggestionClick,
             onRatingClick: this.#handleRateClick.bind(this),
-            onReportClick: () => UIHelpers.openInNewTab(REPORT_URL),
+            onReportClick: () => UIHelpers.openInNewTab(AiAssistanceModel.AiUtils.REPORT_LEGAL_ISSUE_URL),
             onCopyResponseClick: () => {
                 if (this.message.entity === "model" /* ChatMessageEntity.MODEL */) {
                     this.onCopyResponseClick(this.message);

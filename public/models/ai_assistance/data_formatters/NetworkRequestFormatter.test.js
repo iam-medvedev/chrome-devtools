@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -122,6 +123,21 @@ describe('NetworkRequestFormatter', () => {
     });
     describe('formatBody', () => {
         const fakeRequest = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('fakeRequestId', Platform.DevToolsPath.urlString `url1`, Platform.DevToolsPath.urlString `documentURL`, null);
+        fakeRequest.finished = true;
+        it('does not read the body of an unfinished request', async () => {
+            const unfinishedRequest = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('unfinishedRequestId', Platform.DevToolsPath.urlString `url1`, Platform.DevToolsPath.urlString `documentURL`, null);
+            const requestContentData = sinon.spy(unfinishedRequest, 'requestContentData');
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', unfinishedRequest, 100);
+            assert.strictEqual(result, 'test:\n<not available: the request has not finished loading>');
+            sinon.assert.notCalled(requestContentData);
+        });
+        it('reads the body of an unfinished request that has a content data provider', async () => {
+            const unfinishedRequest = createNetworkRequest({
+                contentData: new TextUtils.ContentData.ContentData('{"a":1}', false, 'application/json'),
+            });
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', unfinishedRequest, 100);
+            assert.strictEqual(result, 'test:\n{"a":1}');
+        });
         it('handles empty response correctly', async () => {
             fakeRequest.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('', false, ''));
@@ -388,6 +404,7 @@ describe('NetworkRequestFormatter', () => {
         }
         it('returns response body for same-origin requests', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `https://example.com/api/data`, urlString `https://example.com/`, null);
+            request.finished = true;
             request.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('{"user":"alice"}', false, 'application/json'));
             };
@@ -399,6 +416,7 @@ describe('NetworkRequestFormatter', () => {
         it('returns response body for CORS-allowed cross-origin requests', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', urlString `https://victim.com/api/data`, urlString `https://attacker.com/`, null);
             request.responseHeaders = [{ name: 'Access-Control-Allow-Origin', value: 'https://attacker.com' }];
+            request.finished = true;
             request.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('{"user":"alice"}', false, 'application/json'));
             };

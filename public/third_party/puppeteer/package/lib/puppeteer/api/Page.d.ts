@@ -5,7 +5,7 @@
  */
 import type { Protocol } from 'devtools-protocol';
 import { type Observable } from '../../third_party/rxjs/rxjs.js';
-import type { HTTPRequest } from '../api/HTTPRequest.js';
+import type { HeadersInput, HTTPRequest } from '../api/HTTPRequest.js';
 import type { HTTPResponse } from '../api/HTTPResponse.js';
 import type { Accessibility } from '../cdp/Accessibility.js';
 import type { Coverage } from '../cdp/Coverage.js';
@@ -1457,10 +1457,12 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      *
      * :::
      *
-     * @param headers - An object containing additional HTTP headers to be sent
-     * with every request. All header values must be strings.
+     * @param headers - Additional HTTP headers to be sent with every request.
+     * Either a {@link https://developer.mozilla.org/en-US/docs/Web/API/Headers | Headers}
+     * instance or a record of additional HTTP headers. All header values must be
+     * strings.
      */
-    abstract setExtraHTTPHeaders(headers: Record<string, string>): Promise<void>;
+    abstract setExtraHTTPHeaders(headers: HeadersInput): Promise<void>;
     /**
      * @param userAgent - Specific user agent to use in this page
      * @param userAgentData - Specific user agent client hint data to use in this
@@ -1828,6 +1830,26 @@ export declare abstract class Page extends EventEmitter<PageEvents> {
      * // → true
      * await page.evaluate(() => matchMedia('(color-gamut: rec2020)').matches);
      * // → false
+     *
+     * await page.emulateMediaFeatures([
+     *   {name: 'prefers-contrast', value: 'more'},
+     * ]);
+     * await page.evaluate(() => matchMedia('(prefers-contrast: more)').matches);
+     * // → true
+     *
+     * await page.emulateMediaFeatures([
+     *   {name: 'forced-colors', value: 'active'},
+     * ]);
+     * await page.evaluate(() => matchMedia('(forced-colors: active)').matches);
+     * // → true
+     *
+     * await page.emulateMediaFeatures([
+     *   {name: 'prefers-reduced-transparency', value: 'reduce'},
+     * ]);
+     * await page.evaluate(() => {
+     *   return matchMedia('(prefers-reduced-transparency: reduce)').matches;
+     * });
+     * // → true
      * ```
      */
     abstract emulateMediaFeatures(features?: MediaFeature[]): Promise<void>;

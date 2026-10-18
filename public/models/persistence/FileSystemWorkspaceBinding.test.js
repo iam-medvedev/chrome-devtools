@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -22,9 +23,6 @@ describe('FileSystemWorkspaceBinding', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
-    });
-    afterEach(() => {
-        sinon.restore();
     });
     it('does not conflict when file system paths share a prefix', async () => {
         const fsPath1 = 'file:///var/www';

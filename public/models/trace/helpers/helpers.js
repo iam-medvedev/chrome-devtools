@@ -30,6 +30,7 @@ __export(Trace_exports, {
   findRecalcStyleEvents: () => findRecalcStyleEvents,
   forEachEvent: () => forEachEvent,
   frameIDForEvent: () => frameIDForEvent,
+  getEventDataObject: () => getEventDataObject,
   getNavigationForTraceEvent: () => getNavigationForTraceEvent,
   getStackTraceTopCallFrameInEventPayload: () => getStackTraceTopCallFrameInEventPayload,
   getSyntheticId: () => getSyntheticId,
@@ -41,6 +42,7 @@ __export(Trace_exports, {
   makeProfileCall: () => makeProfileCall,
   makeZeroBasedCallFrame: () => makeZeroBasedCallFrame,
   mergeEventsInOrder: () => mergeEventsInOrder,
+  navigationIDForEvent: () => navigationIDForEvent,
   parseDevtoolsDetails: () => parseDevtoolsDetails,
   rawCallFrameForEntry: () => rawCallFrameForEntry,
   sortTraceEventsInPlace: () => sortTraceEventsInPlace,
@@ -58,8 +60,10 @@ __export(SyntheticEvents_exports, {
 var activeManager = null;
 var SyntheticEventsManager = class _SyntheticEventsManager {
   /**
-   * All synthetic entries created in a trace from a corresponding trace events.
-   * (ProfileCalls are excluded because they are not based on a real trace event)
+   * All synthetic entries created in a trace from
+   * corresponding trace events.
+   * (ProfileCalls and layout shift clusters are excluded
+   * because they are not based on a real trace event.)
    */
   #syntheticTraces = [];
   /**
@@ -174,34 +178,28 @@ var secondsToMicro = (value) => milliToMicro(secondsToMilli(value));
 var microToMilli = (value) => Types.Timing.Milli(value / 1e3);
 var microToSeconds = (value) => Types.Timing.Seconds(value / 1e3 / 1e3);
 function timeStampForEventAdjustedByClosestNavigation(event, traceBounds, navigationsByNavigationId, softNavigationsById, navigationsByFrameId) {
-  let eventTimeStamp = event.ts - traceBounds.min;
-  if (event.name === Types.Events.Name.MARK_LCP_CANDIDATE_FOR_SOFT_NAVIGATION && event.args?.data?.performanceTimelineNavigationId) {
-    const navigationForEvent = softNavigationsById.get(event.args.data.performanceTimelineNavigationId);
-    if (navigationForEvent) {
-      eventTimeStamp = event.ts - navigationForEvent.ts;
-    }
+  let navigationForEvent = null;
+  if (Types.Events.isSoftLargestContentfulPaintCandidate(event)) {
+    navigationForEvent = softNavigationsById.get(event.args.data.performanceTimelineNavigationId) ?? null;
   } else if (Types.Events.isSoftFirstContentfulPaint(event) && event.args?.context?.performanceTimelineNavigationId) {
-    const navigationForEvent = softNavigationsById.get(event.args.context.performanceTimelineNavigationId);
-    if (navigationForEvent) {
-      eventTimeStamp = event.ts - navigationForEvent.ts;
-    }
+    navigationForEvent = softNavigationsById.get(event.args.context.performanceTimelineNavigationId) ?? null;
   } else if (Types.Events.isSoftNavigationStart(event)) {
-    const navigationForEvent = getNavigationForTraceEvent(event, event.args.frame, navigationsByFrameId);
-    if (navigationForEvent) {
-      eventTimeStamp = event.ts - navigationForEvent.ts;
-    }
-  } else if (event.args?.data?.navigationId) {
-    const navigationForEvent = navigationsByNavigationId.get(event.args.data.navigationId);
-    if (navigationForEvent) {
-      eventTimeStamp = event.ts - navigationForEvent.ts;
-    }
-  } else if (event.args?.data?.frame) {
-    const navigationForEvent = getNavigationForTraceEvent(event, event.args.data.frame, navigationsByFrameId);
-    if (navigationForEvent) {
-      eventTimeStamp = event.ts - navigationForEvent.ts;
+    navigationForEvent = getNavigationForTraceEvent(event, event.args.frame, navigationsByFrameId);
+  } else {
+    const navigationId = navigationIDForEvent(event);
+    if (navigationId) {
+      navigationForEvent = navigationsByNavigationId.get(navigationId) ?? null;
+    } else {
+      const frameId = frameIDForEvent(event);
+      if (frameId) {
+        navigationForEvent = getNavigationForTraceEvent(event, frameId, navigationsByFrameId);
+      }
     }
   }
-  return Types.Timing.Micro(eventTimeStamp);
+  if (navigationForEvent) {
+    return Types.Timing.Micro(event.ts - navigationForEvent.ts);
+  }
+  return Types.Timing.Micro(event.ts - traceBounds.min);
 }
 function expandWindowByPercentOrToOneMillisecond(annotationWindow, maxTraceWindow, percentage) {
   let newMin = annotationWindow.min - annotationWindow.range * (percentage / 100) / 2;
@@ -340,11 +338,18 @@ function windowsEqual(w1, w2) {
 }
 
 // ../../front_end/models/trace/helpers/Trace.ts
-function stackTraceInEvent(event) {
-  if (event.args?.data?.stackTrace) {
-    return event.args.data.stackTrace;
+function getEventDataObject(event) {
+  if (!event.args || !("data" in event.args) || typeof event.args.data !== "object" || !event.args.data || Array.isArray(event.args.data)) {
+    return null;
   }
-  if (event.args?.stackTrace) {
+  return event.args.data;
+}
+function stackTraceInEvent(event) {
+  const data = getEventDataObject(event);
+  if (data?.stackTrace && Array.isArray(data.stackTrace)) {
+    return data.stackTrace;
+  }
+  if (event.args && "stackTrace" in event.args && Array.isArray(event.args.stackTrace)) {
     return event.args.stackTrace;
   }
   if (Types2.Events.isRecalcStyle(event)) {
@@ -354,11 +359,11 @@ function stackTraceInEvent(event) {
     return event.args.beginData.stackTrace ?? null;
   }
   if (Types2.Events.isFunctionCall(event)) {
-    const data = event.args.data;
-    if (!data) {
+    const data2 = event.args.data;
+    if (!data2) {
       return null;
     }
-    const { columnNumber, lineNumber, url, scriptId, functionName } = data;
+    const { columnNumber, lineNumber, url, scriptId, functionName } = data2;
     if (lineNumber === void 0 || functionName === void 0 || columnNumber === void 0 || scriptId === void 0 || url === void 0) {
       return null;
     }
@@ -723,16 +728,17 @@ function makeZeroBasedCallFrame(callFrame) {
   return normalizedCallFrame;
 }
 function getRawLineAndColumnNumbersForEvent(event) {
-  if (!event.args?.data) {
+  const data = getEventDataObject(event);
+  if (!data) {
     return {};
   }
   let lineNumber = void 0;
   let columnNumber = void 0;
-  if ("lineNumber" in event.args.data && typeof event.args.data.lineNumber === "number") {
-    lineNumber = event.args.data.lineNumber;
+  if ("lineNumber" in data && typeof data.lineNumber === "number") {
+    lineNumber = data.lineNumber;
   }
-  if ("columnNumber" in event.args.data && typeof event.args.data.columnNumber === "number") {
-    columnNumber = event.args.data.columnNumber;
+  if ("columnNumber" in data && typeof data.columnNumber === "number") {
+    columnNumber = data.columnNumber;
   }
   return { lineNumber, columnNumber };
 }
@@ -740,10 +746,21 @@ function frameIDForEvent(event) {
   if (event.args && "beginData" in event.args && typeof event.args.beginData === "object" && event.args.beginData !== null && "frame" in event.args.beginData && typeof event.args.beginData.frame === "string") {
     return event.args.beginData.frame;
   }
-  if (event.args?.data?.frame) {
-    return event.args.data.frame;
+  const data = getEventDataObject(event);
+  if (data && "frame" in data && typeof data.frame === "string") {
+    return data.frame;
   }
   return null;
+}
+function navigationIDForEvent(event) {
+  if (!event) {
+    return void 0;
+  }
+  const data = getEventDataObject(event);
+  if (data && "navigationId" in data && typeof data.navigationId === "string") {
+    return data.navigationId;
+  }
+  return void 0;
 }
 var DevToolsTimelineEventCategory = "disabled-by-default-devtools.timeline";
 function isTopLevelEvent(event) {
@@ -848,7 +865,14 @@ function extractSampleTraceId(event) {
     const beginData = event.args["beginData"];
     return beginData.sampleTraceId ?? null;
   }
-  return event.args?.sampleTraceId ?? event.args?.data?.sampleTraceId ?? null;
+  if ("sampleTraceId" in event.args && typeof event.args.sampleTraceId === "number") {
+    return event.args.sampleTraceId;
+  }
+  const data = getEventDataObject(event);
+  if (data && "sampleTraceId" in data && typeof data.sampleTraceId === "number") {
+    return data.sampleTraceId;
+  }
+  return null;
 }
 var VISIBLE_TRACE_EVENT_TYPES = /* @__PURE__ */ new Set([
   Types2.Events.Name.ABORT_POST_TASK_CALLBACK,
@@ -2939,8 +2963,6 @@ var Page;
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
     PermissionsPolicyFeature2["Serial"] = "serial";
-    PermissionsPolicyFeature2["SharedStorage"] = "shared-storage";
-    PermissionsPolicyFeature2["SharedStorageSelectUrl"] = "shared-storage-select-url";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
     PermissionsPolicyFeature2["StorageAccess"] = "storage-access";
@@ -2949,6 +2971,7 @@ var Page;
     PermissionsPolicyFeature2["SyncXhr"] = "sync-xhr";
     PermissionsPolicyFeature2["Tools"] = "tools";
     PermissionsPolicyFeature2["Translator"] = "translator";
+    PermissionsPolicyFeature2["UnboundedElement"] = "unbounded-element";
     PermissionsPolicyFeature2["Unload"] = "unload";
     PermissionsPolicyFeature2["Usb"] = "usb";
     PermissionsPolicyFeature2["UsbUnrestricted"] = "usb-unrestricted";
@@ -4250,71 +4273,88 @@ var SamplesIntegrator = class _SamplesIntegrator {
     return calls;
   }
   /**
-   * Given a synthetic profile call, returns an array of profile calls
-   * representing the stack trace that profile call belongs to based on
-   * its nodeId. The input profile call will be at the top of the
-   * returned stack (last position), meaning that any other frames that
-   * were effectively above it are omitted.
-   * @param profileCall
-   * @param overrideTimeStamp a custom timestamp to use for the returned
-   * profile calls. If not defined, the timestamp of the input
-   * profileCall is used instead. This param is useful for example when
-   * creating the profile calls for a sample with a trace id, since the
-   * timestamp of the corresponding trace event should be used instead
-   * of the sample's.
+   * Given a synthetic profile call, returns the profile nodes of the
+   * stack trace that profile call belongs to based on its nodeId,
+   * ordered from the bottom of the stack to the top. The root node is
+   * omitted. The node of the input profile call will be at the top of
+   * the returned stack (last position), meaning that any other frames
+   * that were effectively above it are omitted.
    */
-  #makeProfileCallsForStack(profileCall, overrideTimeStamp) {
-    let node = this.#profileModel.nodeById(profileCall.nodeId);
+  #stackNodesForProfileCall(profileCall) {
+    const sampledNode = this.#profileModel.nodeById(profileCall.nodeId);
+    let node = sampledNode;
     const isGarbageCollection = node?.id === this.#profileModel.gcNode?.id;
     if (isGarbageCollection) {
       node = this.#nodeForGC.get(profileCall) || null;
     }
-    if (!node) {
+    if (!sampledNode || !node) {
       return [];
     }
-    const callFrames = new Array(node.depth + 1 + Number(isGarbageCollection));
-    let i = callFrames.length - 1;
+    const nodes = new Array(node.depth + 1 + Number(isGarbageCollection));
+    let i = nodes.length - 1;
     if (isGarbageCollection) {
-      callFrames[i--] = profileCall;
+      nodes[i--] = sampledNode;
     }
-    while (node) {
-      callFrames[i--] = makeProfileCall(
-        node,
-        profileCall.profileId,
-        profileCall.sampleIndex,
-        overrideTimeStamp ?? profileCall.ts,
-        this.#processId,
-        this.#threadId
-      );
+    while (node && i >= 0) {
+      nodes[i--] = node;
       node = node.parent;
     }
-    return callFrames;
+    return nodes;
   }
-  #getStackForSampleTraceId(traceId, timestamp) {
+  /**
+   * Returns a profile call for the node sampled with the given trace id,
+   * or null if the profile has no node for it.
+   */
+  #callForSampleTraceId(traceId, timestamp) {
     const nodeId = this.#profileModel.traceIds?.[traceId];
     const node = nodeId && this.#profileModel.nodeById(nodeId);
-    const maybeCallForTraceId = node && makeProfileCall(node, this.#profileId, -1, timestamp, this.#processId, this.#threadId);
-    if (!maybeCallForTraceId) {
+    if (!node) {
       return null;
     }
+    const callForTraceId = makeProfileCall(node, this.#profileId, -1, timestamp, this.#processId, this.#threadId);
     if (this.#engineConfig.debugMode) {
-      this.jsSampleEvents.push(this.#makeJSSampleEvent(maybeCallForTraceId, timestamp, traceId));
+      this.jsSampleEvents.push(this.#makeJSSampleEvent(callForTraceId, timestamp, traceId));
     }
-    return this.#makeProfileCallsForStack(maybeCallForTraceId);
+    return callForTraceId;
   }
   /**
    * Update tracked stack using this event's call stack.
    */
   #extractStackTrace(event) {
-    let stackTrace = this.#currentJSStack;
-    if (Types4.Events.isProfileCall(event)) {
-      stackTrace = this.#makeProfileCallsForStack(event);
-    }
     const traceId = extractSampleTraceId(event);
-    const maybeCallForTraceId = traceId && this.#getStackForSampleTraceId(traceId, event.ts);
-    if (maybeCallForTraceId) {
-      stackTrace = maybeCallForTraceId;
+    const callForTraceId = traceId ? this.#callForSampleTraceId(traceId, event.ts) : null;
+    const stackSource = callForTraceId ?? (Types4.Events.isProfileCall(event) ? event : null);
+    if (!stackSource) {
+      this.#mergeWithCurrentStack(event, this.#currentJSStack);
+      return;
     }
+    const stackNodes = this.#stackNodesForProfileCall(stackSource);
+    let i = this.#mergeWithCurrentStack(event, stackNodes);
+    for (; i < stackNodes.length; ++i) {
+      const node = stackNodes[i];
+      if (node.id === this.#profileModel.programNode?.id || node.id === this.#profileModel.root?.id || node.id === this.#profileModel.idleNode?.id || node.id === this.#profileModel.gcNode?.id) {
+        continue;
+      }
+      const call = makeProfileCall(
+        node,
+        stackSource.profileId,
+        stackSource.sampleIndex,
+        stackSource.ts,
+        this.#processId,
+        this.#threadId
+      );
+      this.#currentJSStack.push(call);
+      this.#constructedProfileCalls.push(call);
+    }
+  }
+  /**
+   * Merges the given stack with the tracked stack: the durations of
+   * the shared frames are extended to cover the event, and the tracked
+   * stack is truncated where the two stacks differ.
+   * @returns the index of the first frame in the given stack that is
+   * not shared with the tracked stack.
+   */
+  #mergeWithCurrentStack(event, stackTrace) {
     _SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
     const endTime = event.ts + (event.dur || 0);
     const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
@@ -4328,14 +4368,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
       this.#currentJSStack[i].dur = Types4.Timing.Micro(Math.max(this.#currentJSStack[i].dur || 0, endTime - this.#currentJSStack[i].ts));
     }
     this.#truncateJSStack(i, event.ts);
-    for (; i < stackTrace.length; ++i) {
-      const call = stackTrace[i];
-      if (call.nodeId === this.#profileModel.programNode?.id || call.nodeId === this.#profileModel.root?.id || call.nodeId === this.#profileModel.idleNode?.id || call.nodeId === this.#profileModel.gcNode?.id) {
-        continue;
-      }
-      this.#currentJSStack.push(call);
-      this.#constructedProfileCalls.push(call);
-    }
+    return i;
   }
   /**
    * When a call stack that differs from the one we are tracking has
@@ -4370,7 +4403,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
       name: Types4.Events.Name.JS_SAMPLE,
       cat: "devtools.timeline",
       args: {
-        data: { traceId, stackTrace: this.#makeProfileCallsForStack(call).map((e) => e.callFrame) }
+        data: { traceId, stackTrace: this.#stackNodesForProfileCall(call).map((node) => node.callFrame) }
       },
       ph: Types4.Events.Phase.INSTANT,
       ts: timestamp,

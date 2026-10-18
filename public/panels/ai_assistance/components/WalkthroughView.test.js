@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
+import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import { querySelectorErrorOnMissing, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -285,7 +286,6 @@ describeWithEnvironment('WalkthroughView', () => {
         sinon.assert.calledWithMatch(scrollIntoViewSpy, { behavior: 'smooth', block: 'end' });
         // Verify it was called on the last element
         sinon.assert.calledOn(scrollIntoViewSpy, lastStep);
-        scrollIntoViewSpy.restore();
     });
     it('does not call scrollIntoView on the last step when it is not loading', async () => {
         const message = {
@@ -307,7 +307,6 @@ describeWithEnvironment('WalkthroughView', () => {
         await new Promise(resolve => window.requestAnimationFrame(resolve));
         // Verify it was NOT called
         sinon.assert.notCalled(scrollIntoViewSpy);
-        scrollIntoViewSpy.restore();
     });
     describe('walkthrough titles', () => {
         it('returns the correct walkthrough title when not loading', () => {

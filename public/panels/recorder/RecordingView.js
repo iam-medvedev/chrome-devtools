@@ -231,7 +231,7 @@ function renderSettings({ settings, replaySettingsExpanded, onNetworkConditionsC
             @change=${onNetworkConditionsChange}>
       ${networkConditionPresets.map(condition => html `
         <option jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || ''))}
-                value=${condition.i18nTitleKey || ''} ?selected=${selectedOption === condition.i18nTitleKey}>
+                value=${condition.i18nTitleKey || ''} .selected=${selectedOption === condition.i18nTitleKey}>
                 ${condition.title instanceof Function
             ? condition.title()
             : condition.title}
@@ -340,7 +340,7 @@ function renderTimelineArea(input, output) {
                 ${input.builtInConverters.map(converter => {
         return html `<option
                     value=${converter.getId()}
-                    ?selected=${input.converterId === converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
                     jslog=${VisualLogging.item(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`)}>
                     ${converter.getFormatName()}
                   </option>`;
@@ -348,7 +348,7 @@ function renderTimelineArea(input, output) {
                 ${input.extensionConverters.map(converter => {
         return html `<option
                     value=${converter.getId()}
-                    ?selected=${input.converterId === converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
                     jslog=${VisualLogging.item('converter-extension')}>
                     ${converter.getFormatName()}
                   </option>`;
