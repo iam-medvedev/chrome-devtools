@@ -105,6 +105,8 @@ export declare const unitToPixels: {
     in: number;
     cm: number;
     mm: number;
+    pt: number;
+    pc: number;
 };
 /**
  * @internal
@@ -118,4 +120,12 @@ export declare function fromAbortSignal(signal?: AbortSignal, cause?: Error): Ob
  * @internal
  */
 export declare function filterAsync<T>(predicate: (value: T) => boolean | PromiseLike<boolean>): OperatorFunction<T, T>;
+/**
+ * @internal
+ */
+export declare function assertSupportedUrlRestrictions(options: {
+    allowlist?: string[];
+    blocklist?: string[];
+    protocol?: string;
+}): void;
 //# sourceMappingURL=util.d.ts.map

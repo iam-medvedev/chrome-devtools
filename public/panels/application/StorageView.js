@@ -1,20 +1,23 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/components/report_view/report_view.js';
+import '../../ui/kit/kit.js';
+import '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as uiI18n from '../../ui/i18n/i18n.js';
-import { Icon, Link } from '../../ui/kit/kit.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { IndexedDBModel } from './IndexedDBModel.js';
 import { ResourcesPanel } from './ResourcesPanel.js';
 import storageViewStyles from './storageView.css.js';
+const { classMap, ifDefined, live, ref } = Directives;
+const { bindToSetting } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Text in the storage view that expresses the amount of used and available storage quota.
@@ -153,170 +156,213 @@ export const storagePieColors = new Map([
 ]);
 const str_ = i18n.i18n.registerUIStrings('panels/application/StorageView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, output, target) => {
+    function renderSettingCheckbox(title, settingName, className) {
+        const setting = input.settings.get(settingName);
+        if (!setting) {
+            throw new Error(`Missing setting for storage type: ${settingName}`);
+        }
+        return html `<devtools-checkbox class=${className} title=${title} ${bindToSetting(setting)}>${title}</devtools-checkbox>`;
+    }
+    function renderClearSiteData() {
+        // clang-format off
+        return html `
+      <div class="report-section" jslog=${VisualLogging.section('clear-storage')}>
+        <devtools-report-section-header role="heading" aria-level="2">
+          ${i18nString(UIStrings.clearSiteData)}
+        </devtools-report-section-header>
+        <devtools-report-section>
+          <div class="clear-site-data-checkboxes-row" role="group" aria-label=${i18nString(UIStrings.clearSiteData)}>
+            <div class="clear-site-data-checkbox-column">
+              ${renderSettingCheckbox(i18nString(UIStrings.cacheStorage), "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'cache-storage-checkbox')}
+              ${renderSettingCheckbox(i18nString(UIStrings.fileSystem), "file_systems" /* Protocol.Storage.StorageType.File_systems */, 'file-systems-checkbox')}
+              ${renderSettingCheckbox(i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'indexeddb-checkbox')}
+              ${renderSettingCheckbox(i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'local-and-session-storage-checkbox')}
+            </div>
+            <div class="clear-site-data-checkbox-column">
+              ${renderSettingCheckbox(i18nString(UIStrings.unregisterServiceWorker), "service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'unregister-service-worker-checkbox')}
+              ${renderSettingCheckbox(i18nString(UIStrings.cookies), "cookies" /* Protocol.Storage.StorageType.Cookies */, 'cookies-checkbox cookies-row')}
+              <div class="include-third-party-cookies-row">
+                <devtools-checkbox class="third-party-cookies-checkbox"
+                    title=${i18nString(UIStrings.thirdPartyCookies)}
+                    ?disabled=${input.includeThirdPartyCookiesDisabled}
+                    ${bindToSetting(input.includeThirdPartyCookiesSetting)}>
+                  ${i18nString(UIStrings.thirdPartyCookies)}
+                </devtools-checkbox>
+              </div>
+            </div>
+          </div>
+        </devtools-report-section>
+        <devtools-report-section class="clear-selected-button-row">
+          <devtools-button id="storage-view-clear-button"
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              .disabled=${input.clearing}
+              .jslogContext=${'storage.clear-site-data'}
+              @click=${input.onClear}
+              ${ref(e => {
+            output.focusClearButton = e instanceof HTMLElement ? () => e.focus() : undefined;
+        })}
+              >${input.clearing ? i18nString(UIStrings.clearing) : i18nString(UIStrings.clearSelected)}</devtools-button>
+        </devtools-report-section>
+      </div>`;
+        // clang-format on
+    }
+    function quotaTooltip() {
+        if (input.quotaUsage === null || input.quotaQuota === null) {
+            return undefined;
+        }
+        return i18nString(UIStrings.storageQuotaUsedWithBytes, { PH1: input.quotaUsage.toLocaleString(), PH2: input.quotaQuota.toLocaleString() });
+    }
+    function renderQuotaRow() {
+        if (input.quotaUsage === null || input.quotaQuota === null) {
+            return nothing;
+        }
+        const quotaAsString = i18n.ByteUtilities.bytesToString(input.quotaQuota);
+        const usageAsString = i18n.ByteUtilities.bytesToString(input.quotaUsage);
+        const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, { PH1: quotaAsString });
+        const quota = input.quotaOverrideActive ? html `<b>${formattedQuotaAsString}</b>` : quotaAsString;
+        // clang-format off
+        return html `
+      ${uiI18n.getFormatLocalizedStringTemplate(str_, UIStrings.storageQuotaUsed, { PH1: usageAsString, PH2: quota })}
+      ${!input.quotaOverrideActive && input.quotaQuota < 125829120 /* 120 MiB */ ? html `
+        <devtools-icon name="info" class="small" style="color: var(--icon-info)"
+            title=${i18nString(UIStrings.storageQuotaIsLimitedIn)}></devtools-icon>` : nothing}`;
+        // clang-format on
+    }
+    function renderUsage() {
+        const pieChartData = {
+            chartName: i18nString(UIStrings.storageUsage),
+            size: 110,
+            formatter: i18n.ByteUtilities.bytesToString,
+            showLegend: true,
+            total: input.quotaUsage ?? 0,
+            slices: input.pieChartSlices,
+        };
+        const onEditorInput = (event) => {
+            input.onQuotaOverrideInput(event.target.value);
+        };
+        const onEditorKeyUp = (event) => {
+            if (event.key === 'Enter' && !event.isComposing) {
+                input.onApplyQuotaOverride(event.target.value);
+                event.consume(true);
+            }
+        };
+        const onEditorFocusOut = (event) => {
+            input.onApplyQuotaOverride(event.target.value);
+            event.consume(true);
+        };
+        // clang-format off
+        return html `
+      <div class="report-section" jslog=${VisualLogging.section('usage')}>
+        <devtools-report-section-header role="heading" aria-level="2">
+          ${i18nString(UIStrings.usage)}
+        </devtools-report-section-header>
+        <devtools-report-section class="quota-usage-row" jslog=${VisualLogging.item('storage-usage')}
+            title=${ifDefined(quotaTooltip())}>${renderQuotaRow()}</devtools-report-section>
+        <devtools-report-section>
+          <devtools-link href="https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses"
+              jslogcontext="learn-more">${i18nString(UIStrings.learnMore)}</devtools-link>
+        </devtools-report-section>
+        <devtools-report-section class="usage-breakdown-row" jslog=${VisualLogging.item('usage-breakdown')}>
+          <devtools-perf-piechart .data=${pieChartData}></devtools-perf-piechart>
+        </devtools-report-section>
+        <devtools-report-section class="quota-override-row">
+          <devtools-checkbox .checked=${live(input.quotaOverrideEnabled)}
+              title=${i18nString(UIStrings.simulateCustomStorage)}
+              @change=${input.onToggleQuotaOverride}
+              jslog=${VisualLogging.toggle('simulate-custom-quota').track({ change: true })}>
+            ${i18nString(UIStrings.simulateCustomStorage)}
+          </devtools-checkbox>
+        </devtools-report-section>
+        <devtools-report-section class=${classMap({ hidden: !input.quotaOverrideEnabled })}>
+          <input class="quota-override-notification-editor"
+              aria-label=${i18nString(UIStrings.simulateCustomStorage)}
+              placeholder=${i18nString(UIStrings.pleaseEnterANumber)}
+              .value=${live(input.quotaOverrideValue)}
+              @input=${onEditorInput}
+              @keyup=${onEditorKeyUp}
+              @focusout=${onEditorFocusOut}
+              ${ref(e => {
+            output.focusQuotaOverrideEditor = e instanceof HTMLElement ? () => e.focus() : undefined;
+        })}
+              jslog=${VisualLogging.textField('quota-override').track({ change: true })}>
+          <label>${i18nString(UIStrings.mb)}</label>
+        </devtools-report-section>
+        <devtools-report-section><div class="quota-override-error">${input.quotaOverrideError}</div></devtools-report-section>
+      </div>`;
+        // clang-format on
+    }
+    // clang-format off
+    render(html `
+    <devtools-report class="clear-storage-header" .data=${{ reportTitle: i18nString(UIStrings.storageTitle) }}>
+      ${input.subtitle ? html `<div class="report-subtitle" slot="toolbar">${input.subtitle}</div>` : nothing}
+      ${renderClearSiteData()}
+      <devtools-report-divider></devtools-report-divider>
+      ${renderUsage()}
+    </devtools-report>`, target);
+    // clang-format on
+};
 /**
  * @implements {SDK.TargetManager.Observer}
  */
 export class StorageView extends UI.Widget.VBox {
+    #view;
+    #viewOutput = {};
     pieColors;
-    reportView;
-    target;
-    securityOrigin;
-    storageKey;
+    target = null;
+    securityOrigin = null;
+    storageKey = null;
+    subtitle = '';
     settings;
     includeThirdPartyCookiesSetting;
-    includeThirdPartyCookiesCheckbox;
-    quotaRow;
-    quotaUsage;
-    quotaQuota;
-    quotaOverrideActive;
-    pieChart;
-    previousOverrideFieldValue;
-    quotaOverrideCheckbox;
-    quotaOverrideControlRow;
-    quotaOverrideEditor;
-    quotaOverrideErrorMessage;
-    clearButton;
+    quotaUsage = null;
+    quotaQuota = null;
+    quotaOverrideActive = null;
+    pieChartSlices = [];
+    previousOverrideFieldValue = '';
+    quotaOverrideFieldValue = '';
+    quotaOverrideEnabled = false;
+    quotaOverrideError = '';
+    clearing = false;
+    clearTimerId;
     throttler = new Common.Throttler.Throttler(1000);
-    constructor() {
-        super({ useShadowDom: true });
+    boundOnCookiesSettingChanged = (event) => {
+        this.onCookiesSettingChanged(event.data);
+    };
+    boundOnIncludeThirdPartyCookiesSettingChanged = (event) => {
+        this.onIncludeThirdPartyCookiesSettingChanged(event.data);
+    };
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, { useShadowDom: true, jslog: `${VisualLogging.pane('clear-storage')}` });
+        this.#view = view;
         this.registerRequiredCSS(storageViewStyles);
-        this.contentElement.classList.add('clear-storage-container');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('clear-storage')}`);
         this.pieColors = storagePieColors;
-        // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
-        this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.storageTitle));
-        this.reportView.registerRequiredCSS(storageViewStyles);
-        this.reportView.element.classList.add('clear-storage-header');
-        this.reportView.show(this.contentElement);
-        this.target = null;
-        this.securityOrigin = null;
-        this.storageKey = null;
         this.settings = new Map();
         for (const type of AllStorageTypes) {
             this.settings.set(type, Common.Settings.Settings.instance().createSetting('clear-storage-' + Platform.StringUtilities.toKebabCase(type), true));
         }
         this.includeThirdPartyCookiesSetting =
             Common.Settings.Settings.instance().createSetting('clear-storage-include-third-party-cookies', false);
-        const clearSiteData = this.reportView.appendSection(i18nString(UIStrings.clearSiteData));
-        clearSiteData.element.setAttribute('jslog', `${VisualLogging.section('clear-storage')}`);
-        const clearSiteDataCheckboxesRow = clearSiteData.appendRow();
-        clearSiteDataCheckboxesRow.classList.add('clear-site-data-checkboxes-row');
-        const leftColumn = clearSiteDataCheckboxesRow.createChild('div', 'clear-site-data-checkbox-column');
-        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.cacheStorage), "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'cache-storage-checkbox');
-        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.fileSystem), "file_systems" /* Protocol.Storage.StorageType.File_systems */, 'file-systems-checkbox');
-        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'indexeddb-checkbox');
-        this.appendSettingCheckbox(leftColumn, i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'local-and-session-storage-checkbox');
-        const rightColumn = clearSiteDataCheckboxesRow.createChild('div', 'clear-site-data-checkbox-column');
-        this.appendSettingCheckbox(rightColumn, i18nString(UIStrings.unregisterServiceWorker), "service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'unregister-service-worker-checkbox');
-        const cookiesCheckbox = this.appendSettingCheckbox(rightColumn, i18nString(UIStrings.cookies), "cookies" /* Protocol.Storage.StorageType.Cookies */, 'cookies-checkbox');
-        cookiesCheckbox.classList.add('cookies-row');
-        const includeThirdPartyCookiesRow = rightColumn.createChild('div', 'include-third-party-cookies-row');
-        this.includeThirdPartyCookiesCheckbox = SettingsUI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.thirdPartyCookies), this.includeThirdPartyCookiesSetting);
-        this.includeThirdPartyCookiesCheckbox.classList.add('third-party-cookies-checkbox');
-        includeThirdPartyCookiesRow.appendChild(this.includeThirdPartyCookiesCheckbox);
-        const clearButtonRow = clearSiteData.appendRow();
-        clearButtonRow.classList.add('clear-selected-button-row');
-        this.clearButton = UI.UIUtils.createTextButton(i18nString(UIStrings.clearSelected), this.clear.bind(this), { jslogContext: 'storage.clear-site-data' });
-        this.clearButton.id = 'storage-view-clear-button';
-        clearButtonRow.appendChild(this.clearButton);
-        clearSiteData.markFieldListAsGroup();
         const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
-        if (cookiesSetting) {
-            cookiesSetting.addChangeListener(event => this.onCookiesSettingChanged(event.data));
-        }
-        this.includeThirdPartyCookiesSetting.addChangeListener(event => this.onIncludeThirdPartyCookiesSettingChanged(event.data));
-        cookiesCheckbox.addEventListener('change', () => {
-            this.syncCheckboxAttributeState(cookiesCheckbox);
-            if (!cookiesCheckbox.checked && this.includeThirdPartyCookiesCheckbox.checked) {
-                this.includeThirdPartyCookiesCheckbox.click();
-            }
-            this.onCookiesSettingChanged(cookiesCheckbox.checked);
-        });
-        this.includeThirdPartyCookiesCheckbox.addEventListener('change', () => {
-            this.syncCheckboxAttributeState(this.includeThirdPartyCookiesCheckbox);
-            this.onIncludeThirdPartyCookiesSettingChanged(this.includeThirdPartyCookiesCheckbox.checked);
-        });
         this.onCookiesSettingChanged(Boolean(cookiesSetting?.get()));
-        const quota = this.reportView.appendSection(i18nString(UIStrings.usage));
-        quota.element.setAttribute('jslog', `${VisualLogging.section('usage')}`);
-        this.quotaRow = quota.appendSelectableRow();
-        this.quotaRow.classList.add('quota-usage-row');
-        this.quotaRow.setAttribute('jslog', `${VisualLogging.item('storage-usage')}`);
-        const learnMoreRow = quota.appendRow();
-        const learnMore = Link.create('https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses', i18nString(UIStrings.learnMore), undefined, 'learn-more');
-        learnMoreRow.appendChild(learnMore);
-        this.quotaUsage = null;
-        this.quotaQuota = null;
-        this.quotaOverrideActive = null;
-        this.pieChart = new PerfUI.PieChart.PieChart();
-        this.populatePieChart(0, []);
-        const usageBreakdownRow = quota.appendRow();
-        usageBreakdownRow.classList.add('usage-breakdown-row');
-        usageBreakdownRow.setAttribute('jslog', `${VisualLogging.item('usage-breakdown')}`);
-        usageBreakdownRow.appendChild(this.pieChart);
-        this.previousOverrideFieldValue = '';
-        const quotaOverrideCheckboxRow = quota.appendRow();
-        quotaOverrideCheckboxRow.classList.add('quota-override-row');
-        this.quotaOverrideCheckbox = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.simulateCustomStorage), false);
-        this.quotaOverrideCheckbox.setAttribute('jslog', `${VisualLogging.toggle('simulate-custom-quota').track({ change: true })}`);
-        quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
-        this.quotaOverrideCheckbox.addEventListener('click', this.onClickCheckbox.bind(this), false);
-        this.quotaOverrideControlRow = quota.appendRow();
-        this.quotaOverrideEditor = this.quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor');
-        this.quotaOverrideEditor.setAttribute('placeholder', i18nString(UIStrings.pleaseEnterANumber));
-        this.quotaOverrideEditor.setAttribute('jslog', `${VisualLogging.textField('quota-override').track({ change: true })}`);
-        this.quotaOverrideControlRow.appendChild(UI.UIUtils.createLabel(i18nString(UIStrings.mb)));
-        this.quotaOverrideControlRow.classList.add('hidden');
-        this.quotaOverrideEditor.addEventListener('keyup', event => {
-            if (event.key === 'Enter') {
-                void this.applyQuotaOverrideFromInputField();
-                event.consume(true);
-            }
-        });
-        this.quotaOverrideEditor.addEventListener('focusout', event => {
-            void this.applyQuotaOverrideFromInputField();
-            event.consume(true);
-        });
-        const errorMessageRow = quota.appendRow();
-        this.quotaOverrideErrorMessage = errorMessageRow.createChild('div', 'quota-override-error');
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
     }
-    appendSettingCheckbox(container, title, settingName, className) {
-        const setting = this.settings.get(settingName);
-        if (!setting) {
-            throw new Error(`Missing setting for storage type: ${settingName}`);
-        }
-        const checkbox = SettingsUI.SettingsUI.createSettingCheckbox(title, setting);
-        if (className) {
-            checkbox.classList.add(className);
-        }
-        container.appendChild(checkbox);
-        return checkbox;
-    }
     onCookiesSettingChanged(cookiesEnabled) {
-        if (!cookiesEnabled) {
-            this.includeThirdPartyCookiesCheckbox.toggleAttribute('checked', true);
-            this.includeThirdPartyCookiesCheckbox.toggleAttribute('checked', false);
-            if (this.includeThirdPartyCookiesSetting.get()) {
-                this.includeThirdPartyCookiesSetting.set(false);
-            }
+        // Unchecking general cookies clearing must also uncheck third-party cookies.
+        if (!cookiesEnabled && this.includeThirdPartyCookiesSetting.get()) {
+            this.includeThirdPartyCookiesSetting.set(false);
+            return;
         }
-        this.updateThirdPartyCookiesCheckboxState();
+        this.requestUpdate();
     }
     onIncludeThirdPartyCookiesSettingChanged(includeThirdPartyCookiesEnabled) {
         const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        // Checking third-party cookies requires general cookies clearing to be enabled.
         if (includeThirdPartyCookiesEnabled && cookiesSetting && !cookiesSetting.get()) {
             cookiesSetting.set(true);
             return;
         }
-        this.updateThirdPartyCookiesCheckboxState();
-    }
-    syncCheckboxAttributeState(checkbox) {
-        checkbox.toggleAttribute('checked', checkbox.checked);
-    }
-    updateThirdPartyCookiesCheckboxState() {
-        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
-        this.includeThirdPartyCookiesCheckbox.disabled = !cookiesSetting?.get();
+        this.requestUpdate();
     }
     targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -339,6 +385,23 @@ export class StorageView extends UI.Widget.VBox {
         const storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
         storageKeyManager.removeEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, this.storageKeyChanged, this);
     }
+    willHide() {
+        super.willHide();
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        cookiesSetting?.removeChangeListener(this.boundOnCookiesSettingChanged);
+        this.includeThirdPartyCookiesSetting.removeChangeListener(this.boundOnIncludeThirdPartyCookiesSettingChanged);
+    }
+    wasHidden() {
+        super.wasHidden();
+        if (this.clearTimerId !== undefined) {
+            window.clearTimeout(this.clearTimerId);
+            this.clearTimerId = undefined;
+        }
+        if (this.clearing) {
+            this.clearing = false;
+            this.requestUpdate();
+        }
+    }
     originChanged(event) {
         const { mainSecurityOrigin, unreachableMainSecurityOrigin } = event.data;
         this.updateOrigin(mainSecurityOrigin, unreachableMainSecurityOrigin);
@@ -351,82 +414,90 @@ export class StorageView extends UI.Widget.VBox {
         const oldOrigin = this.securityOrigin;
         if (unreachableMainOrigin) {
             this.securityOrigin = unreachableMainOrigin;
-            this.reportView.setSubtitle(i18nString(UIStrings.sFailedToLoad, { PH1: unreachableMainOrigin }));
+            this.subtitle = i18nString(UIStrings.sFailedToLoad, { PH1: unreachableMainOrigin });
         }
         else {
             this.securityOrigin = mainOrigin;
-            this.reportView.setSubtitle(mainOrigin);
+            this.subtitle = mainOrigin;
         }
         if (oldOrigin !== this.securityOrigin) {
-            this.quotaOverrideControlRow.classList.add('hidden');
-            this.quotaOverrideCheckbox.checked = false;
-            this.quotaOverrideErrorMessage.textContent = '';
+            this.quotaOverrideEnabled = false;
+            this.quotaOverrideError = '';
             this.quotaUsage = null;
             this.quotaQuota = null;
             this.quotaOverrideActive = null;
+            this.pieChartSlices = [];
         }
-        void this.performUpdate();
+        this.requestUpdate();
+        void this.refreshUsageAndQuota();
     }
     updateStorageKey(mainStorageKey) {
         const oldStorageKey = this.storageKey;
         this.storageKey = mainStorageKey;
-        this.reportView.setSubtitle(mainStorageKey);
+        this.subtitle = mainStorageKey;
         if (oldStorageKey !== this.storageKey) {
-            this.quotaOverrideControlRow.classList.add('hidden');
-            this.quotaOverrideCheckbox.checked = false;
-            this.quotaOverrideErrorMessage.textContent = '';
+            this.quotaOverrideEnabled = false;
+            this.quotaOverrideError = '';
         }
-        void this.performUpdate();
+        this.requestUpdate();
     }
-    async applyQuotaOverrideFromInputField() {
+    async applyQuotaOverrideFromInputField(editorString) {
+        this.quotaOverrideFieldValue = editorString;
         if (!this.target || !this.securityOrigin) {
-            this.quotaOverrideErrorMessage.textContent = i18nString(UIStrings.internalError);
+            this.quotaOverrideError = i18nString(UIStrings.internalError);
+            this.requestUpdate();
             return;
         }
-        this.quotaOverrideErrorMessage.textContent = '';
-        const editorString = this.quotaOverrideEditor.value;
+        this.quotaOverrideError = '';
         if (editorString === '') {
             await this.clearQuotaForOrigin(this.target, this.securityOrigin);
             this.previousOverrideFieldValue = '';
+            this.requestUpdate();
             return;
         }
         const quota = parseFloat(editorString);
         if (!Number.isFinite(quota)) {
-            this.quotaOverrideErrorMessage.textContent = i18nString(UIStrings.pleaseEnterANumber);
+            this.quotaOverrideError = i18nString(UIStrings.pleaseEnterANumber);
+            this.requestUpdate();
             return;
         }
         if (quota < 0) {
-            this.quotaOverrideErrorMessage.textContent = i18nString(UIStrings.numberMustBeNonNegative);
+            this.quotaOverrideError = i18nString(UIStrings.numberMustBeNonNegative);
+            this.requestUpdate();
             return;
         }
         const cutoff = 9_000_000_000_000;
         if (quota >= cutoff) {
-            this.quotaOverrideErrorMessage.textContent =
-                i18nString(UIStrings.numberMustBeSmaller, { PH1: cutoff.toLocaleString() });
+            this.quotaOverrideError = i18nString(UIStrings.numberMustBeSmaller, { PH1: cutoff.toLocaleString() });
+            this.requestUpdate();
             return;
         }
         const bytesPerMB = 1000 * 1000;
         const quotaInBytes = Math.round(quota * bytesPerMB);
         const quotaFieldValue = `${quotaInBytes / bytesPerMB}`;
-        this.quotaOverrideEditor.value = quotaFieldValue;
         this.previousOverrideFieldValue = quotaFieldValue;
+        this.quotaOverrideFieldValue = quotaFieldValue;
+        this.requestUpdate();
         await this.target.storageAgent().invoke_overrideQuotaForOrigin({ origin: this.securityOrigin, quotaSize: quotaInBytes });
     }
     async clearQuotaForOrigin(target, origin) {
         await target.storageAgent().invoke_overrideQuotaForOrigin({ origin });
     }
     async onClickCheckbox() {
-        if (this.quotaOverrideControlRow.classList.contains('hidden')) {
-            this.quotaOverrideControlRow.classList.remove('hidden');
-            this.quotaOverrideCheckbox.checked = true;
-            this.quotaOverrideEditor.value = this.previousOverrideFieldValue;
-            window.setTimeout(() => this.quotaOverrideEditor.focus(), 500);
+        if (!this.quotaOverrideEnabled) {
+            this.quotaOverrideEnabled = true;
+            this.quotaOverrideFieldValue = this.previousOverrideFieldValue;
+            this.requestUpdate();
+            await this.updateComplete;
+            this.#viewOutput.focusQuotaOverrideEditor?.();
         }
-        else if (this.target && this.securityOrigin) {
-            this.quotaOverrideControlRow.classList.add('hidden');
-            this.quotaOverrideCheckbox.checked = false;
-            await this.clearQuotaForOrigin(this.target, this.securityOrigin);
-            this.quotaOverrideErrorMessage.textContent = '';
+        else {
+            this.quotaOverrideEnabled = false;
+            this.quotaOverrideError = '';
+            this.requestUpdate();
+            if (this.target && this.securityOrigin) {
+                await this.clearQuotaForOrigin(this.target, this.securityOrigin);
+            }
         }
     }
     clear() {
@@ -444,13 +515,17 @@ export class StorageView extends UI.Widget.VBox {
             const includeThirdPartyCookies = this.includeThirdPartyCookiesSetting.get();
             StorageView.clear(this.target, this.storageKey, this.securityOrigin, selectedStorageTypes, includeThirdPartyCookies);
         }
-        this.clearButton.disabled = true;
-        const label = this.clearButton.textContent;
-        this.clearButton.textContent = i18nString(UIStrings.clearing);
-        window.setTimeout(() => {
-            this.clearButton.disabled = false;
-            this.clearButton.textContent = label;
-            this.clearButton.focus();
+        this.clearing = true;
+        this.requestUpdate();
+        window.clearTimeout(this.clearTimerId);
+        this.clearTimerId = window.setTimeout(async () => {
+            this.clearTimerId = undefined;
+            this.clearing = false;
+            this.requestUpdate();
+            await this.updateComplete;
+            if (this.isShowing()) {
+                this.#viewOutput.focusClearButton?.();
+            }
         }, 500);
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.SiteDataCleared));
     }
@@ -491,23 +566,32 @@ export class StorageView extends UI.Widget.VBox {
             }
         }
     }
-    async performUpdate() {
+    async refreshUsageAndQuota() {
+        if (!this.isShowing()) {
+            return;
+        }
         if (!this.securityOrigin || !this.target) {
-            this.quotaRow.textContent = '';
             this.quotaUsage = null;
             this.quotaQuota = null;
             this.quotaOverrideActive = null;
-            this.populatePieChart(0, []);
+            this.pieChartSlices = [];
+            this.requestUpdate();
             return;
         }
         const securityOrigin = this.securityOrigin;
         const response = await this.target.storageAgent().invoke_getUsageAndQuota({ origin: securityOrigin });
+        if (this.securityOrigin !== securityOrigin) {
+            return;
+        }
         if (response.getError()) {
-            this.quotaRow.textContent = '';
             this.quotaUsage = null;
             this.quotaQuota = null;
             this.quotaOverrideActive = null;
-            this.populatePieChart(0, []);
+            this.pieChartSlices = [];
+            this.requestUpdate();
+            if (this.isShowing()) {
+                void this.throttler.schedule(() => this.refreshUsageAndQuota());
+            }
             return;
         }
         const usageChanged = this.quotaUsage !== response.usage;
@@ -517,27 +601,6 @@ export class StorageView extends UI.Widget.VBox {
             this.quotaUsage = response.usage;
             this.quotaQuota = response.quota;
             this.quotaOverrideActive = response.overrideActive;
-            this.quotaRow.textContent = '';
-            const quotaAsString = i18n.ByteUtilities.bytesToString(response.quota);
-            const usageAsString = i18n.ByteUtilities.bytesToString(response.usage);
-            const formattedQuotaAsString = i18nString(UIStrings.storageWithCustomMarker, { PH1: quotaAsString });
-            let quota = quotaAsString;
-            if (response.overrideActive) {
-                const element = document.createElement('b');
-                element.textContent = formattedQuotaAsString;
-                quota = element;
-            }
-            const element = uiI18n.getFormatLocalizedString(str_, UIStrings.storageQuotaUsed, { PH1: usageAsString, PH2: quota });
-            this.quotaRow.appendChild(element);
-            UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
-            if (!response.overrideActive && response.quota < 125829120) { // 120 MiB
-                const icon = new Icon();
-                icon.name = 'info';
-                icon.style.color = 'var(--icon-info)';
-                icon.classList.add('small');
-                UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.storageQuotaIsLimitedIn));
-                this.quotaRow.appendChild(icon);
-            }
             if (usageChanged) {
                 const slices = [];
                 for (const usageForType of response.usageBreakdown.sort((a, b) => b.usage - a.usage)) {
@@ -549,20 +612,48 @@ export class StorageView extends UI.Widget.VBox {
                     const color = this.pieColors.get(usageForType.storageType) || '#ccc';
                     slices.push({ value, color, title });
                 }
-                this.populatePieChart(response.usage, slices);
+                this.pieChartSlices = slices;
             }
+            this.requestUpdate();
         }
-        void this.throttler.schedule(this.requestUpdate.bind(this));
+        if (this.isShowing()) {
+            void this.throttler.schedule(() => this.refreshUsageAndQuota());
+        }
     }
-    populatePieChart(total, slices) {
-        this.pieChart.data = {
-            chartName: i18nString(UIStrings.storageUsage),
-            size: 110,
-            formatter: i18n.ByteUtilities.bytesToString,
-            showLegend: true,
-            total,
-            slices,
-        };
+    wasShown() {
+        super.wasShown();
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        cookiesSetting?.addChangeListener(this.boundOnCookiesSettingChanged);
+        this.includeThirdPartyCookiesSetting.addChangeListener(this.boundOnIncludeThirdPartyCookiesSettingChanged);
+        this.onCookiesSettingChanged(Boolean(cookiesSetting?.get()));
+        void this.refreshUsageAndQuota();
+    }
+    performUpdate() {
+        const cookiesSetting = this.settings.get("cookies" /* Protocol.Storage.StorageType.Cookies */);
+        this.#view({
+            subtitle: this.subtitle,
+            settings: this.settings,
+            includeThirdPartyCookiesSetting: this.includeThirdPartyCookiesSetting,
+            includeThirdPartyCookiesDisabled: !cookiesSetting?.get(),
+            clearing: this.clearing,
+            quotaUsage: this.quotaUsage,
+            quotaQuota: this.quotaQuota,
+            quotaOverrideActive: this.quotaOverrideActive,
+            pieChartSlices: this.pieChartSlices,
+            quotaOverrideEnabled: this.quotaOverrideEnabled,
+            quotaOverrideValue: this.quotaOverrideFieldValue,
+            quotaOverrideError: this.quotaOverrideError,
+            onClear: () => this.clear(),
+            onToggleQuotaOverride: () => {
+                void this.onClickCheckbox();
+            },
+            onQuotaOverrideInput: value => {
+                this.quotaOverrideFieldValue = value;
+            },
+            onApplyQuotaOverride: value => {
+                void this.applyQuotaOverrideFromInputField(value);
+            },
+        }, this.#viewOutput, this.contentElement);
     }
     static getStorageTypeName(type) {
         switch (type) {

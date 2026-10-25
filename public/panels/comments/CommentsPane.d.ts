@@ -15,7 +15,10 @@ export interface ViewInput {
     threads: ThreadViewData[];
     onTabSelect: (tab: Tab) => void;
     onClearAll: () => void;
-    onThreadClick: (thread: CommentManager.CommentManager.CommentThread) => void;
+    onThreadClick: (thread: CommentManager.CommentManager.CommentThread, fallbackPosition?: {
+        left: number;
+        top: number;
+    }) => void;
     onDeleteThread: (threadId: string) => void;
     onSendToAgent: () => void;
 }

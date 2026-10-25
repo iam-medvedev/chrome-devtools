@@ -147,18 +147,17 @@ var commentsPane_css_default = `/*
   }
 
   .comment-pin-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: var(--sys-size-9);
     height: var(--sys-size-9);
     margin-right: var(--sys-size-2);
     border-radius: var(--sys-shape-corner-full) var(--sys-shape-corner-full) var(--sys-shape-corner-full) var(--sys-shape-corner-extra-small);
     background-color: var(--sys-color-primary);
-    color: var(--sys-color-on-primary);
-    font-size: var(--sys-typescale-body5-size);
-    font-weight: var(--ref-typeface-weight-bold);
     flex-shrink: 0;
+  }
+
+  .comment-thread-item.orphaned .comment-pin-badge {
+    background-color: var(--sys-color-surface-variant);
+    color: var(--sys-color-on-surface-subtle);
   }
 
   .anchor-chip {
@@ -177,6 +176,26 @@ var commentsPane_css_default = `/*
     min-width: 0;
     flex-shrink: 0;
     pointer-events: none;
+  }
+
+  .anchor-chip.orphaned {
+    border-style: dashed;
+    border-color: var(--sys-color-neutral-outline);
+    background: transparent;
+    color: var(--sys-color-state-disabled);
+    gap: var(--sys-size-3);
+  }
+
+  .anchor-chip.orphaned .anchor-chip-text {
+    color: var(--sys-color-state-disabled);
+  }
+
+  .orphaned-label {
+    flex-shrink: 0;
+    color: var(--sys-color-on-surface-subtle);
+    font-family: var(--default-font-family);
+    font-size: var(--sys-typescale-body5-size);
+    font-style: italic;
   }
 
   .anchor-chip devtools-widget,
@@ -309,7 +328,11 @@ var UIStrings = {
   /**
    * @description Tab label for sent and resolved comments in the comments drawer.
    */
-  sent: "Sent"
+  sent: "Sent",
+  /**
+   * @description Label shown next to an element anchor in the comments drawer when the target DOM node has been removed or can no longer be found.
+   */
+  removed: "removed"
 };
 var UIStringsNotTranslate = {
   /**
@@ -370,6 +393,12 @@ function renderThreadStatus(thread, onDeleteThread) {
 var DEFAULT_VIEW = (input, _output, target) => {
   const isQueued = input.activeTab === "queued";
   const isSent = input.activeTab === "sent";
+  const onThreadClick = (e, thread) => {
+    const rowEl = e.currentTarget;
+    const rowRect = rowEl.getBoundingClientRect();
+    const badgeRect = rowEl.querySelector(".comment-pin-badge")?.getBoundingClientRect();
+    input.onThreadClick(thread, { left: badgeRect?.left ?? rowRect.left, top: rowRect.top });
+  };
   render(html`
     <style>${commentsPane_css_default}</style>
     <div class="comments-container" role="region" aria-label="Comments" jslog=${VisualLogging.panel("comments").track({ resize: true })}>
@@ -413,20 +442,21 @@ var DEFAULT_VIEW = (input, _output, target) => {
     (item2) => item2.thread.id,
     (item2) => html`
               <li
-                class="comment-thread-item"
+                class="comment-thread-item ${item2.thread.isOrphaned ? "orphaned" : ""}"
                 role="listitem"
                 tabindex="0"
-                @click=${() => input.onThreadClick(item2.thread)}
+                @click=${(e) => onThreadClick(e, item2.thread)}
                 @keydown=${(e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        input.onThreadClick(item2.thread);
+        onThreadClick(e, item2.thread);
       }
     }}
                 jslog=${VisualLogging.item("comment-thread").track({ click: true })}>
-                <div class="comment-pin-badge">${item2.thread.index}</div>
-                <span class="anchor-chip">
-                  ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, { node: item2.title.node, options: { preventKeyboardFocus: true } }) : html`<span class="anchor-chip-text">${item2.title.text}</span>`}
+                <div class="comment-pin-badge" aria-hidden="true"></div>
+                <span class="anchor-chip ${item2.thread.isOrphaned ? "orphaned" : ""}">
+                  ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, { node: item2.title.node, options: { preventKeyboardFocus: true, disabled: item2.thread.isOrphaned } }) : html`<span class="anchor-chip-text">${item2.title.text}</span>`}
+                  ${item2.thread.isOrphaned ? html`<span class="orphaned-label">(${i18nString(UIStrings.removed)})</span>` : Lit.nothing}
                 </span>
                 <div class="comment-text">${item2.commentText}</div>
                 ${renderThreadStatus(item2.thread, input.onDeleteThread)}
@@ -512,8 +542,8 @@ var CommentsPane = class extends UI.Widget.Widget {
     this.#commentManager.clear();
     this.requestUpdate();
   };
-  #handleThreadClick = (thread) => {
-    void Common.Revealer.reveal(thread);
+  #handleThreadClick = (thread, position) => {
+    void Common.Revealer.reveal(new CommentManager.CommentThread.RevealableThread(thread, position));
   };
   #handleDeleteThread = (threadId) => {
     this.#cachedTitles.delete(threadId);

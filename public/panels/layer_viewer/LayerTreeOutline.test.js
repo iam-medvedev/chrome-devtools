@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { it } from 'mocha';
+import sinon from 'sinon';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -134,6 +135,30 @@ describeWithEnvironment('LayerTreeOutline', () => {
         assert.exists(item);
         assert.strictEqual(item?.getAttribute('data-backend-node-id'), '123');
         assert.strictEqual(item?.getAttribute('data-target-id'), 'target-xyz');
+    });
+    it('only listens to the internal layers setting while shown', async () => {
+        const layerViewHost = new LayerViewer.LayerViewHost.LayerViewHost();
+        const setting = layerViewHost.showInternalLayersSetting();
+        setting.set(false);
+        const view = createViewFunctionStub(LayerViewer.LayerTreeOutline.LayerTreeOutline);
+        const treeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(layerViewHost, view);
+        const { childLayer, layerTree } = createMockLayerTree();
+        childLayer.drawsContent = () => false;
+        treeOutline.setLayerTree(layerTree);
+        renderElementIntoDOM(treeOutline);
+        let viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.layerCount, 1);
+        treeOutline.detach();
+        const requestUpdate = sinon.spy(treeOutline, 'requestUpdate');
+        setting.set(true);
+        sinon.assert.notCalled(requestUpdate);
+        renderElementIntoDOM(treeOutline);
+        viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.layerCount, 2);
+        setting.set(false);
+        viewInput = await view.nextInput;
+        assert.strictEqual(viewInput.layerCount, 1);
+        treeOutline.detach();
     });
 });
 describeWithEnvironment('LayerDetailsView', () => {

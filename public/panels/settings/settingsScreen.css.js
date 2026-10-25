@@ -197,8 +197,4 @@ devtools-button.link-icon {
   }
 }
 
-.greendev-widgets input[type="radio"] {
-  margin: var(--sys-size-4);
-}
-
 /*# sourceURL=${import.meta.resolve('./settingsScreen.css')} */`;

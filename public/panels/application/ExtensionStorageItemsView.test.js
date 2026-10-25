@@ -8,6 +8,7 @@ import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
 var View = Resources.ExtensionStorageItemsView;
 class ExtensionStorageItemsListener {
@@ -124,7 +125,7 @@ describeWithEnvironment('ExtensionStorageItemsView', function () {
         target.style.height = '400px';
         const itemsListener = new ExtensionStorageItemsListener(view.extensionStorageItemsDispatcher);
         await itemsListener.waitForItemsRefreshed();
-        await view.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('application/extension-storage-item-view.png');
         view.detach();
     });

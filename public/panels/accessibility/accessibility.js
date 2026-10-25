@@ -30,7 +30,7 @@ var accessibilityAnnouncementRecordingListView_css_default = `/*
   flex-direction: column;
   flex: auto;
   height: 100%;
-  min-height: 0;
+  min-height: 150px;
   overflow: hidden;
 }
 
@@ -41,6 +41,7 @@ var accessibilityAnnouncementRecordingListView_css_default = `/*
     flex-direction: column;
     flex: auto;
     height: 100%;
+    min-height: 150px;
     overflow: hidden;
   }
 
@@ -48,6 +49,7 @@ var accessibilityAnnouncementRecordingListView_css_default = `/*
     font-family: inherit;
     flex: auto;
     height: 100%;
+    min-height: 150px;
     border: none;
   }
 }
@@ -105,6 +107,7 @@ var accessibilityAnnouncementRecordingView_css_default = `/*
     flex: auto;
     height: 100%;
     overflow: hidden;
+    position: relative;
   }
 
   .announcements-toolbar-container {
@@ -164,8 +167,18 @@ var accessibilityAnnouncementRecordingView_css_default = `/*
     display: flex;
     flex-direction: column;
     flex: auto;
-    min-height: 0;
+    min-height: 150px;
     overflow: hidden;
+  }
+
+  .announcements-resizer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--sys-size-4);
+    z-index: 4000;
+    cursor: ns-resize;
   }
 }
 
@@ -540,11 +553,80 @@ var UIStrings = {
   /**
    * @description Fallback reason shown when an unknown error occurs while blocking recording.
    */
-  unknownError: "Unknown error"
+  unknownError: "Unknown error",
+  /**
+   * @description Accessible label for the grabber handle used to vertically resize the announcements pane.
+   */
+  resizeAnnouncementsPane: "Resize announcements pane"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/accessibility/AccessibilityAnnouncementRecordingView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var BINDING_NAME = "__announcementsRecorderBinding";
+var MIN_MAIN_PANE_HEIGHT = 150;
+var KEYBOARD_RESIZE_STEP = 10;
+var isDragging = false;
+var resizeStartY = 0;
+var resizeStartHeight = MIN_MAIN_PANE_HEIGHT;
+function onResizerPointerDown(event) {
+  if (event.button !== 0) {
+    return;
+  }
+  const resizerEl = event.currentTarget;
+  const mainPane = resizerEl?.parentElement?.querySelector(".announcements-main-pane");
+  if (!resizerEl || !mainPane) {
+    return;
+  }
+  isDragging = true;
+  resizeStartY = event.clientY;
+  resizeStartHeight = mainPane.getBoundingClientRect().height;
+  try {
+    resizerEl.setPointerCapture(event.pointerId);
+  } catch {
+  }
+  event.preventDefault();
+}
+function onResizerPointerMove(event) {
+  const resizerEl = event.currentTarget;
+  if (!resizerEl || !isDragging) {
+    return;
+  }
+  const mainPane = resizerEl.parentElement?.querySelector(".announcements-main-pane");
+  if (!mainPane) {
+    return;
+  }
+  const delta = event.clientY - resizeStartY;
+  const newHeight = Math.max(MIN_MAIN_PANE_HEIGHT, resizeStartHeight + delta);
+  mainPane.style.height = `${newHeight}px`;
+  mainPane.style.flex = "none";
+}
+function onResizerPointerUp(event) {
+  isDragging = false;
+  const resizerEl = event.currentTarget;
+  if (resizerEl) {
+    try {
+      if (resizerEl.hasPointerCapture(event.pointerId)) {
+        resizerEl.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+    }
+  }
+}
+function onResizerKeyDown(event) {
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
+    return;
+  }
+  const resizerEl = event.currentTarget;
+  const mainPane = resizerEl?.parentElement?.querySelector(".announcements-main-pane");
+  if (!mainPane) {
+    return;
+  }
+  event.preventDefault();
+  const delta = event.key === "ArrowDown" ? KEYBOARD_RESIZE_STEP : -KEYBOARD_RESIZE_STEP;
+  const currentHeight = mainPane.getBoundingClientRect().height;
+  const newHeight = Math.max(MIN_MAIN_PANE_HEIGHT, currentHeight + delta);
+  mainPane.style.height = `${newHeight}px`;
+  mainPane.style.flex = "none";
+}
 var AnnouncementApi = /* @__PURE__ */ ((AnnouncementApi2) => {
   AnnouncementApi2["ARIA_LIVE"] = "aria-live";
   AnnouncementApi2["JS_TRIGGERED"] = "js-triggered";
@@ -640,6 +722,23 @@ var DEFAULT_VIEW = (input, _output, target) => {
           @reveal-in-elements=${(e) => input.onRevealInElements(e.detail)}
           @reveal-in-a11y-tree=${(e) => input.onRevealInA11yTree(e.detail)}>
         </devtools-widget>
+      </div>
+      <div
+        class="announcements-resizer"
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label=${i18nString(UIStrings.resizeAnnouncementsPane)}
+        title=${i18nString(UIStrings.resizeAnnouncementsPane)}
+        tabindex="0"
+        jslog=${VisualLogging.resizer("accessibility-announcements.resizer").track({
+      drag: true,
+      keydown: "ArrowUp|ArrowDown"
+    })}
+        @pointerdown=${onResizerPointerDown}
+        @pointermove=${onResizerPointerMove}
+        @pointerup=${onResizerPointerUp}
+        @lostpointercapture=${onResizerPointerUp}
+        @keydown=${onResizerKeyDown}>
       </div>
     </div>`,
     target
@@ -3315,6 +3414,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {

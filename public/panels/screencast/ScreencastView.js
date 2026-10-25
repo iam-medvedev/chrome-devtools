@@ -370,9 +370,8 @@ export class ScreencastView extends UI.Widget.Widget {
             this.resourceTreeModel = screenCaptureModel.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
             this.networkManager = screenCaptureModel.target().model(SDK.NetworkManager.NetworkManager);
             this.inputModel = screenCaptureModel.target().model(InputModel);
-            this.createNavigationBar();
-            this.updateGlasspane();
             if (this.isShowing()) {
+                this.createNavigationBar();
                 this.#scheduleCasting();
             }
         }
@@ -403,6 +402,7 @@ export class ScreencastView extends UI.Widget.Widget {
     wasShown() {
         super.wasShown();
         SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
+        this.createNavigationBar();
         this.updateGlasspane();
         this.#scheduleCasting();
         this.requestUpdate();
@@ -446,10 +446,8 @@ export class ScreencastView extends UI.Widget.Widget {
             delete this.deferredCasting;
         }
         this.stopCasting();
-        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
-    }
-    onDetach() {
         this.#cleanup();
+        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChange, this);
     }
     async startCasting() {
         if (!this.#screenCaptureModel) {

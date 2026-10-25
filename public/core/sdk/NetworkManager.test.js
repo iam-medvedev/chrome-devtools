@@ -1081,6 +1081,14 @@ describe('NetworkManager', () => {
                 assert.deepEqual(request.directSocketInfo?.joinedMulticastGroups, new Set(['237.132.100.17']));
                 assert.lengthOf(updatedRequests, 0);
             });
+            it('directUDPSocketJoinedMulticastGroup keeps memberships for different sources of a group apart', () => {
+                const sourceA = { identifier: mockIdentifier, IPAddress: '232.1.1.1', sourceAddress: '192.0.2.100' };
+                const sourceB = { identifier: mockIdentifier, IPAddress: '232.1.1.1', sourceAddress: '192.0.2.101' };
+                networkDispatcher.directUDPSocketJoinedMulticastGroup(sourceA);
+                networkDispatcher.directUDPSocketJoinedMulticastGroup(sourceB);
+                assert.deepEqual(request.directSocketInfo?.joinedMulticastGroups, new Set(['232.1.1.1@192.0.2.100', '232.1.1.1@192.0.2.101']));
+                assert.lengthOf(updatedRequests, 2);
+            });
         });
         describe('on Leave Multicast Group events', () => {
             let networkManager;
@@ -1140,6 +1148,14 @@ describe('NetworkManager', () => {
                 });
                 assert.deepEqual(request.directSocketInfo?.joinedMulticastGroups, new Set());
                 assert.lengthOf(updatedRequests, 0);
+            });
+            it('directUDPSocketLeftMulticastGroup removes only the membership for its source', () => {
+                request.directSocketInfo.joinedMulticastGroups = new Set(['232.1.1.1@192.0.2.100', '232.1.1.1@192.0.2.101']);
+                updatedRequests.length = 0;
+                const sourceA = { identifier: mockIdentifier, IPAddress: '232.1.1.1', sourceAddress: '192.0.2.100' };
+                networkDispatcher.directUDPSocketLeftMulticastGroup(sourceA);
+                assert.deepEqual(request.directSocketInfo?.joinedMulticastGroups, new Set(['232.1.1.1@192.0.2.101']));
+                assert.lengthOf(updatedRequests, 1);
             });
         });
     });

@@ -5,8 +5,9 @@ import { DEBUG_PREFIXES } from './Debug.js';
 export class BrowserWebSocketTransport {
     static create(url, _headers, logger, 
     // Accepted so this stays call-compatible with NodeWebSocketTransport, which
-    // BrowserConnector picks between at runtime. The keep-alive options are
-    // Node-only: the browser WebSocket API exposes no ping frame.
+    // BrowserConnector picks between at runtime. The keep-alive and handshake
+    // timeout options are Node-only: the browser WebSocket API exposes neither
+    // ping frames nor a handshake timeout.
     _options) {
         return new Promise((resolve, reject) => {
             const ws = new WebSocket(url);
@@ -34,8 +35,8 @@ export class BrowserWebSocketTransport {
             }
         });
         // Silently log all errors - we don't know what to do with them.
-        this.#ws.addEventListener('error', () => {
-            this.#logger?.(DEBUG_PREFIXES.error);
+        this.#ws.addEventListener('error', err => {
+            this.#logger?.(DEBUG_PREFIXES.error)?.(err);
         });
     }
     send(message) {

@@ -44,6 +44,35 @@ describe('UIUtils', () => {
             assert.isTrue(UI.UIUtils.isEditing());
         });
     });
+    describe('isBeingEdited', () => {
+        it('returns true for the edited element and its descendants', () => {
+            const parent = document.createElement('div');
+            const child = parent.createChild('span');
+            const grandChild = child.createChild('b');
+            UI.UIUtils.markBeingEdited(parent, true);
+            try {
+                assert.isTrue(UI.UIUtils.isBeingEdited(parent));
+                assert.isTrue(UI.UIUtils.isBeingEdited(child));
+                assert.isTrue(UI.UIUtils.isBeingEdited(grandChild));
+            }
+            finally {
+                UI.UIUtils.markBeingEdited(parent, false);
+            }
+            assert.isFalse(UI.UIUtils.isBeingEdited(parent));
+            assert.isFalse(UI.UIUtils.isBeingEdited(grandChild));
+        });
+        it('returns false for an element outside of the edited subtree', () => {
+            const edited = document.createElement('div');
+            const other = document.createElement('div');
+            UI.UIUtils.markBeingEdited(edited, true);
+            try {
+                assert.isFalse(UI.UIUtils.isBeingEdited(other));
+            }
+            finally {
+                UI.UIUtils.markBeingEdited(edited, false);
+            }
+        });
+    });
     describe('LongClickController', () => {
         it('does not invoke callback when disposed', () => {
             const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
@@ -634,10 +663,13 @@ describe('bindToSetting (string)', () => {
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         const inputRef = Lit.Directives.createRef();
-        Lit.render(html `<input ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}>`, container);
+        const render = () => {
+            Lit.render(html `<input ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}>`, container);
+        };
+        render();
         const input = inputRef.value;
         assert.exists(input);
-        return { input, setting, container };
+        return { input, setting, container, render };
     }
     it('shows the current value on initial render', () => {
         const { input } = setup();
@@ -677,6 +709,19 @@ describe('bindToSetting (string)', () => {
         setting.set('new value via change listener');
         assert.isFalse(input.isConnected);
         assert.strictEqual(input.value, 'defaultValue');
+        input.value = 'new value via user edit';
+        input.dispatchEvent(new Event('change'));
+        assert.strictEqual(setting.get(), 'new value via change listener');
+    });
+    it('does not stack listeners across multiple renders', () => {
+        const { setting, input, render } = setup();
+        const setSpy = sinon.spy(setting, 'set');
+        for (let i = 0; i < 4; i++) {
+            render();
+        }
+        input.value = 'new value via user edit';
+        input.dispatchEvent(new Event('change'));
+        sinon.assert.calledOnceWithExactly(setSpy, 'new value via user edit');
     });
 });
 describe('bindToSetting (boolean)', () => {
@@ -686,10 +731,13 @@ describe('bindToSetting (boolean)', () => {
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         const inputRef = Lit.Directives.createRef();
-        Lit.render(html `<devtools-checkbox ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}></devtools-checkbox>`, container);
+        const render = () => {
+            Lit.render(html `<devtools-checkbox ${Lit.Directives.ref(inputRef)} ${bindToSetting(setting, opts)}></devtools-checkbox>`, container);
+        };
+        render();
         const input = inputRef.value;
         assert.exists(input);
-        return { input, setting, container };
+        return { input, setting, container, render };
     }
     it('shows the current value on initial render', () => {
         const { input } = setup();
@@ -720,6 +768,19 @@ describe('bindToSetting (boolean)', () => {
         setting.set(false);
         assert.isFalse(input.isConnected);
         assert.isTrue(input.checked);
+        input.checked = true;
+        input.dispatchEvent(new Event('change'));
+        assert.isFalse(setting.get());
+    });
+    it('does not stack listeners across multiple renders', () => {
+        const { setting, input, render } = setup();
+        const setSpy = sinon.spy(setting, 'set');
+        for (let i = 0; i < 4; i++) {
+            render();
+        }
+        input.checked = false;
+        input.dispatchEvent(new Event('change'));
+        sinon.assert.calledOnceWithExactly(setSpy, false);
     });
 });
 describe('bindToSetting (devtools-button)', () => {

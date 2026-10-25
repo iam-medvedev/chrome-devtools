@@ -291,8 +291,10 @@ var UIStrings = {
   currentTime: "Current time",
   /**
    * @description Label for the callback interval statistics in the audio context summary bar.
+   * @example {1.234} PH1
+   * @example {0.567} PH2
    */
-  callbackInterval: "Callback interval",
+  callbackIntervalS: "Callback interval: \u03BC = {PH1} ms, \u03C3 = {PH2} ms",
   /**
    * @description Label for the render capacity percentage in the audio context summary bar.
    */
@@ -379,7 +381,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${contextRealtimeData ? html`<div class="context-summary-container" jslog=${VisualLogging.section("audio-context-summary")}>
             <span>${i18nString(UIStrings.currentTime)}: ${contextRealtimeData.currentTime.toFixed(3)} s</span>
             <span>\u2758</span>
-            <span>${i18nString(UIStrings.callbackInterval)}: μ = ${(contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3)} ms, σ = ${(Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3)} ms</span>
+            <span>${i18nString(UIStrings.callbackIntervalS, {
+    PH1: (contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3),
+    PH2: (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3)
+  })}</span>
             <span>\u2758</span>
             <span>${i18nString(UIStrings.renderCapacity)}: ${(contextRealtimeData.renderCapacity * 100).toFixed(3)} %</span>
           </div>` : ""}

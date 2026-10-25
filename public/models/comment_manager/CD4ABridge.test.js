@@ -112,6 +112,18 @@ describe('CD4ABridge', () => {
         assert.lengthOf(threads, 1);
         assert.strictEqual(threads[0].text, 'Missing target comment\n\n- DevTools VEPath: Panel: elements\n- DevTools element: color: red');
     });
+    it('appends the anchor\'s agent context lines', () => {
+        const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
+        const thread = commentManager.createCommentThread({
+            vePath: 'Panel: timeline',
+            textSignature: 'Task',
+            agentContext: ['Trace event: RunTask', 'Warnings: Long task'],
+        }, 'Why is this slow?');
+        thread.sendToAgent();
+        const threads = bridge.getCommentThreads();
+        assert.lengthOf(threads, 1);
+        assert.strictEqual(threads[0].text, 'Why is this slow?\n\n- DevTools VEPath: Panel: timeline\n- DevTools element: Task\n- Trace event: RunTask\n- Warnings: Long task');
+    });
     it('only takes the first comment text', () => {
         const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
         const thread = commentManager.createCommentThread({

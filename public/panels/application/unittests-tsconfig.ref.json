@@ -28,6 +28,7 @@
     "../../../../../../front_end/panels/application/IndexedDBModel.test.ts",
     "../../../../../../front_end/panels/application/IndexedDBViews.test.ts",
     "../../../../../../front_end/panels/application/KeyValueStorageItemsView.test.ts",
+    "../../../../../../front_end/panels/application/OpenedWindowDetailsView.test.ts",
     "../../../../../../front_end/panels/application/OriginTrialTreeView.test.ts",
     "../../../../../../front_end/panels/application/PreloadingTreeElement.test.ts",
     "../../../../../../front_end/panels/application/ReportingApiTreeElement.test.ts",
@@ -38,6 +39,7 @@
     "../../../../../../front_end/panels/application/ServiceWorkersView.test.ts",
     "../../../../../../front_end/panels/application/StorageBucketsTreeElement.test.ts",
     "../../../../../../front_end/panels/application/StorageView.test.ts",
+    "../../../../../../front_end/panels/application/SubAppsView.test.ts",
     "../../../../../../front_end/panels/application/WebMCPView.test.ts",
     "../../../../../../front_end/panels/application/preloading/PreloadingView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -103,6 +105,9 @@
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../ui/legacy/components/perf_ui/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.ref.json"

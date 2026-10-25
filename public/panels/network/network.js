@@ -2620,6 +2620,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -4228,7 +4229,6 @@ __export(NetworkConfigView_exports, {
   NetworkConfigView: () => NetworkConfigView,
   userAgentGroups: () => userAgentGroups
 });
-import "../settings/emulation/components/components.js";
 import * as Common4 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform2 from "../../core/platform/platform.js";
@@ -4238,6 +4238,7 @@ import * as UI5 from "../../ui/legacy/legacy.js";
 import { Directives as Directives4, html as html5, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling2 from "../mobile_throttling/mobile_throttling.js";
+import * as EmulationComponents from "../settings/emulation/components/components.js";
 
 // gen/front_end/panels/network/networkConfigView.css.js
 var networkConfigView_css_default = `/*
@@ -4268,7 +4269,7 @@ var networkConfigView_css_default = `/*
   flex: 2 0 200px;
 }
 
-.network-config-fields span:first-of-type {
+.network-config-fields > span:first-of-type {
   padding: 3px 0;
 }
 
@@ -4316,12 +4317,12 @@ var networkConfigView_css_default = `/*
   line-height: var(--sys-size-9);
 }
 
-.network-config-ua input {
+.network-config-ua-custom > input {
   display: block;
   width: calc(100% - var(--sys-size-9));
 }
 
-.network-config-ua input[type="text"],
+.network-config-ua-custom > input[type="text"],
 .network-config-ua select {
   margin-top: var(--sys-size-5);
 }
@@ -4334,20 +4335,20 @@ var networkConfigView_css_default = `/*
 .network-config-ua-custom {
   padding-bottom: var(--sys-size-5);
 
-  input,
-  devtools-user-agent-client-hints-form {
+  > input,
+  > .user-agent-client-hints-form {
     opacity: 38%;
     pointer-events: none;
   }
 
-  &.checked input,
-  &.checked devtools-user-agent-client-hints-form {
+  &.checked > input,
+  &.checked > .user-agent-client-hints-form {
     opacity: revert;
     pointer-events: revert;
   }
 }
 
-devtools-user-agent-client-hints-form {
+.user-agent-client-hints-form {
   display: block;
   margin-top: var(--sys-size-7);
   width: min(100%, 400px);
@@ -4508,14 +4509,15 @@ function renderUserAgentSection(input, output) {
     </devtools-checkbox>
     <div class=${Directives4.classMap({ "network-config-ua-custom": true, checked: input.useCustomUA })}>
       ${renderUserAgentSelectAndInput(input, output, title)}
-      <devtools-user-agent-client-hints-form
-          .value=${input.clientHintsValue}
-          .disabled=${!input.useCustomUA}
-          @clienthintschange=${(e) => input.onClientHintsChange(
-    e.target.value.metaData
-  )}
-          @clienthintssubmit=${(e) => input.onClientHintsSubmit(e.detail.value)}>
-      </devtools-user-agent-client-hints-form>
+      <devtools-widget
+          class="user-agent-client-hints-form"
+          @clienthintschange=${(e) => input.onClientHintsChange(e.detail)}
+          @clienthintssubmit=${(e) => input.onClientHintsSubmit(e.detail)}
+          ${UI5.Widget.widget(EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm, {
+    value: input.clientHintsValue,
+    disabled: !input.useCustomUA
+  })}>
+      </devtools-widget>
     </div>
     <span class="status-text">${input.clientHintsStatusText}</span>
   `);
@@ -6298,7 +6300,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     this.parentView().dispatchEventToListeners("RequestSelected" /* RequestSelected */, this.requestInternal);
   }
   openInNewTab() {
-    if (Common5.ParsedURL.isPrivilegedScheme(this.requestInternal.url())) {
+    if (!Common5.ParsedURL.hasWebSafeScheme(this.requestInternal.url())) {
       return;
     }
     Host3.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.requestInternal.url());
@@ -15650,7 +15652,7 @@ var RequestHeadersView = class _RequestHeadersView extends UI17.Widget.Widget {
     }
   }
   constructor(target, view = DEFAULT_VIEW10) {
-    super();
+    super(target);
     this.#view = view;
   }
   static createGeneralHeadersView(request) {
@@ -16431,7 +16433,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
       <li role=treeitem class="source-code object-properties-section-root-element object-properties-section"
           toggle-on-click
           ?open=${objectTree.expanded}
-          @expand=${(e) => input.onPayloadToggle(e.detail.expanded)}
+          @expand=${(e) => input.onPayloadToggle(e.detail.expanded, e.detail.recursively)}
           @contextmenu=${onPayloadContextMenu}>
         ${objectTree.object.description}
         ${objectTree.object.hasChildren ? ObjectUI2.ObjectPropertiesSection.renderObjectTree(objectTree) : nothing9}
@@ -16706,10 +16708,15 @@ var RequestPayloadView = class _RequestPayloadView extends UI18.Widget.VBox {
           }
         );
       },
-      onPayloadToggle: (expanded) => {
-        if (this.#objectTree) {
-          this.#objectTree.expanded = expanded;
+      onPayloadToggle: (expanded, recursively = false) => {
+        if (!this.#objectTree) {
+          return;
         }
+        if (expanded && recursively) {
+          void this.#objectTree.expandRecursively();
+          return;
+        }
+        this.#objectTree.expanded = expanded;
       },
       binaryPayloadContentData: this.#binaryPayloadContentData,
       requestUrl: this.request?.url() ?? Platform10.DevToolsPath.EmptyUrlString
@@ -17296,16 +17303,39 @@ var UIStrings20 = {
 var str_20 = i18n39.i18n.registerUIStrings("panels/network/RequestPreviewView.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var RequestPreviewView = class extends UI21.Widget.VBox {
-  request;
-  contentViewPromise;
-  constructor(request) {
-    super({ jslog: `${VisualLogging14.pane("preview").track({ resize: true })}` });
+  #request;
+  contentViewPromise = null;
+  constructor(request, element) {
+    super(
+      request instanceof HTMLElement ? request : element,
+      { jslog: `${VisualLogging14.pane("preview").track({ resize: true })}` }
+    );
     this.element.classList.add("request-view");
-    this.request = request;
+    if (request && !(request instanceof HTMLElement)) {
+      this.#request = request;
+    }
+  }
+  get request() {
+    return this.#request;
+  }
+  set request(request) {
+    if (this.#request === request) {
+      return;
+    }
+    this.#request = request;
     this.contentViewPromise = null;
+    this.detachChildWidgets();
+    this.element.removeChildren();
+    if (this.isShowing()) {
+      void this.doShowPreview();
+    }
   }
   async showPreview() {
+    const request = this.#request;
     const view = await this.createPreview();
+    if (this.#request !== request) {
+      return view;
+    }
     view.show(this.element);
     await view.updateComplete;
     if (!(view instanceof UI21.View.SimpleView)) {

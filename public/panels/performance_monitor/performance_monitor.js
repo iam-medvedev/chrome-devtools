@@ -227,6 +227,10 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     }
     this.recalcChartHeight();
   }
+  #onThemeChange = () => {
+    this.chartInfos = this.createChartInfos();
+    this.requestUpdate();
+  };
   wasShown() {
     super.wasShown();
     if (!this.model) {
@@ -234,10 +238,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     }
     this.chartInfos = this.createChartInfos();
     const themeSupport = ThemeSupport.ThemeSupport.instance();
-    themeSupport.addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
-      this.chartInfos = this.createChartInfos();
-      this.requestUpdate();
-    });
+    themeSupport.addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
     SDK.TargetManager.TargetManager.instance().addEventListener(
       SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
       this.suspendStateChanged,
@@ -252,6 +253,10 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     if (!this.model) {
       return;
     }
+    ThemeSupport.ThemeSupport.instance().removeEventListener(
+      ThemeSupport.ThemeChangeEvent.eventName,
+      this.#onThemeChange
+    );
     SDK.TargetManager.TargetManager.instance().removeEventListener(
       SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
       this.suspendStateChanged,

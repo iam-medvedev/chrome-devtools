@@ -386,6 +386,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
   muteUpdate;
   emulatedDevicesList;
   editor;
+  #userAgentClientHintsForm = new EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm();
   constructor() {
     super({ jslog: `${VisualLogging.pane("devices")}` });
     this.registerRequiredCSS(devicesSettingsTab_css_default);
@@ -575,7 +576,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     if (uaType === EmulationModel.DeviceModeModel.UA.MOBILE || uaType === EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH) {
       device.capabilities.push(EmulationModel.EmulatedDevices.Capability.TOUCH);
     }
-    const userAgentControlValue = editor.control("ua-metadata").value.metaData;
+    const userAgentControlValue = this.#userAgentClientHintsForm.value.metaData;
     const hasUserAgentOverride = device.userAgent.trim().length > 0;
     device.userAgentMetadata = null;
     if (hasUserAgentOverride && userAgentControlValue) {
@@ -614,7 +615,7 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
       uaType = device.touch() ? EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH : EmulationModel.DeviceModeModel.UA.DESKTOP;
     }
     editor.control("ua-type").value = uaType;
-    editor.control("ua-metadata").value = { metaData: device.userAgentMetadata || void 0 };
+    this.#userAgentClientHintsForm.value = { metaData: device.userAgentMetadata || void 0 };
     return editor;
   }
   safeAreaInsetsFromEditor(editor, controlPrefix = "") {
@@ -774,18 +775,20 @@ var DevicesSettingsTab = class extends UI.Widget.VBox {
     }, i18nString(UIStrings.userAgentType));
     uaType.classList.add("device-edit-fixed");
     ua.appendChild(uaType);
-    const uaMetadata = editor.createCustomControl(
-      "ua-metadata",
-      EmulationComponents.UserAgentClientHintsForm.UserAgentClientHintsForm,
-      userAgentMetadataValidator
-    );
+    const uaMetadata = this.#userAgentClientHintsForm;
     uaMetadata.value = {};
-    uaMetadata.addEventListener("clienthintschange", () => editor.requestValidation(), false);
-    content.appendChild(uaMetadata);
+    uaMetadata.addEventListener(
+      EmulationComponents.UserAgentClientHintsForm.Events.CLIENT_HINTS_CHANGE,
+      () => editor.requestValidation()
+    );
+    uaMetadata.show(
+      content,
+      void 0,
+      /* suppressOrphanWidgetError= */
+      true
+    );
+    editor.addCustomControl(uaMetadata.element, () => uaMetadata.validate());
     return editor;
-    function userAgentMetadataValidator() {
-      return uaMetadata.validate();
-    }
     function userAgentValidator(_item, _index, input) {
       if (input.value.trim().length > 0) {
         return { valid: true };

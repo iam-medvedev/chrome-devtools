@@ -28,12 +28,6 @@ export declare class SecurityPanelSidebar extends UI.Widget.VBox {
     updateOrigin(origin: Platform.DevToolsPath.UrlString, securityState: Protocol.Security.SecurityState): void;
     updateOverviewSecurityState(securityState: Protocol.Security.SecurityState): void;
     clearOrigins(): void;
-    elementsByOrigin(): Map<string, {
-        select: (omitFocus?: boolean, selectedByUser?: boolean) => void;
-        showElement: () => void;
-        origin: () => string;
-        securityState: () => Protocol.Security.SecurityState | undefined;
-    }>;
     set selectedOrigin(origin: Platform.DevToolsPath.UrlString | null);
     get selectedOrigin(): string;
     performUpdate(): void;

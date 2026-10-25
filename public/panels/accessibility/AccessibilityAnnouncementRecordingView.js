@@ -84,10 +84,83 @@ const UIStrings = {
      * @description Fallback reason shown when an unknown error occurs while blocking recording.
      */
     unknownError: 'Unknown error',
+    /**
+     * @description Accessible label for the grabber handle used to vertically resize the announcements pane.
+     */
+    resizeAnnouncementsPane: 'Resize announcements pane',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AccessibilityAnnouncementRecordingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const BINDING_NAME = '__announcementsRecorderBinding';
+const MIN_MAIN_PANE_HEIGHT = 150;
+const KEYBOARD_RESIZE_STEP = 10;
+let isDragging = false;
+let resizeStartY = 0;
+let resizeStartHeight = MIN_MAIN_PANE_HEIGHT;
+function onResizerPointerDown(event) {
+    if (event.button !== 0) {
+        return;
+    }
+    const resizerEl = event.currentTarget;
+    const mainPane = resizerEl?.parentElement?.querySelector('.announcements-main-pane');
+    if (!resizerEl || !mainPane) {
+        return;
+    }
+    isDragging = true;
+    resizeStartY = event.clientY;
+    resizeStartHeight = mainPane.getBoundingClientRect().height;
+    try {
+        resizerEl.setPointerCapture(event.pointerId);
+    }
+    catch {
+        // Pointer capture may fail on synthetic events in unit tests.
+    }
+    event.preventDefault();
+}
+function onResizerPointerMove(event) {
+    const resizerEl = event.currentTarget;
+    if (!resizerEl || !isDragging) {
+        return;
+    }
+    const mainPane = resizerEl.parentElement?.querySelector('.announcements-main-pane');
+    if (!mainPane) {
+        return;
+    }
+    const delta = event.clientY - resizeStartY;
+    const newHeight = Math.max(MIN_MAIN_PANE_HEIGHT, resizeStartHeight + delta);
+    mainPane.style.height = `${newHeight}px`;
+    mainPane.style.flex = 'none';
+}
+function onResizerPointerUp(event) {
+    isDragging = false;
+    const resizerEl = event.currentTarget;
+    if (resizerEl) {
+        try {
+            if (resizerEl.hasPointerCapture(event.pointerId)) {
+                resizerEl.releasePointerCapture(event.pointerId);
+            }
+        }
+        catch {
+            // Ignored for synthetic events in unit tests.
+        }
+    }
+}
+function onResizerKeyDown(event) {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+        return;
+    }
+    const resizerEl = event.currentTarget;
+    const mainPane = resizerEl?.parentElement?.querySelector('.announcements-main-pane');
+    if (!mainPane) {
+        return;
+    }
+    event.preventDefault();
+    const delta = event.key === 'ArrowDown' ? KEYBOARD_RESIZE_STEP : -KEYBOARD_RESIZE_STEP;
+    const currentHeight = mainPane.getBoundingClientRect().height;
+    const newHeight = Math.max(MIN_MAIN_PANE_HEIGHT, currentHeight + delta);
+    mainPane.style.height = `${newHeight}px`;
+    mainPane.style.flex = 'none';
+}
 export var AnnouncementApi;
 (function (AnnouncementApi) {
     AnnouncementApi["ARIA_LIVE"] = "aria-live";
@@ -183,6 +256,23 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           @reveal-in-elements=${(e) => input.onRevealInElements(e.detail)}
           @reveal-in-a11y-tree=${(e) => input.onRevealInA11yTree(e.detail)}>
         </devtools-widget>
+      </div>
+      <div
+        class="announcements-resizer"
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label=${i18nString(UIStrings.resizeAnnouncementsPane)}
+        title=${i18nString(UIStrings.resizeAnnouncementsPane)}
+        tabindex="0"
+        jslog=${VisualLogging.resizer('accessibility-announcements.resizer').track({
+        drag: true,
+        keydown: 'ArrowUp|ArrowDown',
+    })}
+        @pointerdown=${onResizerPointerDown}
+        @pointermove=${onResizerPointerMove}
+        @pointerup=${onResizerPointerUp}
+        @lostpointercapture=${onResizerPointerUp}
+        @keydown=${onResizerKeyDown}>
       </div>
     </div>`, target);
     // clang-format on

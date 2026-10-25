@@ -8,7 +8,6 @@ import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
 import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
@@ -19,13 +18,13 @@ async function makeView(storageKeyOrBucketInfo, storageBucketsModel) {
         component.enableStorageBucketControls(storageBucketsModel);
     }
     if (typeof storageKeyOrBucketInfo === 'string') {
-        component.setStorageKey(storageKeyOrBucketInfo);
+        component.storageKey = storageKeyOrBucketInfo;
     }
     else {
-        component.setStorageBucket(storageKeyOrBucketInfo);
+        component.storageBucket = storageKeyOrBucketInfo;
     }
-    await RenderCoordinator.done();
-    return component;
+    await component.updateComplete;
+    return component.element;
 }
 describe('StorageMetadataView', () => {
     setupLocaleHooks();
@@ -239,9 +238,9 @@ describe('StorageMetadataView', () => {
             persistent: false,
             durability: "relaxed" /* Protocol.Storage.StorageBucketsDurability.Relaxed */,
         };
-        component.setStorageBucket(bucketInfo);
-        component.setShowOnlyBucket(true);
-        await RenderCoordinator.done();
+        component.storageBucket = bucketInfo;
+        component.showOnlyBucket = true;
+        await component.updateComplete;
         const report = component.shadowRoot.querySelector('devtools-report');
         assert.exists(report);
         const link = report.querySelectorAll('devtools-report-value')[0].querySelector('devtools-link');

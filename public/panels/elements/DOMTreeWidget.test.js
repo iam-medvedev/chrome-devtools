@@ -1088,13 +1088,16 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 });
                 const pNode = rootNode.children()[0];
                 domTree.rootDOMNode = rootNode;
+                domTree.selectEnabled = true;
                 domTree.setNodeExpanded(rootNode, true);
+                domTree.selectDOMNode(pNode);
                 domTree.performUpdate();
                 await waitForTreeUpdates();
                 const tree = domTree.contentElement.querySelector('devtools-tree');
                 assert.exists(tree);
                 const treeElement = tree.getInternalTreeOutlineForTest().rootElement().children()[0].children()[0];
                 assert.exists(treeElement);
+                assert.isTrue(treeElement.selected);
                 pWidget = findElementsTreeWidget(domTree, pNode);
                 assert.exists(pWidget);
                 domTree.startEditing(pNode, 'class');
@@ -1105,7 +1108,8 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 const selection = editingElement.getComponentSelection();
                 assert.exists(selection);
                 selection.collapseToStart();
-                treeElement.listItemElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true }));
+                editingElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true }));
+                assert.isTrue(pWidget.isEditing, 'mousedown inside the editor must not close the editor');
                 const dataTransfer = new DataTransfer();
                 const dragStartEvent = new DragEvent('dragstart', { bubbles: true, composed: true, cancelable: true, dataTransfer });
                 treeElement.listItemElement.dispatchEvent(dragStartEvent);
@@ -1124,6 +1128,117 @@ describeWithEnvironment('DOMTreeWidget', () => {
             finally {
                 window.getSelection()?.removeAllRanges();
                 pWidget?.editing?.cancel();
+                domTree.detach();
+            }
+        });
+        describe('mouse interaction with an active inline attribute editor', () => {
+            async function setupEditingTree() {
+                const domModel = target.model(SDK.DOMModel.DOMModel);
+                sinon.stub(domModel, 'requestDocument').resolves(null);
+                const { domTree } = setupDOMTreeWidget(target);
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [
+                        { nodeId: 2, nodeName: 'P', attributes: ['class', 'foo bar baz'] },
+                        { nodeId: 3, nodeName: 'SPAN' },
+                    ],
+                });
+                const children = rootNode.children();
+                assert.exists(children);
+                const pNode = children[0];
+                domTree.rootDOMNode = rootNode;
+                domTree.selectEnabled = true;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.selectDOMNode(pNode);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const rootTreeElement = tree.getInternalTreeOutlineForTest().rootElement().children()[0];
+                const [pTreeElement, spanTreeElement] = rootTreeElement.children();
+                assert.isTrue(pTreeElement.selected);
+                const pWidget = findElementsTreeWidget(domTree, pNode);
+                assert.exists(pWidget);
+                domTree.startEditing(pNode, 'class');
+                await waitForTreeUpdates();
+                assert.isTrue(pWidget.isEditing);
+                const editingElement = pTreeElement.listItemElement.querySelector('.being-edited');
+                assert.exists(editingElement);
+                assert.strictEqual(editingElement.getRootNode().activeElement, editingElement, 'precondition: the editor must own the focus');
+                return { domTree, pWidget, pTreeElement, spanTreeElement, editingElement };
+            }
+            it('keeps the editor open and focused on mousedown inside the editor', async () => {
+                const { domTree, pWidget, pTreeElement, editingElement } = await setupEditingTree();
+                try {
+                    const event = new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true });
+                    editingElement.dispatchEvent(event);
+                    assert.isTrue(pWidget.isEditing);
+                    assert.isTrue(pTreeElement.selected);
+                    assert.isFalse(event.defaultPrevented, 'the browser must place the caret');
+                    assert.strictEqual(editingElement.getRootNode().activeElement, editingElement);
+                    assert.isTrue(UI.UIUtils.isEditing());
+                }
+                finally {
+                    pWidget.editing?.cancel();
+                    domTree.detach();
+                }
+            });
+            it('allows the native word selection on double click inside the editor', async () => {
+                const { domTree, pWidget, editingElement } = await setupEditingTree();
+                try {
+                    const event = new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true, detail: 2 });
+                    editingElement.dispatchEvent(event);
+                    assert.isTrue(pWidget.isEditing);
+                    assert.isFalse(event.defaultPrevented);
+                    assert.strictEqual(editingElement.getRootNode().activeElement, editingElement);
+                }
+                finally {
+                    pWidget.editing?.cancel();
+                    domTree.detach();
+                }
+            });
+            it('commits the editor on mousedown on another row', async () => {
+                const { domTree, pWidget, pTreeElement, spanTreeElement } = await setupEditingTree();
+                try {
+                    spanTreeElement.listItemElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true }));
+                    assert.isFalse(pWidget.isEditing);
+                    assert.isFalse(pTreeElement.selected);
+                    assert.isTrue(spanTreeElement.selected);
+                    assert.isTrue(spanTreeElement.listItemElement.hasFocus());
+                }
+                finally {
+                    pWidget.editing?.cancel();
+                    domTree.detach();
+                }
+            });
+        });
+        it('prevents the native word selection on double click outside of an inline editor', async () => {
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    attributes: ['class', 'foo bar'],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.selectEnabled = true;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const widget = findElementsTreeWidget(domTree, rootNode);
+                assert.exists(widget);
+                const attrElement = widget.contentElement.querySelector('.webkit-html-attribute');
+                assert.exists(attrElement);
+                const singleClick = new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true, detail: 1 });
+                attrElement.dispatchEvent(singleClick);
+                assert.isFalse(singleClick.defaultPrevented);
+                const doubleClick = new MouseEvent('mousedown', { bubbles: true, composed: true, cancelable: true, detail: 2 });
+                attrElement.dispatchEvent(doubleClick);
+                assert.isTrue(doubleClick.defaultPrevented);
+            }
+            finally {
                 domTree.detach();
             }
         });
@@ -5684,6 +5799,51 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+    });
+    it('expands nodes recursively on recursive expand event', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'DIV',
+                children: [
+                    {
+                        nodeId: 2,
+                        nodeName: 'SECTION',
+                        children: [
+                            {
+                                nodeId: 3,
+                                nodeName: 'SPAN',
+                                children: [
+                                    { nodeId: 4, nodeName: 'B' },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+            const sectionChildren = rootNode.children();
+            assert.exists(sectionChildren);
+            const sectionNode = sectionChildren[0];
+            const spanChildren = sectionNode.children();
+            assert.exists(spanChildren);
+            const spanNode = spanChildren[0];
+            domTree.rootDOMNode = rootNode;
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            assert.isFalse(domTree.isNodeExpanded(rootNode));
+            assert.isFalse(domTree.isNodeExpanded(sectionNode));
+            assert.isFalse(domTree.isNodeExpanded(spanNode));
+            const rootTreeElement = requireTreeElement(domTree, rootNode);
+            await rootTreeElement.expandRecursively();
+            await waitForTreeUpdates();
+            assert.isTrue(domTree.isNodeExpanded(rootNode));
+            assert.isTrue(domTree.isNodeExpanded(sectionNode));
+            assert.isTrue(domTree.isNodeExpanded(spanNode));
+        }
+        finally {
+            domTree.detach();
+        }
     });
 });
 //# sourceMappingURL=DOMTreeWidget.test.js.map

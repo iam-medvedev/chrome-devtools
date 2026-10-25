@@ -470,6 +470,55 @@ describe('StylesSidebarPane', () => {
                 sectionBlocks.forEach(block => block.updateFilter());
                 assertBlockVisibility([false, true, false, true]);
             });
+            it('merges universal highlight rules into named highlight blocks', async () => {
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const outerNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                outerNode.nodeName.returns('div');
+                outerNode.id = 1;
+                const targetNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                targetNode.nodeName.returns('h1');
+                targetNode.id = 2;
+                targetNode.pseudoElements.returns(new Map());
+                targetNode.parentNode = outerNode;
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node: targetNode,
+                    pseudoPayload: [{
+                            pseudoType: "highlight" /* Protocol.DOM.PseudoType.Highlight */,
+                            matches: [
+                                ruleMatch('#target::highlight(*)', { color: 'red', 'background-color': 'yellow' }),
+                                ruleMatch('#target::highlight(foo)', { color: 'green' }),
+                            ],
+                        }],
+                    inheritedPseudoPayload: [{
+                            pseudoElements: [{
+                                    pseudoType: "highlight" /* Protocol.DOM.PseudoType.Highlight */,
+                                    matches: [ruleMatch('#outer::highlight(foo)', { color: 'blue', 'background-color': 'gray' })],
+                                }],
+                        }],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                const blocks = sectionBlocks.slice(1).map(block => ({
+                    title: block.titleElement()?.textContent,
+                    sections: block.sections.map(section => section.headerText()),
+                }));
+                assert.deepEqual(blocks, [
+                    { title: 'Pseudo ::highlight(foo) element', sections: ['#target::highlight(foo)', '#target::highlight(*)'] },
+                    { title: 'Inherited from ::highlight(foo) pseudo of ', sections: ['#outer::highlight(foo)'] },
+                    { title: 'Pseudo ::highlight(*) element', sections: ['#target::highlight(*)'] },
+                ]);
+                const [, universalSection, outerSection] = sectionBlocks.slice(1).flatMap(block => block.sections);
+                const propertyStates = (section) => section.style().leadingProperties().map(property => [property.name, matchedStyles.propertyState(property)]);
+                assert.deepEqual(propertyStates(universalSection), [
+                    ['color', "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */],
+                    ['background-color', "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */],
+                ]);
+                assert.deepEqual(propertyStates(outerSection), [
+                    ['color', "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */],
+                    ['background-color', "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */],
+                ]);
+            });
             it('renders media queries', async () => {
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
                 const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
@@ -1907,11 +1956,13 @@ describe('StylesSidebarPane', () => {
                 assert.exists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
             });
             it('cleans up toolbar when the feature is disabled', async () => {
+                const detachSpy = sinon.spy(PanelsCommon.AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'detach');
                 const providerConfig = stylesSidebarPane.aiCodeCompletionConfig;
                 assert.exists(providerConfig);
                 providerConfig.onFeatureEnabled();
                 assert.exists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
                 providerConfig.onFeatureDisabled();
+                sinon.assert.calledOnce(detachSpy);
                 assert.notExists(stylesWrapper.contentElement.querySelector('div.ai-code-completion-summary-toolbar-container'));
             });
             it('shows a loading state when a request is triggered', async () => {
@@ -4066,6 +4117,25 @@ describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyfr
             stylesSidebarPane.setEditingStyle(false);
             sinon.assert.calledOnce(hideHighlightSpy);
         });
+    });
+    it('re-runs filter on LIVE_LOCATION_UPDATED after a styles rebuild', async () => {
+        computedStyleModel.node = node;
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            cssModel,
+            node,
+            matchedPayload: [ruleMatch('div', { color: 'red' })],
+        });
+        sinon.stub(cssModel, 'cachedMatchedCascadeForNode').resolves(matchedStyles);
+        sinon.stub(cssModel, 'getComputedStyle').resolves(new Map());
+        sinon.stub(cssModel, 'getComputedStyleExtraFields').resolves({ isAppearanceBase: false });
+        await stylesSidebarPane.performUpdate();
+        assert.isTrue(stylesSidebarPane.linkifier.hasEventListeners("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */));
+        stylesSidebarPane.setFilter(/long-stylesheet-name/);
+        const updateFilterSpy = sinon.spy(stylesSidebarPane.sectionBlocks[0], 'updateFilter');
+        stylesSidebarPane.linkifier.dispatchEventToListeners("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */, {});
+        await new Promise(resolve => queueMicrotask(resolve));
+        sinon.assert.calledOnce(updateFilterSpy);
     });
 });
 //# sourceMappingURL=StylesSidebarPane.test.js.map

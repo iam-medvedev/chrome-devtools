@@ -38,7 +38,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
-import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import { createIcon } from '../../ui/kit/kit.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -63,6 +62,7 @@ import { ServiceWorkerCacheTreeElement } from './ServiceWorkerCacheTreeElement.j
 import { ServiceWorkersView } from './ServiceWorkersView.js';
 import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js';
 import { StorageView } from './StorageView.js';
+import { SubAppsView } from './SubAppsView.js';
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
 import { WebMCPTreeElement } from './WebMCPTreeElement.js';
 const UIStrings = {
@@ -78,6 +78,14 @@ const UIStrings = {
      * @description Context menu item to explain cookies with AI in the Application panel sidebar.
      */
     explainCookies: 'Explain cookies',
+    /**
+     * @description Tree item label for Sub Apps in the sidebar of the Application panel.
+     */
+    subApps: 'Sub apps',
+    /**
+     * @description Tree item label for Sibling Sub Apps in the sidebar of the Application panel.
+     */
+    siblingSubApps: 'Sibling sub apps',
     /**
      * @description Section header for the application section in the sidebar of the Application panel.
      */
@@ -313,6 +321,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     pushMessagingTreeElement;
     reportingApiTreeElement;
     webMcpTreeElement;
+    subAppsTreeElement;
     adsTreeElement;
     storageTreeElement;
     deviceBoundSessionsRootTreeElement;
@@ -347,6 +356,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const manifestTreeElement = new AppManifestTreeElement(panel);
         this.applicationTreeElement.appendChild(manifestTreeElement);
         manifestTreeElement.generateChildren();
+        this.subAppsTreeElement = new SubAppsTreeElement(panel);
+        this.applicationTreeElement.appendChild(this.subAppsTreeElement);
         this.serviceWorkersTreeElement = new ServiceWorkersTreeElement(panel);
         this.applicationTreeElement.appendChild(this.serviceWorkersTreeElement);
         this.storageTreeElement = new StorageTreeElement(panel);
@@ -532,6 +543,10 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         if (preloadingModel) {
             this.preloadingSummaryTreeElement?.initialize(preloadingModel);
         }
+        const resourceTreeModel = this.target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        if (resourceTreeModel) {
+            void this.subAppsTreeElement.update(resourceTreeModel);
+        }
     }
     domStorageModelAdded(model) {
         model.enable();
@@ -615,6 +630,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const frame = event.data;
         if (frame.isOutermostFrame()) {
             this.reset();
+            void this.subAppsTreeElement.update(frame.resourceTreeModel());
             const selectedElement = this.sidebarTree.selectedTreeElement;
             if (selectedElement instanceof ExpandableApplicationPanelTreeElement) {
                 // Only update AI Assistance storage context for expandable category headers,
@@ -974,6 +990,71 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.onInvokeAlert, { PH1: this.listItemElement.title }));
     }
 }
+export class SubAppsTreeElement extends ApplicationPanelTreeElement {
+    #view;
+    #subApps = [];
+    #isSubApp = false;
+    #latestUpdate;
+    constructor(storagePanel) {
+        super(storagePanel, i18nString(UIStrings.subApps), false, 'sub-apps');
+        const icon = createIcon('table');
+        this.setLeadingIcons([icon]);
+        this.hidden = true;
+    }
+    get itemURL() {
+        return 'sub-apps://';
+    }
+    onselect(selectedByUser) {
+        super.onselect(selectedByUser);
+        if (!this.#view) {
+            this.#view = new SubAppsView();
+        }
+        this.#view.subApps = this.#subApps;
+        this.#view.isSiblingSubApps = this.#isSubApp;
+        this.showView(this.#view);
+        UI.UIUserMetrics.UIUserMetrics.instance().panelShown('sub-apps');
+        return false;
+    }
+    /**
+     * Fetches the Sub Apps of the inspected app, or its Sibling Sub Apps when
+     * the inspected app is itself a Sub App. Only the most recent update is
+     * applied; results of superseded updates are dropped.
+     */
+    update(resourceTreeModel) {
+        const subAppsFetch = Promise.all([resourceTreeModel.getSubApps(), resourceTreeModel.getSiblingSubApps()]);
+        const update = subAppsFetch.then(([subApps, siblingSubApps]) => {
+            if (update !== this.#latestUpdate) {
+                return;
+            }
+            if (siblingSubApps.length > 0) {
+                this.#setSubApps(siblingSubApps, /* isSubApp= */ true);
+            }
+            else {
+                this.#setSubApps(subApps, /* isSubApp= */ false);
+            }
+        });
+        this.#latestUpdate = update;
+        return update;
+    }
+    get latestUpdateForTest() {
+        return this.#latestUpdate;
+    }
+    #setSubApps(subApps, isSubApp) {
+        this.#subApps = subApps;
+        this.#isSubApp = isSubApp;
+        this.hidden = subApps.length === 0;
+        const title = isSubApp ? i18nString(UIStrings.siblingSubApps) : i18nString(UIStrings.subApps);
+        this.title = title;
+        UI.ARIAUtils.setLabel(this.listItemElement, title);
+        if (this.#view) {
+            this.#view.subApps = this.#subApps;
+            this.#view.isSiblingSubApps = this.#isSubApp;
+        }
+    }
+    getSubApps() {
+        return this.#subApps;
+    }
+}
 export class StorageTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
@@ -1158,7 +1239,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
             }
         }
         if (this.view) {
-            this.view.getComponent().update(database);
+            this.view.update(database);
         }
         this.updateTooltip();
     }
@@ -1183,7 +1264,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
             return false;
         }
         if (!this.view) {
-            this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new IDBDatabaseView(this.model, this.database), 'indexeddb-data');
+            this.view = new IDBDatabaseView(this.model, this.database);
         }
         this.showView(this.view);
         UI.UIUserMetrics.UIUserMetrics.instance().panelShown('indexed-db');
@@ -2050,7 +2131,6 @@ class FrameWindowTreeElement extends ApplicationPanelTreeElement {
         this.targetInfo = targetInfo;
         if (this.view) {
             this.view.setTargetInfo(targetInfo);
-            this.view.requestUpdate();
         }
     }
     windowClosed() {
@@ -2058,7 +2138,6 @@ class FrameWindowTreeElement extends ApplicationPanelTreeElement {
         this.isWindowClosed = true;
         if (this.view) {
             this.view.setIsWindowClosed(true);
-            this.view.requestUpdate();
         }
     }
     onselect(selectedByUser) {

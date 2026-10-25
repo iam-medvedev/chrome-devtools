@@ -15,7 +15,7 @@ export default `/*
   flex-direction: column;
   flex: auto;
   height: 100%;
-  min-height: 0;
+  min-height: 150px;
   overflow: hidden;
 }
 
@@ -26,6 +26,7 @@ export default `/*
     flex-direction: column;
     flex: auto;
     height: 100%;
+    min-height: 150px;
     overflow: hidden;
   }
 
@@ -33,6 +34,7 @@ export default `/*
     font-family: inherit;
     flex: auto;
     height: 100%;
+    min-height: 150px;
     border: none;
   }
 }

@@ -377,11 +377,13 @@ describeWithEnvironment('ConsoleView', () => {
             assert.exists(consoleView.element.querySelector('div.ai-code-completion-summary-toolbar-container'));
         });
         it('cleans up toolbar when the feature is disabled', async () => {
+            const detachSpy = sinon.spy(AiCodeCompletionSummaryToolbar.AiCodeCompletionSummaryToolbar.prototype, 'detach');
             const providerConfig = consoleView.aiCodeCompletionConfig;
             assert.exists(providerConfig);
             providerConfig.onFeatureEnabled();
             assert.exists(consoleView.element.querySelector('div.ai-code-completion-summary-toolbar-container'));
             providerConfig.onFeatureDisabled();
+            sinon.assert.calledOnce(detachSpy);
             assert.notExists(consoleView.element.querySelector('div.ai-code-completion-summary-toolbar-container'));
         });
         it('shows a loading state when a request is triggered', async () => {
