@@ -25,6 +25,7 @@ export default `/*
     flex: auto;
     height: 100%;
     overflow: hidden;
+    position: relative;
   }
 
   .announcements-toolbar-container {
@@ -84,8 +85,18 @@ export default `/*
     display: flex;
     flex-direction: column;
     flex: auto;
-    min-height: 0;
+    min-height: 150px;
     overflow: hidden;
+  }
+
+  .announcements-resizer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--sys-size-4);
+    z-index: 4000;
+    cursor: ns-resize;
   }
 }
 

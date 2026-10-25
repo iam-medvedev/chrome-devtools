@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, it } from 'mocha';
+import { it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
@@ -87,8 +87,8 @@ describeWithEnvironment('CommentsPane', () => {
         const commentManager = new CommentManager.CommentManager.CommentManager();
         const [t1] = seedThreads(commentManager);
         const { view } = await createWidget(commentManager);
-        view.input.onThreadClick(t1);
-        sinon.assert.calledOnceWithExactly(revealStub, t1, false);
+        view.input.onThreadClick(t1, { left: 16, top: 450 });
+        sinon.assert.calledOnceWithExactly(revealStub, new CommentManager.CommentThread.RevealableThread(t1, { left: 16, top: 450 }), false);
     });
     it('sends all active threads to agent when send to agent button is clicked', async () => {
         const commentManager = new CommentManager.CommentManager.CommentManager();
@@ -121,9 +121,6 @@ describeWithEnvironment('CommentsPane', () => {
     });
 });
 describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
-    beforeEach(() => {
-        CommentManager.CommentThread.CommentThread.resetIndex();
-    });
     function renderView(inputOverrides = {}) {
         const target = document.createElement('div');
         target.style.width = '360px';
@@ -140,7 +137,7 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
         }, undefined, target);
         return target;
     }
-    function createMockThread(index, selectorText, commentText, options = {}) {
+    function createMockThread(selectorText, commentText, options = {}) {
         const thread = new CommentManager.CommentThread.CommentThread({
             anchor: {
                 vePath: `Panel: elements > ${selectorText}`,
@@ -163,18 +160,18 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
     });
     it('renders comments list with various thread states', async () => {
         const threads = [
-            createMockThread(1, 'a.o-text-cta--small', 'Left align this button with H2 and use the primary pink colour for the button.'),
-            createMockThread(2, 'div.c-scrolling-list', 'Remove the animation from H1.'),
-            createMockThread(3, 'span.sub-header', 'Updated font weight.'),
+            createMockThread('a.o-text-cta--small', 'Left align this button with H2 and use the primary pink colour for the button.'),
+            createMockThread('div.c-scrolling-list', 'Remove the animation from H1.'),
+            createMockThread('span.sub-header', 'Updated font weight.'),
         ];
         const target = renderView({ threads });
         renderElementIntoDOM(target, { includeCommonStyles: true });
         await assertScreenshot('comments/comments_pane_list.png');
     });
     it('renders comments list in the sent tab', async () => {
-        const pendingThread = createMockThread(1, 'a.cta', 'Left align this button with H2 and use the primary pink colour for the button.');
+        const pendingThread = createMockThread('a.cta', 'Left align this button with H2 and use the primary pink colour for the button.');
         pendingThread.thread.sendToAgent();
-        const resolvedThread = createMockThread(2, 'div.list', 'Remove the animation from H1.');
+        const resolvedThread = createMockThread('div.list', 'Remove the animation from H1.');
         resolvedThread.thread.resolve('Done');
         const target = renderView({
             activeTab: 'sent',
@@ -188,7 +185,7 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
     });
     it('does not trigger thread selection when pressing Enter or Space on the delete button', () => {
         const onThreadClick = sinon.spy();
-        const mockThreadData = createMockThread(1, 'a.button', 'Test comment');
+        const mockThreadData = createMockThread('a.button', 'Test comment');
         const target = renderView({
             threads: [mockThreadData],
             onThreadClick,
@@ -204,7 +201,10 @@ describeWithEnvironment('CommentsPane DEFAULT_VIEW', () => {
         sinon.assert.notCalled(onThreadClick);
         const threadItem = target.querySelector('.comment-thread-item');
         threadItem.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
-        sinon.assert.calledOnceWithExactly(onThreadClick, mockThreadData.thread);
+        sinon.assert.calledOnceWithMatch(onThreadClick, mockThreadData.thread, sinon.match({
+            left: sinon.match.number,
+            top: sinon.match.number,
+        }));
     });
 });
 //# sourceMappingURL=CommentsPane.test.js.map

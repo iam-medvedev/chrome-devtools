@@ -244,6 +244,9 @@ let BidiPage = (() => {
         async windowId() {
             return this.#frame.browsingContext.windowId;
         }
+        tabInfo() {
+            throw new UnsupportedOperation();
+        }
         openDevTools() {
             throw new UnsupportedOperation();
         }
@@ -336,6 +339,11 @@ let BidiPage = (() => {
             return this.#frame.browsingContext.isJavaScriptEnabled();
         }
         async setGeolocation(options) {
+            if (options === null) {
+                return await this.#frame.browsingContext.setGeolocationOverride({
+                    coordinates: null,
+                });
+            }
             const { longitude, latitude, accuracy = 0 } = options;
             if (longitude < -180 || longitude > 180) {
                 throw new Error(`Invalid longitude "${longitude}": precondition -180 <= LONGITUDE <= 180 failed.`);
@@ -445,7 +453,11 @@ let BidiPage = (() => {
         async pdf(options = {}) {
             const { timeout: ms = this._timeoutSettings.timeout(), path = undefined } = options;
             const { printBackground: background, margin, landscape, width, height, pageRanges: ranges, scale, preferCSSPageSize, } = parsePDFOptions(options, 'cm');
-            const pageRanges = ranges ? ranges.split(', ') : [];
+            const pageRanges = ranges
+                ? ranges.split(',').map(range => {
+                    return range.trim();
+                })
+                : [];
             await firstValueFrom(from(this.mainFrame()
                 .isolatedRealm()
                 .evaluate(() => {

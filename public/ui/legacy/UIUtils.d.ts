@@ -7,6 +7,7 @@ import * as Buttons from '../components/buttons/buttons.js';
 import * as Geometry from '../geometry/geometry.js';
 import { type IconData } from '../kit/kit.js';
 import * as Lit from '../lit/lit.js';
+import { Widget } from './Widget.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-checkbox': CheckboxLabel;
@@ -189,7 +190,10 @@ export declare class DevToolsCloseButton extends HTMLElement {
     setTabbable(tabbable: boolean): void;
     focus(): void;
 }
-export declare function bindInput(input: HTMLInputElement, apply: (arg0: string) => void, validate: (arg0: string) => boolean, numeric: boolean, modifierMultiplier?: number): (arg0: string) => void;
+export declare function bindInput(input: HTMLInputElement, apply: (arg0: string) => void, validate: (arg0: string) => boolean, numeric: boolean, modifierMultiplier?: number): {
+    setValue: (arg0: string) => void;
+    cleanup: () => void;
+};
 export declare function trimText(context: CanvasRenderingContext2D, text: string, maxWidth: number, trimFunction: (arg0: string, arg1: number) => string): string;
 export declare function trimTextMiddle(context: CanvasRenderingContext2D, text: string, maxWidth: number): string;
 export declare function trimTextEnd(context: CanvasRenderingContext2D, text: string, maxWidth: number): string;
@@ -207,7 +211,7 @@ export declare class MessageDialog {
     static show(header: string, message: string, where?: Element | Document, jslogContext?: string): Promise<void>;
 }
 export declare class ConfirmDialog {
-    static show(message: string, header?: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
+    static show(message: string, header?: string, where?: Element | Document | Widget, options?: ConfirmDialogOptions): Promise<boolean>;
 }
 export declare function formatTimestamp(timestamp: number, full: boolean): string;
 export declare const isScrolledToBottom: (element: Element) => boolean;
@@ -294,7 +298,10 @@ export declare function getDevToolsBoundingElement(): HTMLElement;
  * @deprecated Prefer {@link bindToSetting} as this function leaks the checkbox via the setting listener.
  */
 export declare const bindCheckbox: (input: CheckboxLabel, setting: Common.Settings.Setting<boolean>, metric?: UserMetricOptions) => void;
-export declare const bindCheckboxImpl: (input: CheckboxLabel, apply: (value: boolean) => void, metric?: UserMetricOptions) => (value: boolean) => void;
+export declare const bindCheckboxImpl: (input: CheckboxLabel, apply: (value: boolean) => void, metric?: UserMetricOptions) => {
+    setValue: (value: boolean) => void;
+    cleanup: () => void;
+};
 export type BindToSettingOpts = ((newSettingValue: string) => boolean) | {
     validator?: (newSettingValue: string) => boolean;
     jslog?: boolean;

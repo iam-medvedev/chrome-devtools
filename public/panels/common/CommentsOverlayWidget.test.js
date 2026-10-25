@@ -91,16 +91,16 @@ describeWithEnvironment('CommentsOverlayWidget', () => {
         assert.isNotNull(overlay);
         const pin = widget.contentElement.querySelector('.comment-pin');
         assert.isNotNull(pin);
-        assert.include(pin.textContent || '', '1');
+        assert.strictEqual(pin.getAttribute('aria-hidden'), 'true');
         const cursor = pin.querySelector('.comment-cursor');
         assert.isNotNull(cursor);
-        assert.strictEqual(cursor.textContent?.trim(), '1');
+        assert.strictEqual(cursor.textContent?.trim(), '');
         const highlight = widget.contentElement.querySelector('.comment-anchor-highlight');
         assert.isNotNull(highlight);
         testEl.remove();
         widget.detach();
     });
-    it('renders sequential numbers for multiple comment pins in order of creation', async () => {
+    it('renders a pin for each saved comment', async () => {
         const widget = new PanelCommon.CommentsOverlayWidget.CommentsOverlayWidget(undefined, [commentManager]);
         widget.setOverlayManagerForTest(overlayManager);
         widget.markAsRoot();
@@ -128,41 +128,9 @@ describeWithEnvironment('CommentsOverlayWidget', () => {
         await widget.updateComplete;
         const pins = Array.from(widget.contentElement.querySelectorAll('.comment-pin'));
         assert.lengthOf(pins, 3);
-        const texts = pins.map(p => p.querySelector('.comment-cursor')?.textContent?.trim());
-        assert.deepEqual(texts, ['1', '2', '3']);
         el1.remove();
         el2.remove();
         el3.remove();
-        widget.detach();
-    });
-    it('does not increment pin index when clicking another element without saving draft', async () => {
-        const widget = new PanelCommon.CommentsOverlayWidget.CommentsOverlayWidget(undefined, [commentManager]);
-        widget.setOverlayManagerForTest(overlayManager);
-        widget.markAsRoot();
-        renderElementIntoDOM(widget, { allowMultipleChildren: true });
-        const el1 = document.createElement('div');
-        el1.setAttribute('jslog', 'TreeItem; context: draft-idx-1');
-        el1.textContent = 'item 1';
-        el1.getBoundingClientRect = () => new DOMRect(10, 10, 100, 30);
-        renderElementIntoDOM(el1, { allowMultipleChildren: true });
-        const el2 = document.createElement('div');
-        el2.setAttribute('jslog', 'TreeItem; context: draft-idx-2');
-        el2.textContent = 'item 2';
-        el2.getBoundingClientRect = () => new DOMRect(10, 50, 100, 30);
-        renderElementIntoDOM(el2, { allowMultipleChildren: true });
-        commentManager.setCommentMode(true);
-        overlayManager.handleElementClick(el1);
-        widget.requestUpdate();
-        await widget.updateComplete;
-        let pin = widget.contentElement.querySelector('.comment-pin .comment-cursor');
-        assert.strictEqual(pin?.textContent?.trim(), '1');
-        overlayManager.handleElementClick(el2);
-        widget.requestUpdate();
-        await widget.updateComplete;
-        pin = widget.contentElement.querySelector('.comment-pin .comment-cursor');
-        assert.strictEqual(pin?.textContent?.trim(), '1');
-        el1.remove();
-        el2.remove();
         widget.detach();
     });
     it('does not respond to manager events when hidden/detached', async () => {
@@ -468,7 +436,7 @@ describeWithEnvironment('CommentsOverlayWidget', () => {
         // while preserving the exact same DOM elements via keyed repeat().
         currentTop = 160;
         overlayManager.dispatchEventToListeners("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, {
-            pins: [{ id: thread.id, top: 148, left: 158, visible: true, index: 1 }],
+            pins: [{ id: thread.id, top: 148, left: 158, visible: true }],
             highlights: [{ id: thread.id, top: 160, left: 50, width: 120, height: 30, visible: true }],
             isRealtimeSync: true,
         });
@@ -619,6 +587,48 @@ describeWithEnvironment('CommentsOverlayWidget', () => {
             testEl.remove();
             widget.detach();
         }
+    });
+    it('shows the comment thread popup at the fallback position when not anchored to any element', async () => {
+        const widget = new PanelCommon.CommentsOverlayWidget.CommentsOverlayWidget(undefined, [commentManager]);
+        widget.setOverlayManagerForTest(overlayManager);
+        widget.markAsRoot();
+        renderElementIntoDOM(widget, { allowMultipleChildren: true });
+        const thread = commentManager.createCommentThread({
+            vePath: 'Panel: elements > TreeItem: removed-node',
+            textSignature: 'div.removed',
+        }, 'Comment on removed element');
+        thread.save();
+        widget.openThread(thread.id, { left: 28, top: 450 });
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.isNull(widget.contentElement.querySelector('.comment-pin'));
+        const popup = widget.contentElement.querySelector('.comment-popup-widget');
+        assert.isNotNull(popup);
+        assert.include(popup.style.transform, 'translateY(-100%)');
+        widget.detach();
+    });
+    it('passes activePin and fallbackPosition to view input when opening an anchored thread', async () => {
+        const view = createViewFunctionStub(PanelCommon.CommentsOverlayWidget.CommentsOverlayWidget);
+        const widget = new PanelCommon.CommentsOverlayWidget.CommentsOverlayWidget(undefined, [commentManager], view);
+        widget.setOverlayManagerForTest(overlayManager);
+        widget.markAsRoot();
+        renderElementIntoDOM(widget, { allowMultipleChildren: true });
+        await view.nextInput;
+        const testEl = document.createElement('div');
+        testEl.setAttribute('jslog', 'TreeItem; context: rematched-target');
+        testEl.textContent = 'rematched element';
+        testEl.getBoundingClientRect = () => new DOMRect(100, 120, 150, 30);
+        renderElementIntoDOM(testEl, { allowMultipleChildren: true });
+        const thread = overlayManager.createComment(testEl, 'Anchored comment');
+        assert.isNotNull(thread);
+        thread.save();
+        await view.nextInput;
+        widget.openThread(thread.id, { left: 16, top: 450 });
+        const updatedInput = await view.nextInput;
+        assert.lengthOf(updatedInput.pins, 1);
+        assert.strictEqual(updatedInput.activePin, updatedInput.pins[0]);
+        assert.deepEqual(updatedInput.fallbackPosition, { left: 16, top: 450 });
+        testEl.remove();
+        widget.detach();
     });
 });
 //# sourceMappingURL=CommentsOverlayWidget.test.js.map

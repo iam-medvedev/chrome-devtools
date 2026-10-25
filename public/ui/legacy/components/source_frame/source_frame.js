@@ -252,7 +252,7 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
       false,
       Common.Settings.SettingStorageType.SYNCED
     );
-    Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).addChangeListener(this.#textEditorIndentChanged, this);
+    this.#textEditorIndentSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor);
     this.performUpdate();
   }
   options;
@@ -289,6 +289,11 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
   wasmDisassemblyInternal;
   contentSet;
   selfXssWarningDisabledSetting;
+  #textEditorIndentSetting;
+  #listeningToIndentSetting = false;
+  // The indentation that the content was last pretty printed with.
+  #prettyIndent = null;
+  #updatingPrettyIndent = false;
   performUpdate() {
     this.#view(
       {
@@ -319,12 +324,24 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
     this.#toolbarWidget.performUpdate();
   }
   disposeView() {
-    Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).removeChangeListener(this.#textEditorIndentChanged, this);
+    this.#stopListeningToIndentSetting();
+  }
+  #stopListeningToIndentSetting() {
+    if (this.#listeningToIndentSetting) {
+      this.#textEditorIndentSetting.removeChangeListener(this.#textEditorIndentChanged, this);
+      this.#listeningToIndentSetting = false;
+    }
   }
   async #textEditorIndentChanged() {
     if (this.prettyInternal) {
-      await this.setPretty(false);
-      await this.setPretty(true);
+      this.#updatingPrettyIndent = true;
+      try {
+        await this.setPretty(false);
+        await this.setPretty(true);
+      } finally {
+        this.#updatingPrettyIndent = false;
+      }
+      this.#revealPositionIfNeeded();
     }
   }
   placeholderEditorState(content) {
@@ -455,7 +472,8 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
     if (this.prettyInternal) {
       const content = this.rawContent instanceof CodeMirror.Text ? this.rawContent.sliceString(0) : this.rawContent || "";
       this.textEditor.state = this.placeholderEditorState(i18nString(UIStrings.formatting));
-      const indent = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).get();
+      const indent = this.#textEditorIndentSetting.get();
+      this.#prettyIndent = indent;
       const formatInfo = await Formatter.ScriptFormatter.formatScriptContent(this.contentType, content, indent);
       this.formattedMap = formatInfo.formattedMapping;
       await this.setContent(formatInfo.formattedContent);
@@ -467,11 +485,11 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
         { lineNumber: end[0], columnNumber: end[1] }
       );
     } else {
+      const start = this.prettyToRawLocation(startPos.lineNumber, startPos.columnNumber);
+      const end = this.prettyToRawLocation(endPos.lineNumber, endPos.columnNumber);
       this.formattedMap = null;
       await this.setContent(this.rawContent || "");
       this.baseDoc = textEditor.state.doc;
-      const start = this.prettyToRawLocation(startPos.lineNumber, startPos.columnNumber);
-      const end = this.prettyToRawLocation(endPos.lineNumber, endPos.columnNumber);
       newSelection = textEditor.createSelection(
         { lineNumber: start[0], columnNumber: start[1] },
         { lineNumber: end[0], columnNumber: end[1] }
@@ -541,10 +559,18 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
   wasShown() {
     super.wasShown();
     void this.ensureContentLoaded();
+    if (!this.#listeningToIndentSetting) {
+      this.#textEditorIndentSetting.addChangeListener(this.#textEditorIndentChanged, this);
+      this.#listeningToIndentSetting = true;
+    }
+    if (this.prettyInternal && this.#prettyIndent !== this.#textEditorIndentSetting.get()) {
+      void this.#textEditorIndentChanged();
+    }
     this.wasShownOrLoaded();
   }
   willHide() {
     super.willHide();
+    this.#stopListeningToIndentSetting();
     this.clearPositionToReveal();
   }
   async toolbarItems() {
@@ -673,7 +699,7 @@ var SourceFrameImpl = class extends SourceFrameImplBase {
     if (!this.positionToReveal) {
       return;
     }
-    if (!this.loaded || !this.isShowing()) {
+    if (!this.loaded || !this.isShowing() || this.#updatingPrettyIndent) {
       return;
     }
     const { from, to, shouldHighlight } = this.positionToReveal;
@@ -2480,7 +2506,6 @@ var UIStrings6 = {
 var str_6 = i18n11.i18n.registerUIStrings("ui/legacy/components/source_frame/XMLView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var { render: render6, html: html6 } = Lit;
-var { ifExpanded } = UI7.TreeOutline;
 function* attributes(element) {
   for (let i = 0; i < element.attributes.length; ++i) {
     const attributeNode = element.attributes.item(i);
@@ -2565,7 +2590,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
     return { highlights, selected };
   }
   function layOutNode(node) {
-    const onExpand = (event) => input.onExpand(node, event.detail.expanded);
+    const onExpand = (event) => input.onExpand(node, event.detail.expanded, event.detail.recursively);
     const { highlights, selected } = highlight(
       node,
       /* closeTag=*/
@@ -2582,17 +2607,18 @@ var DEFAULT_VIEW6 = (input, output, target) => {
       }
       return false;
     };
+    const isExpanded = node.expanded || containsSearchResult(node);
     return html6`
       <li role="treeitem"
           ?selected=${input.jumpToNextSearchResult?.node === node}
           @expand=${onExpand}
-          ?open=${containsSearchResult(node)}>
+          ?open=${isExpanded}>
         <devtools-highlight ranges=${highlights} current-range=${selected}>
           ${htmlView(node)}
         </devtools-highlight>
         ${node.children().length ? html6`
           <ul role="group">
-            ${ifExpanded(subtree(node))}
+            ${isExpanded ? subtree(node) : Lit.nothing}
           </ul>` : Lit.nothing}
       </li>`;
   }
@@ -2667,6 +2693,17 @@ var XMLTreeViewNode = class _XMLTreeViewNode {
   treeNodeChildren() {
     return this.children();
   }
+  expandRecursively(maxDepth = 3) {
+    this.expanded = true;
+    if (maxDepth <= 1) {
+      return;
+    }
+    for (const child of this.children()) {
+      if (child.children().length > 0) {
+        child.expandRecursively(maxDepth - 1);
+      }
+    }
+  }
   match(regex, closeTag) {
     return textView(this, closeTag).matchAll(regex);
   }
@@ -2698,8 +2735,15 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
   }
   performUpdate() {
     if (this.#treeViewModel) {
-      const onExpand = (node, expanded) => {
-        node.expanded = expanded;
+      const onExpand = (node, expanded, recursively = false) => {
+        if (node.expanded === expanded && !recursively) {
+          return;
+        }
+        if (expanded && recursively) {
+          node.expandRecursively();
+        } else {
+          node.expanded = expanded;
+        }
         this.requestUpdate();
       };
       this.#view(

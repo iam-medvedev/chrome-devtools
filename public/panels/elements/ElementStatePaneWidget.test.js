@@ -15,10 +15,10 @@ describeWithEnvironment('ElementStatePaneWidget', () => {
     let target;
     let view;
     const pseudoClasses = [
-        'enabled', 'disabled', 'valid', 'invalid', 'user-valid',
-        'user-invalid', 'required', 'optional', 'read-only', 'read-write',
-        'in-range', 'out-of-range', 'visited', 'link', 'checked',
-        'indeterminate', 'placeholder-shown', 'autofill', 'open', 'target-current',
+        'enabled', 'disabled', 'valid', 'invalid', 'user-valid', 'user-invalid',
+        'required', 'optional', 'read-only', 'read-write', 'in-range', 'out-of-range',
+        'visited', 'link', 'checked', 'indeterminate', 'placeholder-shown', 'autofill',
+        'open', 'target-current', 'buffering', 'stalled',
     ];
     beforeEach(() => {
         target = createTarget();
@@ -232,6 +232,10 @@ describeWithEnvironment('ElementStatePaneWidget', () => {
     });
     it('Shows the specific pseudo-classes for ::scroll-marker', async () => {
         await assertExpectedPseudoClasses('::scroll-marker', ['read-write', 'target-current']);
+    });
+    it('Shows the specific pseudo-classes for audio and video', async () => {
+        await assertExpectedPseudoClasses('audio', ['read-write', 'buffering', 'stalled']);
+        await assertExpectedPseudoClasses('video', ['read-write', 'buffering', 'stalled']);
     });
     describe('ButtonProvider', () => {
         it('shows the pane in the DOM', () => {

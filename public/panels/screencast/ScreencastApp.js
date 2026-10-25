@@ -1,12 +1,14 @@
 // Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { ScreencastView } from './ScreencastView.js';
+const { html, nothing, render } = Lit;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Tooltip text that appears when hovering over the toggle screencast button in the Screencast app of the Remote devices tab when toggling screencast.
@@ -16,21 +18,46 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/screencast/ScreencastApp.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let appInstance;
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${UI.inspectorCommonStyles}</style>
+    <devtools-split-view
+      direction="column"
+      sidebar-position="second"
+      name="inspector-view.screencast-split-view-state"
+      sidebar-initial-size="300"
+      show=${input.screencastEnabled ? 'both' : 'sidebar'}
+    >
+      ${input.screenCaptureModel ? html `
+        <devtools-widget
+          slot="main"
+          ${widget(ScreencastView, { screenCaptureModel: input.screenCaptureModel })}
+        ></devtools-widget>
+      ` : nothing}
+      <devtools-widget
+        slot="sidebar"
+        ${widget(e => UI.InspectorView.InspectorView.instance({ element: e }))}
+      ></devtools-widget>
+    </devtools-split-view>
+  `, target);
+    // clang-format on
+};
 export class ScreencastApp {
-    enabledSetting;
-    toggleButton;
-    rootSplitWidget;
-    screenCaptureModel;
-    screencastView;
-    rootView;
     #universe;
-    constructor(universe) {
+    #view;
+    #enabledSetting;
+    #toggleButton;
+    #screenCaptureModel;
+    #rootView;
+    constructor(universe, view = DEFAULT_VIEW) {
         this.#universe = universe;
-        this.enabledSetting = Common.Settings.Settings.instance().createSetting('screencast-enabled', true);
-        this.toggleButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleScreencast), 'devices');
-        this.toggleButton.setToggled(this.enabledSetting.get());
-        this.toggleButton.setEnabled(false);
-        this.toggleButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.toggleButtonClicked, this);
+        this.#view = view;
+        this.#enabledSetting = Common.Settings.Settings.instance().createSetting('screencast-enabled', true);
+        this.#toggleButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleScreencast), 'devices');
+        this.#toggleButton.setToggled(this.#enabledSetting.get());
+        this.#toggleButton.setEnabled(false);
+        this.#toggleButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#toggleButtonClicked, this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ScreenCaptureModel.ScreenCaptureModel, this);
     }
     static instance(universe) {
@@ -42,61 +69,47 @@ export class ScreencastApp {
         }
         return appInstance;
     }
+    get toggleButton() {
+        return this.#toggleButton;
+    }
+    get rootView() {
+        return this.#rootView;
+    }
     presentUI(document) {
-        this.rootView = new UI.RootView.RootView(this.#universe);
-        this.rootView.registerRequiredCSS(UI.inspectorCommonStyles);
-        this.rootSplitWidget =
-            new UI.SplitWidget.SplitWidget(false, true, 'inspector-view.screencast-split-view-state', 300, 300);
-        this.rootSplitWidget.setVertical(true);
-        this.rootSplitWidget.setSecondIsSidebar(true);
-        this.rootSplitWidget.show(this.rootView.element);
-        this.rootSplitWidget.hideMain();
-        this.rootSplitWidget.setSidebarWidget(UI.InspectorView.InspectorView.instance());
-        UI.InspectorView.InspectorView.instance().setOwnerSplit(this.rootSplitWidget);
-        this.rootView.attachToDocument(document);
-        this.rootView.focus();
+        this.#rootView = new UI.RootView.RootView(this.#universe);
+        this.performUpdate();
+        this.#rootView.attachToDocument(document);
+        this.#rootView.focus();
     }
     modelAdded(screenCaptureModel) {
         if (screenCaptureModel.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
             return;
         }
-        this.screenCaptureModel = screenCaptureModel;
-        this.toggleButton.setEnabled(true);
-        this.screencastView = new ScreencastView();
-        this.screencastView.screenCaptureModel = screenCaptureModel;
-        if (this.rootSplitWidget) {
-            this.rootSplitWidget.setMainWidget(this.screencastView);
-        }
-        this.onScreencastEnabledChanged();
+        this.#screenCaptureModel = screenCaptureModel;
+        this.performUpdate();
     }
     modelRemoved(screenCaptureModel) {
-        if (this.screenCaptureModel !== screenCaptureModel) {
+        if (this.#screenCaptureModel !== screenCaptureModel) {
             return;
         }
-        delete this.screenCaptureModel;
-        this.toggleButton.setEnabled(false);
-        if (this.screencastView) {
-            this.screencastView.detach();
-            delete this.screencastView;
-        }
-        this.onScreencastEnabledChanged();
+        this.#screenCaptureModel = undefined;
+        this.performUpdate();
     }
-    toggleButtonClicked() {
-        const enabled = this.toggleButton.isToggled();
-        this.enabledSetting.set(enabled);
-        this.onScreencastEnabledChanged();
+    #toggleButtonClicked() {
+        const enabled = this.#toggleButton.isToggled();
+        this.#enabledSetting.set(enabled);
+        this.performUpdate();
     }
-    onScreencastEnabledChanged() {
-        if (!this.rootSplitWidget) {
-            return;
-        }
-        const enabled = Boolean(this.enabledSetting.get() && this.screencastView);
-        this.toggleButton.setToggled(enabled);
-        if (enabled) {
-            this.rootSplitWidget.showBoth();
-        }
-        else {
-            this.rootSplitWidget.hideMain();
+    performUpdate() {
+        const hasModel = Boolean(this.#screenCaptureModel);
+        const screencastEnabled = Boolean(this.#enabledSetting.get() && hasModel);
+        this.#toggleButton.setEnabled(hasModel);
+        this.#toggleButton.setToggled(screencastEnabled);
+        if (this.#rootView) {
+            this.#view({
+                screencastEnabled,
+                screenCaptureModel: this.#screenCaptureModel,
+            }, {}, this.#rootView.contentElement);
         }
     }
 }

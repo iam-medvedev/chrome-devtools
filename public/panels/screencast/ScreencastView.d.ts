@@ -79,7 +79,6 @@ export declare class ScreencastView extends UI.Widget.Widget implements SDK.Over
     wasShown(): void;
     performUpdate(): void;
     willHide(): void;
-    onDetach(): void;
     private startCasting;
     private stopCasting;
     private screencastFrame;

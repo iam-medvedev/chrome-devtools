@@ -68,7 +68,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}></devtools-button>
         ${input.mainToolbarItems.map(item => item.element)}
       </devtools-toolbar>
-      ${input.metadataView}`, 
+      ${UI.Widget.widget(UI.Widget.WrapperWidget, { widget: input.metadataView })}`, 
     // clang-format on
     target);
 };
@@ -133,7 +133,7 @@ export class StorageItemsToolbar extends StorageItemsToolbarBase {
         this.requestUpdate();
     }
     setStorageKey(storageKey) {
-        this.metadataView.setStorageKey(storageKey);
+        this.metadataView.storageKey = storageKey;
     }
     filterChanged({ detail: text }) {
         this.filterRegex = text ? new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i') : null;

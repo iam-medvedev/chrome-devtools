@@ -2479,9 +2479,10 @@ export declare namespace Browser {
     }
     interface AddMockCameraRequest {
         /**
-         * Required non-empty identifier for the mock camera. This is mapped to an
-         * internal virtual-device identifier and is not the MediaDeviceInfo.deviceId
-         * exposed to the page.
+         * Required non-empty identifier for the mock camera within the current
+         * DevTools session. Different sessions can use the same identifier
+         * without replacing each other's cameras. This is not the
+         * MediaDeviceInfo.deviceId exposed to the page.
          */
         deviceId: string;
     }
@@ -11408,7 +11409,8 @@ export declare namespace Network {
         SigningQuotaExceeded = "SigningQuotaExceeded",
         RefreshedAsWaiter = "RefreshedAsWaiter",
         TransientSigningError = "TransientSigningError",
-        InScopeRefreshNotYetNeeded = "InScopeRefreshNotYetNeeded"
+        InScopeRefreshNotYetNeeded = "InScopeRefreshNotYetNeeded",
+        Canceled = "Canceled"
     }
     /**
      * Session event details specific to refresh.
@@ -12422,11 +12424,27 @@ export declare namespace Network {
     }
     interface DirectUDPSocketJoinedMulticastGroupEvent {
         identifier: RequestId;
+        /**
+         * Multicast group address.
+         */
         IPAddress: string;
+        /**
+         * Source address of a source-specific multicast (SSM) membership. Absent
+         * for any-source multicast (ASM) memberships.
+         */
+        sourceAddress?: string;
     }
     interface DirectUDPSocketLeftMulticastGroupEvent {
         identifier: RequestId;
+        /**
+         * Multicast group address.
+         */
         IPAddress: string;
+        /**
+         * Source address of a source-specific multicast (SSM) membership. Absent
+         * for any-source multicast (ASM) memberships.
+         */
+        sourceAddress?: string;
     }
     /**
      * Fired upon direct_socket.UDPSocket creation.

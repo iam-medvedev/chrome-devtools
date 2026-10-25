@@ -1633,6 +1633,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -4323,7 +4324,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
         str_4,
         valueId,
         Object.fromEntries(Object.entries(placeholders).map(
-          ([key2, { title, href }]) => [key2, html3`<devtools-link href=${href}>${title}</devtools-link>`]
+          ([key2, { title, href }]) => [key2, html3`<devtools-link href=${href} allow-privileged>${title}</devtools-link>`]
         ))
       );
       return html3`
@@ -5342,7 +5343,7 @@ function renderSpeculationsInitiatedByThisPageSummarySections({ badges, revealRu
               jslog=${VisualLogging4.action("view-all-rules").track({ click: true })}>
             ${i18nString8(UIStrings8.viewAllRules)}
           </button>
-         ・
+         \u30fb
           <button class="link devtools-link" @click=${revealAttemptViewWithFilter}
               jslog=${VisualLogging4.action("view-all-speculations").track({ click: true })}>
            ${i18nString8(UIStrings8.viewAllSpeculations)}

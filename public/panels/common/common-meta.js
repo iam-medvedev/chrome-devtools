@@ -64,7 +64,7 @@ UI.Toolbar.registerToolbarItem({
 });
 Common.Revealer.registerRevealer({
   contextTypes() {
-    return [CommentManager.CommentManager.CommentThread];
+    return [CommentManager.CommentThread.RevealableThread];
   },
   async loadRevealer() {
     const CommonModule = await loadCommonModule();

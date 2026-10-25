@@ -163,67 +163,6 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         sinon.assert.calledOnce(callback);
         assert.isNull(callback.firstCall.args[0]);
     });
-    it('supports elementsByOrigin for web test compatibility', async () => {
-        const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
-        renderElementIntoDOM(sidebar);
-        const origin = urlString `https://example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
-        await doubleRaf();
-        const elements = sidebar.elementsByOrigin();
-        const item = elements.get(origin);
-        assert.exists(item);
-        assert.strictEqual(item.origin(), origin);
-        assert.strictEqual(item.securityState(), "secure" /* Protocol.Security.SecurityState.Secure */);
-        const callback = sinon.spy();
-        sidebar.onShowOrigin = callback;
-        item.select(undefined, true);
-        await doubleRaf();
-        sinon.assert.calledOnce(callback);
-        assert.strictEqual(callback.firstCall.args[0], origin);
-    });
-    it('dumps origins as expected by security_test_runner', async () => {
-        const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
-        renderElementIntoDOM(sidebar);
-        const mainOrigin = urlString `https://devtools.test`;
-        const unknownOrigin = urlString `https://foo.test`;
-        sidebar.setMainOrigin(mainOrigin);
-        sidebar.addOrigin(unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
-        await doubleRaf();
-        const tree = sidebar.contentElement.querySelector('devtools-tree');
-        assert.exists(tree);
-        const results = [];
-        const root = tree.templateRoot || tree.shadowRoot || tree;
-        const groups = root.querySelectorAll('.security-sidebar-origins');
-        for (const group of groups) {
-            if (group.hasAttribute('hidden') || group.classList.contains('hidden')) {
-                continue;
-            }
-            const titleElement = group.querySelector('.security-sidebar-origins-title') || group.querySelector('.tree-element-title');
-            const title = titleElement ? titleElement.textContent?.trim() : group.textContent?.trim();
-            results.push('Group: ' + title);
-            const originContainer = group.querySelector('ul[role="group"]') || group.nextElementSibling;
-            if (!originContainer) {
-                continue;
-            }
-            const originItems = originContainer.querySelectorAll('.security-sidebar-tree-item');
-            for (const originItem of originItems) {
-                const spans = originItem.getElementsByTagName('span');
-                for (const span of spans) {
-                    if (!span.classList.contains('tree-element-title')) {
-                        results.push(span.textContent || '');
-                    }
-                }
-            }
-        }
-        assert.deepEqual(results, [
-            'Group: Main origin',
-            'Group: Unknown / canceled',
-            'https://foo.test',
-            'https',
-            '://',
-            'foo.test',
-        ]);
-    });
     describe('visual screenshots', () => {
         it('renders initial sidebar state', async () => {
             const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Switch from '../../ui/components/switch/switch.js';
@@ -261,6 +261,114 @@ describeWithEnvironment('AISettingsTab', () => {
         const settingNames = Array.from(view.input.settingToParams.keys());
         assert.include(settingNames, 'console-insights-enabled');
         assert.include(settingNames, 'ai-assistance-enabled');
+    });
+    describe('allowed tools', () => {
+        const { ToolName } = AiAssistanceModel.Tool;
+        function createAlwaysAllowedTools() {
+            return new AiAssistanceModel.AlwaysAllowedTools.AlwaysAllowedTools(Common.Settings.Settings.instance());
+        }
+        function renderView(allowedTools) {
+            const target = document.createElement('div');
+            target.style.width = '600px';
+            target.style.height = '400px';
+            target.style.position = 'relative';
+            renderElementIntoDOM(target, { includeCommonStyles: true });
+            Settings.AISettingsTab.AI_SETTINGS_TAB_DEFAULT_VIEW({
+                disabledReasons: [],
+                sharedDisclaimerBulletPoints: [],
+                settingToParams: new Map(),
+                isNaturalLanguageInterfaceEnabled: true,
+                allowedTools,
+                expandSetting: () => { },
+                toggleSetting: () => { },
+                removeAllowedTool: () => { },
+            }, {}, target);
+        }
+        beforeEach(() => {
+            updateHostConfig({ devToolsAiNaturalLanguageInterface: { enabled: true } });
+        });
+        it('is hidden when the natural language interface is disabled', async () => {
+            updateHostConfig({ devToolsAiNaturalLanguageInterface: { enabled: false } });
+            Common.Settings.Settings.instance()
+                .resolve(AiAssistanceModel.AlwaysAllowedTools.alwaysAllowedToolsSettingDescriptor)
+                .set(["getCookieValues" /* ToolName.GET_COOKIE_VALUES */]);
+            const { view } = await setupWidget();
+            assert.isFalse(view.input.isNaturalLanguageInterfaceEnabled);
+        });
+        it('is shown when the natural language interface is enabled', async () => {
+            const { view } = await setupWidget();
+            assert.isTrue(view.input.isNaturalLanguageInterfaceEnabled);
+        });
+        it('is empty when no tool is allowed', async () => {
+            const { view } = await setupWidget();
+            assert.deepEqual(view.input.allowedTools, []);
+        });
+        it('lists allowed tools sorted by display name', async () => {
+            const alwaysAllowedTools = createAlwaysAllowedTools();
+            alwaysAllowedTools.allow("getStorageValues" /* ToolName.GET_STORAGE_VALUES */);
+            alwaysAllowedTools.allow("getCookieValues" /* ToolName.GET_COOKIE_VALUES */);
+            const { view } = await setupWidget();
+            assert.deepEqual(view.input.allowedTools, [
+                { toolName: "getCookieValues" /* ToolName.GET_COOKIE_VALUES */, displayName: 'Read cookie values' },
+                { toolName: "getStorageValues" /* ToolName.GET_STORAGE_VALUES */, displayName: 'Read storage values' },
+            ]);
+        });
+        it('removes a tool', async () => {
+            const alwaysAllowedTools = createAlwaysAllowedTools();
+            alwaysAllowedTools.allow("getCookieValues" /* ToolName.GET_COOKIE_VALUES */);
+            alwaysAllowedTools.allow("getStorageValues" /* ToolName.GET_STORAGE_VALUES */);
+            const { view } = await setupWidget();
+            view.input.removeAllowedTool("getCookieValues" /* ToolName.GET_COOKIE_VALUES */);
+            const input = await view.nextInput;
+            assert.deepEqual(input.allowedTools, [{ toolName: "getStorageValues" /* ToolName.GET_STORAGE_VALUES */, displayName: 'Read storage values' }]);
+            assert.isFalse(alwaysAllowedTools.isAllowed("getCookieValues" /* ToolName.GET_COOKIE_VALUES */));
+            assert.isTrue(alwaysAllowedTools.isAllowed("getStorageValues" /* ToolName.GET_STORAGE_VALUES */));
+        });
+        it('re-renders when a tool is allowed elsewhere', async () => {
+            const { view } = await setupWidget();
+            assert.deepEqual(view.input.allowedTools, []);
+            createAlwaysAllowedTools().allow("getCookieValues" /* ToolName.GET_COOKIE_VALUES */);
+            const input = await view.nextInput;
+            assert.deepEqual(input.allowedTools, [{ toolName: "getCookieValues" /* ToolName.GET_COOKIE_VALUES */, displayName: 'Read cookie values' }]);
+        });
+        it('renders the allowed tools card', async () => {
+            renderView([
+                { toolName: "getCookieValues" /* ToolName.GET_COOKIE_VALUES */, displayName: 'Read cookie values' },
+                { toolName: "getStorageValues" /* ToolName.GET_STORAGE_VALUES */, displayName: 'Read storage values' },
+                { toolName: "executeJavaScript" /* ToolName.EXECUTE_JAVASCRIPT */, displayName: 'Run JavaScript on the page' },
+            ]);
+            await assertScreenshot('settings/ai_settings_allowed_tools.png');
+        });
+        it('renders the empty allowed tools card', async () => {
+            renderView([]);
+            await assertScreenshot('settings/ai_settings_allowed_tools_empty.png');
+        });
+        describe('highlightObject', () => {
+            async function showWidget() {
+                const highlightAllowedTools = sinon.stub();
+                const view = createViewFunctionStub(Settings.AISettingsTab.AISettingsTab, { highlightAllowedTools });
+                const widget = new Settings.AISettingsTab.AISettingsTab(view);
+                const container = document.createElement('div');
+                renderElementIntoDOM(container);
+                widget.markAsRoot();
+                widget.show(container);
+                await view.nextInput;
+                return { widget, highlightAllowedTools };
+            }
+            it('highlights the allowed tools section for the always allowed tools setting', async () => {
+                const { widget, highlightAllowedTools } = await showWidget();
+                const setting = Common.Settings.Settings.instance().resolve(AiAssistanceModel.AlwaysAllowedTools.alwaysAllowedToolsSettingDescriptor);
+                widget.highlightObject(setting);
+                await widget.updateComplete;
+                sinon.assert.calledOnce(highlightAllowedTools);
+            });
+            it('ignores other settings', async () => {
+                const { widget, highlightAllowedTools } = await showWidget();
+                widget.highlightObject(Common.Settings.Settings.instance().moduleSetting('console-insights-enabled'));
+                await widget.updateComplete;
+                sinon.assert.notCalled(highlightAllowedTools);
+            });
+        });
     });
 });
 //# sourceMappingURL=AISettingsTab.test.js.map

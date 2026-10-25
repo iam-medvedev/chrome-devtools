@@ -225,10 +225,6 @@ devtools-button.link-icon {
   }
 }
 
-.greendev-widgets input[type="radio"] {
-  margin: var(--sys-size-4);
-}
-
 /*# sourceURL=${import.meta.resolve("./settingsScreen.css")} */`;
 
 // ../../front_end/panels/settings/SettingsScreen.ts
@@ -788,6 +784,7 @@ import * as uiI18n from "../../ui/i18n/i18n.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
+import { PanelUtils as PanelUtils2 } from "../utils/utils.js";
 
 // gen/front_end/panels/settings/aiSettingsTab.css.js
 var aiSettingsTab_css_default = `/*
@@ -980,12 +977,65 @@ var aiSettingsTab_css_default = `/*
     gap: var(--sys-size-6);
     margin-top: var(--sys-size-4);
   }
+
+  .allowed-tools-section {
+    margin-top: var(--sys-size-11);
+    min-width: var(--sys-size-28);
+    max-width: var(--sys-size-35);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+  }
+
+  .allowed-tools-title {
+    font: var(--sys-typescale-headline5);
+    color: var(--sys-color-on-surface);
+    margin: 0;
+  }
+
+  .allowed-tools-card {
+    border-radius: var(--sys-size-5);
+    box-shadow: var(--sys-elevation-level2);
+    background-color: var(--app-color-card-background);
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .allowed-tools-description {
+    padding: var(--sys-size-6) var(--sys-size-7);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    font: var(--sys-typescale-body5-regular);
+    line-height: var(--sys-typescale-body5-line-height);
+    color: var(--sys-color-on-surface);
+  }
+
+  .allowed-tool-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sys-size-6);
+    padding: var(--sys-size-4) var(--sys-size-7);
+    min-height: var(--sys-size-12);
+    font: var(--sys-typescale-body5-regular);
+    color: var(--sys-color-on-surface);
+
+    & ~ .allowed-tool-row {
+      border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    }
+  }
+
+  .allowed-tool-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./aiSettingsTab.css")} */`;
 
 // ../../front_end/panels/settings/AISettingsTab.ts
-var { html: html2, nothing: nothing2, render: render2, Directives: { ifDefined, classMap } } = Lit2;
+var { html: html2, nothing: nothing2, render: render2, Directives: { ifDefined, classMap, ref: ref2 } } = Lit2;
 var UIStrings2 = {
   /**
    * @description Header text for a list of things to consider in the context of generative AI features.
@@ -1189,7 +1239,26 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
+var UIStringsNotTranslate = {
+  /**
+   * @description Header of the list of AI tools allowed to run without asking user permission.
+   */
+  allowedTools: "Allowed tools",
+  /**
+   * @description Explains the list of AI tools allowed to run without asking user permission.
+   */
+  allowedToolsDescription: "Tools in this list can be run by the AI agent without asking. Remove them if you want to be asked for permission every time.",
+  /**
+   * @description Title of a button that removes an AI tool from the list of allowed tools.
+   */
+  removeAllowedTool: "Remove from allowed tools",
+  /**
+   * @description Text shown in the list of allowed AI tools when the list is empty.
+   */
+  noAllowedTools: "No tools allowed yet"
+};
+var lockedString = i18n3.i18n.lockedString;
+var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
   const disabledReasonsExplainer = input.disabledReasons.length ? html2`
     <div class="disabled-explainer">
       ${input.disabledReasons.map((reason) => html2`
@@ -1288,6 +1357,38 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
       </div>
     `;
   });
+  const renderAllowedTool = (tool) => html2`
+    <div class="allowed-tool-row" data-tool-name=${tool.toolName}>
+      <span class="allowed-tool-name">${tool.displayName}</span>
+      <devtools-button
+        .data=${{
+    variant: Buttons2.Button.Variant.ICON,
+    size: Buttons2.Button.Size.SMALL,
+    iconName: "bin",
+    title: lockedString(UIStringsNotTranslate.removeAllowedTool),
+    accessibleLabel: `${lockedString(UIStringsNotTranslate.removeAllowedTool)}: ${tool.displayName}`,
+    jslogContext: "ai-remove-allowed-tool"
+  }}
+        @click=${() => input.removeAllowedTool(tool.toolName)}
+      ></devtools-button>
+    </div>
+  `;
+  const allowedTools = input.isNaturalLanguageInterfaceEnabled ? html2`
+    <div class="allowed-tools-section" jslog=${VisualLogging2.section("ai-allowed-tools")}
+      ${ref2((el) => {
+    output.highlightAllowedTools = el ? () => PanelUtils2.highlightElement(el) : void 0;
+  })}>
+      <h2 class="allowed-tools-title">${lockedString(UIStringsNotTranslate.allowedTools)}</h2>
+      <div class="allowed-tools-card">
+        <div class="allowed-tools-description">${lockedString(UIStringsNotTranslate.allowedToolsDescription)}</div>
+        ${input.allowedTools.length ? input.allowedTools.map(renderAllowedTool) : html2`
+          <div class="allowed-tool-row">
+            <span>${lockedString(UIStringsNotTranslate.noAllowedTools)}</span>
+          </div>
+        `}
+      </div>
+    </div>
+  ` : nothing2;
   render2(html2`
     <style>${Input.checkboxStyles}</style>
     <style>${aiSettingsTab_css_default}</style>
@@ -1300,11 +1401,13 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, _output, target) => {
           ${settings}
         </div>
       ` : nothing2}
+      ${allowedTools}
     </div></div>
   `, target);
 };
 var AISettingsTab = class extends UI2.Widget.VBox {
   #view;
+  #viewOutput = {};
   #consoleInsightsSetting;
   #aiAnnotationsSetting;
   #aiAssistanceSetting;
@@ -1314,6 +1417,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
   // Setting to parameters needed to display it in the UI.
   // To display a a setting, it needs to be added to this map.
   #settingToParams = /* @__PURE__ */ new Map();
+  #alwaysAllowedTools = new AiAssistanceModel.AlwaysAllowedTools.AlwaysAllowedTools(Common2.Settings.Settings.instance());
   constructor(view) {
     super();
     this.#consoleInsightsSetting = new AiAssistanceModel.AiSetting.AiSetting(
@@ -1388,16 +1492,24 @@ var AISettingsTab = class extends UI2.Widget.VBox {
       disabledReasons: this.#getDisabledReasons(),
       sharedDisclaimerBulletPoints: this.#getSharedDisclaimerBulletPoints(),
       settingToParams: this.#settingToParams,
+      isNaturalLanguageInterfaceEnabled: AiAssistanceModel.AiUtils.isNaturalLanguageInterfaceEnabled(),
+      allowedTools: this.#getAllowedTools(),
       expandSetting: this.#expandSetting.bind(this),
-      toggleSetting: this.#toggleSetting.bind(this)
+      toggleSetting: this.#toggleSetting.bind(this),
+      removeAllowedTool: this.#removeAllowedTool.bind(this)
     };
-    this.#view(viewInput, void 0, this.contentElement);
+    this.#view(viewInput, this.#viewOutput, this.contentElement);
   }
   wasShown() {
     super.wasShown();
     Host2.AidaClient.HostConfigTracker.instance().addEventListener(
       Host2.AidaClient.Events.AIDA_AVAILABILITY_CHANGED,
       this.#boundOnAidaAvailabilityChange
+    );
+    this.#alwaysAllowedTools.addEventListener(
+      AiAssistanceModel.AlwaysAllowedTools.Events.TOOLS_CHANGED,
+      this.requestUpdate,
+      this
     );
     const initialAvailability = Host2.AidaClient.HostConfigTracker.instance().aidaAvailability;
     if (initialAvailability !== void 0) {
@@ -1411,6 +1523,29 @@ var AISettingsTab = class extends UI2.Widget.VBox {
       Host2.AidaClient.Events.AIDA_AVAILABILITY_CHANGED,
       this.#boundOnAidaAvailabilityChange
     );
+    this.#alwaysAllowedTools.removeEventListener(
+      AiAssistanceModel.AlwaysAllowedTools.Events.TOOLS_CHANGED,
+      this.requestUpdate,
+      this
+    );
+  }
+  #getAllowedTools() {
+    return this.#alwaysAllowedTools.list().map((tn) => {
+      const tool = AiAssistanceModel.ToolRegistry.ToolRegistry.get(tn);
+      return { toolName: tn, displayName: tool?.displayName ?? tn };
+    }).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
+  #removeAllowedTool(name) {
+    this.#alwaysAllowedTools.remove(name);
+  }
+  /**
+   * Called by `SettingsScreen.Revealer` after this tab is shown via `Common.Revealer.reveal(setting)`.
+   */
+  highlightObject(object) {
+    if (!(object instanceof Common2.Settings.Setting) || object.name !== AiAssistanceModel.AlwaysAllowedTools.alwaysAllowedToolsSettingDescriptor.name) {
+      return;
+    }
+    void this.updateComplete.then(() => this.#viewOutput.highlightAllowedTools?.());
   }
   // Define all parameter needed to render a setting
   #initSettings() {

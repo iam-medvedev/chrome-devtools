@@ -2396,6 +2396,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -3789,13 +3790,19 @@ async function finalize5() {
       continue;
     }
     const isLightrider = globalThis.isLightrider;
-    if (isLightrider && request.resourceFinish && request.receiveResponse?.args.data.headers) {
-      const lrSizeHeader = request.receiveResponse.args.data.headers.find((h) => h.name === "X-TotalFetchedSize");
-      if (lrSizeHeader) {
-        const size = parseFloat(lrSizeHeader.value);
-        if (!isNaN(size)) {
-          request.resourceFinish.args.data.encodedDataLength = size;
+    if (isLightrider && request.receiveResponse?.args.data.headers) {
+      if (request.resourceFinish) {
+        const lrSizeHeader = request.receiveResponse.args.data.headers.find((h) => h.name === "X-TotalFetchedSize");
+        if (lrSizeHeader) {
+          const size = parseFloat(lrSizeHeader.value);
+          if (!isNaN(size)) {
+            request.resourceFinish.args.data.encodedDataLength = size;
+          }
         }
+      }
+      const isH2 = request.receiveResponse.args.data.headers.some((h) => h.name === "X-ProtocolIsH2");
+      if (isH2) {
+        request.receiveResponse.args.data.protocol = "h2";
       }
     }
     const isPushedResource = request.resourceFinish?.args.data.encodedDataLength !== 0;

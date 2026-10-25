@@ -3983,8 +3983,8 @@ var SplitWidget = class extends SplitWidgetBase {
       widget2.element.slot = "main";
       if (this.#showMode === "OnlyMain" /* ONLY_MAIN */ || this.#showMode === "Both" /* BOTH */) {
         widget2.show(this.element);
-      } else {
-        this.#hideSide(widget2);
+      } else if (this.element instanceof SplitWidgetElement) {
+        widget2.hideWidget();
       }
     }
     this.resumeInvalidations();
@@ -4002,20 +4002,11 @@ var SplitWidget = class extends SplitWidgetBase {
       widget2.element.slot = "sidebar";
       if (this.#showMode === "OnlySidebar" /* ONLY_SIDEBAR */ || this.#showMode === "Both" /* BOTH */) {
         widget2.show(this.element);
-      } else {
-        this.#hideSide(widget2);
+      } else if (this.element instanceof SplitWidgetElement) {
+        widget2.hideWidget();
       }
     }
     this.resumeInvalidations();
-  }
-  #hideSide(widget2) {
-    if (this.element instanceof SplitWidgetElement) {
-      widget2.hideWidget();
-    } else {
-      this.#detaching = true;
-      widget2.detach();
-      this.#detaching = false;
-    }
   }
   mainWidget() {
     return this.#mainWidget;
@@ -4102,7 +4093,13 @@ var SplitWidget = class extends SplitWidgetBase {
         }
       }
       if (sideToHide) {
-        this.#hideSide(sideToHide);
+        if (this.element instanceof SplitWidgetElement) {
+          sideToHide.hideWidget();
+        } else {
+          this.#detaching = true;
+          sideToHide.detach();
+          this.#detaching = false;
+        }
       }
       this.#resizerElement.classList.add("hidden");
       shadowToShow.classList.remove("hidden");
@@ -4617,7 +4614,7 @@ var SplitWidgetElement = class extends WidgetElement {
         widget2.hideSidebar();
       } else if (newValue === "sidebar") {
         widget2.hideMain();
-      } else {
+      } else if (newValue === "both" || newValue === null) {
         widget2.showBoth();
       }
     }
@@ -5091,13 +5088,6 @@ var tabbedPane_css_default = `/*
   .selected .close-button {
     --tabbed-pane-close-icon-color: HighlightText;
   }
-}
-
-.spark {
-  position: absolute;
-  top: var(--sys-size-2);
-
-  --icon-default: var(--sys-color-primary);
 }
 
 /*# sourceURL=${import.meta.resolve("./tabbedPane.css")} */`;
@@ -5791,7 +5781,10 @@ var TabbedPane = class extends TabbedPaneBase {
       if (this.tabsElement.children[i] !== tab.tabElement) {
         this.tabsElement.insertBefore(tab.tabElement, this.tabsElement.children[i] ?? null);
       }
-      tab.shown = true;
+      if (!tab.shown) {
+        tab.shown = true;
+        tab.slotsAttached();
+      }
     }
     this.maybeShowDropDown(tabsToShowIndexes.length !== this.#tabs.length);
     this.#dispatchOverflowTabsChangedIfNeeded();
@@ -6290,11 +6283,43 @@ var TabbedPaneTab = class {
     this.#slotContainers[kind] = container;
     container.style.display = "none";
     container.addEventListener("slotchange", () => {
-      this.#hasSlottedContent[kind] = slot.assignedElements().length > 0;
-      container.style.display = this.#hasSlottedContent[kind] ? "" : "none";
+      if (!slot.isConnected) {
+        return;
+      }
+      this.#updateSlottedContent(kind, container, slot);
       delete this.measuredWidth;
       this.tabbedPane.requestUpdate();
     });
+  }
+  #updateSlottedContent(kind, container, slot) {
+    const hasSlottedContent = slot.assignedElements().length > 0;
+    if (hasSlottedContent === this.#hasSlottedContent[kind]) {
+      return false;
+    }
+    this.#hasSlottedContent[kind] = hasSlottedContent;
+    container.style.display = hasSlottedContent ? "" : "none";
+    return true;
+  }
+  /**
+   * Called when the tab header is (re-)attached to the DOM. If the slotted
+   * content changed while the header was detached, no `slotchange` fires
+   * on re-attachment when the slot is still empty afterwards (its assigned
+   * nodes were already cleared on detach), so sync the state explicitly.
+   */
+  slotsAttached() {
+    let changed = false;
+    for (const kind of ["icon", "suffix"]) {
+      const container = this.#slotContainers[kind];
+      const slot = container?.querySelector("slot");
+      if (container && slot?.isConnected) {
+        const updated = this.#updateSlottedContent(kind, container, slot);
+        changed = updated || changed;
+      }
+    }
+    if (changed) {
+      delete this.measuredWidth;
+      this.tabbedPane.requestUpdate();
+    }
   }
   clearSlots() {
     this.#slotContainers.icon?.removeChildren();
@@ -14446,7 +14471,6 @@ function getRegisteredToolbarItems() {
   );
 }
 var ToolbarItemLocation = /* @__PURE__ */ ((ToolbarItemLocation2) => {
-  ToolbarItemLocation2["FILES_NAVIGATION_TOOLBAR"] = "files-navigator-toolbar";
   ToolbarItemLocation2["MAIN_TOOLBAR_RIGHT"] = "main-toolbar-right";
   ToolbarItemLocation2["MAIN_TOOLBAR_LEFT"] = "main-toolbar-left";
   ToolbarItemLocation2["STYLES_SIDEBARPANE_TOOLBAR"] = "styles-sidebarpane-toolbar";
@@ -16267,7 +16291,7 @@ function isBeingEdited(node) {
   }
   let currentElement = element;
   while (currentElement) {
-    if (elementsBeingEdited.has(element)) {
+    if (elementsBeingEdited.has(currentElement)) {
       return true;
     }
     currentElement = currentElement.parentElementOrShadowHost();
@@ -17065,10 +17089,11 @@ var DevToolsCloseButton = class extends HTMLElement {
 };
 customElements.define("dt-close-button", DevToolsCloseButton);
 function bindInput(input, apply, validate, numeric, modifierMultiplier) {
+  const onFocus = input.select.bind(input);
   input.addEventListener("change", onChange, false);
   input.addEventListener("input", onInput, false);
   input.addEventListener("keydown", onKeyDown, false);
-  input.addEventListener("focus", input.select.bind(input), false);
+  input.addEventListener("focus", onFocus, false);
   function onInput() {
     input.classList.toggle("error-input", !validate(input.value));
   }
@@ -17110,7 +17135,13 @@ function bindInput(input, apply, validate, numeric, modifierMultiplier) {
     input.classList.toggle("error-input", !valid);
     input.value = value;
   }
-  return setValue;
+  function cleanup() {
+    input.removeEventListener("change", onChange, false);
+    input.removeEventListener("input", onInput, false);
+    input.removeEventListener("keydown", onKeyDown, false);
+    input.removeEventListener("focus", onFocus, false);
+  }
+  return { setValue, cleanup };
 }
 function trimText(context, text, maxWidth, trimFunction) {
   const maxLength = 200;
@@ -17255,7 +17286,7 @@ var ConfirmDialog = class {
         event.consume();
         resolve(false);
       });
-      dialog3.show(where);
+      dialog3.show(where instanceof Widget ? where.element : where);
       okButton.focus();
     });
     dialog3.hide();
@@ -17860,7 +17891,7 @@ function getDevToolsBoundingElement() {
   return InspectorView.maybeGetInspectorViewInstance()?.element || document.body;
 }
 var bindCheckbox = function(input, setting, metric) {
-  const setValue = bindCheckboxImpl(input, setting.set.bind(setting), metric);
+  const { setValue } = bindCheckboxImpl(input, setting.set.bind(setting), metric);
   setting.addChangeListener((event) => setValue(event.data));
   setValue(setting.get());
 };
@@ -17878,9 +17909,14 @@ var bindCheckboxImpl = function(input, apply, metric) {
       Host9.userMetrics.actionTaken(metric.toggle);
     }
   }
-  return function setValue(value) {
-    if (value !== input.checked) {
-      input.checked = value;
+  return {
+    setValue(value) {
+      if (value !== input.checked) {
+        input.checked = value;
+      }
+    },
+    cleanup() {
+      input.removeEventListener("change", onInputChanged, false);
     }
   };
 };
@@ -17897,19 +17933,16 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
     }
   }
   let setValue;
+  let cleanup;
   function settingChanged() {
     setValue(setting.get());
   }
   if (setting.type() === Common15.Settings.SettingType.BOOLEAN || typeof setting.defaultValue === "boolean") {
-    let attachedButton;
-    let clickListener;
     return Directives4.ref((e) => {
       if (e === void 0) {
         setting.removeChangeListener(settingChanged);
-        if (attachedButton && clickListener) {
-          attachedButton.removeEventListener("click", clickListener);
-          attachedButton = void 0;
-        }
+        cleanup?.();
+        cleanup = void 0;
         return;
       }
       if (jslog) {
@@ -17919,16 +17952,18 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
       }
       setting.addChangeListener(settingChanged);
       if (e instanceof Buttons6.Button.Button) {
-        attachedButton = e;
-        clickListener = () => {
+        const clickListener = () => {
           setting.set(!setting.get());
         };
         e.addEventListener("click", clickListener);
+        cleanup = () => {
+          e.removeEventListener("click", clickListener);
+        };
         setValue = (value) => {
           e.toggled = value;
         };
       } else {
-        setValue = bindCheckboxImpl(e, setting.set.bind(setting));
+        ({ setValue, cleanup } = bindCheckboxImpl(e, setting.set.bind(setting)));
       }
       setValue(setting.get());
     });
@@ -17938,13 +17973,15 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
     return Directives4.ref((e) => {
       if (e === void 0) {
         setting.removeChangeListener(settingChanged);
+        cleanup?.();
+        cleanup = void 0;
         return;
       }
       if (jslogBuilder) {
         e.setAttribute("jslog", jslogBuilder.toString());
       }
       setting.addChangeListener(settingChanged);
-      setValue = bindInput(
+      ({ setValue, cleanup } = bindInput(
         e,
         setting.set.bind(setting),
         (value) => {
@@ -17957,7 +17994,7 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
         },
         /* numeric */
         false
-      );
+      ));
       setValue(setting.get());
     });
   }
@@ -17965,19 +18002,21 @@ var bindToSetting = (settingOrName, optionsOrValidator) => {
     return Directives4.ref((e) => {
       if (e === void 0) {
         setting.removeChangeListener(settingChanged);
+        cleanup?.();
+        cleanup = void 0;
         return;
       }
       if (jslogBuilder) {
         e.setAttribute("jslog", jslogBuilder.toString());
       }
       setting.addChangeListener(settingChanged);
-      setValue = bindInput(
+      ({ setValue, cleanup } = bindInput(
         e,
         setting.set.bind(setting),
         stringValidator ?? (() => true),
         /* numeric */
         false
-      );
+      ));
       setValue(setting.get());
     });
   }
@@ -20034,7 +20073,7 @@ var LinkContextMenuProvider = class {
     const node = targetNode;
     contextMenu.revealSection().appendItem(openLinkExternallyLabel(), () => {
       if (node.href) {
-        UIHelpers.openInNewTab(node.href);
+        UIHelpers.openInNewTab(node.href, node.allowPrivileged);
       }
     }, { jslogContext: "open-in-new-tab" });
     contextMenu.revealSection().appendItem(copyLinkAddressLabel(), () => {
@@ -20565,7 +20604,7 @@ var Editor = class {
     setLabel(input, title);
     this.controlByName.set(name, input);
     this.controls.push(input);
-    this.validators.push(validator);
+    this.validators.push((item8, index) => validator(item8, index, input));
     return input;
   }
   createSelect(name, options, validator, title) {
@@ -20588,15 +20627,18 @@ var Editor = class {
     select.addEventListener("blur", this.validateControls.bind(this, false), false);
     this.controlByName.set(name, select);
     this.controls.push(select);
-    this.validators.push(validator);
+    this.validators.push((item8, index) => validator(item8, index, select));
     return select;
   }
-  createCustomControl(name, ctor, validator) {
-    const control = new ctor();
-    this.controlByName.set(name, control);
-    this.controls.push(control);
+  /**
+   * Adds an existing element, for example the element of a widget, as an
+   * editor control. The editor marks the element as invalid when the
+   * validator fails. The caller keeps its own reference to the control to
+   * read and write its value.
+   */
+  addCustomControl(element, validator) {
+    this.controls.push(element);
     this.validators.push(validator);
-    return control;
   }
   control(name) {
     const control = this.controlByName.get(name);
@@ -20610,7 +20652,7 @@ var Editor = class {
     this.errorMessageContainer.textContent = "";
     for (let index = 0; index < this.controls.length; ++index) {
       const input = this.controls[index];
-      const { valid, errorMessage } = this.validators[index].call(null, this.item, this.index, input);
+      const { valid, errorMessage } = this.validators[index].call(null, this.item, this.index);
       input.classList.toggle("error-input", !valid && !forceValid);
       if (valid || forceValid) {
         setInvalid(input, false);
@@ -24475,7 +24517,7 @@ var TreeElement = class {
   select(omitFocus, selectedByUser) {
     omitFocus = omitFocus || this.disableSelectFocus;
     if (!this.treeOutline || !this.selectable || this.selected) {
-      if (!omitFocus) {
+      if (!omitFocus && !this.listItemElement.hasFocus()) {
         this.listItemElement.focus();
       }
       return false;
@@ -24870,6 +24912,10 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
   onselect(selectedByUser) {
     this.listItemElement.dispatchEvent(new TreeViewElement.SelectEvent({ selectedByUser: Boolean(selectedByUser) }));
     return super.onselect(selectedByUser);
+  }
+  async expandRecursively(maxDepth) {
+    await super.expandRecursively(maxDepth);
+    this.listItemElement.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: true, recursively: true }));
   }
   onenter() {
     const enterEvent = new TreeViewElement.EnterEvent();

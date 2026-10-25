@@ -1995,6 +1995,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -7102,6 +7103,10 @@ var UIStringsNotTranslate = {
    */
   getHelpForError: "Get help understanding this error",
   /**
+   * @description Link text to Chrome's Built-in AI documentation
+   */
+  chromesBuiltInAi: "Chrome\u2019s Built-in AI",
+  /**
    * @description Call to action for downloading an AI model
    */
   toUseDownload: "To use Chrome\u2019s Built-in AI here and elsewhere, download the AI model (~4 GB)",
@@ -7139,7 +7144,7 @@ function renderNoModel(input) {
             class="link"
             href=${BUILT_IN_AI_DOCUMENTATION}
           >
-            Chrome’s Built-in AI
+            ${lockedString(UIStringsNotTranslate.chromesBuiltInAi)}
           </devtools-link>
           , without any data leaving your device.
         </div>
@@ -7972,7 +7977,7 @@ function renderResult(result, isEditing) {
     return nothing5;
   }
   if (result && SDK5.RuntimeModel.RuntimeModel.isSideEffectFailure(result)) {
-    return html5`<span class='object-value-calculate-value-button' title=${i18nString3(UIStrings3.evaluateAllowingSideEffects)}>(…)</span>`;
+    return html5`<span class='object-value-calculate-value-button' title=${i18nString3(UIStrings3.evaluateAllowingSideEffects)}>(\u2026)</span>`;
   }
   const renderedPreview = FORMATTER.renderEvaluationResultPreview(result, !isEditing);
   if (renderedPreview === nothing5 && !isEditing) {
@@ -10991,6 +10996,7 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
     this.createAiCodeCompletionSummaryToolbar();
   }
   cleanupAiCodeCompletion() {
+    this.aiCodeCompletionSummaryToolbar?.detach();
     this.aiCodeCompletionSummaryToolbarContainer?.remove();
     this.aiCodeCompletionSummaryToolbarContainer = void 0;
     this.aiCodeCompletionSummaryToolbar = void 0;

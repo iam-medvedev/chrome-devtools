@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { filter, from, fromEvent, map, mergeMap, NEVER, Observable, timer, } from '../../third_party/rxjs/rxjs.js';
+import { URLPattern } from '../../third_party/urlpattern-polyfill/urlpattern-polyfill.js';
 import { environment } from '../environment.js';
 import { assert } from '../util/assert.js';
 import { mergeUint8Arrays, stringToTypedArray } from '../util/encoding.js';
@@ -257,10 +258,10 @@ export function parsePDFOptions(options = {}, lengthUnit = 'in') {
         tagged: true,
         waitForFonts: true,
     };
-    let width = 8.5;
-    let height = 11;
+    let width = paperFormats.letter[lengthUnit].width;
+    let height = paperFormats.letter[lengthUnit].height;
     if (options.format) {
-        const format = paperFormats[options.format.toLowerCase()][lengthUnit];
+        const format = paperFormats[options.format.toLowerCase()]?.[lengthUnit];
         assert(format, 'Unknown paper format: ' + options.format);
         width = format.width;
         height = format.height;
@@ -294,8 +295,10 @@ export function parsePDFOptions(options = {}, lengthUnit = 'in') {
 export const unitToPixels = {
     px: 1,
     in: 96,
-    cm: 37.8,
-    mm: 3.78,
+    cm: 96 / 2.54,
+    mm: 96 / 25.4,
+    pt: 96 / 72,
+    pc: 16,
 };
 function convertPrintParameterToInches(parameter, lengthUnit = 'in') {
     if (typeof parameter === 'undefined') {
@@ -367,5 +370,27 @@ export function filterAsync(predicate) {
             return value;
         }));
     });
+}
+/**
+ * @internal
+ */
+export function assertSupportedUrlRestrictions(options) {
+    if (options.blocklist?.length && options.allowlist?.length) {
+        throw new Error('Cannot specify both blocklist and allowlist');
+    }
+    if (options.protocol === 'webDriverBiDi' &&
+        (options.blocklist || options.allowlist)) {
+        throw new Error('blocklist and allowlist are only supported with the CDP protocol');
+    }
+    if (options.blocklist) {
+        for (const rule of options.blocklist) {
+            new URLPattern(rule);
+        }
+    }
+    if (options.allowlist) {
+        for (const rule of options.allowlist) {
+            new URLPattern(rule);
+        }
+    }
 }
 //# sourceMappingURL=util.js.map

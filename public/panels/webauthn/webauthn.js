@@ -1614,6 +1614,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -3714,18 +3715,21 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.VirtualAuthenticatorEnvironmentEnabled);
         this.#hasBeenEnabled = true;
       }
-      if (this.#model) {
-        await this.#model.setVirtualAuthEnvEnabled(enable);
+      try {
+        if (this.#model) {
+          await this.#model.setVirtualAuthEnvEnabled(enable);
+        }
+        if (enable) {
+          await this.#loadInitialAuthenticators();
+        } else {
+          this.#removeAuthenticatorSections();
+        }
+        this.#enabled = enable;
+      } finally {
+        this.#isEnabling = void 0;
+        this.requestUpdate();
+        resolve();
       }
-      if (enable) {
-        await this.#loadInitialAuthenticators();
-      } else {
-        this.#removeAuthenticatorSections();
-      }
-      this.#isEnabling = void 0;
-      this.#enabled = enable;
-      this.requestUpdate();
-      resolve();
     });
   }
   #removeAuthenticatorSections() {

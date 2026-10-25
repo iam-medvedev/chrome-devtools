@@ -4,6 +4,10 @@ import * as Platform from '../../core/platform/platform.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
+export interface AllowedTool {
+    toolName: AiAssistanceModel.Tool.ToolName;
+    displayName: string;
+}
 interface SettingItem {
     iconName: string;
     text: Common.UIString.LocalizedString;
@@ -33,10 +37,16 @@ interface ViewInput {
         text: Common.UIString.LocalizedString | Lit.LitTemplate;
     }>;
     settingToParams: Map<string, AiSettingParams>;
+    isNaturalLanguageInterfaceEnabled: boolean;
+    allowedTools: AllowedTool[];
     expandSetting(settingName: string): void;
     toggleSetting(settingName: string, ev: Event): void;
+    removeAllowedTool(name: AiAssistanceModel.Tool.ToolName): void;
 }
-type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+interface ViewOutput {
+    highlightAllowedTools?: () => void;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const AI_SETTINGS_TAB_DEFAULT_VIEW: View;
 export declare class AISettingsTab extends UI.Widget.VBox {
     #private;
@@ -44,5 +54,9 @@ export declare class AISettingsTab extends UI.Widget.VBox {
     performUpdate(): void;
     wasShown(): void;
     willHide(): void;
+    /**
+     * Called by `SettingsScreen.Revealer` after this tab is shown via `Common.Revealer.reveal(setting)`.
+     */
+    highlightObject(object: Object): void;
 }
 export {};

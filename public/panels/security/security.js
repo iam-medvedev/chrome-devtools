@@ -1615,6 +1615,7 @@ var Network;
     RefreshEventDetailsRefreshResult2["RefreshedAsWaiter"] = "RefreshedAsWaiter";
     RefreshEventDetailsRefreshResult2["TransientSigningError"] = "TransientSigningError";
     RefreshEventDetailsRefreshResult2["InScopeRefreshNotYetNeeded"] = "InScopeRefreshNotYetNeeded";
+    RefreshEventDetailsRefreshResult2["Canceled"] = "Canceled";
   })(RefreshEventDetailsRefreshResult = Network2.RefreshEventDetailsRefreshResult || (Network2.RefreshEventDetailsRefreshResult = {}));
   let TerminationEventDetailsDeletionReason;
   ((TerminationEventDetailsDeletionReason2) => {
@@ -3734,26 +3735,6 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
   clearOrigins() {
     this.#origins.clear();
     this.requestUpdate();
-  }
-  // Used in web tests
-  elementsByOrigin() {
-    const map = /* @__PURE__ */ new Map();
-    for (const [origin, state] of this.#origins.entries()) {
-      const element = {
-        select: () => {
-          this.#selectedElementId = origin;
-          this.requestUpdate();
-          this.#onShowOrigin?.(origin);
-        },
-        showElement: () => {
-          this.#onShowOrigin?.(origin);
-        },
-        origin: () => origin,
-        securityState: () => state
-      };
-      map.set(origin, element);
-    }
-    return map;
   }
   set selectedOrigin(origin) {
     this.#selectedElementId = origin ?? "overview";

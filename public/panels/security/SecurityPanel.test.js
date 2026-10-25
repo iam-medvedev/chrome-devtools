@@ -565,6 +565,23 @@ describeWithEnvironment('SecurityPanel', () => {
         prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
     });
+    it('shows security information for a non-cryptographic secure origin', () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const networkManager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(networkManager);
+        const origin = urlString `chrome-test://test`;
+        const request = createNetworkRequest({ url: origin });
+        request.setSecurityState("secure" /* Protocol.Security.SecurityState.Secure */);
+        networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
+        securityPanel.sidebar.selectedOrigin = origin;
+        const originView = securityPanel.visibleView;
+        assert.instanceOf(originView, Security.SecurityPanel.SecurityOriginView);
+        const originDisplay = querySelectorErrorOnMissing(originView.element, '.origin-display');
+        assert.strictEqual(originDisplay.textContent, origin);
+        const section = querySelectorErrorOnMissing(originView.element, '.security-state-section');
+        assert.include(section.textContent, 'This origin is a non-HTTPS secure origin');
+    });
     it('updates when security state changes', async () => {
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
         const securityModel = target.model(Security.SecurityModel.SecurityModel);
@@ -739,6 +756,19 @@ describeWithEnvironment('SecurityPanel', () => {
         assert.lengthOf(unknownOriginElements, 1);
         const unknownOriginElement = querySelectorErrorOnMissing(unknownOriginElements[0], '.highlighted-url');
         assert.strictEqual(unknownOriginElement.textContent, 'https://does-not-resolve.test');
+    });
+    it('shows informational explanations after regular explanations', () => {
+        const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });
+        renderElementIntoDOM(securityPanel);
+        const securityModel = target.model(Security.SecurityModel.SecurityModel);
+        assert.exists(securityModel);
+        const pageVisibleSecurityState = new Security.SecurityModel.PageVisibleSecurityState("secure" /* Protocol.Security.SecurityState.Secure */, null, null, ['pkp-bypassed']);
+        securityModel.dispatchEventToListeners(Security.SecurityModel.Events.VisibleSecurityStateChanged, pageVisibleSecurityState);
+        const titles = securityPanel.mainView.contentElement.querySelectorAll('.security-explanation-title');
+        assert.deepEqual(Array.from(titles, title => title.textContent), [
+            'Resources - all served securely',
+            'Certificate - Public-Key-Pinning bypassed',
+        ]);
     });
     it('shows an explanation for blocked mixed content and clears it on navigation', () => {
         const securityPanel = Security.SecurityPanel.SecurityPanel.instance({ forceNew: true });

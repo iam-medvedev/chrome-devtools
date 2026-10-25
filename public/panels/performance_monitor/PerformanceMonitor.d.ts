@@ -15,6 +15,7 @@ interface PerformanceMonitorOutput {
 }
 type PerformanceMonitorView = (input: PerformanceMonitorInput, output: PerformanceMonitorOutput, target: DocumentFragment) => void;
 export declare class PerformanceMonitorImpl extends UI.Widget.HBox<ShadowRoot> implements SDK.TargetManager.SDKModelObserver<SDK.PerformanceMetricsModel.PerformanceMetricsModel> {
+    #private;
     private view;
     private chartInfos;
     private activeCharts;
