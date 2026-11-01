@@ -2,10 +2,11 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
-import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
+import { type LitTemplate } from '../../ui/lit/lit.js';
+import * as ElementsComponents from './components/components.js';
 import { type CSSControlMap, type MatchRenderer, type RendererBase, RenderingContext } from './PropertyRenderer.js';
 import type { ActiveAiSuggestionProperty, StylePropertiesSection } from './StylePropertiesSection.js';
 import type { StylesContainer } from './StylesContainer.js';
@@ -57,7 +58,7 @@ declare const AttributeRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.
 export declare class AttributeRenderer extends AttributeRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, treeElement: StylePropertyTreeElement | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null);
-    render(match: SDK.CSSPropertyParserMatchers.AttributeMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
+    render(match: SDK.CSSPropertyParserMatchers.AttributeMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const LinearGradientRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;
 export declare class LinearGradientRenderer extends LinearGradientRendererBase {
@@ -67,7 +68,7 @@ declare const RelativeColorChannelRendererBase: RendererBase<SDK.CSSPropertyPars
 export declare class RelativeColorChannelRenderer extends RelativeColorChannelRendererBase {
     #private;
     constructor(treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.RelativeColorChannelMatch, context: RenderingContext): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.RelativeColorChannelMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const ColorRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.ColorMatch>;
 export declare class ColorRenderer extends ColorRendererBase {
@@ -80,20 +81,20 @@ declare const LightDarkColorRendererBase: RendererBase<SDK.CSSPropertyParserMatc
 export declare class LightDarkColorRenderer extends LightDarkColorRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
-    applyColorScheme(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement, lightControls: CSSControlMap, darkControls: CSSControlMap): Promise<void>;
+    render(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext): Lit.LitTemplate;
+    applyColorScheme(match: SDK.CSSPropertyParserMatchers.LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: Lit.LitTemplate, dark: Lit.LitTemplate, lightControls: CSSControlMap, darkControls: CSSControlMap): Promise<Lit.LitTemplate>;
 }
 declare const ColorMixRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.ColorMixMatch>;
 export declare class ColorMixRenderer extends ColorMixRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const ContrastColorRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.ContrastColorMatch>;
 export declare class ContrastColorRenderer extends ContrastColorRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.ContrastColorMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
+    render(match: SDK.CSSPropertyParserMatchers.ContrastColorMatch, context: RenderingContext): Lit.LitTemplate;
 }
 declare const AngleRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.AngleMatch>;
 export declare class AngleRenderer extends AngleRendererBase {
@@ -105,7 +106,7 @@ declare const LinkableNameRendererBase: RendererBase<SDK.CSSPropertyParserMatche
 export declare class LinkableNameRenderer extends LinkableNameRendererBase {
     #private;
     constructor(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, stylesContainer: StylesContainer);
-    render(match: SDK.CSSPropertyParserMatchers.LinkableNameMatch): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.LinkableNameMatch): Lit.LitTemplate;
 }
 declare const BezierRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.BezierMatch>;
 export declare class BezierRenderer extends BezierRendererBase {
@@ -117,7 +118,7 @@ declare const AutoBaseRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.A
 export declare class AutoBaseRenderer extends AutoBaseRendererBase {
     #private;
     constructor(computedStyle: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null);
-    render(match: SDK.CSSPropertyParserMatchers.AutoBaseMatch, context: RenderingContext): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.AutoBaseMatch, context: RenderingContext): Lit.LitTemplate;
 }
 export declare const enum ShadowPropertyType {
     X = "x",
@@ -165,23 +166,23 @@ export declare class ShadowRenderer extends ShadowRendererBase {
 }
 declare const GridTemplateRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.GridTemplateMatch>;
 export declare class GridTemplateRenderer extends GridTemplateRendererBase {
-    render(match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, context: RenderingContext): Node[] | Lit.LitTemplate;
+    render(match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, context: RenderingContext): Lit.LitTemplate;
 }
 export declare const SHORTHANDS_FOR_PERCENTAGES: Set<string>;
 declare const LengthRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.LengthMatch>;
 export declare class LengthRenderer extends LengthRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, propertyName: string, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.LengthMatch, context: RenderingContext): Node[];
-    getTooltipValue(tooltip: Tooltips.Tooltip.Tooltip, match: SDK.CSSPropertyParser.Match, context: RenderingContext): Promise<void>;
+    render(match: SDK.CSSPropertyParserMatchers.LengthMatch, context: RenderingContext): Lit.LitTemplate;
+    getTooltipValue(match: SDK.CSSPropertyParser.Match, context: RenderingContext): Promise<Lit.LitTemplate | null>;
 }
 declare const BaseFunctionRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>>;
 export declare class BaseFunctionRenderer extends BaseFunctionRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null, propertyName: string, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Node[];
-    applyEvaluation(span: HTMLSpanElement, match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<boolean>;
-    applyMathFunction(renderedArgs: HTMLElement[], match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<void>;
+    render(match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Lit.LitTemplate;
+    applyEvaluation(match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<Lit.LitTemplate | null>;
+    applyMathFunction(renderedArgs: Lit.LitTemplate[], match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<Lit.LitTemplate>;
 }
 export declare class MathFunctionRenderer extends BaseFunctionRenderer {
     readonly matchType: typeof SDK.CSSPropertyParserMatchers.MathFunctionMatch;
@@ -192,18 +193,18 @@ export declare class CustomFunctionRenderer extends BaseFunctionRenderer {
 declare const AnchorFunctionRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch>;
 export declare class AnchorFunctionRenderer extends AnchorFunctionRendererBase {
     #private;
-    static decorateAnchorForAnchorLink(stylesContainer: StylesContainer, container: HTMLElement, { identifier, needsSpace }: {
+    static decorateAnchorForAnchorLink(stylesContainer: StylesContainer, { identifier, needsSpace }: {
         identifier?: string;
         needsSpace?: boolean;
-    }): Promise<void>;
+    }): Promise<LitTemplate>;
     constructor(stylesContainer: StylesContainer);
-    render(match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, context: RenderingContext): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, context: RenderingContext): LitTemplate;
 }
 declare const PositionAnchorRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.PositionAnchorMatch>;
 export declare class PositionAnchorRenderer extends PositionAnchorRendererBase {
     #private;
     constructor(stylesContainer: StylesContainer);
-    render(match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch): Node[];
+    render(match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch): LitTemplate;
 }
 declare const PositionAreaRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.PositionAreaMatch>;
 export declare class PositionAreaRenderer extends PositionAreaRendererBase {
@@ -239,6 +240,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private contextForTest;
     constructor({ stylesContainer, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
     onunbind(): void;
+    carryOverCommittedProperty(previous: StylePropertyTreeElement): void;
     gridNames(): Promise<Set<string>>;
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
     getLonghand(): StylePropertyTreeElement | null;
@@ -269,7 +271,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private updateExpandElement;
     refreshIfComputedValueChanged(): void;
     updateTitle(): void;
-    createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
+    createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: ElementsComponents.CSSVariableValueView.CSSVariableParserError | HTMLElement | null): Element;
     getTracingTooltip(functionName: string, node: CodeMirror.SyntaxNode, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null, context: RenderingContext): Lit.TemplateResult;
     getTooltipId(key: string): string;
     updateAuthoringHint(): void;

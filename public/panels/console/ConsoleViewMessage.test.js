@@ -280,6 +280,27 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             assert.strictEqual(activeHighlightListeners(), 1);
             message.willHide();
         });
+        it('holds stack trace preview listeners only while the message is visible', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'boom', { type: "error" /* Protocol.Runtime.ConsoleAPICalledEventType.Error */ });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            const addChangeListener = sinon.spy(ignoreListManager, 'addChangeListener');
+            const removeChangeListener = sinon.spy(ignoreListManager, 'removeChangeListener');
+            const activeIgnoreListListeners = () => addChangeListener.callCount - removeChangeListener.callCount;
+            const messageElement = message.toMessageElement();
+            assert.strictEqual(activeIgnoreListListeners(), 0);
+            renderElementIntoDOM(messageElement);
+            message.wasShown();
+            assert.strictEqual(activeIgnoreListListeners(), 1);
+            message.willHide();
+            assert.strictEqual(activeIgnoreListListeners(), 0);
+            message.wasShown();
+            assert.strictEqual(activeIgnoreListListeners(), 1);
+            message.willHide();
+            assert.strictEqual(activeIgnoreListListeners(), 0);
+        });
         it('opens the DOM node context menu and stops propagation when right-clicking a logged node', async () => {
             const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
@@ -478,6 +499,34 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             messageElement.dispatchEvent(new MouseEvent('mouseenter'));
             sinon.assert.calledOnce(showTeaserStub);
             sinon.assert.calledOnce(generateTeaserStub);
+        });
+        it('detaches teaser when message is hidden and re-shows it when message is shown again', () => {
+            sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')
+                .withArgs('explain.console-message.hover')
+                .returns(true);
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, 'got here');
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const parentWidget = new UI.Widget.VBox();
+            renderElementIntoDOM(parentWidget);
+            const messageElement = message.toMessageElement();
+            parentWidget.contentElement.appendChild(messageElement);
+            message.wasShown();
+            const builtInAi = AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
+            sinon.stub(builtInAi, 'isEventuallyAvailable').returns(true);
+            sinon.stub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser.prototype, 'maybeGenerateTeaser');
+            sinon.stub(Console.ConsoleInsightTeaser.ConsoleInsightTeaser.prototype, 'abortTeaserGeneration').returns({
+                okToRemove: false,
+            });
+            messageElement.dispatchEvent(new MouseEvent('mouseenter'));
+            messageElement.dispatchEvent(new MouseEvent('mouseleave'));
+            assert.isTrue(parentWidget.children().some(child => child instanceof Console.ConsoleInsightTeaser.ConsoleInsightTeaser));
+            message.willHide();
+            assert.isFalse(parentWidget.children().some(child => child instanceof Console.ConsoleInsightTeaser.ConsoleInsightTeaser));
+            message.wasShown();
+            assert.isTrue(parentWidget.children().some(child => child instanceof Console.ConsoleInsightTeaser.ConsoleInsightTeaser));
+            parentWidget.detach();
         });
         it('does not show a hover button if the console message text is empty', () => {
             const messageElement = createMessage(Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, '');
@@ -1183,6 +1232,90 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement();
             assert.isNotNull(messageElement.querySelector('.console-view-object-properties-section'));
+        });
+    });
+    describe('opening links in a new tab', () => {
+        const url = Platform.DevToolsPath.urlString `https://www.example.com/path`;
+        const frameId = 'FRAME_ID';
+        const executionContextId = 1;
+        function openInNewTabFromMessage(message) {
+            const link = message.toMessageElement().querySelector('.devtools-link');
+            assert.exists(link);
+            const info = Components.Linkifier.Linkifier.linkInfo(link);
+            assert.exists(info);
+            const action = Components.Linkifier.Linkifier.linkActions(info).find(action => action.jslogContext === 'open-in-new-tab');
+            assert.exists(action);
+            const stub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
+            void action.handler();
+            return stub;
+        }
+        function createExecutionContext(runtimeModel) {
+            runtimeModel.executionContextCreated({
+                id: executionContextId,
+                origin: 'https://www.example.com',
+                name: '',
+                uniqueId: 'UNIQUE_ID',
+                auxData: { frameId, isDefault: true, type: 'default' },
+            });
+        }
+        function createRawMessage(runtimeModel) {
+            return new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, `see ${url}`, { type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, executionContextId });
+        }
+        it('attributes the navigation to the frame of the message', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            createExecutionContext(runtimeModel);
+            const { message } = createConsoleViewMessageWithStubDeps(createRawMessage(runtimeModel));
+            sinon.assert.calledOnceWithExactly(openInNewTabFromMessage(message), url, frameId);
+        });
+        it('does not attribute the navigation to anything if the execution context of the message is gone', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const { message } = createConsoleViewMessageWithStubDeps(createRawMessage(runtimeModel));
+            sinon.assert.calledOnceWithExactly(openInNewTabFromMessage(message), url, undefined);
+        });
+        it('does not attribute the navigation to anything if the execution context is destroyed after the message was rendered', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            createExecutionContext(runtimeModel);
+            const { message } = createConsoleViewMessageWithStubDeps(createRawMessage(runtimeModel));
+            message.toMessageElement();
+            // E.g. the frame navigates to another document; the message is kept with "Preserve log".
+            runtimeModel.executionContextDestroyed(executionContextId);
+            sinon.assert.calledOnceWithExactly(openInNewTabFromMessage(message), url, undefined);
+        });
+        it('does not attribute the navigation to anything if the target of the message is disposed after the message was rendered', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            createExecutionContext(runtimeModel);
+            const { message } = createConsoleViewMessageWithStubDeps(createRawMessage(runtimeModel));
+            message.toMessageElement();
+            // E.g. the iframe that the message came from navigates into another process: its target is detached
+            // without its execution contexts being destroyed, and the message is kept as it is not from the main frame.
+            target.dispose('target terminated');
+            sinon.assert.calledOnceWithExactly(openInNewTabFromMessage(message), url, undefined);
+        });
+        it('renders URLs with privileged schemes logged by the page as inert text', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const privilegedUrls = [
+                Platform.DevToolsPath.urlString `chrome://settings`,
+                Platform.DevToolsPath.urlString `chrome-error://chromewebdata/`,
+                Platform.DevToolsPath.urlString `chrome-search://local-ntp/local-ntp.html`,
+                Platform.DevToolsPath.urlString `chrome-untrusted://new-tab-page/foo`,
+            ];
+            for (const privilegedUrl of privilegedUrls) {
+                const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, `see ${privilegedUrl}`, { type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */, executionContextId });
+                const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+                const messageElement = message.toMessageElement();
+                assert.isNull(messageElement.querySelector('.devtools-link'), privilegedUrl);
+                assert.include(messageElement.deepTextContent(), privilegedUrl);
+            }
         });
     });
     describe('linkifyWithCustomLinkifier', () => {

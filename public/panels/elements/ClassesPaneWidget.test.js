@@ -5,9 +5,10 @@ import { assert } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchKeyDownEvent, querySelectorErrorOnMissing, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 const CLASS_NAMES = ['class-1', 'class-2', 'class-3'];
@@ -16,24 +17,35 @@ describeWithEnvironment('ClassesPaneWidget', () => {
     let view;
     beforeEach(() => {
         target = createTarget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
     });
     afterEach(() => {
         view?.detach();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
     });
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-        view = new Elements.ClassesPaneWidget.ClassesPaneWidget();
-        renderElementIntoDOM(view);
+        const viewFunction = createViewFunctionStub(Elements.ClassesPaneWidget.ClassesPaneWidget);
+        const presenter = new Elements.ClassesPaneWidget.ClassesPaneWidget(undefined, viewFunction);
+        presenter.wasShown();
         const model = target.model(SDK.DOMModel.DOMModel);
         assert.exists(model);
         const node = new SDK.DOMModel.DOMNode(model);
-        const createCheckboxLabel = sinon.spy(UI.UIUtils.CheckboxLabel, 'create');
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await viewFunction.nextInput;
         sinon.stub(node, 'enclosingElementOrSelf').returns(node);
         sinon.stub(node, 'getAttribute').withArgs('class').returns(CLASS_NAMES.join(' '));
-        sinon.assert.notCalled(createCheckboxLabel);
+        assert.isEmpty(viewFunction.input.classes);
         model.dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, node);
-        sinon.assert.callCount(createCheckboxLabel, inScope ? CLASS_NAMES.length : 0);
+        if (inScope) {
+            const input = await viewFunction.nextInput;
+            assert.deepEqual(input.classes, CLASS_NAMES.map(className => ({ className, enabled: true })));
+        }
+        else {
+            await presenter.updateComplete;
+            assert.isEmpty(viewFunction.input.classes);
+        }
+        presenter.willHide();
     };
     it('updates UI on in scope update event', updatesUiOnEvent(true));
     it('does not update UI on out of scope update event', updatesUiOnEvent(false));
@@ -57,6 +69,209 @@ describeWithEnvironment('ClassesPaneWidget', () => {
         const [name, value] = await setAttributeValue;
         assert.strictEqual(name, 'class');
         assert.strictEqual(value, 'btn');
+    });
+    function createNodeWithClasses(classAttribute) {
+        const model = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(model);
+        const node = new SDK.DOMModel.DOMNode(model);
+        sinon.stub(node, 'enclosingElementOrSelf').returns(node);
+        sinon.stub(node, 'getAttribute').withArgs('class').returns(classAttribute);
+        return node;
+    }
+    function renderClassesPaneWidget() {
+        view = new Elements.ClassesPaneWidget.ClassesPaneWidget();
+        renderElementIntoDOM(view);
+        return view;
+    }
+    it('renders node classes sorted case-insensitively', async () => {
+        const node = createNodeWithClasses('zebra alpha Beta');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const checkboxes = [...view.contentElement.querySelectorAll('devtools-checkbox')];
+        assert.deepEqual(checkboxes.map(checkbox => checkbox.title), ['alpha', 'Beta', 'zebra']);
+        assert.isTrue(checkboxes.every(checkbox => checkbox.checked));
+    });
+    it('replaces rendered classes when selected node changes', async () => {
+        const node1 = createNodeWithClasses('class-1 class-2');
+        const node2 = createNodeWithClasses('class-3');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node1);
+        await view.updateComplete;
+        assert.deepEqual([...view.contentElement.querySelectorAll('devtools-checkbox')].map(c => c.title), ['class-1', 'class-2']);
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node2);
+        await view.updateComplete;
+        assert.deepEqual([...view.contentElement.querySelectorAll('devtools-checkbox')].map(c => c.title), ['class-3']);
+    });
+    it('clears rendered classes when selected node becomes null', async () => {
+        const node = createNodeWithClasses('class-1 class-2');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        assert.lengthOf(view.contentElement.querySelectorAll('devtools-checkbox'), 2);
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
+        await view.updateComplete;
+        assert.lengthOf(view.contentElement.querySelectorAll('devtools-checkbox'), 0);
+    });
+    it('renders the classes of a node selected while the pane was hidden when shown again', async () => {
+        const node1 = createNodeWithClasses('class-1');
+        const node2 = createNodeWithClasses('class-2');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node1);
+        await view.updateComplete;
+        view.detach();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node2);
+        renderElementIntoDOM(view);
+        assert.deepEqual([...view.contentElement.querySelectorAll('devtools-checkbox')].map(c => c.title), ['class-2']);
+    });
+    it('disables the prompt while no node is selected', () => {
+        renderClassesPaneWidget();
+        const input = querySelectorErrorOnMissing(view.contentElement, '.new-class-input');
+        assert.isFalse(input.hasAttribute('contenteditable'));
+        assert.isTrue(input.classList.contains('disabled'));
+    });
+    it('enables the prompt when a node is selected', async () => {
+        const node = createNodeWithClasses('class-1');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const input = querySelectorErrorOnMissing(view.contentElement, '.new-class-input');
+        assert.strictEqual(input.getAttribute('contenteditable'), 'plaintext-only');
+        assert.isFalse(input.classList.contains('disabled'));
+    });
+    it('attaches the prompt only once across re-renders', async () => {
+        const attachSpy = sinon.spy(Elements.ClassesPaneWidget.ClassNamePrompt.prototype, 'attach');
+        const node = createNodeWithClasses('class-1');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        node.domModel().dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, node);
+        await view.updateComplete;
+        view.detach();
+        renderElementIntoDOM(view);
+        await view.updateComplete;
+        sinon.assert.calledOnce(attachSpy);
+    });
+    it('toggles class on checkbox click', async () => {
+        const node = createNodeWithClasses('class-1 class-2');
+        const setAttributeStub = sinon.stub(node, 'setAttributeValuePromise');
+        const setAttributeCalled = expectCall(setAttributeStub, {
+            fakeFn: (_name, _value) => Promise.resolve(null),
+        });
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const checkbox = [...view.contentElement.querySelectorAll('devtools-checkbox')].find(c => c.title === 'class-1');
+        assert.exists(checkbox);
+        checkbox.click();
+        await setAttributeCalled;
+        await view.updateComplete;
+        assert.isFalse(checkbox.checked);
+        sinon.assert.calledOnceWithExactly(setAttributeStub, 'class', 'class-2');
+    });
+    it('re-checks an unchecked checkbox when the class is re-added to the node externally', async () => {
+        const node = createNodeWithClasses('class-1 class-2');
+        const setAttributeCalled = expectCall(sinon.stub(node, 'setAttributeValuePromise'), {
+            fakeFn: (_name, _value) => Promise.resolve(null),
+        });
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const checkbox = [...view.contentElement.querySelectorAll('devtools-checkbox')].find(c => c.title === 'class-1');
+        assert.exists(checkbox);
+        checkbox.click();
+        await setAttributeCalled;
+        await view.updateComplete;
+        assert.isFalse(checkbox.checked);
+        // The page re-adds `class-1` (getAttribute still reports it), which is surfaced as a DOM mutation.
+        node.domModel().dispatchEventToListeners(SDK.DOMModel.Events.DOMMutated, node);
+        await view.updateComplete;
+        const updatedCheckbox = [...view.contentElement.querySelectorAll('devtools-checkbox')].find(c => c.title === 'class-1');
+        assert.exists(updatedCheckbox);
+        assert.isTrue(updatedCheckbox.checked);
+    });
+    it('adds classes and clears prompt on Enter', async () => {
+        const node = createNodeWithClasses('existing-class');
+        const setAttributeStub = sinon.stub(node, 'setAttributeValuePromise');
+        const setAttributeCalled = expectCall(setAttributeStub, {
+            fakeFn: (_name, _value) => Promise.resolve(null),
+        });
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const input = view.contentElement.querySelector('.new-class-input');
+        assert.exists(input);
+        input.textContent = 'added-1 added-2';
+        dispatchKeyDownEvent(input, { key: 'Enter', bubbles: true });
+        await setAttributeCalled;
+        await view.updateComplete;
+        assert.strictEqual(input.textContent, '');
+        sinon.assert.calledOnceWithExactly(setAttributeStub, 'class', 'added-1 added-2 existing-class');
+        assert.deepEqual([...view.contentElement.querySelectorAll('devtools-checkbox')].map(c => c.title), ['added-1', 'added-2', 'existing-class']);
+    });
+    it('clears prompt without adding classes on Escape', async () => {
+        const node = createNodeWithClasses('existing-class');
+        const setAttributeStub = sinon.stub(node, 'setAttributeValuePromise');
+        const setAttributeCalled = expectCall(setAttributeStub, {
+            fakeFn: (_name, _value) => Promise.resolve(null),
+        });
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+        await view.updateComplete;
+        const input = view.contentElement.querySelector('.new-class-input');
+        assert.exists(input);
+        input.textContent = 'discarded-class';
+        dispatchKeyDownEvent(input, { key: 'Escape', bubbles: true });
+        await setAttributeCalled;
+        await view.updateComplete;
+        assert.strictEqual(input.textContent, '');
+        sinon.assert.calledOnceWithExactly(setAttributeStub, 'class', 'existing-class');
+        assert.deepEqual([...view.contentElement.querySelectorAll('devtools-checkbox')].map(c => c.title), ['existing-class']);
+    });
+    it('clears uncommitted prompt text and restores committed classes on previous node when selected node changes', async () => {
+        const node1 = createNodeWithClasses('class-1');
+        const setAttributeStub1 = sinon.stub(node1, 'setAttributeValuePromise');
+        const setAttributeCalled1 = expectCall(setAttributeStub1, {
+            fakeFn: (_name, _value) => Promise.resolve(null),
+        });
+        const node2 = createNodeWithClasses('class-2');
+        renderClassesPaneWidget();
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node1);
+        await view.updateComplete;
+        const input = view.contentElement.querySelector('.new-class-input');
+        assert.exists(input);
+        input.textContent = 'pending-class';
+        UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node2);
+        await setAttributeCalled1;
+        await view.updateComplete;
+        assert.strictEqual(input.textContent, '');
+        sinon.assert.calledOnceWithExactly(setAttributeStub1, 'class', 'class-1');
+    });
+    describe('DEFAULT_VIEW', () => {
+        function renderView() {
+            const input = {
+                classes: [],
+                onCommit: sinon.stub(),
+                onCancel: sinon.stub().returns(false),
+                onClick: sinon.stub(),
+            };
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            Elements.ClassesPaneWidget.DEFAULT_VIEW(input, {}, container);
+            const promptElement = container.querySelector('.new-class-input');
+            assert.exists(promptElement);
+            return { input, promptElement };
+        }
+        it('calls onCommit on Enter', () => {
+            const { input, promptElement } = renderView();
+            dispatchKeyDownEvent(promptElement, { key: 'Enter', bubbles: true });
+            sinon.assert.calledOnce(input.onCommit);
+        });
+        it('does not call onCommit on Enter while an IME composition is in progress', () => {
+            const { input, promptElement } = renderView();
+            dispatchKeyDownEvent(promptElement, { key: 'Enter', isComposing: true, bubbles: true });
+            sinon.assert.notCalled(input.onCommit);
+        });
     });
     describe('ClassNamePrompt', () => {
         let domModel;

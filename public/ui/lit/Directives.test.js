@@ -89,18 +89,25 @@ describe('InterceptBindingDirective', () => {
         sinon.assert.calledTwice(clickHandler1);
         sinon.assert.calledOnce(clickHandler2);
     });
-    it('registers and removes listeners with registerListeners', () => {
-        const element = document.createElement('div');
-        const clickHandler = sinon.spy();
-        CustomDirectives.InterceptBindingDirective.registerListeners(element, { click: clickHandler });
-        const targetElement = document.createElement('div');
-        CustomDirectives.InterceptBindingDirective.setEventListeners([element], targetElement);
-        targetElement.click();
-        sinon.assert.calledOnce(clickHandler);
-        CustomDirectives.InterceptBindingDirective.registerListeners(element, undefined);
-        CustomDirectives.InterceptBindingDirective.setEventListeners([element], targetElement);
-        targetElement.click();
-        sinon.assert.calledOnce(clickHandler);
+    it('updates event handlers on clones when re-rendered', () => {
+        const container = document.createElement('div');
+        const clickHandler1 = sinon.spy();
+        const clickHandler2 = sinon.spy();
+        const renderButton = (handler) => {
+            render(html `<button @click=${interceptBinding(handler)}></button>`, container);
+        };
+        renderButton(clickHandler1);
+        const templateButton = container.firstElementChild;
+        assert.instanceOf(templateButton, HTMLButtonElement);
+        const clonedButton = cloneNodeWithListeners(templateButton);
+        assert.instanceOf(clonedButton, HTMLButtonElement);
+        clonedButton.click();
+        sinon.assert.calledOnce(clickHandler1);
+        sinon.assert.notCalled(clickHandler2);
+        renderButton(clickHandler2);
+        clonedButton.click();
+        sinon.assert.calledOnce(clickHandler1);
+        sinon.assert.calledOnce(clickHandler2);
     });
 });
 //# sourceMappingURL=Directives.test.js.map

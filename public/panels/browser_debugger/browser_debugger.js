@@ -244,7 +244,7 @@ var DEFAULT_VIEW = (input, output, target) => {
               tabIndex=-1
               title=${getLocalizedCategory(category)}
               ?indeterminate=${breakpoints.some((breakpoint) => !breakpoint.enabled()) && breakpoints.some((breakpoint) => breakpoint.enabled())}
-              ?checked=${!breakpoints.some((breakpoint) => !breakpoint.enabled())}
+              .checked=${!breakpoints.some((breakpoint) => !breakpoint.enabled())}
               @change=${(e) => onCheckboxClicked(e, category)}
             >${getLocalizedCategory(category)}</devtools-checkbox>
             <ul role="group">
@@ -258,7 +258,7 @@ var DEFAULT_VIEW = (input, output, target) => {
                     class=${classes(breakpoint)}
                     tabIndex=-1
                     title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
-                    ?checked=${breakpoint.enabled()}
+                    .checked=${breakpoint.enabled()}
                     aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit) : Lit.nothing}
                     @change=${(e) => onCheckboxClicked(e, breakpoint)}
                   >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
@@ -2028,6 +2028,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2710,6 +2711,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3552,19 +3554,19 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     SDK3.TargetManager.TargetManager.instance().addModelListener(
       SDK3.DOMDebuggerModel.DOMDebuggerModel,
       SDK3.DOMDebuggerModel.Events.DOM_BREAKPOINT_ADDED,
-      this.breakpointAdded,
+      this.#breakpointAdded,
       this
     );
     SDK3.TargetManager.TargetManager.instance().addModelListener(
       SDK3.DOMDebuggerModel.DOMDebuggerModel,
       SDK3.DOMDebuggerModel.Events.DOM_BREAKPOINT_TOGGLED,
-      this.breakpointToggled,
+      this.#breakpointToggled,
       this
     );
     SDK3.TargetManager.TargetManager.instance().addModelListener(
       SDK3.DOMDebuggerModel.DOMDebuggerModel,
       SDK3.DOMDebuggerModel.Events.DOM_BREAKPOINTS_REMOVED,
-      this.breakpointsRemoved,
+      this.#breakpointsRemoved,
       this
     );
     for (const domDebuggerModel of SDK3.TargetManager.TargetManager.instance().models(
@@ -3572,7 +3574,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     )) {
       domDebuggerModel.retrieveDOMBreakpoints();
       for (const breakpoint of domDebuggerModel.domBreakpoints()) {
-        this.addBreakpoint(breakpoint);
+        this.#addBreakpoint(breakpoint);
       }
     }
     this.update();
@@ -3591,20 +3593,20 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
         isHighlighted: breakpoint === this.#highlightedBreakpoint,
         isFocused: breakpoint === this.#focusedBreakpoint
       })),
-      onBreakpointClick: this.onBreakpointClick.bind(this),
-      onBreakpointCheckboxClick: this.onBreakpointCheckboxClick.bind(this),
-      onBreakpointContextMenu: this.onBreakpointContextMenu.bind(this),
-      onBreakpointKeyDown: this.onBreakpointKeyDown.bind(this)
+      onBreakpointClick: this.#onBreakpointClick.bind(this),
+      onBreakpointCheckboxClick: this.#onBreakpointCheckboxClick.bind(this),
+      onBreakpointContextMenu: this.#onBreakpointContextMenu.bind(this),
+      onBreakpointKeyDown: this.#onBreakpointKeyDown.bind(this)
     };
     this.#view(input, void 0, this.contentElement);
   }
-  onBreakpointClick(breakpoint) {
+  #onBreakpointClick(breakpoint) {
     this.focusedBreakpoint = breakpoint;
   }
-  onBreakpointKeyDown(breakpoint, event) {
+  #onBreakpointKeyDown(breakpoint, event) {
     const keyboardEvent = event;
     if (keyboardEvent.key === " ") {
-      this.onBreakpointCheckboxClick(breakpoint);
+      this.#onBreakpointCheckboxClick(breakpoint);
       keyboardEvent.consume(true);
     } else if (keyboardEvent.key === "ArrowUp" || keyboardEvent.key === "ArrowDown") {
       const index = this.#breakpoints.indexOf(breakpoint);
@@ -3619,13 +3621,13 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
       }
     }
   }
-  breakpointAdded(event) {
-    this.addBreakpoint(event.data);
+  #breakpointAdded(event) {
+    this.#addBreakpoint(event.data);
   }
-  breakpointToggled(_event) {
+  #breakpointToggled(_event) {
     this.requestUpdate();
   }
-  breakpointsRemoved(event) {
+  #breakpointsRemoved(event) {
     const breakpoints = event.data;
     for (const breakpoint of breakpoints) {
       const index = this.#breakpoints.indexOf(breakpoint);
@@ -3636,7 +3638,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     this.#synchronizeFocusedBreakpoint();
     this.requestUpdate();
   }
-  addBreakpoint(breakpoint) {
+  #addBreakpoint(breakpoint) {
     if (this.#breakpoints.includes(breakpoint)) {
       return;
     }
@@ -3653,7 +3655,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     this.#synchronizeFocusedBreakpoint();
     this.requestUpdate();
   }
-  onBreakpointContextMenu(breakpoint, event) {
+  #onBreakpointContextMenu(breakpoint, event) {
     this.focusedBreakpoint = breakpoint;
     const contextMenu = new UI2.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendItem(
@@ -3669,7 +3671,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     }, { jslogContext: "remove-all-dom-breakpoints" });
     void contextMenu.show();
   }
-  onBreakpointCheckboxClick(breakpoint) {
+  #onBreakpointCheckboxClick(breakpoint) {
     this.focusedBreakpoint = breakpoint;
     breakpoint.domDebuggerModel.toggleDOMBreakpoint(breakpoint, !breakpoint.enabled);
   }

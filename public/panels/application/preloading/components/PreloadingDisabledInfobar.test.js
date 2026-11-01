@@ -12,7 +12,8 @@ const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('PreloadingDisabledInfobar', () => {
     it('renders nothing when enabled', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.wasShown();
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -22,7 +23,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders disabled by preference', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByPreference = true;
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -45,7 +47,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders disabled by Data Saver', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByDataSaver = true;
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -58,7 +61,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders disabled by Battery Saver', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByBatterySaver = true;
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -71,7 +75,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders force enabled by prefetch holdback', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByHoldbackPrefetchSpeculationRules = true;
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -84,7 +89,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders force enabled by prerender holdback', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByHoldbackPrerenderSpeculationRules = true;
         const input = await view.nextInput;
         assert.deepEqual(input, {
@@ -97,7 +103,8 @@ describeWithEnvironment('PreloadingDisabledInfobar', () => {
     });
     it('renders multiple warnings', async () => {
         const view = createViewFunctionStub(PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar);
-        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(view);
+        const component = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar(
+        /* element= */ undefined, view);
         component.disabledByPreference = true;
         component.disabledByDataSaver = true;
         component.disabledByBatterySaver = true;

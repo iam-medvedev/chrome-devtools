@@ -713,6 +713,11 @@ export function checkForBlockedPayload(payload) {
     }
     return null;
 }
+/**
+ * Largest absolute epoch-millisecond value that `Date` accepts (ECMA-262
+ * TimeClip). Larger values produce an Invalid Date, and `toISOString()` throws.
+ */
+const MAX_DATE_MS = 8.64e15;
 export function validateAndSanitizeAnnouncement(payload) {
     if (typeof payload !== 'string') {
         return null;
@@ -740,7 +745,8 @@ export function validateAndSanitizeAnnouncement(payload) {
     if (typeof parsedObj.element !== 'string') {
         return null;
     }
-    if (typeof parsedObj.time !== 'number' || !Number.isFinite(parsedObj.time)) {
+    if (typeof parsedObj.time !== 'number' || !Number.isFinite(parsedObj.time) ||
+        Math.abs(parsedObj.time) > MAX_DATE_MS) {
         return null;
     }
     let elementId = undefined;

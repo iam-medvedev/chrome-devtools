@@ -562,6 +562,18 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         return origin;
     }
+    static extensionIdFromOrigin(extensionOrigin) {
+        const url = Common.ParsedURL.ParsedURL.fromString(extensionOrigin);
+        if (url?.scheme === 'chrome-extension' && url.host) {
+            return url.host;
+        }
+        // Fallback for tests and extensions with malformed or sandboxed origins
+        const sanitized = Platform.StringUtilities.sanitizeIdentifier(extensionOrigin);
+        return sanitized || 'unknown';
+    }
+    getExtensionId(port) {
+        return ExtensionServer.extensionIdFromOrigin(this.getExtensionOrigin(port));
+    }
     onCreatePanel(message, port) {
         if (message.command !== "createPanel" /* Extensions.ExtensionAPI.PrivateAPI.Commands.CreatePanel */) {
             return this.status.E_BADARG('command', `expected ${"createPanel" /* Extensions.ExtensionAPI.PrivateAPI.Commands.CreatePanel */}`);
@@ -630,12 +642,12 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         button.update(resourcePath, message.tooltip, message.disabled);
         return this.status.OK();
     }
-    onCreateSidebarPane(message) {
+    onCreateSidebarPane(message, port) {
         if (message.command !== "createSidebarPane" /* Extensions.ExtensionAPI.PrivateAPI.Commands.CreateSidebarPane */) {
             return this.status.E_BADARG('command', `expected ${"createSidebarPane" /* Extensions.ExtensionAPI.PrivateAPI.Commands.CreateSidebarPane */}`);
         }
         const id = message.id;
-        const sidebar = new ExtensionSidebarPane(this, message.panel, i18n.i18n.lockedString(message.title), id);
+        const sidebar = new ExtensionSidebarPane(this, message.panel, i18n.i18n.lockedString(message.title), id, this.getExtensionId(port));
         this.#sidebarPanes.push(sidebar);
         this.clientObjects.set(id, sidebar);
         this.dispatchEventToListeners("SidebarPaneAdded" /* Events.SidebarPaneAdded */, sidebar);
@@ -690,14 +702,20 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         sidebar.setPage(resourcePath);
         return undefined;
     }
-    onOpenResource(message) {
+    onOpenResource(message, port) {
         if (message.command !== "openResource" /* Extensions.ExtensionAPI.PrivateAPI.Commands.OpenResource */) {
             return this.status.E_BADARG('command', `expected ${"openResource" /* Extensions.ExtensionAPI.PrivateAPI.Commands.OpenResource */}`);
         }
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(message.url);
         if (uiSourceCode) {
+            if (!this.extensionAllowedOnContentProvider(uiSourceCode, port)) {
+                return this.status.E_FAILED('Permission denied');
+            }
             void Common.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, message.columnNumber));
             return this.status.OK();
+        }
+        if (!this.extensionAllowedOnURL(message.url, port)) {
+            return this.status.E_FAILED('Permission denied');
         }
         const resource = Bindings.ResourceUtils.resourceForURL(message.url);
         if (resource) {

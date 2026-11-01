@@ -611,7 +611,7 @@ describe('AiConversation', () => {
         };
         const actionResponse = {
             type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
-            code: 'code',
+            action: 'code',
             output: 'output',
             canceled: false,
             loadedSkills: ['styling'],
@@ -628,7 +628,7 @@ describe('AiConversation', () => {
         const sideEffectResponse = {
             type: "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */,
             description: 'Side effect',
-            code: 'code',
+            javascriptCode: 'code',
             confirm: () => { },
         };
         conversation.history.push(userQuery, contextResponse, actionResponse, sideEffectResponse);
@@ -655,14 +655,14 @@ describe('AiConversation', () => {
         sinon.stub(AiAssistance.ToolRegistry.ToolRegistry, 'get').withArgs('dummyTool').returns(dummyTool);
         const actionResponseWithRedaction = {
             type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
-            code: 'code',
+            action: 'code',
             output: 'secret storage value',
             canceled: false,
             toolName: 'dummyTool',
         };
         const actionResponseWithoutRedaction = {
             type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
-            code: 'code',
+            action: 'code',
             output: 'normal output',
             canceled: false,
             toolName: 'otherTool',
@@ -674,6 +674,25 @@ describe('AiConversation', () => {
         assert.strictEqual(serialized.history[0].output, '<redacted>');
         assert.strictEqual(serialized.history[1].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.strictEqual(serialized.history[1].output, 'normal output');
+    });
+    it('maps the `code` field of stored actions to `action`', () => {
+        const action = {
+            type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
+            code: 'getCookieValues(["session"])',
+            output: 'value',
+            canceled: false,
+        };
+        const conversation = AiAssistance.AiConversation.AiConversation.fromSerializedConversation({
+            id: 'id',
+            type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
+            history: [action],
+        });
+        assert.deepEqual(conversation.history, [{
+                type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
+                action: 'getCookieValues(["session"])',
+                output: 'value',
+                canceled: false,
+            }]);
     });
     async function testNavigationDuringRun({ navigationUrl, expectBlocked, initialUrl = Platform.DevToolsPath.urlString `https://example.com/`, }) {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
@@ -721,6 +740,7 @@ describe('AiConversation', () => {
                 unreachableUrl: () => '',
                 url: navigationUrl,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create(navigationUrl),
+                backForwardCacheDetails: { restoredFromCache: undefined, explanations: [] },
             },
             type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */,
         });
@@ -916,6 +936,7 @@ describe('AiConversation', () => {
             mockFrame.unreachableUrl.returns(Platform.DevToolsPath.EmptyUrlString);
             sinon.stub(mockFrame, 'url').value(newOrigin);
             mockFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(newOrigin));
+            mockFrame.backForwardCacheDetails = { restoredFromCache: undefined, explanations: [] };
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
                 frame: mockFrame,
                 type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */,
@@ -958,6 +979,7 @@ describe('AiConversation', () => {
             mockAuxFrame.unreachableUrl.returns(Platform.DevToolsPath.EmptyUrlString);
             sinon.stub(mockAuxFrame, 'url').value(auxOrigin);
             mockAuxFrame.securityOrigin.returns(SDK.SecurityOrigin.SecurityOrigin.create(auxOrigin));
+            mockAuxFrame.backForwardCacheDetails = { restoredFromCache: undefined, explanations: [] };
             // Dispatch PrimaryPageChanged on the auxiliary target's ResourceTreeModel.
             auxResourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
                 frame: mockAuxFrame,

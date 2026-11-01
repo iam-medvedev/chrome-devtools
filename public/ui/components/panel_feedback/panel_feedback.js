@@ -300,7 +300,7 @@ var PreviewToggle = class extends HTMLElement {
       <style>${previewToggle_css_default}</style>
       <div class="container">
           <devtools-checkbox
-            ?checked=${checked}
+            .checked=${Boolean(checked)}
             @change=${this.#checkboxChanged}
             aria-label=${this.#name} >
             <devtools-icon name="experiment" class="medium">

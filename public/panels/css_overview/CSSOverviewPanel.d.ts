@@ -9,7 +9,7 @@ export interface ViewInput {
     overviewData: OverviewData;
     target?: SDK.Target.Target;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CSSOverviewPanel extends UI.Panel.Panel implements SDK.TargetManager.Observer {
     #private;

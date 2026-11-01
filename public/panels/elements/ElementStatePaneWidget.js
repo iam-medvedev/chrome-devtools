@@ -75,7 +75,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         return html `
         <div id=${state.state}>
           <devtools-checkbox class="small" @click=${input.onStateCheckboxClicked}
-              jslog=${VisualLogging.toggle(state.state).track({ change: true })} ?checked=${state.checked} ?disabled=${state.disabled}
+              jslog=${VisualLogging.toggle(state.state).track({ change: true })} .checked=${Boolean(state.checked)} ?disabled=${state.disabled}
               title=${':' + state.state}>
           <span class="source-code">${':' + state.state}</span>
         </devtools-checkbox>
@@ -226,7 +226,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
             states: [...this.#states.values()],
             onStateCheckboxClicked: this.onStateCheckboxClicked.bind(this),
         };
-        this.#view(viewInput, {}, this.contentElement);
+        this.#view(viewInput, undefined, this.contentElement);
     }
     async #updateElementSpecificStatesTable(node = null) {
         if (!node || node.nodeType() !== Node.ELEMENT_NODE) {

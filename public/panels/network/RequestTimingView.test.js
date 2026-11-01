@@ -154,7 +154,7 @@ describe('ResourceTimingView', () => {
             calculator: new NetworkTimeCalculator.NetworkTimeCalculator(true),
             wasThrottled,
         };
-        Network.RequestTimingView.DEFAULT_VIEW(input, {}, container);
+        Network.RequestTimingView.DEFAULT_VIEW(input, undefined, container);
         await assertScreenshot('network/request-timing-view-throttling.png');
         const icon = container.querySelector('devtools-icon[name=watch]');
         assert.exists(icon);
@@ -195,14 +195,14 @@ describe('ResourceTimingView', () => {
         };
         // Case 1: request.finished = false
         request.finished = false;
-        Network.RequestTimingView.DEFAULT_VIEW(baseInput, {}, container);
+        Network.RequestTimingView.DEFAULT_VIEW(baseInput, undefined, container);
         const cautionElementTrue = container.querySelector('.caution');
         assert.isNotNull(cautionElementTrue, 'caution element should exist when request is not finished');
         assert.include(cautionElementTrue?.textContent, 'Caution: Request isn’t finished yet');
         // Case 2: request.finished = true
         const requestFinished = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
         requestFinished.finished = true;
-        Network.RequestTimingView.DEFAULT_VIEW({ ...baseInput, request: requestFinished }, {}, container);
+        Network.RequestTimingView.DEFAULT_VIEW({ ...baseInput, request: requestFinished }, undefined, container);
         const cautionElementFalse = container.querySelector('.caution');
         assert.isNull(cautionElementFalse, 'caution element should not exist when request is finished');
     });

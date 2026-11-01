@@ -43,7 +43,7 @@ describeWithEnvironment('RequestDeviceBoundSessionsView', () => {
                     usage: "ProactiveRefreshAttempted" /* Protocol.Network.DeviceBoundSessionWithUsageUsage.ProactiveRefreshAttempted */,
                 },
             ],
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('network/request_device_bound_sessions_view.png');
     });
     it('updates when the request headers change', async () => {

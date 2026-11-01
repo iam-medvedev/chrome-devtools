@@ -12,6 +12,7 @@ import * as Trace from '../../models/trace/trace.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpersCore.js';
@@ -92,6 +93,7 @@ function parsedTraceFromProfileCalls(profileCalls) {
 describe('SourceMapsResolver', () => {
     setupLocaleHooks();
     setupSettingsHooks();
+    setupRuntimeHooks();
     let backend;
     beforeEach(async () => {
         backend = new MockDebuggerBackend();

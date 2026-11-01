@@ -765,7 +765,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
     async performUpdate() {
         const visibility = new Set();
         if (!this.#data.length) {
-            this.#view({ items: [], visibility }, {}, this.element);
+            this.#view({ items: [], visibility }, undefined, this.element);
             return;
         }
         const [firstItem] = this.#data;
@@ -808,7 +808,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
             }
             return { data: item, link: link, showNode };
         }));
-        this.#view({ items, visibility }, {}, this.element);
+        this.#view({ items, visibility }, undefined, this.element);
     }
 }
 function renderNode(data, link, showNode) {

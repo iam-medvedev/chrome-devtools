@@ -1630,6 +1630,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2312,6 +2313,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -2900,6 +2902,16 @@ var animationTimeline_css_default = `/*
   --timeline-controls-width: 150px;
 }
 
+:host(.suspended) :is(
+  .animation-timeline-buffer,
+  .animation-timeline-header,
+  .grid-overflow-wrapper,
+  .timeline-controls-resizer,
+  .animation-timeline-rows
+) {
+  visibility: hidden;
+}
+
 .toolbar-view-container {
   min-height: fit-content;
 }
@@ -3019,13 +3031,13 @@ circle.animation-keyframe-point:active {
   flex: 0 0 var(--timeline-controls-width);
   position: relative;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   padding-right: var(--sys-size-5);
 }
 
 .animation-timeline-current-time {
   flex: 0 0 auto;
-  line-height: var(--sys-size-12);
   margin-right: 5px;
 }
 
@@ -3044,6 +3056,10 @@ circle.animation-keyframe-point:active {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   display: flex;
   padding: 0 var(--sys-size-2);
+}
+
+.animation-timeline-paused {
+  color: var(--sys-color-on-surface-subtle);
 }
 
 .animation-timeline-buffer-hint {
@@ -3176,6 +3192,7 @@ text.animation-timeline-grid-label {
 
 .animation-timeline-rows,
 .animation-timeline-rows-hint,
+.animation-timeline-paused,
 .animation-timeline-buffer-hint {
   flex-grow: 1;
   overflow: hidden auto;
@@ -3194,11 +3211,12 @@ text.animation-timeline-grid-label {
   display: none;
 }
 
-.animation-timeline-buffer:not(:empty)
+:host(:not(.suspended)) .animation-timeline-buffer:not(:empty)
   ~ .animation-timeline-rows:empty
   ~ .animation-timeline-buffer-hint:not(:empty)
   ~ .animation-timeline-rows-hint,
-.animation-timeline-buffer:empty ~ .animation-timeline-buffer-hint {
+:host(:not(.suspended)) .animation-timeline-buffer:empty ~ .animation-timeline-buffer-hint,
+.animation-timeline-paused {
   font-size: var(--sys-typescale-body2-size);
   display: flex;
   align-items: center;
@@ -3488,6 +3506,10 @@ var UIStrings = {
    */
   waitingForAnimations: "Currently waiting for animations",
   /**
+   * @description Empty-state status shown while animation inspection is suspended.
+   */
+  animationInspectionPaused: "Animation inspection paused",
+  /**
    * @description Empty buffer hint text content in the animation timeline of the Animations panel that explains the panel.
    */
   animationDescription: "On this page you can inspect and modify animations",
@@ -3571,7 +3593,7 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
         keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight"
       })}
             data-playback-rate=${playbackRate}
-            .disabled=${input.playbackRateButtonsDisabled}
+            .disabled=${!input.playbackControlsEnabled}
             class=${classMap({
         "animation-playback-rate-button": true,
         selected: isSelected
@@ -3596,6 +3618,7 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
           .iconName=${"clear"}
           .jslogContext=${"animations.clear"}
           .variant=${Buttons.Button.Variant.TOOLBAR}
+          .disabled=${!input.controlsEnabled}
           @click=${input.onClearClick}>
         </devtools-button>
         <div class="toolbar-divider"></div>
@@ -3609,6 +3632,7 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
           .variant=${Buttons.Button.Variant.ICON_TOGGLE}
           .toggleType=${Buttons.Button.ToggleType.PRIMARY}
           .toggled=${input.allPaused}
+          .disabled=${!input.playbackControlsEnabled}
           @click=${input.onTogglePauseAllClick}>
         </devtools-button>
       </devtools-toolbar>
@@ -3625,6 +3649,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #allPaused;
   #animationsContainer;
   #previewContainer;
+  #pausedStatus;
   #timelineScrubber;
   #currentTime;
   #clearButton;
@@ -3657,7 +3682,6 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   /** Container & state for rendering `toolbarView` */
   #toolbarViewContainer;
   #toolbarView;
-  #playbackRateButtonsDisabled = false;
   constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
     super({
       jslog: `${VisualLogging.panel("animations").track({ resize: true })}`,
@@ -3676,6 +3700,10 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.createHeader();
     this.#animationsContainer = this.contentElement.createChild("div", "animation-timeline-rows");
     this.#animationsContainer.setAttribute("jslog", `${VisualLogging.section("animations")}`);
+    this.#pausedStatus = this.contentElement.createChild("div", "animation-timeline-paused hidden");
+    this.#pausedStatus.setAttribute("role", "status");
+    const pausedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.animationInspectionPaused));
+    pausedPlaceholder.show(this.#pausedStatus);
     const emptyBufferHint = this.contentElement.createChild("div", "animation-timeline-buffer-hint");
     const noAnimationsPlaceholder = new UI.EmptyWidget.EmptyWidget(
       i18nString(UIStrings.waitingForAnimations),
@@ -3751,6 +3779,12 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   }
   wasShown() {
     super.wasShown();
+    SDK.TargetManager.TargetManager.instance().addEventListener(
+      SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
+      this.#updateSuspendedState,
+      this
+    );
+    this.#updateSuspendedState();
     for (const animationModel of SDK.TargetManager.TargetManager.instance().models(
       SDK.AnimationModel.AnimationModel,
       { scoped: true }
@@ -3761,12 +3795,23 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   }
   willHide() {
     super.willHide();
+    SDK.TargetManager.TargetManager.instance().removeEventListener(
+      SDK.TargetManager.Events.SUSPEND_STATE_CHANGED,
+      this.#updateSuspendedState,
+      this
+    );
     for (const animationModel of SDK.TargetManager.TargetManager.instance().models(
       SDK.AnimationModel.AnimationModel,
       { scoped: true }
     )) {
       this.removeEventListeners(animationModel);
     }
+  }
+  #updateSuspendedState() {
+    const suspended = SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
+    this.element.classList.toggle("suspended", suspended);
+    this.#pausedStatus.classList.toggle("hidden", !suspended);
+    this.performToolbarViewUpdate();
   }
   #addExistingAnimationGroups(animationModel) {
     for (const animationGroup of animationModel.animationGroups.values()) {
@@ -3830,11 +3875,16 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.#timelineScrubber.createChild("div", "animation-time-overlay");
     return this.#timelineScrubber;
   }
+  #isVariablePlaybackRateSupported() {
+    return !this.#selectedGroup?.isScrollDriven();
+  }
   performToolbarViewUpdate() {
+    const controlsEnabled = !SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
     this.#toolbarView(
       {
         selectedPlaybackRate: this.#playbackRate,
-        playbackRateButtonsDisabled: this.#playbackRateButtonsDisabled,
+        controlsEnabled,
+        playbackControlsEnabled: controlsEnabled && this.#isVariablePlaybackRateSupported(),
         allPaused: this.#allPaused,
         onClearClick: () => {
           Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupsCleared);
@@ -3923,9 +3973,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     if (!this.#controlButton) {
       return;
     }
-    this.#controlButton.setEnabled(
-      Boolean(this.#selectedGroup) && this.hasAnimationGroupActiveNodes() && !this.#selectedGroup?.isScrollDriven()
-    );
+    this.#controlButton.setEnabled(Boolean(this.#selectedGroup) && this.hasAnimationGroupActiveNodes() && this.#isVariablePlaybackRateSupported());
     if (this.#selectedGroup && this.#selectedGroup.paused()) {
       this.#controlState = "play-outline" /* PLAY */;
       this.#controlButton.element.classList.toggle("toolbar-state-on", true);
@@ -3960,7 +4008,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.updateControlButton();
   }
   replay() {
-    if (!this.#selectedGroup || !this.hasAnimationGroupActiveNodes() || this.#selectedGroup.isScrollDriven()) {
+    if (!this.#selectedGroup || !this.hasAnimationGroupActiveNodes() || !this.#isVariablePlaybackRateSupported()) {
       return;
     }
     this.#selectedGroup.seekTo(0);
@@ -4214,19 +4262,10 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
       this.setDuration(scrollRange);
       this.setCurrentTimeText(scrollOffset);
       this.setTimelineScrubberPosition(scrollOffset);
-      if (this.#pauseButton) {
-        this.#pauseButton.setEnabled(false);
-      }
-      this.#playbackRateButtonsDisabled = true;
-      this.performToolbarViewUpdate();
     } else {
       this.setDuration(group.finiteDuration());
-      if (this.#pauseButton) {
-        this.#pauseButton.setEnabled(true);
-      }
-      this.#playbackRateButtonsDisabled = false;
-      this.performToolbarViewUpdate();
     }
+    this.performToolbarViewUpdate();
     await Promise.all(group.animations().map((anim) => this.addAnimation(anim)));
     this.scheduleRedraw();
     this.togglePause(false);

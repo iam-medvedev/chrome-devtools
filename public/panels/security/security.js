@@ -1603,6 +1603,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2285,6 +2286,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3048,9 +3050,9 @@ __export(SecurityPanel_exports, {
   SecurityMainView: () => SecurityMainView,
   SecurityOriginView: () => SecurityOriginView,
   SecurityPanel: () => SecurityPanel,
-  createHighlightedUrl: () => createHighlightedUrl,
   getSecurityStateIconForDetailedView: () => getSecurityStateIconForDetailedView,
-  getSecurityStateIconForOverview: () => getSecurityStateIconForOverview
+  getSecurityStateIconForOverview: () => getSecurityStateIconForOverview,
+  renderHighlightedUrl: () => renderHighlightedUrl
 });
 import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
@@ -3261,7 +3263,7 @@ var mainView_css_default = `/*
 }
 
 .security-explanations-main {
-  margin-top: -5px;
+  margin-top: calc(-1 * var(--sys-size-3));
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
@@ -3571,7 +3573,7 @@ var DEFAULT_VIEW = (input, output, target) => {
       output.onShowOrigin(origin);
     }}>
             ${renderIcon(icon)}
-            ${createHighlightedUrl(origin, state)}
+            ${renderHighlightedUrl(origin, state)}
           </li>
         `;
   };
@@ -4237,11 +4239,6 @@ function renderHighlightedUrl(url, securityState) {
       <span class="url-scheme-separator">${schemeSeparator}</span>
       <span>${content}</span>
     </span>`;
-}
-function createHighlightedUrl(url, securityState) {
-  const fragment = document.createDocumentFragment();
-  render2(renderHighlightedUrl(url, securityState), fragment);
-  return fragment.firstElementChild;
 }
 var DEFAULT_VIEW2 = (input, output, target) => {
   render2(

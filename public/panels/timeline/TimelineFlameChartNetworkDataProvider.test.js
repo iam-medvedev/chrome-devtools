@@ -217,6 +217,22 @@ describeWithEnvironment('TimelineFlameChartNetworkDataProvider', function () {
         const nonExistentPopover = dataProvider.preparePopoverElement(-1);
         assert.isNull(nonExistentPopover);
     });
+    it('marks WebSocket track levels as force-drawable by level index rather than WebSocket ID', async function () {
+        const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
+        const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+        dataProvider.setModel(parsedTrace, entityMapper);
+        const timelineData = dataProvider.timelineData();
+        const wsConnection = parsedTrace.data.NetworkRequests.webSocket[0]?.syntheticConnection;
+        assert.exists(wsConnection);
+        const wsIndex = dataProvider.indexForEvent(wsConnection);
+        assert.isNotNull(wsIndex);
+        const wsLevel = timelineData.entryLevels[wsIndex];
+        const wsIdentifier = wsConnection.args.data.identifier;
+        assert.notStrictEqual(wsLevel, wsIdentifier);
+        assert.isTrue(dataProvider.forceDrawableLevel(wsLevel));
+        assert.isFalse(dataProvider.forceDrawableLevel(wsIdentifier));
+    });
 });
 function assertTimestampEqual(actual, expected) {
     assert.strictEqual(actual.toFixed(2), expected.toFixed(2));

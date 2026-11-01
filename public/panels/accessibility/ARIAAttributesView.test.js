@@ -69,7 +69,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
             attributes: node.attributes(),
             propertyCompletions,
         };
-        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, {}, container);
+        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, undefined, container);
         // Wait for devtools-tree to render its template.
         await new Promise(resolve => setTimeout(resolve, 0));
         const tree = container.querySelector('devtools-tree');
@@ -95,7 +95,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
             attributes: node.attributes(),
             propertyCompletions: new Map(),
         };
-        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, {}, container);
+        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, undefined, container);
         await assertScreenshot('accessibility/aria-attributes.png');
     });
     it('renders data-backend-node-id and data-target-id attributes when provided in input', () => {
@@ -111,7 +111,7 @@ describeWithEnvironment('ARIAAttributesView', () => {
             backendNodeId: 42,
             targetId: 'target-abc',
         };
-        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, {}, container);
+        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, undefined, container);
         assert.strictEqual(container.getAttribute('data-backend-node-id'), '42');
         assert.strictEqual(container.getAttribute('data-target-id'), 'target-abc');
     });

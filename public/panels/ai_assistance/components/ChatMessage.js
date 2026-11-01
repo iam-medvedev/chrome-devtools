@@ -486,8 +486,8 @@ function renderTitle(step) {
         Lit.nothing;
     return html `<h3 class="title" aria-label=${titleForStep(step)}>${paused}${titleForStep(step)}</h3>`;
 }
-function renderStepCode(step) {
-    if (!step.code && !step.output) {
+function renderStepAction(step) {
+    if (!step.action && !step.output) {
         return Lit.nothing;
     }
     // If there is no "output" yet, it means we didn't execute the code yet (e.g. maybe it is still waiting for confirmation from the user)
@@ -498,9 +498,9 @@ function renderStepCode(step) {
     // If there is output, we don't show notice on this code block and instead show
     // it in the data returned code block.
     // clang-format off
-    const code = step.code ? html `<div class="action-result">
+    const code = step.action ? html `<div class="action-result">
       <devtools-code-block
-        .code=${step.code.trim()}
+        .code=${step.action.trim()}
         .codeLang=${'js'}
         .displayNotice=${!Boolean(step.output)}
         .header=${codeHeadingText}
@@ -514,7 +514,7 @@ function renderStepCode(step) {
       .codeLang=${'js'}
       .displayNotice=${true}
       .header=${lockedString(UIStringsNotTranslate.dataReturned)}
-      .showCopyButton=${false}
+      .showCopyButton=${true}
     ></devtools-code-block>
   </div>` :
         Lit.nothing;
@@ -541,7 +541,7 @@ function renderStepDetails({ step, markdownRenderer, isLast, }) {
         })}` : Lit.nothing;
     return html `<div class="step-details">
     ${thought}
-    ${renderStepCode(step)}
+    ${renderStepAction(step)}
     ${sideEffects}
     ${contextDetails}
   </div>`;
@@ -702,7 +702,7 @@ function renderStepBadge({ step, isLast }) {
 export function renderStep({ step, markdownRenderer, isLast }) {
     const stepClasses = Lit.Directives.classMap({
         step: true,
-        empty: !step.thought && !step.code && !step.contextDetails && step.state.type !== 'needs_approval',
+        empty: !step.thought && !step.action && !step.contextDetails && step.state.type !== 'needs_approval',
         paused: step.state.type === 'needs_approval',
         canceled: step.state.type === 'canceled',
     });
@@ -1918,11 +1918,7 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
         AiAssistanceModel.Debug.debugLog(`Warning: could not find events for AiAssistanceModel.AiAgent.TimelineRangeSummaryAiWidget`, widgetData);
         return null;
     }
-    const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
     const mapper = Trace.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
-    thirdPartyTree.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
-    thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
-    thirdPartyTree.refreshTree(true);
     // clang-format off
     const template = html `
     <devtools-widget
@@ -1937,9 +1933,9 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
                 maxRows: 10,
                 isInAIWidget: true,
                 model: {
-                    selectedEvents: thirdPartyTree.selectedEvents ?? null,
+                    selectedEvents: events,
                     parsedTrace,
-                    entityMapper: thirdPartyTree.entityMapper(),
+                    entityMapper: mapper,
                 },
                 activeSelection: { bounds },
                 onBottomUpButtonClicked: (node) => {
@@ -1963,13 +1959,16 @@ async function makeNetworkTrackWidget(widgetData) {
     const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
     // clang-format off
     const template = html `
-    <devtools-performance-agent-network-track
-      .data=${{
-        parsedTrace,
-        bounds,
-        dataProvider,
-    }}
-    ></devtools-performance-agent-network-track>`;
+    <devtools-widget
+      class="network-track-widget"
+      ${widget(TimelineComponents.NetworkTrackWidget.NetworkTrackWidget, {
+        data: {
+            parsedTrace,
+            bounds,
+            dataProvider,
+        },
+    })}
+    ></devtools-widget>`;
     // clang-format on
     return {
         renderedWidget: template,

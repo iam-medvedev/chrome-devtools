@@ -896,12 +896,18 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     const settings = opts.settings ?? Common3.Settings.Settings.instance();
     const console2 = opts.console ?? Common3.Console.Console.instance();
     if (!Root.DevToolsContext.globalInstance().has(_IsolatedFileSystemManager) || forceNew) {
+      if (Root.DevToolsContext.globalInstance().has(_IsolatedFileSystemManager)) {
+        Root.DevToolsContext.globalInstance().get(_IsolatedFileSystemManager).dispose();
+      }
       const instance = new _IsolatedFileSystemManager(settings, console2);
       Root.DevToolsContext.globalInstance().set(_IsolatedFileSystemManager, instance);
     }
     return Root.DevToolsContext.globalInstance().get(_IsolatedFileSystemManager);
   }
   static removeInstance() {
+    if (Root.DevToolsContext.globalInstance().has(_IsolatedFileSystemManager)) {
+      Root.DevToolsContext.globalInstance().get(_IsolatedFileSystemManager).dispose();
+    }
     Root.DevToolsContext.globalInstance().delete(_IsolatedFileSystemManager);
   }
   requestFileSystems() {
@@ -1125,11 +1131,15 @@ var FileSystemWorkspaceBinding = class {
     this.isolatedFileSystemManager = isolatedFileSystemManager;
     this.#workspace = workspace;
     this.#eventListeners = [
-      this.isolatedFileSystemManager.addEventListener("FileSystemAdded" /* FileSystemAdded */, this.onFileSystemAdded, this),
-      this.isolatedFileSystemManager.addEventListener("FileSystemRemoved" /* FileSystemRemoved */, this.onFileSystemRemoved, this),
-      this.isolatedFileSystemManager.addEventListener("FileSystemFilesChanged" /* FileSystemFilesChanged */, this.fileSystemFilesChanged, this)
+      this.isolatedFileSystemManager.addEventListener("FileSystemAdded" /* FileSystemAdded */, this.#onFileSystemAdded, this),
+      this.isolatedFileSystemManager.addEventListener("FileSystemRemoved" /* FileSystemRemoved */, this.#onFileSystemRemoved, this),
+      this.isolatedFileSystemManager.addEventListener(
+        "FileSystemFilesChanged" /* FileSystemFilesChanged */,
+        this.#fileSystemFilesChanged,
+        this
+      )
     ];
-    void this.isolatedFileSystemManager.waitForFileSystems().then(this.onFileSystemsLoaded.bind(this));
+    void this.isolatedFileSystemManager.waitForFileSystems().then(this.#onFileSystemsLoaded.bind(this));
   }
   static projectId(fileSystemPath) {
     return fileSystemPath;
@@ -1162,20 +1172,20 @@ var FileSystemWorkspaceBinding = class {
   static fileSystemPath(projectId) {
     return projectId;
   }
-  onFileSystemsLoaded(fileSystems) {
+  #onFileSystemsLoaded(fileSystems) {
     for (const fileSystem of fileSystems) {
-      this.addFileSystem(fileSystem);
+      this.#addFileSystem(fileSystem);
     }
   }
-  onFileSystemAdded(event) {
+  #onFileSystemAdded(event) {
     const fileSystem = event.data;
-    this.addFileSystem(fileSystem);
+    this.#addFileSystem(fileSystem);
   }
-  addFileSystem(fileSystem) {
+  #addFileSystem(fileSystem) {
     const boundFileSystem = new FileSystem(this, fileSystem, this.#workspace);
     this.#boundFileSystems.set(fileSystem.path(), boundFileSystem);
   }
-  onFileSystemRemoved(event) {
+  #onFileSystemRemoved(event) {
     const fileSystem = event.data;
     const boundFileSystem = this.#boundFileSystems.get(fileSystem.path());
     if (boundFileSystem) {
@@ -1183,7 +1193,7 @@ var FileSystemWorkspaceBinding = class {
     }
     this.#boundFileSystems.delete(fileSystem.path());
   }
-  fileSystemFilesChanged(event) {
+  #fileSystemFilesChanged(event) {
     const paths = event.data;
     for (const fileSystemPath of paths.changed.keysArray()) {
       const fileSystem = this.#boundFileSystems.get(fileSystemPath);
@@ -1250,7 +1260,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
       (folder) => Common4.ParsedURL.ParsedURL.concatenate(this.#fileSystemPath, "/", folder)
     );
   }
-  filePathForUISourceCode(uiSourceCode) {
+  #filePathForUISourceCode(uiSourceCode) {
     return Common4.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(uiSourceCode.url(), this.#fileSystemPath.length);
   }
   isServiceProject() {
@@ -1261,7 +1271,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     if (metadata) {
       return metadata;
     }
-    const relativePath = this.filePathForUISourceCode(uiSourceCode);
+    const relativePath = this.#filePathForUISourceCode(uiSourceCode);
     const promise = this.#fileSystem.getMetadata(relativePath).then(onMetadata);
     sourceCodeToMetadataMap.set(uiSourceCode, promise);
     return promise;
@@ -1273,17 +1283,17 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     }
   }
   requestFileBlob(uiSourceCode) {
-    return this.#fileSystem.requestFileBlob(this.filePathForUISourceCode(uiSourceCode));
+    return this.#fileSystem.requestFileBlob(this.#filePathForUISourceCode(uiSourceCode));
   }
   requestFileContent(uiSourceCode) {
-    const filePath = this.filePathForUISourceCode(uiSourceCode);
+    const filePath = this.#filePathForUISourceCode(uiSourceCode);
     return this.#fileSystem.requestFileContent(filePath);
   }
   canSetFileContent() {
     return true;
   }
   async setFileContent(uiSourceCode, newContent, isBase64) {
-    const filePath = this.filePathForUISourceCode(uiSourceCode);
+    const filePath = this.#filePathForUISourceCode(uiSourceCode);
     this.#fileSystem.setFileContent(filePath, newContent, isBase64);
   }
   fullDisplayName(uiSourceCode) {
@@ -1298,7 +1308,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
       callback(true, uiSourceCode.name(), uiSourceCode.url(), uiSourceCode.contentType());
       return;
     }
-    let filePath = this.filePathForUISourceCode(uiSourceCode);
+    let filePath = this.#filePathForUISourceCode(uiSourceCode);
     this.#fileSystem.renameFile(filePath, newName, innerCallback.bind(this));
     function innerCallback(success, newName2) {
       if (!success || !newName2) {
@@ -1317,7 +1327,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     }
   }
   async searchInFileContent(uiSourceCode, query, caseSensitive, isRegex) {
-    const filePath = this.filePathForUISourceCode(uiSourceCode);
+    const filePath = this.#filePathForUISourceCode(uiSourceCode);
     const content = await this.#fileSystem.requestFileContent(filePath);
     return TextUtils2.TextUtils.performSearchInContentData(content, query, caseSensitive, isRegex);
   }
@@ -1362,7 +1372,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     function reportFileChunk(from) {
       const to = Math.min(from + chunkSize, filePaths.length);
       for (let i = from; i < to; ++i) {
-        this.addFile(filePaths[i]);
+        this.#addFile(filePaths[i]);
       }
       if (to < filePaths.length) {
         globalThis.setTimeout(reportFileChunk.bind(this, to), 100);
@@ -1399,12 +1409,12 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     if (!filePath) {
       return null;
     }
-    const uiSourceCode = this.addFile(filePath, content, isBase64);
+    const uiSourceCode = this.#addFile(filePath, content, isBase64);
     this.#creatingFilesGuard.delete(guardFileName);
     return uiSourceCode;
   }
   deleteFile(uiSourceCode) {
-    const relativePath = this.filePathForUISourceCode(uiSourceCode);
+    const relativePath = this.#filePathForUISourceCode(uiSourceCode);
     void this.#fileSystem.deleteFile(relativePath).then((success) => {
       if (success) {
         this.removeUISourceCode(uiSourceCode.url());
@@ -1417,7 +1427,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
   remove() {
     this.#fileSystemWorkspaceBinding.isolatedFileSystemManager.removeFileSystem(this.#fileSystem);
   }
-  addFile(filePath, content, isBase64) {
+  #addFile(filePath, content, isBase64) {
     const contentType = this.#fileSystem.contentType(filePath);
     const uiSourceCode = this.createUISourceCode(Common4.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath), contentType);
     if (content !== void 0) {
@@ -2272,6 +2282,9 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
         throw new Error(
           "Unable to create AutomaticFileSystemManager: inspectorFrontendHost, and projectSettingsModel must be provided"
         );
+      }
+      if (Root3.DevToolsContext.globalInstance().has(_AutomaticFileSystemManager)) {
+        Root3.DevToolsContext.globalInstance().get(_AutomaticFileSystemManager).dispose();
       }
       Root3.DevToolsContext.globalInstance().set(
         _AutomaticFileSystemManager,
@@ -4220,6 +4233,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -4902,6 +4916,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -5683,11 +5698,14 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
   }
   static encodeEncodedPathToLocalPathParts(encodedPath) {
     const encodedParts = [];
+    let pendingSlashes = "";
     for (const pathPart of this.#fileNamePartsFromEncodedPath(encodedPath)) {
       if (!pathPart) {
+        pendingSlashes += "/";
         continue;
       }
-      let encodedName = encodeURI(pathPart).replace(/[\/\*]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
+      let encodedName = encodeURI(pendingSlashes + pathPart).replace(/[\/\*]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
+      pendingSlashes = "";
       if (encodedName === "..") {
         encodedName = "%2E%2E";
       } else if (encodedName === ".") {
@@ -5708,7 +5726,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9
     return encodedParts;
   }
   static #fileNamePartsFromEncodedPath(encodedPath) {
-    encodedPath = Common9.ParsedURL.ParsedURL.urlWithoutHash(encodedPath);
+    encodedPath = Common9.ParsedURL.ParsedURL.urlWithoutHash(encodedPath).replace(/^file:\/\/\//, "file:/");
     const queryIndex = encodedPath.indexOf("?");
     if (queryIndex === -1) {
       return encodedPath.split("/");

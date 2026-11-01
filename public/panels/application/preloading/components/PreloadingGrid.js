@@ -97,20 +97,32 @@ export class PreloadingGrid extends UI.Widget.VBox {
     #rows;
     #pageURL;
     #onSelect;
-    constructor(view) {
-        super();
-        this.#view = view ?? PRELOADING_GRID_DEFAULT_VIEW;
+    constructor(element, view = PRELOADING_GRID_DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
         this.requestUpdate();
+    }
+    get rows() {
+        return this.#rows;
     }
     set rows(rows) {
         this.#rows = rows;
         this.requestUpdate();
     }
+    get pageURL() {
+        return this.#pageURL;
+    }
     set pageURL(pageURL) {
         this.#pageURL = pageURL;
         this.requestUpdate();
     }
+    get onSelect() {
+        return this.#onSelect;
+    }
     set onSelect(onSelect) {
+        if (this.#onSelect === onSelect) {
+            return;
+        }
         this.#onSelect = onSelect;
         this.requestUpdate();
     }

@@ -627,7 +627,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       showDeviceScaleFactorSetting: this.showDeviceScaleFactorSetting,
       showUserAgentTypeSetting: this.showUserAgentTypeSetting
     };
-    this.view(input, {}, this.contentElement);
+    this.view(input, void 0, this.contentElement);
   }
   getDevicePostureOptions() {
     const currentPosture = this.currentDevicePosture();
@@ -1479,7 +1479,7 @@ var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Inspected
   clearMinimumSize() {
     this.setMinimumSize(1, 1);
   }
-  dipPageRect() {
+  #dipPageRect() {
     const zoomFactor = UI2.ZoomManager.ZoomManager.instance().zoomFactor();
     const rect = this.element.getBoundingClientRect();
     const bodyRect = this.element.ownerDocument.body.getBoundingClientRect();
@@ -1493,7 +1493,7 @@ var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Inspected
     if (!this.element.isConnected) {
       return;
     }
-    const rect = this.dipPageRect();
+    const rect = this.#dipPageRect();
     const bounds = {
       x: Math.round(rect.x),
       y: Math.round(rect.y),
@@ -1539,7 +1539,7 @@ var mediaQueryInspector_css_default = `/*
 /* Media query bars */
 
 .media-inspector-view {
-  height: 50px;
+  height: var(--sys-size-16);
 }
 
 .media-inspector-marker-container {
@@ -1992,7 +1992,7 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
         onMediaQueryClicked: this.onMediaQueryClicked.bind(this),
         onContextMenu: this.onContextMenu.bind(this)
       },
-      {},
+      void 0,
       this.contentElement
     );
   }

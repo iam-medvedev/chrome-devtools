@@ -600,7 +600,7 @@ var NodeIndicator = class extends UI2.Widget.Widget {
     const input = {
       nodeProcessRunning
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 var NodeIndicatorProvider = class {

@@ -1224,7 +1224,7 @@ var InspectorFrontendHostStub = class {
     }
     void navigator.clipboard.writeText(text);
   }
-  openInNewTab(url) {
+  openInNewTab(url, _initiatorId) {
     if (Common2.ParsedURL.schemeIs(url, "javascript:")) {
       return;
     }
@@ -1543,10 +1543,10 @@ var InspectorFrontendHostInstance;
 var InspectorFrontendAPIImpl = class {
   constructor() {
     for (const descriptor of EventDescriptors) {
-      this[descriptor[0]] = this.dispatch.bind(this, descriptor[0], descriptor[1], descriptor[2]);
+      this[descriptor[0]] = this.#dispatch.bind(this, descriptor[0], descriptor[1], descriptor[2]);
     }
   }
-  dispatch(name, signature, _runOnceLoaded, ...params) {
+  #dispatch(name, signature, _runOnceLoaded, ...params) {
     if (signature.length < 2) {
       try {
         InspectorFrontendHostInstance.events.dispatchEventToListeners(name, params[0]);
@@ -2842,7 +2842,8 @@ var PanelCodes = /* @__PURE__ */ ((PanelCodes3) => {
   PanelCodes3[PanelCodes3["autofill-view"] = 67] = "autofill-view";
   PanelCodes3[PanelCodes3["freestyler"] = 68] = "freestyler";
   PanelCodes3[PanelCodes3["ads"] = 69] = "ads";
-  PanelCodes3[PanelCodes3["MAX_VALUE"] = 70] = "MAX_VALUE";
+  PanelCodes3[PanelCodes3["private-verification-tokens"] = 70] = "private-verification-tokens";
+  PanelCodes3[PanelCodes3["MAX_VALUE"] = 71] = "MAX_VALUE";
   return PanelCodes3;
 })(PanelCodes || {});
 var MediaTypes = /* @__PURE__ */ ((MediaTypes3) => {
@@ -3792,6 +3793,9 @@ var UserMetrics = class {
       100,
       50
     );
+  }
+  commentQueued(count) {
+    InspectorFrontendHostInstance.recordCountHistogram("DevTools.Comments.CommentQueued", count, 1, 100, 50);
   }
   commentSharedWithAgent(count) {
     InspectorFrontendHostInstance.recordCountHistogram("DevTools.Comments.CommentSharedWithAgent", count, 1, 100, 50);

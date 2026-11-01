@@ -9,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as WebMCP from '../../models/web_mcp/web_mcp.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { findMenuItemWithLabel, getContextMenuForElement, getMenuForToolbarButton, } from '../../testing/ContextMenuHelpers.js';
+import { findMenuItemWithLabel, getContextMenuForElement, getMenu, } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
@@ -29,7 +29,6 @@ const createDefaultViewInput = () => {
         filters: { text: '' },
         tools: [],
         toolCalls: [],
-        filterButtons: WebMCPView.createFilterButtons(() => { }, () => { }),
         onClearLogClick: () => { },
         onFilterChange: () => { },
         selectedTool: null,
@@ -64,7 +63,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             toolCalls: [call],
             onCallSelect,
-        }, {}, target);
+        }, undefined, target);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done({ waitForWork: true });
         const grid = target.querySelector('devtools-data-grid');
@@ -108,7 +107,7 @@ describe('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             toolCalls: [call],
-        }, {}, target);
+        }, undefined, target);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done({ waitForWork: true });
         const grid = target.querySelector('devtools-data-grid');
@@ -164,7 +163,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             toolCalls: [call],
             onRevealTool,
-        }, {}, target);
+        }, undefined, target);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done({ waitForWork: true });
         const grid = target.querySelector('devtools-data-grid');
@@ -181,7 +180,7 @@ describe('WebMCPView (View)', () => {
         target.style.width = '600px';
         target.style.height = '400px';
         renderElementIntoDOM(target, { includeCommonStyles: true });
-        DEFAULT_VIEW(createDefaultViewInput(), {}, target);
+        DEFAULT_VIEW(createDefaultViewInput(), undefined, target);
         await UI.Widget.Widget.allUpdatesComplete;
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 0);
@@ -242,7 +241,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             tools,
             toolCalls,
-        }, {}, target);
+        }, undefined, target);
         const grid = target.querySelector('devtools-data-grid');
         assert.isNotNull(grid);
         await assertScreenshot('application/webmcp-tool-calls.png');
@@ -269,7 +268,7 @@ describe('WebMCPView (View)', () => {
             tools,
             toolCalls,
             selectedCall: toolCalls[0],
-        }, {}, target);
+        }, undefined, target);
         const grid = target.querySelector('devtools-data-grid');
         assert.isNotNull(grid);
         await RenderCoordinator.done({ waitForWork: true });
@@ -301,7 +300,7 @@ describe('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             tools,
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('application/webmcp_view.png');
     });
     it('shows a context menu when right-clicking a tool', async () => {
@@ -315,7 +314,7 @@ describe('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             tools,
-        }, {}, container);
+        }, undefined, container);
         const toolItem = container.querySelector('.tool-item');
         assert.isNotNull(toolItem);
         const contextMenu = getContextMenuForElement(toolItem);
@@ -339,7 +338,7 @@ describe('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             tools,
-        }, {}, target);
+        }, undefined, target);
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 2);
         assert.strictEqual(listElements[0].querySelector('.tool-name')?.textContent, 'tool1');
@@ -360,7 +359,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             tools,
             selectedTool: { tool: tools[1] },
-        }, {}, target);
+        }, undefined, target);
         const listElements = target.querySelectorAll('.tool-item');
         assert.lengthOf(listElements, 2);
         assert.isFalse(listElements[0].classList.contains('selected'));
@@ -385,7 +384,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             toolCalls: [selectedCall],
             selectedCall,
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('application/webmcp-tool-call-details.png');
     });
     it('renders a tool call with JS exception in a TabbedPane', async () => {
@@ -422,7 +421,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             toolCalls: [selectedCall],
             selectedCall,
-        }, {}, target);
+        }, undefined, target);
         await UI.Widget.Widget.allUpdatesComplete;
         const tabbedPane = target.querySelector('devtools-tabbed-pane');
         const tabElement = tabbedPane?.shadowRoot?.getElementById('tab-webmcp.call-outputs');
@@ -435,14 +434,10 @@ describe('WebMCPView (View)', () => {
         container.style.width = '600px';
         container.style.height = '400px';
         renderElementIntoDOM(container, { includeCommonStyles: true });
-        const filterButtons = WebMCPView.createFilterButtons(() => { }, () => { });
-        // Simulate setting an active filter visually
-        filterButtons.toolTypes.setCount(1);
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             filters: { text: 'test', toolTypes: { imperative: true } },
-            filterButtons,
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('application/webmcp_filter_bar_applied.png');
     });
     it('calls onClearLogClick when clear log button is clicked', async () => {
@@ -452,11 +447,25 @@ describe('WebMCPView (View)', () => {
         DEFAULT_VIEW({
             ...createDefaultViewInput(),
             onClearLogClick,
-        }, {}, target);
+        }, undefined, target);
         const clearButton = target.querySelector('devtools-button[title="Clear log"]');
         assert.isNotNull(clearButton);
         clearButton.click();
         sinon.assert.calledOnce(onClearLogClick);
+    });
+    it('calls onFilterChange when drop down filters are toggled', () => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const onFilterChange = sinon.spy();
+        DEFAULT_VIEW({ ...createDefaultViewInput(), onFilterChange }, undefined, container);
+        const toolTypesButton = Array.from(container.querySelectorAll('button.toolbar-has-dropdown'))
+            .find(button => button.textContent?.includes('Tool types'));
+        assert.isDefined(toolTypesButton);
+        const contextMenu = getMenu(() => toolTypesButton.click());
+        const imperativeItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Imperative');
+        assert.isDefined(imperativeItem);
+        contextMenu.invokeHandler(imperativeItem.id());
+        sinon.assert.calledOnceWithExactly(onFilterChange, { text: '', toolTypes: { imperative: true } });
     });
     it('calls onRevealTool on context menu actions', async () => {
         const sdkTarget = createTarget();
@@ -477,7 +486,7 @@ describe('WebMCPView (View)', () => {
             ...createDefaultViewInput(),
             toolCalls: [selectedCall],
             onRevealTool,
-        }, {}, target);
+        }, undefined, target);
         const dataGrid = target.querySelector('devtools-data-grid');
         assert.isNotNull(dataGrid);
         // Wait for the data grid to fully render its shadow DOM and internal legacy grid
@@ -639,10 +648,7 @@ describe('WebMCPView Presenter', () => {
     });
     it('updates filter state when drop down filters are set', async () => {
         const { viewStub } = await setup();
-        const contextMenu = getMenuForToolbarButton(viewStub.input.filterButtons.toolTypes.button);
-        const imperativeItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'Imperative');
-        assert.isDefined(imperativeItem);
-        contextMenu.invokeHandler(imperativeItem.id());
+        viewStub.input.onFilterChange({ text: '', toolTypes: { imperative: true } });
         const input = await viewStub.nextInput;
         assert.isTrue(input.filters.toolTypes?.imperative);
     });
@@ -918,7 +924,7 @@ describe('PayloadWidget (View)', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         PAYLOAD_DEFAULT_VIEW({
             valueObject: { key1: 'value1', key2: ['a', 'b'] },
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('application/webmcp_payload_parsed.png');
     });
     it('renders unparsable input as raw source', async () => {
@@ -928,7 +934,7 @@ describe('PayloadWidget (View)', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         PAYLOAD_DEFAULT_VIEW({
             valueString: 'invalid json input',
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('application/webmcp_payload_unparsable.png');
     });
     it('renders null valueObject payload', async () => {
@@ -938,7 +944,7 @@ describe('PayloadWidget (View)', () => {
         renderElementIntoDOM(target, { includeCommonStyles: true });
         PAYLOAD_DEFAULT_VIEW({
             valueObject: null,
-        }, {}, target);
+        }, undefined, target);
         await raf();
         const tree = target.querySelector('devtools-tree');
         assert.isNotNull(tree);
@@ -1178,7 +1184,6 @@ describe('WebMCPView JSON Editor', () => {
             filters: { text: '' },
             tools: [],
             toolCalls: [],
-            filterButtons: Application.WebMCPView.WebMCPView.createFilterButtons(() => { }, () => { }),
             onClearLogClick: () => { },
             onFilterChange: () => { },
             selectedTool: null,
@@ -1207,7 +1212,7 @@ describe('WebMCPView JSON Editor', () => {
         Application.WebMCPView.DEFAULT_VIEW({
             ...createDefaultViewInput(),
             selectedTool: { tool },
-        }, {}, targetEl);
+        }, undefined, targetEl);
         // Wait for nested Lit renders
         await UI.Widget.Widget.allUpdatesComplete;
         const devtoolsWidget = targetEl.querySelector('devtools-widget.json-editor-widget');

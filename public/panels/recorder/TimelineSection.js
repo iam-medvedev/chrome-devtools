@@ -66,7 +66,7 @@ export class TimelineSection extends UI.Widget.Widget {
             isFirstSection: this.#isFirstSection,
             isLastSection: this.#isLastSection,
             isSelected: this.#isSelected,
-        }, {}, this.contentElement);
+        }, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=TimelineSection.js.map

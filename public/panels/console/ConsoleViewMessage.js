@@ -290,6 +290,8 @@ export class ConsoleViewMessage {
     selectableChildren;
     // Trees rendering logged DOM nodes; they follow the message visibility.
     domTreeWidgets = [];
+    // Stack trace previews are also root widgets and follow the message visibility.
+    stackTracePreviews = [];
     messageResized;
     // The wrapper that contains consoleRowWrapper and other elements in a column.
     elementInternal;
@@ -376,6 +378,12 @@ export class ConsoleViewMessage {
         for (const domTree of this.domTreeWidgets) {
             domTree.wasShown();
         }
+        for (const stackTracePreview of this.stackTracePreviews) {
+            stackTracePreview.wasShown();
+        }
+        if (this.elementInternal && this.#teaser) {
+            this.#teaser.show(this.elementInternal, this.consoleRowWrapper);
+        }
     }
     onResize() {
     }
@@ -384,6 +392,16 @@ export class ConsoleViewMessage {
         this.cachedHeight = this.element().offsetHeight;
         for (const domTree of this.domTreeWidgets) {
             domTree.willHide();
+        }
+        for (const stackTracePreview of this.stackTracePreviews) {
+            stackTracePreview.willHide();
+        }
+        if (this.#teaser) {
+            const { okToRemove } = this.#teaser.abortTeaserGeneration();
+            this.#teaser.detach();
+            if (okToRemove) {
+                this.#teaser = undefined;
+            }
         }
     }
     isVisible() {
@@ -514,10 +532,11 @@ export class ConsoleViewMessage {
         }
         else {
             const messageText = this.message.messageText;
+            const initiatorId = () => this.initiatorId();
             const fragment = ConsoleViewMessage.linkifyWithCustomLinkifier(messageText, (text, url, lineNumber, columnNumber) => {
                 const linkElement = url === request.url() ?
                     Components.Linkifier.Linkifier.linkifyRevealable((request), url, request.url(), undefined, undefined, 'network-request') :
-                    Components.Linkifier.Linkifier.linkifyURL(url, { text, lineNumber, columnNumber });
+                    Components.Linkifier.Linkifier.linkifyURL(url, { text, lineNumber, columnNumber, initiatorId });
                 linkElement.tabIndex = -1;
                 this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });
                 return linkElement;
@@ -693,6 +712,14 @@ export class ConsoleViewMessage {
         }
         stackTracePreview.markAsRoot();
         stackTracePreview.show(stackTraceElement);
+        // The stack trace preview is a root widget, so it does not learn about the
+        // message visibility from the widget hierarchy. Follow the message instead
+        // (see wasShown/willHide) so that the preview does not stay alive through
+        // the global listeners it registers while showing.
+        this.stackTracePreviews.push(stackTracePreview);
+        if (!this.isVisibleInternal) {
+            stackTracePreview.willHide();
+        }
         UI.ARIAUtils.setLabel(contentElement, `${messageElement.textContent} ${i18nString(UIStrings.stackMessageCollapsed)}`);
         UI.ARIAUtils.markAsGroup(stackTraceElement);
         return { stackTraceElement, contentElement, messageElement, clickableElement, toggleElement };
@@ -1732,9 +1759,29 @@ export class ConsoleViewMessage {
         }
         return container;
     }
+    /**
+     * The frame or worker that this message came from, which the browser attributes opening one of the message's
+     * URLs in a new tab to; see {@link Components.Linkifier.openInNewTabInitiatorId}. That is the frame of the
+     * request for messages about a request, and the frame of the execution context otherwise, as long as that
+     * context still exists. Messages whose context is gone (e.g. from a document that has since been navigated
+     * away from, kept with "Preserve log") are not attributed to anything. Determined when a link is opened rather
+     * than when the message is rendered, as the context may be destroyed in between.
+     */
+    initiatorId() {
+        const requestId = this.message.getAffectedResources()?.requestId;
+        if (requestId) {
+            const [request] = Logs.NetworkLog.NetworkLog.instance().requestsForId(requestId);
+            if (request) {
+                return Components.Linkifier.openInNewTabInitiatorId(request);
+            }
+        }
+        const executionContext = this.message.runtimeModel()?.executionContext(this.message.getExecutionContextId());
+        return executionContext ? Components.Linkifier.openInNewTabInitiatorId(executionContext) : undefined;
+    }
     linkifyStringAsFragment(string) {
+        const initiatorId = () => this.initiatorId();
         return ConsoleViewMessage.linkifyWithCustomLinkifier(string, (text, url, lineNumber, columnNumber) => {
-            const options = { text, lineNumber, columnNumber };
+            const options = { text, lineNumber, columnNumber, initiatorId };
             const linkElement = Components.Linkifier.Linkifier.linkifyURL(url, options);
             linkElement.tabIndex = -1;
             this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });

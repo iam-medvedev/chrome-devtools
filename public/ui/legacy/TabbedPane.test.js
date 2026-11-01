@@ -730,6 +730,81 @@ describeWithEnvironment('TabbedPaneElement', () => {
             assert.isTrue(tab2.shown);
             assert.isAtMost(tab2.width(), tab2WidthWithoutIcon);
         });
+        it('supports the vertical attribute', async () => {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            render(html `
+        <devtools-tabbed-pane vertical>
+          <div id="tab1" label="Tab 1">Content 1</div>
+          <div id="tab2" label="Tab 2">Content 2</div>
+        </devtools-tabbed-pane>`, container);
+            await doubleRaf();
+            const element = container.querySelector('devtools-tabbed-pane');
+            const widget = UI.Widget.Widget.get(element);
+            assert.isTrue(element.vertical);
+            assert.isTrue(widget.contentElement.classList.contains('vertical-tab-layout'));
+        });
+        it('dispatches tabinvoked and select events', async () => {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const onTabInvoked = sinon.spy();
+            const onSelect = sinon.spy();
+            render(html `
+        <devtools-tabbed-pane @tabinvoked=${onTabInvoked} @select=${onSelect}>
+          <div id="tab1" label="Tab 1">Content 1</div>
+          <div id="tab2" label="Tab 2">Content 2</div>
+        </devtools-tabbed-pane>`, container);
+            await doubleRaf();
+            const element = container.querySelector('devtools-tabbed-pane');
+            const widget = UI.Widget.Widget.get(element);
+            onTabInvoked.resetHistory();
+            onSelect.resetHistory();
+            widget.selectTab('tab2', true);
+            sinon.assert.calledOnceWithExactly(onTabInvoked, sinon.match({ detail: { tabId: 'tab2', prevTabId: 'tab1', isUserGesture: true } }));
+            sinon.assert.calledOnceWithExactly(onSelect, sinon.match({ detail: { tabId: 'tab2', prevTabId: 'tab1', isUserGesture: true } }));
+            onTabInvoked.resetHistory();
+            onSelect.resetHistory();
+            widget.selectTab('tab2', true);
+            sinon.assert.calledOnceWithExactly(onTabInvoked, sinon.match({ detail: { tabId: 'tab2', prevTabId: 'tab2', isUserGesture: true } }));
+            sinon.assert.notCalled(onSelect);
+        });
+        it('supports declarative <devtools-widget> tabs, selected-tab, and focus-header attributes', async () => {
+            class TabWidget extends UI.Widget.Widget {
+                wasShownCount = 0;
+                wasShown() {
+                    super.wasShown();
+                    this.wasShownCount++;
+                }
+            }
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const { widget } = UI.Widget;
+            render(html `
+        <devtools-tabbed-pane focus-header selected-tab="tab2">
+          <devtools-widget id="tab1" label="Tab 1" ${widget(TabWidget)}></devtools-widget>
+          <devtools-widget id="tab2" label="Tab 2" ${widget(TabWidget)}></devtools-widget>
+        </devtools-tabbed-pane>`, container);
+            const element = container.querySelector('devtools-tabbed-pane');
+            const tabbedPane = UI.Widget.Widget.get(element);
+            const tab1Widget = UI.Widget.Widget.get(container.querySelector('#tab1'));
+            const tab2Widget = UI.Widget.Widget.get(container.querySelector('#tab2'));
+            assert.strictEqual(tabbedPane.selectedTabId, 'tab2');
+            assert.strictEqual(tab1Widget.wasShownCount, 0, 'unselected tab widget should not be shown on connect');
+            assert.strictEqual(tab2Widget.wasShownCount, 1, 'selected tab widget should be shown once');
+            element.focus();
+            const focusedTab = UI.DOMUtilities.deepActiveElement(document);
+            assert.exists(focusedTab);
+            assert.strictEqual(focusedTab.getAttribute('role'), 'tab');
+            assert.strictEqual(focusedTab.getAttribute('aria-label'), 'Tab 2');
+            // Selecting another tab via user gesture must persist after MutationObserver microtasks.
+            tabbedPane.selectTab('tab1', true);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.strictEqual(tabbedPane.selectedTabId, 'tab1');
+            assert.strictEqual(element.selectedTab, 'tab1');
+            assert.isFalse(tab1Widget.element.classList.contains('hidden'));
+            assert.isTrue(tab2Widget.element.classList.contains('hidden'));
+            assert.strictEqual(tab1Widget.wasShownCount, 1);
+        });
     });
 });
 //# sourceMappingURL=TabbedPane.test.js.map

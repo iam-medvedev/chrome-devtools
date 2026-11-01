@@ -797,6 +797,10 @@ export class TimelinePanel extends TimelinePanelBase {
                 // We also hide the sidebar - else if the user is viewing a trace and
                 // then load/record another, the sidebar remains visible.
                 this.#hideSidebar();
+                // Hide the SearchableView so Ctrl/Cmd-F cannot search a hidden trace
+                // and flame chart overlays (such as comment pins rendered on
+                // document.body) do not remain visible above the StatusDialog.
+                this.#searchableView.hideWidget();
                 return;
             }
             default:
@@ -2670,6 +2674,7 @@ export class TimelinePanel extends TimelinePanelBase {
     }
     static async executeRecordAndReload() {
         await UI.ViewManager.ViewManager.instance().showView('timeline');
+        await SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.pageAgent().invoke_bringToFront();
         const panelInstance = TimelinePanel.instance();
         const result = await new Promise(resolve => {
             function listener(e) {

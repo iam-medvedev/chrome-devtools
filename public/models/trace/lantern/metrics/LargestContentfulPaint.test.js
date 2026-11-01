@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture } from '../testing/testing.js';
 const { FirstContentfulPaint, LargestContentfulPaint } = Lantern.Metrics;
 describe('Metrics: Lantern LCP', function () {
+    setupLocaleHooks();
     it('should compute predicted value', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');
         const data = await getComputationDataFromFixture(this, { parsedTrace });
@@ -50,7 +52,7 @@ describe('Metrics: Lantern LCP', function () {
             optimisticNodeTimings: fcpResult.optimisticEstimate.nodeTimings.size,
             pessimisticNodeTimings: fcpResult.pessimisticEstimate.nodeTimings.size,
         });
-        assert.strictEqual(Math.round(lcpResult.timing), 959);
+        assert.strictEqual(Math.round(lcpResult.timing), 1109);
     });
     it('should include image resource when image LCP occurs at the same timestamp as FCP', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'lantern/render-blocking/trace.json.gz');

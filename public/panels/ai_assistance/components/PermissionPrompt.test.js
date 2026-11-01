@@ -26,7 +26,7 @@ describeWithEnvironment('PermissionPrompt', () => {
                 },
             },
             title: 'Reading cookie values and metadata',
-            code: 'getCookieValues({cookieNames: ["session"]})',
+            action: 'getCookieValues({cookieNames: ["session"]})',
         };
     }
     function renderPrompt(step, target = document.createElement('div')) {
@@ -37,16 +37,23 @@ describeWithEnvironment('PermissionPrompt', () => {
         return Array.from(target.querySelectorAll('.permission-prompt devtools-button'));
     }
     it('renders nothing for a step that does not need approval', () => {
-        const target = renderPrompt({ state: { type: 'completed' }, code: 'getCookieValues()' });
+        const target = renderPrompt({ state: { type: 'completed' }, action: 'getCookieValues()' });
         assert.isNull(target.querySelector('.permission-prompt'));
     });
-    it('renders the title, description and code', () => {
+    it('renders the title and description', () => {
         const target = renderPrompt(createStep());
         const prompt = querySelectorErrorOnMissing(target, '.permission-prompt');
         assert.strictEqual(prompt.querySelector('.permission-prompt-title')?.textContent, 'Allow reading cookie values?');
         assert.include(prompt.querySelector('.permission-prompt-description')?.textContent, 'The AI wants to read the cookie "session"');
-        const codeBlock = querySelectorErrorOnMissing(prompt, 'devtools-code-block');
-        assert.strictEqual(codeBlock.code, 'getCookieValues({cookieNames: ["session"]})');
+    });
+    it('does not render a code block for tools that do not execute JavaScript', () => {
+        const target = renderPrompt(createStep());
+        assert.isNull(target.querySelector('devtools-code-block'));
+    });
+    it('renders the code block for tools that execute JavaScript', () => {
+        const target = renderPrompt({ ...createStep(), javascriptCode: 'document.title = "Hello";' });
+        const codeBlock = querySelectorErrorOnMissing(target, 'devtools-code-block');
+        assert.strictEqual(codeBlock.code, 'document.title = "Hello";');
         assert.strictEqual(codeBlock.shadowRoot?.querySelector('.heading-text')?.textContent, 'Code to execute');
         assert.include(codeBlock.shadowRoot?.querySelector('.notice')?.textContent, 'Use code snippets with caution');
     });
@@ -54,11 +61,11 @@ describeWithEnvironment('PermissionPrompt', () => {
         const target = renderPrompt(createStep({ permissionTitle: undefined }));
         assert.strictEqual(target.querySelector('.permission-prompt-title')?.textContent, 'Allow this action?');
     });
-    it('offers Skip and Allow once for ALLOW_ONCE', () => {
+    it('offers "No" and "Yes, allow this time" for ALLOW_ONCE', () => {
         const onAnswer = sinon.stub();
         const target = renderPrompt(createStep({ onAnswer }));
         const buttons = getButtons(target);
-        assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['Skip', 'Yes, allow this time']);
+        assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['No', 'Yes, allow this time']);
         buttons[0].click();
         buttons[1].click();
         assert.deepEqual(onAnswer.args.map(([decision]) => decision), [
@@ -66,16 +73,52 @@ describeWithEnvironment('PermissionPrompt', () => {
             "allow-once" /* AIAssistanceModel.Tool.PermissionDecision.ALLOW_ONCE */,
         ]);
     });
-    it('offers Skip, Always allow and Allow once for ALLOW_ONCE_OR_ALWAYS', () => {
+    it('offers "No", "Yes, and always allow" and "Yes, allow this time" for ALLOW_ONCE_OR_ALWAYS', () => {
         const onAnswer = sinon.stub();
         const target = renderPrompt(createStep({
             onAnswer,
             permissionPrompt: "allow-once-or-always" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */,
         }));
         const buttons = getButtons(target);
-        assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['Skip', 'Yes, always allow', 'Yes, allow this time']);
+        assert.deepEqual(buttons.map(b => b.textContent?.trim()), ['No', 'Yes, and always allow', 'Yes, allow this time']);
         buttons[1].click();
         sinon.assert.calledOnceWithExactly(onAnswer, "allow-always" /* AIAssistanceModel.Tool.PermissionDecision.ALLOW_ALWAYS */);
+    });
+    it('focuses the "No" button when the prompt appears', async () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        renderPrompt(createStep(), target);
+        // Focus is moved in a microtask, after the prompt is attached to the document.
+        await Promise.resolve();
+        const [noButton] = getButtons(target);
+        assert.strictEqual(noButton.textContent?.trim(), 'No');
+        assert.strictEqual(document.activeElement, noButton);
+    });
+    it('keeps the focus where it was on the next render', async () => {
+        const step = createStep();
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        renderPrompt(step, target);
+        await Promise.resolve();
+        const [, yesButton] = getButtons(target);
+        yesButton.focus();
+        assert.strictEqual(document.activeElement, yesButton);
+        renderPrompt(step, target);
+        await Promise.resolve();
+        assert.strictEqual(document.activeElement, yesButton);
+    });
+    it('focuses the "No" button when a new prompt replaces the previous one', async () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        renderPrompt(createStep(), target);
+        await Promise.resolve();
+        const [, yesButton] = getButtons(target);
+        yesButton.focus();
+        assert.strictEqual(document.activeElement, yesButton);
+        renderPrompt(createStep({ description: 'The AI wants to read localStorage on https://example.com.' }), target);
+        await Promise.resolve();
+        const [noButton] = getButtons(target);
+        assert.strictEqual(document.activeElement, noButton);
     });
     it('renders the data disclaimer', () => {
         const target = renderPrompt(createStep());
@@ -106,6 +149,18 @@ describeWithEnvironment('PermissionPrompt', () => {
             permissionPrompt: "allow-once-or-always" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */,
         }), target);
         await assertScreenshot('ai_assistance/permission_prompt_allow_once_or_always.png');
+    });
+    it('renders the prompt with the JavaScript code to execute', async () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target, { includeCommonStyles: true });
+        renderPrompt({
+            ...createStep({
+                description: 'AI assistance wants to change the document title.',
+                permissionTitle: 'Allow executing JavaScript?',
+            }),
+            javascriptCode: 'document.title = "Hello";',
+        }, target);
+        await assertScreenshot('ai_assistance/permission_prompt_javascript_code.png');
     });
 });
 //# sourceMappingURL=PermissionPrompt.test.js.map

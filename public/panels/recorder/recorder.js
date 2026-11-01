@@ -163,7 +163,7 @@ var ControlButton = class extends UI.Widget.Widget {
         disabled: this.#disabled,
         onClick: this.#onClick
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -1140,7 +1140,7 @@ var RecordingListView = class extends UI3.Widget.Widget {
         onPlayRecordingClick: this.#onPlayRecordingClick.bind(this),
         onKeyDown: this.#onKeyDown.bind(this)
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -1495,7 +1495,7 @@ var recordingView_css_default = `/*
     height: var(--sys-size-6);
     display: inline-block;
     background: var(--sys-color-primary);
-    border-radius: 50%;
+    border-radius: var(--sys-shape-corner-full);
     margin-right: 7px;
   }
 
@@ -2156,7 +2156,7 @@ var SelectorPicker = class _SelectorPicker extends UI6.Widget.Widget {
         disabled: this.#disabled,
         onClick: this.#handleClickEvent.bind(this)
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -3853,7 +3853,7 @@ var TimelineSection = class extends UI8.Widget.Widget {
         isLastSection: this.#isLastSection,
         isSelected: this.#isSelected
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -3933,6 +3933,10 @@ var UIStrings7 = {
    */
   elementRoleFallback: "Element",
   /**
+   * @description Placeholder title for a recording section without a title.
+   */
+  noTitle: "(No title)",
+  /**
    * @description The title of the button in the step's context menu that adds a new step before the current one.
    */
   addStepBefore: "Add step before",
@@ -3946,16 +3950,19 @@ var UIStrings7 = {
   removeStep: "Remove step",
   /**
    * @description The title of the button that opens the step's context menu.
+   * @example {Click} title
    */
-  openStepActions: "Open step actions",
+  openStepActions: "Open step actions for {title}",
   /**
    * @description The title of the button in the step's context menu that adds a breakpoint.
+   * @example {Click} title
    */
-  addBreakpoint: "Add breakpoint",
+  addBreakpoint: "Add breakpoint for {title}",
   /**
    * @description The title of the button in the step's context menu that removes a breakpoint.
+   * @example {Click} title
    */
-  removeBreakpoint: "Remove breakpoint",
+  removeBreakpoint: "Remove breakpoint for {title}",
   /**
    * @description A menu item in the context menu that expands another menu which lists all
    * the formats the user can copy the recording as.
@@ -3992,7 +3999,7 @@ var AddStepPosition = /* @__PURE__ */ ((AddStepPosition2) => {
 var COPY_ACTION_PREFIX = "copy-step-as-";
 function getStepTypeTitle(input) {
   if (input.section) {
-    return input.section.title ? input.section.title : html9`<span class="fallback">(No Title)</span>`;
+    return input.section.title || i18nString7(UIStrings7.noTitle);
   }
   if (!input.step) {
     throw new Error("Missing both step and section");
@@ -4058,11 +4065,17 @@ function getSectionPreview(section5) {
   }
   return section5.url;
 }
+function getBreakpointTitle(input) {
+  const title = getStepTypeTitle(input);
+  return input.hasBreakpoint ? i18nString7(UIStrings7.removeBreakpoint, { title }) : i18nString7(UIStrings7.addBreakpoint, { title });
+}
 function renderStepActions(input) {
+  const title = getStepTypeTitle(input);
+  const accessibleLabel = i18nString7(UIStrings7.openStepActions, { title });
   return html9`
     <devtools-menu-button
       class="step-actions"
-      .accessibleLabel=${i18nString7(UIStrings7.openStepActions)}
+      .accessibleLabel=${accessibleLabel}
       .populateMenuCall=${input.populateStepContextMenu}
       @keydown=${(event) => {
     event.stopPropagation();
@@ -4096,7 +4109,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     section: input.section
   });
   const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview(input.section);
-  const breakpointTitle = input.hasBreakpoint ? i18nString7(UIStrings7.removeBreakpoint) : i18nString7(UIStrings7.addBreakpoint);
+  const breakpointTitle = getBreakpointTitle(input);
   Lit9.render(
     html9`
     <style>${stepView_css_default}</style>
@@ -4459,14 +4472,14 @@ var StepView = class extends UI9.Widget.Widget {
       if (this.#viewInput.hasBreakpoint) {
         actions.push({
           id: "remove-breakpoint",
-          label: i18nString7(UIStrings7.removeBreakpoint),
+          label: getBreakpointTitle(this.#viewInput),
           group: "breakPointManagement",
           groupTitle: i18nString7(UIStrings7.breakpoints)
         });
       } else {
         actions.push({
           id: "add-breakpoint",
-          label: i18nString7(UIStrings7.addBreakpoint),
+          label: getBreakpointTitle(this.#viewInput),
           group: "breakPointManagement",
           groupTitle: i18nString7(UIStrings7.breakpoints)
         });
@@ -4945,14 +4958,13 @@ function renderSections(input) {
           <devtools-button
             @click=${input.showCodeToggle}
             class="show-code"
-            aria-controls="recording-code-pane"
-            aria-expanded=${input.showCodeView}
             .data=${{
     variant: Buttons7.Button.Variant.OUTLINED,
     title: Models7.Tooltip.getTooltipForActions(
       codeToggleTitle,
       Actions4.RecorderActions.TOGGLE_CODE_VIEW
-    )
+    ),
+    accessibleExpanded: Boolean(input.showCodeView)
   }}
             jslog=${VisualLogging8.toggleSubpane(Actions4.RecorderActions.TOGGLE_CODE_VIEW).track({ click: true })}
           >

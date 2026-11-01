@@ -24,7 +24,7 @@ describeWithEnvironment('WorkspaceSettingsTab view', () => {
             fileSystems: [{ displayName: 'foo', fileSystem }],
             onAddClicked: () => { },
             onRemoveClicked: () => { },
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('persistence/workspace_settings_tab.png');
     });
 });

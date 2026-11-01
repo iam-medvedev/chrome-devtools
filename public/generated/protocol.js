@@ -1866,6 +1866,7 @@ export var Network;
         DeviceBoundSessionFetchResult["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
         DeviceBoundSessionFetchResult["AttestationCertificationError"] = "AttestationCertificationError";
         DeviceBoundSessionFetchResult["AttestationSigningError"] = "AttestationSigningError";
+        DeviceBoundSessionFetchResult["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
     })(DeviceBoundSessionFetchResult = Network.DeviceBoundSessionFetchResult || (Network.DeviceBoundSessionFetchResult = {}));
     let RefreshEventDetailsRefreshResult;
     (function (RefreshEventDetailsRefreshResult) {
@@ -2617,6 +2618,7 @@ export var Preload;
         PrerenderFinalStatus["PrerenderHostReused"] = "PrerenderHostReused";
         PrerenderFinalStatus["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
         PrerenderFinalStatus["CrossDocumentRestart"] = "CrossDocumentRestart";
+        PrerenderFinalStatus["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
     })(PrerenderFinalStatus = Preload.PrerenderFinalStatus || (Preload.PrerenderFinalStatus = {}));
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

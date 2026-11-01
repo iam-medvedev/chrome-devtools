@@ -190,7 +190,7 @@ describeWithEnvironment('RequestPayloadView', () => {
             binaryPayloadContentData: null,
             requestUrl: urlString `https://example.com/api`,
         };
-        Network.RequestPayloadView.DEFAULT_VIEW(input, {}, container);
+        Network.RequestPayloadView.DEFAULT_VIEW(input, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const shadowRoot = container.querySelector('.request-payload-tree')?.shadowRoot;
         assert.exists(shadowRoot);
@@ -228,7 +228,7 @@ describeWithEnvironment('RequestPayloadView', () => {
             binaryPayloadContentData: null,
             requestUrl: urlString `https://example.com/api`,
         };
-        Network.RequestPayloadView.DEFAULT_VIEW(input, {}, container);
+        Network.RequestPayloadView.DEFAULT_VIEW(input, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const shadowRoot = container.querySelector('.request-payload-tree')?.shadowRoot;
         assert.exists(shadowRoot);
@@ -351,7 +351,7 @@ describeWithEnvironment('RequestPayloadView', () => {
             binaryPayloadContentData: null,
             requestUrl: urlString `https://example.com/api`,
         };
-        Network.RequestPayloadView.DEFAULT_VIEW(input, {}, container);
+        Network.RequestPayloadView.DEFAULT_VIEW(input, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const treeOutline = container.querySelector('.request-payload-tree');
         assert.exists(treeOutline);

@@ -167,6 +167,35 @@ describe('StringUtilities', () => {
             assert.isFalse(isExtendedKebabCase('Main.target.ReloadPage'));
         });
     });
+    describe('sanitizeIdentifier', () => {
+        const { sanitizeIdentifier } = Platform.StringUtilities;
+        it('lowercases and replaces spaces, punctuation, and special characters with single dashes', () => {
+            assert.strictEqual(sanitizeIdentifier('Custom Panel 1!'), 'custom-panel-1');
+            assert.strictEqual(sanitizeIdentifier('My App: View (Experimental)'), 'my-app-view-experimental');
+            assert.strictEqual(sanitizeIdentifier('hello.world@domain'), 'hello-world-domain');
+        });
+        it('collapses consecutive non-alphanumeric characters into a single dash', () => {
+            assert.strictEqual(sanitizeIdentifier('foo   bar'), 'foo-bar');
+            assert.strictEqual(sanitizeIdentifier('a...b___c'), 'a-b-c');
+            assert.strictEqual(sanitizeIdentifier('kebab---case'), 'kebab-case');
+        });
+        it('strips leading and trailing dashes and non-alphanumeric characters', () => {
+            assert.strictEqual(sanitizeIdentifier('---leading-and-trailing---'), 'leading-and-trailing');
+            assert.strictEqual(sanitizeIdentifier('!hello world!'), 'hello-world');
+            assert.strictEqual(sanitizeIdentifier('...test...'), 'test');
+        });
+        it('returns an empty string when the input contains only non-alphanumeric characters or is empty', () => {
+            assert.strictEqual(sanitizeIdentifier(''), '');
+            assert.strictEqual(sanitizeIdentifier('侧边栏'), '');
+            assert.strictEqual(sanitizeIdentifier('!@#$%-^&*'), '');
+            assert.strictEqual(sanitizeIdentifier('    '), '');
+            assert.strictEqual(sanitizeIdentifier('---'), '');
+        });
+        it('preserves already valid kebab-case or alphanumeric identifiers', () => {
+            assert.strictEqual(sanitizeIdentifier('my-extension-panel'), 'my-extension-panel');
+            assert.strictEqual(sanitizeIdentifier('simpleidentifier123'), 'simpleidentifier123');
+        });
+    });
     describe('toTitleCase', () => {
         it('converts a string to title case', () => {
             const output = Platform.StringUtilities.toTitleCase('foo bar baz');
@@ -292,6 +321,13 @@ describe('StringUtilities', () => {
             // NFD.
             assert.strictEqual(trimMiddle('caf\u0065\u0301', 4), 'café');
             assert.strictEqual(trimMiddle('caf\u0065\u0301', 3), 'c…é');
+            // Printable ASCII even and odd maxLengths.
+            assert.strictEqual(trimMiddle('abcdefghij', 5), 'ab…ij');
+            assert.strictEqual(trimMiddle('abcdefghij', 4), 'ab…j');
+            assert.strictEqual(trimMiddle('abcdefghij', 2), 'a…');
+            // ASCII control characters (\r\n is a single grapheme cluster).
+            assert.strictEqual(trimMiddle('a\r\nb\r\nc', 5), 'a\r\nb\r\nc');
+            assert.strictEqual(trimMiddle('a\r\nb\r\nc', 4), 'a\r\n…c');
         });
     });
     describe('trimEndWithMaxLength', () => {
@@ -340,6 +376,10 @@ describe('StringUtilities', () => {
         it('handles devanagari characters', () => {
             assert.strictEqual(trimEndWithMaxLength('देवनागरी', 5), 'देवनागरी');
             assert.strictEqual(trimEndWithMaxLength('देवनागरी', 4), 'देवना…');
+        });
+        it('preserves CRLF grapheme clusters in non-printable ASCII strings', () => {
+            assert.strictEqual(trimEndWithMaxLength('a\r\nb\r\nc', 5), 'a\r\nb\r\nc');
+            assert.strictEqual(trimEndWithMaxLength('a\r\nb\r\nc', 3), 'a\r\n…');
         });
     });
     describe('truncateToCodeUnitLength', () => {
@@ -787,8 +827,16 @@ describe('StringUtilities', () => {
             assert.strictEqual(escapeCsvCell('+1+1'), '\'+1+1');
             assert.strictEqual(escapeCsvCell('@SUM(1)'), '\'@SUM(1)');
             assert.strictEqual(escapeCsvCell('-2+3+cmd|\' /C calc\'!A0'), '\'-2+3+cmd|\' /C calc\'!A0');
-            assert.strictEqual(escapeCsvCell('\tvalue'), '\'\tvalue');
+            assert.strictEqual(escapeCsvCell('\tvalue'), '"\'\tvalue"');
             assert.strictEqual(escapeCsvCell('\rvalue'), '"\'\rvalue"');
+        });
+        it('quotes cells containing alternate column separators', () => {
+            assert.strictEqual(escapeCsvCell('a;b'), '"a;b"');
+            assert.strictEqual(escapeCsvCell('a\tb'), '"a\tb"');
+            // Without quotes, a `;` or tab separator would start a new cell with `=`.
+            assert.strictEqual(escapeCsvCell('x;=1+1'), '"x;=1+1"');
+            assert.strictEqual(escapeCsvCell('x\t=1+1'), '"x\t=1+1"');
+            assert.strictEqual(escapeCsvCell('=1;2'), '"\'=1;2"');
         });
         it('neutralizes formulas hidden behind leading whitespace', () => {
             assert.strictEqual(escapeCsvCell(' =1+1'), '\' =1+1');

@@ -35,7 +35,7 @@ describeWithEnvironment('ScreencastApp', () => {
         screencastApp.presentUI(document);
         assert.isFalse(screencastApp.toggleButton.enabled);
         assert.isFalse(screencastApp.toggleButton.isToggled());
-        sinon.assert.calledOnceWithExactly(view, { screencastEnabled: false, screenCaptureModel: undefined }, {}, screencastApp.rootView?.contentElement);
+        sinon.assert.calledOnceWithExactly(view, { screencastEnabled: false, screenCaptureModel: undefined }, undefined, screencastApp.rootView?.contentElement);
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         const prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         assert.isFalse(screencastApp.toggleButton.enabled);
@@ -47,12 +47,12 @@ describeWithEnvironment('ScreencastApp', () => {
         assert.isTrue(screencastApp.toggleButton.enabled);
         assert.isTrue(screencastApp.toggleButton.isToggled());
         sinon.assert.calledTwice(view);
-        sinon.assert.calledWithExactly(view.secondCall, { screencastEnabled: true, screenCaptureModel }, {}, screencastApp.rootView?.contentElement);
+        sinon.assert.calledWithExactly(view.secondCall, { screencastEnabled: true, screenCaptureModel }, undefined, screencastApp.rootView?.contentElement);
         screencastApp.modelRemoved(screenCaptureModel);
         assert.isFalse(screencastApp.toggleButton.enabled);
         assert.isFalse(screencastApp.toggleButton.isToggled());
         sinon.assert.calledThrice(view);
-        sinon.assert.calledWithExactly(view.thirdCall, { screencastEnabled: false, screenCaptureModel: undefined }, {}, screencastApp.rootView?.contentElement);
+        sinon.assert.calledWithExactly(view.thirdCall, { screencastEnabled: false, screenCaptureModel: undefined }, undefined, screencastApp.rootView?.contentElement);
     });
     it('toggles screencast visibility and setting when toggle button is clicked', () => {
         const view = sinon.spy();
@@ -65,11 +65,11 @@ describeWithEnvironment('ScreencastApp', () => {
         screencastApp.toggleButton.setToggled(false);
         screencastApp.toggleButton.dispatchEventToListeners("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, new MouseEvent('click'));
         assert.isFalse(Common.Settings.Settings.instance().settingForTest('screencast-enabled').get());
-        sinon.assert.calledWithExactly(view.lastCall, { screencastEnabled: false, screenCaptureModel }, {}, screencastApp.rootView?.contentElement);
+        sinon.assert.calledWithExactly(view.lastCall, { screencastEnabled: false, screenCaptureModel }, undefined, screencastApp.rootView?.contentElement);
         screencastApp.toggleButton.setToggled(true);
         screencastApp.toggleButton.dispatchEventToListeners("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, new MouseEvent('click'));
         assert.isTrue(Common.Settings.Settings.instance().settingForTest('screencast-enabled').get());
-        sinon.assert.calledWithExactly(view.lastCall, { screencastEnabled: true, screenCaptureModel }, {}, screencastApp.rootView?.contentElement);
+        sinon.assert.calledWithExactly(view.lastCall, { screencastEnabled: true, screenCaptureModel }, undefined, screencastApp.rootView?.contentElement);
     });
     it('attaches navigation listeners when shown, cleans up when hidden, and re-attaches when re-shown', async () => {
         const target = createTarget();

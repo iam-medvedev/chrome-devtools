@@ -10,14 +10,14 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { renderRelevantDataDisclaimer } from './RelevantDataDisclaimer.js';
-const { html } = Lit;
+const { html, Directives: { ref, repeat } } = Lit;
 const lockedString = i18n.i18n.lockedString;
 const RELEVANT_DATA_TOOLTIP_ID = 'relevant-data-link-permission-prompt';
 const UIStringsNotTranslate = {
     /**
      * @description Button text in the permission prompt that skips the tool call.
      */
-    skipToolCall: 'Skip',
+    skipToolCall: 'No',
     /**
      * @description Button text in the permission prompt that allows the tool call once.
      */
@@ -25,7 +25,7 @@ const UIStringsNotTranslate = {
     /**
      * @description Button text in the permission prompt that allows the tool call now and in the future.
      */
-    allowAlways: 'Yes, always allow',
+    allowAlways: 'Yes, and always allow',
     /**
      * @description Fallback title of the permission prompt when the tool has no title.
      */
@@ -61,6 +61,15 @@ function renderChangePermissionsInSettings() {
     // clang-format on
 }
 /**
+ * Moves focus to the "No" button when the prompt first appears. Must stay at
+ * module level: Lit only invokes a ref callback when its identity changes, so
+ * a stable function runs once per element instead of on every re-render.
+ */
+function focusOnFirstRender(element) {
+    // Lit calls this before the element is in the DOM, so delay focus().
+    queueMicrotask(() => element?.focus());
+}
+/**
  * Renders the permission prompt for a step that needs approval.
  *
  * Used only with the natural language interface
@@ -82,9 +91,9 @@ export function renderPermissionPrompt(step, disclaimerText) {
     const dialog = step.state.sideEffectDialog;
     const title = dialog.permissionTitle ?? lockedString(UIStringsNotTranslate.allowThisAction);
     const description = dialog.description ? html `<p class="permission-prompt-description">${dialog.description}</p>` : Lit.nothing;
-    const code = step.code ? html `<devtools-code-block
+    const code = step.javascriptCode ? html `<devtools-code-block
       class="permission-prompt-code"
-      .code=${step.code.trim()}
+      .code=${step.javascriptCode.trim()}
       .codeLang=${'js'}
       .displayNotice=${true}
       .header=${lockedString(UIStringsNotTranslate.codeToExecute)}
@@ -99,13 +108,16 @@ export function renderPermissionPrompt(step, disclaimerText) {
       @click=${() => dialog.onAnswer("allow-always" /* AiAssistanceModel.Tool.PermissionDecision.ALLOW_ALWAYS */)}
     >${lockedString(UIStringsNotTranslate.allowAlways)}</devtools-button>` :
         Lit.nothing;
+    // Key the prompt by its step so that a new prompt always gets new DOM and
+    // `focusOnFirstRender` runs again when one prompt replaces another in a
+    // single render.
     // clang-format off
-    return html `
+    return html `${repeat([step], step => step, () => html `
   <div class="permission-prompt"
     jslog=${VisualLogging.section('side-effect-confirmation')}>
     <div class="permission-prompt-header">
       <devtools-icon name="lock"></devtools-icon>
-      <h3 class="permission-prompt-title">${title}</h3>
+      <h2 class="permission-prompt-title">${title}</h2>
     </div>
     ${description}
     ${code}
@@ -116,6 +128,7 @@ export function renderPermissionPrompt(step, disclaimerText) {
         jslogContext: 'decline-execute-code',
     }}
         @click=${() => dialog.onAnswer("reject" /* AiAssistanceModel.Tool.PermissionDecision.REJECT */)}
+        ${ref(focusOnFirstRender)}
       >${lockedString(UIStringsNotTranslate.skipToolCall)}</devtools-button>
       ${allowAlwaysButton}
       <devtools-button
@@ -130,7 +143,7 @@ export function renderPermissionPrompt(step, disclaimerText) {
       ${renderRelevantDataDisclaimer(RELEVANT_DATA_TOOLTIP_ID, disclaimerText)}.
       ${renderChangePermissionsInSettings()}.
     </div>
-  </div>`;
+  </div>`)}`;
     // clang-format on
 }
 //# sourceMappingURL=PermissionPrompt.js.map

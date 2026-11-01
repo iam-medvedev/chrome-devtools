@@ -100,7 +100,7 @@ describe('ExploreWidget', () => {
                         panelName: 'Elements',
                         text: 'to ask about CSS styles',
                     }],
-            }, {}, target);
+            }, undefined, target);
             await assertScreenshot('ai_assistance/explore-default.png');
         });
     });

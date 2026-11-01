@@ -55,7 +55,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
             : nothing}
       <devtools-checkbox class="source-order-checkbox"
                           jslog=${VisualLogging.toggle().track({ click: true })}
-                          ?checked=${input.showSourceOrder}
+                          .checked=${Boolean(input.showSourceOrder)}
                           @change=${onShowSourceOrderChanged}>
         ${i18nString(UIStrings.showSourceOrder)}
       </devtools-checkbox>

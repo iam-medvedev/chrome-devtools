@@ -67,7 +67,7 @@ export class SelectorPicker extends UI.Widget.Widget {
             active: this.#active,
             disabled: this.#disabled,
             onClick: this.#handleClickEvent.bind(this),
-        }, {}, this.contentElement);
+        }, undefined, this.contentElement);
     }
     #handleClickEvent(event) {
         event.preventDefault();

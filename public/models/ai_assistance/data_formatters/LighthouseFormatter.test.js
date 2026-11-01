@@ -448,5 +448,429 @@ describe('LighthouseFormatter', function () {
         const output = formatter.audits(imageInsightReport, 'performance');
         snapshotTester.assert(this, output);
     });
+    it('formats 0-based source locations as 1-based', function () {
+        const locationReport = {
+            ...report,
+            categories: {
+                accessibility: {
+                    title: 'Accessibility',
+                    description: 'Category description.',
+                    score: 0,
+                    auditRefs: [{ id: 'button-name', score: 0, weight: 1 }],
+                },
+            },
+            audits: {
+                'button-name': {
+                    id: 'button-name',
+                    title: 'Buttons do not have an accessible name',
+                    description: 'Audit description.',
+                    score: 0,
+                    details: {
+                        type: 'table',
+                        headings: [
+                            { key: 'location', label: 'Location', valueType: 'source-location' },
+                        ],
+                        items: [
+                            {
+                                location: { type: 'source-location', url: 'https://example.com/app.js', line: 0, column: 0 },
+                            },
+                            {
+                                location: { type: 'source-location', url: 'https://example.com/no-line.js' },
+                            },
+                        ],
+                    },
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(locationReport, 'accessibility');
+        snapshotTester.assert(this, output);
+    });
+    it('collapses multi-line values onto a single line', function () {
+        const multiLineReport = {
+            ...report,
+            categories: {
+                accessibility: {
+                    title: 'Accessibility',
+                    description: 'Category description\n  spanning two lines.',
+                    score: 0,
+                    auditRefs: [{ id: 'button-name', score: 0, weight: 1 }],
+                },
+            },
+            audits: {
+                'button-name': {
+                    id: 'button-name',
+                    title: 'Buttons do not have an accessible name',
+                    description: 'Audit description\n  spanning two lines.',
+                    score: 0,
+                    details: {
+                        type: 'table',
+                        headings: [
+                            { key: 'node', label: 'Failing Elements', valueType: 'node' },
+                            { key: 'schema', label: 'Schema', valueType: 'code' },
+                        ],
+                        items: [
+                            {
+                                node: {
+                                    type: 'node',
+                                    nodeLabel: 'button',
+                                    explanation: 'Fix any of the following:\n  Element does not have inner text\n  aria-label attribute does not exist',
+                                },
+                                schema: '{\n  "type": "object",\n  "properties": {}\n}',
+                            },
+                        ],
+                    },
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(multiLineReport, 'accessibility');
+        snapshotTester.assert(this, output);
+    });
+    it('formats audit explanations and warnings', function () {
+        const explanationWarningsReport = {
+            ...report,
+            categories: {
+                'agentic-browsing': {
+                    title: 'Agentic Browsing',
+                    score: 0,
+                    auditRefs: [{ id: 'llms-txt', score: 0, weight: 1 }],
+                },
+            },
+            audits: {
+                'llms-txt': {
+                    id: 'llms-txt',
+                    title: 'llms.txt is valid',
+                    description: 'Checks whether /llms.txt exists and is valid.',
+                    explanation: 'Failed to fetch https://example.com/llms.txt:\n  HTTP 404 Not Found',
+                    warnings: [
+                        'First warning message',
+                        'Second warning\nspanning two lines',
+                    ],
+                    score: 0,
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(explanationWarningsReport, 'agentic-browsing');
+        snapshotTester.assert(this, output);
+    });
+    it('includes gatherMode and fraction-scored categories in summary', function () {
+        const fractionReport = {
+            ...report,
+            gatherMode: 'navigation',
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 0.8,
+                    auditRefs: [{ id: 'first-audit', score: 0.8, weight: 1 }],
+                },
+                'agentic-browsing': {
+                    title: 'Agentic Browsing',
+                    score: null,
+                    categoryScoreDisplayMode: 'fraction',
+                    auditRefs: [
+                        { id: 'llms-txt', weight: 0 },
+                        { id: 'agents-md', weight: 0 },
+                        { id: 'webmcp-registered-tools', weight: 0 },
+                        { id: 'hidden-audit', weight: 0, group: 'hidden' },
+                        { id: 'na-audit', weight: 0 },
+                    ],
+                },
+            },
+            audits: {
+                ...report.audits,
+                'llms-txt': {
+                    id: 'llms-txt',
+                    title: 'llms.txt is valid',
+                    description: 'Description',
+                    score: 0,
+                    scoreDisplayMode: 'binary',
+                },
+                'agents-md': {
+                    id: 'agents-md',
+                    title: 'AGENTS.md is valid',
+                    description: 'Description',
+                    score: 1,
+                    scoreDisplayMode: 'binary',
+                },
+                'webmcp-registered-tools': {
+                    id: 'webmcp-registered-tools',
+                    title: 'Registered WebMCP tools',
+                    description: 'Description',
+                    score: 1,
+                    scoreDisplayMode: 'informative',
+                },
+                'hidden-audit': {
+                    id: 'hidden-audit',
+                    title: 'Hidden audit',
+                    description: 'Description',
+                    score: 0,
+                    scoreDisplayMode: 'binary',
+                },
+                'na-audit': {
+                    id: 'na-audit',
+                    title: 'Not applicable audit',
+                    description: 'Description',
+                    score: null,
+                    scoreDisplayMode: 'notApplicable',
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.summary(fractionReport);
+        snapshotTester.assert(this, output);
+    });
+    it('surfaces errored audits', function () {
+        const erroredReport = {
+            ...report,
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 0.5,
+                    auditRefs: [
+                        { id: 'first-audit', score: 0.8, weight: 1 },
+                        { id: 'errored-audit', score: null, weight: 1 },
+                    ],
+                },
+            },
+            audits: {
+                ...report.audits,
+                'errored-audit': {
+                    id: 'errored-audit',
+                    title: 'Errored Audit',
+                    description: 'An audit that threw an error during execution.',
+                    score: null,
+                    scoreDisplayMode: 'error',
+                    errorMessage: 'Audit execution timed out',
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = [
+            formatter.failingAuditsSummary(erroredReport),
+            formatter.audits(erroredReport, 'performance'),
+        ].join('\n\n');
+        snapshotTester.assert(this, output);
+    });
+    it('excludes hidden audits', function () {
+        const hiddenReport = {
+            ...report,
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 1,
+                    auditRefs: [
+                        { id: 'hidden-failing-audit', score: 0, weight: 0, group: 'hidden' },
+                        { id: 'hidden-errored-audit', score: null, weight: 0, group: 'hidden' },
+                    ],
+                },
+            },
+            audits: {
+                ...report.audits,
+                'hidden-failing-audit': {
+                    id: 'hidden-failing-audit',
+                    title: 'Hidden Failing Audit',
+                    description: 'Internal metric audit',
+                    score: 0,
+                    scoreDisplayMode: 'numeric',
+                },
+                'hidden-errored-audit': {
+                    id: 'hidden-errored-audit',
+                    title: 'Hidden Errored Audit',
+                    description: 'Internal errored audit',
+                    score: null,
+                    scoreDisplayMode: 'error',
+                    errorMessage: 'Internal failure',
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = [
+            formatter.failingAuditsSummary(hiddenReport),
+            formatter.audits(hiddenReport, 'performance'),
+        ].join('\n\n');
+        snapshotTester.assert(this, output);
+    });
+    it('formats list details with list-section, table, and node items', function () {
+        const listReport = {
+            ...report,
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 0.3,
+                    auditRefs: [{ id: 'lcp-breakdown-insight', score: 0.3, weight: 1 }],
+                },
+            },
+            audits: {
+                'lcp-breakdown-insight': {
+                    id: 'lcp-breakdown-insight',
+                    title: 'LCP breakdown',
+                    description: 'Each subpath has specific improvement strategies.',
+                    score: 0.3,
+                    details: {
+                        type: 'list',
+                        items: [
+                            {
+                                type: 'table',
+                                headings: [
+                                    { key: 'subpart', label: 'Subpart', valueType: 'text' },
+                                    { key: 'duration', label: 'Duration', valueType: 'ms' },
+                                ],
+                                items: [
+                                    { subpart: 'Time to first byte', duration: 120 },
+                                    { subpart: 'Element render delay', duration: 480 },
+                                ],
+                            },
+                            {
+                                type: 'list-section',
+                                title: 'LCP Element',
+                                description: 'The largest contentful paint element on the page.',
+                                value: {
+                                    type: 'node',
+                                    nodeLabel: 'Hero Heading',
+                                    selector: 'main > h1.hero',
+                                    path: '1,HTML,1,BODY,0,MAIN,0,H1',
+                                    explanation: 'Fix any of the following:\n  Element is delayed by render-blocking script',
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(listReport, 'performance');
+        snapshotTester.assert(this, output);
+    });
+    it('formats checklist details and wrapped text/url values', function () {
+        const checklistReport = {
+            ...report,
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 0.4,
+                    auditRefs: [{ id: 'lcp-discovery-insight', score: 0.4, weight: 1 }],
+                },
+            },
+            audits: {
+                'lcp-discovery-insight': {
+                    id: 'lcp-discovery-insight',
+                    title: 'LCP request discovery',
+                    description: 'Optimize LCP by making the LCP image discoverable from the HTML immediately.',
+                    score: 0.4,
+                    details: {
+                        type: 'list',
+                        items: [
+                            {
+                                type: 'checklist',
+                                items: {
+                                    priorityHinted: { label: 'fetchpriority=high should be applied', value: false },
+                                    requestDiscoverable: { label: 'Request is discoverable in initial document', value: true },
+                                    eagerlyLoaded: { label: 'lazy load not applied', value: true },
+                                },
+                            },
+                            {
+                                type: 'list-section',
+                                title: 'LCP Resource',
+                                value: {
+                                    type: 'url',
+                                    value: 'https://example.com/hero.jpg',
+                                },
+                            },
+                            {
+                                type: 'list-section',
+                                title: 'Note',
+                                value: {
+                                    type: 'text',
+                                    value: 'Add fetchpriority="high" to the image element.',
+                                },
+                            },
+                            {
+                                type: 'table',
+                                headings: [
+                                    { key: 'resource', label: 'Resource', valueType: 'url' },
+                                    { key: 'advice', label: 'Advice', valueType: 'text' },
+                                ],
+                                items: [
+                                    {
+                                        resource: { type: 'url', value: 'https://example.com/hero.jpg' },
+                                        advice: { type: 'text', value: 'Preload this image' },
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(checklistReport, 'performance');
+        snapshotTester.assert(this, output);
+    });
+    it('formats network-tree details inside a list section', function () {
+        const networkTreeReport = {
+            ...report,
+            categories: {
+                performance: {
+                    title: 'Performance',
+                    score: 0,
+                    auditRefs: [{ id: 'network-dependency-tree-insight', score: 0, weight: 1 }],
+                },
+            },
+            audits: {
+                'network-dependency-tree-insight': {
+                    id: 'network-dependency-tree-insight',
+                    title: 'Network dependency tree',
+                    description: 'Avoid chaining critical requests.',
+                    score: 0,
+                    details: {
+                        type: 'list',
+                        items: [
+                            {
+                                type: 'list-section',
+                                value: {
+                                    type: 'network-tree',
+                                    longestChain: { duration: 650 },
+                                    chains: {
+                                        root: {
+                                            url: 'https://example.com/',
+                                            navStartToEndTime: 200,
+                                            transferSize: 4096,
+                                            isLongest: true,
+                                            children: {
+                                                css: {
+                                                    url: 'https://example.com/styles.css',
+                                                    navStartToEndTime: 450,
+                                                    transferSize: 8192,
+                                                    isLongest: true,
+                                                    children: {
+                                                        font: {
+                                                            url: 'https://example.com/font.woff2',
+                                                            navStartToEndTime: 650,
+                                                            transferSize: 16384,
+                                                            isLongest: true,
+                                                        },
+                                                    },
+                                                },
+                                                js: {
+                                                    url: 'https://example.com/app.js',
+                                                    navStartToEndTime: 400,
+                                                    transferSize: 2048,
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+        };
+        const formatter = new AiAssistance.LighthouseFormatter.LighthouseFormatter();
+        const output = formatter.audits(networkTreeReport, 'performance');
+        snapshotTester.assert(this, output);
+    });
 });
 //# sourceMappingURL=LighthouseFormatter.test.js.map

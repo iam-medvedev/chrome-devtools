@@ -118,12 +118,53 @@ var commentsPane_css_default = `/*
     background-color: var(--sys-color-state-ripple-neutral-on-subtle);
   }
 
-  .comments-list {
+  /* Queued and sent threads share a single scroll area below the toolbar. */
+  .comments-scroll-container {
+    /* Offset parent for the sections, so their offsetTop is their scroll position. */
+    position: relative;
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
+  }
+
+  /*
+   * Only as tall as its content, so the footer follows the last queued row
+   * when the queue fits in the panel.
+   */
+  .comments-queued-section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .comments-list {
     margin: 0;
     padding: 0;
     list-style: none;
+  }
+
+  /* Extra space between the Send to Agent footer and the sent comments separator. */
+  .comments-sent-section {
+    margin-top: var(--sys-size-11);
+    /*
+     * At least as tall as the panel, so the sent comments can always be
+     * scrolled to the top of the drawer, even when the content above and the
+     * sent list itself are short.
+     */
+    min-height: 100%;
+  }
+
+  /*
+   * Looks like a pane header, but only visually separates the queued comments
+   * (with their footer) from the comments already sent to the agent.
+   */
+  .comments-sent-separator {
+    padding: var(--sys-size-3) var(--sys-size-5);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    background-color: var(--sys-color-surface1);
+    color: var(--sys-color-on-surface-subtle);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
   }
 
   .comment-thread-item {
@@ -218,7 +259,8 @@ var commentsPane_css_default = `/*
     text-overflow: ellipsis;
   }
 
-  .thread-status-working {
+  .thread-status-working,
+  .thread-status-sent {
     display: flex;
     align-items: center;
     gap: var(--sys-size-4);
@@ -229,25 +271,71 @@ var commentsPane_css_default = `/*
     white-space: nowrap;
   }
 
+  .thread-status-sent {
+    gap: var(--sys-size-2);
+  }
+
+  .check-icon {
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    color: var(--sys-color-on-surface-subtle);
+  }
+
   .comments-empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    color: var(--sys-color-on-surface-subtle);
-    font-size: var(--sys-typescale-body3-size);
-    padding: var(--sys-size-13);
+    /* Fills the panel when there are no comments at all. */
+    flex: 1;
+    padding: var(--sys-size-13) var(--sys-size-8);
     text-align: center;
   }
 
+  .comments-empty-state-title {
+    margin-bottom: var(--sys-size-4);
+    color: var(--sys-color-on-surface);
+    font-size: var(--sys-typescale-headline5-size);
+    line-height: var(--sys-typescale-headline5-line-height);
+    font-weight: var(--ref-typeface-weight-medium);
+  }
+
+  .comments-empty-state-description {
+    max-width: var(--sys-size-29);
+    color: var(--sys-color-on-surface-subtle);
+    font-size: var(--sys-typescale-body3-size);
+    line-height: var(--sys-typescale-body3-line-height);
+    text-wrap: balance;
+  }
+
+  .comments-empty-state-icon {
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    vertical-align: text-bottom;
+    color: var(--sys-color-on-surface-subtle);
+  }
+
+  .comments-empty-state-link {
+    margin-top: var(--sys-size-3);
+  }
+
+  /*
+   * Sticks to the bottom of the panel while the queued rows overflow it, and
+   * scrolls up with the end of the queued section once the sent rows are reached.
+   */
   .comments-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: var(--sys-size-5);
+    /* Overlap the last queued row's bottom border so only a single divider is shown. */
+    margin-top: calc(-1 * var(--sys-size-1));
     padding: var(--sys-size-5) var(--sys-size-8);
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    background-color: var(--sys-color-cdt-base-container);
     flex-shrink: 0;
   }
 
@@ -277,19 +365,12 @@ var commentsPane_css_default = `/*
     background-color: var(--sys-color-primary-bright);
     box-shadow: var(--sys-elevation-level1);
   }
-
-  .send-agent-button:disabled {
-    background-color: var(--sys-color-state-disabled-container);
-    color: var(--sys-color-state-disabled);
-    cursor: default;
-    box-shadow: none;
-  }
 }
 
 /*# sourceURL=${import.meta.resolve("./commentsPane.css")} */`;
 
 // ../../front_end/panels/comments/CommentsPane.ts
-var { html, render, Directives: { repeat } } = Lit;
+var { html, render, i18nTemplate, Directives: { ref, repeat } } = Lit;
 var { widget } = UI.Widget;
 var { computeCommentTitle } = CommonPanels.CommentThreadWidget;
 var UIStrings = {
@@ -298,13 +379,27 @@ var UIStrings = {
    */
   clearComments: "Clear all comments",
   /**
-   * @description Text displayed when there are no queued comments to show in the queued tab of the Comments panel.
+   * @description Title of the empty state shown in the Comments panel when there are no queued comments.
    */
-  noQueuedComments: "No queued comments. Add comments on elements in DevTools to send to your AI coding agent.",
+  noQueuedComments: "No queued comments",
   /**
-   * @description Text displayed when there are no sent comments to show in the sent tab of the Comments panel.
+   * @description Title of the empty state shown in the Comments panel when there are no comments at all.
    */
-  noSentComments: "No sent comments. Send comments to your AI coding agent to see them here.",
+  noComments: "No comments",
+  /**
+   * @description Description in the empty state of the Comments panel. PH1 is the comment mode icon, the same icon as
+   * the button that turns on comment mode.
+   * @example {(comment icon)} PH1
+   */
+  emptyStateDescription: "Use {PH1} to select an element and send tasks, questions, and context to your coding agent",
+  /**
+   * @description Accessible name of the comment mode icon shown inside the empty state description of the Comments panel.
+   */
+  commentModeIcon: "Comment mode",
+  /**
+   * @description Link in the empty state of the Comments panel that turns on comment mode so the user can add a comment.
+   */
+  addComment: "Add a comment",
   /**
    * @description Tooltip and aria-label for deleting a comment thread.
    */
@@ -317,6 +412,16 @@ var UIStrings = {
    * @description Status text shown next to a spinner when a comment thread is being processed by the agent.
    */
   working: "Working",
+  /**
+   * @description Status text shown next to a checkmark when a comment thread has been sent but not yet picked up by
+   * the agent.
+   */
+  sentStatus: "Sent",
+  /**
+   * @description Alt text for the checkmark icon shown on a comment thread that has been sent but not yet picked up
+   * by the agent.
+   */
+  sentCheckmark: "Sent checkmark",
   /**
    * @description Button text shown on resolved comment threads to view the agent response.
    */
@@ -332,7 +437,11 @@ var UIStrings = {
   /**
    * @description Label shown next to an element anchor in the comments drawer when the target DOM node has been removed or can no longer be found.
    */
-  removed: "removed"
+  removed: "removed",
+  /**
+   * @description Text in the bar that visually separates the queued comments from the comments already sent to the agent in the comments drawer.
+   */
+  sentComments: "Sent comments"
 };
 var UIStringsNotTranslate = {
   /**
@@ -343,9 +452,22 @@ var UIStringsNotTranslate = {
 var str_ = i18n.i18n.registerUIStrings("panels/comments/CommentsPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var lockedString = i18n.i18n.lockedString;
+var TOGGLE_COMMENT_MODE_ACTION_ID = "comments.toggle-comment-mode";
 function renderThreadStatus(thread, onDeleteThread) {
   switch (thread.status) {
     case "SENT_TO_AGENT":
+      if (!thread.transmitted) {
+        return html`
+          <div class="thread-status-sent">
+            <devtools-icon
+              class="check-icon"
+              name="checkmark"
+              aria-label=${i18nString(UIStrings.sentCheckmark)}>
+            </devtools-icon>
+            <span>${i18nString(UIStrings.sentStatus)}</span>
+          </div>
+        `;
+      }
       return html`
         <div class="thread-status-working">
           <devtools-spinner></devtools-spinner>
@@ -390,33 +512,127 @@ function renderThreadStatus(thread, onDeleteThread) {
       return Lit.nothing;
   }
 }
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW = (input, output, target) => {
   const isQueued = input.activeTab === "queued";
   const isSent = input.activeTab === "sent";
+  const hasThreads = input.queuedThreads.length > 0 || input.sentThreads.length > 0;
+  let sentSection;
+  output.scrollToSection = (tab, { animate }) => {
+    const { scrollContainer } = output;
+    const top = tab === "queued" ? 0 : sentSection?.offsetTop;
+    if (!scrollContainer || top === void 0 || Math.abs(top - scrollContainer.scrollTop) < 1) {
+      return false;
+    }
+    scrollContainer.scrollTo({ top, behavior: animate ? "smooth" : "instant" });
+    return animate;
+  };
+  output.sectionAtTop = () => {
+    const { scrollContainer } = output;
+    return scrollContainer && sentSection && sentSection.offsetTop - scrollContainer.scrollTop <= 1 ? "sent" : "queued";
+  };
   const onThreadClick = (e, thread) => {
     const rowEl = e.currentTarget;
     const rowRect = rowEl.getBoundingClientRect();
     const badgeRect = rowEl.querySelector(".comment-pin-badge")?.getBoundingClientRect();
     input.onThreadClick(thread, { left: badgeRect?.left ?? rowRect.left, top: rowRect.top });
   };
+  const renderThreadList = (threads, className) => html`
+    <ul class="comments-list ${className}" role="list">
+      ${repeat(
+    threads,
+    (item2) => item2.thread.id,
+    (item2) => html`
+          <li
+            class="comment-thread-item ${item2.thread.isOrphaned ? "orphaned" : ""}"
+            role="listitem"
+            tabindex="0"
+            @click=${(e) => onThreadClick(e, item2.thread)}
+            @keydown=${(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onThreadClick(e, item2.thread);
+      }
+    }}
+            jslog=${VisualLogging.item("comment-thread").track({ click: true })}>
+            <div class="comment-pin-badge" aria-hidden="true"></div>
+            <span class="anchor-chip ${item2.thread.isOrphaned ? "orphaned" : ""}">
+              ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, {
+      node: item2.title.node,
+      options: { preventKeyboardFocus: true, disabled: item2.thread.isOrphaned }
+    }) : html`<span class="anchor-chip-text">${item2.title.text}</span>`}
+              ${item2.thread.isOrphaned ? html`<span class="orphaned-label">(${i18nString(UIStrings.removed)})</span>` : Lit.nothing}
+            </span>
+            <div class="comment-text">${item2.commentText}</div>
+            ${renderThreadStatus(item2.thread, input.onDeleteThread)}
+          </li>
+        `
+  )}
+    </ul>
+  `;
+  const renderFooter = () => html`
+    <div class="comments-footer">
+      <devtools-icon
+        class="info-icon"
+        name="info"
+        aria-label="Info"
+        aria-details="comments-pane-info-tooltip"
+        tabindex="0"
+      ></devtools-icon>
+      <devtools-tooltip
+        id="comments-pane-info-tooltip"
+        variant="rich"
+      >
+        <div class="info-tooltip-container">
+          ${lockedString(UIStringsNotTranslate.inputDisclaimer)}
+        </div>
+      </devtools-tooltip>
+      <button
+        class="send-agent-button"
+        @click=${input.onSendToAgent}
+        jslog=${VisualLogging.action("comments-send-to-agent").track({ click: true })}>
+        ${i18nString(UIStrings.sendToAgent)}
+      </button>
+    </div>
+  `;
+  const renderEmptyState = (title) => html`
+    <div class="comments-empty-state">
+      <div class="comments-empty-state-title">${title}</div>
+      <div class="comments-empty-state-description">
+        ${i18nTemplate(str_, UIStrings.emptyStateDescription, {
+    PH1: html`<devtools-icon
+            class="comments-empty-state-icon"
+            name="comment-mode"
+            role="img"
+            aria-label=${i18nString(UIStrings.commentModeIcon)}
+          ></devtools-icon>`
+  })}
+      </div>
+      <devtools-button
+        class="comments-empty-state-link"
+        .data=${{
+    variant: Buttons.Button.Variant.TEXT,
+    jslogContext: "comments-add-comment"
+  }}
+        @click=${input.onAddComment}
+      >${i18nString(UIStrings.addComment)}</devtools-button>
+    </div>
+  `;
   render(html`
     <style>${commentsPane_css_default}</style>
     <div class="comments-container" role="region" aria-label="Comments" jslog=${VisualLogging.panel("comments").track({ resize: true })}>
       <div class="comments-toolbar" role="toolbar" jslog=${VisualLogging.toolbar("comments-drawer")}>
-        <div class="toolbar-left" role="tablist">
+        <div class="toolbar-left">
           <button
             class="tab-button ${isQueued ? "active" : ""}"
-            role="tab"
-            aria-selected=${isQueued}
-            @click=${() => input.onTabSelect("queued")}
+            aria-current=${isQueued ? "location" : "false"}
+            @click=${() => input.onTabClick("queued")}
             jslog=${VisualLogging.sectionHeader("queued").track({ click: true })}>
             ${i18nString(UIStrings.queued)}
           </button>
           <button
             class="tab-button ${isSent ? "active" : ""}"
-            role="tab"
-            aria-selected=${isSent}
-            @click=${() => input.onTabSelect("sent")}
+            aria-current=${isSent ? "location" : "false"}
+            @click=${() => input.onTabClick("sent")}
             jslog=${VisualLogging.sectionHeader("sent").track({ click: true })}>
             ${i18nString(UIStrings.sent)}
           </button>
@@ -431,67 +647,32 @@ var DEFAULT_VIEW = (input, _output, target) => {
         </button>
       </div>
 
-      ${input.threads.length === 0 ? html`
-        <div class="comments-empty-state">
-          <p>${isQueued ? i18nString(UIStrings.noQueuedComments) : i18nString(UIStrings.noSentComments)}</p>
-        </div>
-      ` : html`
-        <ul class="comments-list" role="list">
-          ${repeat(
-    input.threads,
-    (item2) => item2.thread.id,
-    (item2) => html`
-              <li
-                class="comment-thread-item ${item2.thread.isOrphaned ? "orphaned" : ""}"
-                role="listitem"
-                tabindex="0"
-                @click=${(e) => onThreadClick(e, item2.thread)}
-                @keydown=${(e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        onThreadClick(e, item2.thread);
-      }
-    }}
-                jslog=${VisualLogging.item("comment-thread").track({ click: true })}>
-                <div class="comment-pin-badge" aria-hidden="true"></div>
-                <span class="anchor-chip ${item2.thread.isOrphaned ? "orphaned" : ""}">
-                  ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, { node: item2.title.node, options: { preventKeyboardFocus: true, disabled: item2.thread.isOrphaned } }) : html`<span class="anchor-chip-text">${item2.title.text}</span>`}
-                  ${item2.thread.isOrphaned ? html`<span class="orphaned-label">(${i18nString(UIStrings.removed)})</span>` : Lit.nothing}
-                </span>
-                <div class="comment-text">${item2.commentText}</div>
-                ${renderThreadStatus(item2.thread, input.onDeleteThread)}
-              </li>
-            `
-  )}
-        </ul>
-      `}
-
-      ${isQueued ? html`
-        <div class="comments-footer">
-          <devtools-icon
-            class="info-icon"
-            name="info"
-            aria-label="Info"
-            aria-details="comments-pane-info-tooltip"
-            tabindex="0"
-          ></devtools-icon>
-          <devtools-tooltip
-            id="comments-pane-info-tooltip"
-            variant="rich"
-          >
-            <div class="info-tooltip-container">
-              ${lockedString(UIStringsNotTranslate.inputDisclaimer)}
+      ${hasThreads ? html`
+        <div
+          class="comments-scroll-container"
+          ${ref((element) => {
+    output.scrollContainer = element;
+  })}
+          @scroll=${input.onScroll}
+          @scrollend=${input.onScrollEnd}>
+          <div class="comments-queued-section">
+            ${input.queuedThreads.length > 0 ? html`
+              ${renderThreadList(input.queuedThreads, "comments-queued-list")}
+              ${renderFooter()}
+            ` : renderEmptyState(i18nString(UIStrings.noQueuedComments))}
+          </div>
+          ${input.sentThreads.length > 0 ? html`
+            <div class="comments-sent-section" ${ref((element) => {
+    sentSection = element;
+  })}>
+              <div class="comments-sent-separator" role="separator" aria-label=${i18nString(UIStrings.sentComments)}>
+                ${i18nString(UIStrings.sentComments)}
+              </div>
+              ${renderThreadList(input.sentThreads, "comments-sent-list")}
             </div>
-          </devtools-tooltip>
-          <button
-            class="send-agent-button"
-            ?disabled=${input.threads.length === 0}
-            @click=${input.onSendToAgent}
-            jslog=${VisualLogging.action("comments-send-to-agent").track({ click: true })}>
-            ${i18nString(UIStrings.sendToAgent)}
-          </button>
+          ` : Lit.nothing}
         </div>
-      ` : Lit.nothing}
+      ` : renderEmptyState(i18nString(UIStrings.noComments))}
     </div>
   `, target);
 };
@@ -502,7 +683,16 @@ var CommentsPane = class extends UI.Widget.Widget {
   #view;
   #commentManager;
   #cachedTitles = /* @__PURE__ */ new Map();
+  #viewOutput = {};
   #activeTab = "queued";
+  // Set while a tab click smoothly scrolls the list. Scroll events then don't
+  // change the highlighted tab, so it doesn't flicker on the way.
+  #scrollingToTab = false;
+  // Whether the previous render had sent comments and nothing queued. We jump
+  // to Sent only when this changes from false to true. Without it, every update
+  // (e.g. the agent resolving a thread) would jump back to Sent even after the
+  // user clicked Queued or scrolled up.
+  #onlySentComments = false;
   constructor(element, [commentManager] = [
     new CommentManager.CommentManager.CommentManager()
   ], view = DEFAULT_VIEW) {
@@ -520,9 +710,19 @@ var CommentsPane = class extends UI.Widget.Widget {
       this.#onThreadsChanged,
       this
     );
+    this.#onlySentComments = false;
     this.requestUpdate();
   }
+  /**
+   * Lets `UI.Widget` store the list's scroll position when the drawer is hidden
+   * and restore it when it is shown again.
+   */
+  elementsToRestoreScrollPositionsFor() {
+    const { scrollContainer } = this.#viewOutput;
+    return scrollContainer ? [this.element, scrollContainer] : [this.element];
+  }
   willHide() {
+    this.#scrollingToTab = false;
     this.#commentManager.removeEventListener(
       CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED,
       this.#onThreadsChanged,
@@ -530,12 +730,26 @@ var CommentsPane = class extends UI.Widget.Widget {
     );
     super.willHide();
   }
-  #handleTabSelect = (tab) => {
+  #setActiveTab(tab) {
     if (this.#activeTab === tab) {
       return;
     }
     this.#activeTab = tab;
     this.requestUpdate();
+  }
+  #handleTabClick = (tab) => {
+    this.#scrollingToTab = this.#viewOutput.scrollToSection?.(tab, { animate: true }) ?? false;
+    this.#setActiveTab(tab);
+  };
+  #handleScroll = () => {
+    if (!this.#scrollingToTab && this.#viewOutput.sectionAtTop) {
+      this.#setActiveTab(this.#viewOutput.sectionAtTop());
+    }
+  };
+  // Fires when a tab-click scroll finishes or the user interrupts it.
+  #handleScrollEnd = () => {
+    this.#scrollingToTab = false;
+    this.#handleScroll();
   };
   #handleClearAll = () => {
     this.#cachedTitles.clear();
@@ -553,40 +767,61 @@ var CommentsPane = class extends UI.Widget.Widget {
   #handleSendToAgent = () => {
     this.#commentManager.sendQueuedThreads();
   };
-  async performUpdate(signal) {
-    let rawThreads;
-    if (this.#activeTab === "queued") {
-      rawThreads = this.#commentManager.getCommentThreads().filter((thread) => thread.status === "ACTIVE");
-    } else {
-      rawThreads = this.#commentManager.getCommentThreads().filter((thread) => thread.status === "SENT_TO_AGENT" || thread.status === "RESOLVED");
+  #handleAddComment = () => {
+    const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
+    if (this.#commentManager.isCommentMode() || !actionRegistry.hasAction(TOGGLE_COMMENT_MODE_ACTION_ID)) {
+      return;
     }
-    const threadViewData = await Promise.all(
-      rawThreads.map(async (thread) => {
-        let title = this.#cachedTitles.get(thread.id);
-        if (!title) {
-          title = await computeCommentTitle(thread.anchor);
-          this.#cachedTitles.set(thread.id, title);
-        }
-        return {
-          thread,
-          title,
-          commentText: thread.comments[0]?.text ?? ""
-        };
-      })
-    );
+    void actionRegistry.getAction(TOGGLE_COMMENT_MODE_ACTION_ID).execute();
+  };
+  async #toViewData(thread) {
+    let title = this.#cachedTitles.get(thread.id);
+    if (!title) {
+      title = await computeCommentTitle(thread.anchor);
+      this.#cachedTitles.set(thread.id, title);
+    }
+    return {
+      thread,
+      title,
+      commentText: thread.comments[0]?.text ?? ""
+    };
+  }
+  async performUpdate(signal) {
+    const allThreads = this.#commentManager.getCommentThreads();
+    const queued = allThreads.filter((thread) => thread.status === "ACTIVE");
+    const sent = allThreads.filter((thread) => thread.status === "SENT_TO_AGENT" || thread.status === "RESOLVED");
+    const [queuedThreads, sentThreads] = await Promise.all([
+      Promise.all(queued.map((thread) => this.#toViewData(thread))),
+      Promise.all(sent.map((thread) => this.#toViewData(thread)))
+    ]);
     if (signal?.aborted) {
       return;
     }
+    const onlySentComments = queuedThreads.length === 0 && sentThreads.length > 0;
+    const showSentComments = onlySentComments && !this.#onlySentComments;
+    this.#onlySentComments = onlySentComments;
+    if (showSentComments) {
+      this.#activeTab = "sent";
+    } else if (sentThreads.length === 0) {
+      this.#activeTab = "queued";
+    }
     const viewInput = {
       activeTab: this.#activeTab,
-      threads: threadViewData,
-      onTabSelect: this.#handleTabSelect,
+      queuedThreads,
+      sentThreads,
+      onTabClick: this.#handleTabClick,
+      onScroll: this.#handleScroll,
+      onScrollEnd: this.#handleScrollEnd,
       onClearAll: this.#handleClearAll,
       onThreadClick: this.#handleThreadClick,
       onDeleteThread: this.#handleDeleteThread,
-      onSendToAgent: this.#handleSendToAgent
+      onSendToAgent: this.#handleSendToAgent,
+      onAddComment: this.#handleAddComment
     };
-    this.#view(viewInput, void 0, this.contentElement);
+    this.#view(viewInput, this.#viewOutput, this.contentElement);
+    if (showSentComments) {
+      this.#viewOutput.scrollToSection?.("sent", { animate: false });
+    }
   }
 };
 export {

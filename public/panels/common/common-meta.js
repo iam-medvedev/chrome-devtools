@@ -51,7 +51,17 @@ UI.ActionRegistration.registerActionExtension({
   async loadActionDelegate() {
     const CommonModule = await loadCommonModule();
     return new CommonModule.CommentsOverlayWidget.ActionDelegate();
-  }
+  },
+  bindings: [
+    {
+      shortcut: "Ctrl+Shift+K",
+      platform: UI.ActionRegistration.Platforms.WINDOWS_LINUX
+    },
+    {
+      shortcut: "Meta+Shift+K",
+      platform: UI.ActionRegistration.Platforms.MAC
+    }
+  ]
 });
 UI.Toolbar.registerToolbarItem({
   async loadItem() {
@@ -69,6 +79,15 @@ Common.Revealer.registerRevealer({
   async loadRevealer() {
     const CommonModule = await loadCommonModule();
     return new CommonModule.CommentsOverlayWidget.ThreadRevealer();
+  }
+});
+UI.ContextMenu.registerProvider({
+  contextTypes() {
+    return [Node];
+  },
+  async loadProvider() {
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.CommentsOverlayWidget.ContextMenuProvider();
   }
 });
 //# sourceMappingURL=common-meta.js.map

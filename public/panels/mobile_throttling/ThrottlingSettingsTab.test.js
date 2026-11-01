@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
-import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from './mobile_throttling.js';
 const { ThrottlingSettingsTab } = MobileThrottling.ThrottlingSettingsTab;
 function makeFakeNetworkConditions(index) {
@@ -22,6 +20,21 @@ function makeFakeNetworkConditions(index) {
         packetReordering: false,
     };
 }
+async function addAndCommitCustomProfile(widget, title = 'Custom Profile') {
+    const addButton = widget.contentElement.querySelector('.add-conditions-button');
+    assert.isOk(addButton);
+    dispatchClickEvent(addButton);
+    await widget.updateComplete;
+    const titleInput = widget.contentElement.querySelector('.editor-container input[type="text"]');
+    assert.isOk(titleInput);
+    titleInput.value = title;
+    titleInput.dispatchEvent(new Event('input'));
+    await widget.updateComplete;
+    const commitButton = widget.contentElement.querySelectorAll('.editor-buttons devtools-button')[1];
+    assert.isOk(commitButton);
+    dispatchClickEvent(commitButton);
+    await widget.updateComplete;
+}
 describe('ThrottlingSettingsTab', () => {
     setupLocaleHooks();
     it('can add custom network conditions and sets the key correctly', async () => {
@@ -29,17 +42,12 @@ describe('ThrottlingSettingsTab', () => {
         const settings = universe.settings;
         const customConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting(settings);
         assert.lengthOf(customConditionsSetting.get(), 0);
-        const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
         const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
-        await raf();
-        const addButton = widget.contentElement.querySelector('.add-conditions-button');
-        assert.isOk(addButton);
-        dispatchClickEvent(addButton);
-        sinon.assert.calledOnce(addNewItemStub);
-        const [indexOfNewItem, newConditions] = addNewItemStub.getCall(0).args;
-        assert.strictEqual(indexOfNewItem, 0);
-        assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_1');
+        await widget.updateComplete;
+        await addAndCommitCustomProfile(widget);
+        assert.lengthOf(customConditionsSetting.get(), 1);
+        assert.strictEqual(customConditionsSetting.get().at(-1)?.key, 'USER_CUSTOM_SETTING_1');
     });
     it('uses the right key when custom conditions already exist', async () => {
         const universe = new TestUniverse();
@@ -50,17 +58,12 @@ describe('ThrottlingSettingsTab', () => {
             // purposefully add a larger key than the index
             makeFakeNetworkConditions(4),
         ]);
-        const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
         const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
-        await raf();
-        const addButton = widget.contentElement.querySelector('.add-conditions-button');
-        assert.isOk(addButton);
-        dispatchClickEvent(addButton);
-        sinon.assert.calledOnce(addNewItemStub);
-        const [indexOfNewItem, newConditions] = addNewItemStub.getCall(0).args;
-        assert.strictEqual(indexOfNewItem, 2);
-        assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_6');
+        await widget.updateComplete;
+        await addAndCommitCustomProfile(widget);
+        assert.lengthOf(customConditionsSetting.get(), 3);
+        assert.strictEqual(customConditionsSetting.get().at(-1)?.key, 'USER_CUSTOM_SETTING_6');
     });
     it('still increments the key even if an old condition is deleted', async () => {
         const universe = new TestUniverse();
@@ -69,21 +72,17 @@ describe('ThrottlingSettingsTab', () => {
         const fakeConditions1 = makeFakeNetworkConditions(0);
         const fakeConditions2 = makeFakeNetworkConditions(1);
         customConditionsSetting.set([fakeConditions1, fakeConditions2]);
-        const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
         const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
-        await raf();
+        await widget.updateComplete;
         // Before we add a new one, delete an old one.
         customConditionsSetting.set([fakeConditions1]);
-        const addButton = widget.contentElement.querySelector('.add-conditions-button');
-        assert.isOk(addButton);
-        dispatchClickEvent(addButton);
-        sinon.assert.calledOnce(addNewItemStub);
-        const [indexOfNewItem, newConditions] = addNewItemStub.getCall(0).args;
-        assert.strictEqual(indexOfNewItem, 1);
+        await widget.updateComplete;
+        await addAndCommitCustomProfile(widget);
+        assert.lengthOf(customConditionsSetting.get(), 2);
         // The number used in the key is still 3, because it never decrements even
         // when settings are deleted.
-        assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_3');
+        assert.strictEqual(customConditionsSetting.get().at(-1)?.key, 'USER_CUSTOM_SETTING_3');
     });
     it('can handle double digit indexes', async () => {
         const universe = new TestUniverse();
@@ -92,17 +91,12 @@ describe('ThrottlingSettingsTab', () => {
         const fakeConditions1 = makeFakeNetworkConditions(0);
         const fakeConditions2 = makeFakeNetworkConditions(9);
         customConditionsSetting.set([fakeConditions1, fakeConditions2]);
-        const addNewItemStub = sinon.stub(UI.ListWidget.ListWidget.prototype, 'addNewItem');
         const widget = new ThrottlingSettingsTab(settings);
         renderElementIntoDOM(widget);
-        await raf();
-        const addButton = widget.contentElement.querySelector('.add-conditions-button');
-        assert.isOk(addButton);
-        dispatchClickEvent(addButton);
-        sinon.assert.calledOnce(addNewItemStub);
-        const [indexOfNewItem, newConditions] = addNewItemStub.getCall(0).args;
-        assert.strictEqual(indexOfNewItem, 2);
-        assert.strictEqual(newConditions.key, 'USER_CUSTOM_SETTING_11');
+        await widget.updateComplete;
+        await addAndCommitCustomProfile(widget);
+        assert.lengthOf(customConditionsSetting.get(), 3);
+        assert.strictEqual(customConditionsSetting.get().at(-1)?.key, 'USER_CUSTOM_SETTING_11');
     });
     it('renders default and custom profiles in separate cards with headers', async () => {
         const expectedHeaders = [
@@ -127,10 +121,8 @@ describe('ThrottlingSettingsTab', () => {
         assert.strictEqual(cards[0].heading, 'CPU throttling presets');
         assert.strictEqual(cards[1].heading, 'Default profiles');
         assert.strictEqual(cards[2].heading, 'Custom profiles');
-        const defaultList = cards[1].querySelector('.conditions-list');
-        assert.isOk(defaultList);
-        // Check header
-        const defaultHeader = defaultList.shadowRoot.querySelector('.conditions-list-header');
+        // Check default header and list
+        const defaultHeader = cards[1].querySelector('.conditions-list-header');
         assert.isOk(defaultHeader);
         const defaultHeaderColumns = defaultHeader.querySelectorAll('.conditions-list-text');
         assert.lengthOf(defaultHeaderColumns, 7);
@@ -138,16 +130,14 @@ describe('ThrottlingSettingsTab', () => {
         assert.deepEqual(actualDefaultTexts, expectedHeaders);
         const actualDefaultTooltips = Array.from(defaultHeaderColumns).map(col => col.getAttribute('title') || '');
         assert.deepEqual(actualDefaultTooltips, expectedHeaders);
-        const defaultItems = defaultList.shadowRoot.querySelectorAll('.list-item');
+        const defaultList = cards[1].querySelector('.conditions-list');
+        assert.isOk(defaultList);
+        assert.isFalse(defaultList.hasAttribute('editable'));
+        assert.isFalse(defaultList.hasAttribute('deletable'));
+        const defaultItems = defaultList.querySelectorAll('.conditions-list-item');
         assert.lengthOf(defaultItems, 4);
-        for (const item of defaultItems) {
-            assert.isFalse(item.classList.contains('editable'));
-            assert.isNull(item.querySelector('.controls-container'));
-        }
-        const customList = cards[2].querySelector('.conditions-list');
-        assert.isOk(customList);
-        // Check header
-        const customHeader = customList.shadowRoot.querySelector('.conditions-list-header');
+        // Check custom header and list
+        const customHeader = cards[2].querySelector('.conditions-list-header');
         assert.isOk(customHeader);
         const customHeaderColumns = customHeader.querySelectorAll('.conditions-list-text');
         assert.lengthOf(customHeaderColumns, 7);
@@ -155,10 +145,12 @@ describe('ThrottlingSettingsTab', () => {
         assert.deepEqual(actualCustomTexts, expectedHeaders);
         const actualCustomTooltips = Array.from(customHeaderColumns).map(col => col.getAttribute('title') || '');
         assert.deepEqual(actualCustomTooltips, expectedHeaders);
-        const customItems = customList.shadowRoot.querySelectorAll('.list-item');
+        const customList = cards[2].querySelector('.conditions-list');
+        assert.isOk(customList);
+        assert.isTrue(customList.hasAttribute('editable'));
+        assert.isTrue(customList.hasAttribute('deletable'));
+        const customItems = customList.querySelectorAll('.conditions-list-item');
         assert.lengthOf(customItems, 1);
-        assert.isTrue(customItems[0].classList.contains('editable'));
-        assert.isOk(customItems[0].querySelector('.controls-container'));
     });
 });
 //# sourceMappingURL=ThrottlingSettingsTab.test.js.map

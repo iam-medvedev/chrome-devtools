@@ -1,3 +1,4 @@
 import * as LinearMemoryInspectorController from './LinearMemoryInspectorController.js';
 import * as LinearMemoryInspectorPane from './LinearMemoryInspectorPane.js';
-export { LinearMemoryInspectorController, LinearMemoryInspectorPane, };
+import * as LinearMemoryInspectorView from './LinearMemoryInspectorView.js';
+export { LinearMemoryInspectorController, LinearMemoryInspectorPane, LinearMemoryInspectorView, };

@@ -1,19 +1,20 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import { createIcon, Link } from '../../ui/kit/kit.js';
 import * as SettingsUI from '../../ui/legacy/components/settings_ui/settings_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as Settings from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import keybindsSettingsTabStyles from './keybindsSettingsTab.css.js';
 import settingsScreenStyles from './settingsScreen.css.js';
+const { html, nothing, render, Directives: { classMap, repeat } } = Lit;
 const UIStrings = {
     /**
      * @description Text for keyboard shortcuts.
@@ -101,75 +102,365 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/KeybindsSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class KeybindsSettingsTab extends UI.Widget.VBox {
-    items;
-    list;
-    editingItem;
-    editingRow;
-    constructor() {
-        super({
-            jslog: `${VisualLogging.pane('keybinds')}`,
-            useShadowDom: true,
-        });
-        this.registerRequiredCSS(keybindsSettingsTabStyles, settingsScreenStyles);
-        const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        settingsContent.classList.add('settings-card-container');
-        const keybindsSetSetting = Common.Settings.Settings.instance().resolve(Settings.MainSettings.activeKeybindSetSettingDescriptor);
-        const userShortcutsSetting = Common.Settings.Settings.instance().resolve(Settings.MainSettings.userShortcutsSettingDescriptor);
-        keybindsSetSetting.addChangeListener(this.update, this);
-        const keybindsSetSelect = SettingsUI.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset));
-        const card = settingsContent.createChild('devtools-card');
-        card.heading = i18nString(UIStrings.shortcuts);
-        if (keybindsSetSelect) {
-            keybindsSetSelect.classList.add('keybinds-set-select');
-        }
-        this.items = new UI.ListModel.ListModel();
-        this.list = new UI.ListControl.ListControl(this.items, this, UI.ListControl.ListMode.NonViewport);
-        this.list.element.classList.add('shortcut-list');
-        this.items.replaceAll(this.createListItems());
-        UI.ARIAUtils.markAsList(this.list.element);
-        UI.ARIAUtils.setLabel(this.list.element, i18nString(UIStrings.keyboardShortcutsList));
-        const footer = document.createElement('div');
-        footer.classList.add('keybinds-footer');
-        const docsLink = Link.create('https://developer.chrome.com/docs/devtools/shortcuts/', i18nString(UIStrings.FullListOfDevtoolsKeyboard), undefined, 'learn-more');
-        docsLink.classList.add('docs-link');
-        footer.appendChild(docsLink);
-        const restoreDefaultShortcutsButton = UI.UIUtils.createTextButton(i18nString(UIStrings.RestoreDefaultShortcuts), () => {
-            userShortcutsSetting.set([]);
-            keybindsSetSetting.set(UI.ShortcutRegistry.DefaultShortcutSetting);
-        }, { jslogContext: 'restore-default-shortcuts' });
-        footer.appendChild(restoreDefaultShortcutsButton);
-        this.editingItem = null;
-        this.editingRow = null;
-        if (keybindsSetSelect) {
-            card.append(keybindsSetSelect);
-        }
-        card.append(this.list.element, footer);
-        this.update();
-    }
-    createElementForItem(item) {
-        const element = document.createElement('div');
-        let itemContent;
+function renderActionRow(item, input) {
+    const renderEditButton = () => html `
+    <devtools-button
+      class="keybinds-edit-button"
+      title=${i18nString(UIStrings.editShortcut)}
+      aria-label=${i18nString(UIStrings.editShortcut)}
+      .iconName=${'edit'}
+      .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+      .jslogContext=${'edit'}
+      @click=${() => input.onStartEditing(item.action)}>
+    </devtools-button>
+  `;
+    // clang-format off
+    return html `
+    <div
+      class="keybinds-list-item-wrapper"
+      @focusin=${() => input.onActionFocused(item.action)}>
+      <div
+        class=${classMap({
+        'keybinds-list-item': true,
+        'keybinds-editing': item.isEditing,
+    })}
+        role="listitem"
+        aria-level="2"
+        tabindex=${item.tabIndex}
+        ?autofocus=${item.isAutofocus}
+        jslog=${VisualLogging.item().context(item.actionId).track({ keydown: 'Escape', resize: true })}
+        @keydown=${item.isEditing ? input.onEditingRowKeyDown : nothing}>
+        <div class="keybinds-action-name keybinds-list-text">${item.actionTitle}</div>
+        ${repeat(item.rows, row => row.shortcut, (row, index) => html `
+          ${row.isModified ? html `
+            <devtools-icon
+              class="keybinds-modified"
+              name="keyboard-pen"
+              aria-label=${i18nString(UIStrings.shortcutModified)}>
+            </devtools-icon>
+          ` : nothing}
+          <div class="keybinds-shortcut keybinds-list-text">
+            ${item.isEditing ? html `
+              <input
+                class=${classMap({
+        'harmony-input': true,
+        'error-input': row.isInvalid,
+    })}
+                jslog=${VisualLogging.textField().track({ change: true })}
+                placeholder=${i18nString(UIStrings.recordingKeys)}
+                .spellcheck=${false}
+                maxlength="0"
+                ?autofocus=${row.isAutofocus}
+                aria-invalid=${row.isInvalid ? 'true' : 'false'}
+                .value=${row.value}
+                @keydown=${(event) => input.onShortcutInputKeyDown(row.shortcut, event)}
+                @focus=${() => input.onShortcutInputFocus(row.shortcut)}
+                @blur=${input.onShortcutInputBlur}
+              />
+              <devtools-button
+                class="keybinds-delete-button"
+                title=${i18nString(UIStrings.removeShortcut)}
+                aria-label=${i18nString(UIStrings.removeShortcut)}
+                .iconName=${'bin'}
+                .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                .jslogContext=${'delete'}
+                @click=${() => input.onDeleteShortcut(row.shortcut)}>
+              </devtools-button>
+            ` : html `
+              ${row.keys.map(key => html `
+                <div class="keybinds-key"><span>${key}</span></div>
+              `)}
+            `}
+          </div>
+          ${!item.isEditing && index === 0 ? renderEditButton() : nothing}
+        `)}
+        ${item.hasEmptyInfo ? html `
+          ${item.hasDefaultShortcutWhenEmpty ? html `
+            <devtools-icon
+              class="keybinds-modified"
+              name="keyboard-pen"
+              aria-label=${i18nString(UIStrings.shortcutModified)}>
+            </devtools-icon>
+          ` : nothing}
+          ${!item.isEditing ? html `
+            <div
+              class="keybinds-shortcut keybinds-list-text"
+              aria-label=${i18nString(UIStrings.noShortcutForAction)}>
+            </div>
+            ${renderEditButton()}
+          ` : nothing}
+        ` : nothing}
+        ${item.isEditing ? html `
+          <div class="keybinds-shortcut">
+            <devtools-button
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              .jslogContext=${'add-shortcut'}
+              ?autofocus=${item.rows.length === 0}
+              @click=${input.onAddShortcut}>
+              ${i18nString(UIStrings.addAShortcut)}
+            </devtools-button>
+          </div>
+          <div
+            class=${classMap({
+        'keybinds-info': true,
+        'keybinds-error': true,
+        hidden: !item.errorMessage,
+    })}
+            role="alert"
+            aria-live="polite">
+            ${item.errorMessage ?? ''}
+          </div>
+          <devtools-button
+            title=${i18nString(UIStrings.ResetShortcutsForAction)}
+            aria-label=${i18nString(UIStrings.ResetShortcutsForAction)}
+            .iconName=${'undo'}
+            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+            .jslogContext=${'undo'}
+            @click=${input.onResetShortcutsToDefaults}>
+          </devtools-button>
+          <devtools-button
+            class="keybinds-confirm-button"
+            title=${i18nString(UIStrings.confirmChanges)}
+            aria-label=${i18nString(UIStrings.confirmChanges)}
+            .iconName=${'checkmark'}
+            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+            .jslogContext=${'confirm'}
+            .disabled=${item.isConfirmDisabled}
+            @click=${input.onConfirmChanges}>
+          </devtools-button>
+          <devtools-button
+            class="keybinds-cancel-button"
+            title=${i18nString(UIStrings.discardChanges)}
+            aria-label=${i18nString(UIStrings.discardChanges)}
+            .iconName=${'cross'}
+            .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+            .jslogContext=${'cancel'}
+            @click=${input.onDiscardChanges}>
+          </devtools-button>
+        ` : nothing}
+      </div>
+    </div>
+  `;
+    // clang-format on
+}
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+        <style>${keybindsSettingsTabStyles}</style>
+        <style>${settingsScreenStyles}</style>
+        <div class="settings-card-container-wrapper">
+          <div class="settings-card-container">
+            <devtools-card heading=${i18nString(UIStrings.shortcuts)}>
+              <div class="keybinds-set-select">
+                ${SettingsUI.SettingsUI.renderControlForSetting(input.keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset))}
+              </div>
+              <div
+                class="shortcut-list"
+                role="list"
+                aria-label=${i18nString(UIStrings.keyboardShortcutsList)}
+                @keydown=${input.onListKeyDown}>
+                ${repeat(input.items, item => typeof item === 'string' ? item : item.actionId, item => {
         if (typeof item === 'string') {
-            itemContent = element;
-            itemContent.classList.add('keybinds-category-header');
-            itemContent.textContent = UI.ActionRegistration.getLocalizedActionCategory(item);
-            UI.ARIAUtils.setLevel(itemContent, 1);
+            return html `
+                          <div
+                            class="keybinds-category-header"
+                            role="listitem"
+                            aria-level="1"
+                            tabindex="-1">
+                            ${UI.ActionRegistration.getLocalizedActionCategory(item)}
+                          </div>
+                        `;
         }
-        else {
-            const listItem = new ShortcutListItem(item, this, item === this.editingItem);
-            itemContent = listItem.element;
-            UI.ARIAUtils.setLevel(itemContent, 2);
-            if (item === this.editingItem) {
-                this.editingRow = listItem;
+        return renderActionRow(item, input);
+    })}
+              </div>
+              <div class="keybinds-footer">
+                <devtools-link
+                  class="docs-link"
+                  href="https://developer.chrome.com/docs/devtools/shortcuts/"
+                  jslogcontext="learn-more">
+                  ${i18nString(UIStrings.FullListOfDevtoolsKeyboard)}
+                </devtools-link>
+                <devtools-button
+                  .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+                  .jslogContext=${'restore-default-shortcuts'}
+                  @click=${input.onRestoreDefaultShortcuts}>
+                  ${i18nString(UIStrings.RestoreDefaultShortcuts)}
+                </devtools-button>
+              </div>
+            </devtools-card>
+          </div>
+        </div>
+      `, target, {
+        container: {
+            classes: ['flex-auto'],
+            attributes: {
+                jslog: `${VisualLogging.pane('keybinds')}`,
+            },
+        },
+    });
+    // clang-format on
+};
+export class KeybindsSettingsTab extends UI.Widget.VBox {
+    #items;
+    #actions;
+    #selectedItem = null;
+    #editingItem = null;
+    #editingShortcuts = [];
+    #editedShortcuts = new Map();
+    #focusedShortcut = null;
+    #validated = false;
+    #secondKeyTimeout = null;
+    #keybindsSetSetting;
+    #userShortcutsSetting;
+    #view;
+    constructor(view = DEFAULT_VIEW) {
+        super({ useShadowDom: 'pure' });
+        this.#view = view;
+        this.#keybindsSetSetting =
+            Common.Settings.Settings.instance().resolve(Settings.MainSettings.activeKeybindSetSettingDescriptor);
+        this.#userShortcutsSetting =
+            Common.Settings.Settings.instance().resolve(Settings.MainSettings.userShortcutsSettingDescriptor);
+        this.#keybindsSetSetting.addChangeListener(this.update, this);
+        this.#items = this.#createListItems();
+        this.#actions = this.#items.filter((item) => item instanceof UI.ActionRegistration.Action);
+        this.#selectedItem = this.#actions[0] ?? null;
+        this.requestUpdate();
+    }
+    wasShown() {
+        super.wasShown();
+        this.performUpdate();
+    }
+    #onRestoreDefaultShortcuts() {
+        this.#userShortcutsSetting.set([]);
+        this.#keybindsSetSetting.set(UI.ShortcutRegistry.DefaultShortcutSetting);
+    }
+    #buildActionRowViewData(item) {
+        const isEditing = item === this.#editingItem;
+        const isSelected = item === this.#selectedItem;
+        const isAutofocus = isSelected && !this.#editingItem;
+        const tabIndex = isSelected && !isEditing ? 0 : -1;
+        const shortcuts = isEditing ? this.#editingShortcuts :
+            UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item.id());
+        const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
+        let errorMessage = null;
+        let isConfirmDisabled = false;
+        const rows = [];
+        for (const shortcut of shortcuts) {
+            if (isEditing && this.#editedShortcuts.has(shortcut) && !this.#editedShortcuts.get(shortcut)) {
+                continue;
             }
-            itemContent.classList.add('keybinds-list-item');
-            element.classList.add('keybinds-list-item-wrapper');
-            element.appendChild(itemContent);
+            const isModified = shortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */ && !shortcut.isDefault();
+            const userDescriptors = isEditing ? this.#editedShortcuts.get(shortcut) : undefined;
+            const value = userDescriptors ? this.#shortcutInputTextForDescriptors(userDescriptors) : shortcut.title();
+            const keys = shortcut.descriptors.flatMap(descriptor => descriptor.name.split(separator));
+            let isInvalid = false;
+            if (isEditing && this.#validated && userDescriptors) {
+                if (userDescriptors.some(descriptor => UI.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
+                    isConfirmDisabled = true;
+                    isInvalid = true;
+                    errorMessage = i18nString(UIStrings.shortcutsCannotContainOnly);
+                }
+                else {
+                    const conflicts = UI.ShortcutRegistry.ShortcutRegistry.instance()
+                        .actionsForDescriptors(userDescriptors)
+                        .filter(actionId => actionId !== item.id());
+                    if (conflicts.length) {
+                        isConfirmDisabled = true;
+                        isInvalid = true;
+                        if (UI.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
+                            const action = UI.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
+                            errorMessage =
+                                i18nString(UIStrings.thisShortcutIsInUseByS, { PH1: action.category(), PH2: action.title() });
+                        }
+                    }
+                }
+            }
+            rows.push({
+                shortcut,
+                isModified,
+                value,
+                keys,
+                isInvalid,
+                isAutofocus: false,
+            });
         }
-        UI.ARIAUtils.markAsListitem(itemContent);
-        itemContent.tabIndex = item === this.list.selectedItem() && item !== this.editingItem ? 0 : -1;
-        return element;
+        if (isEditing && rows.length > 0) {
+            const autofocusRow = rows.find(row => row.shortcut === this.#focusedShortcut) ?? rows[0];
+            autofocusRow.isAutofocus = true;
+        }
+        return {
+            action: item,
+            actionId: item.id(),
+            actionTitle: item.title(),
+            isEditing,
+            isAutofocus,
+            tabIndex,
+            hasEmptyInfo: shortcuts.length === 0,
+            hasDefaultShortcutWhenEmpty: shortcuts.length === 0 && UI.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(item.id()),
+            rows,
+            errorMessage,
+            isConfirmDisabled,
+        };
+    }
+    performUpdate() {
+        const viewItems = this.#items.map(item => typeof item === 'string' ? item : this.#buildActionRowViewData(item));
+        this.#view({
+            keybindsSetSetting: this.#keybindsSetSetting,
+            items: viewItems,
+            onRestoreDefaultShortcuts: this.#onRestoreDefaultShortcuts.bind(this),
+            onListKeyDown: this.#onListKeyDown.bind(this),
+            onActionFocused: this.#onActionFocused.bind(this),
+            onStartEditing: this.startEditing.bind(this),
+            onAddShortcut: this.#addShortcut.bind(this),
+            onResetShortcutsToDefaults: this.#resetShortcutsToDefaults.bind(this),
+            onConfirmChanges: this.#onConfirmChanges.bind(this),
+            onDiscardChanges: this.#onDiscardChanges.bind(this),
+            onEditingRowKeyDown: this.#onEditingRowKeyDown.bind(this),
+            onShortcutInputKeyDown: this.#onShortcutInputKeyDown.bind(this),
+            onShortcutInputFocus: this.#onShortcutInputFocus.bind(this),
+            onShortcutInputBlur: this.#onShortcutInputBlur.bind(this),
+            onDeleteShortcut: this.#onDeleteShortcut.bind(this),
+        }, undefined, this.contentElement);
+    }
+    #onActionFocused(action) {
+        if (this.#selectedItem === action) {
+            return;
+        }
+        this.#selectedItem = action;
+        this.performUpdate();
+    }
+    #onListKeyDown(event) {
+        if (this.#editingItem || this.#actions.length === 0) {
+            return;
+        }
+        const currentIndex = this.#selectedItem ? this.#actions.indexOf(this.#selectedItem) : -1;
+        let nextIndex = -1;
+        switch (event.key) {
+            case 'ArrowDown':
+            case 'PageDown':
+                nextIndex = currentIndex < this.#actions.length - 1 ? currentIndex + 1 : this.#actions.length - 1;
+                break;
+            case 'ArrowUp':
+            case 'PageUp':
+                nextIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+                break;
+            case 'Home':
+                nextIndex = 0;
+                break;
+            case 'End':
+                nextIndex = this.#actions.length - 1;
+                break;
+            default:
+                return;
+        }
+        event.consume(true);
+        const nextAction = this.#actions[nextIndex];
+        if (nextAction) {
+            this.#selectedItem = nextAction;
+            this.performUpdate();
+            this.focus();
+        }
     }
     commitChanges(item, editedShortcuts) {
         for (const [originalShortcut, newDescriptors] of editedShortcuts) {
@@ -191,53 +482,171 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         }
         this.stopEditing(item);
     }
-    /**
-     * This method will never be called.
-     */
-    heightForItem(_item) {
-        return 0;
-    }
-    isItemSelectable(item) {
-        // Category headers (UI.ActionRegistration.ActionCategory) should not be selectable
-        return item instanceof UI.ActionRegistration.Action;
-    }
-    selectedItemChanged(_from, to, fromElement, toElement) {
-        if (fromElement) {
-            fromElement.tabIndex = -1;
-        }
-        if (toElement) {
-            if (to === this.editingItem && this.editingRow) {
-                this.editingRow.focus();
-            }
-            else {
-                toElement.tabIndex = 0;
-                if (this.list.element.hasFocus()) {
-                    toElement.focus();
-                }
-            }
-            this.setDefaultFocusedElement(toElement);
-        }
-    }
-    updateSelectedItemARIA(_fromElement, _toElement) {
-        return true;
-    }
     startEditing(action) {
-        this.list.selectItem(action);
-        if (this.editingItem) {
-            this.stopEditing(this.editingItem);
+        this.#selectedItem = action;
+        if (this.#editingItem) {
+            this.stopEditing(this.#editingItem);
         }
-        UI.UIUtils.markBeingEdited(this.list.element, true);
-        this.editingItem = action;
-        this.list.refreshItem(action);
-    }
-    stopEditing(action) {
-        UI.UIUtils.markBeingEdited(this.list.element, false);
-        this.editingItem = null;
-        this.editingRow = null;
-        this.list.refreshItem(action);
+        UI.UIUtils.markBeingEdited(this.element, true);
+        this.#editingItem = action;
+        this.#editedShortcuts.clear();
+        this.#focusedShortcut = null;
+        this.#validated = false;
+        this.#editingShortcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(action.id());
+        this.performUpdate();
         this.focus();
     }
-    createListItems() {
+    stopEditing(_action) {
+        if (this.#secondKeyTimeout !== null) {
+            clearTimeout(this.#secondKeyTimeout);
+            this.#secondKeyTimeout = null;
+        }
+        UI.UIUtils.markBeingEdited(this.element, false);
+        this.#editingItem = null;
+        this.#editingShortcuts = [];
+        this.#editedShortcuts.clear();
+        this.#focusedShortcut = null;
+        this.#validated = false;
+        this.performUpdate();
+        this.focus();
+    }
+    #onConfirmChanges() {
+        if (!this.#editingItem) {
+            return;
+        }
+        const item = this.#editingItem;
+        this.commitChanges(item, this.#editedShortcuts);
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesApplied, { PH1: item.title() }));
+    }
+    #onDiscardChanges() {
+        if (!this.#editingItem) {
+            return;
+        }
+        this.stopEditing(this.#editingItem);
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesDiscarded));
+    }
+    #onEditingRowKeyDown(event) {
+        if (this.#editingItem && Platform.KeyboardUtilities.isEscKey(event)) {
+            this.stopEditing(this.#editingItem);
+            event.consume(true);
+        }
+    }
+    #onShortcutInputFocus(shortcut) {
+        this.#focusedShortcut = shortcut;
+    }
+    #onShortcutInputBlur() {
+        this.#focusedShortcut = null;
+        if (this.#secondKeyTimeout !== null) {
+            clearTimeout(this.#secondKeyTimeout);
+            this.#secondKeyTimeout = null;
+        }
+    }
+    #onDeleteShortcut(shortcut) {
+        if (!this.#editingItem) {
+            return;
+        }
+        const index = this.#editingShortcuts.indexOf(shortcut);
+        if (!shortcut.isDefault() && index !== -1) {
+            this.#editingShortcuts.splice(index, 1);
+        }
+        this.#editedShortcuts.set(shortcut, null);
+        this.#focusedShortcut = null;
+        this.#validated = true;
+        this.performUpdate();
+        this.focus();
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutRemoved, { PH1: this.#editingItem.title() }));
+    }
+    #addShortcut() {
+        if (!this.#editingItem) {
+            return;
+        }
+        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut([], this.#editingItem.id(), "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */);
+        this.#editingShortcuts.push(shortcut);
+        this.#focusedShortcut = shortcut;
+        this.performUpdate();
+        this.focus();
+    }
+    #onShortcutInputKeyDown(shortcut, event) {
+        if (event.key !== 'Tab') {
+            const eventDescriptor = this.#descriptorForEvent(event);
+            const userDescriptors = this.#editedShortcuts.get(shortcut) || [];
+            this.#editedShortcuts.set(shortcut, userDescriptors);
+            const isLastKeyOfShortcut = userDescriptors.length === 2 && UI.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
+            const shouldClearOldShortcut = userDescriptors.length === 2 && !isLastKeyOfShortcut;
+            if (shouldClearOldShortcut) {
+                userDescriptors.splice(0, 2);
+            }
+            if (this.#secondKeyTimeout) {
+                clearTimeout(this.#secondKeyTimeout);
+                this.#secondKeyTimeout = null;
+                userDescriptors.push(eventDescriptor);
+            }
+            else if (isLastKeyOfShortcut) {
+                userDescriptors[1] = eventDescriptor;
+            }
+            else if (!UI.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
+                userDescriptors[0] = eventDescriptor;
+                this.#secondKeyTimeout = window.setTimeout(() => {
+                    this.#secondKeyTimeout = null;
+                }, UI.ShortcutRegistry.KeyTimeout);
+            }
+            else {
+                userDescriptors[0] = eventDescriptor;
+            }
+            this.#validated = true;
+            this.performUpdate();
+            event.consume(true);
+        }
+    }
+    #descriptorForEvent(event) {
+        const userKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
+        const codeAndModifiers = UI.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
+        let key = UI.KeyboardShortcut.Keys[event.key] || UI.KeyboardShortcut.KeyBindings[event.key];
+        if (!key && !/^[a-z]$/i.test(event.key)) {
+            const keyCode = event.code;
+            // if we still don't have a key name, let's try the code before falling back to the raw key
+            key = UI.KeyboardShortcut.Keys[keyCode] || UI.KeyboardShortcut.KeyBindings[keyCode];
+            if (keyCode.startsWith('Digit')) {
+                key = keyCode.slice(5);
+            }
+            else if (keyCode.startsWith('Key')) {
+                key = keyCode.slice(3);
+            }
+        }
+        return UI.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
+    }
+    #shortcutInputTextForDescriptors(descriptors) {
+        return descriptors.map(descriptor => descriptor.name).join(' ');
+    }
+    #resetShortcutsToDefaults() {
+        if (!this.#editingItem) {
+            return;
+        }
+        this.#editedShortcuts.clear();
+        for (const shortcut of this.#editingShortcuts) {
+            if (shortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
+                const index = this.#editingShortcuts.indexOf(shortcut);
+                this.#editingShortcuts.splice(index, 1);
+            }
+            else if (shortcut.type === "UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */) {
+                this.#editedShortcuts.set(shortcut, null);
+            }
+        }
+        const disabledDefaults = UI.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.#editingItem.id());
+        disabledDefaults.forEach(shortcut => {
+            if (this.#editingShortcuts.includes(shortcut)) {
+                return;
+            }
+            this.#editingShortcuts.push(shortcut);
+            this.#editedShortcuts.set(shortcut, shortcut.descriptors);
+        });
+        this.#focusedShortcut = null;
+        this.#validated = false;
+        this.performUpdate();
+        this.focus();
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesRestored, { PH1: this.#editingItem.title() }));
+    }
+    #createListItems() {
         const actions = UI.ActionRegistry.ActionRegistry.instance()
             .actions()
             .filter(action => action.configurableBindings())
@@ -268,316 +677,25 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         return items;
     }
     onEscapeKeyPressed(event) {
-        const deepActiveElement = UI.DOMUtilities.deepActiveElement(document);
-        if (this.editingRow && deepActiveElement?.nodeName === 'INPUT') {
-            this.editingRow.onEscapeKeyPressed(event);
+        if (this.#editingItem && this.#focusedShortcut &&
+            UI.DOMUtilities.deepActiveElement(document)?.nodeName === 'INPUT') {
+            this.#onShortcutInputKeyDown(this.#focusedShortcut, event);
         }
     }
     update() {
-        if (this.editingItem) {
-            this.stopEditing(this.editingItem);
+        if (this.#editingItem) {
+            this.stopEditing(this.#editingItem);
         }
-        this.list.refreshAllItems();
-        if (!this.list.selectedItem()) {
-            this.list.selectFirstItem();
+        if (!this.#selectedItem && this.#actions.length > 0) {
+            this.#selectedItem = this.#actions[0];
         }
+        this.performUpdate();
     }
     willHide() {
         super.willHide();
-        if (this.editingItem) {
-            this.stopEditing(this.editingItem);
+        if (this.#editingItem) {
+            this.stopEditing(this.#editingItem);
         }
-    }
-}
-export class ShortcutListItem {
-    isEditing;
-    settingsTab;
-    item;
-    element;
-    editedShortcuts;
-    shortcutInputs;
-    shortcuts;
-    elementToFocus;
-    confirmButton;
-    addShortcutLinkContainer;
-    errorMessageElement;
-    secondKeyTimeout;
-    constructor(item, settingsTab, isEditing) {
-        this.isEditing = Boolean(isEditing);
-        this.settingsTab = settingsTab;
-        this.item = item;
-        this.element = document.createElement('div');
-        this.element.setAttribute('jslog', `${VisualLogging.item().context(item.id()).track({ keydown: 'Escape', resize: true })}`);
-        this.editedShortcuts = new Map();
-        this.shortcutInputs = new Map();
-        this.shortcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item.id());
-        this.elementToFocus = null;
-        this.confirmButton = null;
-        this.addShortcutLinkContainer = null;
-        this.errorMessageElement = null;
-        this.secondKeyTimeout = null;
-        this.update();
-    }
-    focus() {
-        if (this.elementToFocus) {
-            this.elementToFocus.focus();
-        }
-    }
-    update() {
-        this.element.removeChildren();
-        this.elementToFocus = null;
-        this.shortcutInputs.clear();
-        this.element.classList.toggle('keybinds-editing', this.isEditing);
-        this.element.createChild('div', 'keybinds-action-name keybinds-list-text').textContent = this.item.title();
-        this.shortcuts.forEach(this.createShortcutRow, this);
-        if (this.shortcuts.length === 0) {
-            this.createEmptyInfo();
-        }
-        if (this.isEditing) {
-            this.setupEditor();
-        }
-    }
-    createEmptyInfo() {
-        if (UI.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(this.item.id())) {
-            const icon = createIcon('keyboard-pen', 'keybinds-modified');
-            UI.ARIAUtils.setLabel(icon, i18nString(UIStrings.shortcutModified));
-            this.element.appendChild(icon);
-        }
-        if (!this.isEditing) {
-            const emptyElement = this.element.createChild('div', 'keybinds-shortcut keybinds-list-text');
-            UI.ARIAUtils.setLabel(emptyElement, i18nString(UIStrings.noShortcutForAction));
-            this.element.appendChild(this.createEditButton());
-        }
-    }
-    setupEditor() {
-        this.addShortcutLinkContainer = this.element.createChild('div', 'keybinds-shortcut');
-        const addShortcutButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addAShortcut), this.addShortcut.bind(this), { jslogContext: 'add-shortcut' });
-        this.addShortcutLinkContainer.appendChild(addShortcutButton);
-        if (!this.elementToFocus) {
-            this.elementToFocus = addShortcutButton;
-        }
-        this.errorMessageElement = this.element.createChild('div', 'keybinds-info keybinds-error hidden');
-        UI.ARIAUtils.markAsAlert(this.errorMessageElement);
-        this.element.appendChild(this.createIconButton(i18nString(UIStrings.ResetShortcutsForAction), 'undo', '', 'undo', this.resetShortcutsToDefaults.bind(this)));
-        this.confirmButton = this.createIconButton(i18nString(UIStrings.confirmChanges), 'checkmark', 'keybinds-confirm-button', 'confirm', () => {
-            this.settingsTab.commitChanges(this.item, this.editedShortcuts);
-            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesApplied, { PH1: this.item.title() }));
-        });
-        this.element.appendChild(this.confirmButton);
-        this.element.appendChild(this.createIconButton(i18nString(UIStrings.discardChanges), 'cross', 'keybinds-cancel-button', 'cancel', () => {
-            this.settingsTab.stopEditing(this.item);
-            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesDiscarded));
-        }));
-        this.element.addEventListener('keydown', event => {
-            if (Platform.KeyboardUtilities.isEscKey(event)) {
-                this.settingsTab.stopEditing(this.item);
-                event.consume(true);
-            }
-        });
-    }
-    addShortcut() {
-        const shortcut = new UI.KeyboardShortcut.KeyboardShortcut([], this.item.id(), "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */);
-        this.shortcuts.push(shortcut);
-        this.update();
-        const shortcutInput = this.shortcutInputs.get(shortcut);
-        if (shortcutInput) {
-            shortcutInput.focus();
-        }
-    }
-    createShortcutRow(shortcut, index) {
-        if (this.editedShortcuts.has(shortcut) && !this.editedShortcuts.get(shortcut)) {
-            return;
-        }
-        let icon;
-        if (shortcut.type !== "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */ && !shortcut.isDefault()) {
-            icon = createIcon('keyboard-pen', 'keybinds-modified');
-            UI.ARIAUtils.setLabel(icon, i18nString(UIStrings.shortcutModified));
-            this.element.appendChild(icon);
-        }
-        const shortcutElement = this.element.createChild('div', 'keybinds-shortcut keybinds-list-text');
-        if (this.isEditing) {
-            const shortcutInput = shortcutElement.createChild('input', 'harmony-input');
-            shortcutInput.setAttribute('jslog', `${VisualLogging.textField().track({ change: true })}`);
-            shortcutInput.setAttribute('placeholder', i18nString(UIStrings.recordingKeys));
-            shortcutInput.spellcheck = false;
-            shortcutInput.maxLength = 0;
-            this.shortcutInputs.set(shortcut, shortcutInput);
-            if (!this.elementToFocus) {
-                this.elementToFocus = shortcutInput;
-            }
-            shortcutInput.value = shortcut.title();
-            const userDescriptors = this.editedShortcuts.get(shortcut);
-            if (userDescriptors) {
-                shortcutInput.value = this.shortcutInputTextForDescriptors(userDescriptors);
-            }
-            shortcutInput.addEventListener('keydown', this.onShortcutInputKeyDown.bind(this, shortcut, shortcutInput));
-            shortcutInput.addEventListener('blur', () => {
-                if (this.secondKeyTimeout !== null) {
-                    clearTimeout(this.secondKeyTimeout);
-                    this.secondKeyTimeout = null;
-                }
-            });
-            shortcutElement.appendChild(this.createIconButton(i18nString(UIStrings.removeShortcut), 'bin', 'keybinds-delete-button', 'delete', () => {
-                const index = this.shortcuts.indexOf(shortcut);
-                if (!shortcut.isDefault()) {
-                    this.shortcuts.splice(index, 1);
-                }
-                this.editedShortcuts.set(shortcut, null);
-                this.update();
-                this.focus();
-                this.validateInputs();
-                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutRemoved, { PH1: this.item.title() }));
-            }));
-        }
-        else {
-            const separator = Host.Platform.isMac() ? '\u2004' : ' + ';
-            const keys = shortcut.descriptors.flatMap(descriptor => descriptor.name.split(separator));
-            keys.forEach(key => {
-                shortcutElement.createChild('div', 'keybinds-key').createChild('span').textContent = key;
-            });
-            if (index === 0) {
-                this.element.appendChild(this.createEditButton());
-            }
-        }
-    }
-    createEditButton() {
-        return this.createIconButton(i18nString(UIStrings.editShortcut), 'edit', 'keybinds-edit-button', 'edit', () => this.settingsTab.startEditing(this.item));
-    }
-    createIconButton(label, iconName, className, jslogContext, listener) {
-        const button = new Buttons.Button.Button();
-        button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName, jslogContext, title: label };
-        button.addEventListener('click', listener);
-        UI.ARIAUtils.setLabel(button, label);
-        if (className) {
-            button.classList.add(className);
-        }
-        return button;
-    }
-    onShortcutInputKeyDown(shortcut, shortcutInput, event) {
-        if (event.key !== 'Tab') {
-            const eventDescriptor = this.descriptorForEvent(event);
-            const userDescriptors = this.editedShortcuts.get(shortcut) || [];
-            this.editedShortcuts.set(shortcut, userDescriptors);
-            const isLastKeyOfShortcut = userDescriptors.length === 2 && UI.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
-            const shouldClearOldShortcut = userDescriptors.length === 2 && !isLastKeyOfShortcut;
-            if (shouldClearOldShortcut) {
-                userDescriptors.splice(0, 2);
-            }
-            if (this.secondKeyTimeout) {
-                clearTimeout(this.secondKeyTimeout);
-                this.secondKeyTimeout = null;
-                userDescriptors.push(eventDescriptor);
-            }
-            else if (isLastKeyOfShortcut) {
-                userDescriptors[1] = eventDescriptor;
-            }
-            else if (!UI.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
-                userDescriptors[0] = eventDescriptor;
-                this.secondKeyTimeout = window.setTimeout(() => {
-                    this.secondKeyTimeout = null;
-                }, UI.ShortcutRegistry.KeyTimeout);
-            }
-            else {
-                userDescriptors[0] = eventDescriptor;
-            }
-            shortcutInput.value = this.shortcutInputTextForDescriptors(userDescriptors);
-            this.validateInputs();
-            event.consume(true);
-        }
-    }
-    descriptorForEvent(event) {
-        const userKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
-        const codeAndModifiers = UI.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
-        let key = UI.KeyboardShortcut.Keys[event.key] || UI.KeyboardShortcut.KeyBindings[event.key];
-        if (!key && !/^[a-z]$/i.test(event.key)) {
-            const keyCode = event.code;
-            // if we still don't have a key name, let's try the code before falling back to the raw key
-            key = UI.KeyboardShortcut.Keys[keyCode] || UI.KeyboardShortcut.KeyBindings[keyCode];
-            if (keyCode.startsWith('Digit')) {
-                key = keyCode.slice(5);
-            }
-            else if (keyCode.startsWith('Key')) {
-                key = keyCode.slice(3);
-            }
-        }
-        return UI.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
-    }
-    shortcutInputTextForDescriptors(descriptors) {
-        return descriptors.map(descriptor => descriptor.name).join(' ');
-    }
-    resetShortcutsToDefaults() {
-        this.editedShortcuts.clear();
-        for (const shortcut of this.shortcuts) {
-            if (shortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
-                const index = this.shortcuts.indexOf(shortcut);
-                this.shortcuts.splice(index, 1);
-            }
-            else if (shortcut.type === "UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */) {
-                this.editedShortcuts.set(shortcut, null);
-            }
-        }
-        const disabledDefaults = UI.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.item.id());
-        disabledDefaults.forEach(shortcut => {
-            if (this.shortcuts.includes(shortcut)) {
-                return;
-            }
-            this.shortcuts.push(shortcut);
-            this.editedShortcuts.set(shortcut, shortcut.descriptors);
-        });
-        this.update();
-        this.focus();
-        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesRestored, { PH1: this.item.title() }));
-    }
-    onEscapeKeyPressed(event) {
-        const activeElement = UI.DOMUtilities.deepActiveElement(document);
-        for (const [shortcut, shortcutInput] of this.shortcutInputs.entries()) {
-            if (activeElement === shortcutInput) {
-                this.onShortcutInputKeyDown(shortcut, shortcutInput, event);
-            }
-        }
-    }
-    validateInputs() {
-        const confirmButton = this.confirmButton;
-        const errorMessageElement = this.errorMessageElement;
-        if (!confirmButton || !errorMessageElement) {
-            return;
-        }
-        confirmButton.disabled = false;
-        errorMessageElement.classList.add('hidden');
-        this.shortcutInputs.forEach((shortcutInput, shortcut) => {
-            const userDescriptors = this.editedShortcuts.get(shortcut);
-            if (!userDescriptors) {
-                return;
-            }
-            if (userDescriptors.some(descriptor => UI.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
-                confirmButton.disabled = true;
-                shortcutInput.classList.add('error-input');
-                UI.ARIAUtils.setInvalid(shortcutInput, true);
-                errorMessageElement.classList.remove('hidden');
-                errorMessageElement.textContent = i18nString(UIStrings.shortcutsCannotContainOnly);
-                return;
-            }
-            const conflicts = UI.ShortcutRegistry.ShortcutRegistry.instance()
-                .actionsForDescriptors(userDescriptors)
-                .filter(actionId => actionId !== this.item.id());
-            if (conflicts.length) {
-                confirmButton.disabled = true;
-                shortcutInput.classList.add('error-input');
-                UI.ARIAUtils.setInvalid(shortcutInput, true);
-                errorMessageElement.classList.remove('hidden');
-                if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
-                    return;
-                }
-                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
-                const actionTitle = action.title();
-                const actionCategory = action.category();
-                errorMessageElement.textContent =
-                    i18nString(UIStrings.thisShortcutIsInUseByS, { PH1: actionCategory, PH2: actionTitle });
-                return;
-            }
-            shortcutInput.classList.remove('error-input');
-            UI.ARIAUtils.setInvalid(shortcutInput, false);
-        });
     }
 }
 //# sourceMappingURL=KeybindsSettingsTab.js.map

@@ -211,7 +211,7 @@ ElementsTestRunner.dumpComputedStyle = async function(doNotAutoExpand) {
   const children = treeOutline.shadowRoot.querySelector('[role="treeitem"]');
 
   for (const treeElement of children) {
-    const property = treeElement.querySelector('devtools-computed-style-property')?.shadowRoot;
+    const property = treeElement.querySelector('devtools-widget.computed-style-property')?.shadowRoot;
     const propertyName = text(property?.querySelector('.webkit-css-property'));
     const propertyValue = text(property?.querySelector('.value'));
     if (!property || propertyName === 'width' || propertyName === 'height') {
@@ -273,7 +273,7 @@ ElementsTestRunner.firstMatchedStyleSection = function() {
 };
 
 ElementsTestRunner.firstMediaTextElementInSection = function(section) {
-  const cssQueryElement = section.element.querySelector('devtools-css-query');
+  const cssQueryElement = section.element.querySelector('.css-query');
   return cssQueryElement.shadowRoot.querySelector('.query-text');
 };
 
@@ -732,7 +732,7 @@ async function printStyleSection(section, omitLonghands, includeSelectorGroupMar
 
   TestRunner.addResult(
       '[expanded] ' + ((section.propertiesTreeOutline.element.classList.contains('no-affect') ? '[no-affect] ' : '')));
-  const queries = section.element.querySelectorAll('devtools-css-query');
+  const queries = section.element.querySelectorAll('.css-query');
 
   for (const query of queries) {
     const queryElement = query.shadowRoot.querySelector('.query');

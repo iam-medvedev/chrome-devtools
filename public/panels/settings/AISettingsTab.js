@@ -352,7 +352,7 @@ export const AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
         size: "SMALL" /* Buttons.Button.Size.SMALL */,
         iconName: 'bin',
         title: lockedString(UIStringsNotTranslate.removeAllowedTool),
-        accessibleLabel: `${lockedString(UIStringsNotTranslate.removeAllowedTool)}: ${tool.displayName}`,
+        accessibleLabel: lockedString(`Remove ${tool.displayName} from allowed tools`),
         jslogContext: 'ai-remove-allowed-tool',
     }}
         @click=${() => input.removeAllowedTool(tool.toolName)}

@@ -64,7 +64,7 @@ interface ControlPaneInput {
     metricValues: Map<string, number>;
     onCheckboxChange: (chartName: string, e: Event) => void;
 }
-type ControlPaneView = (input: ControlPaneInput, output: object, target: HTMLElement) => void;
+type ControlPaneView = (input: ControlPaneInput, output: undefined, target: HTMLElement) => void;
 export declare class ControlPane extends UI.Widget.VBox {
     #private;
     constructor(element: HTMLElement, view?: ControlPaneView);

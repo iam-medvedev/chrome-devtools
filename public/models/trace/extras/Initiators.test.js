@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { before, describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Extras from './extras.js';
 /**
@@ -11,10 +12,11 @@ import * as Extras from './extras.js';
  * https://github.com/ChromeDevTools/performance-stories/tree/main/resource-initiators
  */
 describe('getNetworkInitiator', () => {
+    setupLocaleHooks();
     const { getNetworkInitiator } = Extras.Initiators;
     let parsedTrace;
     let documentRequest;
-    before(async function () {
+    beforeEach(async function () {
         const { data } = await TraceLoader.traceEngine(this, 'resource-initiators.json.gz');
         parsedTrace = data;
         documentRequest = parsedTrace.NetworkRequests.byTime[0];

@@ -61,7 +61,7 @@ export class ControlButton extends UI.Widget.Widget {
             shape: this.#shape,
             disabled: this.#disabled,
             onClick: this.#onClick,
-        }, {}, this.contentElement);
+        }, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=ControlButton.js.map

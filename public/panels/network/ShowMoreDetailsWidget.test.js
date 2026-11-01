@@ -12,7 +12,7 @@ import * as Network from './network.js';
 function renderAndOpenContextMenu(text) {
     const container = document.createElement('div');
     renderElementIntoDOM(container);
-    Network.ShowMoreDetailsWidget.DEFAULT_VIEW({ text, showMore: false, onToggle: () => { }, copy: null }, {}, container);
+    Network.ShowMoreDetailsWidget.DEFAULT_VIEW({ text, showMore: false, onToggle: () => { }, copy: null }, undefined, container);
     const sourceText = container.querySelector('span');
     assert.exists(sourceText);
     sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();

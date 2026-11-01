@@ -7,7 +7,7 @@ export interface ViewInput {
     onUpdateRule: (oldRule: NetworkForward.BackendLinking.BackendLinkingRule, newRule: NetworkForward.BackendLinking.BackendLinkingRule) => void;
     onDeleteRule: (rule: NetworkForward.BackendLinking.BackendLinkingRule) => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class BackendLinkingSettingsTab extends UI.Widget.VBox {
     #private;

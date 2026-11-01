@@ -3,11 +3,12 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import { type Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type TemplateResult } from '../../ui/lit/lit.js';
 import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
 import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): Icon;
 export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string): Icon;
-export declare function createHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): Element;
+export declare function renderHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): TemplateResult;
 export interface ViewInput {
     panel: SecurityPanel;
 }

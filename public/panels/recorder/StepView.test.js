@@ -68,6 +68,26 @@ describeWithEnvironment('StepView', () => {
         };
     }
     describe('Step and section actions menu', () => {
+        for (const { input, title } of [{ input: { step }, title: 'Scroll' }, { input: { section }, title: 'test' }]) {
+            it(`includes the title "${title}" in the actions menu label`, () => {
+                const container = document.createElement('div');
+                StepView.DEFAULT_VIEW(createViewInput(input), undefined, container);
+                const menu = container.querySelector('.step-actions');
+                assert.exists(menu);
+                assert.propertyVal(menu, 'accessibleLabel', `Open step actions for ${title}`);
+            });
+        }
+        it('uses the placeholder title in the actions menu label for an untitled section', () => {
+            const container = document.createElement('div');
+            StepView.DEFAULT_VIEW(createViewInput({ section: { ...section, title: '' } }), undefined, container);
+            const title = container.querySelector('.main-title');
+            assert.exists(title);
+            assert.strictEqual(title.textContent, '(No title)');
+            assert.strictEqual(title.getAttribute('title'), '(No title)');
+            const menu = container.querySelector('.step-actions');
+            assert.exists(menu);
+            assert.propertyVal(menu, 'accessibleLabel', 'Open step actions for (No title)');
+        });
         it('should produce actions for a step', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             await createStepView(viewFunction, { step });
@@ -76,12 +96,19 @@ describeWithEnvironment('StepView', () => {
                 { id: 'add-step-after', label: 'Add step after', group: 'stepManagement', groupTitle: 'Manage steps' },
                 {
                     id: 'add-breakpoint',
-                    label: 'Add breakpoint',
+                    label: 'Add breakpoint for Scroll',
                     group: 'breakPointManagement',
                     groupTitle: 'Breakpoints',
                 },
                 { id: 'copy-step-as-json', label: 'JSON', group: 'copy', groupTitle: 'Copy as' },
             ]);
+        });
+        it('includes the step title in the remove breakpoint menu action', async () => {
+            const viewFunction = createViewFunctionStub(StepView.StepView);
+            await createStepView(viewFunction, { step, hasBreakpoint: true });
+            const action = viewFunction.input.actions.find(action => action.id === 'remove-breakpoint');
+            assert.exists(action);
+            assert.strictEqual(action.label, 'Remove breakpoint for Scroll');
         });
         it('should produce actions for a section', async () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
@@ -152,7 +179,7 @@ describeWithEnvironment('StepView', () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             await createStepView(viewFunction, { step });
             const container = document.createElement('div');
-            StepView.DEFAULT_VIEW(viewFunction.input, {}, container);
+            StepView.DEFAULT_VIEW(viewFunction.input, undefined, container);
             let disclosure = container.querySelector('.title-container');
             assert.exists(disclosure);
             assert.strictEqual(disclosure.getAttribute('role'), 'button');
@@ -160,7 +187,7 @@ describeWithEnvironment('StepView', () => {
             assert.strictEqual(disclosure.tabIndex, 0);
             viewFunction.input.onToggleShowDetailsKeydown(new KeyboardEvent('keydown', { key: 'Enter' }));
             const input = await viewFunction.nextInput;
-            StepView.DEFAULT_VIEW(input, {}, container);
+            StepView.DEFAULT_VIEW(input, undefined, container);
             disclosure = container.querySelector('.title-container');
             assert.exists(disclosure);
             assert.strictEqual(disclosure.getAttribute('aria-expanded'), 'true');
@@ -169,7 +196,7 @@ describeWithEnvironment('StepView', () => {
             const viewFunction = createViewFunctionStub(StepView.StepView);
             await createStepView(viewFunction, { section });
             const container = document.createElement('div');
-            StepView.DEFAULT_VIEW(viewFunction.input, {}, container);
+            StepView.DEFAULT_VIEW(viewFunction.input, undefined, container);
             const title = container.querySelector('.title-container');
             assert.exists(title);
             assert.strictEqual(title.getAttribute('role'), 'presentation');
@@ -199,22 +226,22 @@ describeWithEnvironment('StepView', () => {
         describe('view', () => {
             it('exposes the breakpoint icon as an add breakpoint button', () => {
                 const container = document.createElement('div');
-                StepView.DEFAULT_VIEW(createViewInput({ step }), {}, container);
+                StepView.DEFAULT_VIEW(createViewInput({ step }), undefined, container);
                 const icon = container.querySelector('.icon');
                 assert.exists(icon);
                 assert.strictEqual(icon.getAttribute('role'), 'button');
-                assert.strictEqual(icon.getAttribute('aria-label'), 'Add breakpoint');
+                assert.strictEqual(icon.getAttribute('aria-label'), 'Add breakpoint for Scroll');
             });
             it('exposes the breakpoint icon as a remove breakpoint button', () => {
                 const container = document.createElement('div');
-                StepView.DEFAULT_VIEW(createViewInput({ hasBreakpoint: true, step }), {}, container);
+                StepView.DEFAULT_VIEW(createViewInput({ hasBreakpoint: true, step }), undefined, container);
                 const icon = container.querySelector('.icon');
                 assert.exists(icon);
-                assert.strictEqual(icon.getAttribute('aria-label'), 'Remove breakpoint');
+                assert.strictEqual(icon.getAttribute('aria-label'), 'Remove breakpoint for Scroll');
             });
             it('hides the non-actionable section icon from assistive technology', () => {
                 const container = document.createElement('div');
-                StepView.DEFAULT_VIEW(createViewInput({ section }), {}, container);
+                StepView.DEFAULT_VIEW(createViewInput({ section }), undefined, container);
                 const icon = container.querySelector('.icon');
                 assert.exists(icon);
                 assert.strictEqual(icon.getAttribute('aria-hidden'), 'true');
@@ -223,7 +250,7 @@ describeWithEnvironment('StepView', () => {
             it('invokes the breakpoint callback when the breakpoint button is clicked', () => {
                 const onBreakpointClick = sinon.spy();
                 const container = document.createElement('div');
-                StepView.DEFAULT_VIEW(createViewInput({ step, onBreakpointClick }), {}, container);
+                StepView.DEFAULT_VIEW(createViewInput({ step, onBreakpointClick }), undefined, container);
                 const icon = container.querySelector('.icon');
                 assert.exists(icon);
                 const event = new MouseEvent('click', { bubbles: true });
@@ -233,7 +260,7 @@ describeWithEnvironment('StepView', () => {
             it('invokes the breakpoint callback when the breakpoint button is activated with the keyboard', () => {
                 const onBreakpointClick = sinon.spy();
                 const container = document.createElement('div');
-                StepView.DEFAULT_VIEW(createViewInput({ step, onBreakpointClick }), {}, container);
+                StepView.DEFAULT_VIEW(createViewInput({ step, onBreakpointClick }), undefined, container);
                 const icon = container.querySelector('.icon');
                 assert.exists(icon);
                 icon.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));

@@ -7,7 +7,7 @@ interface ViewInput {
     onSelect(sourceCode: Workspace.UISourceCode.UISourceCode | null): void;
     workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl;
 }
-type View = (input: ViewInput, output: object, target: DocumentFragment) => void;
+type View = (input: ViewInput, output: undefined, target: DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class ChangesView extends UI.Widget.VBox<ShadowRoot> {
     #private;

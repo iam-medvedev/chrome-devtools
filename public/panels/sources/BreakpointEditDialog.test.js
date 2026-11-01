@@ -102,14 +102,14 @@ describeWithEnvironment('BreakpointEditDialog', function () {
     });
     it('focuses the editor input field after changing the breakpoint type', async () => {
         const { dialog, editor } = await getDialogAndEditor(0, '', false, () => { });
-        renderElementIntoDOM(dialog.contentElement);
+        renderElementIntoDOM(dialog);
         setBreakpointType(dialog, "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */);
         await dialog.updateComplete;
         assert.isTrue(editor.hasFocus);
     });
     it('focuses the editor when focus() is called, even if it is not yet rendered', async () => {
         const { dialog, editor } = await getDialogAndEditor(0, '', false, () => { });
-        renderElementIntoDOM(dialog.contentElement);
+        renderElementIntoDOM(dialog);
         assert.isFalse(editor.hasFocus);
         // Trigger an update to test the focus() method waiting for it.
         dialog.editorLineNumber = 1;

@@ -57,7 +57,7 @@ describe('LinearMemoryInspector', () => {
             onEndiannessChanged: () => { },
             memorySlice: new Uint8Array(memory),
             viewerStart: 0,
-        }, {}, target);
+        }, undefined, target);
         const viewer = target.querySelector('.viewer-widget');
         assert.exists(viewer);
         let prevHeight = -1;
@@ -183,16 +183,20 @@ describe('LinearMemoryInspector', () => {
         assert.strictEqual(newViewInput.currentNavigatorAddressLine, '-2');
         assert.strictEqual(newViewInput.currentNavigatorMode, "InvalidSubmit" /* LinearMemoryInspectorComponents.LinearMemoryNavigator.Mode.INVALID_SUBMIT */);
     });
-    it('triggers MemoryRequestEvent on refresh', async () => {
-        const memoryRequestPromise = component.once("MemoryRequest" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.MEMORY_REQUEST */);
+    it('triggers onMemoryRequest on refresh', async () => {
+        const memoryRequestPromise = new Promise(resolve => {
+            component.onMemoryRequest = resolve;
+        });
         view.input.onRefreshRequest();
         const { start, end, address } = await memoryRequestPromise;
         assert.strictEqual(address, view.input.address);
         assert.isAbove(end, start);
         assert.strictEqual(view.input.memorySlice.length, end - start);
     });
-    it('triggers event on address change when byte is selected', async () => {
-        const addressPromise = component.once("AddressChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.ADDRESS_CHANGED */);
+    it('triggers onAddressChanged when byte is selected', async () => {
+        const addressPromise = new Promise(resolve => {
+            component.onAddressChanged = resolve;
+        });
         const numBytesPerPage = view.input.memorySlice.length;
         const pageNumber = view.input.address / numBytesPerPage;
         const addressOfFirstByte = pageNumber * numBytesPerPage + 1;
@@ -200,22 +204,28 @@ describe('LinearMemoryInspector', () => {
         const address = await addressPromise;
         assert.strictEqual(address, addressOfFirstByte);
     });
-    it('triggers event on address change when data is set', async () => {
-        const addressPromise = component.once("AddressChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.ADDRESS_CHANGED */);
+    it('triggers onAddressChanged when data is set', async () => {
+        const addressPromise = new Promise(resolve => {
+            component.onAddressChanged = resolve;
+        });
         component.address = 10;
         const address = await addressPromise;
         assert.strictEqual(address, 10);
     });
-    it('triggers event on settings changed when value type is changed', async () => {
-        const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
+    it('triggers onSettingsChanged when value type is changed', async () => {
+        const settingsPromise = new Promise(resolve => {
+            component.onSettingsChanged = resolve;
+        });
         const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
         view.input.onValueTypeToggled(valueType, false);
         const { valueTypes } = await settingsPromise;
         assert.isTrue(valueTypes.size > 1);
         assert.isFalse(valueTypes.has(valueType));
     });
-    it('triggers event on settings changed when value type mode is changed', async () => {
-        const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
+    it('triggers onSettingsChanged when value type mode is changed', async () => {
+        const settingsPromise = new Promise(resolve => {
+            component.onSettingsChanged = resolve;
+        });
         const valueType = "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */;
         const valueTypeMode = "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */;
         view.input.onValueTypeModeChanged(valueType, valueTypeMode);
@@ -223,8 +233,10 @@ describe('LinearMemoryInspector', () => {
         assert.isTrue(valueTypes.has(valueType));
         assert.strictEqual(modes.get(valueType), valueTypeMode);
     });
-    it('triggers event on settings changed when endianness is changed', async () => {
-        const settingsPromise = component.once("SettingsChanged" /* LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED */);
+    it('triggers onSettingsChanged when endianness is changed', async () => {
+        const settingsPromise = new Promise(resolve => {
+            component.onSettingsChanged = resolve;
+        });
         const endianness = "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */;
         view.input.onEndiannessChanged(endianness);
         const { endianness: newEndianness } = await settingsPromise;

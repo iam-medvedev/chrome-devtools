@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { before, describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function countMetricOcurrences(scoresByMetricName, metricName) {
@@ -14,6 +15,7 @@ function countMetricOcurrences(scoresByMetricName, metricName) {
     }, 0);
 }
 describe('PageLoadMetricsHandler', function () {
+    setupLocaleHooks();
     describe('contentful paints', () => {
         it('obtains all the FCP and LCP events for all frames', async function () {
             const { data } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');
@@ -35,7 +37,7 @@ describe('PageLoadMetricsHandler', function () {
         describe('page refresh', () => {
             let meta;
             let pageLoadMetrics;
-            before(async function () {
+            beforeEach(async function () {
                 const result = await TraceLoader.traceEngine(this, 'reload-and-trace-page.json.gz');
                 meta = result.data.Meta;
                 pageLoadMetrics = result.data.PageLoadMetrics;
@@ -104,7 +106,7 @@ describe('PageLoadMetricsHandler', function () {
         }
         const firstNavigationId = '05059ACF683224E6FC7E344F544A4050';
         const secondNavigationId = '550FC08C662EF691E1535F305CBC0FCA';
-        before(async function () {
+        beforeEach(async function () {
             const { data } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');
             const { Meta, PageLoadMetrics } = data;
             const pageLoadMetricsData = PageLoadMetrics.metricScoresByFrameId.get(Meta.mainFrameId);
@@ -184,7 +186,7 @@ describe('PageLoadMetricsHandler', function () {
         describe('with multiple navigations and iframes', () => {
             let mainFrameId;
             let allMarkerEvents;
-            before(async function () {
+            beforeEach(async function () {
                 const { data } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');
                 const { PageLoadMetrics, Meta } = data;
                 mainFrameId = Meta.mainFrameId;

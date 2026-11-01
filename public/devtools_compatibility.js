@@ -694,7 +694,8 @@
       'autofill-view': 67,
       freestyler: 68,
       ads: 69,
-      MAX_VALUE: 70,
+      'private-verification-tokens': 70,
+      MAX_VALUE: 71,
     },
     MediaTypes: {
       Unknown: 0,
@@ -1564,9 +1565,12 @@
 
     /**
      * @param url
+     * @param initiatorId the DevTools frame id or target id of the frame or worker that `url` came from, if any
      */
-    openInNewTab(url) {
-      DevToolsAPI.sendMessageToEmbedder('openInNewTab', [url], null);
+    openInNewTab(url, initiatorId) {
+      // Only pass `initiatorId` along when there is one: hosts from before it existed accept a single argument.
+      const args = initiatorId === undefined ? [url] : [url, initiatorId];
+      DevToolsAPI.sendMessageToEmbedder('openInNewTab', args, null);
     }
 
     /**

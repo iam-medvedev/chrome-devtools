@@ -9,12 +9,16 @@ export default `/*
  * found in the LICENSE file.
  */
 
-.element-reveal-icon {
-  display: inline-block;
-  width: var(--sys-size-9);
-  height: var(--sys-size-9);
-  mask-image: var(--image-file-select-element);
-  background-color: var(--icon-default);
+@scope to (devtools-widget > *) {
+  .element-reveal-icon {
+    display: inline-block;
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
+    mask-image: var(--image-file-select-element);
+    background-color: var(--icon-default);
+    border: none;
+    padding: 0;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('././elementsPanelLink.css')} */`;

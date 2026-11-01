@@ -17,8 +17,7 @@ export interface ViewInput {
     onStopClick: () => void;
     onDownloadClick: () => void;
 }
-export type ViewOutput = Record<string, never>;
-export type View = (input: ViewInput, output: ViewOutput, target: DocumentFragment) => void;
+export type View = (input: ViewInput, output: undefined, target: DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 /**
  * This is the dialog shown whilst a trace is being recorded/imported.
@@ -40,7 +39,6 @@ export declare class StatusDialog extends UI.Widget.VBox<ShadowRoot> {
     updateStatus(text: string): void;
     updateProgressBar(activity: string, percent: number): void;
     startTimer(): void;
-    private stopTimer;
     performUpdate(): void;
     wasShown(): void;
 }

@@ -3209,6 +3209,9 @@
   "panels/animation/AnimationTimeline.ts | animationDescription": {
     "message": "On this page you can inspect and modify animations"
   },
+  "panels/animation/AnimationTimeline.ts | animationInspectionPaused": {
+    "message": "Animation inspection paused"
+  },
   "panels/animation/AnimationTimeline.ts | animationPreviews": {
     "message": "Animation previews"
   },
@@ -3391,6 +3394,9 @@
   },
   "panels/application/ApplicationPanelSidebar.ts | openedWindowsDescription": {
     "message": "On this page you can view windows opened via window.open()"
+  },
+  "panels/application/ApplicationPanelSidebar.ts | privateVerificationTokens": {
+    "message": "Private verification tokens"
   },
   "panels/application/ApplicationPanelSidebar.ts | refreshIndexeddb": {
     "message": "Refresh IndexedDB"
@@ -5861,6 +5867,9 @@
   "panels/application/preloading/components/UsedPreloadingView.ts | viewAllSpeculations": {
     "message": "View all speculations"
   },
+  "panels/application/preloading/PreloadingView.ts | clearSpeculativeLoads": {
+    "message": "Clear speculative loads"
+  },
   "panels/application/preloading/PreloadingView.ts | filterAllPreloads": {
     "message": "All speculative loads"
   },
@@ -5923,6 +5932,9 @@
   },
   "panels/application/PreloadingTreeElement.ts | speculativeLoads": {
     "message": "Speculative loads"
+  },
+  "panels/application/PrivateVerificationTokensView.ts | noPrivateVerificationTokens": {
+    "message": "No private verification tokens for this origin"
   },
   "panels/application/ReportingApiTreeElement.ts | crashReportContext": {
     "message": "Crash report context"
@@ -6671,17 +6683,26 @@
   "panels/comments/comments-meta.ts | showComments": {
     "message": "Show Comments"
   },
+  "panels/comments/CommentsPane.ts | addComment": {
+    "message": "Add a comment"
+  },
   "panels/comments/CommentsPane.ts | clearComments": {
     "message": "Clear all comments"
+  },
+  "panels/comments/CommentsPane.ts | commentModeIcon": {
+    "message": "Comment mode"
   },
   "panels/comments/CommentsPane.ts | deleteComment": {
     "message": "Delete comment"
   },
-  "panels/comments/CommentsPane.ts | noQueuedComments": {
-    "message": "No queued comments. Add comments on elements in DevTools to send to your AI coding agent."
+  "panels/comments/CommentsPane.ts | emptyStateDescription": {
+    "message": "Use {PH1} to select an element and send tasks, questions, and context to your coding agent"
   },
-  "panels/comments/CommentsPane.ts | noSentComments": {
-    "message": "No sent comments. Send comments to your AI coding agent to see them here."
+  "panels/comments/CommentsPane.ts | noComments": {
+    "message": "No comments"
+  },
+  "panels/comments/CommentsPane.ts | noQueuedComments": {
+    "message": "No queued comments"
   },
   "panels/comments/CommentsPane.ts | queued": {
     "message": "Queued"
@@ -6696,6 +6717,15 @@
     "message": "Send to Agent"
   },
   "panels/comments/CommentsPane.ts | sent": {
+    "message": "Sent"
+  },
+  "panels/comments/CommentsPane.ts | sentCheckmark": {
+    "message": "Sent checkmark"
+  },
+  "panels/comments/CommentsPane.ts | sentComments": {
+    "message": "Sent comments"
+  },
+  "panels/comments/CommentsPane.ts | sentStatus": {
     "message": "Sent"
   },
   "panels/comments/CommentsPane.ts | working": {
@@ -6728,8 +6758,14 @@
   "panels/common/BadgeNotification.ts | viewProfile": {
     "message": "View profile"
   },
-  "panels/common/CommentsStatusBarPill.ts | commentsCount": {
-    "message": "Comments ({PH1})"
+  "panels/common/CommentsOverlayWidget.ts | addComment": {
+    "message": "Add comment"
+  },
+  "panels/common/CommentsStatusBarPill.ts | showComments": {
+    "message": "Show comments"
+  },
+  "panels/common/CommentsStatusBarPill.ts | showCommentsWithCount": {
+    "message": "Show comments ({PH1})"
   },
   "panels/common/CommentThreadWidget.ts | commentInputAriaLabel": {
     "message": "Comment input"
@@ -6737,8 +6773,14 @@
   "panels/common/CommentThreadWidget.ts | deleteQueuedComment": {
     "message": "Delete queued comment"
   },
+  "panels/common/CommentThreadWidget.ts | elementNoLongerAvailable": {
+    "message": "The element is no longer available"
+  },
   "panels/common/CommentThreadWidget.ts | queueComment": {
     "message": "Queue comment"
+  },
+  "panels/common/CommentThreadWidget.ts | queueCommentsPlaceholder": {
+    "message": "{PH1} + ↵ to queue comments"
   },
   "panels/common/CommentThreadWidget.ts | response": {
     "message": "Response:"
@@ -6754,6 +6796,9 @@
   },
   "panels/common/CommentThreadWidget.ts | sentCheckmark": {
     "message": "Sent checkmark"
+  },
+  "panels/common/CommentThreadWidget.ts | working": {
+    "message": "Working"
   },
   "panels/common/common-meta.ts | comments": {
     "message": "Comments"
@@ -8912,8 +8957,8 @@
   "panels/issues/AffectedBlockedByResponseView.ts | requestC": {
     "message": "Request"
   },
-  "panels/issues/AffectedCookiesView.ts | domain": {
-    "message": "Domain"
+  "panels/issues/AffectedCookiesView.ts | domainAndPath": {
+    "message": "Domain & path"
   },
   "panels/issues/AffectedCookiesView.ts | filterSetCookieTitle": {
     "message": "Show network requests that include this Set-Cookie header in the Network panel"
@@ -8927,14 +8972,14 @@
   "panels/issues/AffectedCookiesView.ts | nRawCookieLines": {
     "message": "{n, plural, =1 {1 raw Set-Cookie header} other {# raw Set-Cookie headers}}"
   },
-  "panels/issues/AffectedCookiesView.ts | path": {
-    "message": "Path"
-  },
   "panels/issues/AffectedDescendantsWithinSelectElementView.ts | disallowedNode": {
     "message": "Disallowed descendant"
   },
   "panels/issues/AffectedDescendantsWithinSelectElementView.ts | nDescendants": {
-    "message": "{n, plural, =1 { descendant} other { descendants}}"
+    "message": "{n, plural, =1 {# descendant} other {# descendants}}"
+  },
+  "panels/issues/AffectedDescendantsWithinSelectElementView.ts | unavailable": {
+    "message": "Unavailable"
   },
   "panels/issues/AffectedDirectivesView.ts | blocked": {
     "message": "Blocked"
@@ -8972,11 +9017,17 @@
   "panels/issues/AffectedDocumentsInQuirksModeView.ts | nDocuments": {
     "message": "{n, plural, =1 { document} other { documents}}"
   },
+  "panels/issues/AffectedDocumentsInQuirksModeView.ts | unavailable": {
+    "message": "Unavailable"
+  },
   "panels/issues/AffectedDocumentsInQuirksModeView.ts | url": {
     "message": "URL"
   },
   "panels/issues/AffectedElementsView.ts | nElements": {
     "message": "{n, plural, =1 {# element} other {# elements}}"
+  },
+  "panels/issues/AffectedElementsView.ts | unavailable": {
+    "message": "Unavailable"
   },
   "panels/issues/AffectedHeavyAdView.ts | cpuPeakLimit": {
     "message": "CPU peak limit"
@@ -10070,6 +10121,18 @@
   "panels/media/PlayerPropertiesView.ts | videoPlaybackRoughness": {
     "message": "Video playback roughness"
   },
+  "panels/media/TickingFlameChart.ts | duration": {
+    "message": "Duration: {PH1} - {PH2}"
+  },
+  "panels/media/TickingFlameChart.ts | durationLive": {
+    "message": "Duration: {PH1} - LIVE!"
+  },
+  "panels/media/TickingFlameChart.ts | name": {
+    "message": "Name: {PH1}"
+  },
+  "panels/media/TickingFlameChart.ts | time": {
+    "message": "Time: {PH1}"
+  },
   "panels/mobile_throttling/CalibrationController.ts | runningCalibration": {
     "message": "Running CPU calibration, don’t leave this tab or close DevTools"
   },
@@ -10226,6 +10289,9 @@
   "panels/mobile_throttling/ThrottlingPresets.ts | slowGXCpuSlowdownCalibrated": {
     "message": "Slow 3G & {PH1}x CPU slowdown"
   },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | add": {
+    "message": "Add"
+  },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | addCustomProfile": {
     "message": "Add profile"
   },
@@ -10330,6 +10396,9 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | recalibrate": {
     "message": "Recalibrate"
+  },
+  "panels/mobile_throttling/ThrottlingSettingsTab.ts | save": {
+    "message": "Save"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | sMustBeANumberBetweenSkbsToSkbs": {
     "message": "{PH1} must be a number between {PH2} kbit/s to {PH3} kbit/s inclusive"
@@ -11437,6 +11506,12 @@
   },
   "panels/network/NetworkManageCustomHeadersView.ts | addCustomHeader": {
     "message": "Add custom header…"
+  },
+  "panels/network/NetworkManageCustomHeadersView.ts | headerAlreadyExists": {
+    "message": "Header already exists"
+  },
+  "panels/network/NetworkManageCustomHeadersView.ts | headerCannotBeEmpty": {
+    "message": "Header name can’t be empty"
   },
   "panels/network/NetworkManageCustomHeadersView.ts | headerName": {
     "message": "Header name"
@@ -13122,7 +13197,7 @@
     "message": "Enter a valid action type"
   },
   "panels/recorder/StepView.ts | addBreakpoint": {
-    "message": "Add breakpoint"
+    "message": "Add breakpoint for {title}"
   },
   "panels/recorder/StepView.ts | addStepAfter": {
     "message": "Add step after"
@@ -13175,11 +13250,14 @@
   "panels/recorder/StepView.ts | navigateStepTitle": {
     "message": "Navigate"
   },
+  "panels/recorder/StepView.ts | noTitle": {
+    "message": "(No title)"
+  },
   "panels/recorder/StepView.ts | openStepActions": {
-    "message": "Open step actions"
+    "message": "Open step actions for {title}"
   },
   "panels/recorder/StepView.ts | removeBreakpoint": {
-    "message": "Remove breakpoint"
+    "message": "Remove breakpoint for {title}"
   },
   "panels/recorder/StepView.ts | removeStep": {
     "message": "Remove step"
@@ -14276,8 +14354,14 @@
   "panels/settings/emulation/components/UserAgentClientHintsForm.ts | userAgentClientHintsInfo": {
     "message": "User agent client hints are an alternative to the user agent string that identify the browser and the device in a more structured way with better privacy accounting"
   },
+  "panels/settings/emulation/DevicesSettingsTab.ts | add": {
+    "message": "Add"
+  },
   "panels/settings/emulation/DevicesSettingsTab.ts | addCustomDevice": {
     "message": "Add custom device"
+  },
+  "panels/settings/emulation/DevicesSettingsTab.ts | cancel": {
+    "message": "Cancel"
   },
   "panels/settings/emulation/DevicesSettingsTab.ts | circleDisplayCutout": {
     "message": "Circle"
@@ -14399,6 +14483,9 @@
   "panels/settings/emulation/DevicesSettingsTab.ts | safeAreaVerticalInsetsExceedHeight": {
     "message": "{PH1}: Top and bottom insets mustn’t exceed the device height"
   },
+  "panels/settings/emulation/DevicesSettingsTab.ts | save": {
+    "message": "Save"
+  },
   "panels/settings/emulation/DevicesSettingsTab.ts | userAgentString": {
     "message": "User agent string"
   },
@@ -14417,6 +14504,9 @@
   "panels/settings/emulation/emulation-meta.ts | showDevices": {
     "message": "Show Devices"
   },
+  "panels/settings/FrameworkIgnoreListSettingsTab.ts | add": {
+    "message": "Add"
+  },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | addFilenamePattern": {
     "message": "Add a regular expression rule for the script’s URL"
   },
@@ -14425,6 +14515,9 @@
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | automaticallyIgnoreListKnownThirdPartyScripts": {
     "message": "Known third-party scripts from source maps"
+  },
+  "panels/settings/FrameworkIgnoreListSettingsTab.ts | cancel": {
+    "message": "Cancel"
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | customExclusionRules": {
     "message": "Custom exclusion rules"
@@ -14467,6 +14560,9 @@
   },
   "panels/settings/FrameworkIgnoreListSettingsTab.ts | patternMustBeAValidRegular": {
     "message": "Rule must be a valid regular expression"
+  },
+  "panels/settings/FrameworkIgnoreListSettingsTab.ts | save": {
+    "message": "Save"
   },
   "panels/settings/KeybindsSettingsTab.ts | addAShortcut": {
     "message": "Add a shortcut"
@@ -14689,6 +14785,9 @@
   },
   "panels/sources/BreakpointsView.ts | checked": {
     "message": "checked"
+  },
+  "panels/sources/BreakpointsView.ts | collapseAll": {
+    "message": "Collapse all"
   },
   "panels/sources/BreakpointsView.ts | conditionCode": {
     "message": "Condition: {PH1}"
@@ -16444,6 +16543,12 @@
   },
   "panels/timeline/components/RelatedInsightChips.ts | insightWithName": {
     "message": "Insight: {PH1}"
+  },
+  "panels/timeline/components/Sidebar.ts | annotations": {
+    "message": "Annotations"
+  },
+  "panels/timeline/components/Sidebar.ts | insights": {
+    "message": "Insights"
   },
   "panels/timeline/components/SidebarAnnotationsTab.ts | annotationGetStarted": {
     "message": "Annotate a trace for yourself and others"

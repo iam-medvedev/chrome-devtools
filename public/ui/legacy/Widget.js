@@ -225,6 +225,9 @@ function setUpLifecycleTracking(element) {
         element.appendChild(tracker);
     }
     tracker.onDisconnect = () => {
+        if (element.parentElement instanceof WidgetElement && element.parentElement.controlsChildWidget(element)) {
+            return;
+        }
         const widget = Widget.get(element);
         if (widget) {
             widget.setHideOnDetach();
@@ -244,7 +247,7 @@ function setUpLifecycleTracking(element) {
         if (!parent) {
             widget.markAsRoot();
         }
-        else {
+        else if (!(parent instanceof WidgetElement && parent.controlsChildWidget(element))) {
             widget.show(parent, undefined, /* suppressOrphanWidgetError= */ true);
         }
     };
@@ -255,6 +258,9 @@ export class WidgetElement extends HTMLElement {
     #disconnectTimeout;
     getWidget() {
         return Widget.get(this);
+    }
+    controlsChildWidget(_child) {
+        return false;
     }
     connectedCallback() {
         if (this.#disconnectTimeout) {
@@ -275,18 +281,28 @@ export class WidgetElement extends HTMLElement {
         }
     }
     appendChild(child) {
-        const widget = child instanceof HTMLElement ? Widget.get(child) : null;
-        if (widget) {
-            widget.show(this, undefined, /* suppressOrphanWidgetError= */ true);
-            return child;
+        if (child instanceof HTMLElement) {
+            const widget = Widget.get(child);
+            if (widget) {
+                if (this.controlsChildWidget(child)) {
+                    return originalAppendChild.call(this, child);
+                }
+                widget.show(this, undefined, /* suppressOrphanWidgetError= */ true);
+                return child;
+            }
         }
         return super.appendChild(child);
     }
     insertBefore(child, referenceChild) {
-        const widget = child instanceof HTMLElement ? Widget.get(child) : null;
-        if (widget) {
-            widget.show(this, referenceChild, /* suppressOrphanWidgetError= */ true);
-            return child;
+        if (child instanceof HTMLElement) {
+            const widget = Widget.get(child);
+            if (widget) {
+                if (this.controlsChildWidget(child)) {
+                    return originalInsertBefore.call(this, child, referenceChild);
+                }
+                widget.show(this, referenceChild, /* suppressOrphanWidgetError= */ true);
+                return child;
+            }
         }
         return super.insertBefore(child, referenceChild);
     }
@@ -449,8 +465,6 @@ export class Widget {
         }
         this.#shadowRoot = this.element.shadowRoot;
         if (options?.useShadowDom && !this.#shadowRoot) {
-            this.element.classList.add('vbox');
-            this.element.classList.add('flex-auto');
             this.#shadowRoot = createShadowRootWithCoreStyles(this.element, {
                 delegatesFocus: options?.delegatesFocus,
             });
@@ -458,6 +472,8 @@ export class Widget {
                 this.#contentElement = this.#shadowRoot;
             }
             else {
+                this.element.classList.add('vbox');
+                this.element.classList.add('flex-auto');
                 const div = document.createElement('div');
                 this.#shadowRoot.appendChild(div);
                 this.#contentElement = div;
@@ -755,6 +771,10 @@ export class Widget {
     }
     detach(overrideHideOnDetach) {
         if (!this.#parentWidget && !this.#isRoot) {
+            if (overrideHideOnDetach && this.element.parentElement) {
+                decrementWidgetCounter(this.element.parentElement, this.element);
+                originalRemoveChild.call(this.element.parentElement, this.element);
+            }
             return;
         }
         cancelUpdate(this);
@@ -1099,7 +1119,6 @@ export class HBox extends Widget {
             this.contentElement.classList.add('hbox');
         }
         else {
-            this.element.classList.remove('vbox');
             this.element.classList.add('hbox');
         }
     }

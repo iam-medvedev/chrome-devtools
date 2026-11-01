@@ -178,5 +178,23 @@ describe('RenderBlocking', function () {
         assert.exists(insight.requestIdToWastedMs);
         assert.isAtLeast(insight.requestIdToWastedMs.get(requestId) ?? 0, 60);
     });
+    it('estimates savings with Lantern for sequential H2 render-blocking request', async function () {
+        const traceEvents = [...await TraceLoader.rawEvents(this, 'lcp-text-fcp-same-frame.json.gz')];
+        const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
+        await processor.parse(traceEvents, {
+            isCPUProfile: false,
+            isFreshRecording: true,
+            lanternSettings: { throttlingMethod: 'simulate' },
+        });
+        assert.isOk(processor.data);
+        assert.isOk(processor.insights);
+        const insight = getInsightOrError('RenderBlocking', processor.insights, processor.data.Meta.navigationsByNavigationId.values().next().value);
+        assert.deepEqual(insight.metricSavings, {
+            FCP: 222,
+            LCP: 222,
+        });
+        assert.exists(insight.requestIdToWastedMs);
+        assert.strictEqual(insight.requestIdToWastedMs.get('297069.3'), 150);
+    });
 });
 //# sourceMappingURL=RenderBlocking.test.js.map

@@ -597,7 +597,7 @@ export class ControlPane extends UI.Widget.VBox {
             metricValues: this.#metricValues,
             onCheckboxChange: this.#onCheckboxChange.bind(this),
         };
-        this.#view(input, {}, this.element);
+        this.#view(input, undefined, this.element);
     }
     #onCheckboxChange(chartName, e) {
         this.#onToggle(chartName, e.target.checked);

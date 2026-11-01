@@ -7,7 +7,7 @@ export interface ViewInput {
     issueCategory: IssuesManager.Issue.IssueCategory;
     createElementCell: (element: IssuesManager.Issue.AffectedElement, category: IssuesManager.Issue.IssueCategory) => Promise<Element>;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => Promise<void>;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => Promise<void>;
 export declare const DEFAULT_VIEW: View;
 export declare class AffectedLazyLoadImagesView extends AffectedResourcesView {
     #private;

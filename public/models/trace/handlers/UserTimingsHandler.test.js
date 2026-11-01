@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { after, before, beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { makeCompleteEvent, makeTimingEventWithConsoleExtensionData, makeTimingEventWithPerformanceExtensionData, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
@@ -29,6 +30,7 @@ async function createUserTimingsDataFromEvents(events) {
     return Trace.Handlers.ModelHandlers.UserTimings.data();
 }
 describe('UserTimingsHandler', function () {
+    setupLocaleHooks();
     let timingsData;
     describe('performance timings', function () {
         async function getTimingsDataFromEvents(events) {
@@ -125,7 +127,7 @@ describe('UserTimingsHandler', function () {
         });
     });
     describe('console timings', function () {
-        before(async function () {
+        beforeEach(async function () {
             const { data } = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
             timingsData = data.UserTimings;
         });
@@ -464,7 +466,7 @@ describe('UserTimingsHandler', function () {
                 };
             });
         }
-        before(async function () {
+        beforeEach(async function () {
             const { data } = await TraceLoader.traceEngine(this, 'user-timings-overlaps.json.gz');
             measures = data.UserTimings.performanceMeasures;
             traceBoundMin = data.Meta.traceBounds.min;

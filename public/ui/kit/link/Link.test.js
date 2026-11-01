@@ -72,7 +72,7 @@ describe('devtools-link', () => {
             link.setAttribute('allow-privileged', '');
             renderElementIntoDOM(link);
             link.click();
-            sinon.assert.calledOnceWithExactly(stub, urlString `devtools://devtools/bundled/devtools_app.html`);
+            sinon.assert.calledOnceWithExactly(stub, urlString `devtools://devtools/bundled/devtools_app.html`, undefined);
         });
     });
     describe('keyboard activation', () => {
@@ -105,7 +105,7 @@ describe('devtools-link', () => {
             link.setAttribute('href', 'https://example.com/');
             renderElementIntoDOM(link);
             dispatchKeyDown(link, 'Enter');
-            sinon.assert.calledOnceWithExactly(stub, urlString `https://example.com/`);
+            sinon.assert.calledOnceWithExactly(stub, urlString `https://example.com/`, undefined);
             sinon.assert.notCalled(onClick);
         });
     });

@@ -74,7 +74,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.strictEqual(thread?.comments[0].text, 'Auto-fixed color');
         assert.isTrue(thread?.isGeneratedComment);
         assert.isEmpty(manager.getPinPositions());
-        assert.isEmpty(manager.getHighlightRects());
+        assert.isUndefined(manager.getHighlight(thread.id));
     });
     it('removes comment threads and cleans up DOM observer and pin positions', () => {
         const unobserveSpy = sinon.spy(IntersectionObserver.prototype, 'unobserve');
@@ -208,7 +208,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
         assert.strictEqual(threads[0].status, 'DRAFT');
         assert.strictEqual(manager.getAnchorElement(threads[0]), el);
         assert.isTrue(manager.getPinPositions()[0]?.visible ?? false);
-        assert.isTrue(manager.getHighlightRects()[0]?.visible ?? false);
+        assert.isTrue(manager.getHighlight(threads[0].id)?.visible ?? false);
         sinon.assert.calledOnce(positionsListener);
     });
     it('clears draft thread when clicking an unanchorable element', () => {
@@ -416,7 +416,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
             await Promise.resolve();
             clock.tick(250);
             assert.lengthOf(manager.getPinPositions(), 0);
-            assert.lengthOf(manager.getHighlightRects(), 0);
+            assert.isUndefined(manager.getHighlight(thread.id));
         }
         finally {
             clock.restore();
@@ -467,11 +467,11 @@ describeWithEnvironment('CommentOverlayManager', () => {
             thread.save('Editor comment');
             assert.strictEqual(thread.status, 'ACTIVE');
             assert.strictEqual(thread.comments[0].text, 'Editor comment');
-            const highlights = manager.getHighlightRects();
-            assert.lengthOf(highlights, 1);
+            const highlight = manager.getHighlight(thread.id);
+            assert.exists(highlight);
             const editorRect = textEditor.editor.dom.getBoundingClientRect();
-            assert.strictEqual(highlights[0].top, editorRect.top);
-            assert.strictEqual(highlights[0].height, editorRect.height);
+            assert.strictEqual(highlight.top, editorRect.top);
+            assert.strictEqual(highlight.height, editorRect.height);
             const pins = manager.getPinPositions();
             assert.lengthOf(pins, 1);
             assert.strictEqual(pins[0].top, editorRect.top - 12);
@@ -551,12 +551,12 @@ describeWithEnvironment('CommentOverlayManager', () => {
             manager.setCommentMode(true);
             const thread = manager.createComment(item, 'Clipped comment');
             assert.isNotNull(thread);
-            const highlights = manager.getHighlightRects();
-            assert.lengthOf(highlights, 1);
-            assert.strictEqual(highlights[0].top, 100);
-            assert.strictEqual(highlights[0].height, 50); // Clipped to 150 - 100 = 50
-            assert.strictEqual(highlights[0].left, 10);
-            assert.strictEqual(highlights[0].width, 200);
+            const highlight = manager.getHighlight(thread.id);
+            assert.exists(highlight);
+            assert.strictEqual(highlight.top, 100);
+            assert.strictEqual(highlight.height, 50); // Clipped to 150 - 100 = 50
+            assert.strictEqual(highlight.left, 10);
+            assert.strictEqual(highlight.width, 200);
             const pins = manager.getPinPositions();
             assert.lengthOf(pins, 1);
             assert.strictEqual(pins[0].top, 100 - 12);
@@ -577,8 +577,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
             manager.setCommentMode(true);
             const thread = manager.createComment(item, 'Out of view comment');
             assert.isNotNull(thread);
-            const highlights = manager.getHighlightRects();
-            assert.lengthOf(highlights, 0);
+            assert.isUndefined(manager.getHighlight(thread.id));
             const pins = manager.getPinPositions();
             assert.lengthOf(pins, 0);
         });
@@ -650,7 +649,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
             assert.strictEqual(thread?.anchor.timeline?.startTimeMicro, 40000);
             assert.strictEqual(thread?.comments[0].text, 'Investigate custom target');
             assert.lengthOf(manager.getPinPositions(), 0);
-            assert.lengthOf(manager.getHighlightRects(), 0);
+            assert.isUndefined(manager.getHighlight(thread.id));
         }
         finally {
             Comments.CommentAnchorResolver.unregisterCustomAnchorResolver(customResolver);
@@ -790,14 +789,14 @@ describeWithEnvironment('CommentOverlayManager', () => {
             manager.start(container);
             const thread = manager.createComment(customTarget, 'Custom comment');
             assert.isNotNull(thread);
-            assert.deepEqual(manager.getHighlightRects(), [{
-                    id: thread.id,
-                    top: 60,
-                    left: 40,
-                    width: 100,
-                    height: 20,
-                    visible: true,
-                }]);
+            assert.deepEqual(manager.getHighlight(thread.id), {
+                id: thread.id,
+                top: 60,
+                left: 40,
+                width: 100,
+                height: 20,
+                visible: true,
+            });
             // The pin is centred on the top-right corner of the anchor element.
             assert.deepEqual(manager.getPinPositions(), [{
                     id: thread.id,
@@ -810,14 +809,14 @@ describeWithEnvironment('CommentOverlayManager', () => {
             manager.start(container);
             const thread = manager.createComment(customTarget, 'Custom comment');
             assert.isNotNull(thread);
-            assert.strictEqual(manager.getHighlightRects()[0]?.left, 40);
+            assert.strictEqual(manager.getHighlight(thread.id)?.left, 40);
             // Moving the box does not trigger any DOM observer, so positions only
             // update after the notification.
             anchorBoxRect = new DOMRect(200, 90, 100, 20);
-            assert.strictEqual(manager.getHighlightRects()[0]?.left, 40);
+            assert.strictEqual(manager.getHighlight(thread.id)?.left, 40);
             Comments.CommentAnchorResolver.notifyCustomAnchorsMoved();
-            assert.strictEqual(manager.getHighlightRects()[0]?.left, 200);
-            assert.strictEqual(manager.getHighlightRects()[0]?.top, 90);
+            assert.strictEqual(manager.getHighlight(thread.id)?.left, 200);
+            assert.strictEqual(manager.getHighlight(thread.id)?.top, 90);
             assert.strictEqual(manager.getPinPositions()[0]?.left, 288);
             assert.strictEqual(manager.getPinPositions()[0]?.top, 78);
         });
@@ -827,14 +826,14 @@ describeWithEnvironment('CommentOverlayManager', () => {
             const thread = manager.createComment(customTarget, 'Custom comment');
             assert.isNotNull(thread);
             assert.isEmpty(manager.getPinPositions());
-            assert.isEmpty(manager.getHighlightRects());
+            assert.isUndefined(manager.getHighlight(thread.id));
         });
         it('does not render a pin for generated comments with a custom anchor', () => {
             manager.start(container);
             const thread = manager.createComment(customTarget, 'Generated comment', { author: 'AGENT', isGeneratedComment: true });
             assert.isNotNull(thread);
             assert.isEmpty(manager.getPinPositions());
-            assert.isEmpty(manager.getHighlightRects());
+            assert.isUndefined(manager.getHighlight(thread.id));
         });
         it('does not observe the anchor element for intersection changes', () => {
             const observeSpy = sinon.spy(IntersectionObserver.prototype, 'observe');
@@ -871,12 +870,12 @@ describeWithEnvironment('CommentOverlayManager', () => {
         container.appendChild(host);
         const thread = manager.createComment(innerEl, 'Shadow scroll comment');
         assert.isNotNull(thread);
-        assert.strictEqual(manager.getHighlightRects()[0]?.top, 80);
+        assert.strictEqual(manager.getHighlight(thread.id)?.top, 80);
         // Simulate scrolling inside the ShadowRoot: native scroll events have bubbles: false, composed: false.
         itemTop = 40;
         shadowScrollContainer.dispatchEvent(new Event('scroll', { bubbles: false, composed: false }));
         // Position should be updated synchronously on the leading edge of the scroll event without waiting for a timer.
-        assert.strictEqual(manager.getHighlightRects()[0]?.top, 40);
+        assert.strictEqual(manager.getHighlight(thread.id)?.top, 40);
     });
     it('does not leak ShadowRoots in observedScrollRoots when comment is deleted', () => {
         const host = document.createElement('div');
@@ -919,7 +918,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
             container.appendChild(host1);
             const thread = manager.createComment(innerEl, 'Reparented shadow scroll comment');
             assert.isNotNull(thread);
-            assert.strictEqual(manager.getHighlightRects()[0]?.top, 80);
+            assert.strictEqual(manager.getHighlight(thread.id)?.top, 80);
             const host2 = document.createElement('div');
             const shadow2 = host2.attachShadow({ mode: 'open' });
             const scrollContainer2 = document.createElement('div');
@@ -932,12 +931,12 @@ describeWithEnvironment('CommentOverlayManager', () => {
             // Give MutationObserver a chance to trigger scheduleRematch
             await Promise.resolve();
             clock.tick(250);
-            assert.strictEqual(manager.getHighlightRects()[0]?.top, 80);
+            assert.strictEqual(manager.getHighlight(thread.id)?.top, 80);
             // Simulate scrolling the new container
             itemTop = 40;
             scrollContainer2.dispatchEvent(new Event('scroll', { bubbles: false, composed: false }));
             // Position should be updated synchronously on the leading edge of the scroll event without waiting for a timer.
-            assert.strictEqual(manager.getHighlightRects()[0]?.top, 40);
+            assert.strictEqual(manager.getHighlight(thread.id)?.top, 40);
         }
         finally {
             clock.restore();

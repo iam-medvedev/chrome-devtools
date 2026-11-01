@@ -6,6 +6,8 @@ import { it } from 'mocha';
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../core/text_utils/text_utils.js';
+import * as Workspace from '../../../../models/workspace/workspace.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCode } from '../../../../testing/UISourceCodeHelpers.js';
 import { render } from '../../../lit/lit.js';
@@ -39,20 +41,45 @@ describeWithEnvironment('ImageView', () => {
         assert.include(toolbarTexts, 'image/png');
         imageView.disposeView();
     });
-    it('dispatches TOOLBAR_ITEMS_CHANGED when working copy is committed', async () => {
+    it('dispatches TOOLBAR_ITEMS_CHANGED when working copy is committed while shown', async () => {
         const { uiSourceCode } = createContentProviderUISourceCode({
             url: urlString `http://example.com/image.png`,
             mimeType: 'image/png',
             content: IMAGE_BASE64,
         });
         const imageView = new SourceFrame.ImageView.ImageView('image/png', uiSourceCode);
+        assert.isFalse(uiSourceCode.hasEventListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted));
+        renderElementIntoDOM(imageView);
+        assert.isTrue(uiSourceCode.hasEventListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted));
         const toolbarItemsPromise = new Promise(resolve => {
             imageView.addEventListener("ToolbarItemsChanged" /* SourceFrame.ImageView.Events.TOOLBAR_ITEMS_CHANGED */, () => resolve());
         });
         uiSourceCode.setWorkingCopy('new-content');
         uiSourceCode.commitWorkingCopy();
         await toolbarItemsPromise;
-        imageView.disposeView();
+        imageView.detach();
+        assert.isFalse(uiSourceCode.hasEventListeners(Workspace.UISourceCode.Events.WorkingCopyCommitted));
+    });
+    it('dispatches TOOLBAR_ITEMS_CHANGED when re-shown after working copy is committed while hidden', async () => {
+        const { uiSourceCode } = createContentProviderUISourceCode({
+            url: urlString `http://example.com/image.png`,
+            mimeType: 'image/png',
+            content: IMAGE_BASE64,
+        });
+        const imageView = new SourceFrame.ImageView.ImageView('image/png', uiSourceCode);
+        renderElementIntoDOM(imageView);
+        await imageView.toolbarItems();
+        let toolbarItemsChanged = false;
+        imageView.addEventListener("ToolbarItemsChanged" /* SourceFrame.ImageView.Events.TOOLBAR_ITEMS_CHANGED */, () => {
+            toolbarItemsChanged = true;
+        });
+        imageView.detach();
+        uiSourceCode.setWorkingCopy('new-content');
+        uiSourceCode.commitWorkingCopy();
+        renderElementIntoDOM(imageView);
+        await imageView.toolbarItems();
+        assert.isTrue(toolbarItemsChanged, 'Expected TOOLBAR_ITEMS_CHANGED to be dispatched');
+        imageView.detach();
     });
     it('waits for in-flight image load when toolbarItems is called concurrently with wasShown', async () => {
         const contentData = new TextUtils.ContentData.ContentData(IMAGE_BASE64, true, 'image/png');

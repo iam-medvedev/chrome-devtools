@@ -1149,6 +1149,7 @@ function checkForBlockedPayload(payload) {
   }
   return null;
 }
+var MAX_DATE_MS = 864e13;
 function validateAndSanitizeAnnouncement(payload) {
   if (typeof payload !== "string") {
     return null;
@@ -1175,7 +1176,7 @@ function validateAndSanitizeAnnouncement(payload) {
   if (typeof parsedObj.element !== "string") {
     return null;
   }
-  if (typeof parsedObj.time !== "number" || !Number.isFinite(parsedObj.time)) {
+  if (typeof parsedObj.time !== "number" || !Number.isFinite(parsedObj.time) || Math.abs(parsedObj.time) > MAX_DATE_MS) {
     return null;
   }
   let elementId = void 0;
@@ -3402,6 +3403,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -4084,6 +4086,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -5998,7 +6001,7 @@ __export(ARIAMetadata_exports, {
   ariaMetadata: () => ariaMetadata
 });
 
-// ../../front_end/generated/ARIAProperties.ts
+// gen/front_end/generated/ARIAProperties.ts
 var config = {
   "attributes": [
     {
@@ -8808,7 +8811,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       }
       this.requestUpdate();
     };
-    const attributes = this.node?.attributes()?.filter((attribute) => this.isARIAAttribute(attribute)) ?? [];
+    const attributes = this.node?.attributes()?.filter((attribute) => this.#isARIAAttribute(attribute)) ?? [];
     const propertyCompletions = new Map(attributes.map((attribute) => [attribute, ariaMetadata().valuesForProperty(attribute.name)]));
     const input = {
       attributeBeingEdited: this.#attributeBeingEdited,
@@ -8820,9 +8823,9 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
       backendNodeId: this.node?.backendNodeId(),
       targetId: this.node?.domModel().target().id()
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
-  isARIAAttribute(attribute) {
+  #isARIAAttribute(attribute) {
     return SDK3.DOMModel.ARIA_ATTRIBUTES.has(attribute.name);
   }
 };
@@ -8876,7 +8879,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
         ` : nothing3}
       <devtools-checkbox class="source-order-checkbox"
                           jslog=${VisualLogging4.toggle().track({ click: true })}
-                          ?checked=${input.showSourceOrder}
+                          .checked=${Boolean(input.showSourceOrder)}
                           @change=${onShowSourceOrderChanged}>
         ${i18nString5(UIStrings6.showSourceOrder)}
       </devtools-checkbox>

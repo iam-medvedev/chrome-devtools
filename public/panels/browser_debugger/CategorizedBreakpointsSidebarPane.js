@@ -189,7 +189,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
               title=${getLocalizedCategory(category)}
               ?indeterminate=${breakpoints.some(breakpoint => !breakpoint.enabled()) &&
         breakpoints.some(breakpoint => breakpoint.enabled())}
-              ?checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
+              .checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
               @change=${(e) => onCheckboxClicked(e, category)}
             >${getLocalizedCategory(category)}</devtools-checkbox>
             <ul role="group">
@@ -203,7 +203,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                     class=${classes(breakpoint)}
                     tabIndex=-1
                     title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
-                    ?checked=${breakpoint.enabled()}
+                    .checked=${breakpoint.enabled()}
                     aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
         : Lit.nothing}
                     @change=${(e) => onCheckboxClicked(e, breakpoint)}

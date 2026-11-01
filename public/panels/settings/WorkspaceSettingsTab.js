@@ -123,7 +123,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
             })
                 .sort((fs1, fs2) => fs1.displayName.localeCompare(fs2.displayName)),
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
     static #getFilename(fileSystem) {
         const fileSystemPath = fileSystem.path();

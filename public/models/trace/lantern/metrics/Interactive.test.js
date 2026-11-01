@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { before, describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture } from '../testing/testing.js';
 const { Interactive, FirstContentfulPaint, LargestContentfulPaint } = Lantern.Metrics;
 describe('Metrics: Lantern TTI', function () {
+    setupLocaleHooks();
     let parsedTrace;
     let iframeParsedTrace;
-    before(async function () {
+    beforeEach(async function () {
         parsedTrace = await TraceLoader.traceEngine(this, 'lantern/progressive-app/trace.json.gz');
         iframeParsedTrace = await TraceLoader.traceEngine(this, 'lantern/iframe/trace.json.gz');
     });

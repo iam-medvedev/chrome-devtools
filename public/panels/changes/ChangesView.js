@@ -75,7 +75,7 @@ export class ChangesView extends UI.Widget.VBox {
                 this.#selectedUISourceCode = sourceCode;
                 this.requestUpdate();
             },
-        }, {}, this.contentElement);
+        }, undefined, this.contentElement);
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(ChangesView, this);

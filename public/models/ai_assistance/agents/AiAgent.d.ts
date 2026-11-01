@@ -9,6 +9,7 @@ import type * as Workspace from '../../workspace/workspace.js';
 import type { AlwaysAllowedTools } from '../AlwaysAllowedTools.js';
 import { type ContextHandlerResult, type DataHandlerResult, PermissionDecision, PermissionPrompt } from '../tools/Tool.js';
 type UrlString = Platform.DevToolsPath.UrlString;
+export declare const SUGGEST_FOLLOW_UPS_FUNCTION_NAME = "suggestFollowUps";
 /**
  * The types of event in the response stream that `AiConversation#run()`
  * yields to the AI assistance panel. The same events, minus a few, are saved
@@ -43,7 +44,8 @@ type UrlString = Platform.DevToolsPath.UrlString;
  * ## Events for one tool call
  *
  * `AiAgent#callFunction()` yields these. All events for one call carry the
- * same `callId`.
+ * same `callId`. The `suggestFollowUps` function never yields tool call UI
+ * events (`TITLE`, `THOUGHT`, `ACTION`).
  *
  * ```
  * TITLE?, THOUGHT?              from the tool's displayInfoFromArgs()
@@ -67,7 +69,11 @@ type UrlString = Platform.DevToolsPath.UrlString;
  * every function call in a response as one `MODEL` turn. The next request
  * carries one `functionResponse` per call, in the same order. A denied call
  * gets a response that says it did not run. After a context change, each call
- * that did not run gets a "Not executed" response.
+ * that did not run gets a "Not executed" response. In the final response,
+ * `suggestFollowUps` is not recorded in the history. When called prematurely
+ * alongside other tools, its suggestions are ignored and it receives a
+ * `functionResponse` instructing the model to call `suggestFollowUps` only in
+ * the final response.
  *
  * ## Saved history
  *
@@ -198,10 +204,7 @@ export interface ThoughtResponse extends ToolCallEvent {
 export interface SideEffectResponse extends ToolCallEvent {
     type: ResponseType.SIDE_EFFECT;
     description: string | null;
-    /**
-     * No agent sets this field. The code comes from the preceding `ACTION`.
-     */
-    code?: string;
+    javascriptCode?: string;
     confirm: (decision: PermissionDecision) => void;
     permissionPrompt?: PermissionPrompt;
     permissionTitle?: string;
@@ -244,7 +247,7 @@ export interface ActionResponse extends ToolCallEvent {
      * code, such as `executeJavaScript`. For other tools it is a readable form of
      * the call.
      */
-    code?: string;
+    action?: string;
     /**
      * The tool's result, error message, or the denial message. Missing on the
      * code-only `ACTION` that precedes an approval prompt.
@@ -547,16 +550,19 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
      * - `title`: the step heading, sent as `TITLE`.
      * - `thought`: optional explanation shown in the step, sent as `THOUGHT`.
      * - `action`: the text shown in the step's code box, sent as
-     *   `ACTION.code`. It is real code only for tools that run code, such as
-     *   `executeJavaScript`. For other tools it is a readable form of the call,
-     *   for example `getInsightDetails('NAVIGATION_0', 'LCPBreakdown')`, and is
-     *   never executed.
+     *   `ACTION.action`. It is a readable form of the call, for example
+     *   `getInsightDetails('NAVIGATION_0', 'LCPBreakdown')`, and is never
+     *   executed.
+     * - `javascriptCode`: the exact JavaScript the tool runs in the page, sent
+     *   as `SIDE_EFFECT.javascriptCode` and shown in the permission prompt.
+     *   Only set by tools that execute JavaScript, such as `executeJavaScript`.
      * - `suggestions`: `AiAgent` does not use this field.
      */
     displayInfoFromArgs?: (args: Args) => {
         title?: string;
         thought?: string;
         action?: string;
+        javascriptCode?: string;
         suggestions?: [string, ...string[]];
     };
     /**
@@ -688,10 +694,24 @@ export declare abstract class AiAgent<T> {
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }
 /**
+ * Validates and sanitizes raw follow-up suggestions from the model (either
+ * `args.suggestions` from a `suggestFollowUps` tool call or a `JSON.parse`d
+ * `SUGGESTIONS:` text directive).
+ *
+ * Expects `parsed` to be a `string[]`, but accepts `unknown` because model
+ * output is untrusted. Returns non-empty string items with whitespace
+ * collapsed and each item truncated to `MAX_SUGGESTION_LENGTH`, or
+ * `undefined` if `parsed` is not an array or no valid items remain.
+ */
+export declare function sanitizeSuggestionsList(parsed: unknown): [string, ...string[]] | undefined;
+/**
  * Parses `suggestions` as a JSON array and returns its non-empty string items,
  * with whitespace collapsed and each item truncated to `MAX_SUGGESTION_LENGTH`.
- * Returns `undefined` if the value is not an array or no items remain.
- * Throws if `suggestions` is not valid JSON.
+ * Returns `undefined` if `suggestions` is not valid JSON, not an array, or no
+ * items remain.
+ *
+ * TODO(b/568697679): Remove this JSON-string wrapper and consolidate into a
+ * single function once legacy `SUGGESTIONS:` text parsing is removed.
  */
 export declare function sanitizeSuggestions(suggestions: string): [string, ...string[]] | undefined;
 /**

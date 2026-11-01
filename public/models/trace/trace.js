@@ -196,12 +196,9 @@ var EventsSerializer = class _EventsSerializer {
       return cluster;
     }
     if (_EventsSerializer.isSyntheticEventKey(eventValues)) {
-      const syntheticEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
-      const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
-      if (!syntheticEvent) {
-        throw new Error(`Unknown trace event. Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
-      }
-      return syntheticEvent;
+      return Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().syntheticEventForRawEventIndex(
+        eventValues.rawIndex
+      );
     }
     if (_EventsSerializer.isRawEventKey(eventValues)) {
       const rawEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
@@ -1844,6 +1841,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2526,6 +2524,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3140,6 +3139,13 @@ function createParsedUrl(url) {
     securityOrigin: url.origin
   };
 }
+function stripUrlHash(url, rawUrl) {
+  if (!rawUrl.includes("#")) {
+    return rawUrl;
+  }
+  url.hash = "";
+  return url.href;
+}
 function findWorkerThreads(trace) {
   const workerThreads = /* @__PURE__ */ new Map();
   const workerCreationEvents = ["ServiceWorker thread", "DedicatedWorker thread"];
@@ -3211,7 +3217,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     requestId: request.args.data.requestId,
     connectionId: request.args.data.connectionId ?? 0,
     connectionReused: request.args.data.connectionReused ?? false,
-    url: request.args.data.url,
+    url: stripUrlHash(url, request.args.data.url),
     protocol: request.args.data.protocol,
     parsedURL: createParsedUrl(url),
     documentURL: request.args.data.requestingFrameUrl,
@@ -3340,8 +3346,9 @@ function createNetworkRequests(trace, data, startTime = 0, endTime = Number.POSI
         pushStart: -1,
         pushEnd: -1
       };
-      redirectedRequest.url = redirect.url;
-      redirectedRequest.parsedURL = createParsedUrl(redirect.url);
+      const redirectUrl = new URL(redirect.url);
+      redirectedRequest.url = stripUrlHash(redirectUrl, redirect.url);
+      redirectedRequest.parsedURL = createParsedUrl(redirectUrl);
       redirectedRequest.statusCode = 302;
       redirectedRequest.resourceType = void 0;
       redirectedRequest.transferSize = 400;
@@ -3400,15 +3407,23 @@ function collectMainThreadEvents(trace, data) {
 function createGraph(requests, trace, data, url) {
   const mainThreadEvents = collectMainThreadEvents(trace, data);
   if (!url) {
-    url = {
-      requestedUrl: requests[0].url,
-      mainDocumentUrl: ""
-    };
-    let request = requests[0];
-    while (request.redirectDestination) {
-      request = request.redirectDestination;
+    if (!requests.length) {
+      throw new Lantern.Core.LanternError("No network requests found in trace");
     }
-    url.mainDocumentUrl = request.url;
+    const followRedirects = (request) => {
+      while (request.redirectDestination) {
+        request = request.redirectDestination;
+      }
+      return request;
+    };
+    const isMainFrameDoc = (r) => r.frameId === data.Meta.mainFrameId && followRedirects(r).resourceType === "Document";
+    const isAnyDoc = (r) => followRedirects(r).resourceType === "Document";
+    const initialRequest = requests.find(isMainFrameDoc) ?? requests.find(isAnyDoc) ?? requests[0];
+    const lastDocChainStart = requests.findLast(isMainFrameDoc) ?? requests.findLast(isAnyDoc) ?? requests[0];
+    url = {
+      requestedUrl: initialRequest.url,
+      mainDocumentUrl: followRedirects(lastDocChainStart).url
+    };
   }
   return Lantern.Graph.PageDependencyGraph.createGraph(mainThreadEvents, requests, url);
 }
@@ -3629,6 +3644,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     if (!navStarts || navStartIndex === void 0 || navStartIndex === -1) {
       throw new Lantern2.Core.LanternError("Could not find navigation start");
     }
+    const processedNavigation = createProcessedNavigation(data, frameId, navigation);
     const startTime = navStarts[navStartIndex].ts;
     const endTime = navStartIndex + 1 < navStarts.length ? navStarts[navStartIndex + 1].ts : Number.POSITIVE_INFINITY;
     const boundedTraceEvents = traceEvents.filter((e) => e.ts >= startTime && e.ts < endTime);
@@ -3637,7 +3653,6 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     };
     const requests = createNetworkRequests(trace, data, startTime, endTime);
     const graph = createGraph(requests, trace, data);
-    const processedNavigation = createProcessedNavigation(data, frameId, navigation);
     const networkAnalysis = Lantern2.Core.NetworkAnalyzer.analyze(requests);
     if (!networkAnalysis) {
       return;
@@ -4017,7 +4032,6 @@ var Model = class _Model extends EventTarget {
         this.#processor.data,
         this.#processor.insights
       );
-      syntheticEventsManager.clearRegistrationIndex();
       this.#traces.push(file);
     } catch (e) {
       throw e;

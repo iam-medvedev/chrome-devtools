@@ -717,7 +717,7 @@ var ControlPane = class extends UI.Widget.VBox {
       metricValues: this.#metricValues,
       onCheckboxChange: this.#onCheckboxChange.bind(this)
     };
-    this.#view(input, {}, this.element);
+    this.#view(input, void 0, this.element);
   }
   #onCheckboxChange(chartName, e) {
     this.#onToggle(chartName, e.target.checked);

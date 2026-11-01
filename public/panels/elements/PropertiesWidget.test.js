@@ -222,7 +222,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
                 throw new Error('Function not implemented.');
             },
             isRegex: false,
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('elements/properties_widget_no_filter.png');
     });
     it('renders a selected element', async () => {
@@ -235,7 +235,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
                 throw new Error('Function not implemented.');
             },
             isRegex: false,
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         const tree = container.querySelector('devtools-tree');
         assert.exists(tree);
@@ -255,7 +255,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
                 throw new Error('Function not implemented.');
             },
             isRegex: false,
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('elements/properties_widget_partial_filter.png');
     });
     it('renders the view with no filter matches', async () => {
@@ -268,7 +268,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
                 throw new Error('Function not implemented.');
             },
             isRegex: false,
-        }, {}, container);
+        }, undefined, container);
         await assertScreenshot('elements/properties_widget_no_matches.png');
     });
 });

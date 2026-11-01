@@ -68,20 +68,19 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
                 filters: this.filtersWithoutTextFilter(),
                 startTime: this.startTime,
                 endTime: this.endTime,
-                eventGroupIdCallback: this.groupingFunction.bind(this),
+                eventGroupIdCallback: this.#groupingFunction.bind(this),
             });
         }
-        // The filters for this view are slightly different; we want to use the set
-        // of visible event types, but also include network events, which by
-        // default are not in the set of visible entries (as they are not shown on
-        // the main flame chart).
-        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes().concat([Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST]));
+        // visibleTypes() includes ResourceReceivedData / ResourceReceiveResponse / ResourceFinish for
+        // transferSize accounting, but excludes SyntheticNetworkRequest so network download durations
+        // are not counted as main thread CPU time.
+        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes());
         const node = new Trace.Extras.TraceTree.BottomUpRootNode(this.selectedEvents, {
             textFilter: this.textFilter(),
             filters: [filter],
             startTime: this.startTime,
             endTime: this.endTime,
-            eventGroupIdCallback: this.groupingFunction.bind(this),
+            eventGroupIdCallback: this.#groupingFunction.bind(this),
             calculateTransferSize: true,
             // Ensure we group by 3P alongside eventID for correct 3P grouping.
             forceGroupIdCallback: true,
@@ -94,7 +93,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     selectProfileNode() {
         return;
     }
-    groupingFunction(event) {
+    #groupingFunction(event) {
         const entity = this.entityMapper()?.entityForEvent(event);
         if (!entity) {
             return '';
@@ -127,7 +126,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     populateToolbar() {
         return;
     }
-    compareTransferSize(a, b) {
+    #compareTransferSize(a, b) {
         const nodeA = a;
         const nodeB = b;
         const transferA = nodeA.profileNode.transferSize ?? 0;
@@ -142,7 +141,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         let sortFunction;
         switch (columnId) {
             case 'transfer-size':
-                sortFunction = this.compareTransferSize.bind(this);
+                sortFunction = this.#compareTransferSize.bind(this);
                 break;
             default:
                 sortFunction = super.getSortingFunction(columnId);

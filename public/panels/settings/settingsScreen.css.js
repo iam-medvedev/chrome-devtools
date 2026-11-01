@@ -157,12 +157,6 @@ devtools-button.link-icon {
   margin-left: var(--sys-size-3);
 }
 
-.tabbed-pane-content slot::slotted(.widget) {
-  /* '!important' in order to overwrite the slotted widget's 'overflow-auto' class.
-  This prevents the focus-ring of selectable elements from being cut off. */
-  overflow: visible !important; /* stylelint-disable-line declaration-no-important */
-}
-
 .experiments-warning-subsection {
   display: flex;
   align-items: center;
@@ -176,24 +170,6 @@ devtools-button.link-icon {
 @media (forced-colors: active) {
   .settings-window-title {
     color: canvastext;
-  }
-
-  .tabbed-pane-header-tab {
-    background: ButtonFace;
-  }
-
-  .tabbed-pane-header-tab-title {
-    color: canvastext;
-  }
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-  .tabbed-pane-header-tab.selected {
-    background: ButtonFace;
-  }
-
-  .tabbed-pane-header-tab.selected .tabbed-pane-header-tab-title {
-    color: HighlightText;
   }
 }
 

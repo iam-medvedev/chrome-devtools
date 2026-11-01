@@ -1612,6 +1612,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2294,6 +2295,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3178,14 +3180,14 @@ var EmulatedDevice = class _EmulatedDevice {
     json["capabilities"] = this.capabilities;
     json["screen"] = {
       "device-pixel-ratio": this.deviceScaleFactor,
-      vertical: this.orientationToJSON(this.vertical),
-      horizontal: this.orientationToJSON(this.horizontal),
+      vertical: this.#orientationToJSON(this.vertical),
+      horizontal: this.#orientationToJSON(this.horizontal),
       "vertical-spanned": void 0,
       "horizontal-spanned": void 0
     };
     if (this.isDualScreen || this.isFoldableScreen) {
-      json["screen"]["vertical-spanned"] = this.orientationToJSON(this.verticalSpanned);
-      json["screen"]["horizontal-spanned"] = this.orientationToJSON(this.horizontalSpanned);
+      json["screen"]["vertical-spanned"] = this.#orientationToJSON(this.verticalSpanned);
+      json["screen"]["horizontal-spanned"] = this.#orientationToJSON(this.horizontalSpanned);
     }
     json["modes"] = [];
     for (let i = 0; i < this.modes.length; ++i) {
@@ -3233,7 +3235,7 @@ var EmulatedDevice = class _EmulatedDevice {
     }
     return json;
   }
-  orientationToJSON(orientation) {
+  #orientationToJSON(orientation) {
     const json = {};
     json["width"] = orientation.width;
     json["height"] = orientation.height;
@@ -3365,11 +3367,11 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
     super();
     this.#standardSetting = settings.createSetting("standard-emulated-device-list", []);
     this.#standard = /* @__PURE__ */ new Set();
-    this.listFromJSONV1(this.#standardSetting.get(), this.#standard);
-    this.updateStandardDevices();
+    this.#listFromJSONV1(this.#standardSetting.get(), this.#standard);
+    this.#updateStandardDevices();
     this.#customSetting = settings.createSetting("custom-emulated-device-list", []);
     this.#custom = /* @__PURE__ */ new Set();
-    if (!this.listFromJSONV1(this.#customSetting.get(), this.#custom)) {
+    if (!this.#listFromJSONV1(this.#customSetting.get(), this.#custom)) {
       this.saveCustomDevices();
     }
   }
@@ -3383,7 +3385,7 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
     }
     return Root.DevToolsContext.globalInstance().get(_EmulatedDevicesList);
   }
-  updateStandardDevices() {
+  #updateStandardDevices() {
     const devices = /* @__PURE__ */ new Set();
     for (const emulatedDevice of emulatedDevices) {
       const device = EmulatedDevice.fromJSONV1(emulatedDevice);
@@ -3391,11 +3393,11 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
         devices.add(device);
       }
     }
-    this.copyShowValues(this.#standard, devices);
+    this.#copyShowValues(this.#standard, devices);
     this.#standard = devices;
     this.saveStandardDevices();
   }
-  listFromJSONV1(jsonArray, result) {
+  #listFromJSONV1(jsonArray, result) {
     if (!Array.isArray(jsonArray)) {
       return false;
     }
@@ -3452,7 +3454,7 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
     this.#standardSetting.set(json);
     this.dispatchEventToListeners("StandardDevicesUpdated" /* STANDARD_DEVICES_UPDATED */);
   }
-  copyShowValues(from, to) {
+  #copyShowValues(from, to) {
     const fromDeviceById = /* @__PURE__ */ new Map();
     for (const device of from) {
       fromDeviceById.set(device.title, device);

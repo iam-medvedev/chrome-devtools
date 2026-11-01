@@ -1,13 +1,54 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { MediaModel } from './MediaModel.js';
 import { PlayerDetailView } from './PlayerDetailView.js';
 import { PlayerListView } from './PlayerListView.js';
+const { repeat } = Directives;
+const { widget } = UI.Widget;
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const hasPlayers = input.players.size > 0;
+    const activePlayerData = input.activePlayerId ? input.players.get(input.activePlayerId) : undefined;
+    const placeholderHeader = hasPlayers ? i18nString(UIStrings.noPlayerDetailsSelected) : i18nString(UIStrings.noMediaPlayer);
+    const placeholderText = hasPlayers ? i18nString(UIStrings.selectToViewDetails) : i18nString(UIStrings.mediaPlayerDescription);
+    // clang-format off
+    render(html `
+    <devtools-split-view direction="column"
+                         name="media-panel-split-view-state"
+                         sidebar-initial-size="200"
+                         show=${hasPlayers ? 'both' : 'main'}>
+      <devtools-widget slot="sidebar"
+                       class="panel-sidebar"
+                       jslog=${VisualLogging.pane('sidebar').track({ resize: true })}
+                       ${widget(PlayerListView, {
+        players: input.players,
+        selectedPlayerID: input.activePlayerId,
+        onSelectPlayer: input.onPlayerSelected,
+        onHidePlayer: input.onHidePlayer,
+        onHideOtherPlayers: input.onHideOtherPlayers,
+        onSavePlayerInfo: input.onSavePlayerInfo,
+    })}>
+      </devtools-widget>
+      ${activePlayerData && input.activePlayerId ? repeat([input.activePlayerId], id => id, () => html `
+        <devtools-widget slot="main" ${widget(PlayerDetailView, {
+        playerData: activePlayerData,
+    })}></devtools-widget>
+      `) : html `
+        <devtools-widget slot="main" ${widget(UI.EmptyWidget.EmptyWidget, {
+        header: placeholderHeader,
+        text: placeholderText,
+        link: MEDIA_PLAYER_EXPLANATION_URL,
+    })}></devtools-widget>
+      `}
+    </devtools-split-view>
+  `, target);
+    // clang-format on
+};
 const UIStrings = {
     /**
      * @description Text to show if no media player has been selected.
@@ -107,19 +148,24 @@ export class PlayerDataDownloadManager {
         this.playerDataCollection.delete(playerID);
     }
 }
-export class MainView extends UI.Panel.PanelWithSidebar {
-    detailPanels;
+export class MainView extends UI.Panel.Panel {
     deletedPlayers;
     downloadStore;
-    sidebar;
+    #playerData;
     #playerIdsToPlayers;
     #domNodeIdsToPlayerIds;
-    #placeholder;
+    #activePlayerId = null;
+    #view;
     #initialPlayersLoadedPromise;
     #initialPlayersLoadedPromiseResolve = () => { };
-    constructor(downloadStore = new PlayerDataDownloadManager()) {
+    #boundRenderMainPanel = this.renderMainPanel.bind(this);
+    #boundMarkPlayerForDeletion = this.markPlayerForDeletion.bind(this);
+    #boundMarkOtherPlayersForDeletion = this.markOtherPlayersForDeletion.bind(this);
+    #boundExportPlayerData = this.exportPlayerData.bind(this);
+    constructor(downloadStore = new PlayerDataDownloadManager(), view = DEFAULT_VIEW) {
         super('media');
-        this.detailPanels = new Map();
+        this.#view = view;
+        this.#playerData = new Map();
         this.#playerIdsToPlayers = new Map();
         this.#domNodeIdsToPlayerIds = new Map();
         this.#initialPlayersLoadedPromise = new Promise(resolve => {
@@ -127,24 +173,26 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         });
         this.deletedPlayers = new Set();
         this.downloadStore = downloadStore;
-        this.sidebar = new PlayerListView(this);
-        this.sidebar.show(this.panelSidebarElement());
-        this.splitWidget().hideSidebar();
-        this.#placeholder =
-            new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMediaPlayer), UIStrings.mediaPlayerDescription);
-        this.#placeholder.show(this.mainElement());
-        this.#placeholder.link = MEDIA_PLAYER_EXPLANATION_URL;
+        this.requestUpdate();
         SDK.TargetManager.TargetManager.instance().observeModels(MediaModel, this, { scoped: true });
     }
+    performUpdate() {
+        const input = {
+            players: new Map(this.#playerData),
+            activePlayerId: this.#activePlayerId,
+            onPlayerSelected: this.#boundRenderMainPanel,
+            onHidePlayer: this.#boundMarkPlayerForDeletion,
+            onHideOtherPlayers: this.#boundMarkOtherPlayersForDeletion,
+            onSavePlayerInfo: this.#boundExportPlayerData,
+        };
+        this.#view(input, undefined, this.contentElement);
+    }
     renderMainPanel(playerID) {
-        if (!this.detailPanels.has(playerID)) {
+        if (!this.#playerData.has(playerID) || this.#activePlayerId === playerID) {
             return;
         }
-        const mainWidget = this.splitWidget().mainWidget();
-        if (mainWidget) {
-            mainWidget.detachChildWidgets();
-        }
-        this.detailPanels.get(playerID)?.show(this.mainElement());
+        this.#activePlayerId = playerID;
+        this.requestUpdate();
     }
     wasShown() {
         super.wasShown();
@@ -205,39 +253,55 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         }
     }
     shouldPropagate(playerID) {
-        return !this.deletedPlayers.has(playerID) && this.detailPanels.has(playerID);
+        return !this.deletedPlayers.has(playerID) && this.#playerData.has(playerID);
     }
     onProperty(playerID, property) {
         if (!this.shouldPropagate(playerID)) {
             return;
         }
-        this.sidebar.onProperty(playerID, property);
         this.downloadStore.onProperty(playerID, property);
-        this.detailPanels.get(playerID)?.onProperty(property);
+        const data = this.#playerData.get(playerID);
+        if (data) {
+            data.properties.set(property.name, property.value);
+            this.#playerData.set(playerID, { ...data });
+            this.requestUpdate();
+        }
     }
     onError(playerID, error) {
         if (!this.shouldPropagate(playerID)) {
             return;
         }
-        this.sidebar.onError(playerID, error);
         this.downloadStore.onError(playerID, error);
-        this.detailPanels.get(playerID)?.onError(error);
+        const data = this.#playerData.get(playerID);
+        if (data) {
+            data.errors.push(error);
+            this.#playerData.set(playerID, { ...data });
+            this.requestUpdate();
+        }
     }
     onMessage(playerID, message) {
         if (!this.shouldPropagate(playerID)) {
             return;
         }
-        this.sidebar.onMessage(playerID, message);
         this.downloadStore.onMessage(playerID, message);
-        this.detailPanels.get(playerID)?.onMessage(message);
+        const data = this.#playerData.get(playerID);
+        if (data) {
+            data.messages.push(message);
+            this.#playerData.set(playerID, { ...data });
+            this.requestUpdate();
+        }
     }
     onEvent(playerID, event) {
         if (!this.shouldPropagate(playerID)) {
             return;
         }
-        this.sidebar.onEvent(playerID, event);
         this.downloadStore.onEvent(playerID, event);
-        this.detailPanels.get(playerID)?.onEvent(event);
+        const data = this.#playerData.get(playerID);
+        if (data) {
+            data.events.push(event);
+            this.#playerData.set(playerID, { ...data });
+            this.requestUpdate();
+        }
     }
     selectPlayerByDOMNodeId(domNodeId) {
         const playerId = this.#domNodeIdsToPlayerIds.get(domNodeId);
@@ -246,7 +310,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         }
         const player = this.#playerIdsToPlayers.get(playerId);
         if (player) {
-            this.sidebar.selectPlayerById(player.playerId);
+            this.renderMainPanel(player.playerId);
         }
     }
     waitForInitialPlayers() {
@@ -258,42 +322,33 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         if (player.domNodeId) {
             this.#domNodeIdsToPlayerIds.set(player.domNodeId, player.playerId);
         }
-        if (this.splitWidget().showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
-            this.splitWidget().showBoth();
-        }
-        this.sidebar.addMediaElementItem(player.playerId);
-        this.detailPanels.set(player.playerId, new PlayerDetailView());
+        this.#playerData.set(player.playerId, {
+            properties: new Map(),
+            messages: [],
+            events: [],
+            errors: [],
+        });
         this.downloadStore.addPlayer(player.playerId);
-        if (this.detailPanels.size === 1) {
-            this.#placeholder.header = i18nString(UIStrings.noPlayerDetailsSelected);
-            this.#placeholder.text = i18nString(UIStrings.selectToViewDetails);
-        }
+        this.requestUpdate();
         this.#initialPlayersLoadedPromiseResolve();
     }
     markPlayerForDeletion(playerID) {
         // TODO(tmathmeyer): send this to chromium to save the storage space there too.
         this.deletedPlayers.add(playerID);
-        this.detailPanels.delete(playerID);
+        this.#playerData.delete(playerID);
         const player = this.#playerIdsToPlayers.get(playerID);
         if (player?.domNodeId) {
             this.#domNodeIdsToPlayerIds.delete(player.domNodeId);
         }
         this.#playerIdsToPlayers.delete(playerID);
-        this.sidebar.deletePlayer(playerID);
         this.downloadStore.deletePlayer(playerID);
-        if (this.detailPanels.size === 0) {
-            this.#placeholder.header = i18nString(UIStrings.noMediaPlayer);
-            this.#placeholder.text = i18nString(UIStrings.mediaPlayerDescription);
-            this.splitWidget().hideSidebar();
-            const mainWidget = this.splitWidget().mainWidget();
-            if (mainWidget) {
-                mainWidget.detachChildWidgets();
-            }
-            this.#placeholder.show(this.mainElement());
+        if (this.#activePlayerId === playerID) {
+            this.#activePlayerId = null;
         }
+        this.requestUpdate();
     }
     markOtherPlayersForDeletion(playerID) {
-        for (const keyID of this.detailPanels.keys()) {
+        for (const keyID of this.#playerData.keys()) {
             if (keyID !== playerID) {
                 this.markPlayerForDeletion(keyID);
             }
@@ -302,6 +357,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     exportPlayerData(playerID) {
         const dump = this.downloadStore.exportPlayerData(playerID);
         const uriContent = 'data:application/octet-stream,' + encodeURIComponent(JSON.stringify(dump, null, 2));
+        /* eslint-disable-next-line @devtools/no-imperative-dom-api */
         const anchor = document.createElement('a');
         anchor.href = uriContent;
         anchor.download = playerID + '.json';

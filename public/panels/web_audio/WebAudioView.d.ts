@@ -9,7 +9,7 @@ export interface ViewInput {
     onContextSelectorSelectionChanged: (contextId: string) => void;
     contextRealtimeData: Protocol.WebAudio.ContextRealtimeData | null;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class WebAudioView extends UI.Widget.VBox<ShadowRoot> implements SDK.TargetManager.SDKModelObserver<WebAudioModel> {
     private readonly knownContexts;

@@ -44,7 +44,7 @@ export class CSSOverviewProcessingView extends UI.Widget.Widget {
         this.requestUpdate();
     }
     performUpdate() {
-        this.#view({ onCancel: this.#onCancel }, {}, this.element);
+        this.#view({ onCancel: this.#onCancel }, undefined, this.element);
     }
 }
 //# sourceMappingURL=CSSOverviewProcessingView.js.map

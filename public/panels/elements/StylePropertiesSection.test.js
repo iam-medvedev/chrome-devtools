@@ -8,15 +8,17 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
 import * as ComputedStyle from '../../models/computed_style/computed_style.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet } from '../../testing/StyleHelpers.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
+import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('StylesPropertySection', () => {
     let computedStyleModel;
@@ -36,6 +38,14 @@ describeWithEnvironment('StylesPropertySection', () => {
         Workspace.Workspace.WorkspaceImpl.removeInstance();
         SDK.PageResourceLoader.PageResourceLoader.removeInstance();
     });
+    function createChangeTrackingSetup(cssModel) {
+        const changeTracker = sinon.createStubInstance(ChangeTracker.ChangeTracker.ChangeTracker);
+        sinon.stub(changeTracker, 'isTracking').get(() => true);
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.id = 1;
+        node.domModel.returns(cssModel.domModel());
+        return { changeTracker, node };
+    }
     it('contains specificity information', async () => {
         const specificity = {
             a: 0,
@@ -222,7 +232,8 @@ describeWithEnvironment('StylesPropertySection', () => {
     it('updates property rule property names', async () => {
         const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
         assert.exists(cssModel);
-        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        const { changeTracker, node } = createChangeTrackingSetup(cssModel);
+        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker);
         const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
         const styleSheetId = '0';
         const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 6 };
@@ -249,7 +260,7 @@ describeWithEnvironment('StylesPropertySection', () => {
                 },
                 matchingSelectors: [0],
             }];
-        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, origin, styleSheetId, ...range, propertyRules, matchedPayload, connection });
+        const matchedStyles = await getMatchedStylesWithStylesheet({ cssModel, node, origin, styleSheetId, ...range, propertyRules, matchedPayload, connection });
         function assertIsPropertyRule(rule) {
             assert.instanceOf(rule, SDK.CSSRule.CSSPropertyRule);
         }
@@ -265,6 +276,9 @@ describeWithEnvironment('StylesPropertySection', () => {
         assert.isTrue(forceUpdateSpy.calledAfter(setNameSpy));
         sinon.assert.calledOnceWithExactly(setNameSpy, styleSheetId, sinon.match((r) => r.startLine === range.startLine &&
             r.startColumn === range.startColumn && r.endLine === range.endLine && r.endColumn === range.endColumn), propertyName.text);
+        sinon.assert.notCalled(changeTracker.trackChange);
+        await section.setHeaderText(rule, '--new-prop');
+        sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed @property rule name from "--prop" to "--new-prop"', sinon.match.object);
     });
     it('renders braces correctly with a non-style-rule section', async () => {
         Common.Settings.Settings.instance().resolve(SDK.SDKSettings.textEditorIndentSettingDescriptor).set('  ');
@@ -873,11 +887,13 @@ describeWithEnvironment('StylesPropertySection', () => {
     });
     it('supports editing selector text via setSelectorText and undoing via DOMModelUndoStack', async () => {
         const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+        const { changeTracker, node } = createChangeTrackingSetup(cssModel);
         const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
         const styleSheetId = '0';
         const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 4 };
         const matchedStyles = await getMatchedStylesWithStylesheet({
             cssModel,
+            node,
             origin,
             styleSheetId,
             matchedPayload: [{
@@ -904,7 +920,7 @@ describeWithEnvironment('StylesPropertySection', () => {
             redoCalled = true;
             return {};
         });
-        const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
+        const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker), matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
         cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, event => {
             if (event.data.edit) {
                 section.styleSheetEdited(event.data.edit);
@@ -913,6 +929,7 @@ describeWithEnvironment('StylesPropertySection', () => {
         const rule = matchedStyles.nodeStyles()[0].parentRule;
         await section.setHeaderText(rule, '.updated');
         assert.strictEqual(rule.selectorText(), '.updated');
+        sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed style rule selector from ".old" to ".updated"', sinon.match.object);
         await SDK.DOMModel.DOMModelUndoStack.instance().undo();
         assert.isTrue(undoCalled);
         await SDK.DOMModel.DOMModelUndoStack.instance().redo();
@@ -953,15 +970,99 @@ describeWithEnvironment('StylesPropertySection', () => {
         sinon.assert.calledOnceWithExactly(setMediaStub, styleSheetId, sinon.match.any, '(min-width: 800px)');
         sinon.assert.calledOnce(refreshSpy);
     });
+    describe('query change tracking', () => {
+        const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+        const styleSheetId = '0';
+        // The query prelude and the selector must have distinct ranges, otherwise
+        // CSSStyleRule.rebase treats the query edit as a selector edit.
+        const selectorRange = { startLine: 1, startColumn: 2, endLine: 1, endColumn: 5 };
+        const range = { startLine: 0, startColumn: 7, endLine: 0, endColumn: 25 };
+        async function setupSection(rulePayload) {
+            const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+            const { changeTracker, node } = createChangeTrackingSetup(cssModel);
+            const matchedStyles = await getMatchedStylesWithStylesheet({
+                cssModel,
+                node,
+                origin,
+                styleSheetId,
+                isMutable: true,
+                matchedPayload: [{
+                        rule: {
+                            selectorList: { selectors: [{ text: 'div', range: selectorRange }], text: 'div' },
+                            origin,
+                            styleSheetId,
+                            style: {
+                                cssProperties: [{ name: 'color', value: 'red' }],
+                                shorthandEntries: [],
+                                styleSheetId,
+                                range: selectorRange,
+                            },
+                            ...rulePayload,
+                        },
+                        matchingSelectors: [0],
+                    }],
+                connection,
+            });
+            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker);
+            sinon.stub(stylesSidebarPane, 'cssModel').returns(cssModel);
+            const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
+            cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, event => {
+                if (event.data.edit) {
+                    section.styleSheetEdited(event.data.edit);
+                }
+            });
+            const rule = matchedStyles.nodeStyles()[0].parentRule;
+            return { changeTracker, rule, section };
+        }
+        it('tracks @media query changes using the query text from before the edit', async () => {
+            const { changeTracker, rule, section } = await setupSection({
+                media: [{ text: '(max-width: 600px)', source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */, styleSheetId, range }],
+                ruleTypes: ["MediaRule" /* Protocol.CSS.CSSRuleType.MediaRule */],
+            });
+            connection.setSuccessHandler('CSS.setMediaText', () => ({
+                media: { text: '(min-width: 800px)', source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */, styleSheetId, range },
+            }));
+            assert.isTrue(await section.setQueryText(rule.media[0], '(min-width: 800px)'));
+            // The SDK model is rebased synchronously, so a naive implementation would see the new text as the old one.
+            assert.strictEqual(rule.media[0].text, '(min-width: 800px)');
+            sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed @media query from "(max-width: 600px)" to "(min-width: 800px)"', sinon.match.object);
+        });
+        it('tracks clearing an @scope query', async () => {
+            const { changeTracker, rule, section } = await setupSection({
+                scopes: [{ text: '(.card)', styleSheetId, range }],
+                ruleTypes: ["ScopeRule" /* Protocol.CSS.CSSRuleType.ScopeRule */],
+            });
+            connection.setSuccessHandler('CSS.setScopeText', () => ({ scope: { text: '', styleSheetId, range } }));
+            assert.isTrue(await section.setQueryText(rule.scopes[0], ''));
+            sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Cleared @scope query "(.card)"', sinon.match.object);
+        });
+        it('does not track when the query edit fails', async () => {
+            const { changeTracker, rule, section } = await setupSection({
+                containerQueries: [{
+                        text: '(min-width: 400px)',
+                        conditionText: 'sidebar (min-width: 400px)',
+                        name: 'sidebar',
+                        styleSheetId,
+                        range,
+                    }],
+                ruleTypes: ["ContainerRule" /* Protocol.CSS.CSSRuleType.ContainerRule */],
+            });
+            connection.setFailureHandler('CSS.setContainerQueryConditionText', () => ({ code: -32000, message: 'invalid container query' }));
+            assert.isFalse(await section.setQueryText(rule.containerQueries[0], 'sidebar (min-width'));
+            sinon.assert.notCalled(changeTracker.trackChange);
+        });
+    });
     it('adds a new rule creating a new editable StylePropertiesSection', async () => {
         const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
-        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        const { changeTracker, node } = createChangeTrackingSetup(cssModel);
+        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker);
         sinon.stub(stylesSidebarPane, 'cssModel').returns(cssModel);
         const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
         const styleSheetId = '0';
         const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 12 };
         const matchedStyles = await getMatchedStylesWithStylesheet({
             cssModel,
+            node,
             origin,
             styleSheetId,
             isMutable: true,
@@ -992,6 +1093,7 @@ describeWithEnvironment('StylesPropertySection', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isFalse(blankSection.isBlank);
         assert.strictEqual(blankSection.headerText(), '.added-rule');
+        sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Added style rule ".added-rule"', sinon.match.object);
     });
     it('moves focus to property editing when committing new rule selector on colon', async () => {
         const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
@@ -1568,9 +1670,11 @@ describeWithEnvironment('StylesPropertySection', () => {
         async function createKeyframeSection() {
             const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
             assert.exists(cssModel);
+            const { changeTracker, node } = createChangeTrackingSetup(cssModel);
             const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
             const matchedStyles = await getMatchedStylesWithStylesheet({
                 cssModel,
+                node,
                 origin,
                 styleSheetId,
                 isMutable: true,
@@ -1619,7 +1723,7 @@ describeWithEnvironment('StylesPropertySection', () => {
             SDK.DOMModel.DOMModelUndoStack.instance({ forceNew: true });
             const keyframesRule = matchedStyles.keyframes()[0];
             assert.exists(keyframesRule);
-            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+            const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel, changeTracker);
             const section = new Elements.StylePropertiesSection.KeyframePropertiesSection(stylesSidebarPane, matchedStyles, keyframesRule.keyframes()[0].style, 0);
             // The Styles pane forwards style sheet edits to its sections.
             cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, event => {
@@ -1659,10 +1763,11 @@ describeWithEnvironment('StylesPropertySection', () => {
                 undoStub,
                 redoStub,
                 refreshUpdateSpy,
+                changeTracker,
             };
         }
         it('commits a new keyframe key through CSS.setKeyframeKey and renders it in the header', async () => {
-            const { section, selectorElement, editKey, setKeyframeKeyStub, markUndoableStateStub, refreshUpdateSpy } = await createKeyframeSection();
+            const { section, selectorElement, editKey, setKeyframeKeyStub, markUndoableStateStub, refreshUpdateSpy, changeTracker, } = await createKeyframeSection();
             assert.strictEqual(selectorElement.textContent, '0%');
             await editKey('1%');
             sinon.assert.calledOnce(setKeyframeKeyStub);
@@ -1671,6 +1776,7 @@ describeWithEnvironment('StylesPropertySection', () => {
             sinon.assert.calledOnceWithExactly(refreshUpdateSpy, section);
             assert.strictEqual(section.headerText(), '1%');
             assert.strictEqual(selectorElement.textContent, '1%');
+            sinon.assert.calledOnceWithExactly(changeTracker.trackChange, 'Changed keyframe key from "0%" to "1%"', sinon.match.object);
         });
         it('supports undo and redo of a keyframe key edit', async () => {
             const { editKey, markUndoableStateStub, undoStub, redoStub } = await createKeyframeSection();
@@ -1683,15 +1789,17 @@ describeWithEnvironment('StylesPropertySection', () => {
             sinon.assert.calledOnce(redoStub);
         });
         it('restores the previous key in the header when the new key is invalid', async () => {
-            const { section, selectorElement, editKey, setKeyframeKeyStub, markUndoableStateStub, refreshUpdateSpy } = await createKeyframeSection();
+            const { section, selectorElement, editKey, setKeyframeKeyStub, markUndoableStateStub, refreshUpdateSpy, changeTracker, } = await createKeyframeSection();
             await editKey('1%');
             refreshUpdateSpy.resetHistory();
             markUndoableStateStub.resetHistory();
+            changeTracker.trackChange.resetHistory();
             await editKey('1% /*');
             sinon.assert.calledTwice(setKeyframeKeyStub);
             assert.strictEqual(setKeyframeKeyStub.secondCall.args[0].keyText, '1% /*');
             sinon.assert.notCalled(markUndoableStateStub);
             sinon.assert.notCalled(refreshUpdateSpy);
+            sinon.assert.notCalled(changeTracker.trackChange);
             assert.strictEqual(section.headerText(), '1%');
             assert.strictEqual(selectorElement.textContent, '1%');
         });
@@ -1943,6 +2051,61 @@ describeWithEnvironment('StylesPropertySection', () => {
         assert.exists(functionRule);
         const functionSection = new Elements.StylePropertiesSection.FunctionRuleSection(stylesSidebarPane, matchedStyles, functionRule.style, functionRule.children(), 0, functionRule.nameWithParameters(), true);
         assert.isNull(functionSection.element.querySelector('.new-rule-toolbar'));
+    });
+    it('reconciles CSSVariableValueView child widget across CSSQuery updates', async () => {
+        const cssModel = createTarget({ connection }).model(SDK.CSSModel.CSSModel);
+        assert.exists(cssModel);
+        const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel);
+        const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+        const styleSheetId = '0';
+        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        const containerNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        containerNode.id = 2;
+        containerNode.domModel.returns(cssModel.domModel());
+        sinon.stub(cssModel.domModel(), 'getContainerForNode').resolves(containerNode);
+        const matchedStyles = await getMatchedStylesWithStylesheet({
+            cssModel,
+            origin,
+            styleSheetId,
+            matchedPayload: [{
+                    rule: {
+                        containerQueries: [{ text: 'style(--foo: bar)', conditionText: 'style(--foo: bar)', styleSheetId }],
+                        ruleTypes: ["ContainerRule" /* Protocol.CSS.CSSRuleType.ContainerRule */],
+                        selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                        origin,
+                        styleSheetId,
+                        style: {
+                            cssProperties: [{ name: '--foo', value: 'bar' }, { name: 'color', value: 'red' }],
+                            shorthandEntries: [],
+                            range,
+                        },
+                    },
+                    matchingSelectors: [0],
+                }],
+            connection,
+        });
+        const section = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, matchedStyles.nodeStyles()[0], 0, null, null, null);
+        renderElementIntoDOM(section.element);
+        await raf();
+        await UI.Widget.Widget.allUpdatesComplete;
+        const queryElement = section.element.querySelector('.css-query');
+        assert.exists(queryElement);
+        const queryWidget = UI.Widget.Widget.get(queryElement);
+        assert.exists(queryWidget);
+        assert.instanceOf(queryWidget, ElementsComponents.CSSQuery.CSSQuery);
+        const firstPopoverElement = queryWidget.contentElement.querySelector('devtools-tooltip .css-variable-value-view');
+        assert.exists(firstPopoverElement);
+        const firstPopover = UI.Widget.Widget.get(firstPopoverElement);
+        assert.exists(firstPopover);
+        assert.instanceOf(firstPopover, ElementsComponents.CSSVariableValueView.CSSVariableValueView);
+        void queryWidget.performUpdate();
+        await UI.Widget.Widget.allUpdatesComplete;
+        const secondPopoverElement = queryWidget.contentElement.querySelector('devtools-tooltip .css-variable-value-view');
+        assert.exists(secondPopoverElement);
+        const secondPopover = UI.Widget.Widget.get(secondPopoverElement);
+        assert.strictEqual(secondPopover, firstPopover, 'Expected CSSQuery to reconcile existing CSSVariableValueView widget instance across updates');
+        assert.isTrue(firstPopover.element.isConnected);
+        assert.deepEqual(queryWidget.children(), [firstPopover]);
     });
 });
 //# sourceMappingURL=StylePropertiesSection.test.js.map

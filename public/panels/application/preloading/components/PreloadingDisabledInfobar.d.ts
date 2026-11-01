@@ -16,9 +16,9 @@ export interface ViewInput {
 type ViewOutput = unknown;
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class PreloadingDisabledInfobar extends UI.Widget.VBox {
+export declare class PreloadingDisabledInfobar extends UI.Widget.VBox<ShadowRoot> {
     #private;
-    constructor(view?: View);
+    constructor(element?: HTMLElement, view?: View);
     get disabledByPreference(): boolean;
     set disabledByPreference(value: boolean);
     get disabledByDataSaver(): boolean;

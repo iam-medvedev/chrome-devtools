@@ -1,16 +1,18 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/components/adorners/adorners.js';
+import '../../ui/kit/kit.js';
+import './components/components.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
-import { Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as Components from './components/components.js';
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Context menu item in the Issues panel to hide all current page errors.
@@ -53,13 +55,31 @@ export function getClassNameFromKind(kind) {
             return 'page-errors';
     }
 }
+const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <div class="header">
+      <devtools-icon class="leading-issue-icon extra-large" .name=${input.iconName}></devtools-icon>
+      <devtools-adorner class="aggregated-issues-count" .name=${'countWrapper'}>
+        <span>${input.count}</span>
+      </devtools-adorner>
+      <div class="title">${input.title}</div>
+      <devtools-widget class="hide-available-issues" ${widget(Components.HideIssuesMenu.HideIssuesMenu, {
+        menuItemLabel: input.menuItemLabel,
+        menuItemAction: input.menuItemAction,
+    })}></devtools-widget>
+    </div>
+  `, target);
+    // clang-format on
+};
 export class IssueKindView extends UI.TreeOutline.TreeElement {
     #kind;
-    #issueCount;
-    constructor(kind) {
+    #issueCount = 0;
+    #view;
+    constructor(kind, view = DEFAULT_VIEW) {
         super(undefined, true, Platform.StringUtilities.toKebabCase(kind));
         this.#kind = kind;
-        this.#issueCount = document.createElement('span');
+        this.#view = view;
         this.toggleOnClick = true;
         this.listItemElement.classList.add('issue-kind');
         this.listItemElement.classList.add(getClassNameFromKind(kind));
@@ -78,23 +98,11 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
                 return i18nString(UIStrings.hideAllCurrentBreakingChanges);
         }
     }
-    #appendHeader() {
-        const header = document.createElement('div');
-        header.classList.add('header');
-        const issueKindIcon = new Icon();
-        issueKindIcon.name = IssueCounter.IssueCounter.getIssueKindIconName(this.#kind);
-        issueKindIcon.classList.add('leading-issue-icon', 'extra-large');
-        const countAdorner = new Adorners.Adorner.Adorner();
-        countAdorner.name = 'countWrapper';
-        countAdorner.append(this.#issueCount);
-        countAdorner.classList.add('aggregated-issues-count');
-        this.#issueCount.textContent = '0';
-        const title = document.createElement('div');
-        title.classList.add('title');
-        title.textContent = IssuesManager.Issue.getIssueKindName(this.#kind);
-        const hideAvailableIssuesBtn = new Components.HideIssuesMenu.HideIssuesMenu();
-        hideAvailableIssuesBtn.classList.add('hide-available-issues');
-        hideAvailableIssuesBtn.data = {
+    #render() {
+        this.#view({
+            iconName: IssueCounter.IssueCounter.getIssueKindIconName(this.#kind),
+            count: this.#issueCount,
+            title: IssuesManager.Issue.getIssueKindName(this.#kind),
             menuItemLabel: this.getHideAllCurrentKindString(),
             menuItemAction: () => {
                 const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
@@ -106,19 +114,15 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
                 }
                 setting.set(values);
             },
-        };
-        header.appendChild(issueKindIcon);
-        header.appendChild(countAdorner);
-        header.appendChild(title);
-        header.appendChild(hideAvailableIssuesBtn);
-        this.listItemElement.appendChild(header);
+        }, undefined, this.listItemElement);
     }
     onattach() {
-        this.#appendHeader();
+        this.#render();
         this.expand();
     }
     update(count) {
-        this.#issueCount.textContent = `${count}`;
+        this.#issueCount = count;
+        this.#render();
     }
 }
 //# sourceMappingURL=IssueKindView.js.map

@@ -95,7 +95,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         `}>
       </devtools-data-grid>
     </div>
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging.pane('event-stream').track({ resize: true })}` } } });
     // clang-format on
 };
 export class EventSourceMessagesView extends UI.Widget.VBox {
@@ -104,7 +104,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     filterRegex = null;
     #view;
     constructor(request, view = DEFAULT_VIEW) {
-        super({ jslog: `${VisualLogging.pane('event-stream').track({ resize: true })}` });
+        super();
         this.#view = view;
         this.request = request;
         this.messageFilterSetting =
@@ -172,7 +172,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
             onFilterChanged: this.onFilterChanged.bind(this),
             onRowContextMenu: this.onRowContextMenu.bind(this),
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 function formatTime(d) {

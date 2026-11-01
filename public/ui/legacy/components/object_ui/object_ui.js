@@ -1744,6 +1744,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2426,6 +2427,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3015,7 +3017,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
-  static objectPropertyComparator(a, b) {
+  static #objectPropertyComparator(a, b) {
     return sortValue(a) - sortValue(b);
     function sortValue(property) {
       if (property.name === "[[PromiseState]]" /* PROMISE_STATE */) {
@@ -3061,9 +3063,7 @@ var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
         objectDescription = hideDescription ? "" : description;
       }
     }
-    const items = Array.from(
-      preview.entries ? this.renderEntries(preview) : isArrayOrTypedArray ? this.renderArrayProperties(preview) : this.renderObjectProperties(preview, includeNullOrUndefined)
-    );
+    const items = Array.from(preview.entries ? this.#renderEntries(preview) : isArrayOrTypedArray ? this.#renderArrayProperties(preview) : this.#renderObjectProperties(preview, includeNullOrUndefined));
     const renderName = (name) => html`<span class=name>${/^\s|\s$|^$|\n/.test(name) ? '"' + name.replace(/\n/g, "\u21B5") + '"' : name}</span>`;
     const renderPlaceholder = (placeholder) => html`<span class=object-value-undefined>${placeholder}</span>`;
     const renderValue = (value) => this.renderPropertyPreview(value.type, value.subtype, value.name, value.value);
@@ -3073,8 +3073,8 @@ var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
     return html`${objectDescription.length > 0 ? html`<span class=object-description>${objectDescription + "\xA0"}</span>` : nothing}<span class=object-properties-preview>${isArrayOrTypedArray ? "[" : "{"}${repeat(items, renderItem)}${preview.overflow ? html`<span>${items.length > 0 ? ",\xA0\u2026" : "\u2026"}</span>` : ""}
     ${isArrayOrTypedArray ? "]" : "}"}</span>`;
   }
-  *renderObjectProperties(preview, includeNullOrUndefined) {
-    const properties = preview.properties.filter((p) => p.type !== "accessor").sort(_RemoteObjectPreviewFormatter.objectPropertyComparator);
+  *#renderObjectProperties(preview, includeNullOrUndefined) {
+    const properties = preview.properties.filter((p) => p.type !== "accessor").sort(_RemoteObjectPreviewFormatter.#objectPropertyComparator);
     for (let i = 0; i < properties.length; ++i) {
       const property = properties[i];
       const name = property.name;
@@ -3102,10 +3102,10 @@ var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
       }
     }
   }
-  *renderArrayProperties(preview) {
+  *#renderArrayProperties(preview) {
     const arrayLength = SDK.RemoteObject.RemoteObject.arrayLength(preview);
     const indexProperties = preview.properties.filter((p) => toArrayIndex(p.name) !== -1).sort(arrayEntryComparator);
-    const otherProperties = preview.properties.filter((p) => toArrayIndex(p.name) === -1).sort(_RemoteObjectPreviewFormatter.objectPropertyComparator);
+    const otherProperties = preview.properties.filter((p) => toArrayIndex(p.name) === -1).sort(_RemoteObjectPreviewFormatter.#objectPropertyComparator);
     function arrayEntryComparator(a, b) {
       return toArrayIndex(a.name) - toArrayIndex(b.name);
     }
@@ -3139,7 +3139,7 @@ var RemoteObjectPreviewFormatter = class _RemoteObjectPreviewFormatter {
       yield { name: property.name, value: property };
     }
   }
-  *renderEntries(preview) {
+  *#renderEntries(preview) {
     for (const entry of preview.entries ?? []) {
       yield { entry };
     }
@@ -4588,7 +4588,7 @@ var ObjectPropertiesSectionWidget = class extends UI2.Widget.Widget {
         onRootItemContextMenu: this.onRootItemContextMenu,
         onExpand: this.onExpand
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -4840,6 +4840,8 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
   #renderAsSubtree = false;
   #skipProto = false;
   #skipGettersAndSetters = false;
+  #observedNodes = /* @__PURE__ */ new Set();
+  #wasConnectedToTemplateOrDocument = false;
   #view;
   constructor(element, view = OBJECT_TREE_DEFAULT_VIEW) {
     super(element);
@@ -4871,6 +4873,7 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
       child.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
       child.addEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
       child.addEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+      this.#observedNodes.add(child);
       if (child.expanded) {
         await this.#populateChildrenIfNeeded(child);
       }
@@ -4939,12 +4942,22 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
     if (val === this.#objectTree) {
       return;
     }
-    this.#objectTree?.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
-    this.#objectTree?.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    this.#unobserveAll();
     this.#objectTree = val;
     this.#objectTree?.addEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
     this.#objectTree?.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
     this.requestUpdate();
+  }
+  #unobserveAll() {
+    this.#objectTree?.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+    this.#objectTree?.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    for (const child of this.#observedNodes) {
+      child.removeEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
+      child.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+      child.removeEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
+      child.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+    }
+    this.#observedNodes.clear();
   }
   get linkifier() {
     return this.#linkifier;
@@ -4977,14 +4990,24 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
     this.requestUpdate();
   }
   async performUpdate() {
+    const root = this.contentElement.getRootNode();
+    if (root instanceof Document || root instanceof DocumentFragment || root instanceof ShadowRoot) {
+      this.#wasConnectedToTemplateOrDocument = true;
+    } else if (this.#wasConnectedToTemplateOrDocument) {
+      this.#unobserveAll();
+      return;
+    }
     if (this.#objectTree?.expanded) {
       await this.#populateChildrenIfNeeded(this.#objectTree);
     }
-    this.#view(this, {}, this.contentElement);
+    this.#view(this, void 0, this.contentElement);
+  }
+  willHide() {
+    super.willHide();
+    this.#unobserveAll();
   }
   onDetach() {
-    this.#objectTree?.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
-    this.#objectTree?.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    this.#unobserveAll();
   }
   wasShown() {
     super.wasShown();
@@ -4992,6 +5015,7 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
     this.#objectTree?.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
     this.#objectTree?.addEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
     this.#objectTree?.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    this.requestUpdate();
   }
 };
 function renderObjectTree(objectTree, linkifier, emptyPlaceholder) {
@@ -5283,7 +5307,9 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
     this.#removePropertyListeners();
     this.#property = property;
     this.#search = property.search;
-    this.#addPropertyListeners();
+    if (this.isShowing()) {
+      this.#addPropertyListeners();
+    }
     this.requestUpdate();
   }
   #addPropertyListeners() {
@@ -5298,6 +5324,10 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
     this.#property?.removeEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
     this.#search?.removeEventListener(UI2.TreeOutline.TreeSearch.Events.SEARCH_CHANGED, this.requestUpdate, this);
   }
+  willHide() {
+    super.willHide();
+    this.#removePropertyListeners();
+  }
   onDetach() {
     this.#removePropertyListeners();
   }
@@ -5305,6 +5335,7 @@ var ObjectPropertyWidget = class extends UI2.Widget.Widget {
     super.wasShown();
     this.#removePropertyListeners();
     this.#addPropertyListeners();
+    this.requestUpdate();
   }
   get expanded() {
     return this.#expanded;
@@ -5450,7 +5481,7 @@ var ExpandableTextPropertyValue = class _ExpandableTextPropertyValue extends UI2
       maxLength: this.#maxLength,
       text: this.#text
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 UI2.ContextMenu.registerProvider({

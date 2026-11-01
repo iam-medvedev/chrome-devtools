@@ -11,7 +11,7 @@ import * as PreloadingComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 async function setupWidget() {
     const view = createViewFunctionStub(PreloadingComponents.PreloadingGrid.PreloadingGrid);
-    const widget = new PreloadingComponents.PreloadingGrid.PreloadingGrid(view);
+    const widget = new PreloadingComponents.PreloadingGrid.PreloadingGrid(/* element= */ undefined, view);
     await view.nextInput;
     return { widget, view };
 }

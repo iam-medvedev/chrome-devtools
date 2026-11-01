@@ -1,18 +1,37 @@
+import '../../ui/components/lists/lists.js';
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox implements UI.ListWidget.Delegate<Common.Settings.RegExpSettingItem> {
-    private readonly list;
+export interface ViewInput {
+    enabledSetting: Common.Settings.Setting<boolean>;
+    skipContentScriptsSetting: Common.Settings.Setting<boolean>;
+    automaticallyIgnoreListSetting: Common.Settings.Setting<boolean>;
+    skipAnonymousScriptsSetting: Common.Settings.Setting<boolean>;
+    enabled: boolean;
+    patterns: Common.Settings.RegExpSettingItem[];
+    editingIndex: number | null;
+    editingValue: string;
+    validationError: Common.UIString.LocalizedString | null;
+    showValidationError: boolean;
+    onLearnMoreClick: () => void;
+    onAddPatternClick: () => void;
+    onTogglePattern: (index: number, checked: boolean) => void;
+    onBeginEdit: (index: number) => void;
+    onRemovePattern: (index: number) => void;
+    onEditorInput: (value: string) => void;
+    onCommitEdit: () => void;
+    onCancelEdit: () => void;
+}
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
+    #private;
     private readonly setting;
-    private editor?;
-    constructor();
+    private readonly enabledSetting;
+    private readonly skipContentScriptsSetting;
+    private readonly automaticallyIgnoreListSetting;
+    private readonly skipAnonymousScriptsSetting;
+    constructor(view?: View);
+    performUpdate(): void;
     wasShown(): void;
-    private settingUpdated;
-    private addButtonClicked;
-    private createSettingGroup;
-    renderItem(item: Common.Settings.RegExpSettingItem, editable: boolean): Element;
-    removeItemRequested(_item: Common.Settings.RegExpSettingItem, index: number): void;
-    commitEdit(item: Common.Settings.RegExpSettingItem, editor: UI.ListWidget.Editor<Common.Settings.RegExpSettingItem>, isNew: boolean): void;
-    beginEdit(item: Common.Settings.RegExpSettingItem): UI.ListWidget.Editor<Common.Settings.RegExpSettingItem>;
-    private createEditor;
 }

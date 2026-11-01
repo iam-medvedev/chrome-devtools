@@ -48,7 +48,7 @@ export class AffectedLazyLoadImagesView extends AffectedResourcesView {
             issueCategory: this.issue.getCategory(),
             createElementCell: this.createElementCell.bind(this),
         };
-        await this.#view(input, {}, this.affectedResources);
+        await this.#view(input, undefined, this.affectedResources);
     }
 }
 //# sourceMappingURL=AffectedLazyLoadImagesView.js.map

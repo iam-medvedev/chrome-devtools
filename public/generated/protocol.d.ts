@@ -11356,7 +11356,8 @@ export declare namespace Network {
         PreProvisionedKeyAccessNotGranted = "PreProvisionedKeyAccessNotGranted",
         PreProvisionedKeyNotFound = "PreProvisionedKeyNotFound",
         AttestationCertificationError = "AttestationCertificationError",
-        AttestationSigningError = "AttestationSigningError"
+        AttestationSigningError = "AttestationSigningError",
+        FederatedRegistrationRedirected = "FederatedRegistrationRedirected"
     }
     /**
      * Details about a failed device bound session network request.
@@ -16255,7 +16256,8 @@ export declare namespace Preload {
         BrowsingDataRemoved = "BrowsingDataRemoved",
         PrerenderHostReused = "PrerenderHostReused",
         FormSubmitWhenPrerendering = "FormSubmitWhenPrerendering",
-        CrossDocumentRestart = "CrossDocumentRestart"
+        CrossDocumentRestart = "CrossDocumentRestart",
+        PrefetchFailedCrossOriginSubframe = "PrefetchFailedCrossOriginSubframe"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

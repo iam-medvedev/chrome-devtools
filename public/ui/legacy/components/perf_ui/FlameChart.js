@@ -241,8 +241,9 @@ export class FlameChart extends FlameChartBase {
         lastWidth: 0,
     };
     /**
-     * Caches middle-truncated entry titles keyed by entry index.
-     * Stores the `width` (maximum available text width in pixels) and `text` (trimmed string or null).
+     * Caches entry titles keyed by entry index.
+     * Stores `rawText` (untruncated title capped at 200 graphemes, or null), `fullWidth` (measured pixel
+     * width of `rawText`), `width` (last truncated bar width in pixels), and `text` (trimmed string or null).
      */
     #entryTitleCache = new Map();
     /**
@@ -256,8 +257,8 @@ export class FlameChart extends FlameChartBase {
         styleHeight: 0,
     };
     #boundOnThemeChanged = this.#onThemeChanged.bind(this);
-    constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
-        super({ useShadowDom: true });
+    constructor(dataProvider, flameChartDelegate, optionalConfig = {}, element) {
+        super(element, { useShadowDom: true });
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
         this.#subtitleFont = `${SUBTITLE_FONT_SIZE_AND_STYLE} ${getFontFamilyForCanvas()}`;
         this.registerRequiredCSS(flameChartStyles);
@@ -401,6 +402,18 @@ export class FlameChart extends FlameChartBase {
     }
     disableRangeSelection() {
         this.chartViewport.disableRangeSelection();
+    }
+    setDataProvider(dataProvider) {
+        if (this.dataProvider === dataProvider) {
+            return;
+        }
+        this.dataProvider = dataProvider;
+        this.reset();
+        this.chartViewport.setWindowTimes(dataProvider.minimumBoundary(), dataProvider.minimumBoundary() + dataProvider.totalTime());
+        this.scheduleUpdate();
+    }
+    setDelegate(flameChartDelegate) {
+        this.flameChartDelegate = flameChartDelegate;
     }
     #shouldDimEvent(entryIndex) {
         if (this.dimIndices) {
@@ -630,6 +643,18 @@ export class FlameChart extends FlameChartBase {
     setWindowTimes(startTime, endTime, animate) {
         this.chartViewport.setWindowTimes(startTime, endTime, animate);
         this.updateHighlight();
+    }
+    get windowTimes() {
+        return {
+            min: this.minimumBoundary(),
+            max: this.maximumBoundary(),
+        };
+    }
+    set windowTimes(windowTimes) {
+        this.setWindowTimes(windowTimes.min, windowTimes.max, windowTimes.animate);
+    }
+    performUpdate() {
+        this.update();
     }
     /**
      * Handle the mouse move event. The handle priority will be:
@@ -2626,27 +2651,35 @@ export class FlameChart extends FlameChartBase {
      * entry title cache to avoid repeated text measurements and trimming during animation frames.
      */
     #getEntryTitle(entryIndex, maxBarWidth, context) {
-        if (maxBarWidth <= 0) {
+        // UI.UIUtils.trimText returns an empty string for maxWidth <= 10.
+        if (maxBarWidth <= 10) {
             return null;
         }
-        const cached = this.#entryTitleCache.get(entryIndex);
-        if (cached && cached.width === maxBarWidth) {
+        let cached = this.#entryTitleCache.get(entryIndex);
+        if (!cached) {
+            const rawTitle = this.dataProvider.entryTitle(entryIndex);
+            if (!rawTitle?.length) {
+                this.#entryTitleCache.set(entryIndex, { rawText: null, fullWidth: 0, width: 0, text: null });
+                return null;
+            }
+            // Cap at 200 graphemes to match UI.UIUtils.trimText and bound text measurement on long strings.
+            const rawText = rawTitle.length > 200 ? Platform.StringUtilities.trimMiddle(rawTitle, 200) : rawTitle;
+            const fullWidth = UI.UIUtils.measureTextWidth(context, rawText);
+            cached = { rawText, fullWidth, width: 0, text: null };
+            this.#entryTitleCache.set(entryIndex, cached);
+        }
+        if (!cached.rawText) {
+            return null;
+        }
+        if (maxBarWidth >= cached.fullWidth) {
+            return cached.rawText;
+        }
+        if (cached.width === maxBarWidth) {
             return cached.text;
         }
-        let text = null;
-        const rawText = this.dataProvider.entryTitle(entryIndex);
-        if (rawText?.length) {
-            text = UI.UIUtils.trimTextMiddle(context, rawText, maxBarWidth);
-        }
-        // Mutate existing cache record in place if present to avoid object allocation churn
-        // on every animation frame during continuous zooming.
-        if (cached) {
-            cached.width = maxBarWidth;
-            cached.text = text;
-        }
-        else {
-            this.#entryTitleCache.set(entryIndex, { width: maxBarWidth, text });
-        }
+        const text = UI.UIUtils.trimTextMiddle(context, cached.rawText, maxBarWidth);
+        cached.width = maxBarWidth;
+        cached.text = text;
         return text;
     }
     /**
@@ -3364,7 +3397,8 @@ export class FlameChart extends FlameChartBase {
         this.groupOffsets = new Uint32Array(groups.length + 1);
         let currentOffset = this.rulerEnabled ? RulerHeight + 2 : 2;
         // The root is always visible, so just simply set the |parentGroupIsVisible| to visible.
-        currentOffset = this.#traverseGroupTreeAndUpdateLevelPositionsForTheGroup(this.#groupTreeRoot, currentOffset, /* parentGroupIsVisible= */ true);
+        currentOffset = this.#traverseGroupTreeAndUpdateLevelPositionsForTheGroup(this.#groupTreeRoot, currentOffset, 
+        /* parentGroupIsVisible= */ true);
         // Set the final offset to the last element of |groupOffsets| and
         // |visibleLevelOffsets|. This number represent the end of last group and
         // level.

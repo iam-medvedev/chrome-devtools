@@ -1,7 +1,7 @@
 import '../../ui/kit/kit.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type { MainView, TriggerDispatcher } from './MainView.js';
+import type { MainView, PlayerData, TriggerDispatcher } from './MainView.js';
 import type { PlayerEvent } from './MediaModel.js';
 interface PlayerStatus {
     playerTitle: string;
@@ -18,14 +18,20 @@ export interface ViewInput {
     onPlayerClick: (playerID: string) => void;
     onPlayerContextMenu: (playerID: string, event: Event) => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class PlayerListView extends UI.Widget.VBox implements TriggerDispatcher {
     #private;
     private readonly playerStatuses;
     private readonly playerEntriesWithHostnameFrameTitle;
-    private readonly mainContainer;
+    private readonly mainContainer?;
     private currentlySelectedPlayerID;
-    constructor(mainContainer: MainView, view?: View);
+    constructor(mainContainerOrElement?: MainView | HTMLElement, view?: View);
+    set players(players: Map<string, PlayerData>);
+    set selectedPlayerID(playerID: string | null);
+    set onSelectPlayer(callback: ((playerID: string) => void) | undefined);
+    set onHidePlayer(callback: ((playerID: string) => void) | undefined);
+    set onHideOtherPlayers(callback: ((playerID: string) => void) | undefined);
+    set onSavePlayerInfo(callback: ((playerID: string) => void) | undefined);
     performUpdate(): void;
     selectPlayerById(playerID: string): void;
     private selectPlayer;

@@ -174,10 +174,10 @@ class AffectedMixedContentView extends AffectedResourcesView {
             const cell = this.appendIssueDetailCell(element, filename, 'affected-resource-mixed-content-info');
             cell.title = mixedContent.insecureURL;
         }
-        this.appendIssueDetailCell(element, AffectedMixedContentView.translateStatus(mixedContent.resolutionStatus), 'affected-resource-mixed-content-info');
+        this.appendIssueDetailCell(element, AffectedMixedContentView.#translateStatus(mixedContent.resolutionStatus), 'affected-resource-mixed-content-info');
         this.affectedResources.appendChild(element);
     }
-    static translateStatus(resolutionStatus) {
+    static #translateStatus(resolutionStatus) {
         switch (resolutionStatus) {
             case "MixedContentBlocked" /* Protocol.Audits.MixedContentResolutionStatus.MixedContentBlocked */:
                 return i18nString(UIStrings.blocked);
@@ -213,7 +213,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         this.toggleOnClick = true;
         this.listItemElement.classList.add('issue');
         this.childrenListElement.classList.add('issue-body');
-        this.childrenListElement.classList.add(IssueView.getBodyCSSClass(this.#issue.getKind()));
+        this.childrenListElement.classList.add(IssueView.#getBodyCSSClass(this.#issue.getKind()));
         this.affectedResources = this.#createAffectedResources();
         this.#affectedResourceViews = [
             new AffectedCookiesView(this, this.#issue, 'affected-cookies'),
@@ -253,7 +253,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         this.#issue = issue;
         this.#affectedResourceViews.forEach(view => view.setIssue(issue));
     }
-    static getBodyCSSClass(issueKind) {
+    static #getBodyCSSClass(issueKind) {
         switch (issueKind) {
             case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
                 return 'issue-kind-breaking-change';
@@ -317,7 +317,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         title.textContent = this.#description.title;
         header.appendChild(title);
         if (this.#hiddenIssuesMenu) {
-            header.appendChild(this.#hiddenIssuesMenu);
+            this.#hiddenIssuesMenu.show(header, undefined, /* suppressOrphanWidgetError= */ true);
         }
         this.#updateFromIssue();
         this.listItemElement.appendChild(header);
@@ -353,17 +353,14 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         }
         this.listItemElement.classList.toggle('hidden-issue', this.#issue.isHidden());
         if (this.#hiddenIssuesMenu) {
-            const data = {
-                menuItemLabel: this.#issue.isHidden() ? i18nString(UIStrings.unhideIssuesLikeThis) :
-                    i18nString(UIStrings.hideIssuesLikeThis),
-                menuItemAction: () => {
-                    const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
-                    const values = setting.get();
-                    values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ : "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
-                    setting.set(values);
-                },
+            this.#hiddenIssuesMenu.menuItemLabel = this.#issue.isHidden() ? i18nString(UIStrings.unhideIssuesLikeThis) :
+                i18nString(UIStrings.hideIssuesLikeThis);
+            this.#hiddenIssuesMenu.menuItemAction = () => {
+                const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
+                const values = setting.get();
+                values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ : "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
+                setting.set(values);
             };
-            this.#hiddenIssuesMenu.data = data;
         }
     }
     updateAffectedResourceVisibility() {

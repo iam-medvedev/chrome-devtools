@@ -10,6 +10,6 @@ export declare class AccessibilitySubPane<ContentTypeT extends HTMLElement | Doc
     get node(): SDK.DOMModel.DOMNode | null;
     set node(node: SDK.DOMModel.DOMNode | null);
     protected setNode(node: SDK.DOMModel.DOMNode | null): void;
-    createInfo(textContent: string, ...classNames: string[]): UI.Widget.Widget;
+    createInfo(textContent: string, ...classNames: string[]): UI.EmptyWidget.EmptyWidget;
     createTreeOutline(): UI.TreeOutline.TreeOutline;
 }

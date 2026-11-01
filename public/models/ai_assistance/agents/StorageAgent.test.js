@@ -53,7 +53,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('list keys', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'listStorageKeys(\'localStorage\', ["https://example.com"])');
+        assert.strictEqual(actionResponse.action, 'listStorageKeys(\'localStorage\', ["https://example.com"])');
         assert.include(actionResponse.output, 'key1');
         assert.include(actionResponse.output, 'key2');
     });
@@ -78,9 +78,9 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get key1', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
-        assert.strictEqual(actionResponses[0].code, 'getStorageValues(\'localStorage\', ["key1"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[0].action, 'getStorageValues(\'localStorage\', ["key1"], ["https://example.com"])');
         assert.isUndefined(actionResponses[0].output, 'Pre-approval yield should not contain execution output');
-        assert.strictEqual(actionResponses[1].code, 'getStorageValues(\'localStorage\', ["key1"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getStorageValues(\'localStorage\', ["key1"], ["https://example.com"])');
         assert.include(actionResponses[1].output, 'value1', 'Post-approval yield should contain storage values');
     });
     it('returns error when approval is denied', async () => {
@@ -127,7 +127,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('list keys', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'listStorageKeys(\'localStorage\', ["https://example.com"])');
+        assert.strictEqual(actionResponse.action, 'listStorageKeys(\'localStorage\', ["https://example.com"])');
         assert.include(actionResponse.output, 'key1-keypass');
     });
     it('can list storage keys across multiple origins', async () => {
@@ -156,7 +156,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('list keys across origins', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'listStorageKeys(\'localStorage\', ["https://example.com","https://b.com"])');
+        assert.strictEqual(actionResponse.action, 'listStorageKeys(\'localStorage\', ["https://example.com","https://b.com"])');
         const parsed = JSON.parse(actionResponse.output);
         assert.exists(parsed.storageKeysByOrigin);
         assert.deepEqual(parsed.storageKeysByOrigin['https://example.com'].partitions, [{ storageKey: 'https://example.com^0', keys: ['keyA'] }]);
@@ -195,7 +195,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('list cookies', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'listCookies(["https://example.com"])');
+        assert.strictEqual(actionResponse.action, 'listCookies(["https://example.com"])');
         assert.include(actionResponse.output, 'session-cookie');
         assert.notInclude(actionResponse.output, 'session-value', 'Cookie values must be hidden in listCookies()');
         assert.notInclude(actionResponse.output, 'http-only-cookie', 'HttpOnly cookies must be strictly filtered out');
@@ -229,9 +229,9 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get value of session-cookie', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
-        assert.strictEqual(actionResponses[0].code, 'getCookieValues(["session-cookie"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[0].action, 'getCookieValues(["session-cookie"], ["https://example.com"])');
         assert.isUndefined(actionResponses[0].output, 'Pre-approval yield should not contain execution output');
-        assert.strictEqual(actionResponses[1].code, 'getCookieValues(["session-cookie"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getCookieValues(["session-cookie"], ["https://example.com"])');
         assert.include(actionResponses[1].output, 'session-value', 'Post-approval yield should contain cookie value');
         assert.include(actionResponses[1].output, 'example.com', 'Post-approval yield should contain cookie domain metadata');
         assert.include(actionResponses[1].output, 'path', 'Post-approval yield should contain cookie path metadata');
@@ -269,7 +269,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get value of session-cookie', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
-        assert.strictEqual(actionResponses[1].code, 'getCookieValues(["session-cookie"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getCookieValues(["session-cookie"], ["https://example.com"])');
         assert.include(actionResponses[1].output, 'value-host');
         assert.include(actionResponses[1].output, 'value-wildcard');
         assert.include(actionResponses[1].output, 'example.com');
@@ -315,7 +315,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get cookies', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2);
-        assert.strictEqual(actionResponses[1].code, 'getCookieValues(["secret-cookie","public-cookie"], ["https://example.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getCookieValues(["secret-cookie","public-cookie"], ["https://example.com"])');
         // Verify that public cookie data is returned
         assert.include(actionResponses[1].output, 'public-value');
         // Verify that the secret/HttpOnly cookie's value is strictly filtered out
@@ -398,7 +398,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get cookie values', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
-        assert.strictEqual(actionResponses[1].code, 'getCookieValues(["sessId"], ["https://example.com","https://other.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getCookieValues(["sessId"], ["https://example.com","https://other.com"])');
         assert.include(actionResponses[1].output, 'value-1');
         assert.include(actionResponses[1].output, 'value-2');
     });
@@ -437,7 +437,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get storage values across origins', { selected: context }));
         const actionResponses = responses.filter((r) => r.type === 'action');
         assert.lengthOf(actionResponses, 2, 'Expected exactly two action responses for approval flow');
-        assert.strictEqual(actionResponses[1].code, 'getStorageValues(\'localStorage\', ["keyA"], ["https://example.com","https://b.com"])');
+        assert.strictEqual(actionResponses[1].action, 'getStorageValues(\'localStorage\', ["keyA"], ["https://example.com","https://b.com"])');
         const parsed = JSON.parse(actionResponses[1].output);
         assert.exists(parsed.storageValuesByOrigin);
         assert.deepEqual(parsed.storageValuesByOrigin['https://example.com'].items, [{ storageKey: 'https://example.com^0', values: { keyA: 'valA' } }]);
@@ -502,7 +502,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('list origins', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'listPageOrigins()');
+        assert.strictEqual(actionResponse.action, 'listPageOrigins()');
         assert.include(actionResponse.output, 'https://example.com');
     });
     it('can give a storage breakdown of primary target', async () => {
@@ -555,7 +555,7 @@ describe('StorageAgent', function () {
         const responses = await Array.fromAsync(agent.run('get breakdown', { selected: context }));
         const actionResponse = responses.find((r) => r.type === 'action');
         assert.exists(actionResponse, 'Expected an action response');
-        assert.strictEqual(actionResponse.code, 'getStorageBreakdown()');
+        assert.strictEqual(actionResponse.action, 'getStorageBreakdown()');
         assert.exists(actionResponse.output);
         const parsedOutput = JSON.parse(actionResponse.output);
         assert.deepEqual(parsedOutput, {

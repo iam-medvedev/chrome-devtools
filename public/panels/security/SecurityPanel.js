@@ -470,7 +470,7 @@ export function getSecurityStateIconForOverview(securityState, className) {
     }
     return createIcon(iconName, className);
 }
-function renderHighlightedUrl(url, securityState) {
+export function renderHighlightedUrl(url, securityState) {
     const schemeSeparator = '://';
     const index = url.indexOf(schemeSeparator);
     // If the separator is not found, just display the text without highlighting.
@@ -485,12 +485,6 @@ function renderHighlightedUrl(url, securityState) {
       <span class="url-scheme-separator">${schemeSeparator}</span>
       <span>${content}</span>
     </span>`;
-}
-export function createHighlightedUrl(url, securityState) {
-    const fragment = document.createDocumentFragment();
-    // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-    render(renderHighlightedUrl(url, securityState), fragment);
-    return fragment.firstElementChild;
 }
 const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off

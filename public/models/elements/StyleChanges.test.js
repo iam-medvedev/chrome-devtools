@@ -106,6 +106,58 @@ describe('StyleChanges', () => {
         });
         assert.strictEqual(lastDescription(), 'Enabled style property "font-weight: bold" in rule "element.style"');
     });
+    it('records adding a new style rule', () => {
+        Elements.StyleChanges.trackStyleRuleAdded(tracker, createNode(42), '  .card  >\n  .title  ');
+        assert.strictEqual(lastDescription(), 'Added style rule ".card > .title"');
+        const countBefore = commentManager.getCommentThreads().length;
+        Elements.StyleChanges.trackStyleRuleAdded(tracker, createNode(42), '   ');
+        assert.lengthOf(commentManager.getCommentThreads(), countBefore);
+    });
+    it('records changing a style rule selector', () => {
+        Elements.StyleChanges.trackStyleSelectorChange(tracker, createNode(42), '  .card  ', '  .card:hover,\n  .card:focus  ');
+        assert.strictEqual(lastDescription(), 'Changed style rule selector from ".card" to ".card:hover, .card:focus"');
+        const countBefore = commentManager.getCommentThreads().length;
+        Elements.StyleChanges.trackStyleSelectorChange(tracker, createNode(42), '.card', '  .card  ');
+        Elements.StyleChanges.trackStyleSelectorChange(tracker, createNode(42), '   ', '.card');
+        Elements.StyleChanges.trackStyleSelectorChange(tracker, createNode(42), '.card', '   ');
+        assert.lengthOf(commentManager.getCommentThreads(), countBefore);
+    });
+    it('records changing an @property rule name', () => {
+        Elements.StyleChanges.trackPropertyRuleNameChange(tracker, createNode(42), '  --old-prop  ', '  --new-prop  ');
+        assert.strictEqual(lastDescription(), 'Changed @property rule name from "--old-prop" to "--new-prop"');
+    });
+    it('records changing a keyframe key', () => {
+        Elements.StyleChanges.trackKeyframeKeyChange(tracker, createNode(42), '  0%  ', '  50%,\n  100%  ');
+        assert.strictEqual(lastDescription(), 'Changed keyframe key from "0%" to "50%, 100%"');
+    });
+    it('records changing an @media query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@media', '  (max-width: 600px)  ', '  (min-width: 800px)  ');
+        assert.strictEqual(lastDescription(), 'Changed @media query from "(max-width: 600px)" to "(min-width: 800px)"');
+        assert.deepEqual(lastAnchor(), {
+            vePath: 'Panel: elements > Pane: styles',
+            node: { backendNodeId: 42, targetId: 'mock-target-id' },
+        });
+    });
+    it('records changing an @container query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@container', 'sidebar (min-width: 400px)', 'sidebar (min-width: 500px)');
+        assert.strictEqual(lastDescription(), 'Changed @container query from "sidebar (min-width: 400px)" to "sidebar (min-width: 500px)"');
+    });
+    it('records changing an @supports query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@supports', '(display: grid)', '(display: flex)');
+        assert.strictEqual(lastDescription(), 'Changed @supports query from "(display: grid)" to "(display: flex)"');
+    });
+    it('records changing an @scope query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@scope', '(.card)', '(.content)');
+        assert.strictEqual(lastDescription(), 'Changed @scope query from "(.card)" to "(.content)"');
+    });
+    it('records changing an @navigation query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@navigation', '(navigation-type: push)', '(navigation-type: traverse)');
+        assert.strictEqual(lastDescription(), 'Changed @navigation query from "(navigation-type: push)" to "(navigation-type: traverse)"');
+    });
+    it('records clearing a style query', () => {
+        Elements.StyleChanges.trackStyleQueryChange(tracker, createNode(42), '@scope', '(.card)', '   ');
+        assert.strictEqual(lastDescription(), 'Cleared @scope query "(.card)"');
+    });
     it('omits the rule clause when ruleHeader is omitted or empty', () => {
         trackStylePropertyEdit({
             oldName: 'color',

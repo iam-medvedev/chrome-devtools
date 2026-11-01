@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -23,6 +23,9 @@ describe('FileSystemWorkspaceBinding', () => {
     let universe;
     beforeEach(() => {
         universe = new TestUniverse();
+    });
+    afterEach(() => {
+        universe.dispose();
     });
     it('does not conflict when file system paths share a prefix', async () => {
         const fsPath1 = 'file:///var/www';
@@ -212,6 +215,7 @@ describe('FileSystemWorkspaceBinding', () => {
             finally {
                 removeFileSystem();
                 binding.dispose();
+                manager.dispose();
             }
         });
         it('uses canonical URLs, but keeps the embedder path verbatim', async () => {
@@ -237,6 +241,7 @@ describe('FileSystemWorkspaceBinding', () => {
             finally {
                 removeFileSystem();
                 binding.dispose();
+                manager.dispose();
             }
         });
         it('removes the file system when the embedder reports its removal', async () => {
@@ -254,6 +259,7 @@ describe('FileSystemWorkspaceBinding', () => {
             }
             finally {
                 binding.dispose();
+                manager.dispose();
             }
         });
     });

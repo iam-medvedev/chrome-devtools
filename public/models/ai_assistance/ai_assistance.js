@@ -296,6 +296,7 @@ function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
 }
 
 // ../../front_end/models/ai_assistance/data_formatters/LighthouseFormatter.ts
+var PASS_THRESHOLD = 0.9;
 var LighthouseFormatter = class {
   /**
    * Returns an overall summary and high-level overview of the Lighthouse report.
@@ -306,13 +307,67 @@ var LighthouseFormatter = class {
     lines.push(`URL: ${report.finalDisplayedUrl}`);
     lines.push(`Fetch Time: ${report.fetchTime}`);
     lines.push(`Lighthouse Version: ${report.lighthouseVersion}`);
+    if (report.gatherMode) {
+      lines.push(`Mode: ${report.gatherMode}`);
+    }
     lines.push("");
     lines.push("## Category Scores");
     for (const category of Object.values(report.categories)) {
-      const score = category.score !== null ? Math.round(category.score * 100) : "n/a";
-      lines.push(`- ${category.title}: ${score}`);
+      lines.push(`- ${category.title}: ${this.#formatCategoryScore(report, category)}`);
     }
     return lines.join("\n");
+  }
+  #formatCategoryScore(report, category) {
+    if (this.#shouldDisplayAsFraction(report, category)) {
+      const { numPassed, numPassableAudits } = this.#calculateCategoryFraction(report, category);
+      return `${numPassed}/${numPassableAudits} audits passed`;
+    }
+    return category.score !== null ? Math.round(category.score * 100) : "n/a";
+  }
+  /**
+   * Mirrors `Util.shouldDisplayAsFraction` in the Lighthouse report renderer (`bundle.js`).
+   */
+  #shouldDisplayAsFraction(report, category) {
+    return report.gatherMode === "timespan" || report.gatherMode === "snapshot" || category.categoryScoreDisplayMode === "fraction";
+  }
+  /**
+   * Mirrors `Util.calculateCategoryFraction` in the Lighthouse report renderer (`bundle.js`).
+   */
+  #calculateCategoryFraction(report, category) {
+    let numPassableAudits = 0;
+    let numPassed = 0;
+    for (const ref of category.auditRefs) {
+      const audit = report.audits[ref.id];
+      if (!audit) {
+        continue;
+      }
+      const auditPassed = this.#showAsPassed(audit);
+      if (ref.group === "hidden" || audit.scoreDisplayMode === "manual" || audit.scoreDisplayMode === "notApplicable" || audit.scoreDisplayMode === "informative") {
+        continue;
+      }
+      numPassableAudits += 1;
+      if (auditPassed) {
+        numPassed += 1;
+      }
+    }
+    return { numPassed, numPassableAudits };
+  }
+  /**
+   * Mirrors `Util.showAsPassed` in the Lighthouse report renderer (`bundle.js`).
+   */
+  #showAsPassed(audit) {
+    switch (audit.scoreDisplayMode) {
+      case "manual":
+      case "notApplicable":
+        return true;
+      case "error":
+      case "informative":
+        return false;
+      case "numeric":
+      case "binary":
+      default:
+        return Number(audit.score) >= PASS_THRESHOLD;
+    }
   }
   /**
    * Returns the title and score of every failing audit (score < 90), grouped by category.
@@ -326,12 +381,17 @@ var LighthouseFormatter = class {
       lines.push("");
       lines.push(`### ${category.title} (categoryId: "${categoryId}")`);
       const failingAudits = this.#findFailingAudits(report, category);
-      if (failingAudits.length === 0) {
+      const erroredAudits = this.#findErroredAudits(report, category);
+      if (failingAudits.length === 0 && erroredAudits.length === 0) {
         lines.push("- No failing audits.");
         continue;
       }
       for (const audit of failingAudits) {
         lines.push(`- ${audit.title}: ${this.#formatScore(audit.score)}`);
+      }
+      for (const audit of erroredAudits) {
+        const errorSuffix = audit.errorMessage ? ` (${this.#toSingleLine(audit.errorMessage)})` : "";
+        lines.push(`- ${audit.title}: Error${errorSuffix}`);
       }
     }
     return lines.join("\n");
@@ -360,39 +420,75 @@ var LighthouseFormatter = class {
     const lines = [];
     lines.push(`# Audits for ${category.title}`);
     if (category.description) {
-      lines.push(`${category.description.replace(/\n/g, " ")}`);
+      lines.push(this.#toSingleLine(category.description));
     }
     lines.push("");
     const failingAudits = this.#findFailingAudits(report, category);
-    if (failingAudits.length === 0) {
+    const erroredAudits = this.#findErroredAudits(report, category);
+    if (failingAudits.length === 0 && erroredAudits.length === 0) {
       lines.push("All audits in this category passed (score >= 90).");
       return lines.join("\n");
     }
-    lines.push("The following audits in this category have a score below 90 and may need attention:");
-    for (const audit of failingAudits) {
-      let line = `- **${audit.title}**: ${this.#formatScore(audit.score)}`;
-      if (audit.displayValue) {
-        line += ` (${audit.displayValue})`;
+    const sections = [];
+    if (failingAudits.length > 0) {
+      const sectionLines = ["The following audits in this category have a score below 90 and may need attention:"];
+      for (const audit of failingAudits) {
+        sectionLines.push(...this.#formatAudit(audit, this.#formatScore(audit.score)));
       }
-      lines.push(line);
-      lines.push(`  * ${audit.description.replace(/\n/g, " ")}`);
-      if (audit.details) {
-        const formattedDetails = this.#formatDetails(audit.details);
-        if (formattedDetails) {
-          lines.push("");
-          lines.push(formattedDetails.split("\n").map((l) => `    ${l}`).join("\n"));
-        }
-      }
+      sections.push(sectionLines.join("\n"));
     }
+    if (erroredAudits.length > 0) {
+      const sectionLines = ["The following audits in this category errored:"];
+      for (const audit of erroredAudits) {
+        sectionLines.push(...this.#formatAudit(audit, "Error"));
+      }
+      sections.push(sectionLines.join("\n"));
+    }
+    lines.push(sections.join("\n\n"));
     return lines.join("\n");
   }
+  #formatAudit(audit, score) {
+    const lines = [];
+    let line = `- **${audit.title}**: ${score}`;
+    if (audit.displayValue) {
+      line += ` (${audit.displayValue})`;
+    }
+    lines.push(line);
+    lines.push(`  * ${this.#toSingleLine(audit.description)}`);
+    if (audit.scoreDisplayMode === "error" && audit.errorMessage) {
+      lines.push(`  * Error: ${this.#toSingleLine(audit.errorMessage)}`);
+    }
+    if (audit.explanation) {
+      lines.push(`  * Explanation: ${this.#joinExplanationLines(audit.explanation)}`);
+    }
+    if (audit.warnings) {
+      for (const warning of audit.warnings) {
+        lines.push(`  * Warning: ${this.#toSingleLine(warning)}`);
+      }
+    }
+    if (audit.details) {
+      const formattedDetails = this.#formatDetails(audit.details);
+      if (formattedDetails) {
+        lines.push("");
+        lines.push(formattedDetails.split("\n").map((l) => l ? `    ${l}` : "").join("\n"));
+      }
+    }
+    return lines;
+  }
   /**
-   * Returns the audits in a category that scored below 90, in the category's order.
+   * Returns the non-hidden audits in a category that scored below 90, in the category's order.
    * Audits without a score (such as informative or manual audits) cannot fail, so they
    * are excluded.
    */
   #findFailingAudits(report, category) {
-    return category.auditRefs.map((ref) => report.audits[ref.id]).filter((audit) => Boolean(audit) && audit.score !== null && audit.score < 0.9);
+    return category.auditRefs.filter((ref) => ref.group !== "hidden").map((ref) => report.audits[ref.id]).filter((audit) => Boolean(audit) && audit.scoreDisplayMode !== "error" && audit.score !== null && audit.score < PASS_THRESHOLD);
+  }
+  /**
+   * Returns the non-hidden audits in a category that failed with an execution error
+   * (`scoreDisplayMode === 'error'`), in the category's order.
+   */
+  #findErroredAudits(report, category) {
+    return category.auditRefs.filter((ref) => ref.group !== "hidden").map((ref) => report.audits[ref.id]).filter((audit) => Boolean(audit) && audit.scoreDisplayMode === "error");
   }
   #formatScore(score) {
     return Math.round(score * 100);
@@ -431,9 +527,93 @@ var LighthouseFormatter = class {
         lines.push(this.#formatTable(details.headings, details.items));
         return lines.join("\n");
       }
+      case "list":
+        return this.#formatList(details);
+      case "checklist":
+        return Object.values(details.items).map((item) => `- ${this.#toSingleLine(item.label)}: ${item.value ? "Passed" : "Failed"}`).join("\n");
+      case "network-tree":
+        return this.#formatNetworkTree(details);
       default:
         return "";
     }
+  }
+  #formatNetworkTree(details) {
+    if (Object.keys(details.chains).length === 0) {
+      return "";
+    }
+    const lines = [`Maximum critical path latency: ${millis(details.longestChain.duration)}`];
+    lines.push(...this.#formatNetworkTreeNodes(details.chains, 0));
+    return lines.join("\n");
+  }
+  #formatNetworkTreeNodes(nodes, depth) {
+    const lines = [];
+    const indent = "  ".repeat(depth);
+    for (const node of Object.values(nodes)) {
+      const longestSuffix = node.isLongest ? " (longest chain)" : "";
+      lines.push(
+        `${indent}- ${node.url} (${millis(node.navStartToEndTime)}, ${bytes(node.transferSize)})${longestSuffix}`
+      );
+      if (node.children) {
+        lines.push(...this.#formatNetworkTreeNodes(node.children, depth + 1));
+      }
+    }
+    return lines;
+  }
+  #formatList(details) {
+    const itemStrings = [];
+    for (const item of details.items) {
+      if (item.type === "list-section") {
+        const sectionLines = [];
+        if (item.title) {
+          sectionLines.push(`**${this.#toSingleLine(item.title)}**`);
+        }
+        if (item.description) {
+          sectionLines.push(this.#toSingleLine(item.description));
+        }
+        const formattedValue = this.#formatListValue(item.value);
+        if (formattedValue) {
+          sectionLines.push(formattedValue);
+        }
+        if (sectionLines.length > 0) {
+          itemStrings.push(sectionLines.join("\n"));
+        }
+      } else {
+        const formattedItem = this.#formatListValue(item);
+        if (formattedItem) {
+          itemStrings.push(formattedItem);
+        }
+      }
+    }
+    return itemStrings.join("\n\n");
+  }
+  #formatListValue(value) {
+    switch (value.type) {
+      case "node":
+        return this.#formatNodeFields(value).map(({ labelSuffix, value: v }) => {
+          const label = labelSuffix ? `Element ${labelSuffix}` : "Element";
+          return `- **${label}**: ${this.#toSingleLine(v)}`;
+        }).join("\n");
+      case "text":
+      case "url":
+        return this.#toSingleLine(value.value);
+      default:
+        return this.#formatDetails(value);
+    }
+  }
+  #formatNodeFields(value) {
+    const results = [];
+    const label = value.nodeLabel || value.selector || value.snippet || "(node)";
+    results.push({ value: label });
+    if (value.selector && value.selector !== label) {
+      results.push({ labelSuffix: "selector", value: value.selector });
+    }
+    if (value.path) {
+      results.push({ labelSuffix: "path", value: value.path });
+    }
+    if (value.explanation) {
+      results.push({ labelSuffix: "explanation", value: this.#joinExplanationLines(value.explanation) });
+    }
+    return results;
   }
   #formatTable(headings, items) {
     const lines = [];
@@ -445,7 +625,7 @@ var LighthouseFormatter = class {
         for (const { labelSuffix, value: v } of formattedValues) {
           const baseLabel = heading.label || heading.key;
           const label = labelSuffix ? `${baseLabel} ${labelSuffix}` : baseLabel;
-          itemLines.push(`  * **${label}**: ${v}`);
+          itemLines.push(`  * **${label}**: ${this.#toSingleLine(v)}`);
         }
         const subItems = item.subItems;
         if (subItems && typeof subItems === "object" && "type" in subItems && subItems.type === "subitems" && heading.subItemsHeading) {
@@ -456,7 +636,7 @@ var LighthouseFormatter = class {
             }
             const formattedSubValues = this.#formatTableValues(subValue, heading.subItemsHeading.valueType);
             for (const { value: v } of formattedSubValues) {
-              itemLines.push(`    * ${v}`);
+              itemLines.push(`    * ${this.#toSingleLine(v)}`);
             }
           }
         }
@@ -477,30 +657,20 @@ var LighthouseFormatter = class {
     }
     if (typeof value === "object" && "type" in value) {
       switch (value.type) {
-        case "node": {
-          const results = [];
-          const label = value.nodeLabel || value.selector || value.snippet || "(node)";
-          results.push({ value: label });
-          if (value.selector && value.selector !== label) {
-            results.push({ labelSuffix: "selector", value: value.selector });
-          }
-          if (value.path) {
-            results.push({ labelSuffix: "path", value: value.path });
-          }
-          if (value.explanation) {
-            results.push({ labelSuffix: "explanation", value: value.explanation.replace(/\n/g, " ") });
-          }
-          return results;
-        }
+        case "node":
+          return this.#formatNodeFields(value);
+        case "text":
+        case "url":
+          return [{ value: this.#formatValue(value.value, valueType) }];
         case "source-location": {
           const parts = [];
           if (value.url) {
             parts.push(value.url);
           }
-          if (value.line) {
-            parts.push(String(value.line));
+          if (typeof value.line === "number") {
+            parts.push(String(value.line + 1));
           }
-          if (value.column) {
+          if (typeof value.column === "number") {
             parts.push(String(value.column));
           }
           return [{ value: parts.join(":") }];
@@ -508,6 +678,25 @@ var LighthouseFormatter = class {
       }
     }
     return [];
+  }
+  #toSingleLine(text) {
+    return text.replace(/[^\S\n]*\n\s*/g, " ");
+  }
+  /**
+   * Joins lines of an explanation onto a single line. Lines that follow a
+   * non-colon line are separated with "; " so that list items (such as axe's
+   * "Fix any of the following:\n  Item 1\n  Item 2") remain distinct.
+   */
+  #joinExplanationLines(text) {
+    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    let result = "";
+    for (const line of lines) {
+      if (result) {
+        result += result.endsWith(":") ? " " : "; ";
+      }
+      result += line;
+    }
+    return result;
   }
   #formatValue(value, valueType) {
     if (typeof value === "string") {
@@ -2120,6 +2309,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2802,6 +2992,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3826,11 +4017,11 @@ var JavascriptExecutor = class {
   async generateObservation(action, {
     throwOnSideEffect
   }) {
-    const functionDeclaration = `async function ($0) {
+    const functionDeclaration = `async function ($0, data) {
   try {
     ${action}
     ;
-    return ((typeof data !== "undefined") ? data : undefined);
+    return data;
   } catch (error) {
     return error;
   }
@@ -4226,6 +4417,9 @@ var MAX_LINE_LENGTH = 120;
 var MAX_TOTAL_CHARACTERS = 2500;
 var MAX_LONG_LINES_REPORTED = 3;
 var LONG_LINE_PREVIEW_LENGTH = 60;
+var BLOCKED_NETWORK_ERROR_PATTERN = /^Error: (?:Failed to fetch$|Failed to execute 'send' on 'XMLHttpRequest': Failed to load )/;
+var BLOCKED_NETWORK_HINT = "Network access (e.g., fetch, XMLHttpRequest) is blocked for JavaScript run by this tool, so this error does not mean the page's own network requests are failing. Do not retry network requests with this tool.";
+var NETWORK_TOOLS_HINT = "To inspect the page's network requests, load the `network` skill with `learnSkills` if it is not loaded yet, then use `listNetworkRequests` and `getNetworkRequestDetails`.";
 function describeSizeLimitViolations(formattedCode) {
   const violations = [];
   const lines = formattedCode.split("\n");
@@ -4291,6 +4485,7 @@ var ExecuteJavaScriptTool = class _ExecuteJavaScriptTool {
 
 * To return data, define a top-level \`data\` variable and populate it with data you want to get. Only JSON-serializable objects can be assigned to \`data\`.
 * $0 refers to the currently selected DOM node (or document body if none selected).
+* **CRITICAL** Do not call \`console\` methods (e.g., \`console.log\`, \`console.warn\`, \`console.error\`) by default when returning data via \`data\`.
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
 * **CRITICAL** Variables from previous function calls are not available in subsequent calls.
 * **CRITICAL** Keep code concise (max 40 lines, 120 characters per line, and 2,500 characters). Split complex logic into multiple steps.
@@ -4322,7 +4517,8 @@ const data = {
     return {
       title: params.title,
       thought: params.explanation,
-      action: params.code
+      action: params.code,
+      javascriptCode: params.code
     };
   }
   async handler(params, context, options) {
@@ -4333,7 +4529,8 @@ const data = {
     if (!isOriginAllowedByLock(context.getOriginLock(), executionNode.securityOrigin())) {
       return { error: "Error: Cannot execute JavaScript on cross-origin target." };
     }
-    if (Root2.Runtime.hostConfig.devToolsAiV2Architecture?.enabled) {
+    const isV2Architecture = Root2.Runtime.hostConfig.devToolsAiV2Architecture?.enabled;
+    if (isV2Architecture) {
       const validationResult = await _ExecuteJavaScriptTool.validateAndFormatCode(params.code);
       if (validationResult.error) {
         return { error: validationResult.error };
@@ -4352,7 +4549,13 @@ const data = {
       },
       context.execJs
     );
-    return await executor.executeAction(params.code, options);
+    const result = await executor.executeAction(params.code, options);
+    if ("result" in result && typeof result.result === "string" && BLOCKED_NETWORK_ERROR_PATTERN.test(result.result)) {
+      const hint = isV2Architecture ? `${BLOCKED_NETWORK_HINT} ${NETWORK_TOOLS_HINT}` : BLOCKED_NETWORK_HINT;
+      return { ...result, result: `${result.result}
+${hint}` };
+    }
+    return result;
   }
 };
 
@@ -7903,7 +8106,7 @@ var GetLighthouseAuditsTool = class {
     properties: {
       categoryId: {
         type: Host7.AidaClient.ParametersTypes.STRING,
-        description: 'The category of audits to retrieve. Use "all" to retrieve the full report and all categories, or specify a category: "accessibility", "performance", "best-practices", "seo".',
+        description: 'The category of audits to retrieve. Use "all" to retrieve the full report and all categories, or specify a category: "accessibility", "performance", "best-practices", "seo", or "agentic-browsing" (only present when the active report includes an agentic browsing audit).',
         nullable: false
       }
     },
@@ -7921,6 +8124,11 @@ var GetLighthouseAuditsTool = class {
       return { error: "Error: Active context is not a Lighthouse report." };
     }
     const audits = new LighthouseFormatter().formatReport(report, params.categoryId);
+    if (params.categoryId === "all" && audits.length > MAX_FUNCTION_RESULT_BYTE_LENGTH) {
+      return {
+        error: 'The Lighthouse audits output for "all" is too large to fit in the context window. Request a single category instead.'
+      };
+    }
     return {
       result: { audits }
     };
@@ -9116,13 +9324,7 @@ var ListNetworkRequestsTool = class {
         };
       }
       return {
-        result: JSON.stringify([]),
-        widgets: [{
-          name: "NETWORK_REQUESTS_LIST",
-          data: {
-            requests: []
-          }
-        }]
+        error: "No network requests have been recorded. DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). Ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
       };
     }
     return {
@@ -9317,8 +9519,10 @@ __export(AiAgent_exports, {
   MAX_STEPS: () => MAX_STEPS,
   MultimodalInputType: () => MultimodalInputType,
   ResponseType: () => ResponseType,
+  SUGGEST_FOLLOW_UPS_FUNCTION_NAME: () => SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
   aidaErrorToErrorType: () => aidaErrorToErrorType,
-  sanitizeSuggestions: () => sanitizeSuggestions
+  sanitizeSuggestions: () => sanitizeSuggestions,
+  sanitizeSuggestionsList: () => sanitizeSuggestionsList
 });
 import * as Host23 from "../../core/host/host.js";
 import * as Root4 from "../../core/root/root.js";
@@ -9326,6 +9530,7 @@ import * as SDK19 from "../../core/sdk/sdk.js";
 import * as AiUtils4 from "../ai-utils/ai-utils.js";
 var { debugLog: debugLog2, isStructuredLogEnabled } = AiUtils4.Debug;
 var MAX_SUGGESTION_LENGTH = 200;
+var SUGGEST_FOLLOW_UPS_FUNCTION_NAME = "suggestFollowUps";
 var ResponseType = /* @__PURE__ */ ((ResponseType2) => {
   ResponseType2["CONTEXT"] = "context";
   ResponseType2["TITLE"] = "title";
@@ -9585,20 +9790,14 @@ var AiAgent = class {
     for (const line of lines) {
       const trimmed = line.trim();
       if (trimmed.startsWith("SUGGESTIONS:")) {
-        try {
-          suggestions = sanitizeSuggestions(trimmed.substring("SUGGESTIONS:".length).trim());
-        } catch {
-        }
+        suggestions = sanitizeSuggestions(trimmed.substring("SUGGESTIONS:".length).trim());
       } else {
         answerLines.push(line);
       }
     }
     if (!suggestions && answerLines.at(-1)?.includes("SUGGESTIONS:")) {
       const [answer, suggestionsText] = answerLines[answerLines.length - 1].split("SUGGESTIONS:", 2);
-      try {
-        suggestions = sanitizeSuggestions(suggestionsText.trim());
-      } catch {
-      }
+      suggestions = sanitizeSuggestions(suggestionsText.trim());
       answerLines[answerLines.length - 1] = answer;
     }
     const response = {
@@ -9712,35 +9911,14 @@ var AiAgent = class {
         break;
       }
       this.#history.push(request.current_message);
+      const hasOtherFunctionCalls = Boolean(functionCalls?.some((call) => call.name !== SUGGEST_FOLLOW_UPS_FUNCTION_NAME));
+      if (!functionCalls || !hasOtherFunctionCalls) {
+        yield* this.#handleFinalResponse(i, textResponse, functionCalls, rpcId);
+        break;
+      }
       if (textResponse) {
         const parsedResponse = this.parseTextResponse(textResponse);
-        if (!("answer" in parsedResponse)) {
-          throw new Error("Expected a completed response to have an answer");
-        }
-        if (!functionCalls) {
-          debugLog2(`[AiAgent] Step ${i + 1}: Model returned text response:`, parsedResponse.answer);
-          this.#history.push({
-            parts: [{
-              text: parsedResponse.answer
-            }],
-            role: Host23.AidaClient.Role.MODEL
-          });
-        }
-        Host23.userMetrics.actionTaken(Host23.UserMetrics.Action.AiAssistanceAnswerReceived);
-        yield await this.finalizeAnswer({
-          type: "answer" /* ANSWER */,
-          text: parsedResponse.answer,
-          suggestions: parsedResponse.suggestions,
-          complete: true,
-          rpcId
-        });
-        if (!functionCalls) {
-          break;
-        }
-      }
-      if (!functionCalls) {
-        yield this.#createErrorResponse("unknown" /* UNKNOWN */);
-        break;
+        yield await this.#createCompletedAnswer(parsedResponse.answer, rpcId);
       }
       debugLog2(`[AiAgent] Step ${i + 1}: Model requested function calls:`, functionCalls);
       const outcome = yield* this.#runFunctionCalls(functionCalls, textResponse, options);
@@ -9766,6 +9944,47 @@ var AiAgent = class {
     return;
   }
   /**
+   * Handles the final model response of a run when no further tool calls need
+   * to execute.
+   *
+   * - If `textResponse` is empty, yields an `UNKNOWN` error.
+   * - Otherwise, records the answer as a `MODEL` turn in `#history` (excluding
+   *   `suggestFollowUps`) and yields a completed `ANSWER` with follow-up
+   *   suggestions.
+   */
+  async *#handleFinalResponse(stepIndex, textResponse, functionCalls, rpcId) {
+    if (!textResponse) {
+      yield this.#createErrorResponse("unknown" /* UNKNOWN */);
+      return;
+    }
+    const lastSuggestCall = functionCalls?.findLast((call) => call.name === SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
+    const followUpSuggestions = sanitizeSuggestionsList(lastSuggestCall?.args?.suggestions);
+    const parsedResponse = this.parseTextResponse(textResponse);
+    debugLog2(`[AiAgent] Step ${stepIndex + 1}: Model returned text response:`, parsedResponse.answer);
+    this.#history.push({
+      parts: [{
+        text: parsedResponse.answer
+      }],
+      role: Host23.AidaClient.Role.MODEL
+    });
+    const suggestions = followUpSuggestions ?? parsedResponse.suggestions;
+    yield await this.#createCompletedAnswer(parsedResponse.answer, rpcId, suggestions);
+  }
+  /**
+   * Records the `AiAssistanceAnswerReceived` user metric and builds a
+   * completed `ANSWER` response through `finalizeAnswer()`.
+   */
+  async #createCompletedAnswer(text, rpcId, suggestions) {
+    Host23.userMetrics.actionTaken(Host23.UserMetrics.Action.AiAssistanceAnswerReceived);
+    return await this.finalizeAnswer({
+      type: "answer" /* ANSWER */,
+      text,
+      suggestions,
+      complete: true,
+      rpcId
+    });
+  }
+  /**
    * Runs every function call in one model response, one after another, in the
    * order the model returned them.
    *
@@ -9785,6 +10004,17 @@ var AiAgent = class {
     const functionResponses = [];
     try {
       for (const [index, functionCall] of functionCalls.entries()) {
+        if (functionCall.name === SUGGEST_FOLLOW_UPS_FUNCTION_NAME) {
+          functionResponses.push({
+            functionResponse: {
+              name: functionCall.name,
+              response: {
+                result: "Ignored: call suggestFollowUps only in the final response after all other tool calls complete."
+              }
+            }
+          });
+          continue;
+        }
         const allowedOriginResult = this.#allowedOrigin?.();
         if (allowedOriginResult && "blocked" in allowedOriginResult) {
           throw new CrossOriginError();
@@ -9875,10 +10105,12 @@ var AiAgent = class {
       return { error };
     }
     debugLog2(`[AiAgent] Executing tool '${name}' with args:`, args);
-    let code;
+    let action;
+    let javascriptCode;
     if (call.displayInfoFromArgs) {
-      const { title, thought, action: callCode } = call.displayInfoFromArgs(args);
-      code = callCode;
+      const { title, thought, action: callAction, javascriptCode: callJavascriptCode } = call.displayInfoFromArgs(args);
+      action = callAction;
+      javascriptCode = callJavascriptCode;
       if (title) {
         yield {
           type: "title" /* TITLE */,
@@ -9912,11 +10144,11 @@ var AiAgent = class {
       throw new CrossOriginError();
     }
     if ("requiresApproval" in result) {
-      if (code) {
+      if (action) {
         yield {
           type: "action" /* ACTION */,
           callId,
-          code,
+          action,
           canceled: false
         };
       }
@@ -9938,6 +10170,7 @@ var AiAgent = class {
         callId,
         confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
         description: result.description,
+        javascriptCode,
         permissionPrompt: call.permissionPrompt,
         permissionTitle: call.permissionTitle
       };
@@ -9954,7 +10187,7 @@ var AiAgent = class {
         yield {
           type: "action" /* ACTION */,
           callId,
-          code,
+          action,
           output: "Error: User denied code execution with side effects.",
           canceled: true
         };
@@ -9978,7 +10211,7 @@ var AiAgent = class {
       yield {
         type: "action" /* ACTION */,
         callId,
-        code,
+        action,
         output: typeof result.result === "string" ? result.result : JSON.stringify(result.result),
         widgets: result.widgets,
         canceled: false,
@@ -9990,7 +10223,7 @@ var AiAgent = class {
       yield {
         type: "action" /* ACTION */,
         callId,
-        code,
+        action,
         output: result.error,
         canceled: false,
         toolName: name
@@ -10053,8 +10286,7 @@ var AiAgent = class {
     };
   }
 };
-function sanitizeSuggestions(suggestions) {
-  const parsed = JSON.parse(suggestions);
+function sanitizeSuggestionsList(parsed) {
   if (!Array.isArray(parsed)) {
     return void 0;
   }
@@ -10073,6 +10305,13 @@ function sanitizeSuggestions(suggestions) {
     return void 0;
   }
   return sanitized;
+}
+function sanitizeSuggestions(suggestions) {
+  try {
+    return sanitizeSuggestionsList(JSON.parse(suggestions));
+  } catch {
+    return void 0;
+  }
 }
 function aidaErrorToErrorType(err) {
   if (err instanceof Host23.AidaClient.AidaAbortError) {
@@ -10718,13 +10957,19 @@ var ResolveDevtoolsNodePathTool = class {
         type: Host25.AidaClient.ParametersTypes.STRING,
         description: 'DevTools node path string (e.g. "1,HTML,1,BODY,2,DIV").',
         nullable: false
+      },
+      selector: {
+        type: Host25.AidaClient.ParametersTypes.STRING,
+        description: 'CSS selector or node label of the target element from the audit item (e.g. "button.submit", "body > p").',
+        nullable: false
       }
     },
-    required: ["explanation", "path"]
+    required: ["explanation", "path", "selector"]
   };
   displayInfoFromArgs(params) {
+    const selector = params.selector?.trim().replace(/^body\s*>\s*/i, "");
     return {
-      title: "Resolving element path",
+      title: selector ? `Resolving element (${selector})` : "Resolving element path",
       thought: params.explanation,
       action: `resolveDevtoolsNodePath('${params.path}')`
     };
@@ -10778,6 +11023,7 @@ __export(RunLighthouse_exports, {
   RunLighthouseTool: () => RunLighthouseTool
 });
 import * as Host26 from "../../core/host/host.js";
+import * as LHModel from "../lighthouse/lighthouse.js";
 
 // ../../front_end/models/ai_assistance/contexts/LighthouseContext.ts
 var LighthouseContext_exports = {};
@@ -10870,6 +11116,9 @@ ${formatter.audits(this.#lh, "accessibility")}`;
 };
 
 // ../../front_end/models/ai_assistance/tools/RunLighthouse.ts
+function resolveMode(params) {
+  return params.mode ?? (params.categoryId === "agentic-browsing" ? "navigation" : "snapshot");
+}
 var RunLighthouseTool = class {
   name = "runLighthouse" /* RUN_LIGHTHOUSE */;
   permissionPrompt = "never" /* NEVER */;
@@ -10886,27 +11135,36 @@ var RunLighthouseTool = class {
       },
       categoryId: {
         type: Host26.AidaClient.ParametersTypes.STRING,
-        // The experimental 'agentic-browsing' category is intentionally omitted from the prompt description so the agent does not invoke it unprompted. It is also excluded when 'all' is provided.
-        description: 'Lighthouse category. Use "all" to run all categories, or specify a category: "accessibility", "performance", "best-practices", "seo".',
+        // The experimental 'agentic-browsing' category is listed separately from the standard categories and restricted to explicit user requests so the agent does not invoke it unprompted. It is also excluded when 'all' is provided (see `LighthouseController.getCategoryIDs`).
+        description: 'Lighthouse category. Use "all" to run all categories, or specify a category: "accessibility", "performance", "best-practices", "seo". Use "agentic-browsing" only when the user explicitly asks for an agentic browsing audit (how well AI agents can navigate and use the page, including WebMCP). "all" does not include "agentic-browsing". Run "agentic-browsing" in "navigation" mode, because its WebMCP audits only run in "navigation" mode.',
         nullable: false
       },
       mode: {
         type: Host26.AidaClient.ParametersTypes.STRING,
-        description: 'Lighthouse execution mode: "navigation", "snapshot", "timespan". Use "navigation" for initial full audits unless the user requested otherwise or in-page changes are being evaluated. Defaults to "snapshot".',
-        nullable: true
+        description: 'Lighthouse execution mode: "navigation", "snapshot", or "timespan". Use "navigation" to reload the page and run all audits (including page-load metrics and WebMCP gatherers); note that reloading resets unsaved in-page DOM or CSS modifications. Use "snapshot" to audit the current DOM state without reloading (preserving live edits, though navigation-only audits such as WebMCP are skipped). Use "timespan" to audit user interactions (supported only by "performance" and "best-practices").',
+        nullable: false
       }
     },
-    required: ["explanation", "categoryId"]
+    required: ["explanation", "categoryId", "mode"]
   };
   displayInfoFromArgs(params) {
+    const mode = resolveMode(params);
     return {
-      title: `Running Lighthouse audits: ${params.categoryId} (${params.mode ?? "snapshot"})`,
+      title: `Running Lighthouse audits: ${params.categoryId} (${mode})`,
       thought: params.explanation,
-      action: `runLighthouse('${params.categoryId}', '${params.mode ?? "snapshot"}')`
+      action: `runLighthouse('${params.categoryId}', '${mode}')`
     };
   }
   async handler(params, context) {
-    const mode = params.mode ?? "snapshot";
+    const mode = resolveMode(params);
+    if (params.categoryId !== "all") {
+      const supportedModes = LHModel.RunTypes.CATEGORY_SUPPORTED_MODES[params.categoryId];
+      if (!supportedModes?.includes(mode)) {
+        return {
+          error: `Error: Category "${params.categoryId}" does not support "${mode}" mode. Supported modes: ${supportedModes ? supportedModes.join(", ") : "none"}.`
+        };
+      }
+    }
     try {
       const result = await context.runLighthouse({
         mode,
@@ -14414,7 +14672,7 @@ __export(SkillRegistry_exports, {
 // gen/front_end/models/ai_assistance/skills/lighthouse.skill.js
 var skill = {
   "name": "lighthouse",
-  "description": "Analyzing an active Lighthouse report context, running Lighthouse reports and audits (performance, accessibility, best practices, Search Engine Optimization (SEO)), accessibility audits, ARIA properties, accessible tree inspection, color contrast, and screen reader semantics. Not for general page performance measurement without a Lighthouse report; use the performance skill for that.",
+  "description": "Analyzing an active Lighthouse report context, running Lighthouse reports and audits (performance, accessibility, best practices, Search Engine Optimization (SEO), and agentic browsing when explicitly requested), accessibility audits, ARIA properties, accessible tree inspection, color contrast, and screen reader semantics. Not for general page performance measurement without a Lighthouse report; use the performance skill for that.",
   "allowedTools": [
     "runLighthouse",
     "getLighthouseAudits",
@@ -14423,7 +14681,7 @@ var skill = {
     "getElementAccessibilityDetails",
     "executeJavaScript"
   ],
-  "instructions": "You are an expert web quality, Lighthouse audit, and accessibility debugging assistant integrated into Chrome DevTools.\nYour role is to evaluate websites using Lighthouse audits across performance, accessibility, best practices, and SEO, and to inspect live DOM elements for accessibility and styling fixes.\n\n# Tools & Workflow\n\n1. **Lighthouse Audits (`runLighthouse` & `getLighthouseAudits`)**:\n   - The Lighthouse report context contains only category scores and failing audit titles. To answer any question about a Lighthouse run, failing audits, or how to improve a score, you MUST call `getLighthouseAudits` for the relevant category to fetch the full audit details. Never reply using only the initial summary.\n   - If an active Lighthouse report context already exists and no fresh audit is requested:\n     - To inspect the entire report, multiple categories, or general opportunities to improve the score, call `getLighthouseAudits` with `categoryId: 'all'`.\n     - For a specific category, call `getLighthouseAudits` with the corresponding category ID (e.g. `'performance'`, `'accessibility'`, `'best-practices'`, `'seo'`).\n   - If no active report exists or a fresh audit is requested, call `runLighthouse`:\n     - If the user asks for a general report or multiple categories, use `categoryId: 'all'`.\n     - For a single category, pass that category ID (e.g. `'accessibility'`).\n     - Execution mode:\n       - Use `\"navigation\"` mode for full page-load audits (default for full site reviews).\n       - Use `\"snapshot\"` mode to re-evaluate live in-page DOM/CSS modifications without reloading.\n       - Use `\"timespan\"` mode for user interaction flows.\n       - Always honor explicit mode requests from the user.\n     - **CRITICAL**: `runLighthouse` only records the report and returns `\"Lighthouse audit completed\"` without audit details. Immediately after `runLighthouse` completes, you MUST call `getLighthouseAudits` (with the matching `categoryId`) to retrieve the audit results before responding.\n\n2. **Resolving & Inspecting Failing Audit Elements (`resolveDevtoolsNodePath`, `getStyles`, `getElementAccessibilityDetails`)**:\n   - `getLighthouseAudits` only returns static HTML snippets and DevTools `node path` strings (e.g. `\"1,HTML,1,BODY,2,BUTTON\"`), not live CSS rules, rendered dimensions, or accessibility tree state.\n   - Whenever failing audits reference specific page elements by `node path` (excluding document-level `\"1,HTML\"` landmark checks) and those elements have not yet been resolved and inspected in the conversation:\n     1. Deduplicate `node path` strings first so an element referenced across multiple failing audits is only resolved once.\n     2. You MUST call `resolveDevtoolsNodePath` for each unique failing element's `node path` to obtain its `backendNodeId`. Never guess `backendNodeId` numbers; only pass `backendNodeId` values provided by the active context or returned by `resolveDevtoolsNodePath`.\n     3. You MUST then inspect those `backendNodeId`s using dedicated tools before answering:\n        - Call `getStyles` on the `backendNodeId` for sizing/layout audits (such as `unsized-images` to find the actual rendered CSS `width` and `height`), color contrast, or link styling (`link-in-text-block`).\n        - Call `getElementAccessibilityDetails` on the `backendNodeId` for accessibility, ARIA, role, or accessible name audits (such as `button-name`).\n   - Never guess CSS dimensions, styles, or ARIA properties from the static HTML snippet alone, and never use `executeJavaScript` (`document.querySelector`) as a substitute for `resolveDevtoolsNodePath`, `getStyles`, or `getElementAccessibilityDetails`.\n\n3. **Direct Element Accessibility Inspection (`getElementAccessibilityDetails` & `getStyles`)**:\n   - When inspecting a selected DOM element for accessibility, ALWAYS call `getElementAccessibilityDetails` on its `backendNodeId` to retrieve the computed role, accessible name, name source, ARIA attributes, ignored state, and accessibility properties directly from the accessibility tree.\n   - Call `getStyles` on the `backendNodeId` to inspect layout, color contrast, or font properties when relevant.\n\n4. **Supplementary DOM & Dynamic Interaction Checks (`executeJavaScript`)**:\n   - Only after calling `resolveDevtoolsNodePath`, `getStyles`, and `getElementAccessibilityDetails` on failing elements with a `node path`, you may use `executeJavaScript` if you need supplementary DOM state not available from single-node tools (such as `<head>` `<meta>` tags, `document.body.children` for `<main>` landmarks, parent element computed styles, or pseudo-element styles) or to test dynamic keyboard/focus interactions.\n\n# Considerations\n\n- Base all analysis on empirical Lighthouse audit data and live element inspection. Never fabricate audit scores or results.\n- For performance-only questions (e.g. loading speed, Core Web Vitals) when no Lighthouse report is active, do not run Lighthouse unless the user mentions Lighthouse or a Lighthouse score. Record a performance trace with the performance skill instead.\n- When summarizing a full Lighthouse run, highlight overall category scores first, then detail failing audits (score < 90)."
+  "instructions": "You are an expert web quality, Lighthouse audit, and accessibility debugging assistant integrated into Chrome DevTools.\nYour role is to evaluate websites using Lighthouse audits across performance, accessibility, best practices, and SEO, and to inspect live DOM elements for accessibility and styling fixes.\n\n# Tools & Workflow\n\n1. **Lighthouse Audits (`runLighthouse` & `getLighthouseAudits`)**:\n   - The Lighthouse report context contains only category scores and failing audit titles. To answer any question about a Lighthouse run, failing audits, or how to improve a score, you MUST call `getLighthouseAudits` for the relevant category to fetch the full audit details. Never reply using only the initial summary.\n   - If an active Lighthouse report context already exists and no fresh audit is requested:\n     - To inspect the entire report, multiple categories, or general opportunities to improve the score, call `getLighthouseAudits` with `categoryId: 'all'`.\n     - For a specific category, call `getLighthouseAudits` with the corresponding category ID (e.g. `'performance'`, `'accessibility'`, `'best-practices'`, `'seo'`).\n   - If no active report exists or a fresh audit is requested, call `runLighthouse`:\n     - If the user asks for a general report or multiple categories, use `categoryId: 'all'`.\n     - For a single category, pass that category ID (e.g. `'accessibility'`).\n     - Only pass `categoryId: 'agentic-browsing'` when the user explicitly asks for an agentic browsing audit, such as how ready the page is for AI agents to navigate and use it, or WebMCP checks. `'all'` does not include it, so never pick it for general audits, and never substitute another category (such as `'seo'`) when the user asks for it. Use `\"navigation\"` mode for `'agentic-browsing'` unless the user explicitly asks for another mode, because its WebMCP audits only run in `\"navigation\"` mode.\n     - Execution mode:\n       - Use `\"navigation\"` mode for full page-load audits (default for full site reviews).\n       - Use `\"snapshot\"` mode to re-evaluate live in-page DOM/CSS modifications without reloading.\n       - Use `\"timespan\"` mode for user interaction flows.\n       - Always honor explicit mode requests from the user.\n     - **CRITICAL**: `runLighthouse` only records the report and returns `\"Lighthouse audit completed\"` without audit details. Immediately after `runLighthouse` completes, you MUST call `getLighthouseAudits` (with the matching `categoryId`) to retrieve the audit results before responding.\n\n2. **Resolving & Inspecting Failing Audit Elements (`resolveDevtoolsNodePath`, `getStyles`, `getElementAccessibilityDetails`)**:\n   - `getLighthouseAudits` only returns static HTML snippets and DevTools `node path` strings (e.g. `\"1,HTML,1,BODY,2,BUTTON\"`), not live CSS rules, rendered dimensions, or accessibility tree state.\n   - Whenever failing audits reference specific page elements by `node path` (excluding document-level `\"1,HTML\"` landmark checks) and those elements have not yet been resolved and inspected in the conversation:\n     1. Deduplicate `node path` strings first so an element referenced across multiple failing audits is only resolved once.\n     2. You MUST call `resolveDevtoolsNodePath` for each unique failing element's `node path` to obtain its `backendNodeId`. Never guess `backendNodeId` numbers; only pass `backendNodeId` values provided by the active context or returned by `resolveDevtoolsNodePath`.\n     3. You MUST then inspect those `backendNodeId`s using dedicated tools before answering:\n        - Call `getStyles` on the `backendNodeId` for sizing/layout audits (such as `unsized-images` to find the actual rendered CSS `width` and `height`), color contrast, or link styling (`link-in-text-block`).\n        - Call `getElementAccessibilityDetails` on the `backendNodeId` for accessibility, ARIA, role, or accessible name audits (such as `button-name`).\n   - Never guess CSS dimensions, styles, or ARIA properties from the static HTML snippet alone, and never use `executeJavaScript` (`document.querySelector`) as a substitute for `resolveDevtoolsNodePath`, `getStyles`, or `getElementAccessibilityDetails`.\n\n3. **Direct Element Accessibility Inspection (`getElementAccessibilityDetails` & `getStyles`)**:\n   - When inspecting a selected DOM element for accessibility, ALWAYS call `getElementAccessibilityDetails` on its `backendNodeId` to retrieve the computed role, accessible name, name source, ARIA attributes, ignored state, and accessibility properties directly from the accessibility tree.\n   - Call `getStyles` on the `backendNodeId` to inspect layout, color contrast, or font properties when relevant.\n\n4. **Supplementary DOM & Dynamic Interaction Checks (`executeJavaScript`)**:\n   - Only after calling `resolveDevtoolsNodePath`, `getStyles`, and `getElementAccessibilityDetails` on failing elements with a `node path`, you may use `executeJavaScript` if you need supplementary DOM state not available from single-node tools (such as `<head>` `<meta>` tags, `document.body.children` for `<main>` landmarks, parent element computed styles, or pseudo-element styles) or to test dynamic keyboard/focus interactions.\n\n# Considerations\n\n- Base all analysis on empirical Lighthouse audit data and live element inspection. Never fabricate audit scores or results.\n- For performance-only questions (e.g. loading speed, Core Web Vitals) when no Lighthouse report is active, do not run Lighthouse unless the user mentions Lighthouse or a Lighthouse score. Record a performance trace with the performance skill instead.\n- When summarizing a full Lighthouse run, highlight overall category scores first, then detail failing audits (score < 90)."
 };
 
 // gen/front_end/models/ai_assistance/skills/network.skill.js
@@ -14434,7 +14692,7 @@ var skill2 = {
     "listNetworkRequests",
     "getNetworkRequestDetails"
   ],
-  "instructions": "You are an expert network request debugging assistant.\n\n# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to discover recorded network requests matching the active origin.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain full headers, timing phases (DNS, initial connection, SSL, TTFB, content download), status text, and response body.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Origin Lock**: Only requests belonging to the conversation's established origin can be inspected."
+  "instructions": "You are an expert network request debugging assistant.\n\n# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to discover recorded network requests matching the active origin.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain full headers, timing phases (DNS, initial connection, SSL, TTFB, content download), status text, and response body.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Origin Lock**: Only requests belonging to the conversation's established origin can be inspected.\n* **Recording**: DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). If `listNetworkRequests` reports that no requests have been recorded, ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
 };
 
 // gen/front_end/models/ai_assistance/skills/performance.skill.js
@@ -14524,20 +14782,22 @@ Your role is to help web developers debug, analyze, and optimize web application
 # Workflow
 1. **Analyze**: Understand the user's intent, the context provided, and what they are trying to achieve.
 2. **Investigate**: Proactively use your learned skills and tools to gather live data. Do not make assumptions or guess without sufficient evidence.
-3. **Diagnose**: Explore multiple potential explanations and solutions. Distinguish between the primary root cause and contributing factors.
-4. **Respond**: Provide a structured, clear, and actionable response.
+3. **Evaluate**: Synthesize the live data. If the user is debugging an issue, explore multiple potential explanations and distinguish between the primary root cause and contributing factors.
+4. **Respond**: Match your response format and depth to the user's question.
 
 # Response Structure
-If the user asks a question that requires an investigation or debugging, use this structure:
-* **Root Cause(s)**: Point out the root cause(s) of the problem.
-  - Example: "**Root Cause**: [reason]" or "**Root Causes**:" followed by a bulleted list.
-* **Suggestion(s)**: List actionable solution suggestion(s) in order of impact.
-  - Example: "**Suggestion**: [Suggestion]" or "**Suggestions**:" followed by a bulleted list.
+* **Informational or exploratory questions** (e.g., asking what a network request, script, element, or storage entry is or does):
+  - Answer directly and concisely in 1\u20132 short paragraphs or a compact list of key facts.
+  - Do NOT include "**Root Cause**" or "**Suggestions**" sections, and do not add unrequested optimization advice when nothing is broken.
+* **Debugging or optimization questions** (e.g., asking why something fails, renders incorrectly, or is slow, or how to improve/fix it):
+  - **Root Cause(s)**: Point out the root cause(s) of the problem.
+    - Example: "**Root Cause**: [reason]" or "**Root Causes**:" followed by a bulleted list.
+  - **Suggestion(s)**: List actionable solution suggestion(s) in order of impact.
+    - Example: "**Suggestion**: [Suggestion]" or "**Suggestions**:" followed by a bulleted list.
 
 # Follow-up Suggestions
-* Output a list of suggested follow-up queries or actions for the user at the very end of your response.
-* The format MUST be SUGGESTIONS: ["suggestion 1", "suggestion 2"] on its own single line.
-* Ensure suggestions are relevant, concise, and helpful next steps for the user.
+* At the end of your response, call the \`suggestFollowUps\` function to provide 1 to 3 relevant, concise follow-up queries or actions for the user.
+* Do not write follow-up suggestions as text in your response.
 
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
@@ -14554,7 +14814,7 @@ function removeDirectiveFromLastLine(lines, textBeforeDirective) {
 }
 function parseSuggestionsArray(array) {
   try {
-    return { suggestions: sanitizeSuggestions(array) };
+    return { suggestions: sanitizeSuggestionsList(JSON.parse(array)) };
   } catch {
     return null;
   }
@@ -14679,6 +14939,27 @@ var AiAgent2 = class extends AiAgent {
           loadedSkills: loadedSkills.length > 0 ? loadedSkills : void 0
         };
       }
+    });
+    this.#declaredTools.add(SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
+    this.declareFunction(SUGGEST_FOLLOW_UPS_FUNCTION_NAME, {
+      description: "Provides suggested follow-up queries or actions for the user at the end of the response.",
+      parameters: {
+        type: Host35.AidaClient.ParametersTypes.OBJECT,
+        description: "Parameters for follow-up suggestions",
+        properties: {
+          suggestions: {
+            type: Host35.AidaClient.ParametersTypes.ARRAY,
+            items: {
+              type: Host35.AidaClient.ParametersTypes.STRING,
+              description: "A concise follow-up query or action (under 60 characters)."
+            },
+            description: "1 to 3 concise follow-up queries or actions relevant to the response."
+          }
+        },
+        required: ["suggestions"]
+      },
+      // Never called: AiAgent#run() and AiAgent#runFunctionCalls() intercept suggestFollowUps directly.
+      handler: async () => ({ result: "Suggestions recorded." })
     });
   }
   async enhanceQuery(query, selected = null, _multimodalInputType) {
@@ -14889,6 +15170,10 @@ var AiConversation = class _AiConversation {
         return { ...entry, confirm: () => {
         } };
       }
+      if (entry.type === "action" /* ACTION */ && "code" in entry) {
+        const { code, ...rest } = entry;
+        return { ...rest, action: rest.action ?? code };
+      }
       return entry;
     });
     return new _AiConversation({
@@ -15061,10 +15346,10 @@ ${item.query}`);
           if (!item.output) {
             break;
           }
-          if (item.code) {
+          if (item.action) {
             contentParts.push(`**Code executed:**
 \`\`\`
-${item.code.trim()}
+${item.action.trim()}
 \`\`\``);
           }
           contentParts.push(`**Data returned:**

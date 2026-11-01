@@ -85,7 +85,7 @@ export default `/**
     white-space: normal;
   }
 
-  .ancestor-rule-list devtools-css-query {
+  .ancestor-rule-list .css-query {
     display: block;
   }
 
@@ -112,7 +112,7 @@ export default `/**
   }
 
   &.styles-panel-hovered:not(.read-only),
-  &.styles-panel-hovered:not(.read-only) devtools-css-query {
+  &.styles-panel-hovered:not(.read-only) .css-query {
     --override-styles-section-text-hover-text-decoration: underline;
     --override-styles-section-text-hover-cursor: default;
   }
@@ -385,7 +385,7 @@ export default `/**
       flex: none;
       width: var(--sys-size-3);
       height: var(--sys-size-3);
-      border-radius: 50%;
+      border-radius: var(--sys-shape-corner-full);
       background-color: currentcolor;
       /* Aligns the bullet's center with the disclosure triangle above. */
       margin-left: var(--sys-size-2);

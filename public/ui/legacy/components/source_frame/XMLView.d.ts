@@ -6,7 +6,7 @@ interface ViewInput {
     search: UI.TreeOutline.TreeSearch<XMLTreeViewNode, SearchResult> | undefined;
     jumpToNextSearchResult: SearchResult | undefined;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class XMLTreeViewNode {
     #private;
@@ -32,7 +32,7 @@ export declare class XMLView extends UI.Widget.Widget implements UI.SearchableVi
     constructor(target?: HTMLElement, view?: View);
     set parsedXML(parsedXML: Document);
     performUpdate(): void;
-    static createSearchableView(parsedXML: Document): UI.SearchableView.SearchableView;
+    static createSearchableView(parsedXML: Document, element?: HTMLElement): UI.SearchableView.SearchableView;
     static parseXML(text: string, mimeType: string): Document | null;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;

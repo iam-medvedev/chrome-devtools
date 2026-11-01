@@ -1983,6 +1983,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2665,6 +2666,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -4386,7 +4388,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   --width: var(--sys-size-11);
 
   align-items: center;
-  border-radius: 50%;
+  border-radius: var(--sys-shape-corner-full);
   border: none;
   /* todo: extract to global styles and make it work with dark mode. */
   box-shadow: 0 1px 3px 1px rgb(0 0 0 / 15%), 0 1px 2px 0 rgb(0 0 0 / 30%); /* stylelint-disable-line plugin/use_theme_colors */
@@ -4656,7 +4658,11 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
       ${error.cause ? renderError2(error.cause, true) : Lit2.nothing}
     `;
   };
-  render2(html2`<span class="symbolized-error-widget">${renderError2(input.error, false)}</span>`, target);
+  render2(
+    html2`<span class="symbolized-error-widget">${renderError2(input.error, false)}</span>`,
+    target,
+    { container: { classes: ["symbolized-error-widget-host"] } }
+  );
 };
 var SymbolizedErrorWidget = class extends UI2.Widget.Widget {
   #error;
@@ -4664,7 +4670,7 @@ var SymbolizedErrorWidget = class extends UI2.Widget.Widget {
   #ignoreListManager;
   constructor(element, view = DEFAULT_VIEW2) {
     const host = element || document.createElement("span");
-    super(host, { classes: ["symbolized-error-widget-host"] });
+    super(host);
     this.#view = view;
   }
   get linkElements() {
@@ -4705,7 +4711,7 @@ var SymbolizedErrorWidget = class extends UI2.Widget.Widget {
       error: this.#error,
       ignoreListManager: this.#ignoreListManager
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 
@@ -4942,6 +4948,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   selectableChildren;
   // Trees rendering logged DOM nodes; they follow the message visibility.
   domTreeWidgets = [];
+  // Stack trace previews are also root widgets and follow the message visibility.
+  stackTracePreviews = [];
   messageResized;
   // The wrapper that contains consoleRowWrapper and other elements in a column.
   elementInternal;
@@ -5028,6 +5036,12 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     for (const domTree of this.domTreeWidgets) {
       domTree.wasShown();
     }
+    for (const stackTracePreview of this.stackTracePreviews) {
+      stackTracePreview.wasShown();
+    }
+    if (this.elementInternal && this.#teaser) {
+      this.#teaser.show(this.elementInternal, this.consoleRowWrapper);
+    }
   }
   onResize() {
   }
@@ -5036,6 +5050,16 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.cachedHeight = this.element().offsetHeight;
     for (const domTree of this.domTreeWidgets) {
       domTree.willHide();
+    }
+    for (const stackTracePreview of this.stackTracePreviews) {
+      stackTracePreview.willHide();
+    }
+    if (this.#teaser) {
+      const { okToRemove } = this.#teaser.abortTeaserGeneration();
+      this.#teaser.detach();
+      if (okToRemove) {
+        this.#teaser = void 0;
+      }
     }
   }
   isVisible() {
@@ -5166,6 +5190,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       }
     } else {
       const messageText = this.message.messageText;
+      const initiatorId = () => this.initiatorId();
       const fragment = _ConsoleViewMessage.linkifyWithCustomLinkifier(messageText, (text, url, lineNumber, columnNumber) => {
         const linkElement = url === request.url() ? Components2.Linkifier.Linkifier.linkifyRevealable(
           request,
@@ -5176,7 +5201,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
           "network-request"
         ) : Components2.Linkifier.Linkifier.linkifyURL(
           url,
-          { text, lineNumber, columnNumber }
+          { text, lineNumber, columnNumber, initiatorId }
         );
         linkElement.tabIndex = -1;
         this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });
@@ -5356,6 +5381,10 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     }
     stackTracePreview.markAsRoot();
     stackTracePreview.show(stackTraceElement);
+    this.stackTracePreviews.push(stackTracePreview);
+    if (!this.isVisibleInternal) {
+      stackTracePreview.willHide();
+    }
     UI3.ARIAUtils.setLabel(
       contentElement,
       `${messageElement.textContent} ${i18nString2(UIStrings2.stackMessageCollapsed)}`
@@ -6390,9 +6419,29 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     }
     return container;
   }
+  /**
+   * The frame or worker that this message came from, which the browser attributes opening one of the message's
+   * URLs in a new tab to; see {@link Components.Linkifier.openInNewTabInitiatorId}. That is the frame of the
+   * request for messages about a request, and the frame of the execution context otherwise, as long as that
+   * context still exists. Messages whose context is gone (e.g. from a document that has since been navigated
+   * away from, kept with "Preserve log") are not attributed to anything. Determined when a link is opened rather
+   * than when the message is rendered, as the context may be destroyed in between.
+   */
+  initiatorId() {
+    const requestId = this.message.getAffectedResources()?.requestId;
+    if (requestId) {
+      const [request] = Logs.NetworkLog.NetworkLog.instance().requestsForId(requestId);
+      if (request) {
+        return Components2.Linkifier.openInNewTabInitiatorId(request);
+      }
+    }
+    const executionContext = this.message.runtimeModel()?.executionContext(this.message.getExecutionContextId());
+    return executionContext ? Components2.Linkifier.openInNewTabInitiatorId(executionContext) : void 0;
+  }
   linkifyStringAsFragment(string) {
+    const initiatorId = () => this.initiatorId();
     return _ConsoleViewMessage.linkifyWithCustomLinkifier(string, (text, url, lineNumber, columnNumber) => {
-      const options = { text, lineNumber, columnNumber };
+      const options = { text, lineNumber, columnNumber, initiatorId };
       const linkElement = Components2.Linkifier.Linkifier.linkifyURL(url, options);
       linkElement.tabIndex = -1;
       this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });
@@ -7855,7 +7904,7 @@ var ConsolePinPane = class extends UI6.Widget.VBox {
     super.willHide();
     this.#pinModel.stopPeriodicEvaluate();
   }
-  contextMenuEventFired(event) {
+  #contextMenuEventFired(event) {
     const contextMenu = new UI6.ContextMenu.ContextMenu(event);
     const target = UI6.UIUtils.deepElementFromEvent(event);
     if (target) {
@@ -7874,12 +7923,12 @@ var ConsolePinPane = class extends UI6.Widget.VBox {
     }
     contextMenu.editSection().appendItem(
       i18nString3(UIStrings3.removeAllExpressions),
-      this.removeAllPins.bind(this),
+      this.#removeAllPins.bind(this),
       { jslogContext: "remove-all-expressions" }
     );
     void contextMenu.show();
   }
-  removeAllPins() {
+  #removeAllPins() {
     this.#pinModel.removeAll();
     this.requestUpdate();
   }
@@ -7905,9 +7954,9 @@ var ConsolePinPane = class extends UI6.Widget.VBox {
         pins: [...this.#pinModel.pins],
         focusOut: this.#focusOut,
         onRemove: (pin) => this.removePin(pin),
-        onContextMenu: this.contextMenuEventFired.bind(this)
+        onContextMenu: this.#contextMenuEventFired.bind(this)
       },
-      {},
+      void 0,
       this.contentElement
     );
     for (const child of this.children()) {
@@ -8561,7 +8610,7 @@ var ConsoleSidebar = class extends ConsoleSidebarBase {
         this.dispatchEventToListeners("FilterSelected" /* FILTER_SELECTED */);
       }
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   clear() {
     for (const group of this.#groups) {
@@ -9230,8 +9279,10 @@ var ConsoleViewport = class {
 var ConsolePrompt_exports = {};
 __export(ConsolePrompt_exports, {
   ConsolePrompt: () => ConsolePrompt,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   Events: () => Events2
 });
+import "../../ui/kit/kit.js";
 import * as Common7 from "../../core/common/common.js";
 import * as Host5 from "../../core/host/host.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
@@ -9243,9 +9294,9 @@ import * as Formatter2 from "../../models/formatter/formatter.js";
 import * as SourceMapScopes from "../../models/source_map_scopes/source_map_scopes.js";
 import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as TextEditor2 from "../../ui/components/text_editor/text_editor.js";
-import { Icon as Icon2 } from "../../ui/kit/kit.js";
 import * as ObjectUI5 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html7, nothing as nothing7, render as render7 } from "../../ui/lit/lit.js";
 import * as Settings10 from "../../ui/settings/settings.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
@@ -10587,7 +10638,11 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
   async saveConsole() {
     const url = SDK7.TargetManager.TargetManager.instance().scopeTarget().inspectedURL();
     const parsedURL = Common6.ParsedURL.ParsedURL.fromString(url);
-    const filename = Platform5.StringUtilities.sprintf("%s-%d.log", parsedURL ? parsedURL.host : "console", Date.now());
+    const filename = Platform5.StringUtilities.sprintf(
+      "%s-%d.log",
+      parsedURL ? parsedURL.host : "console",
+      Date.now()
+    );
     const stream = new Bindings4.FileUtils.FileOutputStream(Workspace2.FileManager.FileManager.instance());
     const progressIndicator = document.createElement("devtools-progress");
     progressIndicator.title = i18nString5(UIStrings5.writingFile);
@@ -10756,7 +10811,7 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
   messagesClicked(event) {
     const target = event.target;
     if (!this.messagesElement.hasSelection()) {
-      const clickedOutsideMessageList = target === this.messagesElement || this.prompt.belowEditorElement().isSelfOrAncestor(target);
+      const clickedOutsideMessageList = target === this.messagesElement;
       if (clickedOutsideMessageList) {
         this.prompt.moveCaretToEndOfPrompt();
         this.focusPrompt();
@@ -10989,7 +11044,7 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
   promptTextChangedForTest() {
   }
   isScrolledToBottom() {
-    const distanceToPromptEditorBottom = this.messagesElement.scrollHeight - this.messagesElement.scrollTop - this.messagesElement.clientHeight - this.prompt.belowEditorElement().offsetHeight;
+    const distanceToPromptEditorBottom = this.messagesElement.scrollHeight - this.messagesElement.scrollTop - this.messagesElement.clientHeight - this.prompt.belowEditorHeight();
     return distanceToPromptEditorBottom <= 2;
   }
   setupAiCodeCompletion() {
@@ -11348,7 +11403,7 @@ var consolePrompt_css_default = `/*
 
 #console-prompt .console-prompt-icon {
   position: absolute;
-  left: -9px;
+  left: calc(-1 * var(--sys-size-6));
   top: var(--sys-size-3);
   user-select: none;
 }
@@ -11386,6 +11441,7 @@ var consolePrompt_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./consolePrompt.css")} */`;
 
 // ../../front_end/panels/console/ConsolePrompt.ts
+var { classMap, ref: ref3 } = Directives2;
 var { Direction } = TextEditor2.TextEditorHistory;
 var UIStrings6 = {
   /**
@@ -11393,12 +11449,15 @@ var UIStrings6 = {
    */
   consolePrompt: "Console prompt",
   /**
-   * @description Warning shown to users when pasting text into the DevTools Console. IMPORTANT: keep double quotes around PH1 and do not use single quotes.
+   * @description Warning shown to users when pasting text into the DevTools
+   * Console. IMPORTANT: keep double quotes around PH1 and do not use single
+   * quotes.
    * @example {allow pasting} PH1
    */
   selfXssWarning: 'Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Type "{PH1}" below and press Enter to allow pasting.',
   /**
-   * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools Console.
+   * @description Text a user needs to type in order to confirm that they are
+   * aware of the danger of pasting code into the DevTools Console.
    */
   allowPasting: "allow pasting"
 };
@@ -11407,24 +11466,62 @@ var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_6);
 var ConsolePromptBase = Common7.ObjectWrapper.eventMixin(
   UI11.Widget.Widget
 );
+var DEFAULT_VIEW6 = (input, output, target) => {
+  render7(html7`
+    <style>${consolePrompt_css_default}</style>
+    <div class="console-prompt-editor-container">
+      <devtools-text-editor
+        .state=${input.editorState}
+        @keydown=${(event) => {
+    if (event.defaultPrevented) {
+      event.stopPropagation();
+    }
+  }}
+        ${ref3((e) => {
+    output.editor = e instanceof TextEditor2.TextEditor.TextEditor ? e : void 0;
+  })}
+      ></devtools-text-editor>
+    </div>
+    <div
+      class=${classMap({ "console-eager-preview": true, hidden: !input.eagerEvalEnabled })}
+      @click=${input.onBelowEditorClick}
+      ${ref3((e) => {
+    output.getBelowEditorHeight = e instanceof HTMLElement ? () => e.offsetHeight : void 0;
+  })}
+    >
+      <div class="console-eager-inner-preview">${input.preview ?? nothing7}</div>
+      <devtools-icon name="chevron-left-dot" class="preview-result-icon medium"></devtools-icon>
+    </div>
+    <devtools-icon
+      name="chevron-right"
+      style="color: var(--icon-action)"
+      class=${classMap({ "console-prompt-icon": true, medium: true, "console-prompt-incomplete": input.isIncomplete })}
+    ></devtools-icon>
+  `, target, { container: { attributes: { jslog: `${VisualLogging7.textField("console-prompt").track({
+    change: true,
+    keydown: "Enter|ArrowUp|ArrowDown|PageUp"
+  })}` } } });
+};
 var ConsolePrompt = class extends ConsolePromptBase {
+  #view;
+  #viewOutput = {};
   addCompletionsFromHistory;
   #history;
   initialText;
+  #editorState;
   editor;
-  eagerPreviewElement;
   textChangeThrottler;
   requestPreviewBound;
   requestPreviewCurrent = 0;
-  innerPreviewElement;
-  promptIcon;
+  #preview = null;
+  #isIncomplete = false;
   iconThrottler;
   eagerEvalSetting;
   previewRequestForTest;
   highlightingNode;
-  // The CodeMirror state field that controls whether the argument hints are showing.
-  // If they are, the escape key will clear them. However, if they aren't, then the
-  // console drawer should be hidden as a whole.
+  // The CodeMirror state field that controls whether the argument hints are
+  // showing. If they are, the escape key will clear them. However, if they
+  // aren't, then the console drawer should be hidden as a whole.
   #argumentHintsState;
   #editorHistory;
   #selfXssWarningShown = false;
@@ -11446,42 +11543,21 @@ var ConsolePrompt = class extends ConsolePromptBase {
   #updateJavaScriptCompletionCompartment() {
     const extensions = this.#getJavaScriptCompletionExtensions();
     const effects = this.#javaScriptCompletionCompartment.reconfigure(extensions);
-    this.editor.dispatch({ effects });
+    this.editor?.dispatch({ effects });
   }
-  constructor(aiCodeCompletionConfig) {
-    super({
-      jslog: `${VisualLogging7.textField("console-prompt").track({
-        change: true,
-        keydown: "Enter|ArrowUp|ArrowDown|PageUp"
-      })}`
-    });
-    this.registerRequiredCSS(consolePrompt_css_default);
+  constructor(aiCodeCompletionConfig, view = DEFAULT_VIEW6) {
+    super();
+    this.#view = view;
     this.addCompletionsFromHistory = true;
     this.#history = new TextEditor2.AutocompleteHistory.AutocompleteHistory(
       Common7.Settings.Settings.instance().createLocalSetting("console-history", [])
     );
     this.initialText = "";
-    this.eagerPreviewElement = document.createElement("div");
-    this.eagerPreviewElement.classList.add("console-eager-preview");
     this.textChangeThrottler = new Common7.Throttler.Throttler(150);
     this.requestPreviewBound = this.requestPreview.bind(this);
-    this.innerPreviewElement = this.eagerPreviewElement.createChild("div", "console-eager-inner-preview");
-    const previewIcon = new Icon2();
-    previewIcon.name = "chevron-left-dot";
-    previewIcon.classList.add("preview-result-icon", "medium");
-    this.eagerPreviewElement.appendChild(previewIcon);
-    const editorContainerElement = this.element.createChild("div", "console-prompt-editor-container");
-    this.element.appendChild(this.eagerPreviewElement);
-    this.promptIcon = new Icon2();
-    this.promptIcon.name = "chevron-right";
-    this.promptIcon.style.color = "var(--icon-action)";
-    this.promptIcon.classList.add("console-prompt-icon", "medium");
-    this.element.appendChild(this.promptIcon);
     this.iconThrottler = new Common7.Throttler.Throttler(0);
     this.eagerEvalSetting = Common7.Settings.Settings.instance().resolve(Settings10.ConsoleSettings.consoleEagerEvalSettingDescriptor);
     this.eagerEvalSetting.addChangeListener(this.eagerSettingChanged.bind(this));
-    this.eagerPreviewElement.classList.toggle("hidden", !this.eagerEvalSetting.get());
-    this.element.tabIndex = 0;
     this.previewRequestForTest = null;
     this.highlightingNode = false;
     const argumentHints = TextEditor2.JavaScript.argumentHints();
@@ -11500,7 +11576,7 @@ var ConsolePrompt = class extends ConsolePromptBase {
       TextEditor2.Config.baseConfiguration(this.initialText),
       TextEditor2.Config.autocompletion.instance(),
       CodeMirror2.javascript.javascriptLanguage.data.of({
-        autocomplete: (context) => this.addCompletionsFromHistory ? this.#editorHistory.historyCompletions(context) : null
+        autocomplete: (context) => this.addCompletionsFromHistory ? this.#editorHistory?.historyCompletions(context) ?? null : null
       }),
       CodeMirror2.EditorView.contentAttributes.of({ "aria-label": i18nString6(UIStrings6.consolePrompt) }),
       CodeMirror2.EditorView.lineWrapping,
@@ -11513,42 +11589,56 @@ var ConsolePrompt = class extends ConsolePromptBase {
       extensions.push(...this.aiCodeCompletionProvider.extension());
     }
     const doc = this.initialText;
-    const editorState = CodeMirror2.EditorState.create({ doc, extensions });
-    this.editor = new TextEditor2.TextEditor.TextEditor(editorState);
-    if (this.aiCodeCompletionProvider) {
-      this.aiCodeCompletionProvider.editorInitialized(this.editor);
-      this.editor.editor.dispatch({
-        effects: TextEditor2.AiCodeCompletionProvider.setAiCodeCompletionTeaserMode.of(
-          TextEditor2.AiCodeCompletionProvider.AiCodeCompletionTeaserMode.ONLY_SHOW_ON_EMPTY
-        )
-      });
-    }
-    this.editor.addEventListener("keydown", (event) => {
-      if (event.defaultPrevented) {
-        event.stopPropagation();
-      }
-    });
-    editorContainerElement.appendChild(this.editor);
-    this.#editorHistory = new TextEditor2.TextEditorHistory.TextEditorHistory(this.editor, this.#history);
+    this.#editorState = CodeMirror2.EditorState.create({ doc, extensions });
+    this.performUpdate();
     if (this.hasFocus()) {
       this.focus();
     }
-    this.element.removeAttribute("tabindex");
-    this.editorSetForTest();
     UI11.UIUserMetrics.UIUserMetrics.instance().panelLoaded("console", "DevTools.Launch.Console");
+  }
+  performUpdate() {
+    this.#view(
+      {
+        editorState: this.editor?.state ?? this.#editorState,
+        eagerEvalEnabled: this.eagerEvalSetting.get(),
+        preview: this.#preview,
+        isIncomplete: this.#isIncomplete,
+        onBelowEditorClick: () => {
+          if (!this.element.hasSelection()) {
+            this.moveCaretToEndOfPrompt();
+            this.focus();
+          }
+        }
+      },
+      this.#viewOutput,
+      this.contentElement
+    );
+    if (this.#viewOutput.editor && this.editor !== this.#viewOutput.editor) {
+      this.editor = this.#viewOutput.editor;
+      this.#editorHistory = new TextEditor2.TextEditorHistory.TextEditorHistory(this.editor, this.#history);
+      if (this.aiCodeCompletionProvider) {
+        this.aiCodeCompletionProvider.editorInitialized(this.editor);
+        this.editor.editor.dispatch({
+          effects: TextEditor2.AiCodeCompletionProvider.setAiCodeCompletionTeaserMode.of(
+            TextEditor2.AiCodeCompletionProvider.AiCodeCompletionTeaserMode.ONLY_SHOW_ON_EMPTY
+          )
+        });
+      }
+      this.editorSetForTest();
+    }
   }
   eagerSettingChanged() {
     const enabled = this.eagerEvalSetting.get();
-    this.eagerPreviewElement.classList.toggle("hidden", !enabled);
+    this.requestUpdate();
     if (enabled) {
       void this.requestPreview();
     }
   }
-  belowEditorElement() {
-    return this.eagerPreviewElement;
+  belowEditorHeight() {
+    return this.#viewOutput.getBelowEditorHeight?.() ?? 0;
   }
   onTextChanged() {
-    if (this.eagerEvalSetting.get()) {
+    if (this.eagerEvalSetting.get() && this.editor) {
       const asSoonAsPossible = !TextEditor2.Config.contentIncludingHint(this.editor.editor);
       this.previewRequestForTest = this.textChangeThrottler.schedule(
         this.requestPreviewBound,
@@ -11559,6 +11649,9 @@ var ConsolePrompt = class extends ConsolePromptBase {
     this.dispatchEventToListeners("TextChanged" /* TEXT_CHANGED */);
   }
   async requestPreview() {
+    if (!this.editor) {
+      return;
+    }
     const id = ++this.requestPreviewCurrent;
     const text = TextEditor2.Config.contentIncludingHint(this.editor.editor).trim();
     const executionContext = UI11.Context.Context.instance().flavor(SDK8.RuntimeModel.ExecutionContext);
@@ -11569,13 +11662,15 @@ var ConsolePrompt = class extends ConsolePromptBase {
       500
       /* timeout */
     );
-    if (this.requestPreviewCurrent !== id) {
+    if (this.requestPreviewCurrent !== id || !this.editor) {
       return;
     }
-    this.innerPreviewElement.removeChildren();
     if (preview.deepTextContent() !== TextEditor2.Config.contentIncludingHint(this.editor.editor).trim()) {
-      this.innerPreviewElement.appendChild(preview);
+      this.#preview = preview;
+    } else {
+      this.#preview = null;
     }
+    this.requestUpdate();
     if (result && "object" in result && result.object?.subtype === "node") {
       this.highlightingNode = true;
       SDK8.OverlayModel.OverlayModel.highlightObjectAsDOMNode(result.object);
@@ -11598,34 +11693,42 @@ var ConsolePrompt = class extends ConsolePromptBase {
     return this.#history;
   }
   clearAutocomplete() {
-    CodeMirror2.closeCompletion(this.editor.editor);
+    if (this.editor) {
+      CodeMirror2.closeCompletion(this.editor.editor);
+    }
   }
   clearAiCodeCompletionCache() {
     this.aiCodeCompletionProvider?.clearCache();
   }
   moveCaretToEndOfPrompt() {
-    this.editor.dispatch({
-      selection: CodeMirror2.EditorSelection.cursor(this.editor.state.doc.length)
-    });
+    if (this.editor) {
+      this.editor.dispatch({
+        selection: CodeMirror2.EditorSelection.cursor(this.editor.state.doc.length)
+      });
+    }
   }
   clear() {
-    this.editor.dispatch({
-      changes: { from: 0, to: this.editor.state.doc.length }
-    });
+    if (this.editor) {
+      this.editor.dispatch({
+        changes: { from: 0, to: this.editor.state.doc.length }
+      });
+    }
   }
   /**
    * Replaces the full prompt content with the given text, places the caret
    * at the end, and scrolls the editor into view.
    */
   insertText(text) {
-    this.editor.dispatch({
-      changes: { from: 0, to: this.editor.state.doc.length, insert: text },
-      selection: { anchor: text.length },
-      scrollIntoView: true
-    });
+    if (this.editor) {
+      this.editor.dispatch({
+        changes: { from: 0, to: this.editor.state.doc.length, insert: text },
+        selection: { anchor: text.length },
+        scrollIntoView: true
+      });
+    }
   }
   text() {
-    return this.editor.state.doc.toString();
+    return this.editor?.state.doc.toString() ?? "";
   }
   setAddCompletionsFromHistory(value) {
     this.addCompletionsFromHistory = value;
@@ -11639,20 +11742,26 @@ var ConsolePrompt = class extends ConsolePromptBase {
             return false;
           }
           if (event.key === "ArrowUp") {
-            return this.#editorHistory.moveHistory(Direction.BACKWARD);
+            return this.#editorHistory?.moveHistory(Direction.BACKWARD) ?? false;
           }
           if (event.key === "ArrowDown") {
-            return this.#editorHistory.moveHistory(Direction.FORWARD);
+            return this.#editorHistory?.moveHistory(Direction.FORWARD) ?? false;
           }
           return false;
         }
       },
-      { mac: "Ctrl-p", run: () => this.#editorHistory.moveHistory(Direction.BACKWARD, true) },
-      { mac: "Ctrl-n", run: () => this.#editorHistory.moveHistory(Direction.FORWARD, true) },
+      {
+        mac: "Ctrl-p",
+        run: () => this.#editorHistory?.moveHistory(Direction.BACKWARD, true) ?? false
+      },
+      {
+        mac: "Ctrl-n",
+        run: () => this.#editorHistory?.moveHistory(Direction.FORWARD, true) ?? false
+      },
       {
         key: "Escape",
         run: () => {
-          return TextEditor2.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
+          return this.editor ? TextEditor2.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState) : false;
         }
       },
       {
@@ -11676,6 +11785,9 @@ var ConsolePrompt = class extends ConsolePromptBase {
     ];
   }
   async enterWillEvaluate(forceEvaluate) {
+    if (!this.editor) {
+      return false;
+    }
     const { doc, selection } = this.editor.state;
     if (!doc.length) {
       return false;
@@ -11700,6 +11812,9 @@ var ConsolePrompt = class extends ConsolePromptBase {
     this.#updateJavaScriptCompletionCompartment();
   }
   async handleEnter(forceEvaluate) {
+    if (!this.editor) {
+      return;
+    }
     if (this.#selfXssWarningShown && (this.text() === i18nString6(UIStrings6.allowPasting) || this.text() === `'${i18nString6(UIStrings6.allowPasting)}'`)) {
       Common7.Console.Console.instance().log(this.text());
       this.editor.dispatch({
@@ -11737,7 +11852,8 @@ var ConsolePrompt = class extends ConsolePromptBase {
   }
   updatePromptIcon() {
     void this.iconThrottler.schedule(async () => {
-      this.promptIcon.classList.toggle("console-prompt-incomplete", !await this.enterWillEvaluate());
+      this.#isIncomplete = !await this.enterWillEvaluate();
+      this.requestUpdate();
     });
   }
   appendCommand(text, useCommandLineAPI) {
@@ -11782,7 +11898,7 @@ var ConsolePrompt = class extends ConsolePromptBase {
     }
   }
   focus() {
-    this.editor.focus();
+    this.editor?.focus();
   }
   editorSetForTest() {
   }

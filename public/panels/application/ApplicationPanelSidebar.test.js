@@ -48,6 +48,21 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
         sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
         assert.isUndefined(sidebar.adsTreeElement);
     });
+    it('shows Private Verification Tokens when the config is enabled', async () => {
+        updateHostConfig({ devToolsPrivateVerificationTokens: { enabled: true } });
+        const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        const showViewSpy = sinon.spy(panel, 'showView');
+        const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+        assert.exists(sidebar.privateVerificationTokensTreeElement);
+        sidebar.privateVerificationTokensTreeElement.onselect(false);
+        sinon.assert.calledOnceWithExactly(showViewSpy, sinon.match.instanceOf(Application.PrivateVerificationTokensView.PrivateVerificationTokensView));
+    });
+    it('does not show Private Verification Tokens when the config is disabled', async () => {
+        updateHostConfig({ devToolsPrivateVerificationTokens: { enabled: false } });
+        Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
+        assert.isUndefined(sidebar.privateVerificationTokensTreeElement);
+    });
     it('shows cookies for all frames', async () => {
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();

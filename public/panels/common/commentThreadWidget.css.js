@@ -42,7 +42,8 @@ export default `/*
     flex-shrink: 0;
   }
 
-  .sent-status {
+  .sent-status,
+  .working-status {
     display: flex;
     align-items: center;
     gap: var(--sys-size-2);
@@ -71,6 +72,23 @@ export default `/*
     overflow: hidden;
     max-width: 100%;
     min-width: 0;
+  }
+
+  .thread-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-4);
+    width: 100%;
+    max-height: min(var(--sys-size-32), 50vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .thread-body:hover,
+  .thread-body:focus-within {
+    scrollbar-color: var(--sys-color-neutral-outline) transparent;
   }
 
   .comment-text {
@@ -177,6 +195,29 @@ export default `/*
     font: inherit;
     text-decoration: underline;
     cursor: pointer;
+  }
+
+  .element-removed-banner {
+    display: flex;
+    align-self: stretch;
+    align-items: center;
+    gap: var(--sys-size-3);
+    /* Bleed past the widget padding so the banner spans the full width and sits flush with the bottom edge. */
+    margin: var(--sys-size-4) calc(-1 * var(--sys-size-8)) calc(-1 * var(--sys-size-8));
+    padding: var(--sys-size-5) var(--sys-size-8);
+    border-radius: 0 0 var(--sys-shape-corner-medium) var(--sys-shape-corner-medium);
+    background: var(--sys-color-tonal-container);
+    font-family: var(--default-font-family);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-size-8);
+    color: var(--sys-color-on-tonal-container);
+  }
+
+  .element-removed-icon {
+    width: var(--sys-size-7);
+    height: var(--sys-size-7);
+    flex-shrink: 0;
+    color: var(--sys-color-on-tonal-container);
   }
 
   .selected-item devtools-widget,

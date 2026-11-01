@@ -118,7 +118,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     <style>${requestConditionsDrawerStyles}</style>
     <devtools-toolbar jslog=${VisualLogging.toolbar()}>
       <devtools-checkbox
-        ?checked=${input.enabled}
+        .checked=${input.enabled}
         @click=${input.toggleEnabled}
         .jslogContext=${'network.enable-request-blocking'}>
         ${i18nString(UIStrings.enableBlockingAndThrottling)}
@@ -175,7 +175,12 @@ export const DEFAULT_VIEW = (input, output, target) => {
     `}
     `, 
     // clang-format on
-    target, { container: { classes: (!input.enabled && input.conditions.length > 0) ? ['blocking-disabled'] : [] } });
+    target, {
+        container: {
+            classes: (!input.enabled && input.conditions.length > 0) ? ['blocking-disabled'] : [],
+            attributes: { jslog: `${VisualLogging.panel('network.blocked-urls').track({ resize: true })}` },
+        },
+    });
 };
 function renderItem({ condition, editing, editable, index, onToggle, onConditionsChanged, onIncreasePriority, onDecreasePriority, onCommit, onCancel, onBeginEdit, validator, lookUpRequestCount, }) {
     const { enabled, originalOrUpgradedURLPattern, constructorStringOrWildcardURL, wildcardURL } = condition;
@@ -325,7 +330,7 @@ export class AffectedCountWidget extends UI.Widget.Widget {
         if (!this.#condition || !this.#lookUpRequestCount) {
             return;
         }
-        this.#view({ count: this.#lookUpRequestCount(this.#condition) }, {}, this.element);
+        this.#view({ count: this.#lookUpRequestCount(this.#condition) }, undefined, this.element);
     }
     wasShown() {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.NetworkManager.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this.#onRequestFinished, this, { scoped: true });
@@ -366,7 +371,6 @@ export class RequestConditionsDrawer extends UI.Widget.VBox {
     #editingCondition;
     constructor(target, view = DEFAULT_VIEW) {
         super(target, {
-            jslog: `${VisualLogging.panel('network.blocked-urls').track({ resize: true })}`,
             useShadowDom: true,
         });
         this.#view = view;

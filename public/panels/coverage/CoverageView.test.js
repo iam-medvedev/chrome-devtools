@@ -373,5 +373,52 @@ describeWithEnvironment('CoverageView', () => {
         view.detach();
         Coverage.CoverageView.CoverageView.removeInstance();
     });
+    it('does not accumulate SourceMapResolved listeners across multiple recording sessions', async () => {
+        const { target } = setupTargetAndModels();
+        const coverageModel = target.model(Coverage.CoverageModel.CoverageModel);
+        assert.exists(coverageModel);
+        const view = Coverage.CoverageView.CoverageView.instance();
+        renderElementIntoDOM(view);
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        await view.stopRecording();
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        assert.strictEqual(coverageModel.listeners?.get(Coverage.CoverageModel.Events.SourceMapResolved)?.size ?? 0, 1);
+        await view.stopRecording();
+        view.detach();
+        Coverage.CoverageView.CoverageView.removeInstance();
+    });
+    it('migrates SourceMapResolved listener on primary target switch', async () => {
+        const { target } = setupTargetAndModels();
+        const coverageModel = target.model(Coverage.CoverageModel.CoverageModel);
+        assert.exists(coverageModel);
+        const view = Coverage.CoverageView.CoverageView.instance();
+        renderElementIntoDOM(view);
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        const { target: target2 } = setupTargetAndModels();
+        const coverageModel2 = target2.model(Coverage.CoverageModel.CoverageModel);
+        assert.exists(coverageModel2);
+        activate(target2);
+        await RenderCoordinator.done({ waitForWork: true });
+        assert.strictEqual(coverageModel.listeners?.get(Coverage.CoverageModel.Events.SourceMapResolved)?.size ?? 0, 0);
+        assert.strictEqual(coverageModel2.listeners?.get(Coverage.CoverageModel.Events.SourceMapResolved)?.size ?? 0, 1);
+        await view.stopRecording();
+        view.detach();
+        Coverage.CoverageView.CoverageView.removeInstance();
+    });
+    it('disposes the previous CoverageDecorationManager when switching models on activation', async () => {
+        setupTargetAndModels();
+        const disposeSpy = sinon.spy(Coverage.CoverageDecorationManager.CoverageDecorationManager.prototype, 'dispose');
+        const view = Coverage.CoverageView.CoverageView.instance();
+        renderElementIntoDOM(view);
+        await view.startRecording({ reload: false, jsCoveragePerBlock: false });
+        sinon.assert.notCalled(disposeSpy);
+        const { target: target2 } = setupTargetAndModels();
+        activate(target2);
+        await RenderCoordinator.done({ waitForWork: true });
+        sinon.assert.calledOnce(disposeSpy);
+        await view.stopRecording();
+        view.detach();
+        Coverage.CoverageView.CoverageView.removeInstance();
+    });
 });
 //# sourceMappingURL=CoverageView.test.js.map

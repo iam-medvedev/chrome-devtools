@@ -227,6 +227,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
 export class BackendLinkingSettingsTab extends UI.Widget.VBox {
     #view;
     #rulesSetting;
+    #rules = [];
+    #isSaving = false;
     constructor(target, view = DEFAULT_VIEW) {
         super(target);
         this.#view = view;
@@ -238,43 +240,54 @@ export class BackendLinkingSettingsTab extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.#rulesSetting.addChangeListener(this.requestUpdate, this);
+        this.#rules = [...this.#rulesSetting.get()];
+        this.#rulesSetting.addChangeListener(this.#onRulesSettingChanged, this);
         this.requestUpdate();
     }
     willHide() {
         super.willHide();
-        this.#rulesSetting.removeChangeListener(this.requestUpdate, this);
+        this.#rulesSetting.removeChangeListener(this.#onRulesSettingChanged, this);
+    }
+    #onRulesSettingChanged() {
+        if (this.#isSaving) {
+            return;
+        }
+        this.#rules = [...this.#rulesSetting.get()];
+        this.requestUpdate();
+    }
+    #saveRules() {
+        this.#isSaving = true;
+        try {
+            this.#rulesSetting.set(this.#rules.filter(isRuleValid));
+        }
+        finally {
+            this.#isSaving = false;
+        }
+        this.requestUpdate();
     }
     performUpdate() {
         const input = {
-            rules: this.#rulesSetting.get(),
+            rules: [...this.#rules],
             onAddRule: rule => {
-                if (!isRuleValid(rule)) {
-                    return;
-                }
-                this.#rulesSetting.set([...this.#rulesSetting.get(), rule]);
+                this.#rules.push(rule);
+                this.#saveRules();
             },
             onUpdateRule: (oldRule, newRule) => {
-                if (!isRuleValid(newRule)) {
-                    return;
-                }
-                const rules = [...this.#rulesSetting.get()];
-                const index = rules.indexOf(oldRule);
+                const index = this.#rules.indexOf(oldRule);
                 if (index !== -1) {
-                    rules[index] = newRule;
-                    this.#rulesSetting.set(rules);
+                    this.#rules[index] = newRule;
+                    this.#saveRules();
                 }
             },
             onDeleteRule: rule => {
-                const rules = [...this.#rulesSetting.get()];
-                const index = rules.indexOf(rule);
+                const index = this.#rules.indexOf(rule);
                 if (index !== -1) {
-                    rules.splice(index, 1);
-                    this.#rulesSetting.set(rules);
+                    this.#rules.splice(index, 1);
+                    this.#saveRules();
                 }
             },
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=BackendLinkingSettingsTab.js.map

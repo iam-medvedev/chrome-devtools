@@ -10,7 +10,7 @@ export interface ViewInput {
     onItemClick: (id: string) => void;
     onItemKeyDown: (id: string, key: string) => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CSSOverviewSidebarPanel extends UI.Widget.VBox {
     #private;

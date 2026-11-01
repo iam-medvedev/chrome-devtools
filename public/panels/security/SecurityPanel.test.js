@@ -13,6 +13,7 @@ import { createTarget, describeWithEnvironment } from '../../testing/Environment
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
+import { render } from '../../ui/lit/lit.js';
 import * as NetworkForward from '../network/forward/forward.js';
 import * as Security from './security.js';
 const { urlString } = Platform.DevToolsPath;
@@ -33,14 +34,20 @@ function createSecurityDetails(overrides = {}) {
         ...overrides,
     };
 }
-describe('createHighlightedUrl', () => {
+describe('renderHighlightedUrl', () => {
+    function renderUrl(url, securityState) {
+        const container = document.createElement('div');
+        render(Security.SecurityPanel.renderHighlightedUrl(url, securityState), container);
+        assert.isNotNull(container.firstElementChild);
+        return container.firstElementChild;
+    }
     it('renders a URL without a scheme separator as plain text', () => {
-        const highlightedUrl = Security.SecurityPanel.createHighlightedUrl(urlString `foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
+        const highlightedUrl = renderUrl(urlString `foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
         assert.strictEqual(highlightedUrl.textContent, 'foo.bar');
         assert.isFalse(highlightedUrl.classList.contains('highlighted-url'));
     });
     it('renders a URL with a highlighted scheme', () => {
-        const highlightedUrl = Security.SecurityPanel.createHighlightedUrl(urlString `https://foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
+        const highlightedUrl = renderUrl(urlString `https://foo.bar`, "secure" /* Protocol.Security.SecurityState.Secure */);
         assert.strictEqual(highlightedUrl.textContent, 'https://foo.bar');
         assert.isTrue(highlightedUrl.classList.contains('highlighted-url'));
         const scheme = highlightedUrl.querySelector('.url-scheme-secure');

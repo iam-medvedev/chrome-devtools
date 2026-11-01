@@ -1,6 +1,7 @@
 // Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as Comments from '../../ui/comments/comments.js';
@@ -8,12 +9,21 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import commentsOverlayStyles from './commentsOverlay.css.js';
 import { CommentThreadWidget, computeCommentTitle } from './CommentThreadWidget.js';
-const { html, render, nothing, Directives: { repeat, styleMap }, } = Lit;
+const UIStrings = {
+    /**
+     * @description Context menu item that creates a comment anchored to the right-clicked part of the DevTools UI.
+     */
+    addComment: 'Add comment',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/common/CommentsOverlayWidget.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { html, render, nothing, Directives: { classMap, repeat, styleMap }, } = Lit;
 const POPUP_MARGIN = 8;
 const PIN_HEIGHT = 30;
 const POPUP_WIDTH = 288;
 const POPUP_HEIGHT = 220;
 const AUTO_CLOSE_DELAY_MS = 2000;
+const COMMENTS_VIEW_ID = 'comments';
 const DEFAULT_VIEW = (input, _output, target) => {
     const popupPosition = input.activePin ?? input.fallbackPosition;
     // clang-format off
@@ -30,16 +40,19 @@ const DEFAULT_VIEW = (input, _output, target) => {
     })}>
         </div>
       ` : nothing}
-      ${repeat(input.highlights.filter(h => h.visible), h => h.id, h => html `
-          <div
-            class="comment-anchor-highlight"
-            style=${styleMap({
-        transform: `translate3d(${h.left}px, ${h.top}px, 0)`,
-        width: `${h.width}px`,
-        height: `${h.height}px`,
+      ${input.activeHighlight?.visible && input.activeThread ? html `
+        <div
+          class=${classMap({
+        'comment-anchor-highlight': true,
+        resolved: input.activeThread.status === 'RESOLVED',
+    })}
+          style=${styleMap({
+        transform: `translate3d(${input.activeHighlight.left}px, ${input.activeHighlight.top}px, 0)`,
+        width: `${input.activeHighlight.width}px`,
+        height: `${input.activeHighlight.height}px`,
     })}>
-          </div>
-        `)}
+        </div>
+      ` : nothing}
       ${repeat(input.pins.filter(p => p.visible), p => p.id, p => html `
           <div
             class="comment-pin"
@@ -70,11 +83,13 @@ const DEFAULT_VIEW = (input, _output, target) => {
             title: input.title,
             comments: [...item.thread.comments],
             status: item.thread.status,
+            transmitted: item.thread.transmitted,
             onAddComment: input.onAddComment,
             onDeleteQueuedComment: input.onDeleteQueuedComment,
             onQueueComment: input.onQueueComment,
             onSaveEdit: input.onSaveEdit,
             onStartEdit: input.onStartEdit,
+            elementRemoved: item.thread.isOrphaned,
         })}
             </div>
           `;
@@ -83,6 +98,12 @@ const DEFAULT_VIEW = (input, _output, target) => {
   `, target);
     // clang-format on
 };
+function isEventInsidePopupOrPin(event) {
+    const composedTarget = event.composedPath()[0];
+    const target = composedTarget instanceof Element ? composedTarget : event.target;
+    return target instanceof Element &&
+        Boolean(Comments.CommentAnchorResolver.closestAcrossShadow(target, '.comment-popup-widget, .comment-pin'));
+}
 export class CommentsOverlayWidget extends UI.Widget.Widget {
     static INJECT = [CommentManager.CommentManager.CommentManager];
     #view;
@@ -100,11 +121,23 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
             this.#activeThreadId = threadId;
             if (threadId && this.isShowing()) {
                 document.documentElement.addEventListener('keydown', this.#onKeyDown);
+                document.documentElement.addEventListener('click', this.#onClickOutside, { capture: true });
             }
             else {
                 document.documentElement.removeEventListener('keydown', this.#onKeyDown);
+                document.documentElement.removeEventListener('click', this.#onClickOutside, { capture: true });
             }
+            this.#markActiveThreadResponseSeen();
         }
+    }
+    /**
+     * The open thread shows the agent response, so the developer has seen it.
+     */
+    #markActiveThreadResponseSeen() {
+        if (!this.#activeThreadId) {
+            return;
+        }
+        this.#commentManager.getCommentThread(this.#activeThreadId)?.markResponseSeen();
     }
     constructor(element, [commentManager], view = DEFAULT_VIEW) {
         super(element, { useShadowDom: false });
@@ -125,12 +158,14 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
         this.#commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, this.#onAgentAttachedChanged, this);
         if (this.#activeThreadId) {
             document.documentElement.addEventListener('keydown', this.#onKeyDown);
+            document.documentElement.addEventListener('click', this.#onClickOutside, { capture: true });
         }
         this.requestUpdate();
     }
     willHide() {
         this.#clearCloseTimeout();
         document.documentElement.removeEventListener('keydown', this.#onKeyDown);
+        document.documentElement.removeEventListener('click', this.#onClickOutside, { capture: true });
         this.#commentOverlayManager.stop();
         this.#commentOverlayManager.removeEventListener("PositionsUpdated" /* Comments.CommentOverlayManager.Events.POSITIONS_UPDATED */, this.#onPositionsUpdated, this);
         this.#commentOverlayManager.removeEventListener("HoverHighlightChanged" /* Comments.CommentOverlayManager.Events.HOVER_HIGHLIGHT_CHANGED */, this.#onHoverHighlightChanged, this);
@@ -185,6 +220,8 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
     }
     #onStateChanged() {
         this.#syncActiveThreadFromManager();
+        // The agent may respond while the thread is open.
+        this.#markActiveThreadResponseSeen();
         this.requestUpdate();
     }
     #trySynchronousRender() {
@@ -241,10 +278,16 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
             this.#handleCloseCommentThread();
         }
     };
+    #onClickOutside = (event) => {
+        if (!this.#activeThreadId || isEventInsidePopupOrPin(event)) {
+            return;
+        }
+        this.#handleCloseCommentThread();
+    };
     #renderDisconnectedView() {
         this.#view({
             pins: [],
-            highlights: [],
+            activeHighlight: null,
             hoverHighlight: null,
             commentMode: false,
             onPinClick: this.#handlePinClick,
@@ -260,11 +303,11 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
     }
     #renderWithTitle(activeThread, title) {
         const pins = this.#commentOverlayManager.getPinPositions();
-        const highlights = this.#commentOverlayManager.getHighlightRects();
         const activePin = this.#activeThreadId ? pins.find(p => p.id === this.#activeThreadId) ?? null : null;
+        const activeHighlight = this.#activeThreadId ? this.#commentOverlayManager.getHighlight(this.#activeThreadId) ?? null : null;
         const viewInput = {
             pins,
-            highlights,
+            activeHighlight,
             hoverHighlight: this.#commentOverlayManager.getHoverHighlight(),
             commentMode: this.#commentManager.isCommentMode(),
             onPinClick: this.#handlePinClick,
@@ -341,6 +384,14 @@ export class CommentsOverlayWidget extends UI.Widget.Widget {
         this.#fallbackPosition = fallbackPosition ?? null;
         this.requestUpdate();
     }
+    /**
+     * Opens a draft comment anchored to `element`. Comment mode must already be
+     * active.
+     * @returns whether a draft comment was created.
+     */
+    addCommentAt(element, coordinates) {
+        return this.#commentOverlayManager.handleElementClick(element, coordinates);
+    }
 }
 let widgetInstance = null;
 function getOrCreateOverlayWidget(commentManager) {
@@ -368,6 +419,44 @@ export class ThreadRevealer {
         overlay.openThread(thread.id, position);
     }
 }
+/**
+ * When entering comment mode with the drawer open, add the Comments tab to
+ * the drawer without selecting it or moving focus away from the page being
+ * commented on. When leaving comment mode, always open the drawer on the
+ * Comments tab, as checking the responses is the likely next step.
+ */
+function revealCommentsDrawerView(enteringCommentMode) {
+    const viewManager = UI.ViewManager.ViewManager.instance();
+    if (!viewManager.hasView(COMMENTS_VIEW_ID)) {
+        return;
+    }
+    if (enteringCommentMode) {
+        if (!UI.InspectorView.InspectorView.maybeGetInspectorViewInstance()?.drawerVisible()) {
+            return;
+        }
+        void viewManager.resolveLocation(viewManager.locationNameForViewId(COMMENTS_VIEW_ID)).then(location => {
+            return location?.showView(viewManager.view(COMMENTS_VIEW_ID), undefined, false, 
+            /* omitFocus */ true, /* shouldSelectTab */ false);
+        });
+        return;
+    }
+    void viewManager.showView(COMMENTS_VIEW_ID, /* userGesture */ true);
+}
+/**
+ * Single entry point for comment mode changes requested by the user (toolbar
+ * toggle, shortcut, context menu): shows the overlay, updates the mode and
+ * reveals the Comments drawer tab. Changes not initiated by the user, such as
+ * the agent detaching, go directly through `CommentManager` and leave the
+ * drawer alone. The toggle button follows the mode in
+ * `CommentsOverlayWidget#onCommentModeChanged`.
+ */
+function setCommentModeByUser(commentManager, active) {
+    getOrCreateOverlayWidget(commentManager);
+    if (commentManager.isCommentMode() !== active) {
+        commentManager.setCommentMode(active);
+        revealCommentsDrawerView(active);
+    }
+}
 export class ActionDelegate {
     #commentManager;
     constructor(commentManager) {
@@ -379,8 +468,7 @@ export class ActionDelegate {
             if (!this.#commentManager.isAgentAttached()) {
                 return false;
             }
-            getOrCreateOverlayWidget(this.#commentManager);
-            this.#commentManager.setCommentMode(!this.#commentManager.isCommentMode());
+            setCommentModeByUser(this.#commentManager, !this.#commentManager.isCommentMode());
             return true;
         }
         return false;
@@ -390,6 +478,37 @@ export class ActionDelegate {
             widgetInstance.detach();
             widgetInstance = null;
         }
+    }
+}
+/**
+ * Menus that already have the "Add comment" item. A menu can have several
+ * `Node` targets, for example when a DataGrid row also appends its link
+ * element, and the provider is called once per target. The first target is
+ * the deepest element under the cursor, so only that one adds the item.
+ */
+const menusWithAddComment = new WeakSet();
+/**
+ * Adds an "Add comment" item to the context menu of commentable regions while
+ * the comment mode toggle is available. Choosing it turns comment mode on and
+ * opens a draft comment on the right-clicked region.
+ */
+export class ContextMenuProvider {
+    appendApplicableItems(event, contextMenu, target) {
+        if (menusWithAddComment.has(contextMenu) || !Root.Runtime.hostConfig.devToolsComments?.enabled ||
+            !(target instanceof HTMLElement) || !(event instanceof MouseEvent)) {
+            return;
+        }
+        const commentManager = UI.Widget.lookupUniverseForElement(target)?.commentManager;
+        const coordinates = { clientX: event.clientX, clientY: event.clientY };
+        if (!commentManager?.isAgentAttached() ||
+            !Comments.CommentAnchorResolver.resolveCommentAnchorElement(target, coordinates)) {
+            return;
+        }
+        menusWithAddComment.add(contextMenu);
+        contextMenu.annotationSection().appendItem(i18nString(UIStrings.addComment), () => {
+            setCommentModeByUser(commentManager, true);
+            getOrCreateOverlayWidget(commentManager).addCommentAt(target, coordinates);
+        }, { jslogContext: 'add-comment' });
     }
 }
 export class ButtonProvider {

@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { it } from 'mocha';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ElementsComponents from './components.js';
 describeWithEnvironment('CSSPropertyDocsView', () => {
-    it('renders every section', async () => {
+    it('renders every section', () => {
         const cssProperty = {
             name: 'display',
             description: 'In combination with \'float\' and \'position\', determines the type of box or boxes that are generated for an element.',
@@ -34,11 +33,11 @@ describeWithEnvironment('CSSPropertyDocsView', () => {
                 },
             ],
         };
-        const popupComponent = new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty);
-        renderElementIntoDOM(popupComponent);
-        assert.isNotNull(popupComponent.shadowRoot.querySelector('#description'));
-        assert.isNotNull(popupComponent.shadowRoot.querySelector('#baseline'));
-        assert.isNotNull(popupComponent.shadowRoot.querySelector('#learn-more'));
+        const container = document.createElement('div');
+        ElementsComponents.CSSPropertyDocsView.DEFAULT_VIEW({ cssProperty, onDontShowChanged: () => { } }, undefined, container);
+        assert.isNotNull(container.querySelector('#description'));
+        assert.isNotNull(container.querySelector('#baseline'));
+        assert.isNotNull(container.querySelector('#learn-more'));
     });
     it('renders correct baseline text for various scenarios', () => {
         const testCases = [
@@ -104,9 +103,9 @@ describeWithEnvironment('CSSPropertyDocsView', () => {
             },
         ];
         for (const testCase of testCases) {
-            const popupComponent = new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(testCase.cssProperty);
-            renderElementIntoDOM(popupComponent, { allowMultipleChildren: true });
-            const baselineSection = popupComponent.shadowRoot.querySelector('#baseline');
+            const container = document.createElement('div');
+            ElementsComponents.CSSPropertyDocsView.DEFAULT_VIEW({ cssProperty: testCase.cssProperty, onDontShowChanged: () => { } }, undefined, container);
+            const baselineSection = container.querySelector('#baseline');
             assert.isNotNull(baselineSection, `${testCase.description}: baseline section should exist`);
             const baselineTextElement = baselineSection.querySelector('span');
             assert.isNotNull(baselineTextElement, `${testCase.description}: baseline text element should exist`);

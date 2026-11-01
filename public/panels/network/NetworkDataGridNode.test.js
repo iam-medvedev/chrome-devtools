@@ -9,8 +9,10 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { dispatchEvent } from '../../testing/MockConnection.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
+import { getMainFrame } from '../../testing/ResourceHelpers.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('NetworkLogView', () => {
@@ -885,7 +887,39 @@ describeWithEnvironment('NetworkLogView', () => {
             const el = document.createElement('div');
             networkRequestNode.renderCell(el, 'name');
             el.dispatchEvent(new MouseEvent('dblclick'));
-            sinon.assert.calledOnceWithExactly(openInNewTabStub, urlString `https://www.example.com/`);
+            sinon.assert.calledOnceWithExactly(openInNewTabStub, urlString `https://www.example.com/`, undefined);
+        });
+        it('attributes the new tab to the frame of the request on double-click', () => {
+            const openInNewTabStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
+            const target = createTarget();
+            const frame = getMainFrame(target);
+            const requestId = 'REQUEST_ID';
+            const url = urlString `https://www.example.com/`;
+            dispatchEvent(target, 'Network.requestWillBeSent', {
+                requestId,
+                loaderId: frame.loaderId,
+                documentURL: frame.url,
+                request: {
+                    url,
+                    method: 'GET',
+                    headers: {},
+                    initialPriority: "Medium" /* Protocol.Network.ResourcePriority.Medium */,
+                    referrerPolicy: "no-referrer" /* Protocol.Network.RequestReferrerPolicy.NoReferrer */,
+                },
+                timestamp: 1,
+                wallTime: 1,
+                initiator: { type: "other" /* Protocol.Network.InitiatorType.Other */ },
+                redirectHasExtraInfo: false,
+                type: "Document" /* Protocol.Network.ResourceType.Document */,
+                frameId: frame.id,
+            });
+            const request = target.model(SDK.NetworkManager.NetworkManager)?.requestForId(requestId);
+            assert.exists(request);
+            const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+            const el = document.createElement('div');
+            networkRequestNode.renderCell(el, 'name');
+            el.dispatchEvent(new MouseEvent('dblclick'));
+            sinon.assert.calledOnceWithExactly(openInNewTabStub, url, frame.id);
         });
     });
     describe('initiator cell', () => {

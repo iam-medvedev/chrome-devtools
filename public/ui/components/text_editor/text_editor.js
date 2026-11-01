@@ -708,14 +708,13 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
     this.detach();
   };
   performUpdate() {
-    const output = {};
     this.#view(
       {
         aidaAvailability: this.#aidaAvailability,
         onAction: this.onAction,
         onDismiss: this.onDismiss
       },
-      output,
+      void 0,
       this.contentElement
     );
   }
@@ -2508,6 +2507,9 @@ var AiCodeGenerationProvider = class _AiCodeGenerationProvider {
     if (!this.#aiCodeGeneration || !this.#editor || !hasActiveAiSuggestion(this.#editor.state)) {
       return false;
     }
+    if (this.#editor.state.field(aiAutoCompleteSuggestionState)?.source !== "generation" /* GENERATION */) {
+      return false;
+    }
     const { accepted, suggestion } = acceptAiAutoCompleteSuggestion(this.#editor.editor);
     if (!accepted) {
       return false;
@@ -2903,22 +2905,30 @@ var AiCodeCompletionProvider = class _AiCodeCompletionProvider {
       },
       {
         key: "Tab",
-        run: () => {
-          if (!this.#aiCodeCompletion || !this.#editor || !hasActiveAiSuggestion(this.#editor.state)) {
-            return false;
-          }
-          const { accepted, suggestion } = acceptAiAutoCompleteSuggestion(this.#editor.editor);
-          if (!accepted) {
-            return false;
-          }
-          if (suggestion?.rpcGlobalId) {
-            this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
-          }
-          this.#aiCodeCompletionConfig?.onSuggestionAccepted(this.#aiCodeCompletionCitations);
-          return true;
-        }
+        run: this.#acceptAiSuggestion.bind(this)
+      },
+      {
+        key: "Enter",
+        run: this.#acceptAiSuggestion.bind(this)
       }
     ];
+  }
+  #acceptAiSuggestion() {
+    if (!this.#aiCodeCompletion || !this.#editor || !hasActiveAiSuggestion(this.#editor.state)) {
+      return false;
+    }
+    if (this.#editor.state.field(aiAutoCompleteSuggestionState)?.source !== "completion" /* COMPLETION */) {
+      return false;
+    }
+    const { accepted, suggestion } = acceptAiAutoCompleteSuggestion(this.#editor.editor);
+    if (!accepted) {
+      return false;
+    }
+    if (suggestion?.rpcGlobalId) {
+      this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
+    }
+    this.#aiCodeCompletionConfig?.onSuggestionAccepted(this.#aiCodeCompletionCitations);
+    return true;
   }
   #detachTeaser() {
     if (!this.#teaser) {
@@ -4450,7 +4460,7 @@ var TextEditor = class extends HTMLElement {
     return this.#pendingState;
   }
   set state(state) {
-    if (this.#pendingState === state) {
+    if ((this.#activeEditor ? this.#activeEditor.state : this.#pendingState) === state) {
       return;
     }
     this.#pendingState = state;

@@ -1108,7 +1108,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             runStub.onFirstCall().returns((async function* () {
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'learnSkills(\'styling\')',
+                    action: 'learnSkills(\'styling\')',
                     output: 'Loaded styling skill.',
                     canceled: false,
                     toolName: 'learnSkills',
@@ -1116,7 +1116,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 };
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'getStyles()',
+                    action: 'getStyles()',
                     output: 'color: red;',
                     canceled: false,
                     toolName: 'getStyles',
@@ -1197,7 +1197,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                     },
                     {
                         type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                        code: 'getStyles()',
+                        action: 'getStyles()',
                         output: 'color: blue;',
                         canceled: false,
                         toolName: 'getStyles',
@@ -1232,7 +1232,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 .returns((async function* () {
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'listSourceFiles()',
+                    action: 'listSourceFiles()',
                     output: 'files',
                     canceled: false,
                     toolName: 'listSourceFiles',
@@ -2784,7 +2784,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                             state: { type: 'completed' },
                             title: 'Step Title',
                             thought: 'Step Thought',
-                            code: 'console.log("hello");',
+                            action: 'console.log("hello");',
                             output: 'hello',
                         },
                     },
@@ -2893,7 +2893,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 };
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'console.log("test")',
+                    action: 'console.log("test")',
                     output: 'test',
                     canceled: false,
                 };
@@ -2981,7 +2981,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             return parts.map(part => {
                 switch (part.type) {
                     case 'step':
-                        return { type: 'step', title: part.step.title, code: part.step.code, output: part.step.output };
+                        return { type: 'step', title: part.step.title, action: part.step.action, output: part.step.output };
                     case 'answer':
                         return { type: 'answer', text: part.text };
                     case 'widget':
@@ -2996,7 +2996,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A', callId: 'a' };
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'a()',
+                    action: 'a()',
                     output: 'a-output',
                     canceled: false,
                     callId: 'a',
@@ -3004,7 +3004,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call B', callId: 'b' };
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'b()',
+                    action: 'b()',
                     output: 'b-output',
                     canceled: false,
                     callId: 'b',
@@ -3013,8 +3013,8 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 yield { type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */, text: 'Done', complete: true };
             })());
             assert.deepEqual(summarizeParts(parts), [
-                { type: 'step', title: 'Call A', code: 'a()', output: 'a-output' },
-                { type: 'step', title: 'Call B', code: 'b()', output: 'b-output' },
+                { type: 'step', title: 'Call A', action: 'a()', output: 'a-output' },
+                { type: 'step', title: 'Call B', action: 'b()', output: 'b-output' },
                 { type: 'answer', text: 'Done' },
             ]);
         });
@@ -3023,16 +3023,16 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 yield { type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */, query: 'test' };
                 yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A' };
-                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, code: 'a()', output: 'a-output', canceled: false };
+                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, action: 'a()', output: 'a-output', canceled: false };
                 yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call B' };
-                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, code: 'b()', output: 'b-output', canceled: false };
+                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, action: 'b()', output: 'b-output', canceled: false };
                 yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
                 yield { type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */, text: 'Done', complete: true };
             })());
             assert.deepEqual(summarizeParts(parts), [
-                { type: 'step', title: 'Call A', code: 'a()', output: 'a-output' },
-                { type: 'step', title: 'Call B', code: 'b()', output: 'b-output' },
+                { type: 'step', title: 'Call A', action: 'a()', output: 'a-output' },
+                { type: 'step', title: 'Call B', action: 'b()', output: 'b-output' },
                 { type: 'answer', text: 'Done' },
             ]);
         });
@@ -3045,18 +3045,18 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A', callId: 'a' };
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'a()',
+                    action: 'a()',
                     output: 'a-output',
                     canceled: false,
                     callId: 'a',
                 };
                 yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call B', callId: 'b' };
-                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, code: 'b()', canceled: false, callId: 'b' };
+                yield { type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */, action: 'b()', canceled: false, callId: 'b' };
                 yield { type: "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */, description: null, confirm, callId: 'b' };
                 await decision;
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'b()',
+                    action: 'b()',
                     output: 'b-output',
                     canceled: false,
                     callId: 'b',
@@ -3080,6 +3080,46 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 { title: 'Call A', output: 'a-output', state: 'completed' },
                 { title: 'Call B', output: 'b-output', state: 'completed' },
             ]);
+        });
+        it('stores the JavaScript code from a side effect on the step awaiting approval', async () => {
+            stubPerformanceNow();
+            const { promise: decision, resolve: confirm } = Promise.withResolvers();
+            sinon.stub(AiAssistanceModel.StylingAgent.StylingAgent.prototype, 'run').returns((async function* () {
+                yield { type: "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */, query: 'test' };
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */, title: 'Call A', callId: 'a' };
+                yield {
+                    type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                    action: 'executeJavaScript()',
+                    canceled: false,
+                    callId: 'a',
+                };
+                yield {
+                    type: "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */,
+                    description: null,
+                    javascriptCode: 'document.title = "Hello";',
+                    confirm,
+                    callId: 'a',
+                };
+                await decision;
+                yield { type: "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */ };
+                yield { type: "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */, text: 'Done', complete: true };
+            })());
+            const { panel, view } = await createAiAssistancePanel();
+            void panel.handleAction('freestyler.elements-floating-button');
+            const input = await view.nextInput;
+            assert(input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            input.props.onTextSubmit('test');
+            await waitForSideEffectDialog(view);
+            assert(view.input.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            const lastMessage = view.input.props.messages.at(-1);
+            assert.exists(lastMessage);
+            assert(lastMessage.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
+            const stepPart = lastMessage.parts.find(part => part.type === 'step');
+            assert.strictEqual(stepPart?.type, 'step');
+            assert.strictEqual(stepPart?.step.state.type, 'needs_approval');
+            assert.strictEqual(stepPart?.step.action, 'executeJavaScript()');
+            assert.strictEqual(stepPart?.step.javascriptCode, 'document.title = "Hello";');
         });
     });
     describe('permission prompt input protection', () => {
@@ -3132,7 +3172,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 await decisionA;
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'a()',
+                    action: 'a()',
                     output: 'a-output',
                     canceled: false,
                     callId: 'a',
@@ -3148,7 +3188,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 await decisionB;
                 yield {
                     type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
-                    code: 'b()',
+                    action: 'b()',
                     output: 'b-output',
                     canceled: false,
                     callId: 'b',

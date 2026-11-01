@@ -25,7 +25,7 @@ describe('AffectedMetadataAllowedSitesView', () => {
         function renderView(issueDetails) {
             const target = document.createElement('table');
             renderElementIntoDOM(target);
-            DEFAULT_VIEW({ issueDetails }, {}, target);
+            DEFAULT_VIEW({ issueDetails }, undefined, target);
             return target;
         }
         it('renders one row per issue listing the allowed sites', () => {
@@ -70,7 +70,7 @@ describe('AffectedMetadataAllowedSitesView', () => {
             const issueDetails = [createIssueDetails({ optOutPercentage: 50 })];
             const target = renderView(issueDetails);
             assert.lengthOf(target.querySelectorAll('tr'), 1);
-            DEFAULT_VIEW({ issueDetails }, {}, target);
+            DEFAULT_VIEW({ issueDetails }, undefined, target);
             const rows = target.querySelectorAll('tr');
             assert.lengthOf(rows, 1);
             assert.strictEqual(rows[0].cells[0].textContent, 'example.test (opt-out: 50% - learn more)');
