@@ -109,7 +109,7 @@ export class ScreencastApp {
             this.#view({
                 screencastEnabled,
                 screenCaptureModel: this.#screenCaptureModel,
-            }, {}, this.#rootView.contentElement);
+            }, undefined, this.#rootView.contentElement);
         }
     }
 }

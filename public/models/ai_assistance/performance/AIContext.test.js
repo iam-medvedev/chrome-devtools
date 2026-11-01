@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as AiAssistance from '../ai_assistance.js';
 describe('AgentFocus', function () {
+    setupLocaleHooks();
     it('lookupEvent catches all errors and returns null for invalid event keys', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
         const focus = AiAssistance.AIContext.AgentFocus.fromParsedTrace(parsedTrace);

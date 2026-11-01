@@ -6,11 +6,13 @@ import { beforeEach, describe, it } from 'mocha';
 import * as SDK from '../../core/sdk/sdk.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
 describe('LiveMetrics', () => {
     setupSettingsHooks();
+    setupRuntimeHooks();
     let liveMetrics;
     let primaryTarget;
     let connection;

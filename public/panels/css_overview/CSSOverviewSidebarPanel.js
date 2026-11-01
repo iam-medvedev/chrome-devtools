@@ -86,7 +86,7 @@ export class CSSOverviewSidebarPanel extends UI.Widget.VBox {
             onItemClick: this.#onItemClick.bind(this),
             onItemKeyDown: this.#onItemKeyDown.bind(this),
         };
-        this.#view(viewInput, {}, this.contentElement);
+        this.#view(viewInput, undefined, this.contentElement);
     }
     set items(items) {
         this.#items = items;

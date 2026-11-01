@@ -434,11 +434,10 @@ function renderSections(input) {
           <devtools-button
             @click=${input.showCodeToggle}
             class="show-code"
-            aria-controls="recording-code-pane"
-            aria-expanded=${input.showCodeView}
             .data=${{
         variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
         title: Models.Tooltip.getTooltipForActions(codeToggleTitle, "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */),
+        accessibleExpanded: Boolean(input.showCodeView),
     }}
             jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */).track({ click: true })}
           >

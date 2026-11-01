@@ -13,8 +13,7 @@ interface ViewInput {
     onPlayRecordingClick: (storageName: string, event: Event) => void;
     onKeyDown: (storageName: string, event: Event) => void;
 }
-export type ViewOutput = object;
-export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 export declare class RecordingListView extends UI.Widget.Widget {
     #private;
     onCreateRecording?: () => void;

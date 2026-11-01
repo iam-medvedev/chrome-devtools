@@ -16,7 +16,7 @@ export interface ViewInput {
     onInitiatorMouseEnter: (frameId: Protocol.Page.FrameId | null) => void;
     onInitiatorMouseLeave: () => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     #private;
     constructor(element: HTMLElement, view?: View);

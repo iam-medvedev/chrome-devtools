@@ -1,14 +1,43 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+const { ref } = Directives;
+export const DEFAULT_VIEW = (input, output, target) => {
+    if (!output.overviewGrid) {
+        const overviewGrid = new PerfUI.OverviewGrid.OverviewGrid('heap-recording', input.overviewCalculator);
+        overviewGrid.element.classList.add('fill');
+        overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED */, input.onWindowChanged);
+        output.overviewGrid = overviewGrid;
+    }
+    // clang-format off
+    render(html `
+    <div class="heap-overview-container" ${ref(el => {
+        output.overviewContainer = el instanceof HTMLElement ? el : undefined;
+    })}>
+      <canvas class="heap-recording-overview-canvas" ${ref(el => {
+        output.overviewCanvas = el instanceof HTMLCanvasElement ? el : undefined;
+    })}></canvas>
+      ${output.overviewGrid.element}
+    </div>
+  `, target, {
+        container: {
+            classes: ['heap-tracking-overview'],
+            attributes: {
+                id: 'heap-recording-view',
+                jslog: `${VisualLogging.section('heap-tracking-overview')}`,
+            },
+        },
+    });
+    // clang-format on
+};
 const HeapTimelineOverviewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
 export class HeapTimelineOverview extends HeapTimelineOverviewBase {
     overviewCalculator;
@@ -25,24 +54,36 @@ export class HeapTimelineOverview extends HeapTimelineOverviewBase {
     updateGridTimerId;
     updateTimerId;
     windowWidthRatio;
+    #view;
+    #viewOutput = {};
+    #onWindowChangedBound = this.onWindowChanged.bind(this);
     #onThemeChanged = () => this.update();
-    constructor(element) {
-        super(element, { jslog: `${VisualLogging.section('heap-tracking-overview')}` });
-        this.element.id = 'heap-recording-view';
-        this.element.classList.add('heap-tracking-overview');
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
         this.overviewCalculator = new OverviewCalculator();
-        this.overviewContainer = this.element.createChild('div', 'heap-overview-container');
-        this.overviewGrid = new PerfUI.OverviewGrid.OverviewGrid('heap-recording', this.overviewCalculator);
-        this.overviewGrid.element.classList.add('fill');
-        this.overviewCanvas = this.overviewContainer.createChild('canvas', 'heap-recording-overview-canvas');
-        this.overviewContainer.appendChild(this.overviewGrid.element);
-        this.overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED */, this.onWindowChanged, this);
+        this.#render();
         this.windowLeftRatio = 0.0;
         this.windowRightRatio = 1.0;
         this.overviewGrid.setWindowRatio(this.windowLeftRatio, this.windowRightRatio);
         this.yScale = new SmoothScale();
         this.xScale = new SmoothScale();
         this.profileSamples = new Samples();
+    }
+    #render() {
+        this.#view({
+            overviewCalculator: this.overviewCalculator,
+            onWindowChanged: this.#onWindowChangedBound,
+        }, this.#viewOutput, this.contentElement);
+        if (this.#viewOutput.overviewContainer) {
+            this.overviewContainer = this.#viewOutput.overviewContainer;
+        }
+        if (this.#viewOutput.overviewCanvas) {
+            this.overviewCanvas = this.#viewOutput.overviewCanvas;
+        }
+        if (this.#viewOutput.overviewGrid) {
+            this.overviewGrid = this.#viewOutput.overviewGrid;
+        }
     }
     start() {
         this.running = true;
@@ -162,7 +203,8 @@ export class HeapTimelineOverview extends HeapTimelineOverviewBase {
             context.beginPath();
             context.textBaseline = 'bottom';
             context.font = '10px ' + window.getComputedStyle(this.element, null).getPropertyValue('font-family');
-            // Background behind text for better contrast. Some opacity so canvas can still bleed through
+            // Background behind text for better contrast. Some opacity so canvas can
+            // still bleed through
             context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-opacity-80');
             context.fillRect(labelX, labelY - gridLabelHeight, labelWidth, gridLabelHeight);
             context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-surface-subtle');

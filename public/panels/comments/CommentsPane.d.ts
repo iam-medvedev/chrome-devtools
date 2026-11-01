@@ -12,8 +12,11 @@ export interface ThreadViewData {
 }
 export interface ViewInput {
     activeTab: Tab;
-    threads: ThreadViewData[];
-    onTabSelect: (tab: Tab) => void;
+    queuedThreads: ThreadViewData[];
+    sentThreads: ThreadViewData[];
+    onTabClick: (tab: Tab) => void;
+    onScroll: () => void;
+    onScrollEnd: () => void;
     onClearAll: () => void;
     onThreadClick: (thread: CommentManager.CommentManager.CommentThread, fallbackPosition?: {
         left: number;
@@ -21,8 +24,22 @@ export interface ViewInput {
     }) => void;
     onDeleteThread: (threadId: string) => void;
     onSendToAgent: () => void;
+    onAddComment: () => void;
 }
-export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export interface ViewOutput {
+    /** The element that scrolls the comments. Only used to restore its scroll position. */
+    scrollContainer?: HTMLElement;
+    /**
+     * Scrolls "Queued" to the very top and "Sent" to the sent section, if there is one.
+     * Returns whether a smooth scroll started, which ends with a `scrollend` event.
+     */
+    scrollToSection?: (tab: Tab, options: {
+        animate: boolean;
+    }) => boolean;
+    /** The section that has reached the top of the list. */
+    sectionAtTop?: () => Tab;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class CommentsPane extends UI.Widget.Widget {
     #private;
@@ -31,6 +48,11 @@ export declare class CommentsPane extends UI.Widget.Widget {
     ];
     constructor(element?: HTMLElement, [commentManager]?: UI.Widget.WidgetDependencies<typeof CommentsPane>, view?: View);
     wasShown(): void;
+    /**
+     * Lets `UI.Widget` store the list's scroll position when the drawer is hidden
+     * and restore it when it is shown again.
+     */
+    elementsToRestoreScrollPositionsFor(): Element[];
     willHide(): void;
     performUpdate(signal?: AbortSignal): Promise<void>;
 }

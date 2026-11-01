@@ -1,5 +1,4 @@
 import '../../ui/kit/kit.js';
-import '../../ui/components/menus/menus.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -77,7 +76,7 @@ interface ViewInput {
     displayCommandInput?: boolean;
     displayToolbar?: boolean;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare function suggestionFilter(option: string, query: string): boolean;
 export declare const enum Events {
     SUBMIT_EDITOR = "submiteditor"

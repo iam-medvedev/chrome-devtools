@@ -62,7 +62,7 @@ export interface ViewInput {
     onRemoveBreakpoint: (index: number) => void;
     onExtensionViewClosed: () => void;
     onExportMenuClosed: () => void;
-    onExportOptionSelected: (event: Menus.SelectMenu.SelectMenuItemSelectedEvent) => void;
+    onExportOptionSelected: (event: Menus.Menu.MenuItemSelectedEvent) => void;
     onRecordingFinished: () => void;
     handleAddAssertionEvent: () => void;
     onSetRecording: (event: Event) => void;

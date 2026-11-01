@@ -1,50 +1,85 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
+import { html, render } from '../../ui/lit/lit.js';
+import * as PanelsCommon from '../common/common.js';
 import { AffectedElementsView } from './AffectedElementsView.js';
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const renderElementCell = (row) => {
+        if (!row.target) {
+            return html `<td>${row.nodeName || i18nString(UIStrings.unavailable)}</td>`;
+        }
+        const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(row.target, row.backendNodeId);
+        // clang-format off
+        return html `
+      <td class="affected-resource-element devtools-link">
+        ${PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(deferredDOMNode, { textContent: row.nodeName || undefined, onClick: row.onElementClick })}
+      </td>
+    `;
+        // clang-format on
+    };
+    // clang-format off
+    render(html `
+    ${input.rows.map(row => html `
+      <tr class="affected-resource-select-element-descendant">
+        ${renderElementCell(row)}
+      </tr>
+    `)}
+  `, target);
+    // clang-format on
+};
 const UIStrings = {
     /**
-     * @description Label in the Issues panel for the number of affected descendant nodes.
+     * @description Label in the Issues panel for the number of affected
+     * descendant nodes.
      */
-    nDescendants: '{n, plural, =1 { descendant} other { descendants}}',
+    nDescendants: '{n, plural, =1 {# descendant} other {# descendants}}',
     /**
-     * @description Link text in the Issues panel for a disallowed descendant node.
+     * @description Link text in the Issues panel for a disallowed descendant
+     * node.
      */
     disallowedNode: 'Disallowed descendant',
+    /**
+     * @description Fallback text in the Issues panel when an HTML element is
+     * unavailable in the affected resources table.
+     */
+    unavailable: 'Unavailable',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedDescendantsWithinSelectElementView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AffectedDescendantsWithinSelectElementView extends AffectedElementsView {
-    #runningUpdatePromise = Promise.resolve();
-    update() {
-        // Ensure that doUpdate is invoked atomically by serializing the update calls
-        // because it's not re-entrace safe.
-        this.#runningUpdatePromise = this.#runningUpdatePromise.then(this.#doUpdate.bind(this));
+    #view;
+    constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
+        super(parent, issue, jslogContext);
+        this.#view = view;
     }
-    getResourceName(count) {
+    update() {
+        this.requestResolver.clear();
+        this.#appendDisallowedSelectDescendants(this.issue.getElementAccessibilityIssues());
+    }
+    getResourceNameWithCount(count) {
         return i18nString(UIStrings.nDescendants, { n: count });
     }
-    async #doUpdate() {
-        this.clear();
-        await this.#appendDisallowedSelectDescendants(this.issue.getElementAccessibilityIssues());
-    }
-    async #appendDisallowedSelectDescendant(issue) {
-        const row = document.createElement('tr');
-        row.classList.add('affected-resource-select-element-descendant');
+    #createDisallowedSelectDescendantRow(issue) {
         const details = issue.details();
         const target = issue.model()?.target() || null;
-        row.appendChild(await this.createElementCell({ nodeName: i18nString(UIStrings.disallowedNode), backendNodeId: details.nodeId, target }, issue.getCategory()));
-        this.affectedResources.appendChild(row);
+        const category = issue.getCategory();
+        return {
+            nodeName: i18nString(UIStrings.disallowedNode),
+            backendNodeId: details.nodeId,
+            target,
+            onElementClick: () => {
+                Host.userMetrics.issuesPanelResourceOpened(category, "Element" /* AffectedItem.ELEMENT */);
+            },
+        };
     }
-    async #appendDisallowedSelectDescendants(issues) {
-        let count = 0;
-        for (const issue of issues) {
-            count++;
-            await this.#appendDisallowedSelectDescendant(issue);
-        }
-        this.updateAffectedResourceCount(count);
+    #appendDisallowedSelectDescendants(issues) {
+        const rows = Array.from(issues, issue => this.#createDisallowedSelectDescendantRow(issue));
+        this.#view({ rows }, undefined, this.affectedResources);
+        this.updateAffectedResourceCount(rows.length);
     }
 }
 //# sourceMappingURL=AffectedDescendantsWithinSelectElementView.js.map

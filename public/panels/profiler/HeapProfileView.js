@@ -348,16 +348,35 @@ export class HeapProfileView extends UI.View.SimpleView {
         this.#setupTimelineOverview();
     }
     #setupTimelineOverview() {
-        if (this.profileType.hasTemporaryView()) {
+        // Only the profile that is being recorded receives stats updates. Profiles
+        // loaded from a file are also marked as being recorded while they load.
+        if (this.profileType.hasTemporaryView() && !this.profileHeader.fromFile() &&
+            this.profileType.profileBeingRecorded() === this.profileHeader) {
             this.timelineOverview.addEventListener("IdsRangeChanged" /* Events.IDS_RANGE_CHANGED */, this.onIdsRangeChanged.bind(this));
             this.timelineOverview.start();
             this.profileType.addEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
-            void this.profileType.once("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */).then(() => {
-                this.profileType.removeEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
-                this.timelineOverview.stop();
-                this.timelineOverview.updateGrid();
-            });
+            this.profileType.addEventListener("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */, this.#onProfileComplete, this);
+            this.profileType.addEventListener("remove-profile-header" /* ProfileEvents.REMOVE_PROFILE_HEADER */, this.#onProfileRemoved, this);
         }
+    }
+    #onProfileComplete({ data: profile }) {
+        if (profile !== this.profileHeader) {
+            return;
+        }
+        this.#stopTimelineTracking();
+        this.timelineOverview.updateGrid();
+    }
+    #onProfileRemoved({ data: profile }) {
+        // A profile that is removed while it is being recorded never completes.
+        if (profile === this.profileHeader) {
+            this.#stopTimelineTracking();
+        }
+    }
+    #stopTimelineTracking() {
+        this.profileType.removeEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.STATS_UPDATE */, this.onStatsUpdate, this);
+        this.profileType.removeEventListener("profile-complete" /* ProfileEvents.PROFILE_COMPLETE */, this.#onProfileComplete, this);
+        this.profileType.removeEventListener("remove-profile-header" /* ProfileEvents.REMOVE_PROFILE_HEADER */, this.#onProfileRemoved, this);
+        this.timelineOverview.stop();
     }
     async toolbarItems() {
         const currentViewType = this.viewType.get();

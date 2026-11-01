@@ -15,6 +15,7 @@ import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpe
 import { createTarget, describeWithEnvironment, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled, spyCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { someMutations } from '../../testing/MutationHelpers.js';
 import { getMatchedStyles, getMatchedStylesWithBlankRule, getMatchedStylesWithStylesheet, ruleMatch, } from '../../testing/StyleHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
@@ -22,11 +23,10 @@ import { Icon } from '../../ui/kit/kit.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as LegacyUI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
-const { html } = Lit;
 describeWithEnvironment('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
     let computedStyleModel;
@@ -815,7 +815,9 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('--prop', 'value');
             stylePropertyTreeElement.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
             stylePropertyTreeElement.updateTitle();
-            const popoverContents = stylePropertyTreeElement.listItemElement.querySelector('devtools-tooltip > devtools-css-variable-value-view');
+            const popoverElement = stylePropertyTreeElement.listItemElement.querySelector('devtools-tooltip > .css-variable-value-view');
+            assert.exists(popoverElement);
+            const popoverContents = LegacyUI.Widget.Widget.get(popoverElement);
             assert.instanceOf(popoverContents, ElementsComponents.CSSVariableValueView.CSSVariableValueView);
             const { details } = popoverContents;
             assert.exists(details);
@@ -1144,7 +1146,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const { evaluations } = view.args[0][0];
             assert.deepEqual(evaluations.flat().map(line => {
                 const div = document.createElement('div');
-                Lit.render(line, div);
+                render(line, div);
                 return div.textContent;
             }), [
                 'rgb(from #ff0c0c calc(1.000 / 2) 0.047 0.047)',
@@ -1499,10 +1501,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             });
             const model = new Elements.StylePropertyTreeElement.ShadowModel("boxShadow" /* SDK.CSSPropertyParserMatchers.ShadowType.BOX_SHADOW */, properties, renderingContext);
             const container = document.createElement('div');
-            Lit.render(model.renderContents(), container);
+            render(model.renderContents(), container);
             assert.strictEqual(container.innerText, '10px y var()');
             model.setBlurRadius(new InlineEditor.CSSShadowEditor.CSSLength(12, 'px'));
-            Lit.render(model.renderContents(), container);
+            render(model.renderContents(), container);
             assert.strictEqual(container.innerText, '10px y 12px spread');
             assert.deepEqual(properties.map(p => p.source), [null, null, null, null]);
         });
@@ -1553,7 +1555,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             sinon.stub(stylePropertyTreeElement, 'node').returns(fakeParentNode);
             stylePropertyTreeElement.updateTitle();
             await (await waitForDecorationPromise).result;
+            assert.exists(stylePropertyTreeElement.valueElement);
+            await someMutations(stylePropertyTreeElement.valueElement);
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(anchorFunctionLinkSwatch);
             renderElementIntoDOM(anchorFunctionLinkSwatch);
             assert.strictEqual(anchorFunctionLinkSwatch.linkElement?.textContent, '--identifier');
         });
@@ -1564,8 +1569,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             await (await waitForDecorationPromise).result;
             assert.exists(stylePropertyTreeElement.valueElement);
+            await someMutations(stylePropertyTreeElement.valueElement);
             renderElementIntoDOM(stylePropertyTreeElement.valueElement);
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(anchorFunctionLinkSwatch);
             anchorFunctionLinkSwatch.dispatchEvent(new Event('mouseenter'));
             sinon.assert.calledOnce(highlightMock);
         });
@@ -1576,8 +1583,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             await (await waitForDecorationPromise).result;
             assert.exists(stylePropertyTreeElement.valueElement);
+            await someMutations(stylePropertyTreeElement.valueElement);
             renderElementIntoDOM(stylePropertyTreeElement.valueElement);
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(anchorFunctionLinkSwatch);
             anchorFunctionLinkSwatch.dispatchEvent(new Event('mouseleave'));
             sinon.assert.calledOnce(hideDOMNodeHighlightStub);
         });
@@ -1588,8 +1597,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             await (await waitForDecorationPromise).result;
             assert.exists(stylePropertyTreeElement.valueElement);
+            await someMutations(stylePropertyTreeElement.valueElement);
             renderElementIntoDOM(stylePropertyTreeElement.valueElement);
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(anchorFunctionLinkSwatch);
             anchorFunctionLinkSwatch.linkElement?.click();
             sinon.assert.calledOnce(revealStub);
             sinon.assert.calledWith(revealStub, fakeDOMNode);
@@ -1597,7 +1608,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         async function createAnchorFunctionLinkSwatch(data) {
             sinon.stub(stylesSidebarPane.node(), 'getAnchorBySpecifier').resolves(data.anchorNode);
             const content = document.createElement('div');
-            await Elements.StylePropertyTreeElement.AnchorFunctionRenderer.decorateAnchorForAnchorLink(stylesSidebarPane, content, data);
+            render(await Elements.StylePropertyTreeElement.AnchorFunctionRenderer.decorateAnchorForAnchorLink(stylesSidebarPane, data), content);
             return content;
         }
         describe('when identifier exists', () => {
@@ -1659,7 +1670,8 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                     anchorNode: undefined,
                 };
                 const component = await createAnchorFunctionLinkSwatch(data);
-                assert.isEmpty(component.innerHTML);
+                assert.isEmpty(component.children);
+                assert.isEmpty(component.textContent);
             });
             it('should render icon link when `anchorNode` is resolved correctly', async () => {
                 const data = {
@@ -1731,6 +1743,8 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('position-anchor', '--anchor');
             stylePropertyTreeElement.updateTitle();
             await (await waitForDecorationPromise).result;
+            assert.exists(stylePropertyTreeElement.valueElement);
+            await someMutations(stylePropertyTreeElement.valueElement);
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
             assert.exists(anchorFunctionLinkSwatch);
         });
@@ -2055,6 +2069,25 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.isFalse(values[1].classList.contains('inactive-value'));
             assert.isTrue(values[2].classList.contains('inactive-value'));
         });
+        it('does not mark !important as inactive when the last fallback is inactive', () => {
+            sinon.stub(matchedStyles, 'activePositionFallbackIndex').returns(0);
+            sinon.stub(matchedStyles, 'positionTryRules').returns([]);
+            const stylePropertyTreeElement = getTreeElement('position-try-fallbacks', '--top, flip-block, --bottom !important');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            assert.strictEqual(stylePropertyTreeElement.valueElement.innerText, '--top, flip-block, --bottom !important');
+            const spans = stylePropertyTreeElement.valueElement.querySelectorAll(':scope > span');
+            assert.deepEqual(Array.from(spans, span => ({
+                text: span.innerText,
+                inactive: span.classList.contains('inactive-value'),
+            })), [
+                { text: '--top', inactive: false },
+                { text: ', flip-block', inactive: true },
+                { text: ', --bottom', inactive: true },
+                { text: '!important', inactive: false },
+            ]);
+        });
         it('renders the position-try swatch in default and forced states', () => {
             const forcedOptionStub = sinon.stub(matchedStyles.cssModel(), 'forcedPositionTryOption').returns(undefined);
             const stylePropertyTreeElement = getTreeElement('position-try-fallbacks', '--top, --left');
@@ -2147,6 +2180,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const popoverOpenSpy = spyCall(Elements.StylePropertyTreeElement.LengthRenderer.prototype, 'getTooltipValue');
             popover.showPopover();
             await (await popoverOpenSpy).result;
+            await someMutations(popover);
             assert.strictEqual(popover.deepInnerText(), '15px');
         });
         it('passes the property name to evaluations', async () => {
@@ -2238,7 +2272,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('width', 'min(5em, 4px, 8pt)');
             stylePropertyTreeElement.updateTitle();
             sinon.assert.calledOnce(strikeOutSpy);
-            await strikeOutSpy.returnValues[0];
+            await Promise.all(strikeOutSpy.returnValues);
             const args = stylePropertyTreeElement.valueElement?.querySelectorAll(':scope > span > span:not(.tracing-anchor)');
             assert.lengthOf(args, 3);
             assert.deepEqual(Array.from(args.values()).map(arg => arg.classList.contains('inactive-value')), [true, false, true]);
@@ -2274,7 +2308,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('margin-block', 'max(48px - 40px, 0px)');
             stylePropertyTreeElement.updateTitle();
             sinon.assert.calledOnce(strikeOutSpy);
-            await strikeOutSpy.returnValues[0];
+            await Promise.all(strikeOutSpy.returnValues);
             const args = stylePropertyTreeElement.valueElement?.querySelectorAll(':scope > span > span:not(.tracing-anchor)');
             assert.lengthOf(args, 2);
             assert.deepEqual(Array.from(args.values()).map(arg => arg.classList.contains('inactive-value')), [false, true]);
@@ -2297,12 +2331,19 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             connection.setSuccessHandler('CSS.resolveValues', (request) => ({ results: request.values.map(() => '') }));
             const evaluationSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyEvaluation');
             const property = addProperty('width', 'calc(1 + 1)');
-            const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, () => { });
+            const viewFunction = sinon.stub();
+            const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, viewFunction);
             await view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, stylesSidebarPane, matchedStyles, null, new Map(), null), false, 0, false);
+            await view.updateComplete;
             sinon.assert.calledOnce(evaluationSpy);
-            const originalText = evaluationSpy.args[0][0].textContent;
-            await evaluationSpy.returnValues[0];
-            assert.strictEqual(originalText, evaluationSpy.args[0][0].textContent);
+            assert.isNull(await evaluationSpy.returnValues[0]);
+            sinon.assert.calledOnce(viewFunction);
+            const { evaluations } = viewFunction.args[0][0];
+            assert.deepEqual(evaluations.flat().map(line => {
+                const div = document.createElement('div');
+                render(line, div);
+                return div.textContent;
+            }), ['calc(1 + 1)']);
         });
         it('should try to resolve the values for the correct property name', async () => {
             const cssModel = stylesSidebarPane.cssModel();
@@ -2512,17 +2553,19 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         const openTooltipPromise1 = new Promise(r => openTooltipStub.callsFake(r));
         const stylePropertyTreeElement = getTreeElement('color', 'color-mix(in srgb, red, blue)');
         stylePropertyTreeElement.updateTitle();
-        const tooltip = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
+        assert.exists(stylePropertyTreeElement.valueElement);
+        renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+        const tooltip = stylePropertyTreeElement.valueElement.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
         assert.exists(tooltip);
-        renderElementIntoDOM(tooltip);
         tooltip.showTooltip();
         await openTooltipPromise1;
-        tooltip.remove();
+        stylePropertyTreeElement.valueElement.remove();
         const openTooltipPromise2 = new Promise(r => openTooltipStub.callsFake(r));
         stylePropertyTreeElement.updateTitle();
-        const tooltip2 = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
+        assert.exists(stylePropertyTreeElement.valueElement);
+        renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+        const tooltip2 = stylePropertyTreeElement.valueElement.querySelector('devtools-tooltip:not([jslogcontext="elements.css-value-trace"])');
         assert.exists(tooltip2);
-        renderElementIntoDOM(tooltip2);
         await openTooltipPromise2;
         assert.notStrictEqual(tooltip, tooltip2);
     });
@@ -2543,11 +2586,13 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         const treeElementWithTooltip = getTreeElement('color', 'blue');
         treeElementWithTooltip.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
         treeElementWithTooltip.updateTitle();
-        renderElementIntoDOM(treeElementWithTooltip.listItemElement);
+        stylesSidebarPane.contentElement.appendChild(treeElementWithTooltip.listItemElement);
+        renderElementIntoDOM(stylesSidebarPane);
         const tooltip = treeElementWithTooltip.listItemElement.querySelector('devtools-tooltip[jslogcontext="elements.css-property-doc"]');
         assert.instanceOf(tooltip, Tooltips.Tooltip.Tooltip);
         tooltip.showPopover();
         assert.isTrue(tooltip.open);
+        assert.exists(tooltip.firstElementChild);
         tooltip.hidePopover();
         assert.isFalse(tooltip.open);
         Common.Settings.Settings.instance()
@@ -2555,6 +2600,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             .set(false);
         tooltip.showPopover();
         assert.isFalse(tooltip.open);
+        treeElementWithTooltip.updateTitle();
     });
     it('does not show a variable tooltip on custom property names in function rules', async () => {
         const stylePropertyTreeElement = await getTreeElementForFunctionRule('--func', 'red', '--foo');
@@ -3511,7 +3557,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         let redoStub;
         // Builds a CSS.CSSStyle payload for `text` the way the backend would report it for a style that
         // starts at the beginning of the style sheet.
-        function stylePayload(text) {
+        function stylePayload(text, styleSheetId = liveStyleSheetId) {
             const textObject = new TextUtils.Text.Text(text);
             const toRange = (start, end) => {
                 const startPosition = textObject.positionFromOffset(start);
@@ -3535,7 +3581,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 });
             }
             return {
-                styleSheetId: liveStyleSheetId,
+                styleSheetId,
                 cssText: text,
                 cssProperties,
                 shorthandEntries: [],
@@ -3556,7 +3602,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             connection.setSuccessHandler('CSS.getStyleSheetText', () => ({ text: sheetText }));
             setStyleTextsStub = sinon.stub().callsFake((params) => {
                 sheetText = params.edits[0].text;
-                return { styles: [stylePayload(sheetText)] };
+                return { styles: [stylePayload(sheetText, params.edits[0].styleSheetId)] };
             });
             connection.setHandler('CSS.setStyleTexts', null);
             connection.setSuccessHandler('CSS.setStyleTexts', setStyleTextsStub);
@@ -3611,6 +3657,28 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             container.appendChild(section.element);
             renderElementIntoDOM(container);
             return section;
+        }
+        function addMatchedSection(section, cssText) {
+            const matchedStyles = section.matchedStyles;
+            const styleSheetId = 'matched-sheet';
+            const rule = new SDK.CSSRule.CSSStyleRule(matchedStyles.cssModel(), {
+                selectorList: { selectors: [{ text: 'div' }], text: 'div' },
+                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                styleSheetId,
+                style: stylePayload(cssText, styleSheetId),
+            });
+            const matchedSection = new Elements.StylePropertiesSection.StylePropertiesSection(stylesSidebarPane, matchedStyles, rule.style, 1, null, null, null);
+            stylesSidebarPane.allSections().push(matchedSection);
+            matchedStyles.cssModel().addEventListener(SDK.CSSModel.Events.StyleSheetChanged, event => {
+                if (event.data.edit) {
+                    rule.style.rebase(event.data.edit);
+                }
+            });
+            section.element.parentElement?.appendChild(matchedSection.element);
+            const resolveProperty = matchedStyles.resolveProperty.bind(matchedStyles);
+            sinon.stub(matchedStyles, 'resolveProperty')
+                .callsFake((name, ownerStyle) => resolveProperty(name, ownerStyle) ??
+                rule.style.allProperties().findLast(prop => prop.name === name) ?? null);
         }
         function treeElementAt(section, index) {
             const treeElement = section.propertiesTreeOutline.rootElement().childAt(index);
@@ -3934,6 +4002,42 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 sinon.assert.calledTwice(changeTracker.trackChange);
                 sinon.assert.calledWithExactly(changeTracker.trackChange.firstCall, 'Changed style property "flex-direction" from "row" to "column-reverse" in rule "element.style"', sinon.match.object);
                 sinon.assert.calledWithExactly(changeTracker.trackChange.secondCall, 'Added style property "align-items: stretch" to rule "element.style"', sinon.match.object);
+            });
+            it('tracks only net property changes from PositionAreaRenderer when the popover closes', async () => {
+                const section = await createLiveSection('position-area: top left; justify-self: end;', { inline: true });
+                addMatchedSection(section, 'justify-self: start;');
+                const button = treeElementAt(section, 0).valueElement?.querySelector('.position-area-swatch-icon');
+                assert.exists(button);
+                const showSpy = sinon.spy(stylesSidebarPane.swatchPopoverHelper(), 'show');
+                button.click();
+                sinon.assert.calledOnce(showSpy);
+                const editor = showSpy.firstCall.args[0];
+                assert.instanceOf(editor, InlineEditor.PositionAreaEditor.PositionAreaEditor);
+                const selectArea = async (area) => {
+                    const parsed = InlineEditor.PositionAreaEditor.parsePositionArea(area);
+                    assert.exists(parsed);
+                    editor.dispatchEventToListeners("positionAreaChanged" /* InlineEditor.PositionAreaEditor.Events.POSITION_AREA_CHANGED */, parsed);
+                    await waitFor(() => declarations().includes(`position-area: ${area}`));
+                };
+                const setAlignment = async (propertyName, value) => {
+                    editor.dispatchEventToListeners("propertyChanged" /* InlineEditor.PositionAreaEditor.Events.PROPERTY_CHANGED */, { propertyName, value });
+                    await waitFor(() => value ? declarations().includes(`${propertyName}: ${value}`) :
+                        !declarations().some(decl => decl.startsWith(`${propertyName}:`)));
+                };
+                await selectArea('center');
+                await selectArea('bottom right');
+                await setAlignment('align-self', 'start');
+                await setAlignment('align-self', 'center');
+                await setAlignment('justify-self', 'center');
+                await setAlignment('justify-self');
+                sinon.assert.notCalled(changeTracker.trackChange);
+                const trackChangePromise = expectCalled(changeTracker.trackChange, { callCount: 3 });
+                stylesSidebarPane.swatchPopoverHelper().hide(true);
+                await trackChangePromise;
+                sinon.assert.calledThrice(changeTracker.trackChange);
+                sinon.assert.calledWithExactly(changeTracker.trackChange, 'Changed style property "position-area" from "top left" to "bottom right" in rule "element.style"', sinon.match.object);
+                sinon.assert.calledWithExactly(changeTracker.trackChange, 'Added style property "align-self: center" to rule "element.style"', sinon.match.object);
+                sinon.assert.calledWithExactly(changeTracker.trackChange, 'Removed style property "justify-self: end" from rule "element.style"', sinon.match.object);
             });
         });
     });

@@ -711,21 +711,6 @@ export function endBatchUpdate() {
         postUpdateHandlers = null;
     }
 }
-export function animateFunction(window, func, params, duration, animationComplete) {
-    const start = window.performance.now();
-    let raf = window.requestAnimationFrame(animationStep);
-    function animationStep(timestamp) {
-        const progress = Platform.NumberUtilities.clamp((timestamp - start) / duration, 0, 1);
-        func(...params.map(p => p.from + (p.to - p.from) * progress));
-        if (progress < 1) {
-            raf = window.requestAnimationFrame(animationStep);
-        }
-        else if (animationComplete) {
-            animationComplete();
-        }
-    }
-    return () => window.cancelAnimationFrame(raf);
-}
 export class LongClickController {
     element;
     callback;
@@ -976,7 +961,7 @@ export function setTitle(element, title) {
     Tooltip.install(element, title);
 }
 export class CheckboxLabel extends HTMLElement {
-    static observedAttributes = ['checked', 'disabled', 'indeterminate', 'name', 'title', 'aria-label', 'small'];
+    static observedAttributes = ['checked', 'disabled', 'indeterminate', 'name', 'title', 'aria-label', 'small', 'jslogcontext'];
     #shadowRoot;
     #checkboxElement;
     #textElement;
@@ -1002,7 +987,7 @@ export class CheckboxLabel extends HTMLElement {
         const element = document.createElement('devtools-checkbox');
         element.#checkboxElement.checked = Boolean(checked);
         if (jslogContext) {
-            element.#checkboxElement.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(jslogContext)}`);
+            element.jslogContext = jslogContext;
         }
         if (title !== undefined) {
             element.#textElement.textContent = title;
@@ -1020,7 +1005,7 @@ export class CheckboxLabel extends HTMLElement {
         element.#checkboxElement.classList.toggle('small', small);
         return element;
     }
-    attributeChangedCallback(name, _oldValue, newValue) {
+    attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'checked') {
             this.#checkboxElement.checked = newValue !== null;
         }
@@ -1043,6 +1028,26 @@ export class CheckboxLabel extends HTMLElement {
         else if (name === 'small') {
             this.#checkboxElement.classList.toggle('small', newValue !== null);
         }
+        else if (name === 'jslogcontext' && oldValue !== newValue) {
+            const oldCheckbox = this.#checkboxElement;
+            const hadFocus = this.shadowRoot?.activeElement === oldCheckbox;
+            const newCheckbox = oldCheckbox.cloneNode(false);
+            newCheckbox.checked = oldCheckbox.checked;
+            newCheckbox.disabled = oldCheckbox.disabled;
+            newCheckbox.indeterminate = oldCheckbox.indeterminate;
+            if (newValue) {
+                newCheckbox.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(newValue)}`);
+            }
+            else {
+                newCheckbox.removeAttribute('jslog');
+            }
+            newCheckbox.addEventListener('change', () => this.dispatchEvent(new Event('change')));
+            oldCheckbox.replaceWith(newCheckbox);
+            this.#checkboxElement = newCheckbox;
+            if (hadFocus) {
+                newCheckbox.focus();
+            }
+        }
     }
     getLabelText() {
         return this.#textElement.textContent;
@@ -1060,7 +1065,10 @@ export class CheckboxLabel extends HTMLElement {
         return this.#checkboxElement.checked;
     }
     set checked(checked) {
-        this.toggleAttribute('checked', checked);
+        // Coerce explicitly: `toggleAttribute(name, undefined)` toggles the
+        // attribute instead of removing it, which would flip the state when a
+        // Lit `.checked=${...}` binding receives `undefined`.
+        this.toggleAttribute('checked', Boolean(checked));
     }
     get small() {
         return this.hasAttribute('small');
@@ -1091,6 +1099,17 @@ export class CheckboxLabel extends HTMLElement {
     }
     get name() {
         return this.#checkboxElement.name;
+    }
+    set jslogContext(jslogContext) {
+        if (jslogContext) {
+            this.setAttribute('jslogcontext', jslogContext);
+        }
+        else {
+            this.removeAttribute('jslogcontext');
+        }
+    }
+    get jslogContext() {
+        return this.getAttribute('jslogcontext');
     }
     click() {
         this.#checkboxElement.click();
@@ -1888,8 +1907,8 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
         }
         template.values = template.values.map(patchValue);
         function isLitTemplate(value) {
-            return Boolean(typeof value === 'object' && value && '_$litType$' in value && 'strings' in value && 'values' in value &&
-                value['_$litType$'] === 1);
+            return Boolean(typeof value === 'object' && value && '_$litType$' in value && 'strings' in value &&
+                'values' in value && value['_$litType$'] === 1);
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function isCallable(value) {

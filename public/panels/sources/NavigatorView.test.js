@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import * as sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { addChildFrame, createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
+import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('NavigatorView', () => {
@@ -57,16 +60,138 @@ describeWithEnvironment('NavigatorView', () => {
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
         networkProjectManager = new Bindings.NetworkProject.NetworkProjectManager();
     });
-    function addResourceAndUISourceCode(url, frame, content, mimeType) {
-        createResource(frame, url, 'text/html', content);
-        const uiSourceCode = workspace.uiSourceCodeForURL(url);
-        const projectType = Workspace.Workspace.projectTypes.Network;
-        const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'PROJECT_ID', projectType, 'Test project', false /* isServiceProject*/);
-        Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
-        const contentProvider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(url, Common.ResourceType.ResourceType.fromMimeType(mimeType), content);
+    function dumpTree(navigatorView, options = {}) {
+        const { includeClasses = false, includeStatus = false } = options;
+        function dumpElement(element) {
+            const title = typeof element.title === 'string' ? element.title : element.title.textContent ?? '';
+            const node = { title };
+            if (includeClasses) {
+                const relevantClasses = Array.from(element.listItemElement.classList)
+                    .filter(c => c.startsWith('navigator-') || c.startsWith('is-') || c.startsWith('has-'))
+                    .sort();
+                if (relevantClasses.length > 0) {
+                    node.classes = relevantClasses;
+                }
+            }
+            if (includeStatus) {
+                if (element.expanded) {
+                    node.expanded = true;
+                }
+                if (element.selected) {
+                    node.selected = true;
+                }
+            }
+            const children = element.children();
+            if (children.length > 0) {
+                node.children = children.map(dumpElement);
+            }
+            return node;
+        }
+        return navigatorView.scriptsTree.rootElement().children().map(dumpElement);
+    }
+    function findTreeElement(navigatorView, predicate) {
+        function search(element) {
+            if (predicate(element)) {
+                return element;
+            }
+            for (const child of element.children()) {
+                const found = search(child);
+                if (found) {
+                    return found;
+                }
+            }
+            return null;
+        }
+        for (const rootChild of navigatorView.scriptsTree.rootElement().children()) {
+            const found = search(rootChild);
+            if (found) {
+                return found;
+            }
+        }
+        return null;
+    }
+    function findDumpedNode(nodes, title) {
+        for (const node of nodes) {
+            if (node.title === title) {
+                return node;
+            }
+            if (node.children) {
+                const found = findDumpedNode(node.children, title);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
+    }
+    function getTreeElement(navigatorView, title) {
+        const treeElement = findTreeElement(navigatorView, el => {
+            const elTitle = typeof el.title === 'string' ? el.title : el.title.textContent ?? '';
+            return elTitle === title;
+        });
+        if (!treeElement) {
+            throw new Error(`Tree element with title "${title}" not found`);
+        }
+        return treeElement;
+    }
+    function activateRow(navigatorView, title, action, options = {}) {
+        const treeElement = getTreeElement(navigatorView, title);
+        if (action === 'click') {
+            treeElement.listItemElement.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        }
+        else if (action === 'enter') {
+            treeElement.select(true);
+            navigatorView.scriptsTree.contentElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        }
+        else if (action === 'space') {
+            treeElement.select(true);
+            navigatorView.scriptsTree.contentElement.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', keyCode: 32, bubbles: true }));
+        }
+        else if (action === 'dblclick') {
+            treeElement.listItemElement.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, button: options.button ?? 0 }));
+        }
+    }
+    function dragStartRow(navigatorView, title) {
+        const dataTransfer = new DataTransfer();
+        getTreeElement(navigatorView, title)
+            .listItemElement.dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer }));
+        return dataTransfer;
+    }
+    function mouseDownRow(navigatorView, title, options = {}) {
+        getTreeElement(navigatorView, title)
+            .listItemElement.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, which: options.which ?? 1 }));
+    }
+    function openContextMenuOnRow(navigatorView, title) {
+        getTreeElement(navigatorView, title)
+            .listItemElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+    }
+    function hoverRow(navigatorView, title, hovered) {
+        const eventType = hovered ? 'mousemove' : 'mouseleave';
+        getTreeElement(navigatorView, title)
+            .listItemElement.dispatchEvent(new MouseEvent(eventType, { bubbles: true, cancelable: true }));
+    }
+    function addResourceAndUISourceCode(url, frame, content, mimeType, existingProject, overrideResourceType) {
+        // createResource is only called for text/html (Document) resources because ResourceMapping
+        // only registers Document resources from ResourceTreeModel into the workspace. For other
+        // content types (scripts, stylesheets), UISourceCodes are created directly on the project.
+        if (mimeType === 'text/html') {
+            createResource(frame, url, mimeType, content);
+        }
+        const project = existingProject ??
+            new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'PROJECT_ID', Workspace.Workspace.projectTypes.Network, 'Test project', false /* isServiceProject*/);
+        if (!existingProject) {
+            Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
+        }
+        const resourceType = overrideResourceType ?? Common.ResourceType.ResourceType.fromMimeType(mimeType);
+        let uiSourceCode = workspace.uiSourceCodeForURL(url);
+        if (!uiSourceCode) {
+            uiSourceCode = project.createUISourceCode(url, resourceType);
+        }
+        Bindings.NetworkProject.NetworkProject.setInitialFrameAttribution(uiSourceCode, frame.id);
+        const contentProvider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(url, resourceType, content);
         const metadata = new Workspace.UISourceCode.UISourceCodeMetadata(null, null);
         project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType);
-        return { project };
+        return { project, uiSourceCode };
     }
     it('can discard multiple childless frames', async () => {
         const url = urlString `http://example.com/index.html`;
@@ -79,7 +204,7 @@ describeWithEnvironment('NavigatorView', () => {
         assert.strictEqual(children[0].title, 'top');
         // Remove leaf node and assert that node removal propagates up to the root node.
         project.removeUISourceCode(url);
-        assert.lengthOf(navigatorView.scriptsTree.rootElement().children(), 0, 'The NavigarorView root node should not have any children after node removal');
+        assert.deepEqual(dumpTree(navigatorView), [], 'The NavigatorView root node should not have any children after node removal');
     });
     describe('domain node display name', () => {
         it('should use the project origin if the url matches the default context', async () => {
@@ -264,17 +389,36 @@ describeWithEnvironment('NavigatorView', () => {
             assert.isFalse(placeholderSlot.parentElement?.hasAttribute('hidden'));
             assert.isTrue(navigatorView.scriptsTree.element.parentElement?.hasAttribute('hidden'));
         });
-        it('forwards contextmenu events on the placeholder to handleContextMenu', async () => {
+    });
+    describe('folder and group tree elements', () => {
+        it('renders a devtools-icon with the appropriate icon type in leading icons', () => {
             const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
-            renderElementIntoDOM(navigatorView);
-            const contextMenuSpy = sinon.spy(navigatorView, 'handleContextMenu');
-            const placeholder = new UI.EmptyWidget.EmptyWidget('No content scripts', 'Explanation');
-            placeholder.element.slot = 'placeholder';
-            placeholder.show(navigatorView.element);
+            const groupNode = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, null, 'domain:example.com', Sources.NavigatorView.Types.Domain, 'example.com');
+            const treeElement = groupNode.treeNode();
+            const icon = treeElement.listItemElement.querySelector('.leading-icons devtools-icon');
+            assert.exists(icon);
+            assert.strictEqual(icon.getAttribute('name'), 'cloud');
+        });
+        it('computes joined path tooltip for nested NavigatorFolderTreeNode', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/src/components/button.js`;
+            const { project } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
             await navigatorView.updateComplete;
-            const event = new MouseEvent('contextmenu', { bubbles: true });
-            placeholder.element.dispatchEvent(event);
-            sinon.assert.calledOnceWithExactly(contextMenuSpy, event);
+            const folderTreeElement = getTreeElement(navigatorView, 'src/components');
+            assert.strictEqual(folderTreeElement.tooltip, 'src/components');
+            project.removeProject();
+        });
+        it('appends ignore-listed suffix to folder tooltip when folder is exclusively ignore-listed', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/src/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiSourceCode);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const folderTreeElement = getTreeElement(navigatorView, 'src');
+            assert.strictEqual(folderTreeElement.tooltip, 'src (ignore listed)');
+            project.removeProject();
         });
     });
     describe('NavigatorGroupTreeNode automatic file system controls', () => {
@@ -286,7 +430,7 @@ describeWithEnvironment('NavigatorView', () => {
             const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
             const groupNode = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, fileSystem, 'auto-fs', Sources.NavigatorView.Types.AutomaticFileSystem, 'bar');
             const treeElement = groupNode.treeNode();
-            const spinner = treeElement.listItemElement.querySelector('devtools-spinner');
+            const spinner = treeElement.listItemElement.querySelector('.trailing-icons devtools-spinner');
             assert.exists(spinner);
         });
         it('renders a connect button when automatic file system is disconnected and connects on click', async () => {
@@ -295,14 +439,31 @@ describeWithEnvironment('NavigatorView', () => {
             const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
             const groupNode = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, fileSystem, 'auto-fs', Sources.NavigatorView.Types.AutomaticFileSystem, 'bar');
             const treeElement = groupNode.treeNode();
-            const button = treeElement.listItemElement.querySelector('devtools-button');
+            const button = treeElement.listItemElement.querySelector('.trailing-icons devtools-button');
             assert.exists(button);
             assert.strictEqual(button.textContent?.trim(), 'Connect');
             button.click();
             sinon.assert.calledOnceWithExactly(automaticFileSystemManager.connectAutomaticFileSystem, true);
         });
+        it('updates trailing icons when automatic file system state changes', () => {
+            const automaticFileSystemManager = sinon.createStubInstance(Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager);
+            const fsData = {
+                root,
+                uuid,
+                state: 'connecting',
+            };
+            const fileSystem = new Persistence.AutomaticFileSystemWorkspaceBinding.FileSystem(fsData, automaticFileSystemManager, workspace);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const groupNode = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, fileSystem, 'auto-fs', Sources.NavigatorView.Types.AutomaticFileSystem, 'bar');
+            const treeElement = groupNode.treeNode();
+            assert.exists(treeElement.listItemElement.querySelector('.trailing-icons devtools-spinner'));
+            fsData.state = 'disconnected';
+            groupNode.updateTrailingIcons();
+            assert.isNull(treeElement.listItemElement.querySelector('.trailing-icons devtools-spinner'));
+            assert.exists(treeElement.listItemElement.querySelector('.trailing-icons devtools-button'));
+        });
     });
-    describe('NavigatorSourceTreeElement AI floating button', () => {
+    describe('NavigatorUISourceCodeTreeNode AI floating button', () => {
         it('renders AI floating button when action is registered and executes it on click', async () => {
             const actionExecuteSpy = sinon.spy();
             const mockAction = {
@@ -317,18 +478,63 @@ describeWithEnvironment('NavigatorView', () => {
                 .returns(mockAction);
             const mainFrame = await getMainFrame(target);
             const url = urlString `http://example.com/app.js`;
-            addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
-            const uiSourceCode = workspace.uiSourceCodeForURL(url);
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
             const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
             const sourceSelectedSpy = sinon.spy(navigatorView, 'sourceSelected');
             const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, mainFrame);
             const treeElement = node.treeNode();
-            treeElement.onattach();
             const floatingButton = treeElement.listItemElement.querySelector('devtools-floating-button');
             assert.exists(floatingButton);
             floatingButton.click();
             sinon.assert.calledOnceWithExactly(sourceSelectedSpy, uiSourceCode, false);
             sinon.assert.calledOnce(actionExecuteSpy);
+            project.removeProject();
+        });
+        it('does not render AI floating button for non-text files', async () => {
+            sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')
+                .withArgs('drjones.sources-floating-button')
+                .returns(true);
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/image.png`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'image/png', undefined, Common.ResourceType.resourceTypes.Image);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, mainFrame);
+            const treeElement = node.treeNode();
+            const floatingButton = treeElement.listItemElement.querySelector('devtools-floating-button');
+            assert.isNull(floatingButton);
+            project.removeProject();
+        });
+        it('does not render AI floating button when action is not registered', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/app.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, mainFrame);
+            const treeElement = node.treeNode();
+            const floatingButton = treeElement.listItemElement.querySelector('devtools-floating-button');
+            assert.isNull(floatingButton);
+            project.removeProject();
+        });
+    });
+    describe('treeElement <-> NavigatorTreeNode association', () => {
+        it('associates treeElement with NavigatorUISourceCodeTreeNode on treeNode()', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, mainFrame);
+            const treeElement = node.treeNode();
+            assert.strictEqual(navigatorView.nodeForTreeElement(treeElement), node);
+            project.removeProject();
+        });
+        it('updates treeElement <-> NavigatorTreeNode association on NavigatorView.setNodeForTreeElement()', () => {
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node1 = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, null, 'group1', Sources.NavigatorView.Types.Frame, 'Group 1');
+            const node2 = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, null, 'group2', Sources.NavigatorView.Types.Frame, 'Group 2');
+            const folderTreeElement = node1.treeNode();
+            assert.strictEqual(navigatorView.nodeForTreeElement(folderTreeElement), node1);
+            navigatorView.setNodeForTreeElement(folderTreeElement, node2);
+            assert.strictEqual(navigatorView.nodeForTreeElement(folderTreeElement), node2);
         });
     });
     describe('view injection', () => {
@@ -341,6 +547,875 @@ describeWithEnvironment('NavigatorView', () => {
             sinon.assert.calledOnce(viewSpy);
             assert.strictEqual(viewSpy.firstCall.args[0].treeElement, navigatorView.scriptsTree.element);
             assert.isFalse(viewSpy.firstCall.args[0].showTree);
+        });
+    });
+    describe('folder merging', () => {
+        it('merges single-child folder chains into one row and populates children on reveal', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/src/components/widgets/button.js`;
+            const { uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            // The single-child folders "src", "components", "widgets" are merged into "src/components/widgets".
+            assert.deepEqual(dumpTree(navigatorView), [
+                {
+                    title: 'top',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src/components/widgets',
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+            // Revealing the source code expands the merged folder and populates the leaf file.
+            navigatorView.revealUISourceCode(uiSourceCode);
+            assert.deepEqual(dumpTree(navigatorView), [
+                {
+                    title: 'top',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src/components/widgets',
+                                    children: [
+                                        {
+                                            title: 'button.js',
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+        });
+        it('unmerges folder chain when a sibling folder is added', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/components/widgets/button.js`;
+            const { project, uiSourceCode: uiSourceCode1 } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode1);
+            // Now add a sibling file under "src/utils/math.js".
+            const url2 = urlString `http://example.com/src/utils/math.js`;
+            const { uiSourceCode: uiSourceCode2 } = addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode2);
+            // "src" should now be its own row with "components/widgets" and "utils" as children.
+            assert.deepEqual(dumpTree(navigatorView), [
+                {
+                    title: 'top',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src',
+                                    children: [
+                                        {
+                                            title: 'components/widgets',
+                                            children: [
+                                                {
+                                                    title: 'button.js',
+                                                },
+                                            ],
+                                        },
+                                        {
+                                            title: 'utils',
+                                            children: [
+                                                {
+                                                    title: 'math.js',
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+        });
+    });
+    describe('sort order', () => {
+        it('sorts folders before files, then by content type, then naturally by name', async () => {
+            const mainFrame = await getMainFrame(target);
+            const { project } = addResourceAndUISourceCode(urlString `http://example.com/folder/child.js`, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(urlString `http://example.com/style.css`, mainFrame, '', 'text/css', project);
+            addResourceAndUISourceCode(urlString `http://example.com/index.html`, mainFrame, '', 'text/html', project);
+            addResourceAndUISourceCode(urlString `http://example.com/item10.js`, mainFrame, '', 'text/javascript', project);
+            addResourceAndUISourceCode(urlString `http://example.com/item2.js`, mainFrame, '', 'text/javascript', project);
+            addResourceAndUISourceCode(urlString `http://example.com/b.js`, mainFrame, '', 'text/javascript', project);
+            addResourceAndUISourceCode(urlString `http://example.com/a.js`, mainFrame, '', 'text/javascript', project);
+            addResourceAndUISourceCode(urlString `http://example.com/data.json`, mainFrame, '', 'application/json', project, Common.ResourceType.resourceTypes.Other);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            // Children of example.com should be:
+            // 1. folder: 'folder'
+            // 2. document: 'index.html'
+            // 3. scripts: 'a.js', 'b.js', 'item2.js', 'item10.js'
+            // 4. stylesheet: 'style.css'
+            // 5. other: 'data.json'
+            const exampleComNode = findTreeElement(navigatorView, el => el.title === 'example.com');
+            assert.exists(exampleComNode);
+            const childTitles = exampleComNode.children().map(c => c.title);
+            assert.deepEqual(childTitles, [
+                'folder',
+                'index.html',
+                'a.js',
+                'b.js',
+                'item2.js',
+                'item10.js',
+                'style.css',
+                'data.json',
+            ]);
+        });
+    });
+    describe('node removal', () => {
+        it('keeps parent folder while siblings exist and removes empty parent folder when last child is removed', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/app.js`;
+            const url2 = urlString `http://example.com/src/utils.js`;
+            const { project, uiSourceCode: uiSourceCode1 } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode1);
+            // Initially both files are present under "src".
+            assert.deepEqual(dumpTree(navigatorView), [
+                {
+                    title: 'top',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src',
+                                    children: [
+                                        { title: 'app.js' },
+                                        { title: 'utils.js' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+            // Remove the first file; "src" folder must remain because "utils.js" is still there.
+            project.removeUISourceCode(url1);
+            await navigatorView.updateComplete;
+            assert.deepEqual(dumpTree(navigatorView), [
+                {
+                    title: 'top',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src',
+                                    children: [
+                                        { title: 'utils.js' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+            // Remove the second file; the empty "src" folder and "example.com" should now be removed.
+            project.removeUISourceCode(url2);
+            await navigatorView.updateComplete;
+            assert.deepEqual(dumpTree(navigatorView), []);
+        });
+    });
+    describe('authored and deployed grouping', () => {
+        afterEach(() => {
+            Common.Settings.Settings.instance()
+                .resolve(SettingsUI.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor)
+                .set(false);
+        });
+        it('groups source-mapped files under Authored and network files under Deployed', async () => {
+            Common.Settings.Settings.instance()
+                .resolve(SettingsUI.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor)
+                .set(true);
+            const mainFrame = await getMainFrame(target);
+            const deployedUrl = urlString `http://example.com/bundle.js`;
+            const authoredUrl = urlString `http://example.com/src/app.ts`;
+            const { project } = addResourceAndUISourceCode(deployedUrl, mainFrame, '', 'text/javascript');
+            // Add authored source map source code
+            const authoredContentProvider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(authoredUrl, Common.ResourceType.resourceTypes.SourceMapScript, '');
+            const authoredUiSourceCode = project.createUISourceCode(authoredUrl, Common.ResourceType.resourceTypes.SourceMapScript);
+            project.addUISourceCodeWithProvider(authoredUiSourceCode, authoredContentProvider, new Workspace.UISourceCode.UISourceCodeMetadata(null, null), 'text/typescript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            navigatorView.enableAuthoredGrouping = true;
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(authoredUiSourceCode);
+            const dumped = dumpTree(navigatorView);
+            assert.deepEqual(dumped, [
+                {
+                    title: 'Authored',
+                    children: [
+                        {
+                            title: 'example.com',
+                            children: [
+                                {
+                                    title: 'src',
+                                    children: [
+                                        { title: 'app.ts' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    title: 'Deployed',
+                    children: [
+                        {
+                            title: 'top',
+                            children: [
+                                {
+                                    title: 'example.com',
+                                    children: [
+                                        { title: 'bundle.js' },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+        });
+    });
+    describe('node removal ordering', () => {
+        it('removes nodes without selection on path before nodes with selected ancestor folder', async () => {
+            const mainFrame = await getMainFrame(target);
+            const urlFolderFile = urlString `http://example.com/src/a.js`;
+            const urlRootFile = urlString `http://example.com/b.js`;
+            const { project, uiSourceCode: uiSourceCode1 } = addResourceAndUISourceCode(urlFolderFile, mainFrame, '', 'text/javascript');
+            const { uiSourceCode: uiSourceCode2 } = addResourceAndUISourceCode(urlRootFile, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode1);
+            const folderTreeElement = findTreeElement(navigatorView, el => el.title === 'src');
+            assert.exists(folderTreeElement);
+            folderTreeElement.select();
+            assert.isTrue(folderTreeElement.selected);
+            // The end state after removal is identical (all nodes removed); we spy on removeUISourceCodeNode
+            // to verify the removal ordering optimization that removes unselected paths first (crbug.com/1409025).
+            const removeUISourceCodeNodeSpy = sinon.spy(navigatorView, 'removeUISourceCodeNode');
+            project.removeProject();
+            sinon.assert.calledTwice(removeUISourceCodeNodeSpy);
+            // The node without selection on its path (b.js) must be removed before the node with selected ancestor folder (src/a.js).
+            assert.strictEqual(removeUISourceCodeNodeSpy.firstCall.args[0].uiSourceCode(), uiSourceCode2);
+            assert.strictEqual(removeUISourceCodeNodeSpy.secondCall.args[0].uiSourceCode(), uiSourceCode1);
+        });
+        it('removes nodes without selection on path before nodes with selected ancestor group', async () => {
+            const mainFrame = await getMainFrame(target);
+            const urlExampleFile = urlString `http://example.com/a.js`;
+            const urlOtherFile = urlString `http://other.com/b.js`;
+            const { project, uiSourceCode: uiSourceCode1 } = addResourceAndUISourceCode(urlExampleFile, mainFrame, '', 'text/javascript');
+            const { uiSourceCode: uiSourceCode2 } = addResourceAndUISourceCode(urlOtherFile, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode1);
+            const domainTreeElement = findTreeElement(navigatorView, el => el.title === 'example.com');
+            assert.exists(domainTreeElement);
+            domainTreeElement.select();
+            assert.isTrue(domainTreeElement.selected);
+            // The end state after removal is identical (all nodes removed); we spy on removeUISourceCodeNode
+            // to verify the removal ordering optimization that removes unselected paths first (crbug.com/1409025).
+            const removeUISourceCodeNodeSpy = sinon.spy(navigatorView, 'removeUISourceCodeNode');
+            project.removeProject();
+            sinon.assert.calledTwice(removeUISourceCodeNodeSpy);
+            // The node without selection on its path (other.com/b.js) must be removed before the node with selected ancestor group (example.com/a.js).
+            assert.strictEqual(removeUISourceCodeNodeSpy.firstCall.args[0].uiSourceCode(), uiSourceCode2);
+            assert.strictEqual(removeUISourceCodeNodeSpy.secondCall.args[0].uiSourceCode(), uiSourceCode1);
+        });
+    });
+    describe('revealUISourceCode', () => {
+        it('expands ancestors and selects the target row', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/nested/path/to/script.js`;
+            const { uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const node = navigatorView.revealUISourceCode(uiSourceCode, true);
+            assert.exists(node);
+            assert.exists(node.treeElement);
+            assert.isTrue(node.treeElement.selected);
+            // Verify ancestors are expanded and target is selected in dumpTree.
+            const dumped = dumpTree(navigatorView, { includeStatus: true });
+            assert.deepEqual(dumped, [
+                {
+                    title: 'top',
+                    expanded: true,
+                    children: [
+                        {
+                            title: 'example.com',
+                            expanded: true,
+                            children: [
+                                {
+                                    title: 'nested/path/to',
+                                    expanded: true,
+                                    children: [
+                                        {
+                                            title: 'script.js',
+                                            selected: true,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ]);
+        });
+    });
+    describe('selection events', () => {
+        async function setupSourceNode() {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const node = navigatorView.revealUISourceCode(uiSourceCode);
+            return { project, uiSourceCode, navigatorView, node, url };
+        }
+        async function setupSelectionTest() {
+            const { project, uiSourceCode, navigatorView } = await setupSourceNode();
+            const eventSpy = sinon.spy();
+            navigatorView.addEventListener("source-selected" /* Sources.NavigatorView.Events.SOURCE_SELECTED */, eventSpy);
+            return { project, uiSourceCode, navigatorView, eventSpy };
+        }
+        it('dispatches SOURCE_SELECTED event on click without focusing source', async () => {
+            const { project, uiSourceCode, navigatorView, eventSpy } = await setupSelectionTest();
+            activateRow(navigatorView, 'script.js', 'click');
+            sinon.assert.calledOnce(eventSpy);
+            assert.deepEqual(eventSpy.firstCall.args[0].data, { uiSourceCode, focusSource: false });
+            project.removeProject();
+        });
+        it('dispatches SOURCE_SELECTED event on Enter key with focusing source', async () => {
+            const { project, uiSourceCode, navigatorView, eventSpy } = await setupSelectionTest();
+            activateRow(navigatorView, 'script.js', 'enter');
+            sinon.assert.calledOnce(eventSpy);
+            assert.deepEqual(eventSpy.firstCall.args[0].data, { uiSourceCode, focusSource: true });
+            project.removeProject();
+        });
+        it('dispatches SOURCE_SELECTED event on Space key with focusing source', async () => {
+            const { project, uiSourceCode, navigatorView, eventSpy } = await setupSelectionTest();
+            activateRow(navigatorView, 'script.js', 'space');
+            sinon.assert.calledOnce(eventSpy);
+            assert.deepEqual(eventSpy.firstCall.args[0].data, { uiSourceCode, focusSource: true });
+            project.removeProject();
+        });
+        it('dispatches SOURCE_SELECTED event on primary double click with focusing source', async () => {
+            const { project, uiSourceCode, navigatorView, eventSpy } = await setupSelectionTest();
+            activateRow(navigatorView, 'script.js', 'dblclick', { button: 0 });
+            sinon.assert.calledOnce(eventSpy);
+            assert.deepEqual(eventSpy.firstCall.args[0].data, { uiSourceCode, focusSource: true });
+            project.removeProject();
+        });
+        it('dispatches SOURCE_SELECTED event on middle double click without focusing source', async () => {
+            const { project, uiSourceCode, navigatorView, eventSpy } = await setupSelectionTest();
+            activateRow(navigatorView, 'script.js', 'dblclick', { button: 1 });
+            sinon.assert.calledOnce(eventSpy);
+            assert.deepEqual(eventSpy.firstCall.args[0].data, { uiSourceCode, focusSource: false });
+            project.removeProject();
+        });
+        it('sets URL data on drag start', async () => {
+            const { project, navigatorView, url } = await setupSourceNode();
+            const dataTransfer = dragStartRow(navigatorView, 'script.js');
+            assert.strictEqual(dataTransfer.getData('text/plain'), url);
+            project.removeProject();
+        });
+        it('renames on mousedown when selected and focused', async () => {
+            const clock = sinon.useFakeTimers({ toFake: ['setTimeout'] });
+            try {
+                const { project, uiSourceCode, navigatorView, node } = await setupSourceNode();
+                assert.exists(node);
+                sinon.stub(uiSourceCode, 'canRename').returns(true);
+                const treeElement = node.treeElement;
+                assert.exists(treeElement);
+                treeElement.select();
+                sinon.stub(navigatorView.scriptsTree.element, 'hasFocus').returns(true);
+                const renameSpy = sinon.spy(navigatorView, 'rename');
+                mouseDownRow(navigatorView, 'script.js');
+                clock.tick(300);
+                sinon.assert.calledOnceWithExactly(renameSpy, node, false);
+                project.removeProject();
+            }
+            finally {
+                clock.restore();
+            }
+        });
+    });
+    describe('context menus', () => {
+        it('shows context menu on file row', async () => {
+            const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode);
+            openContextMenuOnRow(navigatorView, 'script.js');
+            sinon.assert.calledOnce(showStub);
+        });
+        it('shows context menu on folder row', async () => {
+            const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/src/script.js`;
+            addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            openContextMenuOnRow(navigatorView, 'src');
+            sinon.assert.calledOnce(showStub);
+        });
+        it('highlights frame on hover and hides highlight on mouseleave', async () => {
+            const overlayModel = target.model(SDK.OverlayModel.OverlayModel);
+            assert.exists(overlayModel);
+            const highlightFrameSpy = sinon.spy(overlayModel, 'highlightFrame');
+            const hideHighlightSpy = sinon.spy(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+            const childFrame = await addChildFrame(target);
+            const url = urlString `http://example.com/subframe/index.html`;
+            addResourceAndUISourceCode(url, childFrame, '', 'text/html');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            hoverRow(navigatorView, childFrame.displayName(), true);
+            sinon.assert.calledOnceWithExactly(highlightFrameSpy, childFrame.id);
+            hoverRow(navigatorView, childFrame.displayName(), false);
+            sinon.assert.calledOnce(hideHighlightSpy);
+        });
+    });
+    describe('selection and expansion tracking', () => {
+        it('marks folder as expanded and lazily populates children on expandNode', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/a.js`;
+            const url2 = urlString `http://example.com/src/b.js`;
+            const { project } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const folderTreeElement = getTreeElement(navigatorView, 'src');
+            const folderNode = navigatorView.nodeForTreeElement(folderTreeElement);
+            assert.exists(folderNode);
+            assert.isFalse(navigatorView.isNodeExpanded(folderNode));
+            assert.isFalse(folderNode.isPopulated());
+            assert.lengthOf(folderTreeElement.children(), 0);
+            navigatorView.expandNode(folderNode);
+            assert.isTrue(navigatorView.isNodeExpanded(folderNode));
+            assert.isTrue(folderNode.isPopulated());
+            assert.lengthOf(folderTreeElement.children(), 2);
+            assert.strictEqual(folderTreeElement.children()[0].title, 'a.js');
+            assert.strictEqual(folderTreeElement.children()[1].title, 'b.js');
+            project.removeProject();
+        });
+        it('marks folder as not expanded on collapseNode', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/a.js`;
+            const url2 = urlString `http://example.com/src/b.js`;
+            const { project } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const folderTreeElement = getTreeElement(navigatorView, 'src');
+            const folderNode = navigatorView.nodeForTreeElement(folderTreeElement);
+            assert.exists(folderNode);
+            navigatorView.expandNode(folderNode);
+            assert.isTrue(navigatorView.isNodeExpanded(folderNode));
+            assert.isTrue(folderTreeElement.expanded);
+            navigatorView.collapseNode(folderNode);
+            assert.isFalse(navigatorView.isNodeExpanded(folderNode));
+            assert.isFalse(folderTreeElement.expanded);
+            project.removeProject();
+        });
+        it('updates tracked selection on selectNode', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const node = navigatorView.revealUISourceCode(uiSourceCode);
+            assert.exists(node);
+            navigatorView.selectNode(node);
+            assert.isTrue(navigatorView.isNodeSelected(node));
+            sinon.stub(uiSourceCode, 'canRename').returns(true);
+            sinon.stub(navigatorView.scriptsTree.element, 'hasFocus').returns(true);
+            assert.isTrue(navigatorView.shouldRenameOnMouseDown(node));
+            project.removeProject();
+        });
+        it('selects file node when opening context menu on file row', async () => {
+            sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const node = navigatorView.revealUISourceCode(uiSourceCode);
+            assert.exists(node);
+            assert.isFalse(navigatorView.isNodeSelected(node));
+            openContextMenuOnRow(navigatorView, 'script.js');
+            assert.isTrue(navigatorView.isNodeSelected(node));
+            project.removeProject();
+        });
+        it('selects folder node when opening context menu on folder row', async () => {
+            sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/src/script.js`;
+            const { project } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const folderTreeElement = getTreeElement(navigatorView, 'src');
+            const folderNode = navigatorView.nodeForTreeElement(folderTreeElement);
+            assert.exists(folderNode);
+            assert.isFalse(navigatorView.isNodeSelected(folderNode));
+            openContextMenuOnRow(navigatorView, 'src');
+            assert.isTrue(navigatorView.isNodeSelected(folderNode));
+            project.removeProject();
+        });
+        it('preserves expansion of unmerged parent folder when a sibling folder is added', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/components/button.js`;
+            const { project, uiSourceCode: uiSourceCode1 } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode1);
+            const mergedTreeElement = getTreeElement(navigatorView, 'src/components');
+            const mergedNode = navigatorView.nodeForTreeElement(mergedTreeElement);
+            assert.exists(mergedNode);
+            navigatorView.expandNode(mergedNode);
+            assert.isTrue(navigatorView.isNodeExpanded(mergedNode));
+            // Add a sibling folder under "src/utils/math.js".
+            const url2 = urlString `http://example.com/src/utils/math.js`;
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            await navigatorView.updateComplete;
+            // "src" should now be its own unmerged row and remain expanded.
+            const srcTreeElement = getTreeElement(navigatorView, 'src');
+            const srcNode = navigatorView.nodeForTreeElement(srcTreeElement);
+            assert.exists(srcNode);
+            assert.isTrue(navigatorView.isNodeExpanded(srcNode));
+            assert.isTrue(srcTreeElement.expanded);
+            project.removeProject();
+        });
+        it('updates selection to parent folder when unpopulated folder chain unmerges', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/components/button.js`;
+            const { project } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const mergedTreeElement = getTreeElement(navigatorView, 'src/components');
+            const mergedNode = navigatorView.nodeForTreeElement(mergedTreeElement);
+            assert.exists(mergedNode);
+            navigatorView.selectNode(mergedNode);
+            assert.isTrue(navigatorView.isNodeSelected(mergedNode));
+            // Add a sibling folder under "src/utils/math.js".
+            const url2 = urlString `http://example.com/src/utils/math.js`;
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            await navigatorView.updateComplete;
+            // The unmerged "src" folder now takes over the tree element and receives the selection.
+            const srcTreeElement = getTreeElement(navigatorView, 'src');
+            const srcNode = navigatorView.nodeForTreeElement(srcTreeElement);
+            assert.exists(srcNode);
+            assert.isTrue(srcTreeElement.selected);
+            assert.isTrue(navigatorView.isNodeSelected(srcNode));
+            project.removeProject();
+        });
+        it('updates tracked selection when setNode is called on a selected folder element', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/script.js`;
+            const url2 = urlString `http://example.com/other/script.js`;
+            const { project } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const srcTreeElement = getTreeElement(navigatorView, 'src');
+            const otherTreeElement = getTreeElement(navigatorView, 'other');
+            const srcNode = navigatorView.nodeForTreeElement(srcTreeElement);
+            const otherNode = navigatorView.nodeForTreeElement(otherTreeElement);
+            assert.exists(srcNode);
+            assert.exists(otherNode);
+            srcTreeElement.select();
+            assert.isTrue(navigatorView.isNodeSelected(srcNode));
+            navigatorView.setNodeForTreeElement(srcTreeElement, otherNode);
+            assert.isTrue(navigatorView.isNodeSelected(otherNode));
+            project.removeProject();
+        });
+        it('updates tracked expansion when setNode is called on an expanded folder element', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url1 = urlString `http://example.com/src/script.js`;
+            const url2 = urlString `http://example.com/other/script.js`;
+            const { project } = addResourceAndUISourceCode(url1, mainFrame, '', 'text/javascript');
+            addResourceAndUISourceCode(url2, mainFrame, '', 'text/javascript', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            const srcTreeElement = getTreeElement(navigatorView, 'src');
+            const otherTreeElement = getTreeElement(navigatorView, 'other');
+            const srcNode = navigatorView.nodeForTreeElement(srcTreeElement);
+            const otherNode = navigatorView.nodeForTreeElement(otherTreeElement);
+            assert.exists(srcNode);
+            assert.exists(otherNode);
+            navigatorView.expandNode(srcNode);
+            assert.isTrue(navigatorView.isNodeExpanded(srcNode));
+            assert.isFalse(navigatorView.isNodeExpanded(otherNode));
+            navigatorView.setNodeForTreeElement(srcTreeElement, otherNode);
+            assert.isTrue(navigatorView.isNodeExpanded(otherNode));
+            project.removeProject();
+        });
+    });
+    describe('dirty and ignore-list state', () => {
+        it('prepends asterisk to title when UISourceCode is dirty and restores on reset', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode);
+            let scriptNode = findDumpedNode(dumpTree(navigatorView), 'script.js');
+            assert.exists(scriptNode);
+            uiSourceCode.setWorkingCopy('console.log(2);');
+            scriptNode = findDumpedNode(dumpTree(navigatorView), '*script.js');
+            assert.exists(scriptNode);
+            uiSourceCode.resetWorkingCopy();
+            scriptNode = findDumpedNode(dumpTree(navigatorView), 'script.js');
+            assert.exists(scriptNode);
+        });
+        it('applies is-ignore-listed class when script is ignore-listed', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, 'console.log(1);', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(uiSourceCode);
+            let dumped = dumpTree(navigatorView, { includeClasses: true });
+            let scriptNode = findDumpedNode(dumped, 'script.js');
+            assert.exists(scriptNode);
+            assert.isFalse(scriptNode.classes?.includes('is-ignore-listed') ?? false);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+            ignoreListManager.enableIgnoreListing = true;
+            let patternChangePromise = new Promise(resolve => {
+                const listener = () => {
+                    ignoreListManager.removeChangeListener(listener);
+                    resolve();
+                };
+                ignoreListManager.addChangeListener(listener);
+            });
+            ignoreListManager.ignoreListURL(url);
+            await patternChangePromise;
+            dumped = dumpTree(navigatorView, { includeClasses: true });
+            scriptNode = findDumpedNode(dumped, 'script.js');
+            assert.exists(scriptNode);
+            assert.isTrue(scriptNode.classes?.includes('is-ignore-listed'));
+            patternChangePromise = new Promise(resolve => {
+                const listener = () => {
+                    ignoreListManager.removeChangeListener(listener);
+                    resolve();
+                };
+                ignoreListManager.addChangeListener(listener);
+            });
+            ignoreListManager.unIgnoreListURL(url);
+            await patternChangePromise;
+            dumped = dumpTree(navigatorView, { includeClasses: true });
+            scriptNode = findDumpedNode(dumped, 'script.js');
+            assert.exists(scriptNode);
+            assert.isFalse(scriptNode.classes?.includes('is-ignore-listed') ?? false);
+        });
+    });
+    describe('screenshots', () => {
+        function addFile(url, frame, content, mimeType, project, overrideResourceType) {
+            if (mimeType === 'text/html') {
+                createResource(frame, url, mimeType, content);
+            }
+            const resourceType = overrideResourceType ?? Common.ResourceType.ResourceType.fromMimeType(mimeType);
+            let uiSourceCode = workspace.uiSourceCodeForURL(url);
+            if (!uiSourceCode) {
+                uiSourceCode = project.createUISourceCode(url, resourceType);
+            }
+            Bindings.NetworkProject.NetworkProject.setInitialFrameAttribution(uiSourceCode, frame.id);
+            const contentProvider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(url, resourceType, content);
+            const metadata = new Workspace.UISourceCode.UISourceCodeMetadata(null, null);
+            project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType);
+            return uiSourceCode;
+        }
+        afterEach(() => {
+            Common.Settings.Settings.instance()
+                .resolve(SettingsUI.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor)
+                .set(false);
+            Workspace.IgnoreListManager.IgnoreListManager.instance().enableIgnoreListing = false;
+        });
+        it('renders network tree with merged folders and files', async () => {
+            const mainFrame = await getMainFrame(target);
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'PROJECT_ID', Workspace.Workspace.projectTypes.Network, 'Test project', false);
+            Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
+            const buttonUiSourceCode = addFile(urlString `http://example.com/src/components/widgets/button.js`, mainFrame, '', 'text/javascript', project);
+            addFile(urlString `http://example.com/index.html`, mainFrame, '', 'text/html', project);
+            addFile(urlString `http://example.com/styles.css`, mainFrame, '', 'text/css', project);
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            renderElementIntoDOM(navigatorView, { includeCommonStyles: true, width: 300, height: 300 });
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(buttonUiSourceCode, /* select= */ true);
+            await navigatorView.updateComplete;
+            await assertScreenshot('sources/navigator-view-network.png');
+        });
+        it('renders ignore-listed and dirty files', async () => {
+            const mainFrame = await getMainFrame(target);
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'PROJECT_ID', Workspace.Workspace.projectTypes.Network, 'Test project', false);
+            Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
+            const dirtyUrl = urlString `http://example.com/dirty.js`;
+            const dirtyUiSourceCode = addFile(dirtyUrl, mainFrame, 'console.log(1);', 'text/javascript', project);
+            const ignoredUrl = urlString `http://example.com/ignored.js`;
+            const ignoredUiSourceCode = addFile(ignoredUrl, mainFrame, 'console.log(2);', 'text/javascript', project);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+            ignoreListManager.enableIgnoreListing = true;
+            const patternChangePromise = new Promise(resolve => {
+                const listener = () => {
+                    ignoreListManager.removeChangeListener(listener);
+                    resolve();
+                };
+                ignoreListManager.addChangeListener(listener);
+            });
+            ignoreListManager.ignoreListURL(ignoredUrl);
+            await patternChangePromise;
+            dirtyUiSourceCode.setWorkingCopy('console.log(11);');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            renderElementIntoDOM(navigatorView, { includeCommonStyles: true, width: 300, height: 300 });
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(dirtyUiSourceCode);
+            navigatorView.revealUISourceCode(ignoredUiSourceCode);
+            await navigatorView.updateComplete;
+            await assertScreenshot('sources/navigator-view-ignore-listed-and-dirty.png');
+        });
+        it('renders authored and deployed grouping', async () => {
+            Common.Settings.Settings.instance()
+                .resolve(SettingsUI.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor)
+                .set(true);
+            const mainFrame = await getMainFrame(target);
+            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'PROJECT_ID', Workspace.Workspace.projectTypes.Network, 'Test project', false);
+            Bindings.NetworkProject.NetworkProject.setTargetForProject(project, target);
+            const deployedUrl = urlString `http://example.com/bundle.js`;
+            const authoredUrl = urlString `http://example.com/src/app.ts`;
+            const deployedUiSourceCode = addFile(deployedUrl, mainFrame, '', 'text/javascript', project);
+            const authoredContentProvider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(authoredUrl, Common.ResourceType.resourceTypes.SourceMapScript, '');
+            const authoredUiSourceCode = project.createUISourceCode(authoredUrl, Common.ResourceType.resourceTypes.SourceMapScript);
+            project.addUISourceCodeWithProvider(authoredUiSourceCode, authoredContentProvider, new Workspace.UISourceCode.UISourceCodeMetadata(null, null), 'text/typescript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            navigatorView.enableAuthoredGrouping = true;
+            renderElementIntoDOM(navigatorView, { includeCommonStyles: true, width: 300, height: 300 });
+            await navigatorView.updateComplete;
+            navigatorView.revealUISourceCode(authoredUiSourceCode);
+            navigatorView.revealUISourceCode(deployedUiSourceCode);
+            await navigatorView.updateComplete;
+            await assertScreenshot('sources/navigator-view-authored-deployed.png');
+        });
+    });
+    describe('presenter state computation', () => {
+        it('updates NavigatorUISourceCodeTreeNode title, tooltip, and ignore-listed state without creating a TreeElement', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/script.js`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '', 'text/javascript');
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, null);
+            assert.isNull(node.treeElement);
+            assert.strictEqual(node.title, 'script.js');
+            assert.strictEqual(node.tooltip, 'http://example.com/script.js');
+            uiSourceCode.setWorkingCopy('modified');
+            node.updateTitle();
+            assert.strictEqual(node.title, '*script.js');
+            assert.isNull(node.treeElement);
+            Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiSourceCode);
+            node.updateTitle();
+            assert.isTrue(node.recursiveProperties.exclusivelyIgnored);
+            assert.strictEqual(node.tooltip, 'http://example.com/script.js (ignore listed)');
+            assert.isNull(node.treeElement);
+            project.removeProject();
+        });
+        it('computes NavigatorTreeNode.computedTooltip() for nested and ignore-listed folders without creating a TreeElement', async () => {
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const srcFolder = new Sources.NavigatorView.NavigatorFolderTreeNode(navigatorView, null, 'src', Sources.NavigatorView.Types.NetworkFolder, 'src', 'src', urlString ``);
+            const componentsFolder = new Sources.NavigatorView.NavigatorFolderTreeNode(navigatorView, null, 'components', Sources.NavigatorView.Types.NetworkFolder, 'src/components', 'components', urlString ``);
+            srcFolder.appendChild(componentsFolder);
+            componentsFolder.recursiveProperties.exclusivelyIgnored = true;
+            assert.isNull(componentsFolder.treeElement);
+            assert.strictEqual(componentsFolder.computedTooltip(), 'src/components (ignore listed)');
+        });
+        it('updates NavigatorFolderTreeNode hasMappedFiles presenter state in updateTitle()', async () => {
+            const { project } = createFileSystemUISourceCode({
+                url: urlString `file:///path/to/project/src/script.js`,
+                mimeType: 'text/javascript',
+                fileSystemPath: 'file:///path/to/project',
+            });
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const folderNode = new Sources.NavigatorView.NavigatorFolderTreeNode(navigatorView, project, 'src', Sources.NavigatorView.Types.FileSystemFolder, 'src', 'src', urlString ``);
+            const filePathHasBindingsStub = sinon.stub(Persistence.Persistence.PersistenceImpl.instance(), 'filePathHasBindings');
+            filePathHasBindingsStub.returns(true);
+            folderNode.updateTitle();
+            assert.isTrue(folderNode.hasMappedFiles);
+            filePathHasBindingsStub.returns(false);
+            folderNode.updateTitle();
+            assert.isFalse(folderNode.hasMappedFiles);
+            workspace.removeProject(project);
+        });
+        it('resets exclusivelyIgnored and is-ignore-listed class on non-script UISourceCode when ignore-listing is disabled', async () => {
+            const mainFrame = await getMainFrame(target);
+            const url = urlString `http://example.com/multi-files.html`;
+            const { project, uiSourceCode } = addResourceAndUISourceCode(url, mainFrame, '<html></html>', 'text/html', undefined, Common.ResourceType.resourceTypes.Document);
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+            ignoreListManager.enableIgnoreListing = true;
+            const patternChangePromise = new Promise(resolve => {
+                const listener = () => {
+                    ignoreListManager.removeChangeListener(listener);
+                    resolve();
+                };
+                ignoreListManager.addChangeListener(listener);
+            });
+            ignoreListManager.ignoreListURL(url);
+            await patternChangePromise;
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const node = new Sources.NavigatorView.NavigatorUISourceCodeTreeNode(navigatorView, uiSourceCode, null);
+            const treeElement = node.treeNode();
+            assert.isTrue(node.recursiveProperties.exclusivelyIgnored);
+            assert.isTrue(treeElement.listItemElement.classList.contains('is-ignore-listed'));
+            try {
+                ignoreListManager.enableIgnoreListing = false;
+                node.updateTitle();
+                assert.isNull(node.recursiveProperties.exclusivelyIgnored);
+                assert.isFalse(treeElement.listItemElement.classList.contains('is-ignore-listed'));
+            }
+            finally {
+                ignoreListManager.enableIgnoreListing = true;
+                ignoreListManager.unIgnoreListURL(url);
+                project.removeProject();
+            }
+        });
+        it('auto-expands NavigatorGroupTreeNode on attach even if updateTitle was called before treeNode was created', async () => {
+            const { project } = createFileSystemUISourceCode({
+                url: urlString `file:///path/to/project/src/script.js`,
+                mimeType: 'text/javascript',
+                fileSystemPath: 'file:///path/to/project',
+            });
+            const navigatorView = new Sources.NavigatorView.NavigatorView(undefined, [networkProjectManager]);
+            const groupNode = new Sources.NavigatorView.NavigatorGroupTreeNode(navigatorView, project, 'file:///path/to/project', Sources.NavigatorView.Types.FileSystem, 'Project', urlString ``);
+            const filePathHasBindingsStub = sinon.stub(Persistence.Persistence.PersistenceImpl.instance(), 'filePathHasBindings');
+            filePathHasBindingsStub.returns(true);
+            // Call updateTitle before treeNode() / attach.
+            groupNode.updateTitle();
+            assert.isTrue(groupNode.hasMappedFiles);
+            assert.isUndefined(groupNode.treeElement);
+            const treeElement = groupNode.treeNode();
+            assert.exists(treeElement);
+            assert.isFalse(treeElement.listItemElement.classList.contains('has-mapped-files'));
+            // Appending to scriptsTree root attaches treeElement and triggers onattach.
+            navigatorView.appendChild(navigatorView.scriptsTree.rootElement(), treeElement);
+            assert.isTrue(treeElement.listItemElement.classList.contains('has-mapped-files'));
+            assert.isTrue(treeElement.expanded);
+            assert.isTrue(navigatorView.isNodeExpanded(groupNode));
+            workspace.removeProject(project);
         });
     });
 });

@@ -82,7 +82,7 @@ export class CSSOverviewStartView extends UI.Widget.Widget {
         this.performUpdate();
     }
     performUpdate() {
-        this.#view({ onStartCapture: this.onStartCapture }, {}, this.contentElement);
+        this.#view({ onStartCapture: this.onStartCapture }, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=CSSOverviewStartView.js.map

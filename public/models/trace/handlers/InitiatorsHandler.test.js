@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { before, beforeEach, describe, it } from 'mocha';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('InitiatorsHandler', () => {
+    setupLocaleHooks();
     beforeEach(() => {
         Trace.Handlers.ModelHandlers.AsyncJSCalls.reset();
         Trace.Handlers.ModelHandlers.Flows.reset();
@@ -70,7 +72,7 @@ describe('InitiatorsHandler', () => {
     });
     describe('for async-js-calls trace', () => {
         let parsedTrace;
-        before(async function () {
+        beforeEach(async function () {
             parsedTrace = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
         });
         it('sets an initiator relationship between a requestAnimationFrame and the scheduled FunctionCall', () => {
@@ -275,6 +277,50 @@ describe('InitiatorsHandler', () => {
                 endEvents.some(Trace.Types.Events.isAbortPostTaskCallback));
         });
         assert(doubleEvents, 'initiator with both run and cancel initiated events not found');
+    });
+    it('scopes numeric timer IDs by process and frame', async () => {
+        Trace.Handlers.ModelHandlers.Flows.reset();
+        Trace.Handlers.ModelHandlers.AsyncJSCalls.reset();
+        Trace.Handlers.ModelHandlers.Initiators.reset();
+        const pid1 = Trace.Types.Events.ProcessID(100);
+        const pid2 = Trace.Types.Events.ProcessID(200);
+        const tid = Trace.Types.Events.ThreadID(1);
+        const timerInstallFrameA = {
+            name: Trace.Types.Events.Name.TIMER_INSTALL,
+            cat: 'devtools.timeline',
+            ph: Trace.Types.Events.Phase.INSTANT,
+            s: Trace.Types.Events.Scope.THREAD,
+            ts: Trace.Types.Timing.Micro(10),
+            pid: pid1,
+            tid,
+            args: { data: { timerId: 1, timeout: 0, singleShot: true, frame: 'frame-a' } },
+        };
+        const timerInstallFrameB = {
+            ...timerInstallFrameA,
+            ts: Trace.Types.Timing.Micro(20),
+            args: { data: { timerId: 1, timeout: 0, singleShot: true, frame: 'frame-b' } },
+        };
+        const timerInstallOtherPid = {
+            ...timerInstallFrameA,
+            ts: Trace.Types.Timing.Micro(30),
+            pid: pid2,
+        };
+        const timerFireFrameA = {
+            name: Trace.Types.Events.Name.TIMER_FIRE,
+            cat: 'devtools.timeline',
+            ph: Trace.Types.Events.Phase.COMPLETE,
+            ts: Trace.Types.Timing.Micro(40),
+            dur: Trace.Types.Timing.Micro(5),
+            pid: pid1,
+            tid,
+            args: { data: { timerId: 1, frame: 'frame-a' } },
+        };
+        for (const event of [timerInstallFrameA, timerInstallFrameB, timerInstallOtherPid, timerFireFrameA]) {
+            Trace.Handlers.ModelHandlers.Initiators.handleEvent(event);
+        }
+        await Trace.Handlers.ModelHandlers.Initiators.finalize();
+        const { eventToInitiator } = Trace.Handlers.ModelHandlers.Initiators.data();
+        assert.strictEqual(eventToInitiator.get(timerFireFrameA), timerInstallFrameA);
     });
 });
 //# sourceMappingURL=InitiatorsHandler.test.js.map

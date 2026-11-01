@@ -1598,6 +1598,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2280,6 +2281,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3385,7 +3387,7 @@ var LogManager = class _LogManager {
   }
   modelAdded(logModel) {
     const eventListeners = [];
-    eventListeners.push(logModel.addEventListener(SDK2.LogModel.Events.ENTRY_ADDED, this.logEntryAdded, this));
+    eventListeners.push(logModel.addEventListener(SDK2.LogModel.Events.ENTRY_ADDED, this.#logEntryAdded, this));
     modelToEventListeners.set(logModel, eventListeners);
   }
   modelRemoved(logModel) {
@@ -3394,7 +3396,7 @@ var LogManager = class _LogManager {
       Common2.EventTarget.removeEventListeners(eventListeners);
     }
   }
-  logEntryAdded(event) {
+  #logEntryAdded(event) {
     const { logModel, entry } = event.data;
     const target = logModel.target();
     const details = {

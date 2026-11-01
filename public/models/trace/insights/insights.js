@@ -1605,6 +1605,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network6.DeviceBoundSessionFetchResult || (Network6.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2287,6 +2288,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -6436,17 +6438,19 @@ function getNodesAndTimingByRequestId(nodeTimings) {
     }
     let duration = nodeTiming.duration;
     let startTime = nodeTiming.startTime;
+    let queuedTime = nodeTiming.queuedTime;
     for (const redirect of node.request.redirects ?? []) {
       const redirectTiming = timingByNodeId.get(redirect.requestId);
       if (redirectTiming) {
         duration += redirectTiming.duration;
         startTime = Math.min(startTime, redirectTiming.startTime);
+        queuedTime = Math.min(queuedTime, redirectTiming.queuedTime);
       }
     }
     const backendRequestId = node.request.rawRequest?.args.data.requestId ?? node.request.requestId;
     requestIdToNode.set(backendRequestId, {
       node,
-      nodeTiming: { startTime, endTime: nodeTiming.endTime, duration }
+      nodeTiming: { startTime, endTime: nodeTiming.endTime, queuedTime, duration }
     });
   }
   return requestIdToNode;

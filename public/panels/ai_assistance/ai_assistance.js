@@ -2136,14 +2136,14 @@ function renderTitle(step) {
   const paused = step.state.type === "needs_approval" ? html5`<span class="paused">${lockedString2(UIStringsNotTranslate.paused)}: </span>` : Lit5.nothing;
   return html5`<h3 class="title" aria-label=${titleForStep(step)}>${paused}${titleForStep(step)}</h3>`;
 }
-function renderStepCode(step) {
-  if (!step.code && !step.output) {
+function renderStepAction(step) {
+  if (!step.action && !step.output) {
     return Lit5.nothing;
   }
   const codeHeadingText = step.output && step.state.type !== "canceled" ? lockedString2(UIStringsNotTranslate.codeExecuted) : lockedString2(UIStringsNotTranslate.codeToExecute);
-  const code = step.code ? html5`<div class="action-result">
+  const code = step.action ? html5`<div class="action-result">
       <devtools-code-block
-        .code=${step.code.trim()}
+        .code=${step.action.trim()}
         .codeLang=${"js"}
         .displayNotice=${!Boolean(step.output)}
         .header=${codeHeadingText}
@@ -2156,7 +2156,7 @@ function renderStepCode(step) {
       .codeLang=${"js"}
       .displayNotice=${true}
       .header=${lockedString2(UIStringsNotTranslate.dataReturned)}
-      .showCopyButton=${false}
+      .showCopyButton=${true}
     ></devtools-code-block>
   </div>` : Lit5.nothing;
   return html5`<div class="step-code">${code}${output}</div>`;
@@ -2184,7 +2184,7 @@ function renderStepDetails({
   )}` : Lit5.nothing;
   return html5`<div class="step-details">
     ${thought}
-    ${renderStepCode(step)}
+    ${renderStepAction(step)}
     ${sideEffects}
     ${contextDetails}
   </div>`;
@@ -2309,7 +2309,7 @@ function renderStepBadge({ step, isLast }) {
 function renderStep({ step, markdownRenderer, isLast }) {
   const stepClasses = Lit5.Directives.classMap({
     step: true,
-    empty: !step.thought && !step.code && !step.contextDetails && step.state.type !== "needs_approval",
+    empty: !step.thought && !step.action && !step.contextDetails && step.state.type !== "needs_approval",
     paused: step.state.type === "needs_approval",
     canceled: step.state.type === "canceled"
   });
@@ -3481,11 +3481,7 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
     );
     return null;
   }
-  const thirdPartyTree = new Timeline.ThirdPartyTreeView.ThirdPartyTreeViewWidget();
   const mapper = Trace2.EntityMapper.EntityMapper.getOrCreate(parsedTrace);
-  thirdPartyTree.model = { selectedEvents: events, parsedTrace, entityMapper: mapper };
-  thirdPartyTree.activeSelection = Timeline.TimelineSelection.selectionFromRangeMicroSeconds(bounds.min, bounds.max);
-  thirdPartyTree.refreshTree(true);
   const template = html5`
     <devtools-widget
       ${widget(TimelineComponents.TimelineRangeSummaryView.TimelineRangeSummaryView, {
@@ -3499,9 +3495,9 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
         maxRows: 10,
         isInAIWidget: true,
         model: {
-          selectedEvents: thirdPartyTree.selectedEvents ?? null,
+          selectedEvents: events,
           parsedTrace,
-          entityMapper: thirdPartyTree.entityMapper()
+          entityMapper: mapper
         },
         activeSelection: { bounds },
         onBottomUpButtonClicked: (node) => {
@@ -3523,13 +3519,16 @@ async function makeNetworkTrackWidget(widgetData) {
   const { parsedTrace, bounds } = widgetData.data;
   const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
   const template = html5`
-    <devtools-performance-agent-network-track
-      .data=${{
-    parsedTrace,
-    bounds,
-    dataProvider
-  }}
-    ></devtools-performance-agent-network-track>`;
+    <devtools-widget
+      class="network-track-widget"
+      ${widget(TimelineComponents.NetworkTrackWidget.NetworkTrackWidget, {
+    data: {
+      parsedTrace,
+      bounds,
+      dataProvider
+    }
+  })}
+    ></devtools-widget>`;
   return {
     renderedWidget: template,
     revealable: new TimelineUtils.Helpers.RevealableTimeRange(bounds),
@@ -5193,6 +5192,7 @@ var Network2;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network3.DeviceBoundSessionFetchResult || (Network3.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -5875,6 +5875,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -6280,13 +6281,13 @@ var Debugger;
   })(PausedEventReason = Debugger2.PausedEventReason || (Debugger2.PausedEventReason = {}));
 })(Debugger || (Debugger = {}));
 var Runtime;
-((Runtime6) => {
+((Runtime7) => {
   let SerializationOptionsSerialization;
   ((SerializationOptionsSerialization2) => {
     SerializationOptionsSerialization2["Deep"] = "deep";
     SerializationOptionsSerialization2["Json"] = "json";
     SerializationOptionsSerialization2["IdOnly"] = "idOnly";
-  })(SerializationOptionsSerialization = Runtime6.SerializationOptionsSerialization || (Runtime6.SerializationOptionsSerialization = {}));
+  })(SerializationOptionsSerialization = Runtime7.SerializationOptionsSerialization || (Runtime7.SerializationOptionsSerialization = {}));
   let DeepSerializedValueType;
   ((DeepSerializedValueType2) => {
     DeepSerializedValueType2["Undefined"] = "undefined";
@@ -6313,7 +6314,7 @@ var Runtime;
     DeepSerializedValueType2["Node"] = "node";
     DeepSerializedValueType2["Window"] = "window";
     DeepSerializedValueType2["Generator"] = "generator";
-  })(DeepSerializedValueType = Runtime6.DeepSerializedValueType || (Runtime6.DeepSerializedValueType = {}));
+  })(DeepSerializedValueType = Runtime7.DeepSerializedValueType || (Runtime7.DeepSerializedValueType = {}));
   let RemoteObjectType;
   ((RemoteObjectType2) => {
     RemoteObjectType2["Object"] = "object";
@@ -6324,7 +6325,7 @@ var Runtime;
     RemoteObjectType2["Boolean"] = "boolean";
     RemoteObjectType2["Symbol"] = "symbol";
     RemoteObjectType2["Bigint"] = "bigint";
-  })(RemoteObjectType = Runtime6.RemoteObjectType || (Runtime6.RemoteObjectType = {}));
+  })(RemoteObjectType = Runtime7.RemoteObjectType || (Runtime7.RemoteObjectType = {}));
   let RemoteObjectSubtype;
   ((RemoteObjectSubtype2) => {
     RemoteObjectSubtype2["Array"] = "array";
@@ -6348,7 +6349,7 @@ var Runtime;
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
     RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
-  })(RemoteObjectSubtype = Runtime6.RemoteObjectSubtype || (Runtime6.RemoteObjectSubtype = {}));
+  })(RemoteObjectSubtype = Runtime7.RemoteObjectSubtype || (Runtime7.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
   ((ObjectPreviewType2) => {
     ObjectPreviewType2["Object"] = "object";
@@ -6359,7 +6360,7 @@ var Runtime;
     ObjectPreviewType2["Boolean"] = "boolean";
     ObjectPreviewType2["Symbol"] = "symbol";
     ObjectPreviewType2["Bigint"] = "bigint";
-  })(ObjectPreviewType = Runtime6.ObjectPreviewType || (Runtime6.ObjectPreviewType = {}));
+  })(ObjectPreviewType = Runtime7.ObjectPreviewType || (Runtime7.ObjectPreviewType = {}));
   let ObjectPreviewSubtype;
   ((ObjectPreviewSubtype2) => {
     ObjectPreviewSubtype2["Array"] = "array";
@@ -6383,7 +6384,7 @@ var Runtime;
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
     ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
-  })(ObjectPreviewSubtype = Runtime6.ObjectPreviewSubtype || (Runtime6.ObjectPreviewSubtype = {}));
+  })(ObjectPreviewSubtype = Runtime7.ObjectPreviewSubtype || (Runtime7.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
   ((PropertyPreviewType2) => {
     PropertyPreviewType2["Object"] = "object";
@@ -6395,7 +6396,7 @@ var Runtime;
     PropertyPreviewType2["Symbol"] = "symbol";
     PropertyPreviewType2["Accessor"] = "accessor";
     PropertyPreviewType2["Bigint"] = "bigint";
-  })(PropertyPreviewType = Runtime6.PropertyPreviewType || (Runtime6.PropertyPreviewType = {}));
+  })(PropertyPreviewType = Runtime7.PropertyPreviewType || (Runtime7.PropertyPreviewType = {}));
   let PropertyPreviewSubtype;
   ((PropertyPreviewSubtype2) => {
     PropertyPreviewSubtype2["Array"] = "array";
@@ -6419,7 +6420,7 @@ var Runtime;
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
     PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
-  })(PropertyPreviewSubtype = Runtime6.PropertyPreviewSubtype || (Runtime6.PropertyPreviewSubtype = {}));
+  })(PropertyPreviewSubtype = Runtime7.PropertyPreviewSubtype || (Runtime7.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
   ((ConsoleAPICalledEventType2) => {
     ConsoleAPICalledEventType2["Log"] = "log";
@@ -6440,7 +6441,7 @@ var Runtime;
     ConsoleAPICalledEventType2["ProfileEnd"] = "profileEnd";
     ConsoleAPICalledEventType2["Count"] = "count";
     ConsoleAPICalledEventType2["TimeEnd"] = "timeEnd";
-  })(ConsoleAPICalledEventType = Runtime6.ConsoleAPICalledEventType || (Runtime6.ConsoleAPICalledEventType = {}));
+  })(ConsoleAPICalledEventType = Runtime7.ConsoleAPICalledEventType || (Runtime7.ConsoleAPICalledEventType = {}));
 })(Runtime || (Runtime = {}));
 
 // ../../front_end/panels/ai_assistance/components/ChatInput.ts
@@ -6757,7 +6758,7 @@ var chatInput_css_default = `/*
       content: var(--image-file-empty);
       width: var(--sys-size-4);
       height: var(--sys-size-4);
-      border-radius: 50%;
+      border-radius: var(--sys-shape-corner-full);
       outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
       left: 11px;
       position: absolute;
@@ -8409,14 +8410,14 @@ import * as AiAssistanceModel6 from "../../models/ai_assistance/ai_assistance.js
 import * as Buttons5 from "../../ui/components/buttons/buttons.js";
 import * as Lit9 from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
-var { html: html9 } = Lit9;
+var { html: html9, Directives: { ref: ref4, repeat } } = Lit9;
 var lockedString5 = i18n11.i18n.lockedString;
 var RELEVANT_DATA_TOOLTIP_ID = "relevant-data-link-permission-prompt";
 var UIStringsNotTranslate4 = {
   /**
    * @description Button text in the permission prompt that skips the tool call.
    */
-  skipToolCall: "Skip",
+  skipToolCall: "No",
   /**
    * @description Button text in the permission prompt that allows the tool call once.
    */
@@ -8424,7 +8425,7 @@ var UIStringsNotTranslate4 = {
   /**
    * @description Button text in the permission prompt that allows the tool call now and in the future.
    */
-  allowAlways: "Yes, always allow",
+  allowAlways: "Yes, and always allow",
   /**
    * @description Fallback title of the permission prompt when the tool has no title.
    */
@@ -8459,6 +8460,9 @@ function renderChangePermissionsInSettings() {
       @click=${openAllowedToolsSettings}
     >${lockedString5(UIStringsNotTranslate4.settings)}</button>${lockedString5(UIStringsNotTranslate4.atAnyTime)}`;
 }
+function focusOnFirstRender(element) {
+  queueMicrotask(() => element?.focus());
+}
 function renderPermissionPrompt(step, disclaimerText) {
   if (step.state.type !== "needs_approval") {
     return Lit9.nothing;
@@ -8466,9 +8470,9 @@ function renderPermissionPrompt(step, disclaimerText) {
   const dialog3 = step.state.sideEffectDialog;
   const title = dialog3.permissionTitle ?? lockedString5(UIStringsNotTranslate4.allowThisAction);
   const description = dialog3.description ? html9`<p class="permission-prompt-description">${dialog3.description}</p>` : Lit9.nothing;
-  const code = step.code ? html9`<devtools-code-block
+  const code = step.javascriptCode ? html9`<devtools-code-block
       class="permission-prompt-code"
-      .code=${step.code.trim()}
+      .code=${step.javascriptCode.trim()}
       .codeLang=${"js"}
       .displayNotice=${true}
       .header=${lockedString5(UIStringsNotTranslate4.codeToExecute)}
@@ -8480,12 +8484,12 @@ function renderPermissionPrompt(step, disclaimerText) {
   }}
       @click=${() => dialog3.onAnswer(AiAssistanceModel6.Tool.PermissionDecision.ALLOW_ALWAYS)}
     >${lockedString5(UIStringsNotTranslate4.allowAlways)}</devtools-button>` : Lit9.nothing;
-  return html9`
+  return html9`${repeat([step], (step2) => step2, () => html9`
   <div class="permission-prompt"
     jslog=${VisualLogging6.section("side-effect-confirmation")}>
     <div class="permission-prompt-header">
       <devtools-icon name="lock"></devtools-icon>
-      <h3 class="permission-prompt-title">${title}</h3>
+      <h2 class="permission-prompt-title">${title}</h2>
     </div>
     ${description}
     ${code}
@@ -8496,6 +8500,7 @@ function renderPermissionPrompt(step, disclaimerText) {
     jslogContext: "decline-execute-code"
   }}
         @click=${() => dialog3.onAnswer(AiAssistanceModel6.Tool.PermissionDecision.REJECT)}
+        ${ref4(focusOnFirstRender)}
       >${lockedString5(UIStringsNotTranslate4.skipToolCall)}</devtools-button>
       ${allowAlwaysButton}
       <devtools-button
@@ -8510,13 +8515,13 @@ function renderPermissionPrompt(step, disclaimerText) {
       ${renderRelevantDataDisclaimer(RELEVANT_DATA_TOOLTIP_ID, disclaimerText)}.
       ${renderChangePermissionsInSettings()}.
     </div>
-  </div>`;
+  </div>`)}`;
 }
 
 // ../../front_end/panels/ai_assistance/components/ChatView.ts
 var {
-  ref: ref4,
-  repeat,
+  ref: ref5,
+  repeat: repeat2,
   classMap
 } = Directives6;
 var { widget: widget3 } = UI6.Widget;
@@ -8554,12 +8559,12 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       <style>${chatView_css_default}</style>
       <style>${permissionPrompt_css_default}</style>
       <div class=${chatUiClasses}>
-        <main @scroll=${input.handleScroll} ${ref4((element) => {
+        <main @scroll=${input.handleScroll} ${ref5((element) => {
     output.mainElement = element;
   })}>
           ${input.messages.length > 0 ? html10`
-            <div class="messages-container" ${ref4(input.handleMessageContainerRef)}>
-              ${repeat(input.messages, (message) => message.id, (message, index) => {
+            <div class="messages-container" ${ref5(input.handleMessageContainerRef)}>
+              ${repeat2(input.messages, (message) => message.id, (message, index) => {
     const prevMessage = index > 0 ? input.messages[index - 1] : null;
     const prompt = message.entity === "model" /* MODEL */ && prevMessage?.entity === "user" /* USER */ ? prevMessage.text : "";
     return widget3(ChatMessage, {
@@ -8635,7 +8640,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     onNewConversation: input.onNewConversation,
     onContextRemoved: input.onContextRemoved,
     onContextAdd: input.onContextAdd
-  })} ${ref4((element) => {
+  })} ${ref5((element) => {
     output.input = element;
   })}></devtools-widget>`}
         </main>
@@ -8805,9 +8810,8 @@ import "../../ui/kit/kit.js";
 import * as Host4 from "../../core/host/host.js";
 import * as i18n15 from "../../core/i18n/i18n.js";
 import * as Root from "../../core/root/root.js";
-import * as uiI18n from "../../ui/i18n/i18n.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
-import { html as html11, render as render6 } from "../../ui/lit/lit.js";
+import { html as html11, i18nTemplate, render as render6 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/ai_assistance/components/disabledWidget.css.js
 var disabledWidget_css_default = `/*
@@ -8914,29 +8918,24 @@ function renderConsentViewContents(hostConfig) {
   if (hostConfig.isOffTheRecord) {
     return html11`${i18nString5(UIStrings5.notAvailableInIncognitoMode)}`;
   }
-  const settingsLink = document.createElement("devtools-link");
-  settingsLink.textContent = i18nString5(UIStrings5.settingsLink);
-  settingsLink.classList.add("link");
-  UI7.ARIAUtils.markAsLink(settingsLink);
-  settingsLink.addEventListener("click", () => {
+  const settingsLink = html11`<devtools-link
+      class="link"
+      jslogcontext="open-ai-settings"
+      @click=${() => {
     void UI7.ViewManager.ViewManager.instance().showView("chrome-ai");
-  });
-  settingsLink.jslogContext = "open-ai-settings";
-  let consentViewContents;
+  }}
+    >${i18nString5(UIStrings5.settingsLink)}</devtools-link>`;
+  let stringId;
   if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-    consentViewContents = uiI18n.getFormatLocalizedString(
-      str_5,
-      UIStrings5.turnOnForStylesRequestsPerformanceAndFiles,
-      { PH1: settingsLink }
-    );
+    stringId = UIStrings5.turnOnForStylesRequestsPerformanceAndFiles;
   } else if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-    consentViewContents = uiI18n.getFormatLocalizedString(str_5, UIStrings5.turnOnForStylesRequestsAndFiles, { PH1: settingsLink });
+    stringId = UIStrings5.turnOnForStylesRequestsAndFiles;
   } else if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-    consentViewContents = uiI18n.getFormatLocalizedString(str_5, UIStrings5.turnOnForStylesAndRequests, { PH1: settingsLink });
+    stringId = UIStrings5.turnOnForStylesAndRequests;
   } else {
-    consentViewContents = uiI18n.getFormatLocalizedString(str_5, UIStrings5.turnOnForStyles, { PH1: settingsLink });
+    stringId = UIStrings5.turnOnForStyles;
   }
-  return html11`${consentViewContents}`;
+  return i18nTemplate(str_5, stringId, { PH1: settingsLink });
 }
 var DEFAULT_VIEW6 = (input, _output, target) => {
   render6(
@@ -8974,7 +8973,7 @@ var DisabledWidget = class extends UI7.Widget.Widget {
         aidaAvailability: this.aidaAvailability,
         hostConfig
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -9274,7 +9273,7 @@ var ExploreWidget = class extends UI8.Widget.Widget {
       {
         featureCards
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -11154,7 +11153,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
           case AiAssistanceModel8.AiAgent.ResponseType.SIDE_EFFECT: {
             step = stepForCall(data.callId);
             const approvalStep = step;
-            approvalStep.code ??= data.code;
+            approvalStep.javascriptCode = data.javascriptCode;
             const promptShownAt = performance.now();
             approvalStep.state = {
               type: "needs_approval",
@@ -11178,7 +11177,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
           case AiAssistanceModel8.AiAgent.ResponseType.ACTION: {
             step = stepForCall(data.callId);
             step.state = data.canceled ? { type: "canceled" } : { type: "completed" };
-            step.code ??= data.code;
+            step.action ??= data.action;
             step.output ??= data.output;
             step.widgets ??= data.widgets;
             commitStep();
@@ -11222,7 +11221,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             }
             if (systemMessage.parts.length > 1) {
               const firstPart = systemMessage.parts[0];
-              if (firstPart.type === "step" && firstPart.step.state.type === "in_progress" && !firstPart.step.thought && !firstPart.step.code && !firstPart.step.contextDetails) {
+              if (firstPart.type === "step" && firstPart.step.state.type === "in_progress" && !firstPart.step.thought && !firstPart.step.action && !firstPart.step.contextDetails) {
                 systemMessage.parts.shift();
               }
             }
@@ -11312,10 +11311,10 @@ ${part.text}`);
       if (step.thought) {
         contentParts.push(step.thought);
       }
-      if (step.code) {
+      if (step.action) {
         contentParts.push(`**Code executed:**
 \`\`\`
-${step.code.trim()}
+${step.action.trim()}
 \`\`\``);
       }
       if (step.output) {
@@ -11387,10 +11386,12 @@ __export(ExternalHandler_exports, {
   handleExternalAIRequest: () => handleExternalAIRequest
 });
 import * as Host6 from "../../core/host/host.js";
+import * as Root5 from "../../core/root/root.js";
 import * as SDK7 from "../../core/sdk/sdk.js";
 import * as AiAssistanceModel9 from "../../models/ai_assistance/ai_assistance.js";
 import * as NetworkTimeCalculator from "../../models/network_time_calculator/network_time_calculator.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
+import * as TimelinePanel4 from "../timeline/timeline.js";
 function resolveConversationType(contextType) {
   switch (contextType) {
     case "NETWORK_REQUEST":
@@ -11426,14 +11427,19 @@ async function handleExternalAIRequest(options) {
     type: conversationType,
     data: [],
     isReadOnly: false,
-    aidaClient
+    aidaClient,
+    performanceRecordAndReload: Root5.Runtime.hostConfig.devToolsAiV2Architecture?.enabled ? () => TimelinePanel4.TimelinePanel.TimelinePanel.executeRecordAndReload() : void 0
   });
   const resolvedContext = getMatchingFlavorContext(options.context);
   if (resolvedContext) {
     conversation.setContext(resolvedContext);
   }
   for (const prompt of options.prompts) {
-    await Array.fromAsync(conversation.run(prompt));
+    for await (const item of conversation.run(prompt)) {
+      if (item.type === AiAssistanceModel9.AiAgent.ResponseType.SIDE_EFFECT && typeof item.confirm === "function") {
+        item.confirm(AiAssistanceModel9.Tool.PermissionDecision.ALLOW_ONCE);
+      }
+    }
   }
   const logsRaw = localStorage.getItem("aiAssistanceStructuredLog");
   return logsRaw ? JSON.parse(logsRaw) : [];

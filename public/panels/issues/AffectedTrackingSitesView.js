@@ -30,7 +30,7 @@ export class AffectedTrackingSitesView extends AffectedResourcesView {
     }
     update() {
         const trackingSites = Array.from(this.issue.getBounceTrackingSites());
-        this.#view({ trackingSites }, {}, this.affectedResources);
+        this.#view({ trackingSites }, undefined, this.affectedResources);
         this.updateAffectedResourceCount(trackingSites.length);
     }
 }

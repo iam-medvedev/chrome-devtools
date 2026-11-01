@@ -112,7 +112,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
             onEdit: e => this.#onEdit(e.currentTarget.dataset.index ?? '-1', e.detail.valueBeforeEditing, e.detail.newText),
             onDelete: e => this.#onDelete(e.currentTarget.dataset.index ?? '-1'),
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
     #onCreate(url) {
         if (url === undefined) {

@@ -126,7 +126,7 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
                 unusedDeclarations: this.#unusedDeclarations,
             },
         };
-        this.#view(viewInput, {}, this.contentElement);
+        this.#view(viewInput, undefined, this.contentElement);
     }
     async #startOverview() {
         this.#renderOverviewStartedView();

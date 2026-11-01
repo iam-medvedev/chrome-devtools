@@ -85,6 +85,10 @@ const UIStrings = {
      */
     elementRoleFallback: 'Element',
     /**
+     * @description Placeholder title for a recording section without a title.
+     */
+    noTitle: '(No title)',
+    /**
      * @description The title of the button in the step's context menu that adds a new step before the current one.
      */
     addStepBefore: 'Add step before',
@@ -98,16 +102,19 @@ const UIStrings = {
     removeStep: 'Remove step',
     /**
      * @description The title of the button that opens the step's context menu.
+     * @example {Click} title
      */
-    openStepActions: 'Open step actions',
+    openStepActions: 'Open step actions for {title}',
     /**
      * @description The title of the button in the step's context menu that adds a breakpoint.
+     * @example {Click} title
      */
-    addBreakpoint: 'Add breakpoint',
+    addBreakpoint: 'Add breakpoint for {title}',
     /**
      * @description The title of the button in the step's context menu that removes a breakpoint.
+     * @example {Click} title
      */
-    removeBreakpoint: 'Remove breakpoint',
+    removeBreakpoint: 'Remove breakpoint for {title}',
     /**
      * @description A menu item in the context menu that expands another menu which lists all
      * the formats the user can copy the recording as.
@@ -141,7 +148,7 @@ export var AddStepPosition;
 const COPY_ACTION_PREFIX = 'copy-step-as-';
 function getStepTypeTitle(input) {
     if (input.section) {
-        return input.section.title ? input.section.title : html `<span class="fallback">(No Title)</span>`;
+        return input.section.title || i18nString(UIStrings.noTitle);
     }
     if (!input.step) {
         throw new Error('Missing both step and section');
@@ -207,12 +214,19 @@ function getSectionPreview(section) {
     }
     return section.url;
 }
+function getBreakpointTitle(input) {
+    const title = getStepTypeTitle(input);
+    return input.hasBreakpoint ? i18nString(UIStrings.removeBreakpoint, { title }) :
+        i18nString(UIStrings.addBreakpoint, { title });
+}
 function renderStepActions(input) {
+    const title = getStepTypeTitle(input);
+    const accessibleLabel = i18nString(UIStrings.openStepActions, { title });
     // clang-format off
     return html `
     <devtools-menu-button
       class="step-actions"
-      .accessibleLabel=${i18nString(UIStrings.openStepActions)}
+      .accessibleLabel=${accessibleLabel}
       .populateMenuCall=${input.populateStepContextMenu}
       @keydown=${(event) => {
         event.stopPropagation();
@@ -247,7 +261,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         section: input.section,
     });
     const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview(input.section);
-    const breakpointTitle = input.hasBreakpoint ? i18nString(UIStrings.removeBreakpoint) : i18nString(UIStrings.addBreakpoint);
+    const breakpointTitle = getBreakpointTitle(input);
     // clang-format off
     Lit.render(html `
     <style>${stepViewStyles}</style>
@@ -612,7 +626,7 @@ export class StepView extends UI.Widget.Widget {
             if (this.#viewInput.hasBreakpoint) {
                 actions.push({
                     id: 'remove-breakpoint',
-                    label: i18nString(UIStrings.removeBreakpoint),
+                    label: getBreakpointTitle(this.#viewInput),
                     group: 'breakPointManagement',
                     groupTitle: i18nString(UIStrings.breakpoints),
                 });
@@ -620,7 +634,7 @@ export class StepView extends UI.Widget.Widget {
             else {
                 actions.push({
                     id: 'add-breakpoint',
-                    label: i18nString(UIStrings.addBreakpoint),
+                    label: getBreakpointTitle(this.#viewInput),
                     group: 'breakPointManagement',
                     groupTitle: i18nString(UIStrings.breakpoints),
                 });

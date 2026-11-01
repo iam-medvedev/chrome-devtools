@@ -2,6 +2,17 @@ import * as Common from '../../core/common/common.js';
 import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    overviewCalculator: OverviewCalculator;
+    onWindowChanged: () => void;
+}
+interface ViewOutput {
+    overviewContainer?: HTMLElement;
+    overviewCanvas?: HTMLCanvasElement;
+    overviewGrid?: PerfUI.OverviewGrid.OverviewGrid;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 declare const HeapTimelineOverviewBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
 export declare class HeapTimelineOverview extends HeapTimelineOverviewBase {
     #private;
@@ -19,7 +30,7 @@ export declare class HeapTimelineOverview extends HeapTimelineOverviewBase {
     updateGridTimerId?: number;
     updateTimerId?: number | null;
     windowWidthRatio?: number;
-    constructor(element?: HTMLElement);
+    constructor(element?: HTMLElement, view?: View);
     start(): void;
     stop(): void;
     setSamples(samples: Samples): void;

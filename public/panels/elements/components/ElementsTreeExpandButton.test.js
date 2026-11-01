@@ -5,35 +5,37 @@ import { assert } from 'chai';
 import { describe, it } from 'mocha';
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as ElementsComponents from './components.js';
 describe('Elements tree expand button', () => {
     setupLocaleHooks();
-    it('render and click handler trigger correctly', async () => {
-        const component = new ElementsComponents.ElementsTreeExpandButton.ElementsTreeExpandButton();
+    it('renders and triggers click handler in view', () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
         let clicks = 0;
         const clickHandler = () => clicks++;
-        component.data = {
-            clickHandler,
-        };
-        renderElementIntoDOM(component);
-        await RenderCoordinator.done();
-        const button = component.shadowRoot.querySelector('.expand-button');
+        ElementsComponents.ElementsTreeExpandButton.DEFAULT_VIEW({ clickHandler }, undefined, target);
+        const button = target.querySelector('.expand-button');
         assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.strictEqual(clicks, 1);
     });
-    it('it should only contains html tags, no other visible characters', async () => {
-        const component = new ElementsComponents.ElementsTreeExpandButton.ElementsTreeExpandButton();
-        const noop = () => { };
-        component.data = {
-            clickHandler: noop,
-        };
-        renderElementIntoDOM(component);
-        await RenderCoordinator.done();
-        const button = component.shadowRoot.querySelector('.expand-button');
+    it('contains only html tags and no visible characters in button innerText', () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        ElementsComponents.ElementsTreeExpandButton.DEFAULT_VIEW({ clickHandler: () => { } }, undefined, target);
+        const button = target.querySelector('.expand-button');
         assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, '');
+    });
+    it('passes clickHandler to view from presenter', async () => {
+        const view = createViewFunctionStub(ElementsComponents.ElementsTreeExpandButton.ElementsTreeExpandButton);
+        const component = new ElementsComponents.ElementsTreeExpandButton.ElementsTreeExpandButton(undefined, view);
+        const clickHandler = () => { };
+        component.clickHandler = clickHandler;
+        renderElementIntoDOM(component);
+        const input = await view.nextInput;
+        assert.strictEqual(input.clickHandler, clickHandler);
     });
 });
 //# sourceMappingURL=ElementsTreeExpandButton.test.js.map

@@ -216,6 +216,7 @@ export default `/*
     background-color: var(--app-color-card-background);
     overflow: hidden;
     width: 100%;
+    padding-bottom: var(--sys-size-6);
   }
 
   .allowed-tools-description {
@@ -235,10 +236,6 @@ export default `/*
     min-height: var(--sys-size-12);
     font: var(--sys-typescale-body5-regular);
     color: var(--sys-color-on-surface);
-
-    & ~ .allowed-tool-row {
-      border-top: var(--sys-size-1) solid var(--sys-color-divider);
-    }
   }
 
   .allowed-tool-name {

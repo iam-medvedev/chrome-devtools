@@ -14,7 +14,6 @@ __export(JSONEditor_exports, {
   suggestionFilter: () => suggestionFilter
 });
 import "../../ui/kit/kit.js";
-import "../../ui/components/menus/menus.js";
 import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
@@ -528,12 +527,12 @@ var JSONEditor = class extends JSONEditorBase {
     return {
       box: hintElement.boxInWindow(),
       show: async (popover) => {
-        const popupElement = new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView({
+        const popupWidget = new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView({
           getMessage: () => html`<span>${head}</span>`,
           getPossibleFixMessage: () => popupContent,
           getLearnMoreLink: () => `https://chromedevtools.github.io/devtools-protocol/tot/${this.command.split(".")[0]}/`
         });
-        popover.contentElement.appendChild(popupElement);
+        popupWidget.show(popover.contentElement);
         return true;
       }
     };
@@ -948,8 +947,7 @@ var JSONEditor = class extends JSONEditorBase {
       displayCommandInput: this.displayCommandInput,
       displayToolbar: this.displayToolbar
     };
-    const viewOutput = {};
-    this.#view(viewInput, viewOutput, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
 function isTypePrimitive(type) {

@@ -1,6 +1,5 @@
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { IsolateSelector } from './IsolateSelector.js';
 import type { ProfileType } from './ProfileHeader.js';
 import type { ProfilesPanel } from './ProfilesPanel.js';
 interface ProfileTypeEntry {
@@ -15,15 +14,11 @@ export interface ViewInput {
     controlButtonDisabled: boolean;
     controlButtonTooltip: string;
     isProfiling: boolean;
-    isolateSelector: IsolateSelector | null;
     onControlClick: () => void;
     onLoadClick: () => void;
     onProfileTypeChange: (profileType: ProfileType) => void;
 }
-export interface ViewOutput {
-    isolateSelector: IsolateSelector;
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 declare const ProfileLauncherViewBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.VBox>;
 export declare class ProfileLauncherView extends ProfileLauncherViewBase {

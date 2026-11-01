@@ -5,7 +5,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type Title } from './CommentThreadWidget.js';
 export interface ViewInput {
     pins: Comments.CommentOverlayManager.PinPositionData[];
-    highlights: Comments.CommentOverlayManager.HighlightRectData[];
+    /**
+     * Highlight of the currently open thread. Null when no thread is open, so
+     * only pins are rendered.
+     */
+    activeHighlight: Comments.CommentOverlayManager.HighlightRectData | null;
     hoverHighlight: Comments.CommentOverlayManager.HoverHighlightData | null;
     commentMode: boolean;
     onPinClick: (threadId: string) => void;
@@ -35,6 +39,15 @@ export declare class CommentsOverlayWidget extends UI.Widget.Widget {
         left: number;
         top: number;
     }): void;
+    /**
+     * Opens a draft comment anchored to `element`. Comment mode must already be
+     * active.
+     * @returns whether a draft comment was created.
+     */
+    addCommentAt(element: Element, coordinates?: {
+        clientX: number;
+        clientY: number;
+    }): boolean;
 }
 export declare class ThreadRevealer implements Common.Revealer.Revealer<CommentManager.CommentThread.RevealableThread> {
     reveal({ thread, position }: CommentManager.CommentThread.RevealableThread): Promise<void>;
@@ -44,6 +57,14 @@ export declare class ActionDelegate implements UI.ActionRegistration.ActionDeleg
     constructor(commentManager?: CommentManager.CommentManager.CommentManager);
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
     static resetForTest(): void;
+}
+/**
+ * Adds an "Add comment" item to the context menu of commentable regions while
+ * the comment mode toggle is available. Choosing it turns comment mode on and
+ * opens a draft comment on the right-clicked region.
+ */
+export declare class ContextMenuProvider implements UI.ContextMenu.Provider<Node> {
+    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Node): void;
 }
 export declare class ButtonProvider implements UI.Toolbar.Provider {
     #private;

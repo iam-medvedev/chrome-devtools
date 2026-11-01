@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import lockIconStyles from './lockIcon.css.js';
-import { createHighlightedUrl, getSecurityStateIconForDetailedView, getSecurityStateIconForOverview, OriginGroup, } from './SecurityPanel.js';
+import { getSecurityStateIconForDetailedView, getSecurityStateIconForOverview, OriginGroup, renderHighlightedUrl, } from './SecurityPanel.js';
 import sidebarStyles from './sidebar.css.js';
 const UIStrings = {
     /**
@@ -55,7 +55,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
             output.onShowOrigin(origin);
         }}>
             ${renderIcon(icon)}
-            ${createHighlightedUrl(origin, state)}
+            ${renderHighlightedUrl(origin, state)}
           </li>
         `;
         // clang-format on

@@ -83,7 +83,6 @@ describe('IsolatedFileSystemManager', () => {
         assert.deepEqual(changedFiles, ['file:///var/www/friendlyFile']);
     });
     it('unregisters event listeners on dispose', () => {
-        const universe = new TestUniverse();
         const manager = new Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager(universe.settings, universe.console);
         const events = Host.InspectorFrontendHost.InspectorFrontendHostInstance.events;
         const registeredEvents = [

@@ -3,6 +3,5 @@ import { AffectedResourcesView } from './AffectedResourcesView.js';
 export declare class GenericIssueDetailsView extends AffectedResourcesView {
     #private;
     protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString;
-    private violatingNodeIdName;
     update(): void;
 }

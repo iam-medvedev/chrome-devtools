@@ -24,7 +24,6 @@ async function setupScriptAndPause(inspectedPage, debuggerModel, code, builder, 
     const scriptContent = `${code}\n//# sourceURL=test.js\n//# sourceMappingURL=${sourceMapUrl}`;
     const pausedPromise = debuggerModel.once(SDK.DebuggerModel.Events.DebuggerPaused);
     await inspectedPage.evaluate((src) => {
-        // eslint-disable-next-line @devtools/no-imperative-dom-api
         const script = document.createElement('script');
         script.textContent = src;
         document.body.appendChild(script);

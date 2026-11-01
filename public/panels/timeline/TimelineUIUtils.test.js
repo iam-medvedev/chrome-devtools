@@ -14,6 +14,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, expectConsoleLogs, } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
 import { allThreadEntriesInTrace, getBaseTraceHandlerData, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
@@ -1608,6 +1609,32 @@ describeWithEnvironment('TimelineUIUtils - mapping to authored function name whe
         const durationRow = rowData.find(row => row.title === 'Duration');
         assert.exists(durationRow);
         assert.strictEqual(durationRow.value.replace(/\u00a0/g, ' '), '452.20 ms (self 27.18 ms)');
+    });
+    it('only listens to ignore-list changes while the stack trace element is connected to the DOM', async () => {
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+        const addChangeListener = sinon.spy(ignoreListManager, 'addChangeListener');
+        const removeChangeListener = sinon.stub(ignoreListManager, 'removeChangeListener');
+        const activeListeners = () => addChangeListener.callCount - removeChangeListener.callCount;
+        const helper = new Timeline.TimelineUIUtils.TimelineDetailsContentHelper(SDK.TargetManager.TargetManager.instance().primaryPageTarget(), new Components.Linkifier.Linkifier());
+        const stackTraceElement = await helper.createChildStackTraceElement({
+            callFrames: [{
+                    functionName: 'fn',
+                    scriptId: '1',
+                    url: 'https://example.com/app.js',
+                    lineNumber: 1,
+                    columnNumber: 1,
+                }],
+        });
+        assert.exists(stackTraceElement);
+        assert.strictEqual(activeListeners(), 0);
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        container.appendChild(stackTraceElement);
+        assert.strictEqual(activeListeners(), 1);
+        const removed = expectCall(removeChangeListener);
+        container.removeChild(stackTraceElement);
+        await removed;
+        assert.strictEqual(activeListeners(), 0);
     });
 });
 //# sourceMappingURL=TimelineUIUtils.test.js.map

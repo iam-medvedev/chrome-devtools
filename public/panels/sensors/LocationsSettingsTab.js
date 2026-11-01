@@ -360,7 +360,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
       </div>
     </div>
     ${input.activeDialog ? renderLocationDialog(input.activeDialog) : nothing}
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging.pane('emulation-locations')}` } } });
     // clang-format on
 };
 export class LocationsSettingsTab extends UI.Widget.VBox {
@@ -369,7 +369,6 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     #activeDialogState;
     constructor(element, view = DEFAULT_VIEW) {
         super(element, {
-            jslog: `${VisualLogging.pane('emulation-locations')}`,
             useShadowDom: true,
         });
         this.#view = view;

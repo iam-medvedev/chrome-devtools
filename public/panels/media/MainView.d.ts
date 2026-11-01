@@ -2,6 +2,22 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { MediaModel, type PlayerEvent } from './MediaModel.js';
+export interface PlayerData {
+    properties: Map<string, string>;
+    messages: Protocol.Media.PlayerMessage[];
+    events: PlayerEvent[];
+    errors: Protocol.Media.PlayerError[];
+}
+export interface ViewInput {
+    players: Map<string, PlayerData>;
+    activePlayerId: string | null;
+    onPlayerSelected: (playerID: string) => void;
+    onHidePlayer: (playerID: string) => void;
+    onHideOtherPlayers: (playerID: string) => void;
+    onSavePlayerInfo: (playerID: string) => void;
+}
+export type View = (input: ViewInput, _output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export interface TriggerHandler {
     onProperty(property: Protocol.Media.PlayerProperty): void;
     onError(error: Protocol.Media.PlayerError): void;
@@ -22,21 +38,15 @@ export declare class PlayerDataDownloadManager implements TriggerDispatcher {
     onError(playerID: string, error: Protocol.Media.PlayerError): void;
     onMessage(playerID: string, message: Protocol.Media.PlayerMessage): void;
     onEvent(playerID: string, event: PlayerEvent): void;
-    exportPlayerData(playerID: string): {
-        properties: Map<string, string>;
-        messages: Protocol.Media.PlayerMessage[];
-        events: PlayerEvent[];
-        errors: Protocol.Media.PlayerError[];
-    };
+    exportPlayerData(playerID: string): PlayerData;
     deletePlayer(playerID: string): void;
 }
-export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.TargetManager.SDKModelObserver<MediaModel> {
+export declare class MainView extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<MediaModel> {
     #private;
-    private detailPanels;
     private deletedPlayers;
     private readonly downloadStore;
-    private readonly sidebar;
-    constructor(downloadStore?: PlayerDataDownloadManager);
+    constructor(downloadStore?: PlayerDataDownloadManager, view?: View);
+    performUpdate(): void;
     renderMainPanel(playerID: string): void;
     wasShown(): void;
     willHide(): void;

@@ -167,7 +167,7 @@ interface ObjectTreeViewInput extends ContextMenuHandlers {
     skipProto: boolean;
     skipGettersAndSetters: boolean;
 }
-type ObjectTreeView = (input: ObjectTreeViewInput, output: object, target: HTMLElement) => void;
+type ObjectTreeView = (input: ObjectTreeViewInput, output: undefined, target: HTMLElement) => void;
 export declare class ObjectTreeWidget extends UI.Widget.Widget {
     #private;
     constructor(element?: HTMLElement, view?: ObjectTreeView);
@@ -190,6 +190,7 @@ export declare class ObjectTreeWidget extends UI.Widget.Widget {
     get renderAsSubtree(): boolean;
     set renderAsSubtree(val: boolean);
     performUpdate(): Promise<void>;
+    willHide(): void;
     onDetach(): void;
     wasShown(): void;
 }
@@ -203,7 +204,7 @@ interface ObjectPropertiesSectionViewInput {
     onRootItemContextMenu: (menu: UI.ContextMenu.ContextMenu) => void;
     onExpand: (expanded: boolean, recursively?: boolean) => void;
 }
-type ObjectPropertiesSectionView = (input: ObjectPropertiesSectionViewInput, output: object, target: HTMLElement) => void;
+type ObjectPropertiesSectionView = (input: ObjectPropertiesSectionViewInput, output: undefined, target: HTMLElement) => void;
 export declare const OBJECT_PROPERTIES_SECTION_DEFAULT_VIEW: ObjectPropertiesSectionView;
 export declare function renderPropertyName(name: string | null, isPrivate?: boolean, title?: string): TemplateResult;
 export declare function formatObjectAsFunction(func: SDK.RemoteObject.RemoteObject, linkify: boolean, includePreview?: boolean): Promise<LitTemplate>;
@@ -231,6 +232,7 @@ export declare class ObjectPropertyWidget extends UI.Widget.Widget {
     constructor(target?: HTMLElement, view?: ObjectPropertyView);
     get property(): ObjectTreeNode | undefined;
     set property(property: ObjectTreeNode);
+    willHide(): void;
     onDetach(): void;
     wasShown(): void;
     get expanded(): boolean;
@@ -251,7 +253,7 @@ interface ExpandableTextViewInput {
     byteCount: number;
     text: string;
 }
-type ExpandableTextView = (input: ExpandableTextViewInput, output: object, target: HTMLElement) => void;
+type ExpandableTextView = (input: ExpandableTextViewInput, output: undefined, target: HTMLElement) => void;
 export declare class ExpandableTextPropertyValue extends UI.Widget.Widget {
     #private;
     static readonly MAX_DISPLAYABLE_TEXT_LENGTH = 10000000;

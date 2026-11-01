@@ -494,6 +494,69 @@ const hostsPolicy = {
     runtimeAllowedHosts: [allowedUrl],
     runtimeBlockedHosts: [allowedUrl, blockedUrl],
 };
+describe('openResource hosts policy', () => {
+    const blockedUrl = urlString `http://web.dev/script.js`;
+    const allowedUrl = urlString `http://example.com/script.js`;
+    const context = setupDevtoolsExtensionHooks({
+        hostsPolicy: { runtimeAllowedHosts: [FRAME_URL], runtimeBlockedHosts: ['http://web.dev/*'] },
+    });
+    expectConsoleLogs({ error: ['Extension server error: Operation failed: Permission denied'] });
+    const permissionDenied = {
+        code: 'E_FAILED',
+        description: 'Operation failed: %s',
+        details: ['Permission denied'],
+        isError: true,
+    };
+    beforeEach(() => {
+        const target = getBackend(context).createTarget({ type: SDK.Target.Type.FRAME });
+        target.setInspectedURL(FRAME_URL);
+        assert.exists(context.chrome.devtools);
+    });
+    function createSourceURLScript(url, targetUrl) {
+        const target = getBackend(context).createTarget({ id: 'script-target' });
+        target.setInspectedURL(targetUrl);
+        const script = sinon.createStubInstance(SDK.Script.Script, { target, contentURL: url });
+        script.hasSourceURL = true;
+        const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), 'open-resource-test', Workspace.Workspace.projectTypes.Network, '', false);
+        const source = new Workspace.UISourceCode.UISourceCode(project, url, Common.ResourceType.resourceTypes.Script);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [script], sourceMapURLsForUISourceCode: [] }));
+        sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').withArgs(url).returns(source);
+        return source;
+    }
+    async function openResource(url) {
+        assert.exists(context.chrome.devtools);
+        return await new Promise(resolve => {
+            context.chrome.devtools.panels.openResource(url, 0, undefined, (response) => resolve(response));
+        });
+    }
+    it('denies blocked URLs whether or not a resource exists', async () => {
+        sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').returns(null);
+        const resourceLookup = sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL');
+        const networkLookup = sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requestForURL').returns(null);
+        const reveal = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        for (const resource of [sinon.createStubInstance(SDK.Resource.Resource), null]) {
+            resourceLookup.returns(resource);
+            assert.deepEqual(await openResource(blockedUrl), permissionDenied);
+        }
+        sinon.assert.notCalled(resourceLookup);
+        sinon.assert.notCalled(networkLookup);
+        sinon.assert.notCalled(reveal);
+    });
+    it('opens a custom-scheme sourceURL script on an allowed target', async () => {
+        const url = urlString `webpack://app/script.js`;
+        const source = createSourceURLScript(url, FRAME_URL);
+        const reveal = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        assert.deepEqual(await openResource(url), { code: 'OK', description: 'OK', details: [] });
+        sinon.assert.calledOnceWithExactly(reveal, source.uiLocation(0, 0), false);
+    });
+    it('denies an allowed-looking sourceURL script on a blocked target', async () => {
+        createSourceURLScript(allowedUrl, blockedUrl);
+        const reveal = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
+        assert.deepEqual(await openResource(allowedUrl), permissionDenied);
+        sinon.assert.notCalled(reveal);
+    });
+});
 function waitForFunction(fn) {
     return new Promise(r => {
         const check = () => {
@@ -2040,13 +2103,18 @@ describe('Extension Panels', () => {
      */
     it('can open a resource', async () => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const url = urlString `http://example.com/script.js`;
+        const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'open-resource-test', Workspace.Workspace.projectTypes.Network, '', false);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [], sourceMapURLsForUISourceCode: [] }));
         const mockUiLocation = {};
         const mockUISourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         mockUISourceCode.uiLocation.returns(mockUiLocation);
+        mockUISourceCode.contentURL.returns(url);
+        mockUISourceCode.project.returns(project);
         const uiSourceCodeStub = sinon.stub(workspace, 'uiSourceCodeForURL').returns(mockUISourceCode);
         const revealRegistry = Common.Revealer.RevealerRegistry.instance();
         const revealStub = sinon.stub(revealRegistry, 'reveal').resolves();
-        const url = urlString `http://example.com/script.js`;
         // Local helper to assert that the stubs are called correctly.
         const assertOpenSuccess = async (lineNumber, columnNumber, triggerCall) => {
             uiSourceCodeStub.resetHistory();
@@ -2112,6 +2180,49 @@ describe('Extension Panels', () => {
         });
         assert.exists(paneFromCallback);
         assertHasSidebarWithTitle('SidebarCallback');
+    });
+    it('creates a sidebar pane with viewId decoupled from title', async () => {
+        await context.chrome.devtools.panels.elements.createSidebarPane('Console');
+        const extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance();
+        const sidebarPanes = extensionServer.sidebarPanes();
+        const pane = sidebarPanes.find(p => p.title() === 'Console');
+        assert.exists(pane);
+        assert.notStrictEqual(pane.viewId(), 'console');
+        assert.match(pane.viewId(), /^extension-sidebar-[a-z0-9-]+-elements-[a-z0-9]+$/);
+        assert.isTrue(Platform.StringUtilities.isExtendedKebabCase(pane.viewId()));
+    });
+    it('extracts extensionId from origin or falls back to sanitized origin or unknown', () => {
+        assert.strictEqual(PanelCommon.ExtensionServer.ExtensionServer.extensionIdFromOrigin(urlString `chrome-extension://abcdefghijklmnop`), 'abcdefghijklmnop');
+        assert.strictEqual(PanelCommon.ExtensionServer.ExtensionServer.extensionIdFromOrigin(urlString `http://localhost:9876`), 'http-localhost-9876');
+        assert.strictEqual(PanelCommon.ExtensionServer.ExtensionServer.extensionIdFromOrigin(urlString `://`), 'unknown');
+    });
+    it('creates a sidebar pane with extensionId in viewId for chrome-extension origin', async () => {
+        const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
+        const extensionOrigin = urlString `chrome-extension://my-extension-id`;
+        const extensionDescriptor = {
+            startPage: `${extensionOrigin}/blank.html`,
+            name: 'MyExtension',
+            exposeExperimentalAPIs: true,
+            allowFileAccess: false,
+        };
+        server.addExtension(extensionDescriptor);
+        const channel = new MessageChannel();
+        server.registerExtension(extensionOrigin, channel.port1);
+        const responsePromise = new Promise(resolve => {
+            channel.port2.onmessage = (event) => resolve(event.data);
+        });
+        channel.port2.postMessage({
+            command: "createSidebarPane" /* Extensions.ExtensionAPI.PrivateAPI.Commands.CreateSidebarPane */,
+            panel: 'elements',
+            title: 'My Sidebar',
+            id: 'sidebar-1',
+            requestId: 1,
+        });
+        await responsePromise;
+        const sidebarPanes = server.sidebarPanes();
+        const pane = sidebarPanes.find(p => p.title() === 'My Sidebar');
+        assert.exists(pane);
+        assert.strictEqual(pane.viewId(), 'extension-sidebar-my-extension-id-elements-4t2ysc');
     });
     /**
      * Verifies that the `ExtensionSidebarPane`'s `setObject` method successfully

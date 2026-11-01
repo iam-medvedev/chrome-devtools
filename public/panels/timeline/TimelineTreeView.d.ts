@@ -7,7 +7,8 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 /**
- * For an overview, read: https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
+ * For an overview, read:
+ * https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
  */
 declare const TimelineTreeViewBase: Common.ObjectWrapper.EventMixin<TimelineTreeView.EventTypes, typeof UI.Widget.VBox>;
 export declare class TimelineTreeView extends TimelineTreeViewBase implements UI.SearchableView.Searchable {
@@ -18,8 +19,8 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     private lastHoveredProfileNode;
     private textFilterInternal;
     private taskFilter;
-    protected startTimeInternal: Trace.Types.Timing.Milli;
-    protected endTimeInternal: Trace.Types.Timing.Milli;
+    protected startTimeInternal?: Trace.Types.Timing.Milli;
+    protected endTimeInternal?: Trace.Types.Timing.Milli;
     splitWidget: UI.SplitWidget.SplitWidget;
     detailsView: UI.Widget.Widget;
     private searchableView;
@@ -76,7 +77,7 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     selectProfileNode(treeNode: Trace.Extras.TraceTree.Node, suppressSelectedEvent: boolean): void;
     /**
      * Refreshes the tree. By default, it will only do this
-     * if the tree is mounted into the DOM - as in the UI we
+     * if the tree view is currently showing - as in the UI we
      * have multiple trees and we only want to refresh the
      * active one. Pass `true` into this function to force a
      * refresh regardless.
@@ -125,10 +126,13 @@ export declare namespace TimelineTreeView {
     }
 }
 /**
- * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the DataGrid. It handles the representation as a row.
- * `TreeGridNode` extends this to maintain relationship to the tree, and handles populate().
+ * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the
+ * DataGrid. It handles the representation as a row. `TreeGridNode` extends this
+ * to maintain relationship to the tree, and handles populate().
  *
- * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's no hierarchy there), otherwise these TreeGridNode could probably be consolidated.
+ * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's
+ * no hierarchy there), otherwise these TreeGridNode could probably be
+ * consolidated.
  */
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     #private;

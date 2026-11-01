@@ -168,12 +168,19 @@ function queryMatches(style) {
     }
     return true;
 }
-function treeScopeDistance(node, property) {
-    if (!property.ownerStyle.parentRule && property.ownerStyle.type !== Type.Inline) {
-        return -1;
+function originatingElement(node) {
+    let current = node;
+    while (current.pseudoType() && current.parentNode) {
+        current = current.parentNode;
     }
-    const root = node.getTreeRoot();
-    const nodeId = property.ownerStyle.parentRule?.treeScope ?? root?.backendNodeId();
+    return current;
+}
+function treeScopeNodeId(node, property) {
+    return property.ownerStyle.type === Type.Inline ? node.getTreeRoot()?.backendNodeId() :
+        property.ownerStyle.parentRule?.treeScope;
+}
+function treeScopeDistance(node, property) {
+    const nodeId = treeScopeNodeId(node, property);
     if (nodeId === undefined) {
         return -1;
     }
@@ -188,7 +195,7 @@ function treeScopeDistance(node, property) {
  */
 export function distanceToTreeScope(node, treeScope) {
     let distance = 0;
-    for (let ancestor = node; ancestor; ancestor = ancestor.parentNode) {
+    for (let ancestor = node.shadowRoots()?.[0] ?? node; ancestor; ancestor = ancestor.parentNode) {
         if (ancestor.backendNodeId() === treeScope) {
             return distance;
         }
@@ -952,23 +959,57 @@ class NodeCascade {
         }
     }
     #needsCascadeContextStep() {
-        if (!this.#node.isInShadowTree()) {
+        const node = originatingElement(this.#node);
+        if (!node.isInShadowTree() && !node.shadowRoots()?.length && !node.hasAssignedSlot()) {
             return false;
         }
-        if (this.#node.ancestorShadowRoot()?.shadowRootType() === 'user-agent') {
+        if (node.ancestorShadowRoot()?.shadowRootType() === 'user-agent') {
             // In UA shadow dom, only standards-track pseudo elements override style attributes. -webkit-* and -internal-*
             // pseudos are still exempt from that to retain legacy behavior.
-            const pseudoElement = this.#node.getAttribute('pseudo');
+            const pseudoElement = node.getAttribute('pseudo');
             return !pseudoElement?.startsWith('-webkit-') && !pseudoElement?.startsWith('-internal-');
         }
         return true;
     }
+    #shouldOverload(activeProperty, propertyWithHigherSpecificity) {
+        if (activeProperty.important !== propertyWithHigherSpecificity.important) {
+            return activeProperty.important;
+        }
+        const node = originatingElement(this.#node);
+        if (!activeProperty.important) {
+            if (propertyWithHigherSpecificity.ownerStyle.type !== Type.Inline || !this.#needsCascadeContextStep()) {
+                return false;
+            }
+            const inlineDistance = treeScopeDistance(node, propertyWithHigherSpecificity);
+            return inlineDistance >= 0 && treeScopeDistance(node, activeProperty) > inlineDistance;
+        }
+        // TODO(crbug.com/40225557): Distinguish user-origin from author-origin injected stylesheets in CDP.
+        const activeIsUA = Boolean(activeProperty.ownerStyle.parentRule?.isUserAgent());
+        const higherSpecIsUA = Boolean(propertyWithHigherSpecificity.ownerStyle.parentRule?.isUserAgent());
+        if (activeIsUA !== higherSpecIsUA) {
+            return activeIsUA;
+        }
+        if (this.#needsCascadeContextStep()) {
+            const activeScope = treeScopeNodeId(node, activeProperty);
+            const higherSpecScope = treeScopeNodeId(node, propertyWithHigherSpecificity);
+            if (activeScope !== undefined && higherSpecScope !== undefined && activeScope !== higherSpecScope) {
+                if (propertyWithHigherSpecificity.ownerStyle.type !== Type.Inline) {
+                    return true;
+                }
+                const inlineDistance = treeScopeDistance(node, propertyWithHigherSpecificity);
+                return inlineDistance >= 0 && treeScopeDistance(node, activeProperty) < inlineDistance;
+            }
+        }
+        const activeRule = activeProperty.ownerStyle.parentRule;
+        const higherSpecRule = propertyWithHigherSpecificity.ownerStyle.parentRule;
+        if (activeRule instanceof CSSStyleRule && higherSpecRule instanceof CSSStyleRule) {
+            return layerIdentifier(activeRule) !== layerIdentifier(higherSpecRule);
+        }
+        return false;
+    }
     updatePropertyState(propertyWithHigherSpecificity, canonicalName) {
         const activeProperty = this.activeProperties.get(canonicalName);
-        if (activeProperty?.important && !propertyWithHigherSpecificity.important ||
-            activeProperty && this.#needsCascadeContextStep() &&
-                treeScopeDistance(this.#node, activeProperty) >
-                    treeScopeDistance(this.#node, propertyWithHigherSpecificity)) {
+        if (activeProperty && this.#shouldOverload(activeProperty, propertyWithHigherSpecificity)) {
             this.propertiesState.set(propertyWithHigherSpecificity, "Overloaded" /* PropertyState.OVERLOADED */);
             return;
         }
@@ -982,6 +1023,14 @@ class NodeCascade {
         this.propertiesState.set(propertyWithHigherSpecificity, "Active" /* PropertyState.ACTIVE */);
         this.activeProperties.set(canonicalName, propertyWithHigherSpecificity);
     }
+}
+// TODO(crbug.com/40225557): Report unique layer IDs in CDP to distinguish anonymous layers without source ranges.
+function layerIdentifier(rule) {
+    return rule.layers
+        .map(layer => layer.text ||
+        `anonymous:${layer.styleSheetId ?? ''}:${layer.range ? `${layer.range.startLine}:${layer.range.startColumn}:${layer.range.endLine}:${layer.range.endColumn}` :
+            ''}`)
+        .join('.');
 }
 function isRegular(declaration) {
     return 'ownerStyle' in declaration;

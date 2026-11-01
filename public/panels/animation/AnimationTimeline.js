@@ -64,6 +64,10 @@ const UIStrings = {
      */
     waitingForAnimations: 'Currently waiting for animations',
     /**
+     * @description Empty-state status shown while animation inspection is suspended.
+     */
+    animationInspectionPaused: 'Animation inspection paused',
+    /**
      * @description Empty buffer hint text content in the animation timeline of the Animations panel that explains the panel.
      */
     animationDescription: 'On this page you can inspect and modify animations',
@@ -144,7 +148,7 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
                 keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight',
             })}
             data-playback-rate=${playbackRate}
-            .disabled=${input.playbackRateButtonsDisabled}
+            .disabled=${!input.playbackControlsEnabled}
             class=${classMap({
                 'animation-playback-rate-button': true,
                 selected: isSelected,
@@ -169,6 +173,7 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
           .iconName=${'clear'}
           .jslogContext=${'animations.clear'}
           .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+          .disabled=${!input.controlsEnabled}
           @click=${input.onClearClick}>
         </devtools-button>
         <div class="toolbar-divider"></div>
@@ -183,6 +188,7 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
           .variant=${"icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */}
           .toggleType=${"primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */}
           .toggled=${input.allPaused}
+          .disabled=${!input.playbackControlsEnabled}
           @click=${input.onTogglePauseAllClick}>
         </devtools-button>
       </devtools-toolbar>
@@ -200,6 +206,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #allPaused;
     #animationsContainer;
     #previewContainer;
+    #pausedStatus;
     #timelineScrubber;
     #currentTime;
     #clearButton;
@@ -232,7 +239,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
     /** Container & state for rendering `toolbarView` */
     #toolbarViewContainer;
     #toolbarView;
-    #playbackRateButtonsDisabled = false;
     constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
         super({
             jslog: `${VisualLogging.panel('animations').track({ resize: true })}`,
@@ -251,6 +257,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.createHeader();
         this.#animationsContainer = this.contentElement.createChild('div', 'animation-timeline-rows');
         this.#animationsContainer.setAttribute('jslog', `${VisualLogging.section('animations')}`);
+        this.#pausedStatus = this.contentElement.createChild('div', 'animation-timeline-paused hidden');
+        this.#pausedStatus.setAttribute('role', 'status');
+        const pausedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.animationInspectionPaused));
+        pausedPlaceholder.show(this.#pausedStatus);
         const emptyBufferHint = this.contentElement.createChild('div', 'animation-timeline-buffer-hint');
         const noAnimationsPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.waitingForAnimations), i18nString(UIStrings.animationDescription));
         noAnimationsPlaceholder.link = ANIMATION_EXPLANATION_URL;
@@ -309,6 +319,8 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#updateSuspendedState, this);
+        this.#updateSuspendedState();
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             this.#addExistingAnimationGroups(animationModel);
             this.addEventListeners(animationModel);
@@ -316,9 +328,16 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     willHide() {
         super.willHide();
+        SDK.TargetManager.TargetManager.instance().removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#updateSuspendedState, this);
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             this.removeEventListeners(animationModel);
         }
+    }
+    #updateSuspendedState() {
+        const suspended = SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
+        this.element.classList.toggle('suspended', suspended);
+        this.#pausedStatus.classList.toggle('hidden', !suspended);
+        this.performToolbarViewUpdate();
     }
     #addExistingAnimationGroups(animationModel) {
         for (const animationGroup of animationModel.animationGroups.values()) {
@@ -374,10 +393,15 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#timelineScrubber.createChild('div', 'animation-time-overlay');
         return this.#timelineScrubber;
     }
+    #isVariablePlaybackRateSupported() {
+        return !this.#selectedGroup?.isScrollDriven();
+    }
     performToolbarViewUpdate() {
+        const controlsEnabled = !SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
         this.#toolbarView({
             selectedPlaybackRate: this.#playbackRate,
-            playbackRateButtonsDisabled: this.#playbackRateButtonsDisabled,
+            controlsEnabled,
+            playbackControlsEnabled: controlsEnabled && this.#isVariablePlaybackRateSupported(),
             allPaused: this.#allPaused,
             onClearClick: () => {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupsCleared);
@@ -444,7 +468,8 @@ export class AnimationTimeline extends UI.Widget.VBox {
         if (!this.#controlButton) {
             return;
         }
-        this.#controlButton.setEnabled(Boolean(this.#selectedGroup) && this.hasAnimationGroupActiveNodes() && !this.#selectedGroup?.isScrollDriven());
+        this.#controlButton.setEnabled(Boolean(this.#selectedGroup) && this.hasAnimationGroupActiveNodes() &&
+            this.#isVariablePlaybackRateSupported());
         if (this.#selectedGroup && this.#selectedGroup.paused()) {
             this.#controlState = "play-outline" /* ControlState.PLAY */;
             this.#controlButton.element.classList.toggle('toolbar-state-on', true);
@@ -482,7 +507,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.updateControlButton();
     }
     replay() {
-        if (!this.#selectedGroup || !this.hasAnimationGroupActiveNodes() || this.#selectedGroup.isScrollDriven()) {
+        if (!this.#selectedGroup || !this.hasAnimationGroupActiveNodes() || !this.#isVariablePlaybackRateSupported()) {
             return;
         }
         this.#selectedGroup.seekTo(0);
@@ -750,20 +775,11 @@ export class AnimationTimeline extends UI.Widget.VBox {
             this.setDuration(scrollRange);
             this.setCurrentTimeText(scrollOffset);
             this.setTimelineScrubberPosition(scrollOffset);
-            if (this.#pauseButton) {
-                this.#pauseButton.setEnabled(false);
-            }
-            this.#playbackRateButtonsDisabled = true;
-            this.performToolbarViewUpdate();
         }
         else {
             this.setDuration(group.finiteDuration());
-            if (this.#pauseButton) {
-                this.#pauseButton.setEnabled(true);
-            }
-            this.#playbackRateButtonsDisabled = false;
-            this.performToolbarViewUpdate();
         }
+        this.performToolbarViewUpdate();
         // Wait for all animations to be added and nodes to be resolved
         // until we schedule a redraw.
         await Promise.all(group.animations().map(anim => this.addAnimation(anim)));

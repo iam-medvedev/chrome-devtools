@@ -15,7 +15,12 @@ export class CommentThread extends Common.ObjectWrapper.ObjectWrapper {
     #isOrphaned = false;
     comments;
     status = 'DRAFT';
-    transmitted = false;
+    #transmitted = false;
+    /**
+     * False until the developer has opened the thread since the agent last
+     * responded. Only meaningful for RESOLVED threads.
+     */
+    responseSeen = false;
     constructor(options) {
         super();
         this.anchor = options.anchor;
@@ -30,6 +35,22 @@ export class CommentThread extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.#isOrphaned = isOrphaned;
+        this.dispatchEventToListeners("Changed" /* Events.CHANGED */);
+    }
+    /**
+     * True once the thread has been taken by the agent (e.g. via CD4ABridge).
+     */
+    get transmitted() {
+        return this.#transmitted;
+    }
+    /**
+     * Marks the thread as taken by the agent.
+     */
+    markTransmitted() {
+        if (this.#transmitted) {
+            return;
+        }
+        this.#transmitted = true;
         this.dispatchEventToListeners("Changed" /* Events.CHANGED */);
     }
     /**
@@ -48,8 +69,9 @@ export class CommentThread extends Common.ObjectWrapper.ObjectWrapper {
     }
     /**
      * Records UMA for a developer-authored comment when it leaves the DRAFT state.
+     * Returns true if this is the first user comment. Returns false otherwise.
      */
-    #recordCommentCreated() {
+    #recordCommentCreated(queued = false) {
         if (this.isGeneratedComment) {
             return;
         }
@@ -59,11 +81,15 @@ export class CommentThread extends Common.ObjectWrapper.ObjectWrapper {
         }
         Host.userMetrics.commentCreated(1);
         Host.userMetrics.commentSize(text.length);
+        if (queued) {
+            Host.userMetrics.commentQueued(1);
+        }
+        return;
     }
     save(text, author = 'DEVELOPER') {
         let changed = this.#saveText(text, author);
         if (this.status === 'DRAFT') {
-            this.#recordCommentCreated();
+            this.#recordCommentCreated(true);
             this.status = 'ACTIVE';
             changed = true;
         }
@@ -97,14 +123,29 @@ export class CommentThread extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     resolve(replyText) {
-        if (replyText && replyText.trim().length > 0) {
+        const reply = replyText?.trim();
+        if (reply) {
             this.comments.push({
                 author: 'AGENT',
-                text: replyText.trim(),
+                text: reply,
                 timestamp: Date.now(),
             });
         }
+        // A new response, or a thread that is newly resolved, has not been seen yet.
+        if (this.status !== 'RESOLVED' || reply) {
+            this.responseSeen = false;
+        }
         this.status = 'RESOLVED';
+        this.dispatchEventToListeners("Changed" /* Events.CHANGED */);
+    }
+    /**
+     * Marks the agent response of a RESOLVED thread as seen by the developer.
+     */
+    markResponseSeen() {
+        if (this.status !== 'RESOLVED' || this.responseSeen) {
+            return;
+        }
+        this.responseSeen = true;
         this.dispatchEventToListeners("Changed" /* Events.CHANGED */);
     }
 }

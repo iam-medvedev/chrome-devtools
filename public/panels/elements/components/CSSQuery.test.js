@@ -16,7 +16,7 @@ describe('CSSQuery', () => {
             queryText: '(min-width: 10px)',
             jslogContext: 'foo',
         };
-        const queryElement = component.shadowRoot.querySelector('.query');
+        const queryElement = component.contentElement.querySelector('.query');
         assert.isNotNull(queryElement, 'query element should exist');
         assert.strictEqual(queryElement.innerText, '@container (min-width: 10px) {', 'text content of query element should match query text');
     });
@@ -31,7 +31,7 @@ describe('CSSQuery', () => {
             onQueryTextClick: clickListener,
             jslogContext: 'foo',
         };
-        const queryElement = component.shadowRoot.querySelector('.query');
+        const queryElement = component.contentElement.querySelector('.query');
         assert.isNotNull(queryElement, 'query element should exist');
         assert.strictEqual(queryElement.innerText, '@container container-query-1 (max-width: 10px) {', 'text content of query element should match query text');
         const queryText = queryElement.querySelector('.editable .query-text');
@@ -48,7 +48,7 @@ describe('CSSQuery', () => {
             queryText: '',
             jslogContext: 'foo',
         };
-        const queryElement = component.shadowRoot.querySelector('.query');
+        const queryElement = component.contentElement.querySelector('.query');
         assert.isNotNull(queryElement, 'query element should exist');
         assert.strictEqual(queryElement.innerText, '@container --bar {', 'text content of query element should match query text');
     });
@@ -71,10 +71,10 @@ describe('CSSQuery', () => {
         };
         matchedStyles.computeCSSVariable.callsFake((_style, name) => name === '--foo' ? variableValue : null);
         component.parseStyleQueries(matchedStyles, style, node, '');
-        const swatch = component.shadowRoot.querySelector('devtools-link-swatch');
+        const swatch = component.contentElement.querySelector('devtools-link-swatch');
         assert.exists(swatch);
-        assert.strictEqual(swatch.data.text, '--foo');
-        swatch.data.onLinkActivate('--foo');
+        assert.strictEqual(swatch.innerText, '--foo');
+        swatch.linkElement?.click();
         sinon.assert.calledOnce(clickListener);
     });
 });

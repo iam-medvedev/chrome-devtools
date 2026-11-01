@@ -63,11 +63,11 @@ export class ChangesSidebar extends ChangesSidebarBase {
     set workspaceDiff(workspaceDiff) {
         if (this.#workspaceDiff) {
             this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#removeUISourceCode.bind(this));
-            this.#workspaceDiff.removeEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
+            this.#workspaceDiff.removeEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.#uiSourceCodeModifiedStatusChanged, this);
         }
         this.#workspaceDiff = workspaceDiff;
         this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
-        this.#workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
+        this.#workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.#uiSourceCodeModifiedStatusChanged, this);
         this.requestUpdate();
     }
     selectedUISourceCode() {
@@ -79,7 +79,7 @@ export class ChangesSidebar extends ChangesSidebarBase {
             sourceCodes: this.#sourceCodes,
             selectedSourceCode: this.#selectedUISourceCode,
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
     #selectionChanged(selectedUISourceCode) {
         this.#selectedUISourceCode = selectedUISourceCode;
@@ -113,7 +113,7 @@ export class ChangesSidebar extends ChangesSidebarBase {
         }
         this.requestUpdate();
     }
-    uiSourceCodeModifiedStatusChanged(event) {
+    #uiSourceCodeModifiedStatusChanged(event) {
         const { isModified, uiSourceCode } = event.data;
         if (isModified) {
             this.#addUISourceCode(uiSourceCode);

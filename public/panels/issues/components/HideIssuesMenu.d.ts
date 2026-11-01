@@ -1,16 +1,16 @@
 import * as Common from '../../../core/common/common.js';
-export interface HiddenIssuesMenuData {
+import * as UI from '../../../ui/legacy/legacy.js';
+export interface ViewInput {
     menuItemLabel: Common.UIString.LocalizedString;
     menuItemAction: () => void;
 }
-export declare class HideIssuesMenu extends HTMLElement {
+export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class HideIssuesMenu extends UI.Widget.Widget<ShadowRoot> {
     #private;
-    set data(data: HiddenIssuesMenuData);
-    onMenuOpen(event: Event): void;
-    onKeydown(event: KeyboardEvent): void;
-}
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-hide-issues-menu': HideIssuesMenu;
-    }
+    constructor(element?: HTMLElement, view?: View);
+    set menuItemLabel(menuItemLabel: Common.UIString.LocalizedString);
+    set menuItemAction(menuItemAction: () => void);
+    wasShown(): void;
+    performUpdate(): void;
 }

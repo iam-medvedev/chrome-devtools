@@ -984,7 +984,7 @@ describe('ContextSelectionAgent', function () {
             assert.isString(callId);
             assert.deepEqual(actionWithoutCallId, {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
-                code: 'listSourceFiles()',
+                action: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',
                 toolName: 'listSourceFiles',
                 widgets: [{
@@ -1082,7 +1082,7 @@ describe('ContextSelectionAgent', function () {
             assert.isString(callId);
             assert.deepEqual(actionWithoutCallId, {
                 type: "action" /* AiAgent.ResponseType.ACTION */,
-                code: 'listSourceFiles()',
+                action: 'listSourceFiles()',
                 output: '[{"file":"script.js","id":1}]',
                 toolName: 'listSourceFiles',
                 widgets: [{

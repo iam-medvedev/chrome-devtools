@@ -9,17 +9,20 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:host {
+:host,
+.elements-tree-expand-button {
   display: inline-flex;
   vertical-align: middle;
 }
 
-:host(.hidden) {
+:host(.hidden),
+.elements-tree-expand-button.hidden {
   display: none;
 }
 
 .expand-button {
   display: inline-flex;
+  vertical-align: middle;
   justify-content: center;
   align-items: center;
   box-sizing: border-box;

@@ -1,11 +1,11 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import { html, render } from '../../ui/lit/lit.js';
 import { Plugin } from './Plugin.js';
 // Defines plugins that show profiling information in the editor
 // gutter when available.
@@ -17,6 +17,16 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/ProfilePlugin.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+function renderPerformanceMarker(input, _output, target) {
+    // clang-format off
+    render(html `
+    <div class="cm-profileMarker"
+         style="background-color: hsla(44, 100%, 50%, ${input.intensity.toFixed(3)})">
+      ${input.value.toFixed(1)}
+      <span class="cm-units">${i18nString(UIStrings.ms)}</span>
+    </div>`, target);
+    // clang-format on
+}
 class PerformanceMarker extends CodeMirror.GutterMarker {
     value;
     constructor(value) {
@@ -27,16 +37,10 @@ class PerformanceMarker extends CodeMirror.GutterMarker {
         return this.value === other.value;
     }
     toDOM() {
-        const element = document.createElement('div');
-        element.className = 'cm-profileMarker';
+        const fragment = document.createDocumentFragment();
         const intensity = Platform.NumberUtilities.clamp(Math.log10(1 + 10 * this.value) / 5, 0.02, 1);
-        element.textContent = this.value.toFixed(1);
-        element.style.backgroundColor = `hsla(44, 100%, 50%, ${intensity.toFixed(3)})`;
-        const span = document.createElement('span');
-        span.className = 'cm-units';
-        span.textContent = i18nString(UIStrings.ms);
-        element.appendChild(span);
-        return element;
+        renderPerformanceMarker({ value: this.value, intensity }, undefined, fragment);
+        return fragment.firstElementChild;
     }
 }
 function markersFromProfileData(map, state) {
@@ -82,7 +86,7 @@ export class PerformanceProfilePlugin extends Plugin {
     static accepts(uiSourceCode) {
         return uiSourceCode.contentType().hasScripts();
     }
-    getLineMap() {
+    #getLineMap() {
         const uiSourceCodeProfileMap = this.uiSourceCode.getDecorationData("performance" /* Workspace.UISourceCode.DecoratorType.PERFORMANCE */);
         if (!uiSourceCodeProfileMap) {
             return undefined;
@@ -93,12 +97,12 @@ export class PerformanceProfilePlugin extends Plugin {
         });
     }
     editorExtension() {
-        const map = this.getLineMap();
+        const map = this.#getLineMap();
         return this.compartment.of(!map ? [] : [this.field.init(state => markersFromProfileData(map, state)), this.gutter, theme]);
     }
     decorationChanged(type, editor) {
         const installed = Boolean(editor.state.field(this.field, false));
-        const map = this.getLineMap();
+        const map = this.#getLineMap();
         if (!map) {
             if (installed) {
                 editor.dispatch({ effects: this.compartment.reconfigure([]) });

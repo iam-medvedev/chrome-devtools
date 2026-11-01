@@ -10,13 +10,12 @@ interface ViewInput {
     backendNodeId?: number;
     targetId?: string;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement | DocumentFragment) => void;
+type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class ARIAAttributesPane extends AccessibilitySubPane<ShadowRoot> {
     #private;
     constructor(element?: HTMLElement, view?: View);
     setNode(node: SDK.DOMModel.DOMNode | null): void;
     performUpdate(): void;
-    private isARIAAttribute;
 }
 export {};

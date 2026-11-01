@@ -13,7 +13,7 @@ export declare class FocusDebuggeeActionDelegate implements UI.ActionRegistratio
 interface ViewInput {
     nodeProcessRunning: Boolean;
 }
-type View = (input: ViewInput, _output: object, target: HTMLElement) => void;
+type View = (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class NodeIndicator extends UI.Widget.Widget {
     #private;

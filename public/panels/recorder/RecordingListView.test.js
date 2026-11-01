@@ -16,8 +16,8 @@ describeWithEnvironment('RecordingListView', () => {
             view.willHide();
         }
     });
-    async function createView(output) {
-        const view = createViewFunctionStub(RecordingListView.RecordingListView, output);
+    async function createView() {
+        const view = createViewFunctionStub(RecordingListView.RecordingListView);
         const component = new RecordingListView.RecordingListView(undefined, view);
         component.recordings = [{ storageName: 'storage-test', name: 'test' }];
         component.replayAllowed = true;

@@ -11,6 +11,7 @@ import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
 import { assertElements, dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
@@ -658,6 +659,50 @@ describe('BreakpointsSidebarController', () => {
         await b2.remove(false /* keepInStorage */);
         Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
     });
+    it('keeps a group collapsed when its breakpoint locations are re-added (e.g. on reload)', async () => {
+        const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
+        const settings = Common.Settings.Settings.instance();
+        const url = urlString `test.js`;
+        const { uiSourceCode, project } = createContentProviderUISourceCode({ url, mimeType: 'text/javascript' });
+        const controller = Sources.BreakpointsView.BreakpointsSidebarController.instance({ forceNew: true, breakpointManager, settings });
+        const b1 = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, ...DEFAULT_BREAKPOINT);
+        assert.exists(b1);
+        controller.expandedStateChanged(url, false /* expanded */);
+        // Simulate a reload: the UISourceCode goes away and comes back, which removes
+        // and re-adds the locations of the (still existing) user breakpoint.
+        Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
+        assert.isEmpty(breakpointManager.allBreakpointLocations());
+        const { project: newProject } = createContentProviderUISourceCode({ url, mimeType: 'text/javascript' });
+        {
+            const data = await controller.getUpdatedBreakpointViewData();
+            assert.lengthOf(data.groups, 1);
+            assert.isFalse(data.groups[0].expanded);
+        }
+        // Clean up.
+        await b1.remove(false /* keepInStorage */);
+        Workspace.Workspace.WorkspaceImpl.instance().removeProject(newProject);
+    });
+    it('forgets the collapsed state once all breakpoints of a file are removed', async () => {
+        const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
+        const settings = Common.Settings.Settings.instance();
+        const url = urlString `test.js`;
+        const { uiSourceCode, project } = createContentProviderUISourceCode({ url, mimeType: 'text/javascript' });
+        const controller = Sources.BreakpointsView.BreakpointsSidebarController.instance({ forceNew: true, breakpointManager, settings });
+        const b1 = await breakpointManager.setBreakpoint(uiSourceCode, 0, 0, ...DEFAULT_BREAKPOINT);
+        assert.exists(b1);
+        controller.expandedStateChanged(url, false /* expanded */);
+        await b1.remove(false /* keepInStorage */);
+        // A breakpoint that does not auto-expand shows up expanded again.
+        const b2 = await breakpointManager.setBreakpoint(uiSourceCode, 0, 3, Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION, true, false, "RESTORED" /* Breakpoints.BreakpointManager.BreakpointOrigin.OTHER */);
+        assert.exists(b2);
+        {
+            const data = await controller.getUpdatedBreakpointViewData();
+            assert.isTrue(data.groups[0].expanded);
+        }
+        // Clean up.
+        await b2.remove(false /* keepInStorage */);
+        Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
+    });
     it('auto-expands if a breakpoint was hit', async () => {
         sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal'); // Prevent pending reveal promises after tests are done.
         target.targetManager().setScopeTarget(target);
@@ -768,6 +813,32 @@ describe('BreakpointsView', () => {
         assert.isAbove(collapsedGroups.length, 0);
         const renderedCollapsedGroups = Array.from(component.contentElement.querySelectorAll(COLLAPSED_GROUPS_SELECTOR));
         checkGroupNames(renderedCollapsedGroups, collapsedGroups);
+    });
+    it('collapses all groups via the group context menu', async () => {
+        const { component, data } = await renderMultipleBreakpoints();
+        // Let the `toggle` events of the initial render fire first.
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const controller = Sources.BreakpointsView.BreakpointsSidebarController.instance();
+        const expandedStateChanged = sinon.stub(controller, 'expandedStateChanged');
+        const expandedGroups = data.groups.filter(group => group.expanded);
+        const collapsedGroups = data.groups.filter(group => !group.expanded);
+        assert.isAbove(collapsedGroups.length, 0);
+        const summary = component.contentElement.querySelector(SUMMARY_SELECTOR);
+        assert.instanceOf(summary, HTMLElement);
+        const menu = getContextMenuForElement(summary);
+        const item = findMenuItemWithLabel(menu.viewSection(), 'Collapse all');
+        assert.exists(item);
+        menu.invokeHandler(item.id());
+        await RenderCoordinator.done();
+        await component.updateComplete;
+        for (const group of expandedGroups) {
+            sinon.assert.calledWith(expandedStateChanged, group.url, false);
+        }
+        // Groups that were already collapsed are not saved again.
+        for (const group of collapsedGroups) {
+            sinon.assert.neverCalledWith(expandedStateChanged, group.url);
+        }
+        assert.isNull(component.contentElement.querySelector(EXPANDED_GROUPS_SELECTOR));
     });
     it('renders the group names', async () => {
         const { component, data } = await renderMultipleBreakpoints();

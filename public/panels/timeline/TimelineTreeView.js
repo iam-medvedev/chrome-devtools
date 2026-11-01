@@ -13,17 +13,19 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import * as Extensions from './extensions/extensions.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineRegExp } from './TimelineFilters.js';
-import { rangeForSelection } from './TimelineSelection.js';
+import { rangeForSelection, } from './TimelineSelection.js';
 import timelineTreeViewStyles from './timelineTreeView.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
     /**
-     * @description Data grid name for timeline tree view tables in the Performance panel.
+     * @description Data grid name for timeline tree view tables in the
+     * Performance panel.
      */
     performance: 'Performance',
     /**
@@ -39,7 +41,8 @@ const UIStrings = {
      */
     activity: 'Activity',
     /**
-     * @description Banner message shown when no tree item is selected for details in the Performance panel.
+     * @description Banner message shown when no tree item is selected for details
+     * in the Performance panel.
      */
     selectItemForDetails: 'Select item for details',
     /**
@@ -48,7 +51,8 @@ const UIStrings = {
      */
     percentPlaceholder: '{PH1} %',
     /**
-     * @description Row label for Chrome extensions overhead in timeline tree views.
+     * @description Row label for Chrome extensions overhead in timeline tree
+     * views.
      */
     chromeExtensionsOverhead: '[`Chrome` extensions overhead]',
     /**
@@ -64,39 +68,48 @@ const UIStrings = {
      */
     page: 'Page',
     /**
-     * @description Option in the grouping dropdown for no grouping in timeline tree views.
+     * @description Option in the grouping dropdown for no grouping in timeline
+     * tree views.
      */
     noGrouping: 'No grouping',
     /**
-     * @description Option in the grouping dropdown to group by activity in timeline tree views.
+     * @description Option in the grouping dropdown to group by activity in
+     * timeline tree views.
      */
     groupByActivity: 'Group by activity',
     /**
-     * @description Option in the grouping dropdown to group by category in timeline tree views.
+     * @description Option in the grouping dropdown to group by category in
+     * timeline tree views.
      */
     groupByCategory: 'Group by category',
     /**
-     * @description Option in the grouping dropdown to group by domain in timeline tree views.
+     * @description Option in the grouping dropdown to group by domain in timeline
+     * tree views.
      */
     groupByDomain: 'Group by domain',
     /**
-     * @description Option in the grouping dropdown to group by frame in timeline tree views.
+     * @description Option in the grouping dropdown to group by frame in timeline
+     * tree views.
      */
     groupByFrame: 'Group by frame',
     /**
-     * @description Option in the grouping dropdown to group by subdomain in timeline tree views.
+     * @description Option in the grouping dropdown to group by subdomain in
+     * timeline tree views.
      */
     groupBySubdomain: 'Group by subdomain',
     /**
-     * @description Option in the grouping dropdown to group by URL in timeline tree views.
+     * @description Option in the grouping dropdown to group by URL in timeline
+     * tree views.
      */
     groupByUrl: 'Group by URL',
     /**
-     * @description Option in the grouping dropdown to group by third parties in timeline tree views.
+     * @description Option in the grouping dropdown to group by third parties in
+     * timeline tree views.
      */
     groupByThirdParties: 'Group by 3rd parties',
     /**
-     * @description Accessible label for the grouping dropdown in timeline tree views.
+     * @description Accessible label for the grouping dropdown in timeline tree
+     * views.
      */
     groupBy: 'Group by',
     /**
@@ -104,43 +117,53 @@ const UIStrings = {
      */
     heaviestStack: 'Heaviest stack',
     /**
-     * @description Tooltip for the button to show the heaviest stack sidebar in timeline tree views.
+     * @description Tooltip for the button to show the heaviest stack sidebar in
+     * timeline tree views.
      */
     showHeaviestStack: 'Show heaviest stack',
     /**
-     * @description Tooltip for the button to hide the heaviest stack sidebar in timeline tree views.
+     * @description Tooltip for the button to hide the heaviest stack sidebar in
+     * timeline tree views.
      */
     hideHeaviestStack: 'Hide heaviest stack',
     /**
-     * @description Screen reader announcement when the heaviest stack sidebar is shown in the Performance panel.
+     * @description Screen reader announcement when the heaviest stack sidebar is
+     * shown in the Performance panel.
      */
     heaviestStackShown: 'Heaviest stack sidebar shown',
     /**
-     * @description Screen reader announcement when the heaviest stack sidebar is hidden in the Performance panel.
+     * @description Screen reader announcement when the heaviest stack sidebar is
+     * hidden in the Performance panel.
      */
     heaviestStackHidden: 'Heaviest stack sidebar hidden',
     /**
-     * @description Data grid name for heaviest stack tables in the Performance panel.
+     * @description Data grid name for heaviest stack tables in the Performance
+     * panel.
      */
     timelineStack: 'Timeline stack',
     /**
-     * @description Tooltip for the match case search button in timeline tree views.
+     * @description Tooltip for the match case search button in timeline tree
+     * views.
      */
     matchCase: 'Match case',
     /**
-     * @description Tooltip for the regular expression search button in timeline tree views.
+     * @description Tooltip for the regular expression search button in timeline
+     * tree views.
      */
     useRegularExpression: 'Use regular expression',
     /**
-     * @description Tooltip for the match whole word search button in timeline tree views.
+     * @description Tooltip for the match whole word search button in timeline
+     * tree views.
      */
     matchWholeWord: 'Match whole word',
     /**
-     * @description Tooltip for the button to switch to the bottom-up view in timeline tree views.
+     * @description Tooltip for the button to switch to the bottom-up view in
+     * timeline tree views.
      */
     bottomUp: 'Bottom-up',
     /**
-     * @description Accessible label for the button to switch to the bottom-up view in timeline tree views.
+     * @description Accessible label for the button to switch to the bottom-up
+     * view in timeline tree views.
      */
     viewBottomUp: 'View bottom-up',
     /**
@@ -155,9 +178,14 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
- * For an overview, read: https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
+ * For an overview, read:
+ * https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
  */
 const TimelineTreeViewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
+function renderDetailsPlaceholder(input, _output, target) {
+    render(input.showPlaceholder ? html `<div class="empty-state">${i18nString(UIStrings.selectItemForDetails)}</div>` :
+        nothing, target);
+}
 export class TimelineTreeView extends TimelineTreeViewBase {
     /** This is sorted by ts. */
     #selectedEvents;
@@ -207,10 +235,22 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         return this.#selectedEvents || [];
     }
     set selectedEvents(selectedEvents) {
+        if (this.#selectedEvents === selectedEvents) {
+            return;
+        }
         this.#selectedEvents = selectedEvents;
         this.refreshTree();
     }
     set parsedTrace(parsedTrace) {
+        if (this.#parsedTrace === parsedTrace) {
+            return;
+        }
+        if (this.#parsedTrace !== null) {
+            // Clear bounds from the previous trace so refreshTree() does not rebuild
+            // the tree with stale bounds before the new trace's selection is set.
+            this.startTimeInternal = undefined;
+            this.endTimeInternal = undefined;
+        }
         this.#parsedTrace = parsedTrace;
         this.refreshTree();
     }
@@ -225,7 +265,7 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.refreshTree();
     }
     get startTime() {
-        return this.startTimeInternal;
+        return this.startTimeInternal ?? Trace.Types.Timing.Milli(0);
     }
     set endTime(endTime) {
         if (this.endTimeInternal === endTime) {
@@ -235,7 +275,7 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.refreshTree();
     }
     get endTime() {
-        return this.endTimeInternal;
+        return this.endTimeInternal ?? Trace.Types.Timing.Milli(Infinity);
     }
     get compactMode() {
         return this.#compactMode;
@@ -284,6 +324,16 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.searchableView = searchableView;
     }
     set model(model) {
+        if (this.#parsedTrace === model.parsedTrace && this.#selectedEvents === model.selectedEvents &&
+            this.#entityMapper === model.entityMapper) {
+            return;
+        }
+        if (this.#parsedTrace !== null && this.#parsedTrace !== model.parsedTrace) {
+            // Clear bounds from the previous trace so refreshTree() does not rebuild
+            // the tree with stale bounds before the new trace's selection is set.
+            this.startTimeInternal = undefined;
+            this.endTimeInternal = undefined;
+        }
         this.#parsedTrace = model.parsedTrace;
         this.#selectedEvents = model.selectedEvents;
         this.#entityMapper = model.entityMapper;
@@ -342,7 +392,8 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     wasShown() {
         super.wasShown();
         // Only refresh if data or configuration changed while detached,
-        // avoiding rebuilding the DataGrid which resets expanded nodes and selection.
+        // avoiding rebuilding the DataGrid which resets expanded nodes and
+        // selection.
         if (this.#dirty) {
             this.refreshTree();
         }
@@ -358,8 +409,13 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.setRange(timingMilli.min, timingMilli.max);
     }
     setRange(startTime, endTime) {
-        this.startTime = startTime;
-        this.endTime = endTime;
+        if (this.startTimeInternal === startTime && this.endTimeInternal === endTime) {
+            return;
+        }
+        // Update internal fields directly to prevent the startTime and endTime setters from
+        // triggering individual refreshTree() calls.
+        this.startTimeInternal = startTime;
+        this.endTimeInternal = endTime;
         this.refreshTree();
     }
     highlightEventInTree(event) {
@@ -377,7 +433,11 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         }
     }
     filters() {
-        return [this.taskFilter, this.textFilterInternal, ...(ActiveFilters.instance().activeFilters())];
+        return [
+            this.taskFilter,
+            this.textFilterInternal,
+            ...(ActiveFilters.instance().activeFilters()),
+        ];
     }
     filtersWithoutTextFilter() {
         return [this.taskFilter, ...(ActiveFilters.instance().activeFilters())];
@@ -433,18 +493,17 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     /**
      * Refreshes the tree. By default, it will only do this
-     * if the tree is mounted into the DOM - as in the UI we
+     * if the tree view is currently showing - as in the UI we
      * have multiple trees and we only want to refresh the
      * active one. Pass `true` into this function to force a
      * refresh regardless.
      */
     refreshTree(forceRefresh = false) {
-        if (!this.element.parentElement && !forceRefresh) {
+        if (!this.isShowing() && !forceRefresh) {
             // This function can be called in different views (Bottom-Up and
             // Call Tree) by the same single event whenever the group-by
             // dropdown changes value. Thus, we bail out whenever the view is
-            // not visible, which we know if the related element is detached
-            // from the document.
+            // not visible to avoid useless work.
             // Mark dirty so that the refresh is deferred until shown.
             this.#dirty = true;
             return;
@@ -452,7 +511,8 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.#dirty = false;
         this.linkifier.reset();
         this.dataGrid.rootNode().removeChildren();
-        if (!this.#parsedTrace) {
+        // Do not build the tree until bounds are configured by an active selection.
+        if (!this.#parsedTrace || this.startTimeInternal === undefined || this.endTimeInternal === undefined) {
             this.updateDetailsForSelection();
             return;
         }
@@ -509,14 +569,41 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     populateColumns(columns) {
         if (this.compactMode) {
-            columns.push({ id: 'self', title: i18nString(UIStrings.selfTime), width: '15%', sortable: true });
-            columns.push({ id: 'total', title: i18nString(UIStrings.totalTime), width: '15%', sortable: true });
+            columns.push({
+                id: 'self',
+                title: i18nString(UIStrings.selfTime),
+                width: '15%',
+                sortable: true,
+            });
+            columns.push({
+                id: 'total',
+                title: i18nString(UIStrings.totalTime),
+                width: '15%',
+                sortable: true,
+            });
         }
         else {
-            columns.push({ id: 'self', title: i18nString(UIStrings.selfTime), width: '120px', fixedWidth: true, sortable: true });
-            columns.push({ id: 'total', title: i18nString(UIStrings.totalTime), width: '120px', fixedWidth: true, sortable: true });
+            columns.push({
+                id: 'self',
+                title: i18nString(UIStrings.selfTime),
+                width: '120px',
+                fixedWidth: true,
+                sortable: true,
+            });
+            columns.push({
+                id: 'total',
+                title: i18nString(UIStrings.totalTime),
+                width: '120px',
+                fixedWidth: true,
+                sortable: true,
+            });
         }
-        columns.push({ id: 'activity', title: i18nString(UIStrings.activity), disclosure: true, sortable: true });
+        columns.push({
+            id: 'activity',
+            title: i18nString(UIStrings.activity),
+            disclosure: true,
+            sortable: true,
+        });
     }
     sortingChanged() {
         const columnId = this.dataGrid.sortColumnId();
@@ -609,13 +696,16 @@ export class TimelineTreeView extends TimelineTreeViewBase {
             return;
         }
         this.detailsView.detachChildWidgets();
-        this.detailsView.element.removeChildren();
         this.lastSelectedNodeInternal = selectedNode;
+        // Clear placeholder via Lit before calling showDetailsForNode so that
+        // subclasses can either render details declaratively into the same
+        // container without corrupting Lit's part tree, or synchronously attach
+        // child widgets without having them removed.
+        renderDetailsPlaceholder({ showPlaceholder: false }, undefined, this.detailsView.element);
         if (selectedNode && this.showDetailsForNode(selectedNode)) {
             return;
         }
-        const banner = this.detailsView.element.createChild('div', 'empty-state');
-        UI.UIUtils.createTextChild(banner, i18nString(UIStrings.selectItemForDetails));
+        renderDetailsPlaceholder({ showPlaceholder: true }, undefined, this.detailsView.element);
     }
     showDetailsForNode(_node) {
         return false;
@@ -661,7 +751,8 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     onGridNodeOpened() {
         const gridNode = this.dataGrid.selectedNode;
-        // Use tree's hover method in case of unique hover experiences (like ThirdPartyTree).
+        // Use tree's hover method in case of unique hover experiences (like
+        // ThirdPartyTree).
         this.onHover(gridNode.profileNode);
         this.updateDetailsForSelection();
     }
@@ -733,10 +824,13 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     })(Events = TimelineTreeView.Events || (TimelineTreeView.Events = {}));
 })(TimelineTreeView || (TimelineTreeView = {}));
 /**
- * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the DataGrid. It handles the representation as a row.
- * `TreeGridNode` extends this to maintain relationship to the tree, and handles populate().
+ * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the
+ * DataGrid. It handles the representation as a row. `TreeGridNode` extends this
+ * to maintain relationship to the tree, and handles populate().
  *
- * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's no hierarchy there), otherwise these TreeGridNode could probably be consolidated.
+ * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's
+ * no hierarchy there), otherwise these TreeGridNode could probably be
+ * consolidated.
  */
 export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     populated;
@@ -883,7 +977,8 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         }
         return cell;
     }
-    // Generates bottom up tree hover button and appends it to the provided cell element.
+    // Generates bottom up tree hover button and appends it to the provided cell
+    // element.
     generateBottomUpButton(textDiv) {
         const button = new Buttons.Button.Button();
         button.data = {
@@ -899,8 +994,8 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         textDiv.appendChild(button);
     }
     #bottomUpButtonClicked() {
-        // We should also trigger an event to "unhover" the 3P tree row. Since this isn't
-        // triggered when clicking the bottom up button.
+        // We should also trigger an event to "unhover" the 3P tree row. Since this
+        // isn't triggered when clicking the bottom up button.
         this.treeView.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: null });
         this.treeView.dispatchEventToListeners("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, this.profileNode);
     }
@@ -945,10 +1040,13 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SELECTION_CHANGED */, this.onStackViewSelectionChanged, this);
     }
     refreshTree(forceRefresh = false) {
-        if (this.element.parentElement || forceRefresh) {
+        if (this.isShowing() || forceRefresh) {
             this.#builtGroupBy = this.groupBySetting.get();
         }
         super.refreshTree(forceRefresh);
+        if (this.element.parentElement || forceRefresh) {
+            this.updateDetailsForSelection();
+        }
     }
     wasShown() {
         super.wasShown();
@@ -1002,7 +1100,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.Subdomain:
             case AggregatedTimelineTreeView.GroupBy.ThirdParties: {
                 // This `undefined` is [unattributed]
-                // TODO(paulirish): Improve attribution to reduce amount of items in [unattributed].
+                // TODO(paulirish): Improve attribution to reduce amount of items in
+                // [unattributed].
                 const domainName = id ? this.beautifyDomainName(id, node) : undefined;
                 return { name: domainName || unattributed, color };
             }
@@ -1036,13 +1135,22 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         const groupBy = AggregatedTimelineTreeView.GroupBy;
         const options = [
             { label: i18nString(UIStrings.noGrouping), value: groupBy.None },
-            { label: i18nString(UIStrings.groupByActivity), value: groupBy.EventName },
+            {
+                label: i18nString(UIStrings.groupByActivity),
+                value: groupBy.EventName,
+            },
             { label: i18nString(UIStrings.groupByCategory), value: groupBy.Category },
             { label: i18nString(UIStrings.groupByDomain), value: groupBy.Domain },
             { label: i18nString(UIStrings.groupByFrame), value: groupBy.Frame },
-            { label: i18nString(UIStrings.groupBySubdomain), value: groupBy.Subdomain },
+            {
+                label: i18nString(UIStrings.groupBySubdomain),
+                value: groupBy.Subdomain,
+            },
             { label: i18nString(UIStrings.groupByUrl), value: groupBy.URL },
-            { label: i18nString(UIStrings.groupByThirdParties), value: groupBy.ThirdParties },
+            {
+                label: i18nString(UIStrings.groupByThirdParties),
+                value: groupBy.ThirdParties,
+            },
         ];
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString(UIStrings.groupBy)));
         if (!this.compactMode && this.splitWidget) {
@@ -1108,9 +1216,11 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 return null;
         }
     }
-    // This is our groupingFunction that returns the eventId in Domain, Subdomain, and ThirdParty groupBy scenarios.
-    // The eventid == the identity of a node that we expect in a bottomUp tree (either without grouping or with the groupBy grouping)
-    // A "top node" (in `ungroupedTopNodes`) is aggregated by this. (But so are all the other nodes, except the `GroupNode`s)
+    // This is our groupingFunction that returns the eventId in Domain, Subdomain,
+    // and ThirdParty groupBy scenarios. The eventid == the identity of a node
+    // that we expect in a bottomUp tree (either without grouping or with the
+    // groupBy grouping) A "top node" (in `ungroupedTopNodes`) is aggregated by
+    // this. (But so are all the other nodes, except the `GroupNode`s)
     domainByEvent(groupBy, event) {
         const parsedTrace = this.parsedTrace;
         if (!parsedTrace) {
@@ -1118,8 +1228,9 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         }
         const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace.data);
         if (!url) {
-            // We could have receiveDataEvents (that don't have a url), but that have been
-            // attributed to an entity, let's check for these. This is used for ThirdParty grouping.
+            // We could have receiveDataEvents (that don't have a url), but that have
+            // been attributed to an entity, let's check for these. This is used for
+            // ThirdParty grouping.
             const entity = this.entityMapper()?.entityForEvent(event);
             if (groupBy === AggregatedTimelineTreeView.GroupBy.ThirdParties && entity) {
                 if (!entity) {
@@ -1205,7 +1316,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
 (function (AggregatedTimelineTreeView) {
     let GroupBy;
     (function (GroupBy) {
-        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
+        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests.
+       */
         GroupBy["None"] = "None";
         GroupBy["EventName"] = "EventName";
         GroupBy["Category"] = "Category";
@@ -1242,9 +1354,11 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
             endTime: this.endTime,
             eventGroupIdCallback: this.groupingFunction(this.groupBySetting.get()),
             // To include instant events. When this is set to true, instant events are
-            // considered (to calculate transfer size). This then includes these events in tree nodes.
+            // considered (to calculate transfer size). This then includes these
+            // events in tree nodes.
             calculateTransferSize: true,
-            // We should forceGroupIdCallback if filtering by 3P for correct 3P grouping.
+            // We should forceGroupIdCallback if filtering by 3P for correct 3P
+            // grouping.
             forceGroupIdCallback: this.groupBySetting.get() === AggregatedTimelineTreeView.GroupBy.ThirdParties,
         });
     }
@@ -1259,8 +1373,18 @@ export class TimelineStackView extends TimelineStackViewBase {
         header.textContent = i18nString(UIStrings.heaviestStack);
         this.treeView = treeView;
         const columns = [
-            { id: 'total', title: i18nString(UIStrings.totalTime), fixedWidth: true, width: '110px', sortable: false },
-            { id: 'activity', title: i18nString(UIStrings.activity), sortable: false },
+            {
+                id: 'total',
+                title: i18nString(UIStrings.totalTime),
+                fixedWidth: true,
+                width: '110px',
+                sortable: false,
+            },
+            {
+                id: 'activity',
+                title: i18nString(UIStrings.activity),
+                sortable: false,
+            },
         ];
         this.dataGrid = new DataGrid.ViewportDataGrid.ViewportDataGrid({
             displayName: i18nString(UIStrings.timelineStack),

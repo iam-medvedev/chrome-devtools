@@ -8,10 +8,12 @@ import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { createUISourceCode, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { deinitializeGlobalVars, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
+import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as Logs from '../../logs/logs.js';
 import { FileAgent, FileContext } from '../ai_assistance.js';
 describe('FileAgent', () => {
+    setupRuntimeHooks();
     let universe;
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({

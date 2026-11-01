@@ -130,7 +130,7 @@ export interface ElementDetailsViewInput {
     }>;
     visibility: Set<string>;
 }
-export type ElementDetailsViewFunction = (input: ElementDetailsViewInput, output: object, target: HTMLElement) => void;
+export type ElementDetailsViewFunction = (input: ElementDetailsViewInput, output: undefined, target: HTMLElement) => void;
 export declare const ELEMENT_DETAILS_DEFAULT_VIEW: ElementDetailsViewFunction;
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;

@@ -22,14 +22,6 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     constructor(view?: View);
     static instance(): DOMBreakpointsSidebarPane;
     performUpdate(): void;
-    private onBreakpointClick;
-    private onBreakpointKeyDown;
-    private breakpointAdded;
-    private breakpointToggled;
-    private breakpointsRemoved;
-    private addBreakpoint;
-    private onBreakpointContextMenu;
-    private onBreakpointCheckboxClick;
     flavorChanged(_object: Object | null): void;
     update(): void;
 }

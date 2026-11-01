@@ -13,7 +13,7 @@ export interface WorkspaceSettingsTabInput {
     onAddClicked: () => void;
     onRemoveClicked: (fileSystem: Persistence.IsolatedFileSystem.IsolatedFileSystem) => void;
 }
-export type View = (input: WorkspaceSettingsTabInput, output: object, target: HTMLElement) => void;
+export type View = (input: WorkspaceSettingsTabInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class WorkspaceSettingsTab extends UI.Widget.VBox {
     #private;

@@ -599,7 +599,12 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     `,
     // clang-format on
     target,
-    { container: { attributes: { tabindex: -1 } } }
+    {
+      container: {
+        attributes: { tabindex: -1, jslog: `${VisualLogging2.dialog("edit-breakpoint")}` },
+        classes: ["sources-edit-breakpoint-dialog"]
+      }
+    }
   );
 };
 var BreakpointEditDialog = class extends UI3.Widget.Widget {
@@ -618,10 +623,8 @@ var BreakpointEditDialog = class extends UI3.Widget.Widget {
   #state;
   constructor(target, view = DEFAULT_VIEW2) {
     super(target, {
-      jslog: `${VisualLogging2.dialog("edit-breakpoint")}`,
-      useShadowDom: true,
-      delegatesFocus: true,
-      classes: ["sources-edit-breakpoint-dialog"]
+      useShadowDom: "pure",
+      delegatesFocus: true
     });
     this.#view = view;
   }
@@ -1388,7 +1391,11 @@ var UIStrings3 = {
    * @description Tooltip text that shows when hovered over a piece of code of a breakpoint in the breakpoint sidebar of the Sources panel. It shows what is going to be printed in the console, if execution hits this breakpoint.
    * @example {'hello'} PH1
    */
-  logpointCode: "Logpoint: {PH1}"
+  logpointCode: "Logpoint: {PH1}",
+  /**
+   * @description Context menu item in the breakpoint sidebar of the Sources panel that collapses all file groups.
+   */
+  collapseAll: "Collapse all"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/sources/BreakpointsView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -1409,6 +1416,9 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
   #pauseOnCaughtExceptionSetting;
   #collapsedFilesSettings;
   #collapsedFiles;
+  // Breakpoints whose locations were already reported. Their locations are
+  // re-added e.g. on page reload, which must not expand collapsed groups.
+  #knownBreakpoints = /* @__PURE__ */ new WeakSet();
   // This is used to keep track of outstanding edits to breakpoints that were initiated
   // by the breakpoint edit button (for UMA).
   #outstandingBreakpointEdited;
@@ -1601,7 +1611,9 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
   }
   #onBreakpointAdded(event) {
     const breakpoint = event.data.breakpoint;
-    if (breakpoint.origin === Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION && this.#collapsedFiles.has(breakpoint.url())) {
+    const isNewBreakpoint = !this.#knownBreakpoints.has(breakpoint);
+    this.#knownBreakpoints.add(breakpoint);
+    if (isNewBreakpoint && breakpoint.origin === Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION && this.#collapsedFiles.has(breakpoint.url())) {
       this.#collapsedFiles.delete(breakpoint.url());
       this.#saveSettings();
     }
@@ -1609,7 +1621,7 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
   }
   #onBreakpointRemoved(event) {
     const breakpoint = event.data.breakpoint;
-    if (this.#collapsedFiles.has(breakpoint.url())) {
+    if (breakpoint.getIsRemoved() && this.#collapsedFiles.has(breakpoint.url())) {
       const locations = Breakpoints.BreakpointManager.BreakpointManager.instance().allBreakpointLocations();
       const otherBreakpointsOnSameFileExist = locations.some((location) => location.breakpoint.url() === breakpoint.url());
       if (!otherBreakpointsOnSameFileExist) {
@@ -1885,7 +1897,7 @@ var BreakpointsView = class _BreakpointsView extends UI4.Widget.VBox {
       itemEditClickHandler: this.#itemEditClickHandler.bind(this),
       itemRemoveClickHandler: this.#itemRemoveClickHandler.bind(this)
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
     if (this.contentElement.querySelector('[tabindex="0"]') === null) {
       const element = this.contentElement.querySelector("[data-first-pause]");
       element?.setAttribute("tabindex", "0");
@@ -2051,6 +2063,15 @@ var BreakpointsView = class _BreakpointsView extends UI4.Widget.VBox {
         this.#controller.breakpointStateChanged(breakpointItem, false);
       }
     }, { disabled: notDisabledItems.length === 0, jslogContext: "disable-file-breakpoints" });
+    menu.viewSection().appendItem(i18nString3(UIStrings3.collapseAll), () => {
+      for (const group of this.#breakpointGroups) {
+        if (group.expanded) {
+          group.expanded = false;
+          this.#controller.expandedStateChanged(group.url, false);
+        }
+      }
+      this.requestUpdate();
+    }, { disabled: this.#breakpointGroups.every((group) => !group.expanded), jslogContext: "collapse-all" });
     void menu.show();
   }
   #onBreakpointEntryContextMenu(event, breakpointItem, editable) {
@@ -2161,7 +2182,7 @@ import * as StackTrace5 from "../../models/stack_trace/stack_trace.js";
 import * as Workspace25 from "../../models/workspace/workspace.js";
 import { Icon } from "../../ui/kit/kit.js";
 import * as UI18 from "../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html17, render as render13 } from "../../ui/lit/lit.js";
+import { Directives as Directives4, html as html18, render as render14 } from "../../ui/lit/lit.js";
 import * as VisualLogging13 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/callStackSidebarPane.css.js
@@ -3913,6 +3934,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -4595,6 +4617,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -5174,7 +5197,7 @@ import * as Buttons9 from "../../ui/components/buttons/buttons.js";
 import * as Geometry2 from "../../ui/geometry/geometry.js";
 import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI17 from "../../ui/legacy/legacy.js";
-import { html as html16, nothing as nothing10, render as render12 } from "../../ui/lit/lit.js";
+import { html as html17, nothing as nothing10, render as render13 } from "../../ui/lit/lit.js";
 import * as Settings10 from "../../ui/settings/settings.js";
 import * as VisualLogging12 from "../../ui/visual_logging/visual_logging.js";
 import * as Snippets5 from "../snippets/snippets.js";
@@ -5703,17 +5726,21 @@ var NavigatorView_exports = {};
 __export(NavigatorView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW5,
   Events: () => Events2,
-  NavigatorFolderTreeElement: () => NavigatorFolderTreeElement,
   NavigatorFolderTreeNode: () => NavigatorFolderTreeNode,
   NavigatorGroupTreeNode: () => NavigatorGroupTreeNode,
   NavigatorRootTreeNode: () => NavigatorRootTreeNode,
-  NavigatorSourceTreeElement: () => NavigatorSourceTreeElement,
   NavigatorTreeNode: () => NavigatorTreeNode,
   NavigatorUISourceCodeTreeNode: () => NavigatorUISourceCodeTreeNode,
   NavigatorView: () => NavigatorView,
-  Types: () => Types
+  Types: () => Types,
+  contextForNodeType: () => contextForNodeType,
+  iconTypeForNodeType: () => iconTypeForNodeType,
+  renderFolderLeadingIcon: () => renderFolderLeadingIcon,
+  renderGroupTrailingIcons: () => renderGroupTrailingIcons,
+  renderSourceTrailingIcons: () => renderSourceTrailingIcons
 });
 import "../../ui/components/spinners/spinners.js";
+import "../../ui/kit/kit.js";
 import * as Common7 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
 import * as i18n11 from "../../core/i18n/i18n.js";
@@ -5725,7 +5752,6 @@ import * as Bindings3 from "../../models/bindings/bindings.js";
 import * as Persistence3 from "../../models/persistence/persistence.js";
 import * as Workspace5 from "../../models/workspace/workspace.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
-import { createIcon } from "../../ui/kit/kit.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
 import * as SettingsUI2 from "../../ui/settings/settings.js";
@@ -6403,16 +6429,111 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
     html6`
         <style>${navigatorView_css_default}</style>
         <slot name="header"></slot>
-        <div class="vbox flex-auto" ?hidden=${!showPlaceholder} @contextmenu=${input.onContextMenu}>
+        <div class="vbox flex-auto" ?hidden=${!showPlaceholder}>
           <slot name="placeholder"></slot>
         </div>
-        <div class="vbox flex-auto" ?hidden=${showPlaceholder} @contextmenu=${input.onContextMenu}>
+        <div class="vbox flex-auto" ?hidden=${showPlaceholder}>
           ${input.treeElement}
         </div>
       `,
     target
   );
 };
+function iconTypeForNodeType(type) {
+  switch (type) {
+    case Types.Domain:
+      return "cloud";
+    case Types.Frame:
+      return "frame";
+    case Types.Worker:
+      return "gears";
+    case Types.Authored:
+      return "code";
+    case Types.Deployed:
+      return "deployed";
+    case Types.AutomaticFileSystem:
+      return "folder-asterisk";
+  }
+  return "folder";
+}
+function contextForNodeType(type) {
+  switch (type) {
+    case Types.Domain:
+      return "domain";
+    case Types.Frame:
+      return "frame";
+    case Types.Worker:
+      return "worker";
+    case Types.Authored:
+      return "authored";
+    case Types.Deployed:
+      return "deployed";
+  }
+  return "folder";
+}
+function renderFolderLeadingIcon(type) {
+  return html6`<devtools-icon name=${iconTypeForNodeType(type)}></devtools-icon>`;
+}
+function renderSourceTrailingIcons(uiSourceCode, onSelectSource) {
+  if (!UI7.ActionRegistry.ActionRegistry.instance().hasAction("drjones.sources-floating-button")) {
+    return [];
+  }
+  if (!uiSourceCode.contentType().isTextType() || Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
+    return [];
+  }
+  const action3 = UI7.ActionRegistry.ActionRegistry.instance().getAction("drjones.sources-floating-button");
+  const icon = AiAssistance.AiUtils.getIconName();
+  return [html6`<span class="ai-button-container">
+    <devtools-floating-button
+      .iconName=${icon}
+      .title=${action3.title()}
+      .jslogContext=${"ask-ai"}
+      @click=${{
+    handleEvent: (ev) => {
+      ev.stopPropagation();
+      onSelectSource(uiSourceCode, false);
+      void action3.execute();
+    },
+    capture: true
+  }}
+      @mousedown=${{
+    handleEvent: (ev) => {
+      ev.stopPropagation();
+    },
+    capture: true
+  }}
+    ></devtools-floating-button>
+  </span>`];
+}
+function renderGroupTrailingIcons(project) {
+  if (!(project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem)) {
+    return [];
+  }
+  const { automaticFileSystem, automaticFileSystemManager } = project;
+  switch (automaticFileSystem?.state) {
+    case "connecting": {
+      return [html6`<devtools-spinner></devtools-spinner>`];
+    }
+    case "disconnected": {
+      return [html6`<devtools-button
+        .data=${{
+        variant: Buttons2.Button.Variant.OUTLINED,
+        size: Buttons2.Button.Size.MICRO,
+        title: i18nString5(UIStrings6.connectFolderToWorkspace),
+        jslogContext: "automatic-workspace-folders.connect"
+      }}
+        @click=${async (event) => {
+        event.consume();
+        await automaticFileSystemManager.connectAutomaticFileSystem(
+          /* addIfMissing= */
+          true
+        );
+      }}
+      >${i18nString5(UIStrings6.connect)}</devtools-button>`];
+    }
+  }
+  return [];
+}
 var Events2 = /* @__PURE__ */ ((Events6) => {
   Events6["UI_SOURCE_CODE_ADDED"] = "ui-source-code-added";
   Events6["SOURCE_SELECTED"] = "source-selected";
@@ -6440,6 +6561,9 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
   groupByAuthored;
   groupByDomain;
   groupByFolder;
+  selectedNode = null;
+  expandedNodes = /* @__PURE__ */ new WeakSet();
+  treeElementNodes = /* @__PURE__ */ new WeakMap();
   #view;
   constructor(element, [networkProjectManager] = [Bindings3.NetworkProject.NetworkProjectManager.instance()], view = DEFAULT_VIEW5) {
     super(element, { useShadowDom: true });
@@ -6447,11 +6571,28 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     this.scriptsTree = new UI7.TreeOutline.TreeOutlineInShadow(UI7.TreeOutline.TreeVariant.NAVIGATION_TREE);
     this.scriptsTree.registerRequiredCSS(navigatorTree_css_default);
     this.scriptsTree.setHideOverflow(true);
-    this.scriptsTree.setComparator(_NavigatorView.treeElementsCompare);
+    this.scriptsTree.setComparator(this.treeElementsCompare.bind(this));
     this.scriptsTree.setFocusable(false);
     this.setDefaultFocusedElement(this.scriptsTree.element);
     this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementAttached, () => this.requestUpdate());
     this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementsDetached, () => this.requestUpdate());
+    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementSelected, (event) => {
+      const node = this.nodeForTreeElement(event.data);
+      this.selectedNode = node ?? null;
+    });
+    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementExpanded, (event) => {
+      const node = this.nodeForTreeElement(event.data);
+      if (node) {
+        this.expandedNodes.add(node);
+        node.populate();
+      }
+    });
+    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementCollapsed, (event) => {
+      const node = this.nodeForTreeElement(event.data);
+      if (node) {
+        this.expandedNodes.delete(node);
+      }
+    });
     this.uiSourceCodeNodes = new Platform5.MapUtilities.Multimap();
     this.subfolderNodes = /* @__PURE__ */ new Map();
     this.rootNode = new NavigatorRootTreeNode(this);
@@ -6542,14 +6683,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     this.requestUpdate();
   }
-  static treeElementOrder(treeElement) {
-    if (boostOrderForNode.has(treeElement)) {
+  static nodeOrder(node) {
+    if (node.boostOrder) {
       return 0;
     }
-    const actualElement = treeElement;
-    let order = TYPE_ORDERS.get(actualElement.nodeType) || 0;
-    if (actualElement.uiSourceCode) {
-      const contentType = actualElement.uiSourceCode.contentType();
+    let order = TYPE_ORDERS.get(node.type) || 0;
+    if (node instanceof NavigatorUISourceCodeTreeNode) {
+      const contentType = node.uiSourceCode().contentType();
       if (contentType.isDocument()) {
         order += 3;
       } else if (contentType.isScript()) {
@@ -6562,6 +6702,17 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return order;
   }
+  static compareNodes(node1, node2) {
+    const order1 = _NavigatorView.nodeOrder(node1);
+    const order2 = _NavigatorView.nodeOrder(node2);
+    if (order1 > order2) {
+      return 1;
+    }
+    if (order1 < order2) {
+      return -1;
+    }
+    return 0;
+  }
   static appendSearchItem(contextMenu, path) {
     const searchLabel = path ? i18nString5(UIStrings6.searchInFolder) : i18nString5(UIStrings6.searchInAllFiles);
     const searchSources = new SearchSources(path && `file:${path}`);
@@ -6571,14 +6722,14 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       { jslogContext: path ? "search-in-folder" : "search-in-all-files" }
     );
   }
-  static treeElementsCompare(treeElement1, treeElement2) {
-    const typeWeight1 = _NavigatorView.treeElementOrder(treeElement1);
-    const typeWeight2 = _NavigatorView.treeElementOrder(treeElement2);
-    if (typeWeight1 > typeWeight2) {
-      return 1;
-    }
-    if (typeWeight1 < typeWeight2) {
-      return -1;
+  treeElementsCompare(treeElement1, treeElement2) {
+    const node1 = this.nodeForTreeElement(treeElement1);
+    const node2 = this.nodeForTreeElement(treeElement2);
+    if (node1 && node2) {
+      const order = _NavigatorView.compareNodes(node1, node2);
+      if (order !== 0) {
+        return order;
+      }
     }
     return Platform5.StringUtilities.naturalOrderComparator(treeElement1.titleAsText(), treeElement2.titleAsText());
   }
@@ -6592,8 +6743,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     this.#view(
       {
         treeElement: this.scriptsTree.element,
-        showTree: Boolean(this.scriptsTree.firstChild()),
-        onContextMenu: this.handleContextMenu.bind(this)
+        showTree: Boolean(this.scriptsTree.firstChild())
       },
       void 0,
       this.contentElement
@@ -6645,6 +6795,43 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
   focus() {
     this.scriptsTree.focus();
   }
+  selectNode(node, omitFocus, selectedByUser) {
+    node.treeNode().select(omitFocus, selectedByUser);
+  }
+  expandNode(node) {
+    node.treeNode().expand();
+  }
+  collapseNode(node) {
+    node.treeNode().collapse();
+  }
+  isNodeExpanded(node) {
+    return this.expandedNodes.has(node);
+  }
+  isNodeSelected(node) {
+    return this.selectedNode === node;
+  }
+  setNodeSelected(node) {
+    this.selectedNode = node;
+  }
+  setNodeExpanded(node) {
+    this.expandedNodes.add(node);
+  }
+  setNodeForTreeElement(treeElement, node) {
+    this.treeElementNodes.set(treeElement, node);
+    if (node instanceof NavigatorFolderTreeNode || node instanceof NavigatorGroupTreeNode) {
+      node.updateTooltip(treeElement);
+      UI7.ARIAUtils.setLabel(treeElement.listItemElement, `${treeElement.title}, ${node.type}`);
+    }
+    if (treeElement.selected) {
+      this.setNodeSelected(node);
+    }
+    if (treeElement.expanded) {
+      this.setNodeExpanded(node);
+    }
+  }
+  nodeForTreeElement(treeElement) {
+    return this.treeElementNodes.get(treeElement);
+  }
   /**
    * Central place to add elements to the tree to
    * enable focus if the tree has elements
@@ -6659,6 +6846,9 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
    */
   removeChild(parent, child) {
     parent.removeChild(child);
+    if (!this.scriptsTree.selectedTreeElement) {
+      this.selectedNode = null;
+    }
     if (this.scriptsTree.rootElement().childCount() === 0) {
       this.scriptsTree.setFocusable(false);
     }
@@ -6707,9 +6897,6 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
       this.computeUniqueFileSystemProjectNames();
     }
-  }
-  workspace() {
-    return this.#workspace;
   }
   acceptProject(project) {
     if (this.#projectFilter) {
@@ -6812,8 +6999,9 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
   // TODO(einbinder) remove this code after crbug.com/964075 is fixed
   selectDefaultTreeNode() {
     const children = this.rootNode.children();
-    if (children.length && !this.scriptsTree.selectedTreeElement) {
-      children[0].treeNode().select(
+    if (children.length && !this.selectedNode) {
+      this.selectNode(
+        children[0],
         true,
         false
         /* selectedByUser */
@@ -6927,11 +7115,11 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       this.computeProjectDisplayName(target, projectOrigin)
     );
     if (frame && projectOrigin === Common7.ParsedURL.ParsedURL.extractOrigin(frame.url)) {
-      boostOrderForNode.add(domainNode.treeNode());
+      domainNode.boostOrder = true;
     }
     frameNode.appendChild(domainNode);
     if (isAuthored && this.groupByAuthored) {
-      domainNode.treeNode().expand();
+      this.expandNode(domainNode);
     }
     return domainNode;
   }
@@ -6943,24 +7131,23 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (frameNode) {
       return frameNode;
     }
-    frameNode = new NavigatorGroupTreeNode(this, project, target.id() + ":" + frame.id, Types.Frame, frame.displayName());
-    frameNode.setHoverCallback(hoverCallback);
+    frameNode = new NavigatorGroupTreeNode(
+      this,
+      project,
+      target.id() + ":" + frame.id,
+      Types.Frame,
+      frame.displayName(),
+      void 0,
+      frame
+    );
     this.frameNodes.set(frame, frameNode);
     const parentFrame = frame.parentFrame();
+    if (!parentFrame) {
+      frameNode.boostOrder = true;
+    }
     this.frameNode(project, parentFrame ? parentFrame.resourceTreeModel().target() : target, parentFrame, isAuthored).appendChild(frameNode);
     if (!parentFrame) {
-      boostOrderForNode.add(frameNode.treeNode());
-      frameNode.treeNode().expand();
-    }
-    function hoverCallback(hovered) {
-      if (hovered) {
-        const overlayModel = target.model(SDK5.OverlayModel.OverlayModel);
-        if (overlayModel && frame) {
-          overlayModel.highlightFrame(frame.id);
-        }
-      } else {
-        SDK5.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK5.TargetManager.TargetManager.instance());
-      }
+      this.expandNode(frameNode);
     }
     return frameNode;
   }
@@ -6976,7 +7163,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           i18nString5(UIStrings6.authoredTooltip)
         );
         this.rootNode.appendChild(this.authoredNode);
-        this.authoredNode.treeNode().expand();
+        this.expandNode(this.authoredNode);
       }
       return this.authoredNode;
     }
@@ -7050,11 +7237,12 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (!node) {
       return null;
     }
-    if (this.scriptsTree.selectedTreeElement) {
-      if (UI7.UIUtils.isBeingEdited(this.scriptsTree.selectedTreeElement.treeOutline?.element)) {
+    if (this.selectedNode) {
+      if (UI7.UIUtils.isBeingEdited(this.scriptsTree.element)) {
         return null;
       }
-      this.scriptsTree.selectedTreeElement.deselect();
+      this.selectedNode.treeNode().deselect();
+      this.selectedNode = null;
     }
     node.reveal(select);
     return node;
@@ -7064,15 +7252,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     void Common7.Revealer.reveal(uiSourceCode, !focusSource);
   }
   #isUISourceCodeOrAnyAncestorSelected(node) {
-    const selectedTreeElement = this.scriptsTree.selectedTreeElement;
-    const selectedNode = selectedTreeElement?.node;
     let currentNode = node;
     while (currentNode) {
-      if (currentNode === selectedNode) {
+      if (currentNode === this.selectedNode) {
         return true;
       }
       currentNode = currentNode.parent;
-      if (!(node instanceof NavigatorGroupTreeNode || node instanceof NavigatorFolderTreeElement)) {
+      if (!(currentNode instanceof NavigatorGroupTreeNode || currentNode instanceof NavigatorFolderTreeNode)) {
         break;
       }
     }
@@ -7151,6 +7337,8 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     this.scriptsTree.removeChildren();
     this.scriptsTree.setFocusable(false);
+    this.selectedNode = null;
+    this.expandedNodes = /* @__PURE__ */ new WeakSet();
     this.uiSourceCodeNodes.clear();
     this.subfolderNodes.clear();
     this.frameNodes.clear();
@@ -7161,15 +7349,11 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       this.resetWorkspace(Workspace5.Workspace.WorkspaceImpl.instance());
     }
   }
-  handleContextMenu(_event) {
-  }
   async renameShortcut() {
-    const selectedTreeElement = this.scriptsTree.selectedTreeElement;
-    const node = selectedTreeElement?.node;
-    if (!node?.uiSourceCode()?.canRename()) {
+    if (!(this.selectedNode instanceof NavigatorUISourceCodeTreeNode) || !this.selectedNode.uiSourceCode().canRename()) {
       return false;
     }
-    this.rename(node, false);
+    this.rename(this.selectedNode, false);
     return true;
   }
   handleContextMenuCreate(project, path, uiSourceCode) {
@@ -7208,6 +7392,19 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (shouldDelete) {
       uiSourceCode.project().deleteFile(uiSourceCode);
     }
+  }
+  fileDragStarted(node, event) {
+    if (!event.dataTransfer) {
+      return;
+    }
+    event.dataTransfer.setData("text/plain", node.uiSourceCode().url());
+    event.dataTransfer.effectAllowed = "copy";
+  }
+  shouldRenameOnMouseDown(node) {
+    if (!node.uiSourceCode().canRename() || !node.treeElement) {
+      return false;
+    }
+    return this.selectedNode === node && this.scriptsTree.element.hasFocus() && !UI7.UIUtils.isBeingEdited(this.scriptsTree.element);
   }
   handleFileContextMenu(event, node) {
     const uiSourceCode = node.uiSourceCode();
@@ -7318,8 +7515,20 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return this.findTopNonMergedNode(node.parent);
   }
+  folderHovered(node, hovered) {
+    if (node instanceof NavigatorGroupTreeNode && node.frame) {
+      if (hovered) {
+        const overlayModel = node.frame.resourceTreeModel().target().model(SDK5.OverlayModel.OverlayModel);
+        if (overlayModel) {
+          overlayModel.highlightFrame(node.frame.id);
+        }
+      } else {
+        SDK5.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK5.TargetManager.TargetManager.instance());
+      }
+    }
+  }
   handleFolderContextMenu(event, node) {
-    const path = node.folderPath || Platform5.DevToolsPath.EmptyEncodedPathString;
+    const path = node instanceof NavigatorFolderTreeNode ? node.folderPath : Platform5.DevToolsPath.EmptyEncodedPathString;
     const project = node.project || null;
     const contextMenu = new UI7.ContextMenu.ContextMenu(event);
     if (project?.type() !== Workspace5.Workspace.projectTypes.ConnectableFileSystem) {
@@ -7343,7 +7552,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           this.handleContextMenuCreate(project, path, void 0);
         }, { jslogContext: "new-file" });
       }
-    } else if (node.origin && node.folderPath) {
+    } else if (node instanceof NavigatorFolderTreeNode && node.origin && node.folderPath) {
       const url = Common7.ParsedURL.ParsedURL.concatenate(node.origin, "/", node.folderPath);
       const options = {
         isContentScript: node.recursiveProperties.exclusivelyContentScripts || false,
@@ -7488,252 +7697,12 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
   }
 };
-var boostOrderForNode = /* @__PURE__ */ new WeakSet();
-var NavigatorFolderTreeElement = class _NavigatorFolderTreeElement extends UI7.TreeOutline.TreeElement {
-  nodeType;
-  navigatorView;
-  hoverCallback;
-  node;
-  hovered;
-  isIgnoreListed;
-  constructor(navigatorView, type, title, hoverCallback, expandable = true) {
-    super("", expandable, _NavigatorFolderTreeElement.#contextForType(type));
-    this.listItemElement.classList.add("navigator-" + type + "-tree-item", "navigator-folder-tree-item");
-    UI7.ARIAUtils.setLabel(this.listItemElement, `${title}, ${type}`);
-    this.nodeType = type;
-    this.title = title;
-    this.tooltip = title;
-    this.navigatorView = navigatorView;
-    this.hoverCallback = hoverCallback;
-    let iconType = "folder";
-    if (type === Types.Domain) {
-      iconType = "cloud";
-    } else if (type === Types.Frame) {
-      iconType = "frame";
-    } else if (type === Types.Worker) {
-      iconType = "gears";
-    } else if (type === Types.Authored) {
-      iconType = "code";
-    } else if (type === Types.Deployed) {
-      iconType = "deployed";
-    } else if (type === Types.AutomaticFileSystem) {
-      iconType = "folder-asterisk";
-    }
-    const icon = createIcon(iconType);
-    this.setLeadingIcons([icon]);
-  }
-  async onpopulate() {
-    this.node.populate();
-  }
-  onattach() {
-    this.collapse();
-    this.node.onattach();
-    this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), false);
-    this.listItemElement.addEventListener("mousemove", this.mouseMove.bind(this), false);
-    this.listItemElement.addEventListener("mouseleave", this.mouseLeave.bind(this), false);
-  }
-  setIgnoreListed(isIgnoreListed) {
-    if (this.isIgnoreListed !== isIgnoreListed) {
-      this.isIgnoreListed = isIgnoreListed;
-      this.listItemElement.classList.toggle("is-ignore-listed", isIgnoreListed);
-      this.updateTooltip();
-    }
-  }
-  setFromSourceMap(isFromSourceMap) {
-    this.listItemElement.classList.toggle("is-from-source-map", isFromSourceMap);
-  }
-  setNode(node) {
-    this.node = node;
-    this.updateTooltip();
-    UI7.ARIAUtils.setLabel(this.listItemElement, `${this.title}, ${this.nodeType}`);
-  }
-  updateTooltip() {
-    if (this.node.tooltip) {
-      this.tooltip = this.node.tooltip;
-    } else {
-      const paths = [];
-      let currentNode = this.node;
-      while (currentNode && !currentNode.isRoot() && currentNode.type === this.node.type) {
-        paths.push(currentNode.title);
-        currentNode = currentNode.parent;
-      }
-      paths.reverse();
-      let tooltip = paths.join("/");
-      if (this.isIgnoreListed) {
-        tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
-      }
-      this.tooltip = tooltip;
-    }
-  }
-  handleContextMenuEvent(event) {
-    if (!this.node) {
-      return;
-    }
-    this.select();
-    this.navigatorView.handleFolderContextMenu(event, this.node);
-  }
-  mouseMove(_event) {
-    if (this.hovered || !this.hoverCallback) {
-      return;
-    }
-    this.hovered = true;
-    this.hoverCallback(true);
-  }
-  mouseLeave(_event) {
-    if (!this.hoverCallback) {
-      return;
-    }
-    this.hovered = false;
-    this.hoverCallback(false);
-  }
-  static #contextForType(type) {
-    switch (type) {
-      case Types.Domain:
-        return "domain";
-      case Types.Frame:
-        return "frame";
-      case Types.Worker:
-        return "worker";
-      case Types.Authored:
-        return "authored";
-      case Types.Deployed:
-        return "deployed";
-    }
-    return "folder";
-  }
-};
-var NavigatorSourceTreeElement = class extends UI7.TreeOutline.TreeElement {
-  nodeType;
-  node;
-  navigatorView;
-  #uiSourceCode;
-  constructor(navigatorView, uiSourceCode, title, node) {
-    super("", false, uiSourceCode.contentType().name());
-    this.nodeType = Types.File;
-    this.node = node;
-    this.title = title;
-    this.listItemElement.classList.add(
-      "navigator-" + uiSourceCode.contentType().name() + "-tree-item",
-      "navigator-file-tree-item"
-    );
-    this.tooltip = uiSourceCode.url();
-    UI7.ARIAUtils.setLabel(this.listItemElement, `${uiSourceCode.name()}, ${this.nodeType}`);
-    window.dispatchEvent(new CustomEvent(
-      "source-tree-file-added",
-      { bubbles: true, cancelable: true, detail: uiSourceCode.fullDisplayName() }
-    ));
-    this.navigatorView = navigatorView;
-    this.#uiSourceCode = uiSourceCode;
-    this.updateIcon();
-    this.titleElement.setAttribute("jslog", `${VisualLogging5.value("title").track({ change: true })}`);
-  }
-  updateIcon() {
-    const icon = PanelUtils.getIconForSourceFile(this.#uiSourceCode);
-    this.setLeadingIcons([icon]);
-  }
-  updateAccessibleName() {
-    UI7.ARIAUtils.setLabel(this.listItemElement, `${this.#uiSourceCode.name()}, ${this.nodeType}`);
-  }
-  createAiButton() {
-    if (!UI7.ActionRegistry.ActionRegistry.instance().hasAction("drjones.sources-floating-button")) {
-      return;
-    }
-    if (!this.uiSourceCode.contentType().isTextType() || Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.uiSourceCode)) {
-      return;
-    }
-    const action3 = UI7.ActionRegistry.ActionRegistry.instance().getAction("drjones.sources-floating-button");
-    const icon = AiAssistance.AiUtils.getIconName();
-    this.setTrailingIcons([
-      html6`<span class="ai-button-container">
-        <devtools-floating-button
-          .iconName=${icon}
-          .title=${action3.title()}
-          .jslogContext=${"ask-ai"}
-          @click=${{
-        handleEvent: (ev) => {
-          ev.stopPropagation();
-          this.navigatorView.sourceSelected(this.uiSourceCode, false);
-          void action3.execute();
-        },
-        capture: true
-      }}
-          @mousedown=${{
-        handleEvent: (ev) => {
-          ev.stopPropagation();
-        },
-        capture: true
-      }}
-        ></devtools-floating-button>
-      </span>`
-    ]);
-  }
-  get uiSourceCode() {
-    return this.#uiSourceCode;
-  }
-  onattach() {
-    this.listItemElement.draggable = true;
-    this.listItemElement.addEventListener("click", this.onclick.bind(this), false);
-    this.listItemElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this), false);
-    this.listItemElement.addEventListener("dragstart", this.ondragstart.bind(this), false);
-    this.createAiButton();
-  }
-  shouldRenameOnMouseDown() {
-    if (!this.#uiSourceCode.canRename()) {
-      return false;
-    }
-    if (!this.treeOutline) {
-      return false;
-    }
-    const isSelected = this === this.treeOutline.selectedTreeElement;
-    return isSelected && this.treeOutline.element.hasFocus() && !UI7.UIUtils.isBeingEdited(this.treeOutline.element);
-  }
-  selectOnMouseDown(event) {
-    if (event.which !== 1 || !this.shouldRenameOnMouseDown()) {
-      super.selectOnMouseDown(event);
-      return;
-    }
-    window.setTimeout(rename.bind(this), 300);
-    function rename() {
-      if (this.shouldRenameOnMouseDown()) {
-        this.navigatorView.rename(this.node, false);
-      }
-    }
-  }
-  ondragstart(event) {
-    if (!event.dataTransfer) {
-      return;
-    }
-    event.dataTransfer.setData("text/plain", this.#uiSourceCode.url());
-    event.dataTransfer.effectAllowed = "copy";
-  }
-  onspace() {
-    this.navigatorView.sourceSelected(this.uiSourceCode, true);
-    return true;
-  }
-  onclick(_event) {
-    this.navigatorView.sourceSelected(this.uiSourceCode, false);
-  }
-  ondblclick(event) {
-    const middleClick = event.button === 1;
-    this.navigatorView.sourceSelected(this.uiSourceCode, !middleClick);
-    return false;
-  }
-  onenter() {
-    this.navigatorView.sourceSelected(this.uiSourceCode, true);
-    return true;
-  }
-  ondelete() {
-    return true;
-  }
-  handleContextMenuEvent(event) {
-    this.select();
-    this.navigatorView.handleFileContextMenu(event, this.node);
-  }
-};
 var NavigatorTreeNode = class {
   id;
   navigatorView;
   type;
+  boostOrder = false;
+  hasMappedFiles = false;
   populated;
   isMerged;
   parent;
@@ -7755,6 +7724,71 @@ var NavigatorTreeNode = class {
       exclusivelyContentScripts: null,
       exclusivelyThirdParty: null
     };
+  }
+  computedTooltip() {
+    if (this.tooltip) {
+      return this.tooltip;
+    }
+    const paths = [];
+    let currentNode = this;
+    while (currentNode && !currentNode.isRoot() && currentNode.type === this.type) {
+      paths.push(currentNode.title);
+      currentNode = currentNode.parent;
+    }
+    paths.reverse();
+    let tooltip = paths.join("/");
+    if (Boolean(this.recursiveProperties.exclusivelyIgnored)) {
+      tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
+    }
+    return tooltip;
+  }
+  updateTooltip(treeElement) {
+    if (!treeElement) {
+      return;
+    }
+    let tooltip = this.computedTooltip();
+    if (treeElement.listItemElement.classList.contains("is-ignore-listed") && !this.recursiveProperties.exclusivelyIgnored) {
+      tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
+    }
+    treeElement.tooltip = tooltip;
+  }
+  createFolderTreeElement(title, node, expandable = true) {
+    const treeElement = new UI7.TreeOutline.TreeElement("", expandable, contextForNodeType(this.type));
+    treeElement.listItemElement.classList.add("navigator-" + this.type + "-tree-item", "navigator-folder-tree-item");
+    treeElement.title = title;
+    treeElement.tooltip = title;
+    treeElement.setLeadingIcons([renderFolderLeadingIcon(this.type)]);
+    this.navigatorView.setNodeForTreeElement(treeElement, node);
+    treeElement.onattach = () => {
+      treeElement.collapse();
+      this.navigatorView.nodeForTreeElement(treeElement)?.onattach();
+    };
+    let hovered = false;
+    treeElement.listItemElement.addEventListener("contextmenu", (event) => {
+      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
+      if (!activeNode || !(activeNode instanceof NavigatorFolderTreeNode || activeNode instanceof NavigatorGroupTreeNode)) {
+        return;
+      }
+      this.navigatorView.selectNode(activeNode);
+      this.navigatorView.handleFolderContextMenu(event, activeNode);
+    }, false);
+    treeElement.listItemElement.addEventListener("mousemove", (_event) => {
+      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
+      if (hovered || !activeNode) {
+        return;
+      }
+      hovered = true;
+      this.navigatorView.folderHovered(activeNode, true);
+    }, false);
+    treeElement.listItemElement.addEventListener("mouseleave", (_event) => {
+      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
+      if (!activeNode) {
+        return;
+      }
+      hovered = false;
+      this.navigatorView.folderHovered(activeNode, false);
+    }, false);
+    return treeElement;
   }
   treeNode() {
     throw new Error("Not implemented");
@@ -7879,6 +7913,7 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
       this.recursiveProperties.exclusivelyThirdParty = uiSourceCode.isKnownThirdParty();
       this.recursiveProperties.exclusivelyContentScripts = uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.ContentScripts;
     }
+    this.updateTitle();
   }
   frame() {
     return this.#frame;
@@ -7886,11 +7921,89 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
   uiSourceCode() {
     return this.#uiSourceCode;
   }
+  updateIcon() {
+    if (!this.treeElement) {
+      return;
+    }
+    const icon = PanelUtils.getIconForSourceFile(this.#uiSourceCode);
+    this.treeElement.setLeadingIcons([icon]);
+  }
+  updateAccessibleName() {
+    if (!this.treeElement) {
+      return;
+    }
+    UI7.ARIAUtils.setLabel(this.treeElement.listItemElement, `${this.#uiSourceCode.name()}, ${this.type}`);
+  }
+  updateTrailingIcons() {
+    if (!this.treeElement) {
+      return;
+    }
+    const trailingIcons = renderSourceTrailingIcons(
+      this.#uiSourceCode,
+      (uiSourceCode, focusSource) => this.navigatorView.sourceSelected(uiSourceCode, focusSource)
+    );
+    this.treeElement.setTrailingIcons(trailingIcons);
+  }
+  onattach() {
+    this.updateTrailingIcons();
+  }
   treeNode() {
     if (this.treeElement) {
       return this.treeElement;
     }
-    this.treeElement = new NavigatorSourceTreeElement(this.navigatorView, this.#uiSourceCode, "", this);
+    this.treeElement = new UI7.TreeOutline.TreeElement("", false, this.#uiSourceCode.contentType().name());
+    this.treeElement.listItemElement.classList.add(
+      "navigator-" + this.#uiSourceCode.contentType().name() + "-tree-item",
+      "navigator-file-tree-item"
+    );
+    this.treeElement.listItemElement.draggable = true;
+    this.treeElement.titleElement.setAttribute("jslog", `${VisualLogging5.value("title").track({
+      change: true
+    })}`);
+    this.navigatorView.setNodeForTreeElement(this.treeElement, this);
+    const treeElement = this.treeElement;
+    treeElement.selectOnMouseDown = (event) => {
+      if (event.which !== 1 || !this.navigatorView.shouldRenameOnMouseDown(this)) {
+        UI7.TreeOutline.TreeElement.prototype.selectOnMouseDown.call(treeElement, event);
+        return;
+      }
+      window.setTimeout(() => {
+        if (this.navigatorView.shouldRenameOnMouseDown(this)) {
+          this.navigatorView.rename(this, false);
+        }
+      }, 300);
+    };
+    treeElement.onspace = () => {
+      this.navigatorView.sourceSelected(this.#uiSourceCode, true);
+      return true;
+    };
+    treeElement.ondblclick = (event) => {
+      const middleClick = event.button === 1;
+      this.navigatorView.sourceSelected(this.#uiSourceCode, !middleClick);
+      return false;
+    };
+    treeElement.onenter = () => {
+      this.navigatorView.sourceSelected(this.#uiSourceCode, true);
+      return true;
+    };
+    treeElement.ondelete = () => true;
+    treeElement.onattach = () => {
+      this.onattach();
+    };
+    treeElement.listItemElement.addEventListener("click", () => {
+      this.navigatorView.sourceSelected(this.#uiSourceCode, false);
+    }, false);
+    treeElement.listItemElement.addEventListener("contextmenu", (event) => {
+      this.navigatorView.selectNode(this);
+      this.navigatorView.handleFileContextMenu(event, this);
+    }, false);
+    treeElement.listItemElement.addEventListener("dragstart", (event) => {
+      this.navigatorView.fileDragStarted(this, event);
+    }, false);
+    window.dispatchEvent(new CustomEvent(
+      "source-tree-file-added",
+      { bubbles: true, cancelable: true, detail: this.#uiSourceCode.fullDisplayName() }
+    ));
     this.updateTitle();
     const updateTitleBound = this.updateTitle.bind(this, void 0);
     this.eventListeners = [
@@ -7900,23 +8013,30 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     ];
     return this.treeElement;
   }
+  updateTreeElement() {
+    if (!this.treeElement) {
+      return;
+    }
+    this.treeElement.title = this.title;
+    this.updateIcon();
+    this.updateTrailingIcons();
+    this.treeElement.listItemElement.classList.toggle(
+      "is-ignore-listed",
+      Boolean(this.recursiveProperties.exclusivelyIgnored)
+    );
+    this.treeElement.tooltip = this.tooltip ?? "";
+    this.updateAccessibleName();
+  }
   updateTitle(ignoreIsDirty) {
     const isIgnoreListed = Workspace5.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
       this.#uiSourceCode
     );
-    if (this.#uiSourceCode.contentType().isScript() || isIgnoreListed) {
-      this.recursiveProperties.exclusivelyIgnored = isIgnoreListed;
-    }
-    if (!this.treeElement) {
-      return;
-    }
+    this.recursiveProperties.exclusivelyIgnored = this.#uiSourceCode.contentType().isScript() || isIgnoreListed ? isIgnoreListed : null;
     let titleText = this.#uiSourceCode.displayName();
     if (!ignoreIsDirty && this.#uiSourceCode.isDirty()) {
       titleText = "*" + titleText;
     }
-    this.treeElement.title = titleText;
-    this.treeElement.updateIcon();
-    this.treeElement.listItemElement.classList.toggle("is-ignore-listed", isIgnoreListed);
+    this.title = titleText;
     let tooltip = this.#uiSourceCode.url();
     if (this.#uiSourceCode.contentType().isFromSourceMap()) {
       tooltip = i18nString5(UIStrings6.sFromSourceMap, { PH1: this.#uiSourceCode.displayName() });
@@ -7924,9 +8044,9 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     if (isIgnoreListed) {
       tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
     }
-    this.treeElement.tooltip = tooltip;
-    this.treeElement.updateAccessibleName();
+    this.tooltip = tooltip;
     this.updateId("UISourceCode:" + this.#uiSourceCode.canonicalScriptId());
+    this.updateTreeElement();
   }
   hasChildren() {
     return false;
@@ -7937,12 +8057,12 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
   reveal(select) {
     if (this.parent) {
       this.parent.populate();
-      this.parent.treeNode().expand();
+      this.navigatorView.expandNode(this.parent);
     }
     if (this.treeElement) {
       this.treeElement.reveal(true);
       if (select) {
-        this.treeElement.select(true);
+        this.navigatorView.selectNode(this, true);
       }
     }
   }
@@ -7978,7 +8098,7 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
         if (parent) {
           parent.removeChild(this.treeElement);
           parent.appendChild(this.treeElement);
-          this.treeElement.select();
+          this.navigatorView.selectNode(this);
         }
       }
       afterEditing(true);
@@ -8001,7 +8121,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
   folderPath;
   origin;
   title;
-  treeElement;
+  treeElement = null;
   constructor(navigatorView, project, id, type, folderPath, title, origin) {
     super(navigatorView, id, type);
     this.project = project;
@@ -8017,6 +8137,36 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
     this.updateTitle();
     return this.treeElement;
   }
+  computeHasMappedFiles() {
+    if (!this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
+      return false;
+    }
+    const absoluteFileSystemPath = Common7.ParsedURL.ParsedURL.concatenate(
+      Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(
+        this.project.id()
+      ),
+      "/",
+      this.folderPath
+    );
+    const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
+    return isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(absoluteFileSystemPath);
+  }
+  updateTreeElement() {
+    if (!this.treeElement) {
+      return;
+    }
+    this.treeElement.listItemElement.classList.toggle(
+      "is-from-source-map",
+      Boolean(this.recursiveProperties.exclusivelySourceMapped)
+    );
+    this.treeElement.listItemElement.classList.toggle(
+      "is-ignore-listed",
+      Boolean(this.recursiveProperties.exclusivelyIgnored)
+    );
+    this.treeElement.listItemElement.classList.toggle("has-mapped-files", this.hasMappedFiles);
+    const activeNode = this.navigatorView.nodeForTreeElement(this.treeElement) ?? this;
+    activeNode.updateTooltip(this.treeElement);
+  }
   updateTitle() {
     let propName;
     for (propName in this.recursiveProperties) {
@@ -8031,32 +8181,14 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       }
       this.recursiveProperties[propName] = propValue;
     }
-    if (!this.treeElement) {
-      return;
-    }
-    this.treeElement.setFromSourceMap(this.recursiveProperties.exclusivelySourceMapped || false);
-    this.treeElement.setIgnoreListed(this.recursiveProperties.exclusivelyIgnored || false);
-    if (!this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
-      return;
-    }
-    const absoluteFileSystemPath = Common7.ParsedURL.ParsedURL.concatenate(
-      Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(
-        this.project.id()
-      ),
-      "/",
-      this.folderPath
-    );
-    const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    const hasMappedFiles = isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(absoluteFileSystemPath);
-    this.treeElement.listItemElement.classList.toggle("has-mapped-files", hasMappedFiles);
+    this.hasMappedFiles = this.computeHasMappedFiles();
+    this.updateTreeElement();
   }
   createTreeElement(title, node) {
-    const treeElement = new NavigatorFolderTreeElement(this.navigatorView, this.type, title);
-    treeElement.setNode(node);
-    return treeElement;
+    return this.createFolderTreeElement(title, node);
   }
   wasPopulated() {
-    if (this.treeElement?.node !== this) {
+    if (!this.treeElement || this.navigatorView.nodeForTreeElement(this.treeElement) !== this) {
       return;
     }
     this.addChildrenRecursive();
@@ -8084,7 +8216,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       this.treeElement.title = this.treeElement.title + "/" + node.title;
       node.treeElement = this.treeElement;
       node.updateTitle();
-      this.treeElement.setNode(node);
+      this.navigatorView.setNodeForTreeElement(this.treeElement, node);
       return;
     }
     let oldNode;
@@ -8113,7 +8245,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       } while (treeNode?.isMerged);
       if (!this.isPopulated()) {
         this.treeElement.title = titleText;
-        this.treeElement.setNode(this);
+        this.navigatorView.setNodeForTreeElement(this.treeElement, this);
         for (let i = 0; i < nodes.length; ++i) {
           nodes[i].treeElement = null;
           nodes[i].isMerged = false;
@@ -8130,14 +8262,16 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       if (oldTreeElement.parent) {
         this.navigatorView.appendChild(oldTreeElement.parent, treeElement);
       }
-      oldTreeElement.setNode(nodes[nodes.length - 1]);
+      const oldTreeElementNode = this.navigatorView.nodeForTreeElement(oldTreeElement);
+      const wasExpanded = Boolean(oldTreeElementNode && this.navigatorView.isNodeExpanded(oldTreeElementNode));
       oldTreeElement.title = nodes.map((node2) => node2.title).join("/");
+      this.navigatorView.setNodeForTreeElement(oldTreeElement, nodes[nodes.length - 1]);
       if (oldTreeElement.parent) {
         this.navigatorView.removeChild(oldTreeElement.parent, oldTreeElement);
       }
       this.navigatorView.appendChild(this.treeElement, oldTreeElement);
-      if (oldTreeElement.expanded) {
-        treeElement.expand();
+      if (wasExpanded) {
+        this.navigatorView.expandNode(this);
       }
       this.updateTitle();
     }
@@ -8156,81 +8290,63 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
 var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
   project;
   title;
-  hoverCallback;
+  frame;
   treeElement;
-  constructor(navigatorView, project, id, type, title, tooltip) {
+  constructor(navigatorView, project, id, type, title, tooltip, frame) {
     super(navigatorView, id, type, tooltip);
     this.project = project;
     this.title = title;
+    this.frame = frame;
     this.populate();
-  }
-  setHoverCallback(hoverCallback) {
-    this.hoverCallback = hoverCallback;
   }
   treeNode() {
     if (this.treeElement) {
       return this.treeElement;
     }
     const expandable = !(this.project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem);
-    this.treeElement = new NavigatorFolderTreeElement(this.navigatorView, this.type, this.title, this.hoverCallback, expandable);
-    this.treeElement.setNode(this);
-    if (this.project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem) {
-      const { automaticFileSystem, automaticFileSystemManager } = this.project;
-      switch (automaticFileSystem?.state) {
-        case "connecting": {
-          this.treeElement.setTrailingIcons([
-            html6`<devtools-spinner></devtools-spinner>`
-          ]);
-          break;
-        }
-        case "disconnected": {
-          this.treeElement.setTrailingIcons([
-            html6`<devtools-button
-              .data=${{
-              variant: Buttons2.Button.Variant.OUTLINED,
-              size: Buttons2.Button.Size.MICRO,
-              title: i18nString5(UIStrings6.connectFolderToWorkspace),
-              jslogContext: "automatic-workspace-folders.connect"
-            }}
-              @click=${async (event) => {
-              event.consume();
-              await automaticFileSystemManager.connectAutomaticFileSystem(
-                /* addIfMissing= */
-                true
-              );
-            }}
-            >${i18nString5(UIStrings6.connect)}</devtools-button>`
-          ]);
-          break;
-        }
-      }
-    }
+    this.treeElement = this.createFolderTreeElement(this.title, this, expandable);
+    this.updateTrailingIcons();
     return this.treeElement;
+  }
+  updateTrailingIcons() {
+    if (!this.treeElement) {
+      return;
+    }
+    const trailingIcons = renderGroupTrailingIcons(this.project);
+    this.treeElement.setTrailingIcons(trailingIcons);
   }
   onattach() {
     this.updateTitle();
   }
-  updateTitle() {
-    if (!this.treeElement || !this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
-      return;
+  computeHasMappedFiles() {
+    if (!this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
+      return false;
     }
     const fileSystemPath = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(
       this.project.id()
     );
-    const wasActive = this.treeElement.listItemElement.classList.contains("has-mapped-files");
     const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    const isActive = isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(fileSystemPath);
+    return isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(fileSystemPath);
+  }
+  updateTitle() {
+    this.hasMappedFiles = this.computeHasMappedFiles();
+    this.updateTrailingIcons();
+    if (!this.treeElement || !this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
+      return;
+    }
+    const wasActive = this.treeElement.listItemElement.classList.contains("has-mapped-files");
+    const isActive = this.hasMappedFiles;
+    this.treeElement.listItemElement.classList.toggle("has-mapped-files", isActive);
     if (wasActive === isActive) {
       return;
     }
-    this.treeElement.listItemElement.classList.toggle("has-mapped-files", isActive);
     if (this.treeElement.childrenListElement.hasFocus()) {
       return;
     }
     if (isActive) {
-      this.treeElement.expand();
+      this.navigatorView.expandNode(this);
     } else {
-      this.treeElement.collapse();
+      this.navigatorView.collapseNode(this);
     }
   }
   setTitle(title) {
@@ -8396,7 +8512,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends SourcesNavigatorV
     this.#view = view;
     SDK6.TargetManager.TargetManager.instance().addEventListener(
       SDK6.TargetManager.Events.INSPECTED_URL_CHANGED,
-      this.inspectedURLChanged,
+      this.#inspectedURLChanged,
       this
     );
     UI8.UIUserMetrics.UIUserMetrics.instance().panelLoaded("sources", "DevTools.Launch.Sources");
@@ -8438,7 +8554,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends SourcesNavigatorV
       }
     }
   }
-  inspectedURLChanged(event) {
+  #inspectedURLChanged(event) {
     const mainTarget = SDK6.TargetManager.TargetManager.instance().scopeTarget();
     if (event.data !== mainTarget) {
       return;
@@ -8631,17 +8747,17 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends SourcesNaviga
     this.#view = view;
     Persistence5.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(
       Persistence5.NetworkPersistenceManager.Events.PROJECT_CHANGED,
-      this.updateProjectAndUI,
+      this.#updateProjectAndUI,
       this
     );
     Persistence5.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(
       Persistence5.NetworkPersistenceManager.Events.LOCAL_OVERRIDES_PROJECT_UPDATED,
-      this.updateProjectAndUI,
+      this.#updateProjectAndUI,
       this
     );
     const workspace = Workspace7.Workspace.WorkspaceImpl.instance();
-    workspace.addEventListener(Workspace7.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
-    workspace.addEventListener(Workspace7.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
+    workspace.addEventListener(Workspace7.Workspace.Events.ProjectAdded, this.#onProjectAddOrRemoved, this);
+    workspace.addEventListener(Workspace7.Workspace.Events.ProjectRemoved, this.#onProjectAddOrRemoved, this);
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -8673,14 +8789,14 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends SourcesNaviga
     );
     await this.navigatorView?.updateComplete;
   }
-  onProjectAddOrRemoved(event) {
+  #onProjectAddOrRemoved(event) {
     const project = event.data;
     if (project && project.type() === Workspace7.Workspace.projectTypes.FileSystem && Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
       return;
     }
     this.requestUpdate();
   }
-  updateProjectAndUI() {
+  #updateProjectAndUI() {
     const navigatorView = this.navigatorView;
     if (navigatorView) {
       navigatorView.reset();
@@ -8927,7 +9043,7 @@ import * as Buttons8 from "../../ui/components/buttons/buttons.js";
 import * as QuickOpen from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as SourceFrame11 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "../../ui/legacy/legacy.js";
-import { html as html14, nothing as nothing8, render as render10 } from "../../ui/lit/lit.js";
+import { html as html15, nothing as nothing8, render as render11 } from "../../ui/lit/lit.js";
 import * as VisualLogging10 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/sourcesView.css.js
@@ -8984,7 +9100,7 @@ import * as Workspace19 from "../../models/workspace/workspace.js";
 import * as uiI18n3 from "../../ui/i18n/i18n.js";
 import * as SourceFrame9 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI14 from "../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html13, nothing as nothing7, render as render9 } from "../../ui/lit/lit.js";
+import { Directives as Directives3, html as html14, nothing as nothing7, render as render10 } from "../../ui/lit/lit.js";
 import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon2 from "../common/common.js";
 import * as Snippets4 from "../snippets/snippets.js";
@@ -9368,7 +9484,7 @@ import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.j
 import * as TextEditor5 from "../../ui/components/text_editor/text_editor.js";
 import * as SourceFrame7 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI13 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html12, nothing as nothing6, render as render8 } from "../../ui/lit/lit.js";
+import { Directives as Directives2, html as html13, nothing as nothing6, render as render9 } from "../../ui/lit/lit.js";
 
 // ../../front_end/panels/sources/CoveragePlugin.ts
 var CoveragePlugin_exports = {};
@@ -9614,7 +9730,7 @@ import * as Bindings5 from "../../models/bindings/bindings.js";
 import * as Workspace12 from "../../models/workspace/workspace.js";
 import * as CodeMirror3 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as Geometry from "../../ui/geometry/geometry.js";
-import { createIcon as createIcon2 } from "../../ui/kit/kit.js";
+import { createIcon } from "../../ui/kit/kit.js";
 import * as ColorPicker from "../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI10 from "../../ui/legacy/legacy.js";
@@ -9778,7 +9894,7 @@ var CurveSwatchWidget = class extends CodeMirror3.WidgetType {
   toDOM(view) {
     const container = document.createElement("span");
     const bezierText = container.createChild("span");
-    const icon = createIcon2("bezier-curve-filled", "bezier-swatch-icon");
+    const icon = createIcon("bezier-curve-filled", "bezier-swatch-icon");
     icon.setAttribute("jslog", `${VisualLogging7.showStyleEditor("bezier")}`);
     bezierText.append(this.text);
     UI10.Tooltip.Tooltip.install(icon, i18nString8(UIStrings9.openCubicBezierEditor));
@@ -10865,6 +10981,7 @@ var DebuggerPlugin = class extends Plugin {
       }
     };
     dialog4.markAsExternallyManaged();
+    dialog4.performUpdate();
     const decorationFragment = document.createDocumentFragment();
     renderBreakpointEditDialogHost({ dialog: dialog4 }, void 0, decorationFragment);
     const decorationElement = decorationFragment.firstElementChild;
@@ -12385,6 +12502,7 @@ import * as i18n21 from "../../core/i18n/i18n.js";
 import * as Platform8 from "../../core/platform/platform.js";
 import * as Workspace16 from "../../models/workspace/workspace.js";
 import * as CodeMirror5 from "../../third_party/codemirror.next/codemirror.next.js";
+import { html as html10, render as render8 } from "../../ui/lit/lit.js";
 var UIStrings11 = {
   /**
    * @description The millisecond unit.
@@ -12393,6 +12511,14 @@ var UIStrings11 = {
 };
 var str_11 = i18n21.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
 var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+function renderPerformanceMarker(input, _output, target) {
+  render8(html10`
+    <div class="cm-profileMarker"
+         style="background-color: hsla(44, 100%, 50%, ${input.intensity.toFixed(3)})">
+      ${input.value.toFixed(1)}
+      <span class="cm-units">${i18nString10(UIStrings11.ms)}</span>
+    </div>`, target);
+}
 var PerformanceMarker = class extends CodeMirror5.GutterMarker {
   constructor(value2) {
     super();
@@ -12403,16 +12529,10 @@ var PerformanceMarker = class extends CodeMirror5.GutterMarker {
     return this.value === other.value;
   }
   toDOM() {
-    const element = document.createElement("div");
-    element.className = "cm-profileMarker";
+    const fragment = document.createDocumentFragment();
     const intensity = Platform8.NumberUtilities.clamp(Math.log10(1 + 10 * this.value) / 5, 0.02, 1);
-    element.textContent = this.value.toFixed(1);
-    element.style.backgroundColor = `hsla(44, 100%, 50%, ${intensity.toFixed(3)})`;
-    const span = document.createElement("span");
-    span.className = "cm-units";
-    span.textContent = i18nString10(UIStrings11.ms);
-    element.appendChild(span);
-    return element;
+    renderPerformanceMarker({ value: this.value, intensity }, void 0, fragment);
+    return fragment.firstElementChild;
   }
 };
 function markersFromProfileData(map, state) {
@@ -12458,7 +12578,7 @@ var PerformanceProfilePlugin = class extends Plugin {
   static accepts(uiSourceCode) {
     return uiSourceCode.contentType().hasScripts();
   }
-  getLineMap() {
+  #getLineMap() {
     const uiSourceCodeProfileMap = this.uiSourceCode.getDecorationData(Workspace16.UISourceCode.DecoratorType.PERFORMANCE);
     if (!uiSourceCodeProfileMap) {
       return void 0;
@@ -12469,14 +12589,14 @@ var PerformanceProfilePlugin = class extends Plugin {
     });
   }
   editorExtension() {
-    const map = this.getLineMap();
+    const map = this.#getLineMap();
     return this.compartment.of(
       !map ? [] : [this.field.init((state) => markersFromProfileData(map, state)), this.gutter, theme4]
     );
   }
   decorationChanged(type, editor) {
     const installed = Boolean(editor.state.field(this.field, false));
-    const map = this.getLineMap();
+    const map = this.#getLineMap();
     if (!map) {
       if (installed) {
         editor.dispatch({ effects: this.compartment.reconfigure([]) });
@@ -12522,7 +12642,7 @@ import * as i18n23 from "../../core/i18n/i18n.js";
 import * as Bindings7 from "../../models/bindings/bindings.js";
 import * as uiI18n2 from "../../ui/i18n/i18n.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
-import { html as html10, nothing as nothing5 } from "../../ui/lit/lit.js";
+import { html as html11, nothing as nothing5 } from "../../ui/lit/lit.js";
 var UIStrings12 = {
   /**
    * @description Text in the bottom toolbar of the Sources panel that lists the source mapped origin scripts.
@@ -12572,9 +12692,9 @@ var ResourceOriginPlugin = class extends Plugin {
       if (links.length === 0) {
         return [];
       }
-      const linksTemplate = html10`<span>${links.map((link, index) => html10`${index > 0 ? ", " : nothing5}${link}`)}</span>`;
+      const linksTemplate = html11`<span>${links.map((link, index) => html11`${index > 0 ? ", " : nothing5}${link}`)}</span>`;
       return [
-        html10`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: linksTemplate })}</div>`
+        html11`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: linksTemplate })}</div>`
       ];
     }
     for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
@@ -12582,7 +12702,7 @@ var ResourceOriginPlugin = class extends Plugin {
         const link = this.#linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
         link.tabIndex = 0;
         return [
-          html10`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: link })}</div>`
+          html11`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: link })}</div>`
         ];
       }
     }
@@ -12604,7 +12724,7 @@ import * as i18n25 from "../../core/i18n/i18n.js";
 import * as Buttons6 from "../../ui/components/buttons/buttons.js";
 import * as TextEditor4 from "../../ui/components/text_editor/text_editor.js";
 import * as UI12 from "../../ui/legacy/legacy.js";
-import { html as html11 } from "../../ui/lit/lit.js";
+import { html as html12 } from "../../ui/lit/lit.js";
 import * as Snippets3 from "../snippets/snippets.js";
 var { bindToAction: bindToAction2 } = UI12.UIUtils;
 var UIStrings13 = {
@@ -12626,7 +12746,7 @@ var SnippetsPlugin = class extends Plugin {
   rightToolbarItems() {
     const action3 = UI12.ActionRegistry.ActionRegistry.instance().getAction("debugger.run-snippet");
     const text = Host6.Platform.isMac() ? i18nString12(UIStrings13.enter) : i18nString12(UIStrings13.ctrlenter);
-    return [html11`<devtools-button
+    return [html12`<devtools-button
       class="toolbar-button"
       title=${action3.title()}
       aria-label=${action3.title()}
@@ -13041,7 +13161,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
     const isJavaScript = Common12.ResourceType.ResourceType.isJavaScriptMimeType(this.contentType);
     const isInplaceFormattable = isEditable && isJavaScript;
     if (isInplaceFormattable) {
-      leftToolbarItems.unshift(html12`<devtools-button
+      leftToolbarItems.unshift(html13`<devtools-button
         class="toolbar-button"
         title=${i18nString13(UIStrings14.format)}
         aria-label=${i18nString13(UIStrings14.format)}
@@ -13055,9 +13175,9 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
       leftToolbarItems.push(...plugin.leftToolbarItems());
       rightToolbarItems.push(...plugin.rightToolbarItems());
     }
-    return html12`
+    return html13`
       ${leftToolbarItems}
-      ${rightToolbarItems.length ? html12`
+      ${rightToolbarItems.length ? html13`
         <div class="toolbar-spacer"></div>
         ${rightToolbarItems}
       ` : nothing6}
@@ -13260,10 +13380,10 @@ var MessageWidget = class extends CodeMirror6.WidgetType {
     const maxIssueIconData = maxIssue && getIconDataForLevel(maxIssue.level());
     const issue = this.messages.find((m) => m.level() === Workspace17.UISourceCode.Message.Level.ISSUE);
     const issueIconData = issue && getIconDataForMessage(issue);
-    render8(html12`<span class="cm-messageIcon">${maxIssueIconData ? html12`<devtools-icon
+    render9(html13`<span class="cm-messageIcon">${maxIssueIconData ? html13`<devtools-icon
           class="cm-messageIcon-error"
           name=${maxIssueIconData.iconName}
-          style=${styleMap({ height: maxIssueIconData.height, width: maxIssueIconData.width })}></devtools-icon>` : nothing6}${issueIconData ? html12`<devtools-icon
+          style=${styleMap({ height: maxIssueIconData.height, width: maxIssueIconData.width })}></devtools-icon>` : nothing6}${issueIconData ? html13`<devtools-icon
           class="cm-messageIcon-issue extra-small"
           @click=${() => (issue.clickHandler() || Math.min)()}
           name=${issueIconData.iconName}
@@ -13329,7 +13449,7 @@ function renderMessage(message, count) {
   let iconOrCounter;
   if (count === 1) {
     const data = getIconDataForMessage(message);
-    iconOrCounter = html12`<devtools-icon
+    iconOrCounter = html13`<devtools-icon
       name=${data.iconName}
       style=${styleMap({
       height: data.height,
@@ -13338,22 +13458,22 @@ function renderMessage(message, count) {
       class="text-editor-row-message-icon extra-small"
       @click=${() => (message.clickHandler() || Math.min)()}></devtools-icon>`;
   } else {
-    iconOrCounter = html12`<dt-small-bubble
+    iconOrCounter = html13`<dt-small-bubble
           class="text-editor-row-message-repeat-count"
           .type=${getBubbleTypePerLevel(message.level())}
         >${String(count)}</dt-small-bubble>`;
   }
-  return html12`<div class="text-editor-row-message">
+  return html13`<div class="text-editor-row-message">
     ${iconOrCounter}
     <div>
-      ${message.text().split("\n").map((line) => html12`<div>${line}</div>`)}
+      ${message.text().split("\n").map((line) => html13`<div>${line}</div>`)}
     </div>
   </div>`;
 }
 var DEFAULT_POPOVER_VIEW = (input, _output, target) => {
   const counts = countDuplicates(input.messages);
-  render8(
-    html12`<style>
+  render9(
+    html13`<style>
         .text-editor-row-message {
           display: flex;
           align-items: center;
@@ -13481,7 +13601,7 @@ function removeSourceViewCache(uiSourceCode) {
   return view;
 }
 function renderPlaceholder(input) {
-  return html13`
+  return html14`
     <style>${tabbedEditorContainer_css_default}</style>
     <div class="sources-placeholder">
       <div class="tabbed-pane-placeholder-row workspace">
@@ -13495,10 +13615,10 @@ function renderPlaceholder(input) {
       </div>
       <div class="shortcuts-list tabbed-pane-placeholder-row" role="list"
             aria-label=${i18nString14(UIStrings15.sourceViewActions)}>
-        ${input.shortcuts.map((shortcut) => !shortcut.keys.length ? html13`<div class="shortcut-line" role="listitem"></div>` : html13`<div class="shortcut-line" role="listitem">
+        ${input.shortcuts.map((shortcut) => !shortcut.keys.length ? html14`<div class="shortcut-line" role="listitem"></div>` : html14`<div class="shortcut-line" role="listitem">
               <button @click=${shortcut.onClick}>${shortcut.description}</button>
               <span class="shortcuts">
-                ${shortcut.keys.map((key) => html13`
+                ${shortcut.keys.map((key) => html14`
                   <span class="keybinds-key"><span>${key}</span></span>
                 `)}
               </span>
@@ -13508,13 +13628,13 @@ function renderPlaceholder(input) {
 }
 function renderTabIcon(tab) {
   if (tab.hasLoadError) {
-    return html13`
+    return html14`
       <devtools-icon slot=${`icon-${tab.tabId}`} class="small" name="cross-circle-filled"
                      title=${i18nString14(UIStrings15.unableToLoadThisContent)}>
       </devtools-icon>`;
   }
   if (tab.icon) {
-    return html13`<span slot=${`icon-${tab.tabId}`}>${tab.icon}</span>`;
+    return html14`<span slot=${`icon-${tab.tabId}`}>${tab.icon}</span>`;
   }
   return nothing7;
 }
@@ -13523,7 +13643,7 @@ function renderTabSuffix(tab, input) {
     return nothing7;
   }
   const tooltipId = `tab-tooltip-${tab.tabId}`;
-  return html13`
+  return html14`
     <div slot=${`suffix-${tab.tabId}`}>
       <devtools-icon name="warning-filled" class="small" aria-describedby=${tooltipId}></devtools-icon>
       <devtools-tooltip id=${tooltipId} variant="rich">
@@ -13531,20 +13651,20 @@ function renderTabSuffix(tab, input) {
     str_15,
     UIStrings15.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace,
     {
-      PH1: html13`<devtools-link class="devtools-link" @click=${input.onConnectAutomaticFileSystem}>${tab.disconnectedAutomaticFileSystemRoot}</devtools-link>`
+      PH1: html14`<devtools-link class="devtools-link" @click=${input.onConnectAutomaticFileSystem}>${tab.disconnectedAutomaticFileSystemRoot}</devtools-link>`
     }
   ) : uiI18n3.getFormatLocalizedStringTemplate(
     str_15,
     UIStrings15.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace,
     {
-      PH1: html13`<devtools-link href="https://developer.chrome.com/docs/devtools/workspaces/">Workspace</devtools-link>`
+      PH1: html14`<devtools-link href="https://developer.chrome.com/docs/devtools/workspaces/">Workspace</devtools-link>`
     }
   )}
       </devtools-tooltip>
     </div>`;
 }
 var DEFAULT_VIEW6 = (input, _output, target) => {
-  render9(html13`
+  render10(html14`
     <devtools-tabbed-pane
       class="flex-auto vbox"
       .closeableTabs=${true}
@@ -13563,14 +13683,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       <devtools-toolbar class="tabbed-pane-right-toolbar" slot="right">
         ${input.rightToolbarItems}
       </devtools-toolbar>
-      ${repeat2(input.openTabs, (tab) => tab.tabId, (tab) => html13`
+      ${repeat2(input.openTabs, (tab) => tab.tabId, (tab) => html14`
         <div id=${tab.tabId}
              class="vbox flex-auto"
              label=${tab.title}
              tab-tooltip=${tab.tooltip}
              ?closeable=${tab.isCloseable}
              ?selected=${input.activeTabId === tab.tabId}>
-             ${tab.widget ? html13`${widget3(UI14.Widget.WrapperWidget, { widget: tab.widget })}` : nothing7}
+             ${tab.widget ? html14`${widget3(UI14.Widget.WrapperWidget, { widget: tab.widget })}` : nothing7}
         </div>
         ${renderTabIcon(tab)}
         ${renderTabSuffix(tab, input)}`)}
@@ -14518,7 +14638,7 @@ var toolbarItemsCache = /* @__PURE__ */ new WeakMap();
 function renderNavigatorToggleButton(isNavigatorSidebarOpen, onToggleNavigatorSidebar) {
   const navHidden = !isNavigatorSidebarOpen;
   const title = navHidden ? i18nString15(UIStrings16.showNavigator) : i18nString15(UIStrings16.hideNavigator);
-  return html14`
+  return html15`
     <devtools-button
       class="toolbar-button"
       title=${title}
@@ -14533,7 +14653,7 @@ function renderDebuggerToggleButton(isDebuggerSidebarOpen, isVertical, isDebugge
   const debuggerHidden = !isDebuggerSidebarOpen;
   const title = debuggerHidden ? i18nString15(UIStrings16.showDebugger) : i18nString15(UIStrings16.hideDebugger);
   const glyph = debuggerHidden ? isVertical ? "right-panel-open" : "bottom-panel-open" : isVertical ? "right-panel-close" : "bottom-panel-close";
-  return html14`
+  return html15`
     <devtools-button
       class="toolbar-button"
       title=${title}
@@ -14570,7 +14690,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     input.isDebuggerSidebarButtonEnabled,
     input.onToggleDebuggerSidebar
   ) : nothing8;
-  render10(html14`
+  render11(html15`
     <style>${sourcesView_css_default}</style>
     <devtools-widget class="vbox flex-auto"
       ${widget4(UI15.SearchableView.SearchableView, {
@@ -14608,7 +14728,8 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     </div>`, target, {
     container: {
       attributes: {
-        id: "sources-panel-sources-view"
+        id: "sources-panel-sources-view",
+        jslog: `${VisualLogging10.pane("editor").track({ keydown: "Escape" })}`
       }
     }
   });
@@ -14641,7 +14762,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
   #onEditorSelected = this.#editorSelected.bind(this);
   #onEditorClosed = this.#editorClosed.bind(this);
   constructor(element, view = DEFAULT_VIEW7) {
-    super(element, { jslog: `${VisualLogging10.pane("editor").track({ keydown: "Escape" })}` });
+    super(element);
     this.#view = view;
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
     const workspace = Workspace21.Workspace.WorkspaceImpl.instance();
@@ -14828,8 +14949,8 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
     if (wasSelected) {
       this.#currentUISourceCode = null;
       this.#visibleView = null;
+      this.#removeToolbarChangedListener();
     }
-    this.#removeToolbarChangedListener();
     this.#updateScriptViewToolbarItems();
     const data = {
       uiSourceCode,
@@ -15136,7 +15257,7 @@ var threadsSidebarPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./threadsSidebarPane.css")} */`;
 
 // ../../front_end/panels/sources/ThreadsSidebarPane.ts
-var { html: html15, render: render11, nothing: nothing9 } = Lit5;
+var { html: html16, render: render12, nothing: nothing9 } = Lit5;
 var UIStrings17 = {
   /**
    * @description Text in Threads sidebar of the Sources panel.
@@ -15146,10 +15267,10 @@ var UIStrings17 = {
 var str_17 = i18n33.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var DEFAULT_VIEW8 = (input, _output, target) => {
-  render11(html15`
+  render12(html16`
     <style>${threadsSidebarPane_css_default}</style>
     <div role="listbox">
-    ${input.threads.map((thread) => html15`
+    ${input.threads.map((thread) => html16`
       <button
         class="thread-item"
         @click=${thread.onSelect}
@@ -15159,7 +15280,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
       >
         <div class="thread-item-title">${thread.name}</div>
         <div class="thread-item-paused-state">${thread.paused ? i18nString16(UIStrings17.paused) : ""}</div>
-        ${thread.selected ? html15`<devtools-icon name="large-arrow-right-filled" class="selected-thread-icon"></devtools-icon>` : nothing9}
+        ${thread.selected ? html16`<devtools-icon name="large-arrow-right-filled" class="selected-thread-icon"></devtools-icon>` : nothing9}
       </button>
     `)}
     </div>
@@ -15174,7 +15295,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
     this.#view = view;
     const currentTarget = UI16.Context.Context.instance().flavor(SDK12.Target.Target);
     this.#selectedModel = currentTarget?.model(SDK12.DebuggerModel.DebuggerModel) ?? null;
-    UI16.Context.Context.instance().addFlavorChangeListener(SDK12.Target.Target, this.targetFlavorChanged, this);
+    UI16.Context.Context.instance().addFlavorChangeListener(SDK12.Target.Target, this.#targetFlavorChanged, this);
     SDK12.TargetManager.TargetManager.instance().observeModels(SDK12.DebuggerModel.DebuggerModel, this);
   }
   static shouldBeShown() {
@@ -15240,7 +15361,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
     );
     this.requestUpdate();
   }
-  targetFlavorChanged({ data: target }) {
+  #targetFlavorChanged({ data: target }) {
     this.#selectedModel = target.model(SDK12.DebuggerModel.DebuggerModel);
     this.requestUpdate();
   }
@@ -15382,7 +15503,7 @@ function setSidebarOpenInSplitSetting(settingName, isVertical, open) {
   setting.set(state);
 }
 var DEFAULT_VIEW9 = (input, _output, target) => {
-  render12(html16`
+  render13(html17`
     <style>${sourcesPanel_css_default}</style>
     <devtools-split-view
         class="widget split-widget ${input.isVertical ? "" : "sources-split-view-vertical"}"
@@ -15411,7 +15532,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
             ${widget5(UI17.Widget.WrapperWidget, { widget: input.sourcesView })}>
         </devtools-widget>
       </devtools-split-view>
-      ${!input.isTraceApp && input.sidebarPaneStackWidget ? input.isVertical ? html16`
+      ${!input.isTraceApp && input.sidebarPaneStackWidget ? input.isVertical ? html17`
         <devtools-widget
             slot="sidebar"
             ${widget5(UI17.Widget.VBox, {
@@ -15419,7 +15540,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   })}>
           ${renderDebugPaneContent(input)}
         </devtools-widget>
-      ` : html16`
+      ` : html17`
         <devtools-split-view
             slot="sidebar"
             direction="column"
@@ -15433,7 +15554,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   })}>
             ${renderDebugPaneContent(input)}
           </devtools-widget>
-          ${input.debuggerSidebarTabbedPane ? html16`
+          ${input.debuggerSidebarTabbedPane ? html17`
             <devtools-widget
                 slot="sidebar"
                 ${widget5(UI17.Widget.WrapperWidget, { widget: input.debuggerSidebarTabbedPane })}>
@@ -15445,8 +15566,8 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
   `, target);
 };
 function renderDebugPaneContent(input) {
-  return html16`
-    ${input.isDebuggerSidebarOpen ? html16`
+  return html17`
+    ${input.isDebuggerSidebarOpen ? html17`
       <devtools-toolbar
           class="scripts-debug-toolbar"
           jslog=${VisualLogging12.toolbar("debug").track({
@@ -16583,18 +16704,18 @@ var ActionDelegate4 = class {
   }
 };
 var QUICK_SOURCE_DEFAULT_VIEW = (input, _output, target) => {
-  render12(html16`
+  render13(html17`
     <div class="sources-view-wrapper vbox flex-auto">
       ${input.sourcesView ? widget5(UI17.Widget.WrapperWidget, { widget: input.sourcesView }) : nothing10}
     </div>
-  `, target);
+  `, target, { container: { attributes: { jslog: `${VisualLogging12.panel("sources.quick").track({ resize: true })}` } } });
 };
 var QuickSourceView = class _QuickSourceView extends UI17.Widget.VBox {
   #sourcesView;
   #view;
   #showInWrapper = false;
   constructor(view = QUICK_SOURCE_DEFAULT_VIEW) {
-    super({ jslog: `${VisualLogging12.panel("sources.quick").track({ resize: true })}` });
+    super();
     this.#view = view;
     this.#sourcesView = SourcesPanel.instance().sourcesView();
     this.performUpdate();
@@ -16706,6 +16827,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
   scheduledForUpdateItems = /* @__PURE__ */ new Set();
   muteActivateItem;
   #stackTrace = null;
+  #flavorChangeId = 0;
   constructor() {
     super({
       jslog: `${VisualLogging13.section("sources.callstack")}`,
@@ -16740,7 +16862,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       this.maxAsyncStackChainDepth += defaultMaxAsyncStackChainDepth;
       this.requestUpdate();
     };
-    render13(html17`
+    render14(html18`
       <style>${callStackSidebarPane_css_default}</style>
       <div class='ignore-listed-message' ${ref3(ignoreListMessageRef)}>
         <label class='ignore-listed-message-label'>
@@ -16776,6 +16898,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
     return callstackSidebarPaneInstance;
   }
   async flavorChanged(details) {
+    const flavorChangeId = ++this.#flavorChangeId;
     this.showIgnoreListed = false;
     this.ignoreListCheckboxElement.checked = false;
     this.maxAsyncStackChainDepth = defaultMaxAsyncStackChainDepth;
@@ -16785,7 +16908,11 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       this.requestUpdate();
     }
     if (details) {
-      this.#stackTrace = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromDebuggerPaused(details, details.debuggerModel.target());
+      const stackTrace = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromDebuggerPaused(details, details.debuggerModel.target());
+      if (flavorChangeId !== this.#flavorChangeId) {
+        return;
+      }
+      this.#stackTrace = stackTrace;
       this.#stackTrace.addEventListener(StackTrace5.StackTrace.Events.UPDATED, this.requestUpdate, this);
     }
     this.requestUpdate();
@@ -17264,7 +17391,7 @@ import * as i18n39 from "../../core/i18n/i18n.js";
 import * as Persistence13 from "../../models/persistence/persistence.js";
 import * as Workspace26 from "../../models/workspace/workspace.js";
 import * as QuickOpen3 from "../../ui/legacy/components/quick_open/quick_open.js";
-import { Directives as Directives5, html as html18, nothing as nothing11 } from "../../ui/lit/lit.js";
+import { Directives as Directives5, html as html19, nothing as nothing11 } from "../../ui/lit/lit.js";
 import * as SettingsUI4 from "../../ui/settings/settings.js";
 
 // gen/front_end/panels/sources/filteredUISourceCodeListProvider.css.js
@@ -17476,7 +17603,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       }
     }
     const isFileSystem = this.isFileSystemFile(uiSourceCode);
-    return html18`
+    return html19`
       <style>${filteredUISourceCodeListProvider_css_default}</style>
       <div class="filtered-ui-source-code-list-item
                   ${classMap2({ "is-ignore-listed": isIgnoreListed })}">
@@ -17492,7 +17619,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
             class="filtered-ui-source-code-subtitle" title=${tooltipText}>
           ${this.renderSubtitleElement(fullDisplayName.substring(0, fileNameIndex + 1))}
         </devtools-highlight>
-        ${isFileSystem ? html18`<span class="tag">${i18nString19(UIStrings20.workspace)}</span>` : nothing11}
+        ${isFileSystem ? html19`<span class="tag">${i18nString19(UIStrings20.workspace)}</span>` : nothing11}
       </div>`;
   }
   renderSubtitleElement(text) {
@@ -17501,7 +17628,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     if (text.length > maxTextLength) {
       splitPosition = text.length - maxTextLength;
     }
-    return html18`
+    return html19`
       <div class="first-part">${text.substring(0, splitPosition)}</div>
       <div class="second-part">${text.substring(splitPosition)}</div>`;
   }
@@ -17580,7 +17707,7 @@ import "../../ui/kit/kit.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
 import * as QuickOpen4 from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI19 from "../../ui/legacy/legacy.js";
-import { html as html19 } from "../../ui/lit/lit.js";
+import { html as html20 } from "../../ui/lit/lit.js";
 var UIStrings21 = {
   /**
    * @description Text in the go to line quick open menu of the Sources panel.
@@ -17627,11 +17754,11 @@ var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
   #goToLineStrings = [];
   selectItem(_itemIndex, promptValue) {
-    const sourceFrame = this.currentSourceFrame();
+    const sourceFrame = this.#currentSourceFrame();
     if (!sourceFrame) {
       return;
     }
-    const position = this.parsePosition(promptValue);
+    const position = this.#parsePosition(promptValue);
     if (!position) {
       return;
     }
@@ -17641,7 +17768,7 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     return this.#goToLineStrings.length;
   }
   renderItem(itemIndex, _query) {
-    return html19`
+    return html20`
       <devtools-icon name="colon"></devtools-icon>
       <div>
         <div>${this.#goToLineStrings[itemIndex]}</div>
@@ -17652,8 +17779,8 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
   }
   queryChanged(query) {
     this.#goToLineStrings = [];
-    const position = this.parsePosition(query);
-    const sourceFrame = this.currentSourceFrame();
+    const position = this.#parsePosition(query);
+    const sourceFrame = this.#currentSourceFrame();
     if (!position) {
       if (!sourceFrame) {
         this.#goToLineStrings.push(i18nString20(UIStrings21.typeANumberToGoToThatLine));
@@ -17688,13 +17815,13 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     this.#goToLineStrings.push(i18nString20(UIStrings21.goToLineS, { PH1: position.line }));
   }
   notFoundText(_query) {
-    if (!this.currentSourceFrame()) {
+    if (!this.#currentSourceFrame()) {
       return i18nString20(UIStrings21.noFileSelected);
     }
     return i18nString20(UIStrings21.noResultsFound);
   }
-  parsePosition(query) {
-    const sourceFrame = this.currentSourceFrame();
+  #parsePosition(query) {
+    const sourceFrame = this.#currentSourceFrame();
     if (sourceFrame?.wasmDisassembly) {
       const parts2 = query.match(/0x([0-9a-fA-F]+)/);
       if (!parts2?.[0] || parts2[0].length !== query.length) {
@@ -17714,7 +17841,7 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     }
     return { line: Math.max(line | 0, 1), column: Math.max(column | 0, 1) };
   }
-  currentSourceFrame() {
+  #currentSourceFrame() {
     const sourcesView = UI19.Context.Context.instance().flavor(SourcesView);
     if (!sourcesView) {
       return null;
@@ -17732,7 +17859,7 @@ import "../../ui/kit/kit.js";
 import * as Common18 from "../../core/common/common.js";
 import * as Host11 from "../../core/host/host.js";
 import { PanelUtils as PanelUtils2 } from "../utils/utils.js";
-import { Directives as Directives6, html as html20 } from "../../ui/lit/lit.js";
+import { Directives as Directives6, html as html21 } from "../../ui/lit/lit.js";
 var { styleMap: styleMap2 } = Directives6;
 var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   attach() {
@@ -17755,7 +17882,7 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   }
   renderItem(itemIndex, query) {
     const { iconName, color } = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
-    return html20`
+    return html21`
       <devtools-icon class="large" name=${iconName} style=${styleMap2({ color })}></devtools-icon>
       ${super.renderItem(itemIndex, query)}`;
   }
@@ -17773,7 +17900,7 @@ import * as i18n43 from "../../core/i18n/i18n.js";
 import * as CodeMirror7 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as QuickOpen5 from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI20 from "../../ui/legacy/legacy.js";
-import { html as html21, nothing as nothing12 } from "../../ui/lit/lit.js";
+import { html as html22, nothing as nothing12 } from "../../ui/lit/lit.js";
 var UIStrings22 = {
   /**
    * @description Text in Go to line Quick Open of the Sources panel.
@@ -18090,10 +18217,10 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
     }
     const title = item.title + (item.subtitle ? item.subtitle : "");
     const highlightRanges = QuickOpen5.FilteredListWidget.FilteredListWidget.getHighlightRanges(title, query, true);
-    return html21`
+    return html22`
       <devtools-icon name="deployed"></devtools-icon>
       <div><devtools-highlight type="markup" ranges=${highlightRanges}>${title}</devtools-highlight></div>
-      ${location ? html21`<span class="tag">${location}</span>` : nothing12}`;
+      ${location ? html22`<span class="tag">${location}</span>` : nothing12}`;
   }
   selectItem(itemIndex, _promptValue) {
     if (itemIndex === null) {
@@ -18265,12 +18392,12 @@ var ContextMenuProvider = class {
     if (uiSourceCode && networkPersistenceManager.isUISourceCodeOverridable(uiSourceCode)) {
       if (!uiSourceCode.contentType().isFromSourceMap()) {
         disabled = false;
-        handler = this.handleOverrideContent.bind(this, uiSourceCode, contentProvider);
+        handler = this.#handleOverrideContent.bind(this, uiSourceCode, contentProvider);
       } else {
-        const deployedUiSourceCode = this.getDeployedUiSourceCode(uiSourceCode);
+        const deployedUiSourceCode = this.#getDeployedUiSourceCode(uiSourceCode);
         if (deployedUiSourceCode) {
           disabled = false;
-          handler = this.redirectOverrideToDeployedUiSourceCode.bind(this, deployedUiSourceCode, uiSourceCode);
+          handler = this.#redirectOverrideToDeployedUiSourceCode.bind(this, deployedUiSourceCode, uiSourceCode);
         }
       }
     }
@@ -18286,7 +18413,7 @@ var ContextMenuProvider = class {
       }, { jslogContext: "show-overrides" });
     }
   }
-  async handleOverrideContent(uiSourceCode, contentProvider) {
+  async #handleOverrideContent(uiSourceCode, contentProvider) {
     const networkPersistenceManager = Persistence15.NetworkPersistenceManager.NetworkPersistenceManager.instance();
     const isSuccess = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
     if (isSuccess) {
@@ -18311,7 +18438,7 @@ var ContextMenuProvider = class {
       Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverrideFont);
     }
   }
-  async redirectOverrideToDeployedUiSourceCode(deployedUiSourceCode, originalUiSourceCode) {
+  async #redirectOverrideToDeployedUiSourceCode(deployedUiSourceCode, originalUiSourceCode) {
     Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverrideContentContextMenuSourceMappedWarning);
     const deployedUrl = deployedUiSourceCode.url();
     const deployedName = Bindings11.ResourceUtils.displayNameForURL(deployedUrl);
@@ -18325,10 +18452,10 @@ var ContextMenuProvider = class {
     );
     if (shouldJumpToDeployedFile) {
       Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverrideContentContextMenuRedirectToDeployed);
-      await this.handleOverrideContent(deployedUiSourceCode, deployedUiSourceCode);
+      await this.#handleOverrideContent(deployedUiSourceCode, deployedUiSourceCode);
     }
   }
-  getDeployedUiSourceCode(uiSourceCode) {
+  #getDeployedUiSourceCode(uiSourceCode) {
     const debuggerWorkspaceBinding = Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     for (const deployedScript of debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)) {
       const deployedUiSourceCode2 = debuggerWorkspaceBinding.uiSourceCodeForScript(deployedScript);
@@ -18375,7 +18502,7 @@ import * as StackTrace7 from "../../models/stack_trace/stack_trace.js";
 import * as ObjectUI3 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "../../ui/legacy/components/utils/utils.js";
 import * as UI22 from "../../ui/legacy/legacy.js";
-import { html as html22, nothing as nothing13, render as render14 } from "../../ui/lit/lit.js";
+import { html as html23, nothing as nothing13, render as render15 } from "../../ui/lit/lit.js";
 import * as VisualLogging14 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
@@ -18454,11 +18581,11 @@ var DEFAULT_VIEW10 = (input, output, target) => {
   const createScopeSection = ({ scope, objectTree }) => {
     let emptyPlaceholder;
     if (scope.type() === Debugger.ScopeType.Local || scope.type() === Debugger.ScopeType.Closure) {
-      emptyPlaceholder = html22`${i18nString23(UIStrings24.noVariables)}`;
+      emptyPlaceholder = html23`${i18nString23(UIStrings24.noVariables)}`;
     }
     const icon = scope.icon();
     const { title, subtitle } = scopeTitle(scope);
-    return html22`
+    return html23`
           <li role="treeitem"
               class="scope-chain-sidebar-pane-section"
               aria-label=${title}
@@ -18475,30 +18602,31 @@ var DEFAULT_VIEW10 = (input, output, target) => {
                  @click=${() => {
       input.onToggle(objectTree, !objectTree.expanded);
     }}>
-              ${icon ? html22`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing13}
+              ${icon ? html23`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing13}
               <div class="scope-chain-sidebar-pane-section-title">${title}</div>
               <div class="scope-chain-sidebar-pane-section-subtitle">${subtitle}</div>
             </div>
 
-            ${objectTree.expanded ? ObjectUI3.ObjectPropertiesSection.renderObjectTree(objectTree, input.linkifier, emptyPlaceholder) : html22`<ul role="group"></ul>`}
+            ${objectTree.expanded ? ObjectUI3.ObjectPropertiesSection.renderObjectTree(objectTree, input.linkifier, emptyPlaceholder) : html23`<ul role="group"></ul>`}
           </li>`;
   };
-  render14(
+  render15(
     // clang-format off
-    html22`
+    html23`
     <style>${scopeChainSidebarPane_css_default}</style>
-    ${input.scopeChain ? html22`
-      <devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus .template=${html22`<ul role=tree class="source-code object-properties-section">
+    ${input.scopeChain ? html23`
+      <devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus .template=${html23`<ul role=tree class="source-code object-properties-section">
           <style>${ObjectUI3.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI3.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <style>${scopeChainSidebarPane_css_default}</style>
           ${input.scopeChain?.map((item) => createScopeSection(item)) ?? nothing13}
         </ul>`}>
-      </devtools-tree>` : html22`
+      </devtools-tree>` : html23`
       <div class=gray-info-message tabindex=-1>${input.isPaused ? i18nString23(UIStrings24.loading) : i18nString23(UIStrings24.notPaused)}</div>`}
     `,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: `${VisualLogging14.section("sources.scope-chain")}` } } }
   );
 };
 function scopeTitle(scope) {
@@ -18541,7 +18669,6 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI22.Widget.VBo
   #view;
   constructor(target, view = DEFAULT_VIEW10) {
     super(target, {
-      jslog: `${VisualLogging14.section("sources.scope-chain")}`,
       useShadowDom: true
     });
     this.#linkifier = new Components3.Linkifier.Linkifier();
@@ -18612,7 +18739,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI22.Widget.VBo
           );
         }
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -18794,7 +18921,7 @@ var objectValue_css_default = `/*
 // ../../front_end/panels/sources/WatchExpressionsSidebarPane.ts
 import * as Components4 from "../../ui/legacy/components/utils/utils.js";
 import * as UI23 from "../../ui/legacy/legacy.js";
-import { Directives as Directives7, html as html23, nothing as nothing14, render as render15 } from "../../ui/lit/lit.js";
+import { Directives as Directives7, html as html24, nothing as nothing14, render as render16 } from "../../ui/lit/lit.js";
 import * as VisualLogging15 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
@@ -19012,7 +19139,7 @@ var { widget: widget6 } = UI23.Widget;
 var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
   const e = input.expression;
   if (!e) {
-    render15(nothing14, target);
+    render16(nothing14, target);
     return;
   }
   const stopPropagationIfEditing = (event) => {
@@ -19026,8 +19153,8 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
     false,
     e.expression ?? void 0
   );
-  render15(
-    html23`
+  render16(
+    html24`
         <devtools-prompt
             class=${classMap3({
       monospace: true,
@@ -19066,7 +19193,7 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
                 @click=${input.onDelete}></devtools-button>
               ${renderNameElement()}
               <span class=watch-expressions-separator>: </span>
-              ${e.exceptionDetails || !e.result ? html23`<span
+              ${e.exceptionDetails || !e.result ? html24`<span
                     class="watch-expression-error value"
                     title=${ifDefined3(e.exceptionDetails?.exception?.description)}
                     >${i18nString24(UIStrings25.notAvailable)}</span>` : ObjectUI4.ObjectPropertiesSection.renderPropertyValue(
@@ -19082,9 +19209,9 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
     )}
             </div>
           </div>
-          ${e.editing ? html23`
+          ${e.editing ? html24`
             <datalist id=${input.completionsId}>
-              ${input.completions.map((c) => html23`<option>${c}</option>`)}
+              ${input.completions.map((c) => html24`<option>${c}</option>`)}
             </datalist>
           ` : nothing14}
         </devtools-prompt>
@@ -19228,7 +19355,7 @@ var DEFAULT_VIEW11 = (input, output, target) => {
   };
   const renderTreeElement = (e) => {
     const completionsId = `watch-expression-completions-${input.watchExpressions.indexOf(e)}`;
-    return html23`<li
+    return html24`<li
           class=${classMap3({ "watch-expression-tree-item": true, "watch-expression-editing": e.editing })}
           ?open=${Boolean(e.result?.expanded)}
           @keydown=${onExpressionKeydown.bind(void 0, e)}
@@ -19247,12 +19374,12 @@ var DEFAULT_VIEW11 = (input, output, target) => {
         ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing14 : ObjectUI4.ObjectPropertiesSection.renderObjectTree(e.result, input.linkifier)}
       </li>`;
   };
-  render15(
+  render16(
     // clang-format off
-    html23`
-      ${input.watchExpressions.length === 0 ? html23`<div class=gray-info-message tabindex=-1 >
+    html24`
+      ${input.watchExpressions.length === 0 ? html24`<div class=gray-info-message tabindex=-1 >
         ${i18nString24(UIStrings25.noWatchExpressions)}
-        </div>` : html23`<devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus toggle-on-click .template=${html23`
+        </div>` : html24`<devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus toggle-on-click .template=${html24`
         <ul role=tree class="source-code object-properties-section">
           <style>${ObjectUI4.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI4.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
@@ -19309,7 +19436,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     return this.#watchExpressions;
   }
   toolbarItems() {
-    return html23`
+    return html24`
       <devtools-button .data=${{
       variant: Buttons10.Button.Variant.TOOLBAR,
       iconName: "plus",
@@ -19423,7 +19550,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
           e.result.expanded = expanded;
         }
       },
-      {},
+      void 0,
       this.contentElement
     );
   }

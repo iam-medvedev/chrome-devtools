@@ -74,7 +74,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         `)}
       </table>
     </devtools-data-grid>
-  `, target);
+  `, target, { container: { classes: ['detached-elements-view'] } });
     // clang-format on
 };
 function calculateDetachedNodeCount(treeNode) {
@@ -110,7 +110,6 @@ export class DetachedElementsProfileView extends UI.View.SimpleView {
         super({
             title: i18nString(UIStrings.detachedElementsTitle),
             viewId: 'detached-elements',
-            classes: ['detached-elements-view'],
         });
         this.#view = view;
         this.profile = profile;

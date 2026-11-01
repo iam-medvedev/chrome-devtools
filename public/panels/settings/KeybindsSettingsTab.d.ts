@@ -1,53 +1,57 @@
+import '../../ui/kit/kit.js';
+import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class KeybindsSettingsTab extends UI.Widget.VBox implements UI.ListControl.ListDelegate<KeybindsItem> {
-    private readonly items;
-    private list;
-    private editingItem;
-    private editingRow;
-    constructor();
-    createElementForItem(item: KeybindsItem): Element;
+export interface ShortcutRowViewData {
+    shortcut: UI.KeyboardShortcut.KeyboardShortcut;
+    isModified: boolean;
+    value: string;
+    keys: string[];
+    isInvalid: boolean;
+    isAutofocus: boolean;
+}
+export interface ActionRowViewData {
+    action: UI.ActionRegistration.Action;
+    actionId: string;
+    actionTitle: string;
+    isEditing: boolean;
+    isAutofocus: boolean;
+    tabIndex: number;
+    hasEmptyInfo: boolean;
+    hasDefaultShortcutWhenEmpty: boolean;
+    rows: ShortcutRowViewData[];
+    errorMessage: string | null;
+    isConfirmDisabled: boolean;
+}
+export type KeybindsViewItem = UI.ActionRegistration.ActionCategory | ActionRowViewData;
+export interface ViewInput {
+    keybindsSetSetting: Common.Settings.Setting<string>;
+    items: KeybindsViewItem[];
+    onRestoreDefaultShortcuts: () => void;
+    onListKeyDown: (event: KeyboardEvent) => void;
+    onActionFocused: (action: UI.ActionRegistration.Action) => void;
+    onStartEditing: (action: UI.ActionRegistration.Action) => void;
+    onAddShortcut: () => void;
+    onResetShortcutsToDefaults: () => void;
+    onConfirmChanges: () => void;
+    onDiscardChanges: () => void;
+    onEditingRowKeyDown: (event: KeyboardEvent) => void;
+    onShortcutInputKeyDown: (shortcut: UI.KeyboardShortcut.KeyboardShortcut, event: KeyboardEvent) => void;
+    onShortcutInputFocus: (shortcut: UI.KeyboardShortcut.KeyboardShortcut) => void;
+    onShortcutInputBlur: () => void;
+    onDeleteShortcut: (shortcut: UI.KeyboardShortcut.KeyboardShortcut) => void;
+}
+export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class KeybindsSettingsTab extends UI.Widget.VBox<ShadowRoot> {
+    #private;
+    constructor(view?: View);
+    wasShown(): void;
+    performUpdate(): void;
     commitChanges(item: UI.ActionRegistration.Action, editedShortcuts: Map<UI.KeyboardShortcut.KeyboardShortcut, UI.KeyboardShortcut.Descriptor[] | null>): void;
-    /**
-     * This method will never be called.
-     */
-    heightForItem(_item: KeybindsItem): number;
-    isItemSelectable(item: KeybindsItem): boolean;
-    selectedItemChanged(_from: KeybindsItem | null, to: KeybindsItem | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
-    updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     startEditing(action: UI.ActionRegistration.Action): void;
-    stopEditing(action: UI.ActionRegistration.Action): void;
-    private createListItems;
+    stopEditing(_action: UI.ActionRegistration.Action): void;
     onEscapeKeyPressed(event: Event): void;
     update(): void;
     willHide(): void;
-}
-export declare class ShortcutListItem {
-    private isEditing;
-    private settingsTab;
-    private item;
-    element: HTMLDivElement;
-    private editedShortcuts;
-    private readonly shortcutInputs;
-    private readonly shortcuts;
-    private elementToFocus;
-    private confirmButton;
-    private addShortcutLinkContainer;
-    private errorMessageElement;
-    private secondKeyTimeout;
-    constructor(item: UI.ActionRegistration.Action, settingsTab: KeybindsSettingsTab, isEditing?: boolean);
-    focus(): void;
-    private update;
-    private createEmptyInfo;
-    private setupEditor;
-    private addShortcut;
-    private createShortcutRow;
-    private createEditButton;
-    private createIconButton;
-    private onShortcutInputKeyDown;
-    private descriptorForEvent;
-    private shortcutInputTextForDescriptors;
-    private resetShortcutsToDefaults;
-    onEscapeKeyPressed(event: Event): void;
-    private validateInputs;
 }
 export type KeybindsItem = UI.ActionRegistration.ActionCategory | UI.ActionRegistration.Action;

@@ -40,6 +40,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as Elements from '../../models/elements/elements.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import { createIcon } from '../../ui/kit/kit.js';
@@ -829,7 +830,13 @@ export class StylePropertiesSection {
                     break;
             }
             if (ancestorRuleElement) {
-                this.#ancestorRuleListElement.prepend(ancestorRuleElement);
+                if (ancestorRuleElement instanceof UI.Widget.Widget) {
+                    ancestorRuleElement.show(this.#ancestorRuleListElement, this.#ancestorRuleListElement.firstChild, 
+                    /* suppressOrphanWidgetError= */ true);
+                }
+                else {
+                    this.#ancestorRuleListElement.prepend(ancestorRuleElement);
+                }
                 this.#ancestorClosingBracesElement.prepend(this.indentElement(this.createClosingBrace(), this.nestingLevel));
                 this.nestingLevel++;
             }
@@ -847,7 +854,8 @@ export class StylePropertiesSection {
                 queryText: rule.name()?.text ?? '',
                 jslogContext: 'at-rule-' + rule.type(),
             };
-            this.#ancestorRuleListElement.prepend(atRuleElement);
+            atRuleElement.show(this.#ancestorRuleListElement, this.#ancestorRuleListElement.firstChild, 
+            /* suppressOrphanWidgetError= */ true);
             this.#ancestorClosingBracesElement.prepend(this.indentElement(this.createClosingBrace(), 0));
             this.nestingLevel = 1;
         }
@@ -935,8 +943,8 @@ export class StylePropertiesSection {
             onLinkActivate: async (resolvedVariable) => {
                 handleVarDefinitionActivate(resolvedVariable, this.stylesContainer);
             },
-            getPopoverContents: (variableName, variableValue) => {
-                return this.stylesContainer.getVariablePopoverContents(this.matchedStyles, variableName, variableValue);
+            getRegisteredPropertyDetails: (variableName) => {
+                return this.stylesContainer.getRegisteredPropertyDetails(this.matchedStyles, variableName);
             },
             jslogContext: 'container-query',
         };
@@ -1045,21 +1053,24 @@ export class StylePropertiesSection {
         containerElement.data = {
             container: container.containerNode,
             queryName: containerQuery.name,
-            onContainerLinkClick: event => {
-                event.preventDefault();
+            onContainerLinkClick: () => {
                 void ElementsPanel.instance().revealAndSelectNode(container.containerNode, { showPanel: true, focusNode: true, highlightInOverlay: false });
                 void container.containerNode.scrollIntoView();
             },
         };
-        containerElement.addEventListener('queriedsizerequested', async () => {
+        containerElement.element.addEventListener('queriedsizerequested', async () => {
             const details = await container.getContainerSizeDetails();
             if (details) {
                 containerElement.updateContainerQueriedSizeDetails(details);
             }
         });
-        this.#ancestorRuleListElement.prepend(containerElement);
+        containerElement.show(this.#ancestorRuleListElement, this.#ancestorRuleListElement.firstChild, 
+        /* suppressOrphanWidgetError= */ true);
     }
     updateAncestorRuleList() {
+        for (const child of [...this.#ancestorRuleListElement.children]) {
+            UI.Widget.Widget.get(child)?.detach(true);
+        }
         this.#ancestorRuleListElement.removeChildren();
         this.#ancestorClosingBracesElement.removeChildren();
         this.maybeCreateAncestorRules(this.styleInternal);
@@ -1481,39 +1492,57 @@ export class StylePropertiesSection {
         if (newContent) {
             newContent = newContent.trim();
         }
-        // This gets deleted in finishOperation(), which is called both on success and failure.
-        this.stylesContainer.setUserOperation(true);
+        await this.setQueryText(query, newContent);
+    }
+    /**
+     * Replaces the text of the given at-rule query (`@media`, `@container`,
+     * `@supports`, `@scope`, `@navigation`) in the stylesheet, records the
+     * change with the change tracker and refreshes the section.
+     *
+     * @returns whether the stylesheet was updated.
+     */
+    async setQueryText(query, newContent) {
         const cssModel = this.stylesContainer.cssModel();
-        if (cssModel && query.styleSheetId) {
-            const range = query.range;
-            let success = false;
-            if (query instanceof SDK.CSSContainerQuery.CSSContainerQuery) {
-                if (query.textIsConditionText) {
-                    success = await cssModel.setContainerQueryConditionText(query.styleSheetId, range, newContent);
-                }
-                else {
-                    success = await cssModel.setContainerQueryText(query.styleSheetId, range, newContent);
-                }
-            }
-            else if (query instanceof SDK.CSSSupports.CSSSupports) {
-                success = await cssModel.setSupportsText(query.styleSheetId, range, newContent);
-            }
-            else if (query instanceof SDK.CSSScope.CSSScope) {
-                success = await cssModel.setScopeText(query.styleSheetId, range, newContent);
-            }
-            else if (query instanceof SDK.CSSNavigation.CSSNavigation) {
-                success = await cssModel.setNavigationText(query.styleSheetId, range, newContent);
+        if (!cssModel || !query.styleSheetId) {
+            return false;
+        }
+        this.stylesContainer.setUserOperation(true);
+        const oldQueryText = query.text;
+        const range = query.range;
+        let queryType = '@media';
+        let success = false;
+        if (query instanceof SDK.CSSContainerQuery.CSSContainerQuery) {
+            queryType = '@container';
+            if (query.textIsConditionText) {
+                success = await cssModel.setContainerQueryConditionText(query.styleSheetId, range, newContent);
             }
             else {
-                success = await cssModel.setMediaText(query.styleSheetId, range, newContent);
+                success = await cssModel.setContainerQueryText(query.styleSheetId, range, newContent);
             }
-            if (success) {
-                this.matchedStyles.resetActiveProperties();
-                this.stylesContainer.refreshUpdate(this);
-            }
-            this.stylesContainer.setUserOperation(false);
-            this.editingMediaTextCommittedForTest();
         }
+        else if (query instanceof SDK.CSSSupports.CSSSupports) {
+            queryType = '@supports';
+            success = await cssModel.setSupportsText(query.styleSheetId, range, newContent);
+        }
+        else if (query instanceof SDK.CSSScope.CSSScope) {
+            queryType = '@scope';
+            success = await cssModel.setScopeText(query.styleSheetId, range, newContent);
+        }
+        else if (query instanceof SDK.CSSNavigation.CSSNavigation) {
+            queryType = '@navigation';
+            success = await cssModel.setNavigationText(query.styleSheetId, range, newContent);
+        }
+        else {
+            success = await cssModel.setMediaText(query.styleSheetId, range, newContent);
+        }
+        if (success) {
+            Elements.StyleChanges.trackStyleQueryChange(this.stylesContainer.changeTracker, this.stylesContainer.node() ?? this.matchedStyles.node(), queryType, oldQueryText, newContent);
+            this.matchedStyles.resetActiveProperties();
+            this.stylesContainer.refreshUpdate(this);
+        }
+        this.stylesContainer.setUserOperation(false);
+        this.editingMediaTextCommittedForTest();
+        return success;
     }
     editingMediaTextCommittedForTest() {
     }
@@ -1696,10 +1725,11 @@ export class StylePropertiesSection {
         void this.setHeaderText(rule, newContent).then(headerTextCommitted.bind(this));
     }
     setHeaderText(rule, newContent) {
-        function onSelectorsUpdated(rule, success) {
+        function onSelectorsUpdated(rule, oldSelector, success) {
             if (!success) {
                 return Promise.resolve();
             }
+            Elements.StyleChanges.trackStyleSelectorChange(this.stylesContainer.changeTracker, this.stylesContainer.node() ?? this.matchedStyles.node(), oldSelector, newContent);
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
             return this.matchedStyles.recomputeMatchingSelectors(rule).then(updateSourceRanges.bind(this, rule));
         }
@@ -1716,8 +1746,9 @@ export class StylePropertiesSection {
         if (!oldSelectorRange) {
             return Promise.resolve();
         }
+        const oldSelector = rule.selectorText();
         this.#customHeaderText = undefined;
-        return rule.setSelectorText(newContent).then(onSelectorsUpdated.bind(this, rule, Boolean(oldSelectorRange)));
+        return rule.setSelectorText(newContent).then(onSelectorsUpdated.bind(this, rule, oldSelector));
     }
     editingSelectorCommittedForTest() {
     }
@@ -1794,6 +1825,7 @@ export class BlankStylePropertiesSection extends StylePropertiesSection {
         function onAddedToCascade(newRule) {
             const doesSelectorAffectSelectedNode = this.matchedStyles.getMatchingSelectors(newRule).length > 0;
             this.makeNormal(newRule);
+            Elements.StyleChanges.trackStyleRuleAdded(this.stylesContainer.changeTracker, this.stylesContainer.node() ?? this.matchedStyles.node(), newRule.selectorText());
             if (!doesSelectorAffectSelectedNode) {
                 this.propertiesTreeOutline.element.classList.add('no-affect');
             }
@@ -1849,7 +1881,9 @@ export class RegisteredPropertiesSection extends StylePropertiesSection {
         if (!oldRange) {
             return;
         }
+        const oldName = rule.propertyName().text;
         if (await rule.setPropertyName(newContent)) {
+            Elements.StyleChanges.trackPropertyRuleNameChange(this.stylesContainer.changeTracker, this.stylesContainer.node() ?? this.matchedStyles.node(), oldName, newContent);
             this.stylesContainer.forceUpdate();
         }
     }
@@ -1861,6 +1895,7 @@ export class RegisteredPropertiesSection extends StylePropertiesSection {
     }
 }
 export class FunctionRuleSection extends StylePropertiesSection {
+    conditionWidgets;
     constructor(stylesContainer, matchedStyles, style, children, sectionIdx, functionName, expandedByDefault) {
         super(stylesContainer, matchedStyles, style, sectionIdx, null, null, null, functionName);
         if (!expandedByDefault) {
@@ -1869,6 +1904,13 @@ export class FunctionRuleSection extends StylePropertiesSection {
         this.selectorElement.className = 'function-key';
         this.customPopulateCallback = () => this.addChildren(children, this.propertiesTreeOutline);
         this.onpopulate();
+    }
+    onpopulate() {
+        for (const widget of this.conditionWidgets ?? []) {
+            widget.detach(true);
+        }
+        this.conditionWidgets = [];
+        super.onpopulate();
     }
     isHeaderEditable() {
         return false;
@@ -1923,7 +1965,9 @@ export class FunctionRuleSection extends StylePropertiesSection {
                 this.nestingLevel++;
                 if (conditionElement) {
                     const treeElement = new UI.TreeOutline.TreeElement();
-                    treeElement.listItemElement.appendChild(this.positionNestingElement(conditionElement));
+                    this.positionNestingElement(conditionElement.element);
+                    conditionElement.show(treeElement.listItemElement, null, /* suppressOrphanWidgetError= */ true);
+                    this.conditionWidgets?.push(conditionElement);
                     treeElement.setExpandable(true);
                     treeElement.setCollapsible(false);
                     parent.appendChild(treeElement);
@@ -1974,10 +2018,11 @@ export class KeyframePropertiesSection extends StylePropertiesSection {
         return '';
     }
     setHeaderText(rule, newContent) {
-        function updateSourceRanges(success) {
+        function updateSourceRanges(oldKey, success) {
             if (!success) {
                 return;
             }
+            Elements.StyleChanges.trackKeyframeKeyChange(this.stylesContainer.changeTracker, this.stylesContainer.node() ?? this.matchedStyles.node(), oldKey, newContent);
             this.stylesContainer.refreshUpdate(this);
         }
         if (!(rule instanceof SDK.CSSRule.CSSKeyframeRule)) {
@@ -1987,7 +2032,8 @@ export class KeyframePropertiesSection extends StylePropertiesSection {
         if (!oldRange) {
             return Promise.resolve();
         }
-        return rule.setKeyText(newContent).then(updateSourceRanges.bind(this));
+        const oldKey = rule.key().text;
+        return rule.setKeyText(newContent).then(updateSourceRanges.bind(this, oldKey));
     }
     isPropertyInherited(_propertyName) {
         return false;

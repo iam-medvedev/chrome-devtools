@@ -4,10 +4,12 @@
 import { assert } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { allThreadEntriesInTrace, getMainThread, makeAsyncEndEvent, makeAsyncStartEvent, makeCompleteEvent, makeInstantEvent, } from '../../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('Trace helpers', function () {
+    setupLocaleHooks();
     describe('extractOriginFromTrace', () => {
         it('extracts the origin of a parsed trace correctly', () => {
             const origin = Trace.Helpers.Trace.extractOriginFromTrace('https://web.dev/some/path');

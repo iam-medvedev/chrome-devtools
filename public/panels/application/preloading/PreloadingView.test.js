@@ -214,8 +214,6 @@ function createRuleSetView(target) {
     container.markAsRoot();
     container.show(div);
     view.show(container.element);
-    // Ensure PreloadingModelProxy.initialize to be called.
-    view.wasShown();
     return view;
 }
 function createAttemptView(target) {
@@ -230,8 +228,6 @@ function createAttemptView(target) {
     container.markAsRoot();
     container.show(div);
     view.show(container.element);
-    // Ensure PreloadingModelProxy.initialize to be called.
-    view.wasShown();
     return view;
 }
 function createSummaryView(target) {
@@ -244,8 +240,6 @@ function createSummaryView(target) {
     container.markAsRoot();
     container.show(div);
     view.show(container.element);
-    // Ensure PreloadingModelProxy.initialize to be called.
-    view.wasShown();
     return view;
 }
 function getTextFilterPromptElement(view) {
@@ -266,6 +260,19 @@ function clickClearButton(view) {
     assert.instanceOf(button, HTMLElement);
     dispatchClickEvent(button);
 }
+function getChildWidget(view, ctor) {
+    const widget = Array.from(view.contentElement.querySelectorAll('devtools-widget'))
+        .map(el => el.getWidget())
+        .find((widget) => widget instanceof ctor);
+    assert.exists(widget);
+    return widget;
+}
+function getRuleSetGrid(view) {
+    return getChildWidget(view, PreloadingComponents.RuleSetGrid.RuleSetGrid);
+}
+function getRuleSetDetails(view) {
+    return getChildWidget(view, PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView);
+}
 describeWithEnvironment('PreloadingRuleSetView', () => {
     beforeEach(() => {
         SDK.ChildTargetManager.ChildTargetManager.install();
@@ -274,7 +281,7 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
         const view = createRuleSetView(emulator.primaryTarget);
-        await RenderCoordinator.done();
+        await view.updateComplete;
         const placeholder = view.contentElement.querySelector('.empty-state');
         assert.exists(placeholder);
         assert.deepEqual(window.getComputedStyle(placeholder).display, 'flex');
@@ -317,7 +324,7 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
         });
         await RenderCoordinator.done();
         await doubleRaf();
-        const ruleSetGrid = view.getRuleSetGridForTest();
+        const ruleSetGrid = getRuleSetGrid(view);
         assert.isNotNull(ruleSetGrid.element.shadowRoot);
         assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', '1 running'],
@@ -339,17 +346,14 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
 `);
         await RenderCoordinator.done();
         await doubleRaf();
-        const ruleSetGrid = view.getRuleSetGridForTest();
+        const ruleSetGrid = getRuleSetGrid(view);
         assert.isNotNull(ruleSetGrid.element.shadowRoot);
         assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', '1 error'],
         ]);
-        ruleSetGrid.dispatchEventToListeners("select" /* PreloadingComponents.RuleSetGrid.Events.SELECT */, 'ruleSetId:0.2');
-        await RenderCoordinator.done();
-        const ruleSetDetailsElement = view.contentElement
-            .querySelector('devtools-widget');
-        const ruleSetDetailsComponent = ruleSetDetailsElement?.getWidget();
-        assert.exists(ruleSetDetailsComponent);
+        ruleSetGrid.onSelect('ruleSetId:0.2');
+        await view.updateComplete;
+        const ruleSetDetailsComponent = getRuleSetDetails(view);
         await ruleSetDetailsComponent.updateComplete;
         assert.deepEqual(ruleSetDetailsComponent.contentElement.querySelector('#ruleset-url')?.textContent, 'https://example.com/');
         assert.deepEqual(ruleSetDetailsComponent.contentElement.querySelector('#error-message-text')?.textContent, 'fake error message');
@@ -372,7 +376,7 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
         await emulator.navigateAndDispatchEvents('notprerendered.html');
         await RenderCoordinator.done();
         await doubleRaf();
-        const ruleSetGrid = view.getRuleSetGridForTest();
+        const ruleSetGrid = getRuleSetGrid(view);
         assert.isNotNull(ruleSetGrid.element.shadowRoot);
         assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], []);
     });
@@ -394,7 +398,7 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
         await emulator.activateAndDispatchEvents('prerendered.html');
         await RenderCoordinator.done();
         await doubleRaf();
-        const ruleSetGrid = view.getRuleSetGridForTest();
+        const ruleSetGrid = getRuleSetGrid(view);
         assert.isNotNull(ruleSetGrid.element.shadowRoot);
         assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], []);
     });
@@ -432,13 +436,19 @@ describeWithEnvironment('PreloadingRuleSetView', () => {
         });
         await RenderCoordinator.done();
         await doubleRaf();
-        const ruleSetGrid = view.getRuleSetGridForTest();
+        const ruleSetGrid = getRuleSetGrid(view);
         assert.isNotNull(ruleSetGrid.element.shadowRoot);
         assertGridContents(ruleSetGrid.element, ['Rule set', 'Status'], [
             ['example.com/', ''],
         ]);
     });
 });
+function getPreloadingGrid(view) {
+    return getChildWidget(view, PreloadingComponents.PreloadingGrid.PreloadingGrid);
+}
+function getPreloadingDetails(view) {
+    return getChildWidget(view, PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView);
+}
 describeWithEnvironment('PreloadingAttemptView', () => {
     beforeEach(() => {
         SDK.ChildTargetManager.ChildTargetManager.install();
@@ -447,7 +457,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
         const view = createAttemptView(emulator.primaryTarget);
-        await RenderCoordinator.done();
+        await view.updateComplete;
         const placeholder = view.contentElement.querySelector('.empty-state');
         assert.exists(placeholder);
         assert.deepEqual(window.getComputedStyle(placeholder).display, 'flex');
@@ -463,6 +473,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         const emulator = new NavigationEmulator();
         await emulator.openDevTools();
         const view = createAttemptView(emulator.primaryTarget);
+        await view.updateComplete;
         const splitView = view.contentElement.querySelector('devtools-split-view');
         assert.exists(splitView);
         await emulator.navigateAndDispatchEvents('');
@@ -476,7 +487,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
   ]
 }
 `);
-        await RenderCoordinator.done();
+        await view.updateComplete;
         const splitWidget = splitView.getWidget();
         assert.exists(splitWidget);
         assert.isAbove(splitWidget.sidebarSize(), 0);
@@ -496,10 +507,11 @@ describeWithEnvironment('PreloadingAttemptView', () => {
   ]
 }
 `);
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
-        const preloadingDetailsComponent = view.getPreloadingDetailsForTest();
+        const preloadingDetailsComponent = getPreloadingDetails(view);
         assert.isNotNull(preloadingDetailsComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             [
@@ -559,7 +571,8 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             prefetchStatus: "PrefetchFailedNon2XX" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNon2XX */,
             requestId,
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -607,7 +620,8 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
             prerenderStatus: "NavigationBadHttpStatus" /* Protocol.Preload.PrerenderFinalStatus.NavigationBadHttpStatus */,
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -655,7 +669,8 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
             prerenderStatus: "NavigationBadHttpStatus" /* Protocol.Preload.PrerenderFinalStatus.NavigationBadHttpStatus */,
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -699,10 +714,11 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             targetInfo,
             waitingForDebugger: false,
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
-        const preloadingDetailsComponent = view.getPreloadingDetailsForTest();
+        const preloadingDetailsComponent = getPreloadingDetails(view);
         assert.isNotNull(preloadingDetailsComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             [
@@ -767,7 +783,8 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             ],
         });
         const ruleSetSelectorToolbarItem = view.getRuleSetSelectorToolbarItemForTest();
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
         assert.strictEqual(ruleSetSelectorToolbarItem.element.querySelector('span')?.textContent, 'All speculative loads');
@@ -787,6 +804,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         ]);
         // Turn on filtering.
         view.selectRuleSetOnFilterForTest('ruleSetId:0.2');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assert.strictEqual(ruleSetSelectorToolbarItem.element.querySelector('span')?.textContent, 'example.com/');
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -799,6 +817,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         ]);
         // Turn off filtering.
         view.selectRuleSetOnFilterForTest(null);
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assert.strictEqual(ruleSetSelectorToolbarItem.element.querySelector('span')?.textContent, 'All speculative loads');
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -831,10 +850,11 @@ describeWithEnvironment('PreloadingAttemptView', () => {
   ]
 }
 `);
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
-        const preloadingDetailsComponent = view.getPreloadingDetailsForTest();
+        const preloadingDetailsComponent = getPreloadingDetails(view);
         assert.isNotNull(preloadingDetailsComponent.contentElement);
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             [
@@ -844,7 +864,10 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 'Running',
             ],
         ]);
-        preloadingGridComponent.contentElement.querySelectorAll('tr')[1].dispatchEvent(new Event('select'));
+        const [row] = preloadingGridComponent.rows ?? [];
+        assert.exists(row);
+        preloadingGridComponent.onSelect?.({ rowId: row.id });
+        await view.updateComplete;
         await preloadingDetailsComponent.updateComplete;
         const report = preloadingDetailsComponent.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
@@ -881,10 +904,12 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             },
             status: "Ready" /* Protocol.Preload.PreloadingStatus.Ready */,
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         assert.isNotNull(preloadingGridComponent.contentElement);
-        const preloadingDetailsComponent = view.getPreloadingDetailsForTest();
+        const preloadingDetailsComponent = getPreloadingDetails(view);
         assert.isNotNull(preloadingDetailsComponent.contentElement);
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             [
@@ -894,7 +919,10 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 'Ready',
             ],
         ]);
-        preloadingGridComponent.contentElement.querySelectorAll('tr')[1].dispatchEvent(new Event('select'));
+        const [row] = preloadingGridComponent.rows ?? [];
+        assert.exists(row);
+        preloadingGridComponent.onSelect?.({ rowId: row.id });
+        await view.updateComplete;
         await preloadingDetailsComponent.updateComplete;
         const report = preloadingDetailsComponent.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
@@ -938,10 +966,12 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         const prerenderTarget = SDK.TargetManager.TargetManager.instance().targets().find(child => child.targetInfo()?.subtype === 'prerender' &&
             child.inspectedURL() === 'https://example.com/prerendered.html');
         prerenderTarget?.dispose('test');
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         assert.isNotNull(preloadingGridComponent.contentElement);
-        const preloadingDetailsComponent = view.getPreloadingDetailsForTest();
+        const preloadingDetailsComponent = getPreloadingDetails(view);
         assert.isNotNull(preloadingDetailsComponent.contentElement);
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             [
@@ -951,7 +981,10 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 'Failure - The prerendered page used a forbidden JavaScript API that isn’t currently supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
             ],
         ]);
-        preloadingGridComponent.contentElement.querySelectorAll('tr')[1].dispatchEvent(new Event('select'));
+        const [row] = preloadingGridComponent.rows ?? [];
+        assert.exists(row);
+        preloadingGridComponent.onSelect?.({ rowId: row.id });
+        await view.updateComplete;
         await preloadingDetailsComponent.updateComplete;
         const report = preloadingDetailsComponent.contentElement.querySelector('devtools-report');
         const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
@@ -1017,7 +1050,8 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         assert.isNotNull(preloadingGridComponent.contentElement);
         // Initially shows both
@@ -1027,12 +1061,14 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         ]);
         // Filter by URL
         setTextFilter(view, 'url:subresource');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
         ]);
         // Clear filter
         setTextFilter(view, '');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
@@ -1087,16 +1123,19 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Filter by action (case-insensitive)
         setTextFilter(view, 'action:prefetch');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
         ]);
         // Filter by prerender action
         setTextFilter(view, 'action:Prerender');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prerendered.html', 'Prerender', 'example.com/', 'Running'],
@@ -1150,22 +1189,26 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Upper-case key "Action:" should work the same as "action:"
         setTextFilter(view, 'Action:prefetch');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
         ]);
         // Mixed case key "URL:" should work
         setTextFilter(view, 'URL:prerendered');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prerendered.html', 'Prerender', 'example.com/', 'Running'],
         ]);
         // Upper-case "Status:" should work
         setTextFilter(view, 'Status:running');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
@@ -1231,16 +1274,19 @@ describeWithEnvironment('PreloadingAttemptView', () => {
             status: "Ready" /* Protocol.Preload.PreloadingStatus.Ready */,
             requestId: 'requestId:1',
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Filter by Ready status
         setTextFilter(view, 'status:Ready');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Ready'],
         ]);
         // Filter by Running status
         setTextFilter(view, 'status:running');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prerendered.html', 'Prerender', 'example.com/', 'Running'],
@@ -1294,16 +1340,19 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Search for "prefetch" without key - should match action column
         setTextFilter(view, 'prefetch');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
         ]);
         // Search for ".html" - should match URL column
         setTextFilter(view, '.html');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/prerendered.html', 'Prerender', 'example.com/', 'Running'],
@@ -1357,10 +1406,12 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Type just "action:" - should show all results
         setTextFilter(view, 'action:');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
@@ -1415,10 +1466,12 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Set a text filter first
         setTextFilter(view, 'url:subresource');
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
             ['/subresource.js', 'Prefetch', 'example.com/', 'Running'],
@@ -1426,6 +1479,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
         assert.strictEqual(getTextFilter(view), 'url:subresource');
         // Click clear button
         clickClearButton(view);
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         // Text filter should be cleared
         assert.strictEqual(getTextFilter(view), '');
@@ -1461,10 +1515,12 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
-        const preloadingGridComponent = view.getPreloadingGridForTest();
+        await view.updateComplete;
+        const preloadingGridComponent = getPreloadingGrid(view);
         await preloadingGridComponent.updateComplete;
         // Click clear button
         clickClearButton(view);
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         // Grid should be empty after reset
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], []);
@@ -1490,6 +1546,7 @@ describeWithEnvironment('PreloadingAttemptView', () => {
                 },
             ],
         });
+        await view.updateComplete;
         await preloadingGridComponent.updateComplete;
         // New attempt should be visible
         assertGridWidgetContents(preloadingGridComponent.contentElement, ['URL', 'Action', 'Rule set', 'Status'], [
@@ -1517,7 +1574,8 @@ describeWithEnvironment('PreloadingSummaryView', () => {
 }
 `);
         await emulator.activateAndDispatchEvents('prerendered.html');
-        const usedPreloadingComponent = view.getUsedPreloadingForTest();
+        await view.updateComplete;
+        const usedPreloadingComponent = getChildWidget(view, PreloadingComponents.UsedPreloadingView.UsedPreloadingView);
         await usedPreloadingComponent.updateComplete;
         assert.include(usedPreloadingComponent.contentElement.textContent, 'This page was successfully prerendered');
     });

@@ -1599,6 +1599,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2281,6 +2282,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -2850,7 +2852,7 @@ var Runtime;
 })(Runtime || (Runtime = {}));
 
 // ../../front_end/panels/elements/InspectElementModeController.ts
-import * as UI22 from "../../ui/legacy/legacy.js";
+import * as UI23 from "../../ui/legacy/legacy.js";
 import * as SettingsUI8 from "../../ui/settings/settings.js";
 import * as VisualLogging15 from "../../ui/visual_logging/visual_logging.js";
 
@@ -2875,7 +2877,7 @@ import * as Root5 from "../../core/root/root.js";
 import * as SDK18 from "../../core/sdk/sdk.js";
 import * as ComputedStyle3 from "../../models/computed_style/computed_style.js";
 import * as PanelCommon from "../common/common.js";
-import * as UI21 from "../../ui/legacy/legacy.js";
+import * as UI22 from "../../ui/legacy/legacy.js";
 import * as SettingsUI7 from "../../ui/settings/settings.js";
 import * as VisualLogging14 from "../../ui/visual_logging/visual_logging.js";
 
@@ -2888,7 +2890,7 @@ __export(AccessibilityTreeView_exports, {
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as TreeOutline from "../../ui/components/tree_outline/tree_outline.js";
-import * as UI from "../../ui/legacy/legacy.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
@@ -2898,9 +2900,11 @@ __export(AccessibilityTreeUtils_exports, {
   accessibilityNodeRenderer: () => accessibilityNodeRenderer,
   sdkNodeToAXTreeNodes: () => sdkNodeToAXTreeNodes
 });
-import "./components/components.js";
+import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
+import * as ElementsComponents from "./components/components.js";
 var { html } = Lit;
+var { widget } = UI.Widget;
 async function sdkNodeToAXTreeNodes(sdkNode) {
   const treeNodeData = sdkNode;
   if (sdkNode.isLeafNode()) {
@@ -2925,14 +2929,7 @@ function accessibilityNodeRenderer(node) {
   const role = sdkNode.role()?.value || "";
   const properties = sdkNode.properties() || [];
   const ignored = sdkNode.ignored();
-  const id = sdkNode.getNodeId();
-  return html`<devtools-accessibility-tree-node .data=${{
-    name,
-    role,
-    ignored,
-    properties,
-    id
-  }}></devtools-accessibility-tree-node>`;
+  return html`${widget(ElementsComponents.AccessibilityTreeNode.AccessibilityTreeNode, { name, role, ignored, properties })}`;
 }
 
 // gen/front_end/panels/elements/accessibilityTreeView.css.js
@@ -3036,7 +3033,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     </div>
   `, target);
 };
-var AccessibilityTreeView = class extends UI.Widget.VBox {
+var AccessibilityTreeView = class extends UI2.Widget.VBox {
   inspectedDOMNode = null;
   root = null;
   #view;
@@ -3078,7 +3075,7 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
   };
   #onCopy = async (axNode) => {
     const text = await axNode.axNodeToText();
-    UI.UIUtils.copyTextToClipboard(text);
+    UI2.UIUtils.copyTextToClipboard(text);
   };
   #onScrollIntoView = (axNode) => {
     const deferredNode = axNode.deferredDOMNode();
@@ -3217,7 +3214,7 @@ import * as Platform5 from "../../core/platform/platform.js";
 import * as Bindings4 from "../../models/bindings/bindings.js";
 import * as ColorPicker2 from "../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor3 from "../../ui/legacy/components/inline_editor/inline_editor.js";
-import * as UI11 from "../../ui/legacy/legacy.js";
+import * as UI12 from "../../ui/legacy/legacy.js";
 
 // ../../front_end/panels/elements/PropertyRenderer.ts
 var PropertyRenderer_exports = {};
@@ -3240,8 +3237,8 @@ import * as Common5 from "../../core/common/common.js";
 import * as i18n16 from "../../core/i18n/i18n.js";
 import * as SDK7 from "../../core/sdk/sdk.js";
 import * as Components4 from "../../ui/legacy/components/utils/utils.js";
-import * as UI10 from "../../ui/legacy/legacy.js";
-import { Directive, html as html10, nothing as nothing3, render as render7 } from "../../ui/lit/lit.js";
+import * as UI11 from "../../ui/legacy/legacy.js";
+import { AsyncDirective, Directive, html as html10, nothing as nothing4, render as render8 } from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/elements/ImagePreviewPopover.ts
@@ -3250,7 +3247,7 @@ __export(ImagePreviewPopover_exports, {
   ImagePreviewPopover: () => ImagePreviewPopover
 });
 import * as Components from "../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 var ImagePreviewPopover = class {
   getLinkElement;
   popover;
@@ -3258,7 +3255,7 @@ var ImagePreviewPopover = class {
   constructor(container, getLinkElement, getNodeFeatures) {
     this.getLinkElement = getLinkElement;
     this.#getNodeFeatures = getNodeFeatures;
-    this.popover = new UI2.PopoverHelper.PopoverHelper(container, this.handleRequest.bind(this), "elements.image-preview");
+    this.popover = new UI3.PopoverHelper.PopoverHelper(container, this.handleRequest.bind(this), "elements.image-preview");
     this.popover.setTimeout(0, 100);
   }
   handleRequest(event) {
@@ -3332,12 +3329,12 @@ import * as TextEditor2 from "../../ui/components/text_editor/text_editor.js";
 import { createIcon as createIcon3, Icon as Icon2 } from "../../ui/kit/kit.js";
 import * as InlineEditor2 from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components3 from "../../ui/legacy/components/utils/utils.js";
-import * as UI9 from "../../ui/legacy/legacy.js";
-import { render as render6 } from "../../ui/lit/lit.js";
+import * as UI10 from "../../ui/legacy/legacy.js";
+import { render as render7 } from "../../ui/lit/lit.js";
 import * as SettingsUI3 from "../../ui/settings/settings.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon2 from "../common/common.js";
-import * as ElementsComponents3 from "./components/components.js";
+import * as ElementsComponents4 from "./components/components.js";
 
 // ../../front_end/panels/elements/ElementsSidebarPane.ts
 var ElementsSidebarPane_exports = {};
@@ -3345,8 +3342,8 @@ __export(ElementsSidebarPane_exports, {
   ElementsSidebarPane: () => ElementsSidebarPane
 });
 import * as ComputedStyle from "../../models/computed_style/computed_style.js";
-import * as UI3 from "../../ui/legacy/legacy.js";
-var ElementsSidebarPane = class extends UI3.Widget.VBox {
+import * as UI4 from "../../ui/legacy/legacy.js";
+var ElementsSidebarPane = class extends UI4.Widget.VBox {
   computedStyleModelInternal;
   constructor(computedStyleModel, options) {
     super(options);
@@ -3389,7 +3386,7 @@ __export(LayersWidget_exports, {
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as TreeOutline3 from "../../ui/components/tree_outline/tree_outline.js";
-import * as UI4 from "../../ui/legacy/legacy.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
@@ -3467,7 +3464,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   render2(template, target, { container: { attributes: { jslog: `${VisualLogging2.pane("css-layers")}` } } });
 };
 var layersWidgetInstance;
-var LayersWidget = class _LayersWidget extends UI4.Widget.Widget {
+var LayersWidget = class _LayersWidget extends UI5.Widget.Widget {
   #node = null;
   #view;
   #layerToReveal = null;
@@ -3477,11 +3474,11 @@ var LayersWidget = class _LayersWidget extends UI4.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    UI4.Context.Context.instance().addFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
-    this.#onDOMNodeChanged({ data: UI4.Context.Context.instance().flavor(SDK2.DOMModel.DOMNode) });
+    UI5.Context.Context.instance().addFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+    this.#onDOMNodeChanged({ data: UI5.Context.Context.instance().flavor(SDK2.DOMModel.DOMNode) });
   }
   wasHidden() {
-    UI4.Context.Context.instance().removeFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+    UI5.Context.Context.instance().removeFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
     this.#onDOMNodeChanged({ data: null });
     super.wasHidden();
   }
@@ -3545,9 +3542,9 @@ var buttonProviderInstance;
 var ButtonProvider = class _ButtonProvider {
   button;
   constructor() {
-    this.button = new UI4.Toolbar.ToolbarToggle(i18nString2(UIStrings2.toggleCSSLayers), "layers", "layers-filled");
+    this.button = new UI5.Toolbar.ToolbarToggle(i18nString2(UIStrings2.toggleCSSLayers), "layers", "layers-filled");
     this.button.setVisible(false);
-    this.button.addEventListener(UI4.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
+    this.button.addEventListener(UI5.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
     this.button.element.classList.add("monospace");
     this.button.element.setAttribute("jslog", `${VisualLogging2.toggleSubpane("css-layers").track({ click: true })}`);
   }
@@ -3570,12 +3567,13 @@ var ButtonProvider = class _ButtonProvider {
 // ../../front_end/panels/elements/StyleEditorWidget.ts
 var StyleEditorWidget_exports = {};
 __export(StyleEditorWidget_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   StyleEditorWidget: () => StyleEditorWidget
 });
 import "../../ui/kit/kit.js";
 import * as Elements2 from "../../models/elements/elements.js";
-import * as UI7 from "../../ui/legacy/legacy.js";
-import { Directives, html as html8 } from "../../ui/lit/lit.js";
+import * as UI8 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html8, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/elements/StylePropertyTreeElement.ts
@@ -3628,11 +3626,12 @@ import * as Tooltips from "../../ui/components/tooltips/tooltips.js";
 import { createIcon, Icon } from "../../ui/kit/kit.js";
 import * as ColorPicker from "../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor from "../../ui/legacy/components/inline_editor/inline_editor.js";
-import * as UI6 from "../../ui/legacy/legacy.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
 import * as Lit5 from "../../ui/lit/lit.js";
+import { Directives, html as html7, nothing as nothing2, render as render4 } from "../../ui/lit/lit.js";
 import * as SettingsUI from "../../ui/settings/settings.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
-import * as ElementsComponents from "./components/components.js";
+import * as ElementsComponents2 from "./components/components.js";
 
 // ../../front_end/panels/elements/CSSRuleValidator.ts
 var CSSRuleValidator_exports = {};
@@ -4362,7 +4361,7 @@ var CSSValueTraceView_exports = {};
 __export(CSSValueTraceView_exports, {
   CSSValueTraceView: () => CSSValueTraceView
 });
-import * as UI5 from "../../ui/legacy/legacy.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
 import * as Lit4 from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/cssValueTraceView.css.js
@@ -4885,7 +4884,7 @@ function defaultView(input, output, target) {
     }
   }
 }
-var CSSValueTraceView = class extends UI5.Widget.VBox {
+var CSSValueTraceView = class extends UI6.Widget.VBox {
   #highlighting;
   #view;
   #evaluations = [];
@@ -4982,7 +4981,7 @@ var CSSValueTraceView = class extends UI5.Widget.VBox {
       evaluations: this.#evaluations,
       onToggle: () => this.onResize()
     };
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
     const tabStop = this.contentElement.querySelector("[tabindex]");
     this.setDefaultFocusedElement(tabStop);
     if (tabStop && this.#pendingFocus) {
@@ -5011,12 +5010,13 @@ function escapeAsSingleQuotedJsString(text) {
 }
 
 // ../../front_end/panels/elements/StylePropertyTreeElement.ts
-var { html: html7, nothing, render: render4, Directives: { classMap: classMap2, ref: ref3 } } = Lit5;
+var { classMap: classMap2, ref: ref3, until } = Directives;
+var { ifExpanded } = Tooltips.Tooltip;
 var ASTUtils = SDK4.CSSPropertyParser.ASTUtils;
-var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
-var GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
-var GridLanesEditor = ElementsComponents.StylePropertyEditor.GridLanesEditor;
-var { widget } = UI6.Widget;
+var FlexboxEditor = ElementsComponents2.StylePropertyEditor.FlexboxEditor;
+var GridEditor = ElementsComponents2.StylePropertyEditor.GridEditor;
+var GridLanesEditor = ElementsComponents2.StylePropertyEditor.GridLanesEditor;
+var { widget: widget2 } = UI7.Widget;
 var UIStrings4 = {
   /**
    * @description Text in the color swatch popover icon of the Elements panel.
@@ -5176,7 +5176,7 @@ var EnvFunctionRenderer = class extends EnvFunctionRendererBase {
     ) ?? "env";
     const valueClass = classMap2({ "inactive-value": !match.varNameIsValid });
     const fallbackClass = classMap2({ "inactive-value": match.varNameIsValid });
-    return html7`<span>${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ? html7`, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` : nothing})</span>`;
+    return html7`<span>${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ? html7`, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` : nothing2})</span>`;
   }
 };
 var FlexGridRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.FlexGridGridLanesMatch);
@@ -5265,7 +5265,7 @@ var CSSWideKeywordRenderer = class extends CSSWideKeywordRendererBase {
       const color = Common.Color.parse(context.matchedResult.getComputedText(match.node));
       if (color) {
         const colorSwatch = new ColorRenderer(this.#stylesContainer, this.#treeElement).renderColorSwatch(color, match, context);
-        return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${colorSwatch}${swatch}</devtools-widget>` : html7`${colorSwatch}${swatch}`;
+        return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${colorSwatch}${swatch}</devtools-widget>` : html7`${colorSwatch}${swatch}`;
       }
     }
     return swatch;
@@ -5339,7 +5339,6 @@ var VariableRenderer = class extends VariableRendererBase {
       this.#computedStyleExtraFields,
       context
     );
-    const tooltipContents = this.#stylesContainer.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
     const tooltipId = this.#treeElement?.getTooltipId("custom-property-var");
     const tooltip = tooltipId ? { tooltipId } : void 0;
     const varSwatch = html7`<span
@@ -5349,10 +5348,14 @@ var VariableRenderer = class extends VariableRendererBase {
       text: match.name,
       isDefined: computedValue !== null && !fromFallback,
       onLinkActivate
-    }}></devtools-link-swatch>${renderedFallback ? html7`, ${renderedFallback.nodes}` : nothing})</span>${tooltipId ? html7`<devtools-tooltip
+    }}></devtools-link-swatch>${renderedFallback ? html7`, ${renderedFallback.nodes}` : nothing2})</span>${tooltipId ? html7`<devtools-tooltip
             id=${tooltipId}
             variant=rich
-            jslogContext=elements.css-var>${tooltipContents}</devtools-tooltip>` : nothing}`;
+            jslogContext=elements.css-var>${widget2(ElementsComponents2.CSSVariableValueView.CSSVariableValueView, {
+      variableName: match.name,
+      value: variableValue ?? void 0,
+      details: this.#stylesContainer.getRegisteredPropertyDetails(this.#matchedStyles, match.name)
+    })}</devtools-tooltip>` : nothing2}`;
     const color = computedValue && Common.Color.parse(computedValue);
     if (!color) {
       return varSwatch;
@@ -5366,7 +5369,7 @@ var VariableRenderer = class extends VariableRendererBase {
         })
       );
     }
-    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${colorSwatch}${varSwatch}</devtools-widget>` : html7`${colorSwatch}${varSwatch}`;
+    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${colorSwatch}${varSwatch}</devtools-widget>` : html7`${colorSwatch}${varSwatch}`;
   }
 };
 var VariableNameRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.VariableNameMatch);
@@ -5388,7 +5391,6 @@ var VariableNameRenderer = class extends VariableNameRendererBase {
     const { declaration, value: variableValue } = match.resolveVariable() ?? {};
     const isDefined = variableValue !== void 0;
     const onLinkActivate = (name) => handleVarDefinitionActivate(declaration ?? name, this.#stylesContainer);
-    const tooltipContents = this.#stylesContainer.getVariablePopoverContents(this.#matchedStyles, match.text, variableValue ?? null);
     const tooltipId = this.#treeElement?.getTooltipId("custom-property-var");
     const tooltip = tooltipId ? { tooltipId } : void 0;
     return html7`<devtools-link-swatch class=css-var-link .data=${{
@@ -5399,7 +5401,11 @@ var VariableNameRenderer = class extends VariableNameRendererBase {
     }}></devtools-link-swatch>${tooltipId ? html7`<devtools-tooltip
         id=${tooltipId}
         variant=rich
-        jslogContext=elements.css-var>${tooltipContents}</devtools-tooltip>` : nothing}`;
+        jslogContext=elements.css-var>${widget2(ElementsComponents2.CSSVariableValueView.CSSVariableValueView, {
+      variableName: match.text,
+      value: variableValue ?? void 0,
+      details: this.#stylesContainer.getRegisteredPropertyDetails(this.#matchedStyles, match.text)
+    })}</devtools-tooltip>` : nothing2}`;
   }
 };
 var AttributeRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.AttributeMatch);
@@ -5431,7 +5437,6 @@ var AttributeRenderer = class extends AttributeRendererBase {
     const typeClass = typeError ? "inactive" : "";
     const fallbackClass = fromFallback ? "" : "inactive";
     const computedValue = attributeValue ?? match.fallbackValue();
-    const varSwatch = document.createElement("span");
     const substitution = context.tracing?.substitution({ match, context });
     if (substitution) {
       if (fromFallback) {
@@ -5471,23 +5476,22 @@ var AttributeRenderer = class extends AttributeRendererBase {
     );
     const tooltipId = attributeMissing ? void 0 : this.#treeElement?.getTooltipId("custom-attribute");
     const tooltip = tooltipId ? { tooltipId } : void 0;
-    render4(html7`
-        <span data-title=${computedValue || ""}
-              jslog=${VisualLogging3.link("css-variable").track({ click: true, hover: true })}
+    const varSwatch = html7`<span
+        data-title=${computedValue || ""}
+        jslog=${VisualLogging3.link("css-variable").track({ click: true, hover: true })}
         >${attrCall ?? "attr"}(<devtools-link-swatch class=${attributeClass} .data=${{
       tooltip,
       text: match.name,
       isDefined: true,
       onLinkActivate: () => this.#handleAttributeActivate(this.#matchedStyles.originatingNodeForStyle(match.style), match.name)
-    }}></devtools-link-swatch>${tooltipId ? html7`
-          <devtools-tooltip
-            id=${tooltipId}
-            variant=rich
-            jslogContext=elements.css-var
-          >${JSON.stringify(rawValue)}</devtools-tooltip>` : nothing}${match.type ? html7` <span class=${typeClass}>${match.type}</span>` : nothing}${renderedFallback ? html7`, <span class=${fallbackClass}>${renderedFallback.nodes}</span>` : nothing})</span>`, varSwatch);
+    }}></devtools-link-swatch>${tooltipId ? html7`<devtools-tooltip
+          id=${tooltipId}
+          variant=rich
+          jslogContext=elements.css-var
+        >${JSON.stringify(rawValue)}</devtools-tooltip>` : nothing2}${match.type ? html7` <span class=${typeClass}>${match.type}</span>` : nothing2}${renderedFallback ? html7`, <span class=${fallbackClass}>${renderedFallback.nodes}</span>` : nothing2})</span>`;
     const color = computedValue && Common.Color.parse(computedValue);
     if (!color) {
-      return [varSwatch];
+      return varSwatch;
     }
     const colorSwatch = new ColorRenderer(this.#stylesContainer, this.#treeElement).renderColorSwatch(color, match, context);
     context.addControl("color", colorSwatch);
@@ -5498,7 +5502,7 @@ var AttributeRenderer = class extends AttributeRendererBase {
         })
       );
     }
-    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${colorSwatch}${varSwatch}</devtools-widget>` : [colorSwatch, varSwatch];
+    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${colorSwatch}${varSwatch}</devtools-widget>` : html7`${colorSwatch}${varSwatch}`;
   }
   #handleAttributeActivate(node, attribute) {
     if (!node) {
@@ -5546,31 +5550,24 @@ var RelativeColorChannelRenderer = class extends RelativeColorChannelRendererBas
   render(match, context) {
     const color = context.findParent(match.node, SDK4.CSSPropertyParserMatchers.ColorMatch);
     if (!color?.relativeColor) {
-      return [document.createTextNode(match.text)];
+      return html7`${match.text}`;
     }
     const value5 = match.getColorChannelValue(color.relativeColor);
     if (value5 === null) {
-      return [document.createTextNode(match.text)];
+      return html7`${match.text}`;
     }
-    const evaluation = context.tracing?.applyEvaluation([], () => ({ placeholder: [document.createTextNode(value5.toFixed(3))] }));
+    const evaluation = context.tracing?.applyEvaluation([], () => ({ placeholder: html7`${value5.toFixed(3)}` }));
     if (evaluation) {
       return evaluation;
     }
-    const span = document.createElement("span");
-    span.append(match.text);
     const tooltipId = this.#treeElement?.getTooltipId("relative-color-channel");
     if (!tooltipId) {
-      return [span];
+      return html7`<span>${match.text}</span>`;
     }
-    span.setAttribute("aria-details", tooltipId);
-    const tooltip = new Tooltips.Tooltip.Tooltip({
-      id: tooltipId,
-      variant: "rich",
-      anchor: span,
-      jslogContext: "elements.relative-color-channel"
-    });
-    tooltip.append(value5.toFixed(3));
-    return [span, tooltip];
+    return html7`<span aria-details=${tooltipId}>${match.text}</span><devtools-tooltip
+        id=${tooltipId}
+        variant=rich
+        jslogContext=elements.relative-color-channel>${value5.toFixed(3)}</devtools-tooltip>`;
   }
 };
 var ColorRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.ColorMatch);
@@ -5659,7 +5656,7 @@ var ColorRenderer = class _ColorRenderer extends ColorRendererBase {
         });
       }
     }
-    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${swatch}${valueChild}</devtools-widget>` : html7`${swatch}${valueChild}`;
+    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${swatch}${valueChild}</devtools-widget>` : html7`${swatch}${valueChild}`;
   }
   // Renders a swatch for `color`. When the user changes the color through the swatch, a `ValueEditEvent` is dispatched
   // to update the enclosing `EditableContent`, and the new text is recorded as the edit of `match`.
@@ -5724,36 +5721,33 @@ var LightDarkColorRenderer = class extends LightDarkColorRendererBase {
     this.#stylesContainer = stylesContainer;
     this.#matchedStyles = matchedStyles;
   }
+  #renderContent(match, light, dark, activeColor) {
+    const lightClasses = classMap2({ "inactive-value": activeColor === match.dark });
+    const darkClasses = classMap2({ "inactive-value": activeColor === match.light });
+    return html7`<span>light-dark(<span class=${lightClasses}>${light}</span>, <span class=${darkClasses}>${dark}</span>)</span>`;
+  }
   render(match, context) {
-    const content = document.createElement("span");
-    content.appendChild(document.createTextNode("light-dark("));
-    const light = content.appendChild(document.createElement("span"));
-    content.appendChild(document.createTextNode(", "));
-    const dark = content.appendChild(document.createElement("span"));
-    content.appendChild(document.createTextNode(")"));
-    const { cssControls: lightControls } = Renderer.renderInto(match.light, context, light);
-    const { cssControls: darkControls } = Renderer.renderInto(match.dark, context, dark);
+    const { nodes: light, cssControls: lightControls } = Renderer.render(match.light, context);
+    const { nodes: dark, cssControls: darkControls } = Renderer.render(match.dark, context);
+    const content = this.#renderContent(match, light, dark);
     if (context.matchedResult.hasUnresolvedSubstitutions(match.node)) {
-      return [content];
+      return content;
     }
     const color = Common.Color.parse(
       context.matchedResult.getComputedTextRange(match.light[0], match.light[match.light.length - 1])
     );
     if (!color) {
-      return [content];
+      return content;
     }
     const colorSwatch = new ColorRenderer(this.#stylesContainer, this.#treeElement).renderColorSwatch(void 0, match, context);
     context.addControl("color", colorSwatch);
-    void this.applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls);
-    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${colorSwatch}${content}</devtools-widget>` : [colorSwatch, content];
+    const styledContent = until(this.applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls), content);
+    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${colorSwatch}${styledContent}</devtools-widget>` : html7`${colorSwatch}${styledContent}`;
   }
   async applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls) {
     const activeColor = await this.#activeColor(match);
-    if (context.signal?.aborted) {
-      return;
-    }
-    if (!activeColor) {
-      return;
+    if (context.signal?.aborted || !activeColor) {
+      return this.#renderContent(match, light, dark);
     }
     const activeColorSwatches = (activeColor === match.light ? lightControls : darkControls).get("color");
     activeColorSwatches?.forEach(
@@ -5762,13 +5756,12 @@ var LightDarkColorRenderer = class extends LightDarkColorRendererBase {
         (ev) => colorSwatch.setColor(ev.data.color)
       )
     );
-    const inactiveColor = activeColor === match.light ? dark : light;
     const colorText = context.matchedResult.getComputedTextRange(activeColor[0], activeColor[activeColor.length - 1]);
     const color = colorText && Common.Color.parse(colorText);
-    inactiveColor.classList.add("inactive-value");
     if (color) {
       colorSwatch.renderColor(color);
     }
+    return this.#renderContent(match, light, dark, activeColor);
   }
   // Returns the syntax node group corresponding the active color scheme:
   // If the element has color-scheme set to light or dark, return the respective group.
@@ -5841,24 +5834,20 @@ var ColorMixRenderer = class extends ColorMixRendererBase {
     const color1RenderingContext = childTracingContexts?.at(0)?.renderingContext(context) ?? context;
     const color2RenderingContext = childTracingContexts?.at(1)?.renderingContext(context) ?? context;
     const spaceRenderingContext = childTracingContexts?.at(2)?.renderingContext(context) ?? context;
-    const contentChild = document.createElement("span");
-    const color1 = Renderer.renderInto(match.color1, color1RenderingContext, contentChild);
-    const color2 = Renderer.renderInto(match.color2, color2RenderingContext, contentChild);
-    render4(
-      html7`${this.#treeElement?.getTracingTooltip(
-        "color-mix",
-        match.node,
-        this.#matchedStyles,
-        this.#computedStyles,
-        this.#computedStyleExtraFields,
-        context
-      ) ?? "color-mix"}(${match.space.length ? html7`${Renderer.render(match.space, spaceRenderingContext).nodes}, ` : ""}${color1.nodes}, ${color2.nodes})`,
-      contentChild
-    );
+    const color1 = Renderer.render(match.color1, color1RenderingContext);
+    const color2 = Renderer.render(match.color2, color2RenderingContext);
+    const contentChild = html7`<span>${this.#treeElement?.getTracingTooltip(
+      "color-mix",
+      match.node,
+      this.#matchedStyles,
+      this.#computedStyles,
+      this.#computedStyleExtraFields,
+      context
+    ) ?? "color-mix"}(${match.space.length ? html7`${Renderer.render(match.space, spaceRenderingContext).nodes}, ` : ""}${color1.nodes}, ${color2.nodes})</span>`;
     const color1Controls = color1.cssControls.get("color") ?? [];
     const color2Controls = color2.cssControls.get("color") ?? [];
     if (context.matchedResult.hasUnresolvedSubstitutions(match.node) || color1Controls.length !== 1 || color2Controls.length !== 1) {
-      return [contentChild];
+      return contentChild;
     }
     const space = match.space.map((space2) => context.matchedResult.getComputedText(space2)).join(" ");
     const color1Text = match.color1.map((color) => context.matchedResult.getComputedText(color)).join(" ");
@@ -5868,11 +5857,10 @@ var ColorMixRenderer = class extends ColorMixRendererBase {
     if (nodeId !== void 0 && childTracingContexts) {
       const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => {
         const initialColor = Common.Color.parse("#000");
-        const colorText = document.createElement("span");
-        colorText.textContent = initialColor.asString();
+        const { promise, resolve } = Promise.withResolvers();
         const swatch2 = new ColorRenderer(this.#stylesContainer, null).renderColorSwatch(initialColor, match, context);
         swatch2.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (ev) => {
-          colorText.textContent = ev.data.color.asString();
+          resolve(ev.data.color.asString());
         });
         context.addControl("color", swatch2);
         const asyncEvalCallback = async () => {
@@ -5889,7 +5877,10 @@ var ColorMixRenderer = class extends ColorMixRendererBase {
           }
           return false;
         };
-        return { placeholder: [swatch2, colorText], asyncEvalCallback };
+        return {
+          placeholder: html7`${swatch2}<span>${until(promise, initialColor.asString())}</span>`,
+          asyncEvalCallback
+        };
       });
       if (evaluation) {
         return evaluation;
@@ -5897,39 +5888,32 @@ var ColorMixRenderer = class extends ColorMixRendererBase {
     }
     const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
     if (!hookUpColorArg(color1Controls[0], (text) => swatch.setFirstColor(text)) || !hookUpColorArg(color2Controls[0], (text) => swatch.setSecondColor(text))) {
-      return [contentChild];
+      return contentChild;
     }
     swatch.tabIndex = -1;
     swatch.setColorMixText(colorMixText);
-    UI6.ARIAUtils.setLabel(swatch, colorMixText);
+    UI7.ARIAUtils.setLabel(swatch, colorMixText);
     context.addControl("color", swatch);
     if (context.tracing) {
-      return [swatch, contentChild];
+      return html7`${swatch}${contentChild}`;
     }
     const tooltipId = this.#treeElement?.getTooltipId("color-mix");
     if (!tooltipId) {
-      return [swatch, contentChild];
+      return html7`${swatch}${contentChild}`;
     }
     swatch.setAttribute("aria-details", tooltipId);
-    const tooltip = new Tooltips.Tooltip.Tooltip({
-      id: tooltipId,
-      variant: "rich",
-      anchor: swatch,
-      jslogContext: "elements.css-color-mix"
-    });
-    const colorTextSpan = tooltip.appendChild(document.createElement("span"));
-    tooltip.onbeforetoggle = (e) => {
-      if (e.newState !== "open") {
-        return;
-      }
+    return html7`${swatch}${contentChild}<devtools-tooltip
+        id=${tooltipId}
+        variant=rich
+        jslogContext=elements.css-color-mix
+      >${ifExpanded(() => {
       const color = swatch.mixedColor();
       if (!color) {
-        return;
+        return Lit5.nothing;
       }
       const rgb = color.as(Common.Color.Format.HEX);
-      colorTextSpan.textContent = rgb.isGamutClipped() ? color.asString() : rgb.asString();
-    };
-    return [swatch, contentChild, tooltip];
+      return html7`${rgb.isGamutClipped() ? color.asString() : rgb.asString()}`;
+    })}</devtools-tooltip>`;
   }
 };
 var ContrastColorRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.ContrastColorMatch);
@@ -5943,13 +5927,9 @@ var ContrastColorRenderer = class extends ContrastColorRendererBase {
     this.#stylesContainer = stylesContainer;
   }
   render(match, context) {
-    const content = document.createElement("span");
-    content.appendChild(document.createTextNode("contrast-color("));
-    const param = content.appendChild(document.createElement("span"));
-    content.appendChild(document.createTextNode(")"));
-    Renderer.renderInto(match.color, context, param);
+    const content = html7`<span>contrast-color(${Renderer.render(match.color, context).nodes})</span>`;
     if (context.matchedResult.hasUnresolvedSubstitutions(match.node)) {
-      return [content];
+      return content;
     }
     const colorText = context.matchedResult.getComputedText(match.node);
     const fakeSpan = document.body.appendChild(document.createElement("span"));
@@ -5958,11 +5938,11 @@ var ContrastColorRenderer = class extends ContrastColorRendererBase {
     fakeSpan.remove();
     const color = Common.Color.parse(resolvedColorText);
     if (!color) {
-      return [content];
+      return content;
     }
     const colorSwatch = new ColorRenderer(this.#stylesContainer, this.#treeElement).renderColorSwatch(color, match, context);
     context.addControl("color", colorSwatch);
-    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget(EditableContent)}>${colorSwatch}${content}</devtools-widget>` : [colorSwatch, content];
+    return this.#treeElement?.editable() ? html7`<devtools-widget ${widget2(EditableContent)}>${colorSwatch}${content}</devtools-widget>` : html7`${colorSwatch}${content}`;
   }
 };
 var AngleRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.AngleMatch);
@@ -6012,7 +5992,7 @@ var AngleRenderer = class extends AngleRendererBase {
       context.recordEdit(match, data.value);
     });
     context.addControl("angle", cssAngle);
-    return html7`<devtools-widget ${widget(EditableContent)}>${cssAngle}${angleText}</devtools-widget>`;
+    return html7`<devtools-widget ${widget2(EditableContent)}>${cssAngle}${angleText}</devtools-widget>`;
   }
 };
 var LinkableNameRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.LinkableNameMatch);
@@ -6067,9 +6047,8 @@ var LinkableNameRenderer = class extends LinkableNameRendererBase {
     }
   }
   render(match) {
-    const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
     const { metric, jslogContext, ruleBlock, isDefined } = this.#getLinkData(match);
-    swatch.data = {
+    const swatch = html7`<devtools-link-swatch .data=${{
       text: match.text,
       tooltip: isDefined ? void 0 : { title: i18nString4(UIStrings4.sIsNotDefined, { PH1: match.text }) },
       isDefined,
@@ -6084,31 +6063,23 @@ var LinkableNameRenderer = class extends LinkableNameRendererBase {
         }
       },
       jslogContext
-    };
+    }}></devtools-link-swatch>`;
     if (match.propertyName === SDK4.CSSPropertyParserMatchers.LinkableNameProperties.ANIMATION || match.propertyName === SDK4.CSSPropertyParserMatchers.LinkableNameProperties.ANIMATION_NAME) {
-      const el = document.createElement("span");
-      el.appendChild(swatch);
       const node = this.#stylesContainer.node();
-      if (node) {
-        const animationModel = node.domModel().target().model(SDK4.AnimationModel.AnimationModel);
-        void animationModel?.getAnimationGroupForAnimation(match.text, node.id).then((maybeAnimationGroup) => {
-          if (!maybeAnimationGroup) {
-            return;
-          }
-          const icon = createIcon("animation", "open-in-animations-panel");
-          icon.setAttribute("jslog", `${VisualLogging3.link("open-in-animations-panel").track({ click: true })}`);
-          icon.setAttribute("role", "button");
-          icon.setAttribute("title", i18nString4(UIStrings4.jumpToAnimationsPanel));
-          icon.addEventListener("mouseup", (ev) => {
-            ev.consume(true);
-            void Common.Revealer.reveal(maybeAnimationGroup);
-          });
-          el.insertBefore(icon, swatch);
-        });
-      }
-      return [el];
+      const animationModel = node?.domModel().target().model(SDK4.AnimationModel.AnimationModel);
+      const icon = node && animationModel ? until(animationModel.getAnimationGroupForAnimation(match.text, node.id).then((maybeAnimationGroup) => maybeAnimationGroup ? html7`<devtools-icon
+                  class="open-in-animations-panel"
+                  name="animation"
+                  jslog=${VisualLogging3.link("open-in-animations-panel").track({ click: true })}
+                  role="button"
+                  title=${i18nString4(UIStrings4.jumpToAnimationsPanel)}
+                  @mouseup=${(ev) => {
+        ev.consume(true);
+        void Common.Revealer.reveal(maybeAnimationGroup);
+      }}></devtools-icon>` : Lit5.nothing)) : Lit5.nothing;
+      return html7`<span>${icon}${swatch}</span>`;
     }
-    return [swatch];
+    return swatch;
   }
 };
 var BezierRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.BezierMatch);
@@ -6135,7 +6106,7 @@ var BezierRenderer = class extends BezierRendererBase {
       Host.userMetrics.swatchActivated(Host.UserMetrics.SwatchType.ANIMATION_TIMING);
     });
     new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch: icon, match, context });
-    return html7`<devtools-widget class="bezier-icon-and-text" ${widget(EditableContent)}>${icon}${nodes}</devtools-widget>`;
+    return html7`<devtools-widget class="bezier-icon-and-text" ${widget2(EditableContent)}>${icon}${nodes}</devtools-widget>`;
   }
 };
 var AutoBaseRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.AutoBaseMatch);
@@ -6147,20 +6118,11 @@ var AutoBaseRenderer = class extends AutoBaseRendererBase {
     this.#computedStyleExtraFields = computedStyleExtraFields;
   }
   render(match, context) {
-    const content = document.createElement("span");
-    content.appendChild(document.createTextNode("-internal-auto-base("));
-    const auto = content.appendChild(document.createElement("span"));
-    content.appendChild(document.createTextNode(", "));
-    const base = content.appendChild(document.createElement("span"));
-    content.appendChild(document.createTextNode(")"));
-    Renderer.renderInto(match.auto, context, auto);
-    Renderer.renderInto(match.base, context, base);
-    if (this.#computedStyleExtraFields?.isAppearanceBase) {
-      auto.classList.add("inactive-value");
-    } else {
-      base.classList.add("inactive-value");
-    }
-    return [content];
+    const auto = Renderer.render(match.auto, context).nodes;
+    const base = Renderer.render(match.base, context).nodes;
+    const isAppearanceBase = Boolean(this.#computedStyleExtraFields?.isAppearanceBase);
+    return html7`<span>-internal-auto-base(<span class=${classMap2({ "inactive-value": isAppearanceBase })}>${auto}</span>,
+        <span class=${classMap2({ "inactive-value": !isAppearanceBase })}>${base}</span>)</span>`;
   }
 };
 var ShadowPropertyType = /* @__PURE__ */ ((ShadowPropertyType2) => {
@@ -6328,14 +6290,14 @@ var SHADOW_WIDGET_DEFAULT_VIEW = (input, _output, target) => {
     @mousedown=${(event) => event.consume()}
   ></css-shadow-swatch>${input.model.renderContents()}`, target);
 };
-var ShadowWidget = class extends UI6.Widget.Widget {
+var ShadowWidget = class extends UI7.Widget.Widget {
   #view;
   #model;
   #treeElement;
   #popoverHelper;
   constructor(element, view = SHADOW_WIDGET_DEFAULT_VIEW) {
     super(element);
-    this.element.classList.remove("vbox", "flex-auto", "widget");
+    this.element.classList.remove("widget");
     this.#view = view;
   }
   set model(model) {
@@ -6489,7 +6451,7 @@ var ShadowRenderer = class extends ShadowRendererBase {
         continue;
       }
       result.push(
-        html7`<devtools-widget ${widget(ShadowWidget, { model, treeElement: this.#treeElement })}></devtools-widget>`
+        html7`<devtools-widget ${widget2(ShadowWidget, { model, treeElement: this.#treeElement })}></devtools-widget>`
       );
       texts.push(() => isImportant ? `${model.text()} ${nestedEdits.textRange(isImportant, isImportant)}` : model.text());
       if (isImportant) {
@@ -6508,8 +6470,7 @@ var GridTemplateRenderer = class extends GridTemplateRendererBase {
       return Renderer.render(ASTUtils.siblings(ASTUtils.declValue(match.node)), context).nodes;
     }
     const indent = Common.Settings.Settings.instance().resolve(SDK4.SDKSettings.textEditorIndentSettingDescriptor).get();
-    const container = document.createDocumentFragment();
-    const template = html7`
+    return html7`
       ${match.lines.map((line) => {
       const lines = Renderer.render(line, context).nodes;
       return html7`
@@ -6517,8 +6478,6 @@ var GridTemplateRenderer = class extends GridTemplateRendererBase {
         ${lines}`;
     })}
     `;
-    render4(template, container);
-    return [container];
   }
 };
 var SHORTHANDS_FOR_PERCENTAGES = /* @__PURE__ */ new Set([
@@ -6556,53 +6515,27 @@ var LengthRenderer = class extends LengthRendererBase {
     this.#propertyName = propertyName;
   }
   render(match, context) {
-    const valueElement = document.createElement("span");
-    valueElement.tabIndex = -1;
-    valueElement.textContent = match.text;
-    const tooltip = this.#getTooltip(valueElement, match, context);
-    const evaluation = context.tracing?.applyEvaluation([], () => {
-      return {
-        placeholder: [valueElement],
-        asyncEvalCallback: () => this.#applyEvaluation(valueElement, match, context)
-      };
-    });
-    if (evaluation) {
-      return evaluation;
-    }
-    return tooltip ? [valueElement, tooltip] : [valueElement];
-  }
-  async #applyEvaluation(valueElement, match, context) {
-    const pixelValue = await resolveValues(this.#stylesContainer, this.#propertyName, match, context, match.text);
-    if (context.signal?.aborted) {
-      return false;
-    }
-    if (pixelValue?.[0] && pixelValue?.[0] !== match.text) {
-      valueElement.textContent = pixelValue[0];
-      return true;
-    }
-    return false;
-  }
-  #getTooltip(valueElement, match, context) {
+    const template = html7`${match.text}`;
+    const evaluation = context.tracing?.applyEvaluation([], () => ({
+      template,
+      asyncEvalCallback: () => this.getTooltipValue(match, context)
+    }));
     const tooltipId = this.#treeElement?.getTooltipId("length");
-    if (!tooltipId) {
-      return void 0;
+    if (evaluation || !tooltipId) {
+      return html7`<span tabindex=-1>${evaluation ?? template}</span>`;
     }
-    valueElement.setAttribute("aria-details", tooltipId);
-    const tooltip = new Tooltips.Tooltip.Tooltip(
-      { anchor: valueElement, variant: "rich", id: tooltipId, jslogContext: "length-popover" }
-    );
-    tooltip.addEventListener("beforetoggle", () => this.getTooltipValue(tooltip, match, context), { once: true });
-    return tooltip;
+    return html7`<span tabindex=-1 aria-details=${tooltipId}>${template}</span><devtools-tooltip
+      variant=rich
+      id=${tooltipId}
+      jslogContext=length-popover
+    >${ifExpanded(async () => await this.getTooltipValue(match, context) ?? template)}</devtools-tooltip>`;
   }
-  async getTooltipValue(tooltip, match, context) {
-    const pixelValue = await resolveValues(this.#stylesContainer, this.#propertyName, match, context, match.text);
-    if (context.signal?.aborted) {
-      return;
+  async getTooltipValue(match, context) {
+    const pixelValue = (await resolveValues(this.#stylesContainer, this.#propertyName, match, context, match.text))?.[0];
+    if (context.signal?.aborted || !pixelValue || pixelValue === match.text) {
+      return null;
     }
-    if (!pixelValue) {
-      return;
-    }
-    tooltip.appendChild(document.createTextNode(pixelValue[0]));
+    return html7`${pixelValue}`;
   }
 };
 var BaseFunctionRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.BaseFunctionMatch);
@@ -6623,43 +6556,41 @@ var BaseFunctionRenderer = class extends BaseFunctionRendererBase {
     this.#treeElement = treeElement;
     this.#propertyName = propertyName;
   }
+  #renderArgs(renderedArgs, activeArgs) {
+    return html7`${renderedArgs.map((arg, idx) => {
+      const classes = classMap2({ "inactive-value": activeArgs?.[idx] === false });
+      return html7`${idx === 0 ? nothing2 : ", "}<span class=${classes}>${arg}</span>`;
+    })}`;
+  }
   render(match, context) {
     const childTracingContexts = context.tracing?.evaluation(match.args, { match, context });
-    const renderedArgs = match.args.map((arg, idx) => {
-      const span2 = document.createElement("span");
-      Renderer.renderInto(
-        arg,
-        childTracingContexts ? childTracingContexts[idx].renderingContext(context) : context,
-        span2
-      );
-      return span2;
-    });
-    const span = document.createElement("span");
-    render4(
-      html7`${this.#treeElement?.getTracingTooltip(
-        match.func,
-        match.node,
-        this.#matchedStyles,
-        this.#computedStyles,
-        this.#computedStyleExtraFields,
-        context
-      ) ?? match.func}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html7`, `, arg]).flat()})`,
-      span
+    const renderedArgs = match.args.map(
+      (arg, idx) => Renderer.render(arg, childTracingContexts ? childTracingContexts[idx].renderingContext(context) : context).nodes
     );
+    const func = this.#treeElement?.getTracingTooltip(
+      match.func,
+      match.node,
+      this.#matchedStyles,
+      this.#computedStyles,
+      this.#computedStyleExtraFields,
+      context
+    ) ?? match.func;
+    const args = this.#renderArgs(renderedArgs);
     if (childTracingContexts) {
+      const template = html7`${func}(${args})`;
       const evaluation = context.tracing?.applyEvaluation(
         childTracingContexts,
-        () => ({ placeholder: [span], asyncEvalCallback: () => this.applyEvaluation(span, match, context) })
+        () => ({ template, asyncEvalCallback: () => this.applyEvaluation(match, context) })
       );
       if (evaluation) {
-        return evaluation;
+        return html7`<span>${evaluation}</span>`;
       }
     } else if (match instanceof SDK4.CSSPropertyParserMatchers.MathFunctionMatch && !match.isArithmeticFunctionCall()) {
-      void this.applyMathFunction(renderedArgs, match, context);
+      return html7`<span>${func}(${until(this.applyMathFunction(renderedArgs, match, context), args)})</span>`;
     }
-    return [span];
+    return html7`<span>${func}(${args})</span>`;
   }
-  async applyEvaluation(span, match, context) {
+  async applyEvaluation(match, context) {
     const value5 = context.matchedResult.getComputedText(match.node, (match2) => {
       if (match2 instanceof SDK4.CSSPropertyParserMatchers.RelativeColorChannelMatch) {
         const relativeColor = context.findParent(match2.node, SDK4.CSSPropertyParserMatchers.ColorMatch)?.relativeColor ?? null;
@@ -6668,14 +6599,10 @@ var BaseFunctionRenderer = class extends BaseFunctionRendererBase {
       return null;
     });
     const evaled = await resolveValues(this.#stylesContainer, this.#propertyName, match, context, value5);
-    if (context.signal?.aborted) {
-      return false;
+    if (context.signal?.aborted || !evaled?.[0] || evaled[0] === value5) {
+      return null;
     }
-    if (!evaled?.[0] || evaled[0] === value5) {
-      return false;
-    }
-    span.textContent = evaled[0];
-    return true;
+    return html7`${evaled[0]}`;
   }
   async applyMathFunction(renderedArgs, match, context) {
     const values = match.args.map((arg) => {
@@ -6684,21 +6611,11 @@ var BaseFunctionRenderer = class extends BaseFunctionRendererBase {
     });
     values.unshift(context.matchedResult.getComputedText(match.node));
     const evaledArgs = await resolveValues(this.#stylesContainer, this.#propertyName, match, context, ...values);
-    if (context.signal?.aborted) {
-      return;
+    const functionResult = evaledArgs?.shift();
+    if (context.signal?.aborted || !evaledArgs || !functionResult) {
+      return this.#renderArgs(renderedArgs);
     }
-    if (!evaledArgs) {
-      return;
-    }
-    const functionResult = evaledArgs.shift();
-    if (!functionResult) {
-      return;
-    }
-    for (let i = 0; i < renderedArgs.length; ++i) {
-      if (evaledArgs[i] !== functionResult) {
-        renderedArgs[i].classList.add("inactive-value");
-      }
-    }
+    return this.#renderArgs(renderedArgs, evaledArgs.map((evaledArg) => evaledArg === functionResult));
   }
 };
 var MathFunctionRenderer = class extends BaseFunctionRenderer {
@@ -6711,13 +6628,10 @@ var AnchorFunctionRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.Anc
 var AnchorFunctionRenderer = class _AnchorFunctionRenderer extends AnchorFunctionRendererBase {
   // clang-format on
   #stylesContainer;
-  static async decorateAnchorForAnchorLink(stylesContainer, container, { identifier, needsSpace }) {
-    if (identifier) {
-      render4(html7`${identifier}`, container, { host: container });
-    }
+  static async decorateAnchorForAnchorLink(stylesContainer, { identifier, needsSpace }) {
     const anchorNode = await stylesContainer.node()?.getAnchorBySpecifier(identifier) ?? void 0;
     if (!identifier && !anchorNode) {
-      return;
+      return nothing2;
     }
     const onLinkActivate = () => {
       if (!anchorNode) {
@@ -6736,59 +6650,47 @@ var AnchorFunctionRenderer = class _AnchorFunctionRenderer extends AnchorFunctio
       SDK4.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK4.TargetManager.TargetManager.instance());
     };
     if (identifier) {
-      render4(
-        // clang-format off
-        html7`<devtools-link-swatch
-                @mouseenter=${onMouseEnter}
-                @mouseleave=${onMouseLeave}
-                .data=${{
-          text: identifier,
-          tooltip: anchorNode ? void 0 : { title: i18nString4(UIStrings4.sIsNotDefined, { PH1: identifier }) },
-          isDefined: Boolean(anchorNode),
-          jslogContext: "anchor-link",
-          onLinkActivate
-        }}
-                ></devtools-link-swatch>${needsSpace ? " " : ""}`,
-        // clang-format on
-        container,
-        { host: container }
-      );
-    } else {
-      render4(html7`<devtools-icon
-                   role='button'
-                   title=${i18nString4(UIStrings4.jumpToAnchorNode)}
-                   class='icon-link'
-                   name='open-externally'
-                   jslog=${VisualLogging3.action("jump-to-anchor-node").track({ click: true })}
-                   @mouseenter=${onMouseEnter}
-                   @mouseleave=${onMouseLeave}
-                   @mousedown=${(ev) => ev.stopPropagation()}
-                   @click=${handleIconClick}
-                  ></devtools-icon>${needsSpace ? " " : ""}`, container, { host: container });
+      return html7`<devtools-link-swatch
+        @mouseenter=${onMouseEnter}
+        @mouseleave=${onMouseLeave}
+        .data=${{
+        text: identifier,
+        tooltip: anchorNode ? void 0 : { title: i18nString4(UIStrings4.sIsNotDefined, { PH1: identifier }) },
+        isDefined: Boolean(anchorNode),
+        jslogContext: "anchor-link",
+        onLinkActivate
+      }}
+      ></devtools-link-swatch>${needsSpace ? " " : nothing2}`;
     }
+    return html7`<devtools-icon
+      role='button'
+      title=${i18nString4(UIStrings4.jumpToAnchorNode)}
+      class='icon-link'
+      name='open-externally'
+      jslog=${VisualLogging3.action("jump-to-anchor-node").track({ click: true })}
+      @mouseenter=${onMouseEnter}
+      @mouseleave=${onMouseLeave}
+      @mousedown=${(ev) => ev.stopPropagation()}
+      @click=${handleIconClick}
+    ></devtools-icon>${needsSpace ? " " : nothing2}`;
   }
   constructor(stylesContainer) {
     super();
     this.#stylesContainer = stylesContainer;
   }
   render(match, context) {
-    const content = document.createElement("span");
     if (match.node.name === "VariableName") {
-      void _AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesContainer, content, { identifier: match.text });
-    } else {
-      content.appendChild(document.createTextNode(`${match.functionName}(`));
-      const swatchContainer = document.createElement("span");
-      content.appendChild(swatchContainer);
-      const args = ASTUtils.children(match.node.getChild("ArgList"));
-      const remainingArgs = args.splice(1);
-      void _AnchorFunctionRenderer.decorateAnchorForAnchorLink(
-        this.#stylesContainer,
-        swatchContainer,
-        { needsSpace: remainingArgs.length > 1 }
-      );
-      Renderer.renderInto(remainingArgs, context, content);
+      return html7`<span>${until(
+        _AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesContainer, { identifier: match.text }),
+        match.text
+      )}</span>`;
     }
-    return [content];
+    const args = ASTUtils.children(match.node.getChild("ArgList"));
+    const remainingArgs = args.splice(1);
+    return html7`<span>${match.functionName}(${until(_AnchorFunctionRenderer.decorateAnchorForAnchorLink(
+      this.#stylesContainer,
+      { needsSpace: remainingArgs.length > 1 }
+    ))}${Renderer.render(remainingArgs, context).nodes}</span>`;
   }
 };
 var PositionAnchorRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.PositionAnchorMatch);
@@ -6800,15 +6702,17 @@ var PositionAnchorRenderer = class extends PositionAnchorRendererBase {
     this.#stylesContainer = stylesContainer;
   }
   render(match) {
-    const content = document.createElement("span");
-    void AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesContainer, content, { identifier: match.text });
-    return [content];
+    return html7`<span>${until(
+      AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesContainer, { identifier: match.text }),
+      match.text
+    )}</span>`;
   }
 };
 var PositionAreaRendererBase = rendererBase(SDK4.CSSPropertyParserMatchers.PositionAreaMatch);
 var PositionAreaRenderer = class _PositionAreaRenderer extends PositionAreaRendererBase {
   // clang-format on
   static #active;
+  static #EDITABLE_PROPERTIES = ["align-self", "justify-self"];
   #treeElement;
   #stylesContainer;
   constructor(stylesContainer, treeElement) {
@@ -6835,7 +6739,10 @@ var PositionAreaRenderer = class _PositionAreaRenderer extends PositionAreaRende
         }
       }
     }
-    return activeSection?.propertiesTreeOutline?.rootElement().children().find(
+    return this.#findPropertyInSection(activeSection, propertyName);
+  }
+  #findPropertyInSection(section5, propertyName) {
+    return section5?.propertiesTreeOutline?.rootElement().children().find(
       (child) => child instanceof StylePropertyTreeElement && child.property.name === propertyName
     );
   }
@@ -6855,6 +6762,7 @@ var PositionAreaRenderer = class _PositionAreaRenderer extends PositionAreaRende
     const popoverHelper = this.#stylesContainer.swatchPopoverHelper();
     const isActive = Boolean(_PositionAreaRenderer.#active && popoverHelper.isShowing(_PositionAreaRenderer.#active.editor) && key2 !== void 0 && _PositionAreaRenderer.#active.key === key2);
     if (isActive && _PositionAreaRenderer.#active) {
+      treeElement.carryOverCommittedProperty(_PositionAreaRenderer.#active.treeElement);
       _PositionAreaRenderer.#active.treeElement = treeElement;
       _PositionAreaRenderer.#active.edit = edit;
     }
@@ -6869,6 +6777,16 @@ var PositionAreaRenderer = class _PositionAreaRenderer extends PositionAreaRende
       _PositionAreaRenderer.#active = active;
       const valueText = context.edits?.getEdit(match) ?? context.matchedResult.getComputedPropertyValueText();
       editor.area = InlineEditor.PositionAreaEditor.parsePositionArea(valueText) ?? void 0;
+      const initialProperties = /* @__PURE__ */ new Map();
+      for (const propertyName of _PositionAreaRenderer.#EDITABLE_PROPERTIES) {
+        const target = this.#findTreeElementForProperty(propertyName);
+        if (target) {
+          initialProperties.set(propertyName, {
+            value: target.property.value,
+            section: target.section()
+          });
+        }
+      }
       const updateProperty = (propertyName, computedStyle) => {
         const matchedStyles = active.treeElement.matchedStyles();
         const resolved = matchedStyles.resolveProperty(propertyName, active.treeElement.property.ownerStyle);
@@ -6932,13 +6850,29 @@ var PositionAreaRenderer = class _PositionAreaRenderer extends PositionAreaRende
         editor.removeEventListener(InlineEditor.PositionAreaEditor.Events.PROPERTY_CHANGED, onPropertyChanged);
         const propertyText = commitEdit ? active.treeElement.renderedPropertyText() : originalPropertyText || "";
         void active.treeElement.applyStyleText(propertyText, true);
+        const node = this.#stylesContainer.node() ?? active.treeElement.matchedStyles().node();
+        for (const propertyName of _PositionAreaRenderer.#EDITABLE_PROPERTIES) {
+          const originalTarget = initialProperties.get(propertyName);
+          const targetSection = originalTarget?.section ?? active.treeElement.section();
+          const target = this.#findPropertyInSection(targetSection, propertyName);
+          const oldValue = originalTarget?.value ?? "";
+          const newValue = target?.property.value ?? "";
+          const ruleHeader = targetSection.headerText();
+          Elements.StyleChanges.trackStylePropertyEdit(this.#stylesContainer.changeTracker, node, {
+            ruleHeader,
+            oldName: oldValue ? propertyName : "",
+            oldValue,
+            newName: newValue ? propertyName : "",
+            newValue
+          });
+        }
         if (_PositionAreaRenderer.#active === active) {
           _PositionAreaRenderer.#active = void 0;
         }
         this.#stylesContainer.setEditingStyle(false);
       });
     };
-    return html7`<devtools-widget ${widget(EditableContent)}><devtools-icon
+    return html7`<devtools-widget ${widget2(EditableContent)}><devtools-icon
       ${ref3((e) => {
       button = e;
       if (e && isActive) {
@@ -6977,22 +6911,17 @@ var PositionTryRenderer = class extends PositionTryRendererBase {
     const node = this.#treeElement ? this.#matchedStyles.nodeForStyle(this.#treeElement.property.ownerStyle) : this.#matchedStyles.node();
     const fallbackLabels = [];
     for (const [i, fallback] of match.fallbacks.entries()) {
-      const isImportant = fallback.find((node2) => node2.name === "Important");
-      const fallbackContent = document.createElement("span");
-      if (i > 0) {
-        fallbackContent.appendChild(document.createTextNode(", "));
+      const important = fallback.find((node2) => node2.name === "Important");
+      const classes = classMap2({
+        "inactive-value": !this.#treeElement?.inherited() && node === this.#matchedStyles.node() && i !== this.#matchedStyles.activePositionFallbackIndex()
+      });
+      content.push(html7`<span class=${classes}>${i > 0 ? ", " : nothing2}${Renderer.render(fallback.filter((node2) => node2.name !== "Important"), context).nodes}</span>`);
+      if (important) {
+        content.push(html7` ${Renderer.render(important, context).nodes}`);
       }
-      if (!this.#treeElement?.inherited() && node === this.#matchedStyles.node() && i !== this.#matchedStyles.activePositionFallbackIndex()) {
-        fallbackContent.classList.add("inactive-value");
-      }
-      Renderer.renderInto(fallback.filter((node2) => node2.name !== "Important"), context, fallbackContent);
       fallbackLabels.push(
         context.matchedResult.getComputedTextRange(fallback[0], fallback[fallback.length - 1]).trim()
       );
-      content.push(fallbackContent);
-      if (isImportant) {
-        content.push(document.createTextNode(" "), Renderer.render(isImportant, context).nodes);
-      }
     }
     if (!this.#treeElement || this.#treeElement.overloaded() || this.#treeElement.inherited() || !this.#treeElement.property.activeInStyle() || !node) {
       return html7`${content}`;
@@ -7010,7 +6939,7 @@ var PositionTryRenderer = class extends PositionTryRendererBase {
       @click=${(event) => {
       event.consume(true);
       const currentForced = cssModel.forcedPositionTryOption(node);
-      const contextMenu = new UI6.ContextMenu.ContextMenu(event);
+      const contextMenu = new UI7.ContextMenu.ContextMenu(event);
       contextMenu.defaultSection().appendCheckboxItem(i18nString4(UIStrings4.defaultPositionTryOption), () => {
         cssModel.forcePositionTryOption(node, void 0);
       }, { checked: currentForced === void 0, jslogContext: "default" });
@@ -7080,7 +7009,7 @@ function getPropertyRenderers(propertyName, style, stylesContainer, matchedStyle
     new AttributeRenderer(stylesContainer, treeElement, matchedStyles, computedStyles, computedStyleExtraFields)
   ];
 }
-var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeOutline.TreeElement {
+var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI7.TreeOutline.TreeElement {
   style;
   #matchedStyles;
   property;
@@ -7140,6 +7069,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     this.#lazyRender = false;
     this.property.removeEventListener(SDK4.CSSProperty.Events.LOCAL_VALUE_UPDATED, this.updateTitle, this);
     super.onunbind();
+  }
+  carryOverCommittedProperty(previous) {
+    this.#lastCommittedProperty = previous.#lastCommittedProperty;
   }
   async gridNames() {
     if (!SDK4.CSSMetadata.cssMetadata().isGridNameAwareProperty(this.name)) {
@@ -7481,6 +7413,13 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
       this.getComputedStyles() ?? /* @__PURE__ */ new Map(),
       this.getComputedStyleExtraFields()
     ) : [];
+    const existingDocWidget = this.listItemElement.querySelector('devtools-tooltip[jslogcontext="elements.css-property-doc"]')?.firstElementChild;
+    if (existingDocWidget) {
+      UI7.Widget.Widget.get(existingDocWidget)?.detach(
+        /* overrideHideOnDetach= */
+        true
+      );
+    }
     this.listItemElement.removeChildren();
     const matchedResult = this.property.parseValue(this.matchedStyles(), this.computedStyles);
     this.#edits = matchedResult ? new ValueUpdateTracking(matchedResult.ast) : void 0;
@@ -7490,23 +7429,27 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
       return;
     }
     const indent = Common.Settings.Settings.instance().resolve(SDK4.SDKSettings.textEditorIndentSettingDescriptor).get();
-    UI6.UIUtils.createTextChild(
+    UI7.UIUtils.createTextChild(
       this.listItemElement.createChild("span", "styles-clipboard-only"),
       indent.repeat(this.section().nestingLevel + 1) + (this.property.disabled ? "/* " : "")
     );
     this.listItemElement.appendChild(this.nameElement);
     if (this.property.name.startsWith("--") && !(this.property.ownerStyle.parentRule instanceof SDK4.CSSRule.CSSFunctionRule)) {
-      const contents = this.#stylesContainer.getVariablePopoverContents(
-        this.matchedStyles(),
-        this.property.name,
-        this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value ?? null
-      );
+      const contents = new ElementsComponents2.CSSVariableValueView.CSSVariableValueView();
+      contents.variableName = this.property.name;
+      contents.value = this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value;
+      contents.details = this.#stylesContainer.getRegisteredPropertyDetails(this.matchedStyles(), this.property.name);
       const tooltipId = this.getTooltipId("custom-property-decl");
       this.nameElement.setAttribute("aria-details", tooltipId);
       const tooltip = new Tooltips.Tooltip.Tooltip(
         { anchor: this.nameElement, variant: "rich", id: tooltipId, jslogContext: "elements.css-var" }
       );
-      tooltip.appendChild(contents);
+      contents.show(
+        tooltip,
+        void 0,
+        /* suppressOrphanWidgetError= */
+        true
+      );
       tooltip.onbeforetoggle = (e) => {
         if (e.newState === "open") {
           contents.value = this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value;
@@ -7536,8 +7479,17 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
           event.consume(true);
           return;
         }
-        tooltip.removeChildren();
-        tooltip.appendChild(new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty));
+        if (tooltip.firstElementChild) {
+          return;
+        }
+        const docsView = new ElementsComponents2.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty);
+        docsView.markAsExternallyManaged();
+        docsView.show(
+          tooltip,
+          void 0,
+          /* suppressOrphanWidgetError= */
+          true
+        );
       };
       this.listItemElement.appendChild(tooltip);
     }
@@ -7554,7 +7506,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
       semicolon.textContent = ";";
       semicolon.onmouseup = this.mouseUp.bind(this);
       if (this.property.disabled) {
-        UI6.UIUtils.createTextChild(this.listItemElement.createChild("span", "styles-clipboard-only"), " */");
+        UI7.UIUtils.createTextChild(this.listItemElement.createChild("span", "styles-clipboard-only"), " */");
       }
     }
     if (this.property.parsedOk) {
@@ -7590,7 +7542,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
         event.consume();
       }, false);
       if (this.nameElement && this.valueElement) {
-        UI6.ARIAUtils.setLabel(enabledCheckboxElement, `${this.name} ${this.value}`);
+        UI7.ARIAUtils.setLabel(enabledCheckboxElement, `${this.name} ${this.value}`);
       }
       this.listItemElement.insertBefore(enabledCheckboxElement, this.listItemElement.firstChild);
     }
@@ -7598,7 +7550,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     this.valueElement.addEventListener("keydown", nonEditingNameValueKeyDown);
     this.nameElement.addEventListener("keydown", nonEditingNameValueKeyDown);
     function nonEditingNameValueKeyDown(event) {
-      if (UI6.UIUtils.isBeingEdited(this)) {
+      if (UI7.UIUtils.isBeingEdited(this)) {
         return;
       }
       if (event.key !== Platform.KeyboardUtilities.ENTER_KEY && event.key !== " ") {
@@ -7620,7 +7572,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     exclamationElement.classList.add("exclamation-mark");
     const invalidMessage = SDK4.CSSMetadata.cssMetadata().isCSSPropertyName(property.name) ? i18nString4(UIStrings4.invalidPropertyValue) : i18nString4(UIStrings4.unknownPropertyName);
     if (title === null) {
-      UI6.Tooltip.Tooltip.install(exclamationElement, invalidMessage);
+      UI7.Tooltip.Tooltip.install(exclamationElement, invalidMessage);
     } else {
       const tooltipId = this.getTooltipId("property-warning");
       exclamationElement.setAttribute("aria-describedby", tooltipId);
@@ -7630,7 +7582,16 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
         id: tooltipId,
         jslogContext: "elements.invalid-property-decl-popover"
       });
-      tooltip.appendChild(title);
+      if (title instanceof UI7.Widget.Widget) {
+        title.show(
+          tooltip,
+          void 0,
+          /* suppressOrphanWidgetError= */
+          true
+        );
+      } else {
+        tooltip.appendChild(title);
+      }
       container.appendChild(tooltip);
     }
     const invalidString = i18nString4(UIStrings4.invalidString, { PH1: invalidMessage, PH2: property.name, PH3: property.value });
@@ -7711,7 +7672,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
         e.consume(true);
       }
     }}
-            ${widget(CSSValueTraceView)}>
+            ${widget2(CSSValueTraceView)}>
           </devtools-widget>
         </devtools-tooltip>`;
   }
@@ -7768,7 +7729,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
         const tooltip = new Tooltips.Tooltip.Tooltip(
           { anchor: hintIcon, variant: "rich", padding: "large", id: tooltipId, jslogContext: "elements.css-hint" }
         );
-        tooltip.appendChild(new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView(hint));
+        const hintDetailsView = new ElementsComponents2.CSSHintDetailsView.CSSHintDetailsView(hint);
+        hintDetailsView.markAsRoot();
+        hintDetailsView.show(tooltip);
         this.listItemElement.appendChild(tooltip);
         break;
       }
@@ -7779,7 +7742,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     if (existingElement) {
       existingElement?.remove();
     }
-    if (!this.overriddenByAnimation() || UI6.ViewManager.ViewManager.instance().isViewVisible("animations") || !Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor).get()) {
+    if (!this.overriddenByAnimation() || UI7.ViewManager.ViewManager.instance().isViewVisible("animations") || !Common.Settings.Settings.instance().resolve(SettingsUI.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor).get()) {
       return;
     }
     const wrapper = document.createElement("span");
@@ -7808,7 +7771,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     link2.jslogContext = "open-in-animations-panel";
     link2.addEventListener("click", (event) => {
       event.preventDefault();
-      void UI6.ViewManager.ViewManager.instance().showView("animations");
+      void UI7.ViewManager.ViewManager.instance().showView("animations");
     });
     content.appendChild(document.createTextNode(" "));
     content.appendChild(link2);
@@ -7827,7 +7790,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     if (this.listItemElement.hasSelection()) {
       return;
     }
-    if (UI6.UIUtils.isBeingEdited(event.target)) {
+    if (UI7.UIUtils.isBeingEdited(event.target)) {
       return;
     }
     if (event.composedPath()[0] instanceof HTMLButtonElement) {
@@ -7838,7 +7801,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
       return;
     }
     let selectedElement = event.target;
-    if (UI6.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.#parentSection.navigable) {
+    if (UI7.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.#parentSection.navigable) {
       this.navigateToSource(selectedElement);
       return;
     }
@@ -7858,7 +7821,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     }
   }
   handleContextMenuEvent(context, event) {
-    const contextMenu = new UI6.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI7.ContextMenu.ContextMenu(event);
     if (this.property.parsedOk && this.parent?.root) {
       const sectionIndex = this.#stylesContainer.focusedSectionIndex();
       contextMenu.defaultSection().appendCheckboxItem(
@@ -7892,7 +7855,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     void contextMenu.show();
   }
   createCopyContextMenu(event) {
-    const contextMenu = new UI6.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI7.ContextMenu.ContextMenu(event);
     contextMenu.headerSection().appendItem(i18nString4(UIStrings4.copyDeclaration), () => {
       const propertyText = `${this.property.name}: ${this.property.value};`;
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
@@ -7929,7 +7892,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
   async viewComputedValue() {
     const computedStyleWidget = ElementsPanel.instance().getComputedStyleWidget();
     if (!computedStyleWidget.isShowing()) {
-      await UI6.ViewManager.ViewManager.instance().showView("computed");
+      await UI7.ViewManager.ViewManager.instance().showView("computed");
     }
     let propertyNamePattern = "";
     if (this.isShorthand) {
@@ -8001,7 +7964,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     if (!selectedElement) {
       return;
     }
-    if (UI6.UIUtils.isBeingEdited(selectedElement)) {
+    if (UI7.UIUtils.isBeingEdited(selectedElement)) {
       return;
     }
     this.setExpandable(false);
@@ -8058,12 +8021,12 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     selectedElement.parentElement?.scrollIntoViewIfNeeded(false);
     this.prompt = new CSSPropertyPrompt(this, context.isEditingName, Array.from(this.#gridNames ?? []));
     this.prompt.setAutocompletionTimeout(0);
-    this.prompt.addEventListener(UI6.TextPrompt.Events.TEXT_CHANGED, () => {
+    this.prompt.addEventListener(UI7.TextPrompt.Events.TEXT_CHANGED, () => {
       void this.applyFreeFlowStyleTextEdit(context);
     });
     const invalidString = this.property.getInvalidStringForInvalidProperty();
     if (invalidString) {
-      UI6.ARIAUtils.LiveAnnouncer.alert(invalidString);
+      UI7.ARIAUtils.LiveAnnouncer.alert(invalidString);
     }
     const proxyElement = this.prompt.attachAndStartEditing(selectedElement, blurListener.bind(this, context));
     this.navigateToSource(selectedElement, true);
@@ -8084,9 +8047,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     let result;
     if (keyboardEvent.key === "Enter" && !keyboardEvent.shiftKey || context.isEditingName && keyboardEvent.key === " ") {
       result = "forward";
-    } else if (keyboardEvent.keyCode === UI6.KeyboardShortcut.Keys.Esc.code || keyboardEvent.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
+    } else if (keyboardEvent.keyCode === UI7.KeyboardShortcut.Keys.Esc.code || keyboardEvent.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
       result = "cancel";
-    } else if (!context.isEditingName && this.newProperty && keyboardEvent.keyCode === UI6.KeyboardShortcut.Keys.Backspace.code) {
+    } else if (!context.isEditingName && this.newProperty && keyboardEvent.keyCode === UI7.KeyboardShortcut.Keys.Backspace.code) {
       const selection = target.getComponentSelection();
       if (selection && selection.isCollapsed && !selection.focusOffset) {
         event.preventDefault();
@@ -8229,7 +8192,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     this.editingEnded(context);
   }
   async commitAiSuggestion(fullText) {
-    const isEditingName = UI6.UIUtils.isBeingEdited(this.nameElement);
+    const isEditingName = UI7.UIUtils.isBeingEdited(this.nameElement);
     const context = {
       expanded: this.expanded,
       hasChildren: this.isExpandable(),
@@ -8482,7 +8445,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI6.TreeO
     if (!this.prompt) {
       return;
     }
-    const isEditingName = UI6.UIUtils.isBeingEdited(this.nameElement);
+    const isEditingName = UI7.UIUtils.isBeingEdited(this.nameElement);
     if (isEditingName) {
       this.prompt.applySuggestion({ text: activeAiSuggestion.name, disableAcceptSuggestionOnStopCharacters: true }, true);
       this.#showGhostTextInValue(activeAiSuggestion.value);
@@ -8558,21 +8521,29 @@ var GhostStylePropertyTreeElement = class extends StylePropertyTreeElement {
 };
 
 // ../../front_end/panels/elements/StyleEditorWidget.ts
-var { ref: ref4 } = Directives;
+var { ref: ref4 } = Directives2;
 var instance = null;
-var StyleEditorWidget = class _StyleEditorWidget extends UI7.Widget.VBox {
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  input.editor.data = {
+    authoredProperties: input.authoredProperties,
+    computedProperties: input.computedProperties
+  };
+  render5(
+    html8`<div tabindex="0" autofocus>${input.editor}</div>`,
+    target,
+    { container: { classes: ["with-padding"] } }
+  );
+};
+var StyleEditorWidget = class _StyleEditorWidget extends UI8.Widget.VBox {
   editor;
   stylesContainer;
   section;
-  editorContainer;
+  #view;
   #triggerKey;
   #initialProperties = null;
-  constructor() {
-    super({ useShadowDom: true });
-    this.contentElement.tabIndex = 0;
-    this.setDefaultFocusedElement(this.contentElement);
-    this.editorContainer = document.createElement("div");
-    this.contentElement.appendChild(this.editorContainer);
+  constructor(element, view = DEFAULT_VIEW3) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
     this.onPropertySelected = this.onPropertySelected.bind(this);
     this.onPropertyDeselected = this.onPropertyDeselected.bind(this);
   }
@@ -8643,10 +8614,15 @@ var StyleEditorWidget = class _StyleEditorWidget extends UI7.Widget.VBox {
     if (!this.editor) {
       return;
     }
-    this.editor.data = {
-      authoredProperties: this.section ? getAuthoredStyles(this.section, this.editor.getEditableProperties()) : /* @__PURE__ */ new Map(),
-      computedProperties: this.stylesContainer ? await fetchComputedStyles(this.stylesContainer) : /* @__PURE__ */ new Map()
-    };
+    this.#view(
+      {
+        editor: this.editor,
+        authoredProperties: this.section ? getAuthoredStyles(this.section, this.editor.getEditableProperties()) : /* @__PURE__ */ new Map(),
+        computedProperties: this.stylesContainer ? await fetchComputedStyles(this.stylesContainer) : /* @__PURE__ */ new Map()
+      },
+      void 0,
+      this.contentElement
+    );
   }
   async performUpdate() {
     await super.performUpdate();
@@ -8660,9 +8636,7 @@ var StyleEditorWidget = class _StyleEditorWidget extends UI7.Widget.VBox {
   }
   setEditor(editorClass) {
     if (!(this.editor instanceof editorClass)) {
-      this.contentElement.removeChildren();
       this.editor = new editorClass();
-      this.contentElement.appendChild(this.editor);
     }
   }
   static createTriggerButton(stylesContainer, section5, editorClass, buttonTitle, triggerKey, jslogContext, onClick) {
@@ -8687,22 +8661,21 @@ var StyleEditorWidget = class _StyleEditorWidget extends UI7.Widget.VBox {
       if (!triggerButton) {
         return;
       }
-      const widget5 = _StyleEditorWidget.instance();
-      widget5.element.classList.toggle("with-padding", true);
-      widget5.setEditor(editorClass);
-      widget5.bindContext(stylesContainer, section5);
-      widget5.setTriggerKey(triggerKey);
-      await widget5.render();
-      widget5.focus();
+      const widget8 = _StyleEditorWidget.instance();
+      widget8.setEditor(editorClass);
+      widget8.bindContext(stylesContainer, section5);
+      widget8.setTriggerKey(triggerKey);
+      await widget8.render();
+      widget8.focus();
       const scrollerElement = triggerButton.enclosingNodeOrSelfWithClass("style-panes-wrapper");
       const onScroll = () => {
         popoverHelper.hide(true);
       };
-      const onStylesUpdateCompleted = widget5.requestUpdate.bind(widget5);
+      const onStylesUpdateCompleted = widget8.requestUpdate.bind(widget8);
       stylesContainer.addStyleUpdateListener(onStylesUpdateCompleted);
-      popoverHelper.show(widget5, triggerButton, () => {
-        widget5.#trackChanges();
-        widget5.unbindContext();
+      popoverHelper.show(widget8, triggerButton, () => {
+        widget8.#trackChanges();
+        widget8.unbindContext();
         if (scrollerElement) {
           scrollerElement.removeEventListener("scroll", onScroll);
         }
@@ -8766,16 +8739,17 @@ import * as SDK5 from "../../core/sdk/sdk.js";
 import * as TextUtils3 from "../../core/text_utils/text_utils.js";
 import * as Badges2 from "../../models/badges/badges.js";
 import * as Bindings2 from "../../models/bindings/bindings.js";
+import * as Elements3 from "../../models/elements/elements.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as Tooltips2 from "../../ui/components/tooltips/tooltips.js";
 import { createIcon as createIcon2 } from "../../ui/kit/kit.js";
 import * as Components2 from "../../ui/legacy/components/utils/utils.js";
-import * as UI8 from "../../ui/legacy/legacy.js";
-import { html as html9, nothing as nothing2, render as render5 } from "../../ui/lit/lit.js";
+import * as UI9 from "../../ui/legacy/legacy.js";
+import { html as html9, nothing as nothing3, render as render6 } from "../../ui/lit/lit.js";
 import * as SettingsUI2 from "../../ui/settings/settings.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "../common/common.js";
-import * as ElementsComponents2 from "./components/components.js";
+import * as ElementsComponents3 from "./components/components.js";
 
 // ../../front_end/panels/elements/CSSSpecificityBreakdown.ts
 var CSSSpecificityBreakdown_exports = {};
@@ -8927,7 +8901,7 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/elements/StylePropertiesSection.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var { widget: widget2 } = UI8.Widget;
+var { widget: widget3 } = UI9.Widget;
 var STYLE_TAG = "<style>";
 var DEFAULT_MAX_PROPERTIES = 50;
 var StylePropertiesSection = class _StylePropertiesSection {
@@ -8945,7 +8919,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
   element;
   #styleRuleElement;
   titleElement;
-  propertiesTreeOutline = new UI8.TreeOutline.TreeOutlineInShadow();
+  propertiesTreeOutline = new UI9.TreeOutline.TreeOutlineInShadow();
   showAllButton;
   selectorElement;
   newStyleRuleToolbar;
@@ -8997,9 +8971,9 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.element.setAttribute("jslog", `${VisualLogging5.section("style-properties").track({
       keydown: "ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space"
     })}`);
-    UI8.ARIAUtils.setLabel(this.element, `${headerText}, css selector`);
+    UI9.ARIAUtils.setLabel(this.element, `${headerText}, css selector`);
     this.element.tabIndex = -1;
-    UI8.ARIAUtils.markAsListitem(this.element);
+    UI9.ARIAUtils.markAsListitem(this.element);
     this.element.addEventListener("keydown", this.onKeyDown.bind(this), false);
     stylesContainer.sectionByElement.set(this.element, this);
     this.#styleRuleElement = this.element.createChild("div", "style-rule");
@@ -9015,7 +8989,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.propertiesTreeOutline.registerRequiredCSS(stylePropertiesTreeOutline_css_default);
     this.propertiesTreeOutline.element.classList.add("style-properties", "matched-styles", "monospace");
     this.#styleRuleElement.appendChild(this.propertiesTreeOutline.element);
-    this.showAllButton = UI8.UIUtils.createTextButton("", this.showAllItems.bind(this), {
+    this.showAllButton = UI9.UIUtils.createTextButton("", this.showAllItems.bind(this), {
       className: "styles-show-all",
       jslogContext: "elements.show-all-style-properties"
     });
@@ -9025,8 +8999,8 @@ var StylePropertiesSection = class _StylePropertiesSection {
     selectorContainer.createChild("span", "styles-clipboard-only").textContent = indent.repeat(this.nestingLevel);
     selectorContainer.classList.add("selector-container");
     this.#collapseIcon = createIcon2("triangle-right", "section-collapse-icon");
-    UI8.ARIAUtils.markAsButton(this.#collapseIcon);
-    UI8.ARIAUtils.setControls(this.#collapseIcon, this.propertiesTreeOutline.element);
+    UI9.ARIAUtils.markAsButton(this.#collapseIcon);
+    UI9.ARIAUtils.setControls(this.#collapseIcon, this.propertiesTreeOutline.element);
     this.#collapseIcon.tabIndex = 0;
     this.#collapseIcon.addEventListener("click", (event) => {
       event.consume(true);
@@ -9041,7 +9015,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     });
     selectorContainer.appendChild(this.#collapseIcon);
     this.selectorElement = document.createElement("span");
-    UI8.ARIAUtils.setLabel(this.selectorElement, i18nString6(UIStrings6.cssSelector));
+    UI9.ARIAUtils.setLabel(this.selectorElement, i18nString6(UIStrings6.cssSelector));
     this.selectorElement.classList.add("selector");
     this.selectorElement.textContent = headerText;
     selectorContainer.appendChild(this.selectorElement);
@@ -9065,20 +9039,20 @@ var StylePropertiesSection = class _StylePropertiesSection {
       this.updateAncestorRuleList();
     }
     if (rule instanceof SDK5.CSSRule.CSSStyleRule) {
-      const newRuleButton = new UI8.Toolbar.ToolbarButton(
+      const newRuleButton = new UI9.Toolbar.ToolbarButton(
         i18nString6(UIStrings6.insertStyleRuleBelow),
         "plus",
         void 0,
         "elements.new-style-rule"
       );
-      newRuleButton.addEventListener(UI8.Toolbar.ToolbarButton.Events.CLICK, this.onNewRuleClick, this);
+      newRuleButton.addEventListener(UI9.Toolbar.ToolbarButton.Events.CLICK, this.onNewRuleClick, this);
       newRuleButton.setSize(Buttons.Button.Size.MICRO);
       newRuleButton.element.tabIndex = -1;
       if (!this.newStyleRuleToolbar) {
         this.newStyleRuleToolbar = this.element.createChild("devtools-toolbar", "sidebar-pane-section-toolbar new-rule-toolbar");
       }
       this.newStyleRuleToolbar.appendToolbarItem(newRuleButton);
-      UI8.ARIAUtils.setHidden(this.newStyleRuleToolbar, true);
+      UI9.ARIAUtils.setHidden(this.newStyleRuleToolbar, true);
     }
     this.selectorElement.addEventListener("click", this.handleSelectorClick.bind(this), false);
     this.selectorElement.setAttribute(
@@ -9183,7 +9157,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   static createRuleOriginNode(matchedStyles, linkifier, rule) {
     if (!rule) {
-      return nothing2;
+      return nothing3;
     }
     const ruleLocation = _StylePropertiesSection.getRuleLocationFromCSSRule(rule);
     const header = rule.header;
@@ -9203,13 +9177,13 @@ var StylePropertiesSection = class _StylePropertiesSection {
     }
     function linkifyNode(label) {
       if (header?.ownerNode) {
-        return html9`<devtools-widget ${widget2((e) => new PanelsCommon.DOMLinkifier.DeferredDOMNodeLink(e, header.ownerNode))}>
+        return html9`<devtools-widget ${widget3((e) => new PanelsCommon.DOMLinkifier.DeferredDOMNodeLink(e, header.ownerNode))}>
           ${label}
         </devtools-widget>`;
       }
       if (rule && rule.style.styleSheetId && rule.treeScope) {
         const ownerNode = new SDK5.DOMModel.DeferredDOMNode(rule.cssModelInternal.target(), rule.treeScope);
-        return html9`<devtools-widget ${widget2(
+        return html9`<devtools-widget ${widget3(
           (e) => new PanelsCommon.DOMLinkifier.DeferredDOMNodeLink(e, ownerNode, void 0, rule.style.styleSheetId)
         )}>
           ${label}
@@ -9246,7 +9220,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (node) {
       return node;
     }
-    return nothing2;
+    return nothing3;
   }
   createRuleOriginNode(matchedStyles, linkifier, rule) {
     return _StylePropertiesSection.createRuleOriginNode(matchedStyles, linkifier, rule);
@@ -9319,7 +9293,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   onKeyDown(event) {
     const keyboardEvent = event;
-    if (UI8.UIUtils.isEditing() || !this.editable || keyboardEvent.altKey || keyboardEvent.ctrlKey || keyboardEvent.metaKey) {
+    if (UI9.UIUtils.isEditing() || !this.editable || keyboardEvent.altKey || keyboardEvent.ctrlKey || keyboardEvent.metaKey) {
       return;
     }
     const isSectionLevelShortcut = keyboardEvent.target === this.element;
@@ -9358,7 +9332,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.stylesContainer.setActiveProperty(null);
   }
   onMouseMove(event) {
-    const hasCtrlOrMeta = UI8.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event);
+    const hasCtrlOrMeta = UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event);
     this.setSectionHovered(hasCtrlOrMeta);
     const treeElement = this.propertiesTreeOutline.treeElementFromEvent(event);
     if (treeElement instanceof StylePropertyTreeElement) {
@@ -9629,7 +9603,16 @@ var StylePropertiesSection = class _StylePropertiesSection {
           break;
       }
       if (ancestorRuleElement) {
-        this.#ancestorRuleListElement.prepend(ancestorRuleElement);
+        if (ancestorRuleElement instanceof UI9.Widget.Widget) {
+          ancestorRuleElement.show(
+            this.#ancestorRuleListElement,
+            this.#ancestorRuleListElement.firstChild,
+            /* suppressOrphanWidgetError= */
+            true
+          );
+        } else {
+          this.#ancestorRuleListElement.prepend(ancestorRuleElement);
+        }
         this.#ancestorClosingBracesElement.prepend(this.indentElement(this.createClosingBrace(), this.nestingLevel));
         this.nestingLevel++;
       }
@@ -9640,13 +9623,18 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   createAtRuleAncestor(rule) {
     if (rule.subsection()) {
-      const atRuleElement = new ElementsComponents2.CSSQuery.CSSQuery();
+      const atRuleElement = new ElementsComponents3.CSSQuery.CSSQuery();
       atRuleElement.data = {
         queryPrefix: "@" + rule.type(),
         queryText: rule.name()?.text ?? "",
         jslogContext: "at-rule-" + rule.type()
       };
-      this.#ancestorRuleListElement.prepend(atRuleElement);
+      atRuleElement.show(
+        this.#ancestorRuleListElement,
+        this.#ancestorRuleListElement.firstChild,
+        /* suppressOrphanWidgetError= */
+        true
+      );
       this.#ancestorClosingBracesElement.prepend(this.indentElement(this.createClosingBrace(), 0));
       this.nestingLevel = 1;
     }
@@ -9709,7 +9697,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
         break;
       }
     }
-    const mediaQueryElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const mediaQueryElement = new ElementsComponents3.CSSQuery.CSSQuery();
     mediaQueryElement.data = {
       queryPrefix,
       queryText,
@@ -9723,7 +9711,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (containerQuery.styleSheetId) {
       onQueryTextClick = this.handleQueryRuleClick.bind(this, containerQuery);
     }
-    const containerQueryElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const containerQueryElement = new ElementsComponents3.CSSQuery.CSSQuery();
     containerQueryElement.data = {
       queryPrefix: "@container",
       queryName: containerQuery.textIsConditionText ? void 0 : containerQuery.name,
@@ -9732,8 +9720,8 @@ var StylePropertiesSection = class _StylePropertiesSection {
       onLinkActivate: async (resolvedVariable) => {
         handleVarDefinitionActivate(resolvedVariable, this.stylesContainer);
       },
-      getPopoverContents: (variableName, variableValue) => {
-        return this.stylesContainer.getVariablePopoverContents(this.matchedStyles, variableName, variableValue);
+      getRegisteredPropertyDetails: (variableName) => {
+        return this.stylesContainer.getRegisteredPropertyDetails(this.matchedStyles, variableName);
       },
       jslogContext: "container-query"
     };
@@ -9753,7 +9741,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (scope.styleSheetId) {
       onQueryTextClick = this.handleQueryRuleClick.bind(this, scope);
     }
-    const scopeElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const scopeElement = new ElementsComponents3.CSSQuery.CSSQuery();
     scopeElement.data = {
       queryPrefix: "@scope",
       queryText: scope.text,
@@ -9763,7 +9751,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     return scopeElement;
   }
   createStartingStyleElement() {
-    const startingStyleElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const startingStyleElement = new ElementsComponents3.CSSQuery.CSSQuery();
     startingStyleElement.data = {
       queryPrefix: "@starting-style",
       queryText: "",
@@ -9779,7 +9767,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (supports.styleSheetId) {
       onQueryTextClick = this.handleQueryRuleClick.bind(this, supports);
     }
-    const supportsElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const supportsElement = new ElementsComponents3.CSSQuery.CSSQuery();
     supportsElement.data = {
       queryPrefix: "@supports",
       queryText: supports.text,
@@ -9796,7 +9784,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (navigation.styleSheetId) {
       onQueryTextClick = this.handleQueryRuleClick.bind(this, navigation);
     }
-    const navigationElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    const navigationElement = new ElementsComponents3.CSSQuery.CSSQuery();
     navigationElement.data = {
       queryPrefix: "@navigation",
       queryText: navigation.text,
@@ -9844,12 +9832,11 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (!container) {
       return;
     }
-    const containerElement = new ElementsComponents2.QueryContainer.QueryContainer();
+    const containerElement = new ElementsComponents3.QueryContainer.QueryContainer();
     containerElement.data = {
       container: container.containerNode,
       queryName: containerQuery.name,
-      onContainerLinkClick: (event) => {
-        event.preventDefault();
+      onContainerLinkClick: () => {
         void ElementsPanel.instance().revealAndSelectNode(
           container.containerNode,
           { showPanel: true, focusNode: true, highlightInOverlay: false }
@@ -9857,15 +9844,23 @@ var StylePropertiesSection = class _StylePropertiesSection {
         void container.containerNode.scrollIntoView();
       }
     };
-    containerElement.addEventListener("queriedsizerequested", async () => {
+    containerElement.element.addEventListener("queriedsizerequested", async () => {
       const details = await container.getContainerSizeDetails();
       if (details) {
         containerElement.updateContainerQueriedSizeDetails(details);
       }
     });
-    this.#ancestorRuleListElement.prepend(containerElement);
+    containerElement.show(
+      this.#ancestorRuleListElement,
+      this.#ancestorRuleListElement.firstChild,
+      /* suppressOrphanWidgetError= */
+      true
+    );
   }
   updateAncestorRuleList() {
+    for (const child of [...this.#ancestorRuleListElement.children]) {
+      UI9.Widget.Widget.get(child)?.detach(true);
+    }
     this.#ancestorRuleListElement.removeChildren();
     this.#ancestorClosingBracesElement.removeChildren();
     this.maybeCreateAncestorRules(this.styleInternal);
@@ -10073,8 +10068,8 @@ var StylePropertiesSection = class _StylePropertiesSection {
     this.propertiesTreeOutline.element.classList.toggle("hidden", collapsed);
     if (this.#collapseIcon) {
       this.#collapseIcon.name = collapsed ? "triangle-right" : "triangle-down";
-      UI8.ARIAUtils.setExpanded(this.#collapseIcon, !collapsed);
-      UI8.ARIAUtils.setLabel(
+      UI9.ARIAUtils.setExpanded(this.#collapseIcon, !collapsed);
+      UI9.ARIAUtils.setLabel(
         this.#collapseIcon,
         collapsed ? i18nString6(UIStrings6.expandCollapsedRule) : i18nString6(UIStrings6.collapseExpandedRule)
       );
@@ -10157,7 +10152,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
             </ul>
           </details>` : html9`
           <div class="selector-specificity-tooltip-summary">${specificitySummary}</div>`;
-        render5(tooltipContent, tooltip, { host: this });
+        render6(tooltipContent, tooltip, { host: this });
       }
     }
   }
@@ -10205,8 +10200,8 @@ var StylePropertiesSection = class _StylePropertiesSection {
       event.consume();
       return;
     }
-    const deepTarget = UI8.UIUtils.deepElementFromEvent(event);
-    const treeElement = deepTarget && UI8.TreeOutline.TreeElement.getTreeElementBylistItemNode(deepTarget);
+    const deepTarget = UI9.UIUtils.deepElementFromEvent(event);
+    const treeElement = deepTarget && UI9.TreeOutline.TreeElement.getTreeElementBylistItemNode(deepTarget);
     if (treeElement && treeElement instanceof StylePropertyTreeElement) {
       this.addNewBlankProperty(treeElement.property.index + 1).startEditingName();
     } else if (target.classList.contains("selector-container") || target.classList.contains("styles-section-subtitle")) {
@@ -10218,10 +10213,10 @@ var StylePropertiesSection = class _StylePropertiesSection {
   }
   handleQueryRuleClick(query, event) {
     const element = event.currentTarget;
-    if (UI8.UIUtils.isBeingEdited(element)) {
+    if (UI9.UIUtils.isBeingEdited(element)) {
       return;
     }
-    if (UI8.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.navigable) {
+    if (UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.navigable) {
       const location = query.rawLocation();
       if (!location) {
         event.consume(true);
@@ -10237,13 +10232,13 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (!this.editable) {
       return;
     }
-    const config = new UI8.InplaceEditor.Config(
+    const config = new UI9.InplaceEditor.Config(
       this.editingMediaCommitted.bind(this, query),
       this.editingMediaCancelled.bind(this, element),
       void 0,
       this.editingMediaBlurHandler.bind(this)
     );
-    UI8.InplaceEditor.InplaceEditor.startEditing(element, config);
+    UI9.InplaceEditor.InplaceEditor.startEditing(element, config);
     const selection = element.getComponentSelection();
     if (selection) {
       selection.selectAllChildren(element);
@@ -10275,33 +10270,58 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (newContent) {
       newContent = newContent.trim();
     }
-    this.stylesContainer.setUserOperation(true);
+    await this.setQueryText(query, newContent);
+  }
+  /**
+   * Replaces the text of the given at-rule query (`@media`, `@container`,
+   * `@supports`, `@scope`, `@navigation`) in the stylesheet, records the
+   * change with the change tracker and refreshes the section.
+   *
+   * @returns whether the stylesheet was updated.
+   */
+  async setQueryText(query, newContent) {
     const cssModel = this.stylesContainer.cssModel();
-    if (cssModel && query.styleSheetId) {
-      const range = query.range;
-      let success = false;
-      if (query instanceof SDK5.CSSContainerQuery.CSSContainerQuery) {
-        if (query.textIsConditionText) {
-          success = await cssModel.setContainerQueryConditionText(query.styleSheetId, range, newContent);
-        } else {
-          success = await cssModel.setContainerQueryText(query.styleSheetId, range, newContent);
-        }
-      } else if (query instanceof SDK5.CSSSupports.CSSSupports) {
-        success = await cssModel.setSupportsText(query.styleSheetId, range, newContent);
-      } else if (query instanceof SDK5.CSSScope.CSSScope) {
-        success = await cssModel.setScopeText(query.styleSheetId, range, newContent);
-      } else if (query instanceof SDK5.CSSNavigation.CSSNavigation) {
-        success = await cssModel.setNavigationText(query.styleSheetId, range, newContent);
-      } else {
-        success = await cssModel.setMediaText(query.styleSheetId, range, newContent);
-      }
-      if (success) {
-        this.matchedStyles.resetActiveProperties();
-        this.stylesContainer.refreshUpdate(this);
-      }
-      this.stylesContainer.setUserOperation(false);
-      this.editingMediaTextCommittedForTest();
+    if (!cssModel || !query.styleSheetId) {
+      return false;
     }
+    this.stylesContainer.setUserOperation(true);
+    const oldQueryText = query.text;
+    const range = query.range;
+    let queryType = "@media";
+    let success = false;
+    if (query instanceof SDK5.CSSContainerQuery.CSSContainerQuery) {
+      queryType = "@container";
+      if (query.textIsConditionText) {
+        success = await cssModel.setContainerQueryConditionText(query.styleSheetId, range, newContent);
+      } else {
+        success = await cssModel.setContainerQueryText(query.styleSheetId, range, newContent);
+      }
+    } else if (query instanceof SDK5.CSSSupports.CSSSupports) {
+      queryType = "@supports";
+      success = await cssModel.setSupportsText(query.styleSheetId, range, newContent);
+    } else if (query instanceof SDK5.CSSScope.CSSScope) {
+      queryType = "@scope";
+      success = await cssModel.setScopeText(query.styleSheetId, range, newContent);
+    } else if (query instanceof SDK5.CSSNavigation.CSSNavigation) {
+      queryType = "@navigation";
+      success = await cssModel.setNavigationText(query.styleSheetId, range, newContent);
+    } else {
+      success = await cssModel.setMediaText(query.styleSheetId, range, newContent);
+    }
+    if (success) {
+      Elements3.StyleChanges.trackStyleQueryChange(
+        this.stylesContainer.changeTracker,
+        this.stylesContainer.node() ?? this.matchedStyles.node(),
+        queryType,
+        oldQueryText,
+        newContent
+      );
+      this.matchedStyles.resetActiveProperties();
+      this.stylesContainer.refreshUpdate(this);
+    }
+    this.stylesContainer.setUserOperation(false);
+    this.editingMediaTextCommittedForTest();
+    return success;
   }
   editingMediaTextCommittedForTest() {
   }
@@ -10310,7 +10330,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (!target) {
       return;
     }
-    if (UI8.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.navigable && target.classList.contains("simple-selector")) {
+    if (UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && this.navigable && target.classList.contains("simple-selector")) {
       const selectorIndex = this.elementToSelectorIndex.get(target);
       if (selectorIndex) {
         this.navigateToSelectorSource(selectorIndex, true);
@@ -10333,7 +10353,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (!target) {
       return;
     }
-    const contextMenu = new UI8.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI9.ContextMenu.ContextMenu(event);
     contextMenu.clipboardSection().appendItem(i18nString6(UIStrings6.copySelector), () => {
       const selectorText = this.headerText();
       Host2.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(selectorText);
@@ -10409,7 +10429,7 @@ ${allDeclarationText}
       return;
     }
     const element = this.selectorElement;
-    if (UI8.UIUtils.isBeingEdited(element) || this.titleElement.classList.contains("hidden")) {
+    if (UI9.UIUtils.isBeingEdited(element) || this.titleElement.classList.contains("hidden")) {
       return;
     }
     element.scrollIntoViewIfNeeded(false);
@@ -10418,12 +10438,12 @@ ${allDeclarationText}
       this.#specificityTooltips.querySelectorAll("devtools-tooltip")?.forEach((tooltip) => tooltip.hidePopover());
       element.textContent = textContent.replace(/\s+/g, " ").trim();
     }
-    const config = new UI8.InplaceEditor.Config(
+    const config = new UI9.InplaceEditor.Config(
       this.editingSelectorCommitted.bind(this),
       this.editingSelectorCancelled.bind(this),
       void 0
     );
-    UI8.InplaceEditor.InplaceEditor.startEditing(this.selectorElement, config);
+    UI9.InplaceEditor.InplaceEditor.startEditing(this.selectorElement, config);
     const selection = element.getComponentSelection();
     if (selection) {
       selection.selectAllChildren(element);
@@ -10481,10 +10501,16 @@ ${allDeclarationText}
     void this.setHeaderText(rule, newContent).then(headerTextCommitted.bind(this));
   }
   setHeaderText(rule, newContent) {
-    function onSelectorsUpdated(rule2, success) {
+    function onSelectorsUpdated(rule2, oldSelector2, success) {
       if (!success) {
         return Promise.resolve();
       }
+      Elements3.StyleChanges.trackStyleSelectorChange(
+        this.stylesContainer.changeTracker,
+        this.stylesContainer.node() ?? this.matchedStyles.node(),
+        oldSelector2,
+        newContent
+      );
       Badges2.UserBadges.instance().recordAction(Badges2.BadgeAction.CSS_RULE_MODIFIED);
       return this.matchedStyles.recomputeMatchingSelectors(rule2).then(updateSourceRanges.bind(this, rule2));
     }
@@ -10501,14 +10527,15 @@ ${allDeclarationText}
     if (!oldSelectorRange) {
       return Promise.resolve();
     }
+    const oldSelector = rule.selectorText();
     this.#customHeaderText = void 0;
-    return rule.setSelectorText(newContent).then(onSelectorsUpdated.bind(this, rule, Boolean(oldSelectorRange)));
+    return rule.setSelectorText(newContent).then(onSelectorsUpdated.bind(this, rule, oldSelector));
   }
   editingSelectorCommittedForTest() {
   }
   updateRuleOrigin() {
     const origin = this.createRuleOriginNode(this.matchedStyles, this.stylesContainer.linkifier, this.styleInternal.parentRule);
-    render5(origin, this.selectorRefElement, { host: this });
+    render6(origin, this.selectorRefElement, { host: this });
   }
   editingSelectorEnded() {
     this.stylesContainer.setEditingStyle(false);
@@ -10548,7 +10575,7 @@ var BlankStylePropertiesSection = class extends StylePropertiesSection {
       styleSheetHeader,
       this.actualRuleLocation()
     );
-    render5(html9`${locationNode}`, this.selectorRefElement, { host: this });
+    render6(html9`${locationNode}`, this.selectorRefElement, { host: this });
     this.maybeCreateAncestorRules(insertAfterStyle);
     this.element.classList.add("blank-section");
   }
@@ -10581,6 +10608,11 @@ var BlankStylePropertiesSection = class extends StylePropertiesSection {
     function onAddedToCascade(newRule) {
       const doesSelectorAffectSelectedNode = this.matchedStyles.getMatchingSelectors(newRule).length > 0;
       this.makeNormal(newRule);
+      Elements3.StyleChanges.trackStyleRuleAdded(
+        this.stylesContainer.changeTracker,
+        this.stylesContainer.node() ?? this.matchedStyles.node(),
+        newRule.selectorText()
+      );
       if (!doesSelectorAffectSelectedNode) {
         this.propertiesTreeOutline.element.classList.add("no-affect");
       }
@@ -10634,7 +10666,14 @@ var RegisteredPropertiesSection = class extends StylePropertiesSection {
     if (!oldRange) {
       return;
     }
+    const oldName = rule.propertyName().text;
     if (await rule.setPropertyName(newContent)) {
+      Elements3.StyleChanges.trackPropertyRuleNameChange(
+        this.stylesContainer.changeTracker,
+        this.stylesContainer.node() ?? this.matchedStyles.node(),
+        oldName,
+        newContent
+      );
       this.stylesContainer.forceUpdate();
     }
   }
@@ -10646,6 +10685,7 @@ var RegisteredPropertiesSection = class extends StylePropertiesSection {
   }
 };
 var FunctionRuleSection = class extends StylePropertiesSection {
+  conditionWidgets;
   constructor(stylesContainer, matchedStyles, style, children, sectionIdx, functionName, expandedByDefault) {
     super(stylesContainer, matchedStyles, style, sectionIdx, null, null, null, functionName);
     if (!expandedByDefault) {
@@ -10654,6 +10694,13 @@ var FunctionRuleSection = class extends StylePropertiesSection {
     this.selectorElement.className = "function-key";
     this.customPopulateCallback = () => this.addChildren(children, this.propertiesTreeOutline);
     this.onpopulate();
+  }
+  onpopulate() {
+    for (const widget8 of this.conditionWidgets ?? []) {
+      widget8.detach(true);
+    }
+    this.conditionWidgets = [];
+    super.onpopulate();
   }
   isHeaderEditable() {
     return false;
@@ -10699,8 +10746,15 @@ var FunctionRuleSection = class extends StylePropertiesSection {
         let newParent = parent;
         this.nestingLevel++;
         if (conditionElement) {
-          const treeElement = new UI8.TreeOutline.TreeElement();
-          treeElement.listItemElement.appendChild(this.positionNestingElement(conditionElement));
+          const treeElement = new UI9.TreeOutline.TreeElement();
+          this.positionNestingElement(conditionElement.element);
+          conditionElement.show(
+            treeElement.listItemElement,
+            null,
+            /* suppressOrphanWidgetError= */
+            true
+          );
+          this.conditionWidgets?.push(conditionElement);
           treeElement.setExpandable(true);
           treeElement.setCollapsible(false);
           parent.appendChild(treeElement);
@@ -10708,7 +10762,7 @@ var FunctionRuleSection = class extends StylePropertiesSection {
         }
         this.addChildren(child.children, newParent);
         if (conditionElement) {
-          const treeElement = new UI8.TreeOutline.TreeElement();
+          const treeElement = new UI9.TreeOutline.TreeElement();
           treeElement.listItemElement.appendChild(this.positionNestingElement(this.createClosingBrace()));
           parent.appendChild(treeElement);
         }
@@ -10751,10 +10805,16 @@ var KeyframePropertiesSection = class extends StylePropertiesSection {
     return "";
   }
   setHeaderText(rule, newContent) {
-    function updateSourceRanges(success) {
+    function updateSourceRanges(oldKey2, success) {
       if (!success) {
         return;
       }
+      Elements3.StyleChanges.trackKeyframeKeyChange(
+        this.stylesContainer.changeTracker,
+        this.stylesContainer.node() ?? this.matchedStyles.node(),
+        oldKey2,
+        newContent
+      );
       this.stylesContainer.refreshUpdate(this);
     }
     if (!(rule instanceof SDK5.CSSRule.CSSKeyframeRule)) {
@@ -10764,7 +10824,8 @@ var KeyframePropertiesSection = class extends StylePropertiesSection {
     if (!oldRange) {
       return Promise.resolve();
     }
-    return rule.setKeyText(newContent).then(updateSourceRanges.bind(this));
+    const oldKey = rule.key().text;
+    return rule.setKeyText(newContent).then(updateSourceRanges.bind(this, oldKey));
   }
   isPropertyInherited(_propertyName) {
     return false;
@@ -11192,7 +11253,7 @@ var stylesSidebarPane_css_default = `/**
     white-space: normal;
   }
 
-  .ancestor-rule-list devtools-css-query {
+  .ancestor-rule-list .css-query {
     display: block;
   }
 
@@ -11219,7 +11280,7 @@ var stylesSidebarPane_css_default = `/**
   }
 
   &.styles-panel-hovered:not(.read-only),
-  &.styles-panel-hovered:not(.read-only) devtools-css-query {
+  &.styles-panel-hovered:not(.read-only) .css-query {
     --override-styles-section-text-hover-text-decoration: underline;
     --override-styles-section-text-hover-cursor: default;
   }
@@ -11492,7 +11553,7 @@ var stylesSidebarPane_css_default = `/**
       flex: none;
       width: var(--sys-size-3);
       height: var(--sys-size-3);
-      border-radius: 50%;
+      border-radius: var(--sys-shape-corner-full);
       background-color: currentcolor;
       /* Aligns the bullet's center with the disclosure triangle above. */
       margin-left: var(--sys-size-2);
@@ -11729,9 +11790,9 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     this.toolbarPaneElement = this.createStylesSidebarToolbar();
     this.noMatchesElement = this.contentElement.createChild("div", "gray-info-message hidden");
     this.noMatchesElement.textContent = i18nString7(UIStrings7.noMatchingSelectorOrStyle);
-    this.sectionsContainer = new UI9.Widget.VBox();
+    this.sectionsContainer = new UI10.Widget.VBox();
     this.sectionsContainer.show(this.contentElement);
-    UI9.ARIAUtils.markAsList(this.sectionsContainer.contentElement);
+    UI10.ARIAUtils.markAsList(this.sectionsContainer.contentElement);
     this.sectionsContainer.contentElement.addEventListener("keydown", this.sectionsContainerKeyDown.bind(this), false);
     this.sectionsContainer.contentElement.addEventListener(
       "focusin",
@@ -11755,7 +11816,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     );
     this.decorator = new StylePropertyHighlighter(this);
     this.contentElement.classList.add("styles-pane");
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK6.DOMModel.DOMNode, this.forceUpdate, this);
+    UI10.Context.Context.instance().addFlavorChangeListener(SDK6.DOMModel.DOMNode, this.forceUpdate, this);
     this.contentElement.addEventListener("copy", this.clipboardCopy.bind(this));
     this.boundOnScroll = this.onScroll.bind(this);
     this.imagePreviewPopover = new ImagePreviewPopover(
@@ -11772,7 +11833,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
         return features;
       }
     );
-    UI9.ViewManager.ViewManager.instance().addEventListener(UI9.ViewManager.Events.VIEW_VISIBILITY_CHANGED, (event) => {
+    UI10.ViewManager.ViewManager.instance().addEventListener(UI10.ViewManager.Events.VIEW_VISIBILITY_CHANGED, (event) => {
       if (event.data.revealedViewId === "animations" || event.data.hiddenViewId === "animations") {
         this.#scheduleResetUpdateIfNotEditing();
       }
@@ -11820,7 +11881,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     return this.#webCustomData;
   }
   get changeTracker() {
-    this.#changeTracker ??= UI9.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker.ChangeTracker.ChangeTracker);
+    this.#changeTracker ??= UI10.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker.ChangeTracker.ChangeTracker);
     return this.#changeTracker;
   }
   onScroll(_event) {
@@ -11877,7 +11938,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     }
   }
   sectionsContainerKeyDown(event) {
-    const activeElement = UI9.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
+    const activeElement = UI10.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
     if (!activeElement) {
       return;
     }
@@ -11952,7 +12013,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       contextMenuDescriptors.push({ text: Bindings3.ResourceUtils.displayNameForURL(header.resourceURL()), handler });
     }
     contextMenuDescriptors.sort(compareDescriptors);
-    const contextMenu = new UI9.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI10.ContextMenu.ContextMenu(event);
     for (let i = 0; i < contextMenuDescriptors.length; ++i) {
       const descriptor = contextMenuDescriptors[i];
       contextMenu.defaultSection().appendItem(
@@ -12003,7 +12064,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       if (this.lastFilterChange) {
         const stillTyping = Date.now() - this.lastFilterChange < FILTER_IDLE_PERIOD;
         if (!stillTyping) {
-          UI9.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ? i18nString7(UIStrings7.visibleSelectors, { n: this.visibleSections }) : i18nString7(UIStrings7.noMatchingSelectorOrStyle));
+          UI10.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ? i18nString7(UIStrings7.visibleSelectors, { n: this.visibleSections }) : i18nString7(UIStrings7.noMatchingSelectorOrStyle));
         }
       }
     }, FILTER_IDLE_PERIOD);
@@ -12088,28 +12149,21 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     }
     this.#updateId += 1;
     const currentUpdateId = this.#updateId;
-    void UI9.Widget.Widget.allUpdatesComplete.then(() => {
+    void UI10.Widget.Widget.allUpdatesComplete.then(() => {
       if (this.#updateId === currentUpdateId) {
         this.nodeStylesUpdatedForTest(this.node(), true);
         this.dispatchEventToListeners("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: this.hasMatchedStyles });
       }
     });
   }
-  #getRegisteredPropertyDetails(matchedStyles, variableName) {
+  getRegisteredPropertyDetails(matchedStyles, variableName) {
     const registration = matchedStyles.getRegisteredProperty(variableName);
     const goToDefinition = () => this.jumpToSection(variableName, REGISTERED_PROPERTY_SECTION_NAME);
     return registration ? { registration, goToDefinition } : void 0;
   }
   getVariableParserError(matchedStyles, variableName) {
-    const registrationDetails = this.#getRegisteredPropertyDetails(matchedStyles, variableName);
-    return registrationDetails ? new ElementsComponents3.CSSVariableValueView.CSSVariableParserError(registrationDetails) : null;
-  }
-  getVariablePopoverContents(matchedStyles, variableName, computedValue) {
-    return new ElementsComponents3.CSSVariableValueView.CSSVariableValueView({
-      variableName,
-      value: computedValue ?? void 0,
-      details: this.#getRegisteredPropertyDetails(matchedStyles, variableName)
-    });
+    const registrationDetails = this.getRegisteredPropertyDetails(matchedStyles, variableName);
+    return registrationDetails ? new ElementsComponents4.CSSVariableValueView.CSSVariableParserError(registrationDetails) : null;
   }
   async fetchComputedStylesFor(nodeId) {
     const node = this.node();
@@ -12264,7 +12318,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       this.#scheduleResetUpdateIfNotEditing();
       return;
     }
-    if (!UI9.ViewManager.ViewManager.instance().isViewVisible("animations")) {
+    if (!UI10.ViewManager.ViewManager.instance().isViewVisible("animations")) {
       return;
     }
     const updateStyleSection = (currentStyle, newStyle) => {
@@ -12388,8 +12442,8 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     this.hasMatchedStyles = matchedStyles !== null && node !== null;
     if (!this.hasMatchedStyles) {
       this.sectionBlocks = [];
-      this.sectionsContainer.contentElement.removeChildren();
       this.sectionsContainer.detachChildWidgets();
+      this.sectionsContainer.contentElement.removeChildren();
       this.noMatchesElement.classList.remove("hidden");
       return;
     }
@@ -12413,8 +12467,8 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
         }
       }
     }
-    this.sectionsContainer.contentElement.removeChildren();
     this.sectionsContainer.detachChildWidgets();
+    this.sectionsContainer.contentElement.removeChildren();
     const fragment = document.createDocumentFragment();
     let index = 0;
     let elementToFocus = null;
@@ -12450,7 +12504,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       this.lastRevealedProperty = null;
     }
     this.swatchPopoverHelper().reposition();
-    UI9.UIUserMetrics.UIUserMetrics.instance().panelLoaded("elements", "DevTools.Launch.Elements");
+    UI10.UIUserMetrics.UIUserMetrics.instance().panelLoaded("elements", "DevTools.Launch.Elements");
     this.dispatchEventToListeners("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: false });
   }
   nodeStylesUpdatedForTest(_node, _rebuild) {
@@ -12530,7 +12584,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       }
     };
     ButtonProvider.instance().item().setVisible(false);
-    const animationsPanelVisible = UI9.ViewManager.ViewManager.instance().isViewVisible("animations");
+    const animationsPanelVisible = UI10.ViewManager.ViewManager.instance().isViewVisible("animations");
     const cssAnimationsOnlyWhenAnimationsTabOpen = Common4.Settings.Settings.instance().resolve(SettingsUI3.ElementsSettings.cssAnimationsOnlyWhenAnimationsTabOpenSettingDescriptor).get();
     let totalProperties = 0;
     for (const style of matchedStyles.nodeStyles()) {
@@ -12867,7 +12921,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     this.visibleSections = visibleSections;
   }
   wasShown() {
-    UI9.Context.Context.instance().setFlavor(_StylesSidebarPane, this);
+    UI10.Context.Context.instance().setFlavor(_StylesSidebarPane, this);
     super.wasShown();
     if (this.#aiCodeCompletionEnabled && !this.#aiCodeCompletionSummaryToolbar) {
       this.#createAiCodeCompletionSummaryToolbar();
@@ -12876,7 +12930,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
   willHide() {
     this.hideAllPopovers();
     super.willHide();
-    UI9.Context.Context.instance().setFlavor(_StylesSidebarPane, null);
+    UI10.Context.Context.instance().setFlavor(_StylesSidebarPane, null);
   }
   hideAllPopovers() {
     this.#swatchPopoverHelper.hide();
@@ -12905,7 +12959,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     const hbox = container.createChild("div", "hbox styles-sidebar-pane-toolbar");
     const toolbar2 = hbox.createChild("devtools-toolbar", "styles-pane-toolbar");
     toolbar2.role = "presentation";
-    const filterInput = new UI9.Toolbar.ToolbarFilter(
+    const filterInput = new UI10.Toolbar.ToolbarFilter(
       void 0,
       1,
       1,
@@ -12918,7 +12972,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
       true,
       this.onRegexToggled.bind(this)
     );
-    filterInput.addEventListener(UI9.Toolbar.ToolbarInput.Event.TEXT_CHANGED, this.onFilterChanged, this);
+    filterInput.addEventListener(UI10.Toolbar.ToolbarInput.Event.TEXT_CHANGED, this.onFilterChanged, this);
     toolbar2.appendToolbarItem(filterInput);
     void toolbar2.appendItemsAtLocation("styles-sidebarpane-toolbar");
     this.toolbar = toolbar2;
@@ -12926,18 +12980,18 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     const toolbarPaneContent = toolbarPaneContainer.createChild("div", "styles-sidebar-toolbar-pane");
     return toolbarPaneContent;
   }
-  showToolbarPane(widget5, toggle4) {
+  showToolbarPane(widget8, toggle5) {
     if (this.pendingWidgetToggle) {
       this.pendingWidgetToggle.setToggled(false);
     }
-    this.pendingWidgetToggle = toggle4;
+    this.pendingWidgetToggle = toggle5;
     if (this.animatedToolbarPane) {
-      this.pendingWidget = widget5;
+      this.pendingWidget = widget8;
     } else {
-      this.startToolbarPaneAnimation(widget5);
+      this.startToolbarPaneAnimation(widget8);
     }
-    if (widget5 && toggle4) {
-      toggle4.setToggled(true);
+    if (widget8 && toggle5) {
+      toggle5.setToggled(true);
     }
   }
   appendToolbarItem(item2) {
@@ -12951,25 +13005,25 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
   removeStyleUpdateListener(listener) {
     this.removeEventListener("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, listener);
   }
-  startToolbarPaneAnimation(widget5) {
-    if (widget5 === this.currentToolbarPane) {
+  startToolbarPaneAnimation(widget8) {
+    if (widget8 === this.currentToolbarPane) {
       return;
     }
-    if (widget5 && this.currentToolbarPane) {
+    if (widget8 && this.currentToolbarPane) {
       this.currentToolbarPane.detach();
-      widget5.show(this.toolbarPaneElement);
-      this.currentToolbarPane = widget5;
+      widget8.show(this.toolbarPaneElement);
+      this.currentToolbarPane = widget8;
       this.currentToolbarPane.focus();
       return;
     }
-    this.animatedToolbarPane = widget5;
+    this.animatedToolbarPane = widget8;
     if (this.currentToolbarPane) {
       this.toolbarPaneElement.style.animationName = "styles-element-state-pane-slideout";
-    } else if (widget5) {
+    } else if (widget8) {
       this.toolbarPaneElement.style.animationName = "styles-element-state-pane-slidein";
     }
-    if (widget5) {
-      widget5.show(this.toolbarPaneElement);
+    if (widget8) {
+      widget8.show(this.toolbarPaneElement);
     }
     const listener = onAnimationEnd.bind(this);
     this.toolbarPaneElement.addEventListener("animationend", listener, false);
@@ -12996,7 +13050,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     );
     const autoDarkModeSetting = Common4.Settings.Settings.instance().resolve(SDK6.SDKSettings.emulateAutoDarkModeSettingDescriptor);
     const decorateStatus = (condition, title) => `${condition ? "\u2713 " : ""}${title}`;
-    const button = new UI9.Toolbar.ToolbarToggle(
+    const button = new UI10.Toolbar.ToolbarToggle(
       i18nString7(UIStrings7.toggleRenderingEmulations),
       "brush",
       "brush-filled",
@@ -13006,7 +13060,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends StylesSidebarPaneBase {
     button.element.setAttribute("jslog", `${VisualLogging6.dropDown("rendering-emulations").track({ click: true })}`);
     button.element.addEventListener("click", (event) => {
       const boundingRect = button.element.getBoundingClientRect();
-      const menu = new UI9.ContextMenu.ContextMenu(event, {
+      const menu = new UI10.ContextMenu.ContextMenu(event, {
         x: boundingRect.left,
         y: boundingRect.bottom
       });
@@ -13155,7 +13209,7 @@ var SectionBlock = class _SectionBlock {
     if (expandable && titleElement instanceof HTMLElement) {
       this.#icon = createIcon3(this.#expanded ? "triangle-down" : "triangle-right", "section-block-expand-icon");
       titleElement.classList.toggle("empty-section", !this.#expanded);
-      UI9.ARIAUtils.setExpanded(titleElement, this.#expanded);
+      UI10.ARIAUtils.setExpanded(titleElement, this.#expanded);
       titleElement.appendChild(this.#icon);
       titleElement.tabIndex = -1;
       titleElement.addEventListener("click", () => this.expand(!this.#expanded), false);
@@ -13173,7 +13227,7 @@ var SectionBlock = class _SectionBlock {
     }
     this.#titleElement.classList.toggle("empty-section", !expand2);
     this.#icon.name = expand2 ? "triangle-down" : "triangle-right";
-    UI9.ARIAUtils.setExpanded(this.#titleElement, expand2);
+    UI10.ARIAUtils.setExpanded(this.#titleElement, expand2);
     this.#expanded = expand2;
     this.sections.forEach((section5) => section5.element.classList.toggle("hidden", !expand2));
   }
@@ -13192,9 +13246,9 @@ var SectionBlock = class _SectionBlock {
     separatorElement.setAttribute("jslog", `${VisualLogging6.sectionHeader("inherited-pseudotype")}`);
     const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : "";
     const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
-    UI9.UIUtils.createTextChild(separatorElement, i18nString7(UIStrings7.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
+    UI10.UIUtils.createTextChild(separatorElement, i18nString7(UIStrings7.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
     const link2 = PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node, { preventKeyboardFocus: true });
-    render6(link2, separatorElement);
+    render7(link2, separatorElement);
     return new _SectionBlock(
       separatorElement,
       false,
@@ -13241,22 +13295,22 @@ var SectionBlock = class _SectionBlock {
     const separatorElement = document.createElement("div");
     separatorElement.className = "sidebar-separator";
     separatorElement.setAttribute("jslog", `${VisualLogging6.sectionHeader("inherited")}`);
-    UI9.UIUtils.createTextChild(separatorElement, i18nString7(UIStrings7.inheritedFroms));
+    UI10.UIUtils.createTextChild(separatorElement, i18nString7(UIStrings7.inheritedFroms));
     const link2 = PanelsCommon2.DOMLinkifier.Linkifier.instance().linkify(node, {
       preventKeyboardFocus: true
     });
-    render6(link2, separatorElement);
+    render7(link2, separatorElement);
     return new _SectionBlock(separatorElement, false, false, `inherited-node:${node.id}`);
   }
   static createLayerBlock(rule, parentBlockId = "main") {
     const separatorElement = document.createElement("div");
     separatorElement.className = "sidebar-separator layer-separator";
     separatorElement.setAttribute("jslog", `${VisualLogging6.sectionHeader("layer")}`);
-    UI9.UIUtils.createTextChild(separatorElement.createChild("div"), i18nString7(UIStrings7.layer));
+    UI10.UIUtils.createTextChild(separatorElement.createChild("div"), i18nString7(UIStrings7.layer));
     const layers = rule.layers;
     if (!layers.length && rule.origin === CSS2.StyleSheetOrigin.UserAgent) {
       const name2 = rule.origin === CSS2.StyleSheetOrigin.UserAgent ? "\xA0user\xA0agent\xA0stylesheet" : "\xA0implicit\xA0outer\xA0layer";
-      UI9.UIUtils.createTextChild(separatorElement.createChild("div"), name2);
+      UI10.UIUtils.createTextChild(separatorElement.createChild("div"), name2);
       return new _SectionBlock(separatorElement, false, false, `layer:${parentBlockId}:${name2}`);
     }
     const layerLink = separatorElement.createChild("button");
@@ -13330,7 +13384,7 @@ var IdleCallbackManager = class {
 function quoteFamilyName(familyName) {
   return `'${familyName.replaceAll("'", "\\'")}'`;
 }
-var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
+var CSSPropertyPrompt = class extends UI10.TextPrompt.TextPrompt {
   isColorAware;
   cssCompletions;
   selectedNodeComputedStyles;
@@ -13345,7 +13399,7 @@ var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
   }, TextEditor2.AiCodeCompletionProvider.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
   constructor(treeElement, isEditingName, completions = []) {
     super();
-    this.initialize(this.buildPropertyCompletions.bind(this), UI9.UIUtils.StyleValueDelimiters);
+    this.initialize(this.buildPropertyCompletions.bind(this), UI10.UIUtils.StyleValueDelimiters);
     const cssMetadata = SDK6.CSSMetadata.cssMetadata();
     this.isColorAware = SDK6.CSSMetadata.cssMetadata().isColorAwareProperty(treeElement.property.name);
     this.cssCompletions = [];
@@ -13500,7 +13554,7 @@ var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
       }
       return prefix + number + suffix;
     }
-    if (!this.isEditingName && this.treeElement.valueElement && UI9.UIUtils.handleElementValueModifications(
+    if (!this.isEditingName && this.treeElement.valueElement && UI10.UIUtils.handleElementValueModifications(
       event,
       this.treeElement.valueElement,
       finishHandler.bind(this),
@@ -13619,7 +13673,7 @@ var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
     };
     for (const result of results) {
       await ensureComputedStyles();
-      const iconInfo = ElementsComponents3.CSSPropertyIconResolver.findIcon(
+      const iconInfo = ElementsComponents4.CSSPropertyIconResolver.findIcon(
         this.isEditingName ? result.text : `${this.treeElement.property.name}: ${result.text}`,
         this.selectedNodeComputedStyles,
         this.parentNodeComputedStyles
@@ -13765,7 +13819,7 @@ var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
     if (args.rpcGlobalId) {
       args.onImpression(args.rpcGlobalId, latency, args.sampleId);
     }
-    UI9.ARIAUtils.LiveAnnouncer.status(lockedString(styleText));
+    UI10.ARIAUtils.LiveAnnouncer.status(lockedString(styleText));
   }
   #getAiSuggestedProperties(suggestionText) {
     const cssParser = CodeMirror.css.cssLanguage.parser.configure({ top: "Styles" });
@@ -13853,7 +13907,7 @@ var CSSPropertyPrompt = class extends UI9.TextPrompt.TextPrompt {
       );
     }
     if (suggestionText) {
-      UI9.ARIAUtils.LiveAnnouncer.status(i18nString7(UIStrings7.aiSuggestionAccepted, { PH1: suggestionText }));
+      UI10.ARIAUtils.LiveAnnouncer.status(i18nString7(UIStrings7.aiSuggestionAccepted, { PH1: suggestionText }));
     }
     this.setAiAutoCompletion(null);
   }
@@ -13950,13 +14004,13 @@ var buttonProviderInstance2;
 var ButtonProvider2 = class _ButtonProvider {
   button;
   constructor() {
-    this.button = UI9.Toolbar.Toolbar.createActionButton("elements.new-style-rule");
+    this.button = UI10.Toolbar.Toolbar.createActionButton("elements.new-style-rule");
     this.button.setLongClickable(true);
-    new UI9.UIUtils.LongClickController(this.button.element, this.longClicked.bind(this));
-    UI9.Context.Context.instance().addFlavorChangeListener(SDK6.DOMModel.DOMNode, onNodeChanged.bind(this));
+    new UI10.UIUtils.LongClickController(this.button.element, this.longClicked.bind(this));
+    UI10.Context.Context.instance().addFlavorChangeListener(SDK6.DOMModel.DOMNode, onNodeChanged.bind(this));
     onNodeChanged.call(this);
     function onNodeChanged() {
-      let node = UI9.Context.Context.instance().flavor(SDK6.DOMModel.DOMNode);
+      let node = UI10.Context.Context.instance().flavor(SDK6.DOMModel.DOMNode);
       node = node ? node.enclosingElementOrSelf() : null;
       this.button.setEnabled(Boolean(node));
     }
@@ -14010,7 +14064,7 @@ function rendererBase(matchT) {
   class RendererBaseClass {
     matchType = matchT;
     render(_match, _context) {
-      return nothing3;
+      return nothing4;
     }
   }
   return RendererBaseClass;
@@ -14099,7 +14153,7 @@ var HighlightDirective = class extends Directive.Directive {
   #startNode = null;
   update(part, [highlighting, match]) {
     if (part.type !== Directive.PartType.CHILD) {
-      return nothing3;
+      return nothing4;
     }
     this.#startNode ??= part.startNode?.parentNode?.firstChild ?? null;
     const nodes = [];
@@ -14109,10 +14163,10 @@ var HighlightDirective = class extends Directive.Directive {
       }
     }
     highlighting.addMatch(match, nodes);
-    return nothing3;
+    return nothing4;
   }
   render(_highlighting, _match) {
-    return nothing3;
+    return nothing4;
   }
 };
 var highlightDirective = Directive.directive(HighlightDirective);
@@ -14122,6 +14176,42 @@ function highlight(highlighting, match, template) {
   }
   return html10`${template}${highlightDirective(highlighting, match)}`;
 }
+var LazyEvaluationBlackboard = class {
+  #result;
+  callback;
+  #asyncEvalCallback;
+  constructor(asyncEvalCallback) {
+    this.#asyncEvalCallback = asyncEvalCallback;
+  }
+  get result() {
+    return this.#result;
+  }
+  set result(val) {
+    if (this.#result === val) {
+      return;
+    }
+    this.#result = val;
+    this.callback?.(val);
+  }
+  asyncEvalCallback = async () => {
+    const result = await this.#asyncEvalCallback();
+    if (result) {
+      this.result = result;
+    }
+    return Boolean(result);
+  };
+};
+var LazyEvaluationDirective = class extends AsyncDirective.AsyncDirective {
+  render(placeholder, blackboard) {
+    blackboard.callback = (result) => {
+      if (this.isConnected) {
+        this.setValue(result);
+      }
+    };
+    return blackboard.result ?? placeholder;
+  }
+};
+var lazyEvaluation = AsyncDirective.directive(LazyEvaluationDirective);
 var TracingContext = class _TracingContext {
   #substitutionDepth = 0;
   #hasMoreSubstitutions;
@@ -14222,11 +14312,6 @@ var TracingContext = class _TracingContext {
     }
     this.#appliedEvaluations = Math.max(this.#appliedEvaluations, value5);
   }
-  // After rendering the arguments of a function call, the TracingContext produced by TracingContext#evaluation need to
-  // be passed here to determine whether the "current" function call should be evaluated or not. If so, the
-  // evaluation callback is run. The callback should return synchronously an array of Nodes as placeholder to be
-  // rendered immediately and optionally a callback for asynchronous updates of the placeholder nodes. The callback
-  // returns a boolean indicating whether the update was successful or not.
   applyEvaluation(children, evaluation) {
     if (this.#evaluationCount === 0 || children.some((child) => child.#appliedEvaluations >= this.#evaluationCount)) {
       this.#setHasMoreEvaluations(true);
@@ -14234,9 +14319,18 @@ var TracingContext = class _TracingContext {
       return null;
     }
     this.#setAppliedEvaluations(children.map((child) => child.#appliedEvaluations).reduce((a, b) => Math.max(a, b), 0) + 1);
-    const { placeholder, asyncEvalCallback } = evaluation();
-    this.#asyncEvalCallbacks.push(asyncEvalCallback);
-    return placeholder;
+    const result = evaluation();
+    if ("placeholder" in result) {
+      this.#asyncEvalCallbacks.push(result.asyncEvalCallback);
+      return result.placeholder;
+    }
+    if (!result.asyncEvalCallback) {
+      this.#asyncEvalCallbacks.push(result.asyncEvalCallback);
+      return result.template;
+    }
+    const blackboard = new LazyEvaluationBlackboard(result.asyncEvalCallback);
+    this.#asyncEvalCallbacks.push(blackboard.asyncEvalCallback);
+    return html10`${lazyEvaluation(result.template, blackboard)}`;
   }
   #setHasMoreSubstitutions() {
     if (this.#parent) {
@@ -14364,17 +14458,17 @@ var ValueEditEvent = class _ValueEditEvent extends CustomEvent {
   }
 };
 var EDITABLE_CONTENT_DEFAULT_VIEW = (input, _output, target) => {
-  render7(
+  render8(
     html10`<slot name="icon" @valueedit=${input.onValueEdit}></slot>${input.editedValue ?? html10`<slot></slot>`}`,
     target
   );
 };
-var EditableContent = class extends UI10.Widget.Widget {
+var EditableContent = class extends UI11.Widget.Widget {
   #editedValue = null;
   #view;
   constructor(element, view = EDITABLE_CONTENT_DEFAULT_VIEW) {
     super(element, { useShadowDom: "pure" });
-    this.element.classList.remove("vbox", "flex-auto", "widget");
+    this.element.classList.remove("widget");
     this.#view = view;
     this.performUpdate();
   }
@@ -14498,7 +14592,7 @@ var Renderer = class _Renderer extends SDK7.CSSPropertyParser.TreeWalker {
   }
   static renderInto(nodeOrNodes, context, parent) {
     const { nodes, cssControls } = this.render(nodeOrNodes, context);
-    render7(nodes, parent);
+    render8(nodes, parent);
     return { nodes, cssControls };
   }
   renderedMatchForTest(_nodes, _match) {
@@ -14510,7 +14604,7 @@ var Renderer = class _Renderer extends SDK7.CSSPropertyParser.TreeWalker {
       const rendered = renderer?.render(match, this.#context) ?? html10`<span>${match.text}</span>`;
       const output = highlight(this.#context.tracing?.highlighting, match, Array.isArray(rendered) ? html10`${rendered}` : rendered);
       this.renderedMatchForTest(output, match);
-      if (this.#output.some((t) => t !== nothing3)) {
+      if (this.#output.some((t) => t !== nothing4)) {
         const spacing = precedingSpace(node, this.#context.ast, this.#matchedResult);
         if (spacing) {
           this.#output.push(html10`${spacing}`);
@@ -14530,7 +14624,7 @@ var Renderer = class _Renderer extends SDK7.CSSPropertyParser.TreeWalker {
         keydown: "ArrowLeft|ArrowUp|PageUp|Home|PageDown|ArrowRight|ArrowDown|End|Space|Tab|Enter|Escape"
       })}`
     );
-    UI10.ARIAUtils.setLabel(nameElement, i18nString8(UIStrings8.cssPropertyName, { PH1: name }));
+    UI11.ARIAUtils.setLabel(nameElement, i18nString8(UIStrings8.cssPropertyName, { PH1: name }));
     nameElement.className = "webkit-css-property";
     nameElement.textContent = name;
     nameElement.normalize();
@@ -14557,11 +14651,11 @@ var Renderer = class _Renderer extends SDK7.CSSPropertyParser.TreeWalker {
         keydown: "ArrowLeft|ArrowUp|PageUp|Home|PageDown|ArrowRight|ArrowDown|End|Space|Tab|Enter|Escape"
       })}`
     );
-    UI10.ARIAUtils.setLabel(valueElement, i18nString8(UIStrings8.cssPropertyValue, { PH1: property.value }));
+    UI11.ARIAUtils.setLabel(valueElement, i18nString8(UIStrings8.cssPropertyValue, { PH1: property.value }));
     valueElement.className = "value";
     valueElement.tabIndex = -1;
     const { nodes, cssControls } = this.renderValueNodes(property, matchedResult, renderers, tracing, signal, edits);
-    render7(nodes, valueElement);
+    render8(nodes, valueElement);
     valueElement.normalize();
     return { valueElement, cssControls };
   }
@@ -14600,7 +14694,7 @@ var URLRenderer = class extends URLRendererBase {
   render(match) {
     const url = unescapeCssString(match.url);
     const container = document.createDocumentFragment();
-    UI10.UIUtils.createTextChild(container, "url(");
+    UI11.UIUtils.createTextChild(container, "url(");
     let hrefUrl = null;
     if (this.rule?.resourceURL()) {
       hrefUrl = Common5.ParsedURL.ParsedURL.completeURL(this.rule.resourceURL(), url);
@@ -14621,7 +14715,7 @@ var URLRenderer = class extends URLRendererBase {
       hrefUrl || url
     );
     container.appendChild(link2);
-    UI10.UIUtils.createTextChild(container, ")");
+    UI11.UIUtils.createTextChild(container, ")");
     return html10`${[container]}`;
   }
 };
@@ -14631,7 +14725,7 @@ var StringRenderer = class extends StringRendererBase {
   render(match) {
     const element = document.createElement("span");
     element.innerText = match.text;
-    UI10.Tooltip.Tooltip.install(element, unescapeCssString(match.text));
+    UI11.Tooltip.Tooltip.install(element, unescapeCssString(match.text));
     return html10`${[element]}`;
   }
 };
@@ -14677,7 +14771,7 @@ var BezierPopoverIcon = class {
     this.swatch = swatch;
     this.match = match;
     this.context = context;
-    UI11.Tooltip.Tooltip.install(this.swatch, i18nString9(UIStrings9.openCubicBezierEditor));
+    UI12.Tooltip.Tooltip.install(this.swatch, i18nString9(UIStrings9.openCubicBezierEditor));
     this.swatch.addEventListener("click", this.iconClick.bind(this), false);
     this.swatch.addEventListener("keydown", this.iconClick.bind(this), false);
     this.swatch.addEventListener("mousedown", (event) => event.consume(), false);
@@ -14829,7 +14923,7 @@ var ColorSwatchPopoverIcon = class _ColorSwatchPopoverIcon extends Common6.Objec
         /* omitFocus */
       );
     }
-    UI11.Context.Context.instance().setFlavor(_ColorSwatchPopoverIcon, this);
+    UI12.Context.Context.instance().setFlavor(_ColorSwatchPopoverIcon, this);
   }
   spectrumResized() {
     this.swatchPopoverHelper.reposition();
@@ -14896,7 +14990,7 @@ var ColorSwatchPopoverIcon = class _ColorSwatchPopoverIcon extends Common6.Objec
     void this.treeElement.applyStyleText(propertyText, true);
     this.treeElement.stylesContainer().setEditingStyle(false);
     delete this.originalPropertyText;
-    UI11.Context.Context.instance().setFlavor(_ColorSwatchPopoverIcon, null);
+    UI12.Context.Context.instance().setFlavor(_ColorSwatchPopoverIcon, null);
   }
 };
 var ShadowEvents = /* @__PURE__ */ ((ShadowEvents2) => {
@@ -14973,13 +15067,13 @@ var ShadowSwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrappe
 };
 
 // ../../front_end/panels/elements/ElementsPanel.ts
-import * as ElementsComponents7 from "./components/components.js";
+import * as ElementsComponents8 from "./components/components.js";
 
 // ../../front_end/panels/elements/ComputedStyleWidget.ts
 var ComputedStyleWidget_exports = {};
 __export(ComputedStyleWidget_exports, {
   ComputedStyleWidget: () => ComputedStyleWidget,
-  DEFAULT_VIEW: () => DEFAULT_VIEW3
+  DEFAULT_VIEW: () => DEFAULT_VIEW4
 });
 import "../../ui/legacy/legacy.js";
 import * as Common7 from "../../core/common/common.js";
@@ -14989,9 +15083,9 @@ import * as SDK9 from "../../core/sdk/sdk.js";
 import * as TreeOutline7 from "../../ui/components/tree_outline/tree_outline.js";
 import * as InlineEditor4 from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components5 from "../../ui/legacy/components/utils/utils.js";
-import * as UI12 from "../../ui/legacy/legacy.js";
+import * as UI13 from "../../ui/legacy/legacy.js";
 import * as Lit6 from "../../ui/lit/lit.js";
-import * as ElementsComponents4 from "./components/components.js";
+import * as ElementsComponents5 from "./components/components.js";
 
 // gen/front_end/panels/elements/computedStyleWidget.css.js
 var computedStyleWidget_css_default = `/*
@@ -15235,8 +15329,9 @@ var categorizePropertyName = (propertyName) => {
 };
 
 // ../../front_end/panels/elements/ComputedStyleWidget.ts
-var { html: html11, render: render8 } = Lit6;
-var { bindToSetting } = UI12.UIUtils;
+var { html: html11, render: render9 } = Lit6;
+var { bindToSetting } = UI13.UIUtils;
+var { widget: widget4 } = UI13.Widget;
 var UIStrings10 = {
   /**
    * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -15299,21 +15394,24 @@ function renderPropertyContents(node, cache, propertyName, propertyValue, catego
 }
 var createPropertyElement = (node, cache, propertyName, propertyValue, traceable, inherited, activeProperty, onContextMenu, category) => {
   const { name, value: value5 } = renderPropertyContents(node, cache, propertyName, propertyValue, category);
-  return html11`<devtools-computed-style-property
-        .traceable=${traceable}
-        .inherited=${inherited}
-        @oncontextmenu=${onContextMenu}
-        @onnavigatetosource=${(event) => {
-    if (activeProperty) {
-      navigateToSource(activeProperty, event);
+  return html11`<devtools-widget
+        class="computed-style-property"
+        ${widget4(ElementsComponents5.ComputedStyleProperty.ComputedStyleProperty, {
+    traceable,
+    inherited,
+    onNavigateToSource: () => {
+      if (activeProperty) {
+        navigateToSource(activeProperty);
+      }
     }
-  }}>
+  })}
+        @oncontextmenu=${onContextMenu}>
           ${name}
           ${value5}
-      </devtools-computed-style-property>`;
+      </devtools-widget>`;
 };
 var createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
-  const trace = new ElementsComponents4.ComputedStyleTrace.ComputedStyleTrace();
+  const trace = new ElementsComponents5.ComputedStyleTrace.ComputedStyleTrace();
   const { valueElement } = Renderer.renderValueElement(
     property,
     matchProperty(property.name, property.value),
@@ -15369,11 +15467,8 @@ var ColorRenderer2 = class extends rendererBase(SDK9.CSSPropertyParserMatchers.C
   }
 };
 var navigateToSource = (cssProperty, event) => {
-  if (!event) {
-    return;
-  }
   void Common7.Revealer.reveal(cssProperty);
-  event.consume(true);
+  event?.consume(true);
 };
 var propertySorter = (propA, propB) => {
   if (propA.startsWith("--") !== propB.startsWith("--")) {
@@ -15386,8 +15481,8 @@ var propertySorter = (propA, propB) => {
   const canonicalB = SDK9.CSSMetadata.cssMetadata().canonicalPropertyName(propB);
   return Platform6.StringUtilities.compare(canonicalA, canonicalB);
 };
-var DEFAULT_VIEW3 = (input, _output, target) => {
-  render8(html11`
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  render9(html11`
     <style>${computedStyleWidget_css_default}</style>
     ${input.includeToolbar ? html11`
       <div class="styles-sidebar-pane-toolbar">
@@ -15416,7 +15511,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     ${!input.hasMatches ? html11`<div class="gray-info-message">${i18nString10(UIStrings10.noMatchingProperty)}</div>` : ""}
   `, target);
 };
-var ComputedStyleWidget = class extends UI12.Widget.VBox {
+var ComputedStyleWidget = class extends UI13.Widget.VBox {
   /**
    * We store these because they are used when calculating the dimensions for the image preview.
    * When we need to get those dimensions, we try to resolve them against the
@@ -15461,7 +15556,7 @@ var ComputedStyleWidget = class extends UI12.Widget.VBox {
   #filterText = "";
   #filterIsRegex = false;
   #allowUserControl = true;
-  constructor(element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW4) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.contentElement.classList.add("styles-sidebar-computed-style-widget");
@@ -15766,7 +15861,7 @@ var ComputedStyleWidget = class extends UI12.Widget.VBox {
     };
   }
   handleContextMenuEvent(matchedStyles, property, event) {
-    const contextMenu = new UI12.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI13.ContextMenu.ContextMenu(event);
     const rule = property.ownerStyle.parentRule;
     if (rule) {
       const header = rule.header;
@@ -15816,7 +15911,7 @@ var ComputedStyleWidget = class extends UI12.Widget.VBox {
     this.#filterText = event.detail;
     await this.filterComputedStyles(this.#buildFilterRegex(event.detail));
     if (event.detail && this.#computedStylesTree.data && this.#computedStylesTree.data.tree) {
-      UI12.ARIAUtils.LiveAnnouncer.alert(i18nString10(
+      UI13.ARIAUtils.LiveAnnouncer.alert(i18nString10(
         UIStrings10.filterUpdateAriaText,
         { PH1: event.detail, PH2: this.#computedStylesTree.data.tree.length }
       ));
@@ -15883,7 +15978,7 @@ var alwaysShownComputedProperties = /* @__PURE__ */ new Set(["display", "height"
 // ../../front_end/panels/elements/DOMTreeWidget.ts
 var DOMTreeWidget_exports = {};
 __export(DOMTreeWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW6,
+  DEFAULT_VIEW: () => DEFAULT_VIEW7,
   DOMTreeWidget: () => DOMTreeWidget,
   domTreeWidgetStyles: () => domTreeWidget_css_default
 });
@@ -15893,12 +15988,12 @@ import * as i18n32 from "../../core/i18n/i18n.js";
 import * as SDK15 from "../../core/sdk/sdk.js";
 import * as Badges4 from "../../models/badges/badges.js";
 import * as ChangeTracker5 from "../../models/change_tracker/change_tracker.js";
-import * as Elements4 from "../../models/elements/elements.js";
+import * as Elements5 from "../../models/elements/elements.js";
 import * as Buttons3 from "../../ui/components/buttons/buttons.js";
 import * as CodeHighlighter5 from "../../ui/components/code_highlighter/code_highlighter.js";
 import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.js";
 import * as UIComponentUtils from "../../ui/legacy/components/utils/utils.js";
-import * as UI17 from "../../ui/legacy/legacy.js";
+import * as UI18 from "../../ui/legacy/legacy.js";
 import * as Lit9 from "../../ui/lit/lit.js";
 import * as SettingsUI5 from "../../ui/settings/settings.js";
 import * as VisualLogging11 from "../../ui/visual_logging/visual_logging.js";
@@ -15912,10 +16007,10 @@ __export(AdoptedStyleSheetTreeElement_exports, {
 import * as SDK10 from "../../core/sdk/sdk.js";
 import * as TextUtils6 from "../../core/text_utils/text_utils.js";
 import * as CodeHighlighter from "../../ui/components/code_highlighter/code_highlighter.js";
-import * as UI13 from "../../ui/legacy/legacy.js";
+import * as UI14 from "../../ui/legacy/legacy.js";
 import * as Lit7 from "../../ui/lit/lit.js";
 import * as VisualLogging8 from "../../ui/visual_logging/visual_logging.js";
-var { Directives: { ref: ref5 }, html: html12, render: render9 } = Lit7;
+var { Directives: { ref: ref5 }, html: html12, render: render10 } = Lit7;
 var DEFAULT_ADOPTED_STYLESHEET_CONTENTS_VIEW = (input, _output, target) => {
   const highlightNode = ref5((el) => {
     if (el) {
@@ -15923,7 +16018,7 @@ var DEFAULT_ADOPTED_STYLESHEET_CONTENTS_VIEW = (input, _output, target) => {
       void CodeHighlighter.CodeHighlighter.highlightNode(el, "text/css");
     }
   });
-  render9(html12`
+  render10(html12`
         <span class="webkit-html-text-node webkit-html-css-node"
               jslog=${VisualLogging8.value("css-text-node").track({
     change: true,
@@ -15933,7 +16028,7 @@ var DEFAULT_ADOPTED_STYLESHEET_CONTENTS_VIEW = (input, _output, target) => {
               @dblclick=${input.onDblClick}></span>
       `, target);
 };
-var AdoptedStyleSheetContentsWidget = class extends UI13.Widget.Widget {
+var AdoptedStyleSheetContentsWidget = class extends UI14.Widget.Widget {
   #styleSheetHeader;
   #text = "";
   #fetchContentPromise = null;
@@ -16029,7 +16124,7 @@ var AdoptedStyleSheetContentsWidget = class extends UI13.Widget.Widget {
       return;
     }
     const textNode = (target ? target.enclosingNodeOrSelfWithClass("webkit-html-text-node") : null) ?? this.contentElement.querySelector(".webkit-html-text-node");
-    if (!textNode || UI13.UIUtils.isBeingEdited(textNode)) {
+    if (!textNode || UI14.UIUtils.isBeingEdited(textNode)) {
       return;
     }
     const dummyEditorHandles = {
@@ -16048,12 +16143,12 @@ var AdoptedStyleSheetContentsWidget = class extends UI13.Widget.Widget {
       }
       const data = await this.#styleSheetHeader.requestContentData();
       textNode.textContent = TextUtils6.ContentData.ContentData.isError(data) || !data.isTextContent ? "" : data.text;
-      const config = new UI13.InplaceEditor.Config(
+      const config = new UI14.InplaceEditor.Config(
         (element, newText, oldText) => this.#editingCommitted(element, newText, oldText),
         () => this.#editingCancelled(),
         void 0
       );
-      const editorHandles = UI13.InplaceEditor.InplaceEditor.startEditing(textNode, config);
+      const editorHandles = UI14.InplaceEditor.InplaceEditor.startEditing(textNode, config);
       if (!editorHandles) {
         this.#editing = null;
         return;
@@ -16102,7 +16197,7 @@ var AdoptedStyleSheetContentsWidget = class extends UI13.Widget.Widget {
 };
 
 // ../../front_end/panels/elements/DOMTreeWidget.ts
-import * as ElementsComponents6 from "./components/components.js";
+import * as ElementsComponents7 from "./components/components.js";
 
 // ../../front_end/panels/elements/DOMPath.ts
 var DOMPath_exports = {};
@@ -16427,13 +16522,13 @@ __export(DOMTreeContextMenu_exports, {
 import * as Common10 from "../../core/common/common.js";
 import * as i18n30 from "../../core/i18n/i18n.js";
 import * as SDK14 from "../../core/sdk/sdk.js";
-import * as UI16 from "../../ui/legacy/legacy.js";
+import * as UI17 from "../../ui/legacy/legacy.js";
 import * as Emulation2 from "../emulation/emulation.js";
 
 // ../../front_end/panels/elements/DOMTreeElementWidget.ts
 var DOMTreeElementWidget_exports = {};
 __export(DOMTreeElementWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   DOMTreeElementWidget: () => DOMTreeElementWidget,
   EditTagBlocklist: () => EditTagBlocklist,
   ForbiddenClosingTagElements: () => ForbiddenClosingTagElements,
@@ -16460,7 +16555,7 @@ import * as AIAssistance from "../../models/ai-utils/ai-utils.js";
 import * as Badges3 from "../../models/badges/badges.js";
 import * as Bindings5 from "../../models/bindings/bindings.js";
 import * as ChangeTracker3 from "../../models/change_tracker/change_tracker.js";
-import * as Elements3 from "../../models/elements/elements.js";
+import * as Elements4 from "../../models/elements/elements.js";
 import * as IssuesManager2 from "../../models/issues_manager/issues_manager.js";
 import * as Workspace from "../../models/workspace/workspace.js";
 import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.js";
@@ -16468,13 +16563,13 @@ import * as CodeHighlighter3 from "../../ui/components/code_highlighter/code_hig
 import * as Highlighting2 from "../../ui/components/highlighting/highlighting.js";
 import * as TextEditor3 from "../../ui/components/text_editor/text_editor.js";
 import * as Components6 from "../../ui/legacy/components/utils/utils.js";
-import * as UI15 from "../../ui/legacy/legacy.js";
+import * as UI16 from "../../ui/legacy/legacy.js";
 import * as Lit8 from "../../ui/lit/lit.js";
 import * as SettingsUI4 from "../../ui/settings/settings.js";
 import * as VisualLogging10 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon3 from "../common/common.js";
 import * as Media2 from "../media/media.js";
-import * as ElementsComponents5 from "./components/components.js";
+import * as ElementsComponents6 from "./components/components.js";
 
 // ../../front_end/panels/elements/ElementIssueUtils.ts
 import * as i18n22 from "../../core/i18n/i18n.js";
@@ -16632,7 +16727,7 @@ function getTooltipFromElementAccessibilityIssue(reason) {
 var ElementStatePaneWidget_exports = {};
 __export(ElementStatePaneWidget_exports, {
   ButtonProvider: () => ButtonProvider3,
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   ElementStatePaneWidget: () => ElementStatePaneWidget
 });
 import * as Common8 from "../../core/common/common.js";
@@ -16640,8 +16735,8 @@ import * as i18n24 from "../../core/i18n/i18n.js";
 import * as SDK12 from "../../core/sdk/sdk.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "../../ui/helpers/helpers.js";
-import * as UI14 from "../../ui/legacy/legacy.js";
-import { html as html13, render as render10 } from "../../ui/lit/lit.js";
+import * as UI15 from "../../ui/legacy/legacy.js";
+import { html as html13, render as render11 } from "../../ui/lit/lit.js";
 import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/elementStatePaneWidget.css.js
@@ -16701,7 +16796,7 @@ var elementStatePaneWidget_css_default = `/**
 /*# sourceURL=${import.meta.resolve("./elementStatePaneWidget.css")} */`;
 
 // ../../front_end/panels/elements/ElementStatePaneWidget.ts
-var { bindToSetting: bindToSetting2 } = UI14.UIUtils;
+var { bindToSetting: bindToSetting2 } = UI15.UIUtils;
 var UIStrings12 = {
   /**
    * @description Title of a section in the force element state section of the Styles tab in the Elements panel. The
@@ -16734,18 +16829,18 @@ var UIStrings12 = {
 };
 var str_12 = i18n24.i18n.registerUIStrings("panels/elements/ElementStatePaneWidget.ts", UIStrings12);
 var i18nString12 = i18n24.i18n.getLocalizedString.bind(void 0, str_12);
-var DEFAULT_VIEW4 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, _output, target) => {
   const createElementStateCheckbox = (state) => {
     return html13`
         <div id=${state.state}>
           <devtools-checkbox class="small" @click=${input.onStateCheckboxClicked}
-              jslog=${VisualLogging9.toggle(state.state).track({ change: true })} ?checked=${state.checked} ?disabled=${state.disabled}
+              jslog=${VisualLogging9.toggle(state.state).track({ change: true })} .checked=${Boolean(state.checked)} ?disabled=${state.disabled}
               title=${":" + state.state}>
           <span class="source-code">${":" + state.state}</span>
         </devtools-checkbox>
         </div>`;
   };
-  render10(html13`
+  render11(html13`
     <style>${elementStatePaneWidget_css_default}</style>
     <div class="styles-element-state-pane"
         jslog=${VisualLogging9.pane("element-states")}>
@@ -16778,12 +16873,12 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
       </details>
     </div>`, target);
 };
-var ElementStatePaneWidget = class extends UI14.Widget.Widget {
+var ElementStatePaneWidget = class extends UI15.Widget.Widget {
   #duals;
   #cssModel;
   #states = /* @__PURE__ */ new Map();
   #view;
-  constructor(view = DEFAULT_VIEW4) {
+  constructor(view = DEFAULT_VIEW5) {
     super({ useShadowDom: true });
     this.#view = view;
     this.#duals = /* @__PURE__ */ new Map();
@@ -16831,11 +16926,11 @@ var ElementStatePaneWidget = class extends UI14.Widget.Widget {
     setDualStateCheckboxes("in-range" /* IN_RANGE */, "out-of-range" /* OUT_OF_RANGE */);
     setDualStateCheckboxes("enabled" /* ENABLED */, "disabled" /* DISABLED */);
     setDualStateCheckboxes("visited" /* VISITED */, "link" /* LINK */);
-    UI14.Context.Context.instance().addFlavorChangeListener(SDK12.DOMModel.DOMNode, this.requestUpdate, this);
+    UI15.Context.Context.instance().addFlavorChangeListener(SDK12.DOMModel.DOMNode, this.requestUpdate, this);
   }
   onStateCheckboxClicked(event) {
-    const node = UI14.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
-    if (!node || !(event.target instanceof UI14.UIUtils.CheckboxLabel)) {
+    const node = UI15.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
+    if (!node || !(event.target instanceof UI15.UIUtils.CheckboxLabel)) {
       return;
     }
     const state = event.target.title.slice(1);
@@ -16866,7 +16961,7 @@ var ElementStatePaneWidget = class extends UI14.Widget.Widget {
     this.requestUpdate();
   }
   async performUpdate() {
-    let node = UI14.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
+    let node = UI15.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
@@ -16889,7 +16984,7 @@ var ElementStatePaneWidget = class extends UI14.Widget.Widget {
       states: [...this.#states.values()],
       onStateCheckboxClicked: this.onStateCheckboxClicked.bind(this)
     };
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
   async #updateElementSpecificStatesTable(node = null) {
     if (!node || node.nodeType() !== Node.ELEMENT_NODE) {
@@ -17024,8 +17119,8 @@ var ButtonProvider3 = class _ButtonProvider {
   button;
   view;
   constructor() {
-    this.button = new UI14.Toolbar.ToolbarToggle(i18nString12(UIStrings12.toggleElementState), "hover");
-    this.button.addEventListener(UI14.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
+    this.button = new UI15.Toolbar.ToolbarToggle(i18nString12(UIStrings12.toggleElementState), "hover");
+    this.button.addEventListener(UI15.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
     this.button.element.classList.add("element-state");
     this.button.element.setAttribute("jslog", `${VisualLogging9.toggleSubpane("element-states").track({ click: true })}`);
     this.button.element.style.setProperty("--dot-toggle-top", "12px");
@@ -17128,9 +17223,10 @@ function buildChangeSelector(tracker, node) {
   }
   return void 0;
 }
-var { html: html15, nothing: nothing5, render: render11, Directives: { classMap: classMap3, ifDefined: ifDefined2, ref: ref6, repeat, styleMap, until } } = Lit8;
-var { animateOn } = UI15.UIUtils;
-var { RegisteredAdorners } = ElementsComponents5.AdornerManager;
+var { html: html15, nothing: nothing6, render: render12, Directives: { classMap: classMap3, ifDefined: ifDefined2, ref: ref6, repeat, styleMap, until: until2 } } = Lit8;
+var { animateOn } = UI16.UIUtils;
+var { widget: widget5 } = UI16.Widget;
+var { RegisteredAdorners } = ElementsComponents6.AdornerManager;
 var UIStrings14 = {
   /**
    * @description Title for Ad adorner. This element is marked as advertisement element.
@@ -17446,7 +17542,9 @@ function renderTitle(node, input) {
       const renderClosingTag = () => renderTag(node, tagName, true, expanded, false, updateRecord, issues);
       if (isExpandable) {
         if (!expanded) {
-          return html15`${openingTag}<devtools-elements-tree-expand-button .data=${{ clickHandler: onExpand2 }}></devtools-elements-tree-expand-button><span style="font-size: 0;"
+          return html15`${openingTag}<devtools-widget ${widget5(ElementsComponents6.ElementsTreeExpandButton.ElementsTreeExpandButton, {
+            clickHandler: onExpand2
+          })}></devtools-widget><span style="font-size: 0;"
                   >\u2026</span>\u200B${renderClosingTag()}`;
         }
         return openingTag;
@@ -17704,13 +17802,13 @@ function renderAttribute(attr, updateRecord, isDiff, node, issues) {
   } else if (nodeName === "image" && (name === "xlink:href" || name === "href")) {
     valueType = 2 /* SRCSET */;
   }
-  let valueContent = nothing5;
+  let valueContent = nothing6;
   if (valueType === 1 /* SRC */) {
     valueContent = renderLinkifiedValue(value5, node);
   } else if (valueType === 2 /* SRCSET */) {
     valueContent = renderLinkifiedSrcset(Common9.Srcset.parseSrcset(value5), node);
   } else if (linkifyValue && relationPromise) {
-    valueContent = until(relationPromise, value5);
+    valueContent = until2(relationPromise, value5);
   } else if (valueType === 0 /* UNKNOWN */ && !isRelation) {
     valueContent = html15`<span ${ref6((el) => {
       if (el) {
@@ -17728,10 +17826,10 @@ function renderAttribute(attr, updateRecord, isDiff, node, issues) {
     "violating-element": hasAttributeIssues
   };
   return html15`<span class="webkit-html-attribute" jslog=${jslog}><span class=${classMap3(attributeNameClasses)}
-      ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && !hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)}>${linkifyName && relationPromise ? until(relationPromise, name) : name}</span>${hasText ? html15`=\u200B"<span class="webkit-html-attribute-value" ${animateOn(
+      ${animateOn(Boolean(updateRecord?.isAttributeModified(name) && !hasText), DOM_UPDATE_ANIMATION_CLASS_NAME)}>${linkifyName && relationPromise ? until2(relationPromise, name) : name}</span>${hasText ? html15`=\u200B"<span class="webkit-html-attribute-value" ${animateOn(
     Boolean(updateRecord?.isAttributeModified(name) && hasText),
     DOM_UPDATE_ANIMATION_CLASS_NAME
-  )}>${valueContent}</span>"` : nothing5}</span>`;
+  )}>${valueContent}</span>"` : nothing6}</span>`;
 }
 function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement, updateRecord, issues) {
   const tagClasses = {
@@ -17758,13 +17856,13 @@ function renderTag(node, tagName, isClosingTag, expanded, isDistinctTreeElement,
   const ariaLabel = isClosingTag ? `</${tagName}>` : `<${tagName}${attributes.map((attr) => attr.value ? ` ${attr.name}="${attr.value}"` : ` ${attr.name}`).join("")}>`;
   return html15`<span
       class=${classMap3(tagClasses)} aria-label=${ariaLabel}
-      >&lt;<span class=${classMap3(tagNameClasses)} jslog=${jslog || nothing5} ${animateOn(hasUpdates, DOM_UPDATE_ANIMATION_CLASS_NAME)}>${tagString}</span>${attributes.map((attr) => html15` ${renderAttribute(attr, updateRecord, false, node, issues)}`)}&gt;</span>\u200B`;
+      >&lt;<span class=${classMap3(tagNameClasses)} jslog=${jslog || nothing6} ${animateOn(hasUpdates, DOM_UPDATE_ANIMATION_CLASS_NAME)}>${tagString}</span>${attributes.map((attr) => html15` ${renderAttribute(attr, updateRecord, false, node, issues)}`)}&gt;</span>\u200B`;
 }
 function renderAdorner(adorner3) {
   const interactive = Boolean(adorner3.onClick);
   const toggleable = adorner3.active !== void 0;
   const classes = [adorner3.classes, interactive ? "clickable" : void 0].filter(Boolean).join(" ");
-  const onKeyDown = adorner3.onClick && adorner3.keyboardActivatable !== false ? handleAdornerKeydown(adorner3.onClick) : nothing5;
+  const onKeyDown = adorner3.onClick && adorner3.keyboardActivatable !== false ? handleAdornerKeydown(adorner3.onClick) : nothing6;
   return html15`<devtools-adorner
       class=${classes}
       role=${ifDefined2(interactive ? "button" : void 0)}
@@ -17774,14 +17872,14 @@ function renderAdorner(adorner3) {
       .name=${adorner3.name}
       jslog=${VisualLogging10.adorner(adorner3.name).track({ click: true })}
       aria-label=${ifDefined2(adorner3.ariaLabel)}
-      @click=${adorner3.onClick ?? nothing5}
+      @click=${adorner3.onClick ?? nothing6}
       @keydown=${onKeyDown}
-      @mousedown=${adorner3.onMouseDown ?? nothing5}
+      @mousedown=${adorner3.onMouseDown ?? nothing6}
       ${adornerRef()}>${adorner3.content ?? html15`<span>${adorner3.name}</span>`}</devtools-adorner>`;
 }
 function maybeRenderAdAdorner(input) {
   if (!input.adProvenance) {
-    return nothing5;
+    return nothing6;
   }
   return html15`
     <devtools-adorner
@@ -17802,14 +17900,14 @@ function maybeRenderAdAdorner(input) {
         ${input.adProvenance.filterlistRule ? html15`
           <div class="ad-provenance-tooltip-title">${i18nString13(UIStrings14.filterListRule)}</div>
           <div class="ad-provenance-tooltip-content">${input.adProvenance.filterlistRule}</div>
-        ` : nothing5}
+        ` : nothing6}
 
         ${input.adProvenance.adScriptAncestry && input.target ? html15`
           <div class="ad-provenance-tooltip-title">${i18nString13(UIStrings14.creatorAdScriptAncestry)}</div>
           <div class="ad-provenance-tooltip-content">
             ${input.adProvenance.adScriptAncestry.ancestryChain.map((script) => html15`
               <div>
-                ${UI15.Widget.widget(Components6.Linkifier.ScriptLocationLink, {
+                ${UI16.Widget.widget(Components6.Linkifier.ScriptLocationLink, {
     target: input.target,
     scriptId: script.scriptId,
     options: { jslogContext: "ad-script" }
@@ -17823,17 +17921,17 @@ function maybeRenderAdAdorner(input) {
             <div class="ad-provenance-tooltip-content">
               ${input.adProvenance.adScriptAncestry.rootScriptFilterlistRule}
             </div>
-          ` : nothing5}
-        ` : nothing5}
+          ` : nothing6}
+        ` : nothing6}
 
         ${!input.adProvenance.adScriptAncestry && !input.adProvenance.filterlistRule ? html15`
             <div class="ad-provenance-tooltip-title">${i18nString13(UIStrings14.noProvenanceAvailable)}</div>
-          ` : nothing5}
+          ` : nothing6}
       </div>
     </devtools-tooltip>
   `;
 }
-var DEFAULT_VIEW5 = (input, output, target) => {
+var DEFAULT_VIEW6 = (input, output, target) => {
   const hasAdorners = !!input.adProvenance || input.showContainerAdorner || input.showFlexAdorner || input.showGridAdorner || input.showGridLanesAdorner || input.showMediaAdorner || input.showPopoverAdorner || input.showInterestAdorner || input.showTopLayerAdorner || input.showViewSourceAdorner || input.showScrollAdorner || input.showScrollSnapAdorner || input.showSlotAdorner || input.showStartingStyleAdorner || input.showCustomElementAdorner;
   const gutterContainerClasses = {
     "has-decorations": input.decorations.length || input.descendantDecorations.length,
@@ -17841,16 +17939,16 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     hidden: Boolean(input.editorState)
   };
   if (input.clearDOM) {
-    render11(nothing5, target);
+    render12(nothing6, target);
   }
-  render11(html15`
+  render12(html15`
     <div style=${styleMap({ "--indent": `${input.indent}px` })}
          @dblclick=${input.onDblClick}
          ${ref6((el) => {
     output.contentElement = el;
   })}>
-      ${input.node ? html15`<span class="highlight ${input.editorState ? "hidden" : ""}">${renderTitle(input.node, input)}</span>` : nothing5}
-      ${input.renderSelection !== false ? html15`<div class="selection fill ${input.editorState ? "hidden" : ""}" style=${`margin-left: ${-input.indent}px`}></div>` : nothing5}
+      ${input.node ? html15`<span class="highlight ${input.editorState ? "hidden" : ""}">${renderTitle(input.node, input)}</span>` : nothing6}
+      ${input.renderSelection !== false ? html15`<div class="selection fill ${input.editorState ? "hidden" : ""}" style=${`margin-left: ${-input.indent}px`}></div>` : nothing6}
       <div class=${classMap3(gutterContainerClasses)}
            style="left: ${-input.indent}px"
            @click=${input.onGutterClick}>
@@ -17860,7 +17958,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
              title=${input.decorationsTooltip}>
              ${input.decorations.map((d) => html15`<div class="elements-gutter-decoration" style="--decoration-color: ${d.color}"></div>`)}
              ${input.descendantDecorations.map((d) => html15`<div class="elements-gutter-decoration elements-has-decorated-children" style="--decoration-color: ${d.color}"></div>`)}
-        </div>` : nothing5}
+        </div>` : nothing6}
       </div>
       ${hasAdorners ? html15`<div class="adorner-container ${input.editorState ? "hidden" : ""}">
         ${maybeRenderAdAdorner(input)}
@@ -17868,13 +17966,13 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     name: RegisteredAdorners.VIEW_SOURCE,
     ariaLabel: i18nString13(UIStrings14.viewSourceCode),
     onClick: input.onViewSourceAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showCustomElementAdorner ? renderAdorner({
     name: RegisteredAdorners.CUSTOM_ELEMENT,
     classes: "custom-element",
     ariaLabel: i18nString13(UIStrings14.showCustomElementDefinition),
     onClick: input.onCustomElementAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showContainerAdorner ? renderAdorner({
     name: RegisteredAdorners.CONTAINER,
     active: input.containerAdornerActive,
@@ -17884,25 +17982,25 @@ var DEFAULT_VIEW5 = (input, output, target) => {
             <devtools-icon name="container"></devtools-icon>
             <span>${input.containerType}</span>
           </span>`
-  }) : nothing5}
+  }) : nothing6}
         ${input.showFlexAdorner ? renderAdorner({
     name: RegisteredAdorners.FLEX,
     active: input.flexAdornerActive,
     ariaLabel: input.flexAdornerActive ? i18nString13(UIStrings14.disableFlexMode) : i18nString13(UIStrings14.enableFlexMode),
     onClick: input.onFlexAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showGridAdorner ? renderAdorner({
     name: input.isSubgrid ? RegisteredAdorners.SUBGRID : RegisteredAdorners.GRID,
     active: input.gridAdornerActive,
     ariaLabel: input.gridAdornerActive ? i18nString13(UIStrings14.disableGridMode) : i18nString13(UIStrings14.enableGridMode),
     onClick: input.onGridAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showGridLanesAdorner ? renderAdorner({
     name: RegisteredAdorners.GRID_LANES,
     active: input.gridAdornerActive,
     ariaLabel: input.gridAdornerActive ? i18nString13(UIStrings14.disableGridLanesMode) : i18nString13(UIStrings14.enableGridLanesMode),
     onClick: input.onGridAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showMediaAdorner ? renderAdorner({
     name: RegisteredAdorners.MEDIA,
     ariaLabel: i18nString13(UIStrings14.openMediaPanel),
@@ -17910,19 +18008,19 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     content: html15`<span class="adorner-with-icon">
             ${RegisteredAdorners.MEDIA}<devtools-icon name="select-element"></devtools-icon>
           </span>`
-  }) : nothing5}
+  }) : nothing6}
         ${input.showPopoverAdorner ? renderAdorner({
     name: RegisteredAdorners.POPOVER,
     active: input.popoverAdornerActive,
     ariaLabel: input.popoverAdornerActive ? i18nString13(UIStrings14.stopForceOpenPopover) : i18nString13(UIStrings14.forceOpenPopover),
     onClick: input.onPopoverAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showInterestAdorner ? renderAdorner({
     name: RegisteredAdorners.INTEREST,
     active: input.interestAdornerActive,
     ariaLabel: input.interestAdornerActive ? i18nString13(UIStrings14.stopForceShowInterest) : i18nString13(UIStrings14.forceShowInterest),
     onClick: input.onInterestAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showTopLayerAdorner ? renderAdorner({
     name: RegisteredAdorners.TOP_LAYER,
     ariaLabel: i18nString13(UIStrings14.reveal),
@@ -17930,19 +18028,19 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     content: html15`<span class="adorner-with-icon">
             ${`top-layer (${input.topLayerIndex})`}<devtools-icon name="select-element"></devtools-icon>
           </span>`
-  }) : nothing5}
+  }) : nothing6}
         ${input.showStartingStyleAdorner ? renderAdorner({
     name: RegisteredAdorners.STARTING_STYLE,
     classes: "starting-style",
     active: input.startingStyleAdornerActive,
     ariaLabel: input.startingStyleAdornerActive ? i18nString13(UIStrings14.disableStartingStyle) : i18nString13(UIStrings14.enableStartingStyle),
     onClick: input.onStartingStyleAdornerClick
-  }) : nothing5}
+  }) : nothing6}
         ${input.showScrollAdorner ? renderAdorner({
     name: RegisteredAdorners.SCROLL,
     classes: "scroll",
     ariaLabel: i18nString13(UIStrings14.elementHasScrollableOverflow)
-  }) : nothing5}
+  }) : nothing6}
         ${input.showSlotAdorner ? renderAdorner({
     name: RegisteredAdorners.SLOT,
     onClick: input.onSlotAdornerClick,
@@ -17952,18 +18050,18 @@ var DEFAULT_VIEW5 = (input, output, target) => {
             <devtools-icon name="select-element"></devtools-icon>
             <span>${RegisteredAdorners.SLOT}</span>
           </span>`
-  }) : nothing5}
+  }) : nothing6}
         ${input.showScrollSnapAdorner ? renderAdorner({
     name: RegisteredAdorners.SCROLL_SNAP,
     classes: "scroll-snap",
     active: input.scrollSnapAdornerActive,
     ariaLabel: input.scrollSnapAdornerActive ? i18nString13(UIStrings14.disableScrollSnap) : i18nString13(UIStrings14.enableScrollSnap),
     onClick: input.onScrollSnapAdornerClick
-  }) : nothing5}
-      </div>` : nothing5}
+  }) : nothing6}
+      </div>` : nothing6}
       ${input.isSelected && input.canInspect ? html15`
         <span class="selected-hint ${input.editorState ? "hidden" : ""}" title=${i18nString13(UIStrings14.useSInTheConsoleToReferToThis, { PH1: "$0" })} aria-hidden="true"></span>
-      ` : nothing5}
+      ` : nothing6}
       ${input.showAiButton ? html15`
         <span class="ai-button-container ${input.editorState ? "hidden" : ""}">
           <devtools-floating-button
@@ -17974,7 +18072,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
             @mousedown=${(e) => e.stopPropagation()}>
           </devtools-floating-button>
         </span>
-      ` : nothing5}
+      ` : nothing6}
       ${input.editorState ? html15`<div @keydown=${(event) => {
     if (event.key === "Escape") {
       event.consume(true);
@@ -17986,7 +18084,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
         <devtools-text-editor .state=${input.editorState} ${ref6((el) => {
     output.editorRef = el;
   })}></devtools-text-editor>
-      </div>` : nothing5}
+      </div>` : nothing6}
     </div>
   `, target);
 };
@@ -18025,7 +18123,7 @@ function createEditAsHTMLState(initialValue, callbacks) {
           event.consume(true);
           const { from, to, empty } = view.state.selection.main;
           const copy = () => Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(view.state.sliceDoc(from, to));
-          const contextMenu = new UI15.ContextMenu.ContextMenu(event, {
+          const contextMenu = new UI16.ContextMenu.ContextMenu(event, {
             onSoftMenuClosed: () => callbacks.onContextMenuToggled(false)
           });
           contextMenu.clipboardSection().appendItem(i18nString13(UIStrings14.cut), () => {
@@ -18055,7 +18153,7 @@ function createEditAsHTMLState(initialValue, callbacks) {
     ]
   });
 }
-var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widget {
+var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI16.Widget.Widget {
   static INJECT = [
     IssuesManager2.DOMIssuesManager.DOMIssuesManager,
     ChangeTracker3.ChangeTracker.ChangeTracker
@@ -18250,7 +18348,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
   }
   get issues() {
     if (!this.#domIssuesManager) {
-      const universe = UI15.Widget.lookupUniverseForElement(this.contentElement);
+      const universe = UI16.Widget.lookupUniverseForElement(this.contentElement);
       if (universe) {
         this.#domIssuesManager = universe.get(IssuesManager2.DOMIssuesManager.DOMIssuesManager);
         if (this.#nodeEventListeners.length && this.#node?.id) {
@@ -18261,10 +18359,10 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     return this.#domIssuesManager?.issuesForNode(this.node) ?? [];
   }
   get changeTracker() {
-    this.#changeTracker ??= UI15.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker3.ChangeTracker.ChangeTracker);
+    this.#changeTracker ??= UI16.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker3.ChangeTracker.ChangeTracker);
     return this.#changeTracker;
   }
-  constructor(element, [domIssuesManager, changeTracker] = [], view = DEFAULT_VIEW5) {
+  constructor(element, [domIssuesManager, changeTracker] = [], view = DEFAULT_VIEW6) {
     super(element);
     this.#domIssuesManager = domIssuesManager;
     this.#changeTracker = changeTracker;
@@ -18440,10 +18538,10 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
         isSelected: this.#selected,
         canInspect: this.node.canInspectNode(),
         showAiButton: Boolean(this.#hovered || this.#selected) && this.node.nodeType() === Node.ELEMENT_NODE && this.isAiButtonEnabled() && this.showAIButton,
-        aiButtonTitle: this.isAiButtonEnabled() ? UI15.ActionRegistry.ActionRegistry.instance().getAction("freestyler.elements-floating-button").title() : void 0,
+        aiButtonTitle: this.isAiButtonEnabled() ? UI16.ActionRegistry.ActionRegistry.instance().getAction("freestyler.elements-floating-button").title() : void 0,
         onAiButtonClick: (ev) => {
           ev.stopPropagation();
-          const action3 = UI15.ActionRegistry.ActionRegistry.instance().getAction("freestyler.elements-floating-button");
+          const action3 = UI16.ActionRegistry.ActionRegistry.instance().getAction("freestyler.elements-floating-button");
           if (action3) {
             void action3.execute();
           }
@@ -18549,13 +18647,13 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
   }
   async #onMediaAdornerClick(event) {
     event.stopPropagation();
-    await UI15.ViewManager.ViewManager.instance().showView("medias");
-    const view = UI15.ViewManager.ViewManager.instance().view("medias");
+    await UI16.ViewManager.ViewManager.instance().showView("medias");
+    const view = UI16.ViewManager.ViewManager.instance().view("medias");
     if (view) {
-      const widget5 = await view.widget();
-      if (widget5 instanceof Media2.MainView.MainView) {
-        await widget5.waitForInitialPlayers();
-        widget5.selectPlayerByDOMNodeId(this.node.backendNodeId());
+      const widget8 = await view.widget();
+      if (widget8 instanceof Media2.MainView.MainView) {
+        await widget8.waitForInitialPlayers();
+        widget8.selectPlayerByDOMNodeId(this.node.backendNodeId());
       }
     }
   }
@@ -18572,7 +18670,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
         }
       }
     }
-    UI15.UIUtils.runCSSAnimationOnce(animationElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
+    UI16.UIUtils.runCSSAnimationOnce(animationElement, DOM_UPDATE_ANIMATION_CLASS_NAME);
   }
   get isEditing() {
     return Boolean(this.editing);
@@ -18686,9 +18784,9 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
       }
       const nodeName = matchResult[1];
       tag.textContent = "";
-      UI15.UIUtils.createTextChild(tag, "<" + nodeName);
+      UI16.UIUtils.createTextChild(tag, "<" + nodeName);
       tag.appendChild(node);
-      UI15.UIUtils.createTextChild(tag, ">");
+      UI16.UIUtils.createTextChild(tag, ">");
     }
   }
   startEditingTarget(eventTarget) {
@@ -18727,7 +18825,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     }
   }
   isAiButtonEnabled() {
-    return UI15.ActionRegistry.ActionRegistry.instance().hasAction("freestyler.elements-floating-button");
+    return UI16.ActionRegistry.ActionRegistry.instance().hasAction("freestyler.elements-floating-button");
   }
   startEditing() {
     if (!this.isDOMNodeSelected) {
@@ -18762,7 +18860,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
   }
   addNewAttribute() {
     const container = document.createDocumentFragment();
-    render11(renderAttribute({ name: " ", value: "" }, null, false, this.node), container);
+    render12(renderAttribute({ name: " ", value: "" }, null, false, this.node), container);
     const attr = container.firstElementChild;
     attr.style.marginLeft = "2px";
     attr.style.marginRight = "2px";
@@ -18791,7 +18889,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
   }
   startEditingAttribute(attribute, elementForSelection) {
     console.assert(this.element.isAncestor(attribute));
-    if (UI15.UIUtils.isBeingEdited(attribute)) {
+    if (UI16.UIUtils.isBeingEdited(attribute)) {
       return true;
     }
     const attributeNameElement = attribute.getElementsByClassName("webkit-html-attribute-name")[0];
@@ -18829,13 +18927,13 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
       );
     }
     removeZeroWidthSpaceRecursive(attribute);
-    const config = new UI15.InplaceEditor.Config(
+    const config = new UI16.InplaceEditor.Config(
       this.attributeEditingCommitted.bind(this),
       this.editingCancelled.bind(this),
       attributeName
     );
     function postKeyDownFinishHandler(event) {
-      UI15.UIUtils.handleElementValueModifications(event, attribute);
+      UI16.UIUtils.handleElementValueModifications(event, attribute);
       return "";
     }
     if (!Common9.ParsedURL.ParsedURL.fromString(attributeValueElement?.textContent || "")) {
@@ -18847,7 +18945,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     return true;
   }
   startEditingTextNode(textNodeElement) {
-    if (UI15.UIUtils.isBeingEdited(textNodeElement)) {
+    if (UI16.UIUtils.isBeingEdited(textNodeElement)) {
       return true;
     }
     let textNode = this.node;
@@ -18861,7 +18959,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     if (container) {
       container.textContent = textNode.nodeValue();
     }
-    const config = new UI15.InplaceEditor.Config(
+    const config = new UI16.InplaceEditor.Config(
       this.textNodeEditingCommitted.bind(this, textNode),
       this.editingCancelled.bind(this),
       null
@@ -18880,7 +18978,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     if (tagName !== null && EditTagBlocklist.has(tagName.toLowerCase())) {
       return false;
     }
-    if (UI15.UIUtils.isBeingEdited(tagNameElement)) {
+    if (UI16.UIUtils.isBeingEdited(tagNameElement)) {
       return true;
     }
     const closingTagElement = this.distinctClosingTagElement();
@@ -18910,14 +19008,14 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     };
     tagNameElement.addEventListener("keyup", keyupListener, false);
     tagNameElement.addEventListener("keydown", keydownListener, false);
-    const config = new UI15.InplaceEditor.Config(editingCommitted, editingCancelled, tagName);
+    const config = new UI16.InplaceEditor.Config(editingCommitted, editingCancelled, tagName);
     this.updateEditorHandles(tagNameElement, config);
     const componentSelection = this.element.getComponentSelection();
     componentSelection?.selectAllChildren(tagNameElement);
     return true;
   }
   updateEditorHandles(element, config) {
-    const editorHandles = UI15.InplaceEditor.InplaceEditor.startEditing(element, config);
+    const editorHandles = UI16.InplaceEditor.InplaceEditor.startEditing(element, config);
     if (!editorHandles) {
       this.editing = null;
     } else {
@@ -19035,7 +19133,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
       const changeTracker = this.changeTracker;
       this.node.setAttribute(attributeName, newText, (error) => {
         if (!error) {
-          Elements3.DOMChanges.trackAttributeEdit(
+          Elements4.DOMChanges.trackAttributeEdit(
             changeTracker,
             this.node,
             buildChangeSelector(changeTracker, this.node),
@@ -19089,7 +19187,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
         return;
       }
       Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
-      Elements3.DOMChanges.trackTagNameEdit(
+      Elements4.DOMChanges.trackTagNameEdit(
         changeTracker,
         newNode,
         buildChangeSelector(changeTracker, newNode),
@@ -19107,7 +19205,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     const changeTracker = this.changeTracker;
     textNode.setNodeValue(newText, (error) => {
       if (!error && oldValue !== newText) {
-        Elements3.DOMChanges.trackTextNodeEdit(
+        Elements4.DOMChanges.trackTextNodeEdit(
           changeTracker,
           textNode,
           buildChangeSelector(changeTracker, textNode),
@@ -19224,7 +19322,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
     const selector = buildChangeSelector(changeTracker, this.node);
     await this.node.removeNode((err) => {
       if (!err) {
-        Elements3.DOMChanges.trackNodeRemoval(changeTracker, this.node, selector);
+        Elements4.DOMChanges.trackNodeRemoval(changeTracker, this.node, selector);
       }
     });
   }
@@ -19246,7 +19344,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
         const selector = buildChangeSelector(changeTracker, node);
         node.setOuterHTML(value5, (error) => {
           if (!error) {
-            Elements3.DOMChanges.trackHTMLEdit(changeTracker, node, selector, initialValue, value5);
+            Elements4.DOMChanges.trackHTMLEdit(changeTracker, node, selector, initialValue, value5);
           }
           selectNode(error);
         });
@@ -19339,7 +19437,7 @@ var DOMTreeElementWidget = class _DOMTreeElementWidget extends UI15.Widget.Widge
         y = rect.bottom;
       }
     }
-    const contextMenu = new UI15.ContextMenu.ContextMenu(event, {
+    const contextMenu = new UI16.ContextMenu.ContextMenu(event, {
       useSoftMenu: true,
       x,
       y,
@@ -19509,7 +19607,7 @@ var PERSISTENT_OVERLAYS = {
   }
 };
 function loggingParentProvider(e) {
-  const treeElement = UI15.TreeOutline.TreeElement.getTreeElementBylistItemNode(e);
+  const treeElement = UI16.TreeOutline.TreeElement.getTreeElementBylistItemNode(e);
   return treeElement?.treeOutline?.contentElement;
 }
 VisualLogging10.registerParentProvider("elementsTreeOutline", loggingParentProvider);
@@ -19705,19 +19803,19 @@ async function populateNodeContextMenu(contextMenu, domTreeWidget, domNode) {
     );
   }
   const isShadowRoot = domNode.isShadowRoot();
-  const createShortcut = UI16.KeyboardShortcut.KeyboardShortcut.shortcutToString.bind(null);
-  const modifier = UI16.KeyboardShortcut.Modifiers.CtrlOrMeta.value;
+  const createShortcut = UI17.KeyboardShortcut.KeyboardShortcut.shortcutToString.bind(null);
+  const modifier = UI17.KeyboardShortcut.Modifiers.CtrlOrMeta.value;
   let menuItem;
   const openAiAssistanceId = "freestyler.element-panel-context";
-  if (UI16.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+  if (UI17.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
     let appendSubmenuPromptAction = function(submenu2, action4, label, prompt, jslogContext) {
       submenu2.defaultSection().appendItem(label, () => {
         void action4.execute({ prompt });
-        UI16.UIUtils.PromotionManager.instance().recordFeatureInteraction(openAiAssistanceId);
+        UI17.UIUtils.PromotionManager.instance().recordFeatureInteraction(openAiAssistanceId);
       }, { disabled: !action4.enabled(), jslogContext });
     };
-    UI16.Context.Context.instance().setFlavor(SDK14.DOMModel.DOMNode, domNode);
-    const action3 = UI16.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+    UI17.Context.Context.instance().setFlavor(SDK14.DOMModel.DOMNode, domNode);
+    const action3 = UI17.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
     const submenu = contextMenu.footerSection().appendSubMenuItem(action3.title(), false, openAiAssistanceId);
     submenu.defaultSection().appendAction(openAiAssistanceId, i18nString14(UIStrings15.startAChat));
     const submenuConfigs = [
@@ -19929,7 +20027,7 @@ async function populateNodeContextMenu(contextMenu, domTreeWidget, domNode) {
     }
   );
   menuItem.setShortcut(
-    UI16.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction("elements.hide-element") || ""
+    UI17.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction("elements.hide-element") || ""
   );
   if (isEditable) {
     contextMenu.editSection().appendItem(
@@ -19958,7 +20056,7 @@ async function populateNodeContextMenu(contextMenu, domTreeWidget, domNode) {
     i18nString14(UIStrings15.captureNodeScreenshot),
     deviceModeWrapperAction.handleAction.bind(
       null,
-      UI16.Context.Context.instance(),
+      UI17.Context.Context.instance(),
       "emulation.capture-node-screenshot"
     ),
     { jslogContext: "emulation.capture-node-screenshot" }
@@ -19974,7 +20072,7 @@ async function populateNodeContextMenu(contextMenu, domTreeWidget, domNode) {
   }
 }
 async function showContextMenu(domTreeWidget, domNode, event) {
-  if (UI16.UIUtils.isEditing()) {
+  if (UI17.UIUtils.isEditing()) {
     return;
   }
   if (!domTreeWidget.enableContextMenu) {
@@ -19986,7 +20084,7 @@ async function showContextMenu(domTreeWidget, domNode, event) {
   }
   event.stopPropagation();
   event.preventDefault();
-  const contextMenu = new UI16.ContextMenu.ContextMenu(event);
+  const contextMenu = new UI17.ContextMenu.ContextMenu(event);
   const isPseudoElement = Boolean(domNode.pseudoType());
   const isTag = domNode.nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
   let textNode = node.enclosingNodeOrSelfWithClass?.("webkit-html-text-node");
@@ -20062,7 +20160,7 @@ async function showContextMenu(domTreeWidget, domNode, event) {
       }
     );
     hideItem.setShortcut(
-      UI16.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction("elements.hide-element") || ""
+      UI17.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction("elements.hide-element") || ""
     );
     if (domNode.childNodeCount() !== 0 || domNode.hasPseudoElements()) {
       contextMenu.viewSection().appendItem(
@@ -20570,7 +20668,7 @@ li.hovered:not(.always-parent) + ol.children {
 /*# sourceURL=${import.meta.resolve("./domTreeWidget.css")} */`;
 
 // ../../front_end/panels/elements/DOMTreeWidget.ts
-var { html: html16, nothing: nothing6, render: render12, Directives: { classMap: classMap4, ifDefined: ifDefined3, repeat: repeat2, styleMap: styleMap2 } } = Lit9;
+var { html: html16, nothing: nothing7, render: render13, Directives: { classMap: classMap4, ifDefined: ifDefined3, repeat: repeat2, styleMap: styleMap2 } } = Lit9;
 var UIStrings16 = {
   /**
    * @description ARIA accessible name in the DOM tree outline of the Elements panel.
@@ -20635,7 +20733,6 @@ function isBeingEditedAsHTML(state, node) {
 }
 function getVisibleChildren(node, { showComments }) {
   const children = [];
-  children.push(...DOMTreeElementWidget.visibleShadowRoots(node));
   const contentDocument = node.contentDocument();
   if (contentDocument) {
     children.push(contentDocument);
@@ -20657,6 +20754,7 @@ function getVisibleChildren(node, { showComments }) {
   if (beforePseudo) {
     children.push(beforePseudo);
   }
+  children.push(...DOMTreeElementWidget.visibleShadowRoots(node));
   children.push(...node.carouselPseudoElements());
   if (node.childNodeCount()) {
     const nodeChildren = node.children();
@@ -20712,7 +20810,7 @@ function findVisibleSibling(node, visibleChildren) {
 function computeLeftIndent(depth, isExpandable) {
   return 12 * (depth - 1) + (isExpandable ? 1 : 12);
 }
-var DEFAULT_VIEW6 = (input, _output, target) => {
+var DEFAULT_VIEW7 = (input, _output, target) => {
   let allRootNodes = [];
   let rootNodes = [];
   const rootDOMNode = input.rootDOMNode;
@@ -20771,7 +20869,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           jslog=${treeItemJslog()}>
         <span class="elements-tree-shortcut-title">\u21AA ${title}</span>
         <devtools-adorner
-            .name=${ElementsComponents6.AdornerManager.RegisteredAdorners.REVEAL}
+            .name=${ElementsComponents7.AdornerManager.RegisteredAdorners.REVEAL}
             class="adorner-reveal clickable"
             role=button
             tabindex=0
@@ -20783,21 +20881,21 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
             ${adornerRef()}>
           <span class="adorner-with-icon">
             <devtools-icon name="select-element"></devtools-icon>
-            <span>${ElementsComponents6.AdornerManager.RegisteredAdorners.REVEAL}</span>
+            <span>${ElementsComponents7.AdornerManager.RegisteredAdorners.REVEAL}</span>
           </span>
         </devtools-adorner>
         ${hasShortcutChildren ? html16`
           <ul role="group">
             ${shortcut.childShortcuts.map((child) => renderShortcut(child, shortcutDepth + 1))}
           </ul>
-        ` : nothing6}
+        ` : nothing7}
       </li>
     `;
   };
   const renderTopLayerContainer = (doc, containerDepth) => {
     const shortcuts = input.getTopLayerShortcuts(doc);
     if (shortcuts.length === 0) {
-      return nothing6;
+      return nothing7;
     }
     const isTopLayerExpanded = input.isTopLayerExpanded(doc);
     const onTopLayerExpand = (event) => {
@@ -20845,17 +20943,17 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       text: linkText,
       preventClick: true,
       showColumnNumber: false
-    })})` : nothing6}</span>
+    })})` : nothing7}</span>
         <ul role="group">
-          ${UI17.TreeOutline.ifExpanded(html16`
+          ${UI18.TreeOutline.ifExpanded(html16`
             ${header ? html16`
               <li role="treeitem"
                   class="elements-tree-adopted-style-sheet-contents"
                   style=${styleMap2({ "--indent": `${computeLeftIndent(depth + 1, false)}px` })}
                   jslog=${treeItemJslog("adopted-style-sheet-contents")}>
-                ${UI17.Widget.widget(AdoptedStyleSheetContentsWidget, { styleSheetHeader: header })}
+                ${UI18.Widget.widget(AdoptedStyleSheetContentsWidget, { styleSheetHeader: header })}
               </li>
-            ` : nothing6}
+            ` : nothing7}
           `)}
         </ul>
       </li>
@@ -20864,7 +20962,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   const renderAdoptedStyleSheets = (node, depth) => {
     const sheets = node.adoptedStyleSheetsForNode;
     if (!sheets || sheets.length === 0) {
-      return nothing6;
+      return nothing7;
     }
     const isExpanded = input.isAdoptedStyleSheetsExpanded(node);
     const onExpand2 = (event) => {
@@ -20883,7 +20981,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           jslog=${treeItemJslog("adopted-style-sheets")}>
         <span class="elements-tree-shortcut-title">#adopted-style-sheets</span>
         <ul role="group">
-          ${UI17.TreeOutline.ifExpanded(html16`
+          ${UI18.TreeOutline.ifExpanded(html16`
             ${sheets.map((sheet) => renderAdoptedStyleSheet(sheet, depth + 1))}
           `)}
         </ul>
@@ -21015,7 +21113,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       if (currentTarget && event.target.closest('li[role="treeitem"]') !== currentTarget) {
         return;
       }
-      const showInfo = !UI17.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
+      const showInfo = !UI18.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event);
       input.onHoverNode(node, showInfo, isClosingTag);
     };
     const onContextMenu = (event) => {
@@ -21023,7 +21121,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       input.onContextMenu(node, event);
     };
     const onMouseDown = (event) => {
-      if (event.detail < 2 || UI17.UIUtils.isBeingEdited(event.target)) {
+      if (event.detail < 2 || UI18.UIUtils.isBeingEdited(event.target)) {
         return;
       }
       event.preventDefault();
@@ -21079,7 +21177,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       false
     ))}
           @dragend=${on(onDragEnd)}
-          jslog=${treeItemJslog(void 0, true)}>${UI17.Widget.widget(DOMTreeElementWidget, {
+          jslog=${treeItemJslog(void 0, true)}>${UI18.Widget.widget(DOMTreeElementWidget, {
       node,
       isClosingTag: false,
       renderSelection: false,
@@ -21121,7 +21219,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       updateRecord: input.updateRecordForNode(node) ?? null
     })}${hasChildren ? html16`<ul role="group">
             ${isExpanded && !isEditingAsHTML ? html16`
-              ${node.adoptedStyleSheetsForNode.length > 0 ? renderAdoptedStyleSheets(node, depth + 1) : nothing6}
+              ${node.adoptedStyleSheetsForNode.length > 0 ? renderAdoptedStyleSheets(node, depth + 1) : nothing7}
               ${repeat2(children, (child) => child.id, (child) => renderNode(child, depth + 1))}
               ${remainingChildrenCount > 0 ? html16`
                 <li role="treeitem"
@@ -21135,9 +21233,9 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       event.stopPropagation();
       input.onExpandAllChildren(node);
     })}>${i18nString15(UIStrings16.showAllNodesDMore, { PH1: remainingChildrenCount })}</devtools-button></li>
-              ` : nothing6}
-              ${node.isInsertionPoint() ? node.distributedNodes().map((distributedNode) => renderShortcut(distributedNode, depth + 1)) : nothing6}
-              ${node instanceof SDK15.DOMModel.DOMDocument ? renderTopLayerContainer(node, depth + 1) : nothing6}
+              ` : nothing7}
+              ${node.isInsertionPoint() ? node.distributedNodes().map((distributedNode) => renderShortcut(distributedNode, depth + 1)) : nothing7}
+              ${node instanceof SDK15.DOMModel.DOMDocument ? renderTopLayerContainer(node, depth + 1) : nothing7}
               ${needsClosingTag ? html16`
                 <li role="treeitem"
                     data-backend-node-id=${ifDefined3(node.backendNodeId())}
@@ -21169,7 +21267,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       /* isClosingTag= */
       true
     ))}
-                    @dragend=${on(onDragEnd)}>${UI17.Widget.widget(DOMTreeElementWidget, {
+                    @dragend=${on(onDragEnd)}>${UI18.Widget.widget(DOMTreeElementWidget, {
       node,
       isClosingTag: true,
       renderSelection: false,
@@ -21188,9 +21286,9 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       },
       updateRecord: input.updateRecordForNode(node) ?? null
     })}</li>
-              ` : nothing6}
-            ` : nothing6}
-          </ul>` : nothing6}</li>
+              ` : nothing7}
+            ` : nothing7}
+          </ul>` : nothing7}</li>
     `;
   };
   const isSingleNode = Boolean(input.deindentSingleNode && rootNodes.length === 1 && !nodeHasVisibleChildren(rootNodes[0], input));
@@ -21204,8 +21302,8 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   });
   const totalVisibleRows = input.maxRowsShown ? countAllVisibleRows() : 0;
   const truncatedLines = input.maxRowsShown ? Math.max(0, totalVisibleRows - input.maxRowsShown) : 0;
-  render12(html16`
-    <style>@scope to (devtools-widget > *) { ${UI17.inspectorCommonStyles} }</style>
+  render13(html16`
+    <style>@scope to (devtools-widget > *) { ${UI18.inspectorCommonStyles} }</style>
     <style>@scope to (devtools-widget > *) { ${domTreeWidget_css_default} }</style>
     <style>@scope to (devtools-widget > *) { ${CodeHighlighter5.codeHighlighterStyles} }</style>
     <div class=${disclosureClasses} style=${disclosureStyles}>
@@ -21221,16 +21319,16 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
         @clipboard-paste=${(event) => input.onPaste(event)}
         @mouseleave=${input.onLeave}
         .template=${html16`
-          <style>${UI17.inspectorCommonStyles}</style>
+          <style>${UI18.inspectorCommonStyles}</style>
           <style>${domTreeWidget_css_default}</style>
           <style>${CodeHighlighter5.codeHighlighterStyles}</style>
           <ul role="tree" class="elements-tree-outline source-code ${input.wrap ? "" : "elements-tree-nowrap"} ${input.hideGutter ? "elements-hide-gutter" : ""} ${isSingleNode ? "single-node" : ""}" aria-label=${i18nString15(UIStrings16.pageDom)}>
-            ${input.omitRootDOMNode && input.rootDOMNode && input.rootDOMNode.adoptedStyleSheetsForNode.length > 0 ? renderAdoptedStyleSheets(input.rootDOMNode, 0) : nothing6}
+            ${input.omitRootDOMNode && input.rootDOMNode && input.rootDOMNode.adoptedStyleSheetsForNode.length > 0 ? renderAdoptedStyleSheets(input.rootDOMNode, 0) : nothing7}
             ${repeat2(rootNodes, (node) => node.id, (node) => renderNode(node))}
             ${input.omitRootDOMNode && input.rootDOMNode ? (() => {
     const remaining = allRootNodes.length - rootNodes.length;
     if (remaining <= 0) {
-      return nothing6;
+      return nothing7;
     }
     const root = input.rootDOMNode;
     return html16`
@@ -21246,8 +21344,8 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       input.onExpandAllChildren(root);
     })}>${i18nString15(UIStrings16.showAllNodesDMore, { PH1: remaining })}</devtools-button></li>
               `;
-  })() : nothing6}
-            ${input.omitRootDOMNode && input.rootDOMNode instanceof SDK15.DOMModel.DOMDocument ? renderTopLayerContainer(input.rootDOMNode, 0) : nothing6}
+  })() : nothing7}
+            ${input.omitRootDOMNode && input.rootDOMNode instanceof SDK15.DOMModel.DOMDocument ? renderTopLayerContainer(input.rootDOMNode, 0) : nothing7}
           </ul>
         `}>
       </devtools-tree>
@@ -21260,7 +21358,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
         @click=${input.onClearMaxRows}>
         ${i18nString15(UIStrings16.showAllLines, { PH1: truncatedLines })}
       </button>
-    ` : nothing6}
+    ` : nothing7}
   `, target);
   if (input.nodesWithDirtyAdorners.size > 0) {
     input.onDirtyAdornersUpdated();
@@ -21272,9 +21370,9 @@ function getElementsTreeWidgetAndNode(element) {
     if (current.tagName === "LI") {
       const devtoolsWidget = current.querySelector(":scope > devtools-widget, :scope > .tree-element-title > devtools-widget");
       if (devtoolsWidget) {
-        const widget5 = UI17.Widget.Widget.get(devtoolsWidget);
-        if (widget5 instanceof DOMTreeElementWidget) {
-          return { node: widget5.node, widget: widget5 };
+        const widget8 = UI18.Widget.Widget.get(devtoolsWidget);
+        if (widget8 instanceof DOMTreeElementWidget) {
+          return { node: widget8.node, widget: widget8 };
         }
       }
     }
@@ -21282,7 +21380,7 @@ function getElementsTreeWidgetAndNode(element) {
   }
   return {};
 }
-var DOMTreeWidget = class extends UI17.Widget.Widget {
+var DOMTreeWidget = class extends UI18.Widget.Widget {
   static INJECT = [ChangeTracker5.ChangeTracker.ChangeTracker];
   omitRootDOMNode = false;
   selectEnabled = false;
@@ -21422,10 +21520,10 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
   #view;
   #highlightThrottler = new Common11.Throttler.Throttler(100);
   get changeTracker() {
-    this.#changeTracker ??= UI17.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker5.ChangeTracker.ChangeTracker);
+    this.#changeTracker ??= UI18.Widget.lookupUniverseForElement(this.contentElement)?.get(ChangeTracker5.ChangeTracker.ChangeTracker);
     return this.#changeTracker;
   }
-  constructor(element, [changeTracker] = [], view = DEFAULT_VIEW6) {
+  constructor(element, [changeTracker] = [], view = DEFAULT_VIEW7) {
     super(element, {
       useShadowDom: false,
       delegatesFocus: false
@@ -21496,16 +21594,16 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
         return await UIComponentUtils.ImagePreview.loadPrecomputedFeatures(node);
       }
     );
-    this.#issuePopoverHelper = new UI17.PopoverHelper.PopoverHelper(this.contentElement, (event) => {
+    this.#issuePopoverHelper = new UI18.PopoverHelper.PopoverHelper(this.contentElement, (event) => {
       const hoveredNode = event.composedPath()[0];
       if (!(hoveredNode instanceof Element) || !hoveredNode.matches(".violating-element")) {
         return null;
       }
-      const { node, widget: widget5 } = getElementsTreeWidgetAndNode(hoveredNode);
+      const { node, widget: widget8 } = getElementsTreeWidgetAndNode(hoveredNode);
       if (!node) {
         return null;
       }
-      let issues = widget5?.issues ?? [];
+      let issues = widget8?.issues ?? [];
       if (hoveredNode.classList.contains("webkit-html-attribute-name")) {
         const attrName = hoveredNode.textContent;
         issues = issues.filter((issue) => getElementIssueDetails(issue)?.attribute === attrName);
@@ -21522,12 +21620,12 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
         box: hoveredNode.boxInWindow(),
         show: async (popover) => {
           popover.setIgnoreLeftMargin(true);
-          render12(html16`
+          render13(html16`
             <div class="squiggles-content">
               ${issues.map((issue) => {
             const elementIssueDetails = getElementIssueDetails(issue);
             if (!elementIssueDetails) {
-              return nothing6;
+              return nothing7;
             }
             const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
             const openIssueEvent = () => Common11.Revealer.reveal(issue);
@@ -21552,7 +21650,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
   #addUpdateRecord(node) {
     let record = this.#updateRecords.get(node);
     if (!record) {
-      record = new Elements4.ElementUpdateRecord.ElementUpdateRecord();
+      record = new Elements5.ElementUpdateRecord.ElementUpdateRecord();
       this.#updateRecords.set(node, record);
     }
     return record;
@@ -22240,7 +22338,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     const isHidden = this.isToggledToHidden(node);
     if (isHidden !== wasHidden) {
       const changeTracker = this.changeTracker;
-      Elements4.DOMChanges.trackVisibilityToggle(
+      Elements5.DOMChanges.trackVisibilityToggle(
         changeTracker,
         node,
         buildChangeSelector(changeTracker, node),
@@ -22262,7 +22360,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     const selector = buildChangeSelector(changeTracker, node);
     await node.removeNode((err) => {
       if (!err) {
-        Elements4.DOMChanges.trackNodeRemoval(changeTracker, node, selector);
+        Elements5.DOMChanges.trackNodeRemoval(changeTracker, node, selector);
       }
     });
   }
@@ -22351,7 +22449,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     void node.duplicate().then(({ error, node: newNode }) => {
       if (!error && newNode) {
         const changeTracker = this.changeTracker;
-        Elements4.DOMChanges.trackNodeDuplication(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
+        Elements5.DOMChanges.trackNodeDuplication(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
       }
     });
   }
@@ -22399,7 +22497,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     if (selection && selection.type === "Range" && !selection.isCollapsed && selection.toString().length > 0 && target.hasSelection()) {
       return false;
     }
-    if (UI17.UIUtils.isEditing() || this.#multilineEditing) {
+    if (UI18.UIUtils.isEditing() || this.#multilineEditing) {
       event.preventDefault();
       return false;
     }
@@ -22476,7 +22574,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     draggedNode.moveTo(parentNode, anchorNode, (error, newNode) => {
       if (!error && newNode) {
         const changeTracker = this.changeTracker;
-        Elements4.DOMChanges.trackNodeDrop(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
+        Elements5.DOMChanges.trackNodeDrop(changeTracker, newNode, buildChangeSelector(changeTracker, newNode));
       }
       this.selectNodeAfterEdit(wasExpanded, error, newNode);
     });
@@ -22589,7 +22687,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     this.performUpdate();
   }
   addNewAttribute(node) {
-    if (UI17.UIUtils.isEditing()) {
+    if (UI18.UIUtils.isEditing()) {
       return;
     }
     if (node.nodeType() !== Node.ELEMENT_NODE || node.isShadowRoot() || node.ancestorUserAgentShadowRoot()) {
@@ -22599,14 +22697,14 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     this.performUpdate();
   }
   startEditingTextNode(node) {
-    if (UI17.UIUtils.isEditing() || !DOMTreeElementWidget.canEditTextNode(node)) {
+    if (UI18.UIUtils.isEditing() || !DOMTreeElementWidget.canEditTextNode(node)) {
       return;
     }
     this.#nodeToEdit = { node, isTextNode: true };
     this.performUpdate();
   }
   startEditing(node, attributeName) {
-    if (UI17.UIUtils.isEditing()) {
+    if (UI18.UIUtils.isEditing()) {
       return;
     }
     const nodeType = node.nodeType();
@@ -22640,14 +22738,14 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     }
   }
   onKeyDown(event) {
-    if (UI17.UIUtils.isEditing()) {
+    if (UI18.UIUtils.isEditing()) {
       return false;
     }
     const node = this.selectedDOMNode();
     if (!node) {
       return false;
     }
-    if (UI17.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && node.parentNode) {
+    if (UI18.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event) && node.parentNode) {
       if (event.key === "ArrowUp" && node.previousSibling) {
         this.#moveNodeAmongSiblings(
           node,
@@ -22701,7 +22799,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     node.moveTo(parentNode, anchor, (error, newNode) => {
       if (!error && newNode) {
         const changeTracker = this.changeTracker;
-        Elements4.DOMChanges.trackNodeMove(
+        Elements5.DOMChanges.trackNodeMove(
           changeTracker,
           newNode,
           buildChangeSelector(changeTracker, newNode),
@@ -22730,7 +22828,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
   async copyOuterHTML(node, includeShadowRoots = false) {
     const outerHTML = await node.getOuterHTML(includeShadowRoots);
     if (outerHTML !== null) {
-      UI17.UIUtils.copyTextToClipboard(outerHTML);
+      UI18.UIUtils.copyTextToClipboard(outerHTML);
     }
   }
   copyCSSPath(node) {
@@ -22808,7 +22906,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
       clipboardNode.moveTo(targetNode, null, (error, newNode) => {
         if (!error && newNode) {
           const changeTracker = this.changeTracker;
-          Elements4.DOMChanges.trackNodePaste(
+          Elements5.DOMChanges.trackNodePaste(
             changeTracker,
             newNode,
             buildChangeSelector(changeTracker, newNode),
@@ -22823,7 +22921,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
       clipboardNode.copyTo(targetNode, null, (error, newNode) => {
         if (!error && newNode) {
           const changeTracker = this.changeTracker;
-          Elements4.DOMChanges.trackNodePaste(
+          Elements5.DOMChanges.trackNodePaste(
             changeTracker,
             newNode,
             buildChangeSelector(changeTracker, newNode),
@@ -22844,7 +22942,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     if (originalEvent.target instanceof Node && originalEvent.target.hasSelection?.()) {
       return;
     }
-    if (UI17.UIUtils.isEditing()) {
+    if (UI18.UIUtils.isEditing()) {
       return;
     }
     const targetNode = this.selectedDOMNode();
@@ -22858,7 +22956,7 @@ var DOMTreeWidget = class extends UI17.Widget.Widget {
     this.performCopyOrCut(isCut, targetNode);
   }
   onPaste(event) {
-    if (UI17.UIUtils.isEditing()) {
+    if (UI18.UIUtils.isEditing()) {
       return;
     }
     const targetNode = this.selectedDOMNode();
@@ -23031,7 +23129,7 @@ import * as i18n34 from "../../core/i18n/i18n.js";
 import * as Platform8 from "../../core/platform/platform.js";
 import * as SDK16 from "../../core/sdk/sdk.js";
 import * as Buttons4 from "../../ui/components/buttons/buttons.js";
-import * as UI18 from "../../ui/legacy/legacy.js";
+import * as UI19 from "../../ui/legacy/legacy.js";
 import * as Lit10 from "../../ui/lit/lit.js";
 import * as SettingsUI6 from "../../ui/settings/settings.js";
 import * as VisualLogging12 from "../../ui/visual_logging/visual_logging.js";
@@ -23226,7 +23324,7 @@ var UIStrings17 = {
 };
 var str_17 = i18n34.i18n.registerUIStrings("panels/elements/LayoutPane.ts", UIStrings17);
 var i18nString16 = i18n34.i18n.getLocalizedString.bind(void 0, str_17);
-var { render: render13, html: html17 } = Lit10;
+var { render: render14, html: html17 } = Lit10;
 var nodeToLayoutElement = (node) => {
   const className = node.getAttribute("class");
   const nodeId = node.id;
@@ -23306,7 +23404,7 @@ function isBooleanSetting(setting) {
   return setting.type === Common12.Settings.SettingType.BOOLEAN;
 }
 var layoutPaneInstance;
-var DEFAULT_VIEW7 = (input, output, target) => {
+var DEFAULT_VIEW8 = (input, output, target) => {
   const onColorLabelKeyUp = (event) => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -23314,7 +23412,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     const target2 = event.target;
     const input2 = target2.querySelector("input");
     input2.click();
-    UI18.ARIAUtils.LiveAnnouncer.alert(i18nString16(UIStrings17.colorPickerOpened));
+    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString16(UIStrings17.colorPickerOpened));
     event.preventDefault();
   };
   const onColorLabelKeyDown = (event) => {
@@ -23371,11 +23469,11 @@ var DEFAULT_VIEW7 = (input, output, target) => {
            @click=${(e) => input.onElementClick(element, e)}
            ></devtools-button>
       </div>`;
-  render13(
+  render14(
     html17`
       <div style="min-width: min-content;" jslog=${VisualLogging12.pane("layout").track({ resize: true })}>
         <style>${layoutPane_css_default}</style>
-        <style>@scope to (devtools-widget > *) { ${UI18.inspectorCommonStyles} }</style>
+        <style>@scope to (devtools-widget > *) { ${UI19.inspectorCommonStyles} }</style>
         <details open>
           <summary class="header"
             @keydown=${input.onSummaryKeyDown}
@@ -23438,12 +23536,12 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     target
   );
 };
-var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
+var LayoutPane = class _LayoutPane extends UI19.Widget.Widget {
   #settings;
   #uaShadowDOMSetting;
   #domModels;
   #view;
-  constructor(element, view = DEFAULT_VIEW7) {
+  constructor(element, view = DEFAULT_VIEW8) {
     super(element);
     const settings = Common12.Settings.Settings.instance();
     this.#settings = [
@@ -23576,7 +23674,7 @@ var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
     }
     this.#domModels = [];
     SDK16.TargetManager.TargetManager.instance().observeModels(SDK16.DOMModel.DOMModel, this, { scoped: true });
-    UI18.Context.Context.instance().addFlavorChangeListener(SDK16.DOMModel.DOMNode, this.requestUpdate, this);
+    UI19.Context.Context.instance().addFlavorChangeListener(SDK16.DOMModel.DOMNode, this.requestUpdate, this);
     this.#uaShadowDOMSetting.addChangeListener(this.requestUpdate, this);
     this.requestUpdate();
   }
@@ -23586,7 +23684,7 @@ var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
       setting.removeChangeListener(this.requestUpdate, this);
     }
     SDK16.TargetManager.TargetManager.instance().unobserveModels(SDK16.DOMModel.DOMModel, this);
-    UI18.Context.Context.instance().removeFlavorChangeListener(SDK16.DOMModel.DOMNode, this.requestUpdate, this);
+    UI19.Context.Context.instance().removeFlavorChangeListener(SDK16.DOMModel.DOMNode, this.requestUpdate, this);
     this.#uaShadowDOMSetting.removeChangeListener(this.requestUpdate, this);
   }
   #onSummaryKeyDown(event) {
@@ -23623,7 +23721,7 @@ var LayoutPane = class _LayoutPane extends UI18.Widget.Widget {
       booleanSettings: settings.filter(isBooleanSetting),
       onSummaryKeyDown: this.#onSummaryKeyDown.bind(this)
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   #onBooleanSettingChange(setting, event) {
     event.preventDefault();
@@ -23664,8 +23762,8 @@ __export(MetricsSidebarPane_exports, {
 import * as Common13 from "../../core/common/common.js";
 import * as Platform9 from "../../core/platform/platform.js";
 import * as SDK17 from "../../core/sdk/sdk.js";
-import * as UI19 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html18, nothing as nothing7, render as render14 } from "../../ui/lit/lit.js";
+import * as UI20 from "../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html18, nothing as nothing8, render as render15 } from "../../ui/lit/lit.js";
 import * as VisualLogging13 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/metricsSidebarPane.css.js
@@ -23822,8 +23920,8 @@ visible. */
 /*# sourceURL=${import.meta.resolve("./metricsSidebarPane.css")} */`;
 
 // ../../front_end/panels/elements/MetricsSidebarPane.ts
-var { live } = Directives2;
-var DEFAULT_VIEW8 = (input, output, target) => {
+var { live } = Directives3;
+var DEFAULT_VIEW9 = (input, output, target) => {
   const { style, highlightedMode, node, contentWidth, contentHeight, onHighlightNode, onStartEditing } = input;
   function createBoxPartElement(style2, name, side, suffix) {
     const propertyName = (name !== "position" ? name + "-" : "") + side + suffix;
@@ -23871,7 +23969,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
     Common13.Color.Legacy.fromRGBA([0, 0, 0, 0])
   ];
   const boxLabels = ["content", "padding", "border", "margin", "position"];
-  let previousBox = nothing7;
+  let previousBox = nothing8;
   for (let i = 0; i < boxes.length; ++i) {
     const name = boxes[i];
     const display = style.get("display");
@@ -23929,7 +24027,7 @@ var DEFAULT_VIEW8 = (input, output, target) => {
         </div>`;
     previousBox = box;
   }
-  render14(
+  render15(
     html18`
     <div class="metrics ${!node ? "collapsed" : ""}" @mouseover=${(e) => {
       e.consume();
@@ -23954,7 +24052,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
   boxModelInternal = null;
   isEditingMetrics;
   view;
-  constructor(computedStyleModel, view = DEFAULT_VIEW8) {
+  constructor(computedStyleModel, view = DEFAULT_VIEW9) {
     super(computedStyleModel, { useShadowDom: "pure" });
     this.registerRequiredCSS(metricsSidebarPane_css_default);
     this.originalPropertyData = null;
@@ -24146,7 +24244,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     );
   }
   startEditing(targetElement, box, styleProperty, computedStyle) {
-    if (UI19.UIUtils.isBeingEdited(targetElement)) {
+    if (UI20.UIUtils.isBeingEdited(targetElement)) {
       return;
     }
     const context = { box, styleProperty, computedStyle, keyDownHandler: () => {
@@ -24155,8 +24253,8 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     context.keyDownHandler = boundKeyDown;
     targetElement.addEventListener("keydown", boundKeyDown, false);
     this.isEditingMetrics = true;
-    const config = new UI19.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
-    UI19.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
+    const config = new UI20.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
+    UI20.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
     const selection = targetElement.getComponentSelection();
     selection?.selectAllChildren(targetElement);
   }
@@ -24171,7 +24269,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
       }
       return prefix + number + suffix;
     }
-    UI19.UIUtils.handleElementValueModifications(
+    UI20.UIUtils.handleElementValueModifications(
       event,
       element,
       finishHandler.bind(this),
@@ -24280,13 +24378,13 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
 // ../../front_end/panels/elements/PlatformFontsWidget.ts
 var PlatformFontsWidget_exports = {};
 __export(PlatformFontsWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW9,
+  DEFAULT_VIEW: () => DEFAULT_VIEW10,
   PlatformFontsWidget: () => PlatformFontsWidget
 });
 import * as i18n36 from "../../core/i18n/i18n.js";
 import * as ComputedStyle2 from "../../models/computed_style/computed_style.js";
-import * as UI20 from "../../ui/legacy/legacy.js";
-import { html as html19, render as render15 } from "../../ui/lit/lit.js";
+import * as UI21 from "../../ui/legacy/legacy.js";
+import { html as html19, render as render16 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/platformFontsWidget.css.js
 var platformFontsWidget_css_default = `/**
@@ -24370,9 +24468,9 @@ var UIStrings18 = {
 };
 var str_18 = i18n36.i18n.registerUIStrings("panels/elements/PlatformFontsWidget.ts", UIStrings18);
 var i18nString17 = i18n36.i18n.getLocalizedString.bind(void 0, str_18);
-var DEFAULT_VIEW9 = (input, _output, target) => {
+var DEFAULT_VIEW10 = (input, _output, target) => {
   const isEmptySection = !input.platformFonts?.length;
-  render15(
+  render16(
     html19`
     <style>${platformFontsWidget_css_default}</style>
     <div class="platform-fonts">
@@ -24396,10 +24494,10 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
     target
   );
 };
-var PlatformFontsWidget = class extends UI20.Widget.VBox {
+var PlatformFontsWidget = class extends UI21.Widget.VBox {
   #view;
   #sharedModel = null;
-  constructor(element, view = DEFAULT_VIEW9) {
+  constructor(element, view = DEFAULT_VIEW10) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(platformFontsWidget_css_default);
@@ -24429,12 +24527,12 @@ var PlatformFontsWidget = class extends UI20.Widget.VBox {
     const cssModel = this.#sharedModel?.cssModel();
     const node = this.#sharedModel?.node;
     if (!node || !cssModel) {
-      this.#view({ platformFonts: null }, {}, this.contentElement);
+      this.#view({ platformFonts: null }, void 0, this.contentElement);
       return;
     }
     const platformFonts = await cssModel.getPlatformFonts(node.id);
     const sortedPlatformFonts = platformFonts?.sort((a, b) => b.glyphCount - a.glyphCount) || null;
-    this.#view({ platformFonts: sortedPlatformFonts }, {}, this.contentElement);
+    this.#view({ platformFonts: sortedPlatformFonts }, void 0, this.contentElement);
   }
 };
 
@@ -24526,7 +24624,7 @@ var SidebarPaneTabId = /* @__PURE__ */ ((SidebarPaneTabId2) => {
 })(SidebarPaneTabId || {});
 var elementsPanelInstance;
 var DEFAULT_COMPUTED_STYLES_DEBOUNCE_MS = 100;
-var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
+var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
   splitWidget;
   #searchableView;
   mainContainer;
@@ -24577,13 +24675,13 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     this.#targetManager = targetManager ?? SDK18.TargetManager.TargetManager.instance();
     this.#settings = settings ?? Common14.Settings.Settings.instance();
     this.registerRequiredCSS(elementsPanel_css_default);
-    this.splitWidget = new UI21.SplitWidget.SplitWidget(true, true, "elements-panel-split-view-state", 325, 325);
+    this.splitWidget = new UI22.SplitWidget.SplitWidget(true, true, "elements-panel-split-view-state", 325, 325);
     this.splitWidget.addEventListener(
-      UI21.SplitWidget.Events.SIDEBAR_SIZE_CHANGED,
+      UI22.SplitWidget.Events.SIDEBAR_SIZE_CHANGED,
       this.updateTreeOutlineVisibleWidth.bind(this)
     );
     this.splitWidget.show(this.element);
-    this.#searchableView = new UI21.SearchableView.SearchableView(this, null);
+    this.#searchableView = new UI22.SearchableView.SearchableView(this, null);
     this.#searchableView.setMinimalSearchQuerySize(0);
     this.#searchableView.setMinimumSize(25, 28);
     this.#searchableView.setPlaceholder(i18nString18(UIStrings19.findByStringSelectorOrXpath));
@@ -24594,8 +24692,8 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     this.mainContainer.appendChild(this.domTreeContainer);
     stackElement.appendChild(this.mainContainer);
     stackElement.appendChild(crumbsContainer);
-    UI21.ARIAUtils.markAsMain(this.domTreeContainer);
-    UI21.ARIAUtils.setLabel(this.domTreeContainer, i18nString18(UIStrings19.domTreeExplorer));
+    UI22.ARIAUtils.markAsMain(this.domTreeContainer);
+    UI22.ARIAUtils.setLabel(this.domTreeContainer, i18nString18(UIStrings19.domTreeExplorer));
     this.splitWidget.setMainWidget(this.#searchableView);
     this.splitMode = null;
     this.mainContainer.id = "main-content";
@@ -24608,19 +24706,19 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     domWordWrapSetting.addChangeListener(this.domWordWrapSettingChanged.bind(this));
     crumbsContainer.id = "elements-crumbs";
     this.accessibilityTreeView = new AccessibilityTreeView();
-    this.breadcrumbs = new ElementsComponents7.ElementsBreadcrumbs.ElementsBreadcrumbs();
+    this.breadcrumbs = new ElementsComponents8.ElementsBreadcrumbs.ElementsBreadcrumbs();
     this.breadcrumbs.addEventListener("breadcrumbsnodeselected", (event) => {
       this.crumbNodeSelected(event);
     });
     crumbsContainer.appendChild(this.breadcrumbs);
     this.#computedStyleModel = new ComputedStyle3.ComputedStyleModel.ComputedStyleModel(
-      UI21.Context.Context.instance().flavor(SDK18.DOMModel.DOMNode)
+      UI22.Context.Context.instance().flavor(SDK18.DOMModel.DOMNode)
     );
-    UI21.Context.Context.instance().addFlavorChangeListener(SDK18.DOMModel.DOMNode, (event) => {
+    UI22.Context.Context.instance().addFlavorChangeListener(SDK18.DOMModel.DOMNode, (event) => {
       this.#computedStyleModel.node = event.data;
       this.evaluateTrackingComputedStyleUpdatesForNode();
     });
-    UI21.Context.Context.instance().addFlavorChangeListener(
+    UI22.Context.Context.instance().addFlavorChangeListener(
       StylesSidebarPane,
       this.evaluateTrackingComputedStyleUpdatesForNode,
       this
@@ -24643,7 +24741,7 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
     this.cssStyleTrackerByCSSModel = /* @__PURE__ */ new Map();
     this.currentSearchResultIndex = -1;
     this.pendingNodeReveal = false;
-    this.adornerManager = new ElementsComponents7.AdornerManager.AdornerManager(
+    this.adornerManager = new ElementsComponents8.AdornerManager.AdornerManager(
       this.#settings.resolve(SettingsUI7.ElementsSettings.adornerSettingsSettingDescriptor)
     );
     this.adornersByName = /* @__PURE__ */ new Map();
@@ -24672,12 +24770,12 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
   // This is a debounced method because the user might be navigated from Styles tab to Computed Style tab and vice versa.
   // For that case, we want to only run this function once.
   evaluateTrackingComputedStyleUpdatesForNode = Common14.Debouncer.debounce(() => {
-    const selectedNode = UI21.Context.Context.instance().flavor(SDK18.DOMModel.DOMNode);
+    const selectedNode = UI22.Context.Context.instance().flavor(SDK18.DOMModel.DOMNode);
     if (!selectedNode) {
       return;
     }
     const isComputedStyleWidgetVisible = this.#computedStyleWidget.isShowing();
-    const isStylesTabVisible = Boolean(UI21.Context.Context.instance().flavor(StylesSidebarPane));
+    const isStylesTabVisible = Boolean(UI22.Context.Context.instance().flavor(StylesSidebarPane));
     const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible || isStylesTabVisible && Root5.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled;
     void selectedNode.domModel()?.cssModel()?.trackComputedStyleUpdatesForNode(
       shouldTrackComputedStyleUpdates ? selectedNode.id : void 0
@@ -24695,7 +24793,7 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
   showAccessibilityTree() {
     if (this.accessibilityTreeView) {
       this.splitWidget.setMainWidget(this.accessibilityTreeView);
-      const toggleAction = UI21.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
+      const toggleAction = UI22.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
       if (toggleAction) {
         toggleAction.setToggled(true);
       }
@@ -24703,7 +24801,7 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
   }
   showDOMTree() {
     this.splitWidget.setMainWidget(this.#searchableView);
-    const toggleAction = UI21.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
+    const toggleAction = UI22.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-a11y-tree");
     if (toggleAction) {
       toggleAction.setToggled(false);
     }
@@ -24738,8 +24836,8 @@ var ElementsPanel = class _ElementsPanel extends UI21.Panel.Panel {
   resolveLocation(_locationName) {
     return this.sidebarPaneView || null;
   }
-  showToolbarPane(widget5, toggle4) {
-    this.stylesWidget.showToolbarPane(widget5, toggle4);
+  showToolbarPane(widget8, toggle5) {
+    this.stylesWidget.showToolbarPane(widget8, toggle5);
   }
   modelAdded(domModel) {
     this.setupStyleTracking(domModel.cssModel());
@@ -24809,7 +24907,7 @@ ${node.simpleSelector()} {}`, false);
   }
   wasShown() {
     super.wasShown();
-    UI21.Context.Context.instance().setFlavor(_ElementsPanel, this);
+    UI22.Context.Context.instance().setFlavor(_ElementsPanel, this);
     this.#domTreeWidget.show(this.domTreeContainer);
     this.evaluateTrackingComputedStyleUpdatesForNode();
   }
@@ -24818,7 +24916,7 @@ ${node.simpleSelector()} {}`, false);
     this.evaluateTrackingComputedStyleUpdatesForNode();
     this.#domTreeWidget.detach();
     super.willHide();
-    UI21.Context.Context.instance().setFlavor(_ElementsPanel, null);
+    UI22.Context.Context.instance().setFlavor(_ElementsPanel, null);
   }
   onResize() {
     this.element.window().requestAnimationFrame(this.updateSidebarPosition.bind(this));
@@ -24848,7 +24946,7 @@ ${node.simpleSelector()} {}`, false);
     } else {
       this.breadcrumbs.data = { crumbs: [], selectedNode: null };
     }
-    UI21.Context.Context.instance().setFlavor(SDK18.DOMModel.DOMNode, selectedNode);
+    UI22.Context.Context.instance().setFlavor(SDK18.DOMModel.DOMNode, selectedNode);
     if (!selectedNode) {
       return;
     }
@@ -24864,7 +24962,7 @@ ${node.simpleSelector()} {}`, false);
     const nodeFrameId = selectedNode.frameId();
     for (const context of executionContexts) {
       if (context.frameId === nodeFrameId) {
-        UI21.Context.Context.instance().setFlavor(SDK18.RuntimeModel.ExecutionContext, context);
+        UI22.Context.Context.instance().setFlavor(SDK18.RuntimeModel.ExecutionContext, context);
         break;
       }
     }
@@ -25118,7 +25216,7 @@ ${node.simpleSelector()} {}`, false);
     }
     this.sidebarPaneView.tabbedPane().selectTab(tabId);
     if (!this.isShowing()) {
-      void UI21.ViewManager.ViewManager.instance().showView("elements");
+      void UI22.ViewManager.ViewManager.instance().showView("elements");
     }
   }
   updateBreadcrumbIfNeeded(event) {
@@ -25167,7 +25265,7 @@ ${node.simpleSelector()} {}`, false);
       void this.accessibilityTreeView.revealAndSelectNode(nodeToReveal);
     }
     if (showPanel) {
-      await UI21.ViewManager.ViewManager.instance().showView("elements", false, !focusNode);
+      await UI22.ViewManager.ViewManager.instance().showView("elements", false, !focusNode);
     }
     this.selectDOMNode(node, focusNode);
     delete this.omitDefaultSelection;
@@ -25182,7 +25280,7 @@ ${node.simpleSelector()} {}`, false);
     const { showPanel = true, focusNode = false } = opts ?? {};
     this.omitDefaultSelection = true;
     if (showPanel) {
-      await UI21.ViewManager.ViewManager.instance().showView("elements", false, !focusNode);
+      await UI22.ViewManager.ViewManager.instance().showView("elements", false, !focusNode);
     }
     this.selectDOMNode(nodeToReveal, focusNode);
     delete this.omitDefaultSelection;
@@ -25236,12 +25334,12 @@ ${node.simpleSelector()} {}`, false);
       null
       /* toggle */
     );
-    const matchedStylePanesWrapper = new UI21.Widget.VBox();
+    const matchedStylePanesWrapper = new UI22.Widget.VBox();
     matchedStylePanesWrapper.element.classList.add("style-panes-wrapper");
     matchedStylePanesWrapper.element.setAttribute("jslog", `${VisualLogging14.pane("styles").track({ resize: true })}`);
     this.stylesWidget.show(matchedStylePanesWrapper.element);
     this.setupTextSelectionHack(matchedStylePanesWrapper.element);
-    const computedStylePanesWrapper = new UI21.Widget.VBox();
+    const computedStylePanesWrapper = new UI22.Widget.VBox();
     computedStylePanesWrapper.element.classList.add("style-panes-wrapper", "computed-styles-pane-wrapper");
     computedStylePanesWrapper.element.setAttribute("jslog", `${VisualLogging14.pane("computed").track({ resize: true })}`);
     this.#computedStyleWidget.element.classList.add("computed-styles-wrapper");
@@ -25250,7 +25348,7 @@ ${node.simpleSelector()} {}`, false);
     platformFontsWidget.element.classList.add("platform-fonts-wrapper");
     platformFontsWidget.sharedModel = this.#computedStyleModel;
     platformFontsWidget.show(computedStylePanesWrapper.element);
-    const stylesSplitWidget = new UI21.SplitWidget.SplitWidget(
+    const stylesSplitWidget = new UI22.SplitWidget.SplitWidget(
       true,
       true,
       "elements.styles.sidebar.width",
@@ -25259,7 +25357,7 @@ ${node.simpleSelector()} {}`, false);
     stylesSplitWidget.setMainWidget(matchedStylePanesWrapper);
     stylesSplitWidget.hideSidebar();
     stylesSplitWidget.enableShowModeSaving();
-    stylesSplitWidget.addEventListener(UI21.SplitWidget.Events.SHOW_MODE_CHANGED, () => {
+    stylesSplitWidget.addEventListener(UI22.SplitWidget.Events.SHOW_MODE_CHANGED, () => {
       showMetricsWidgetInStylesPane();
     });
     this.stylesWidget.addEventListener("InitialUpdateCompleted" /* INITIAL_UPDATE_COMPLETED */, () => {
@@ -25276,7 +25374,7 @@ ${node.simpleSelector()} {}`, false);
       this.stylesWidget.removeEventListener("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, toggleMetricsWidget);
     };
     const showMetricsWidgetInStylesPane = () => {
-      const showMergedComputedPane = stylesSplitWidget.showMode() === UI21.SplitWidget.ShowMode.BOTH;
+      const showMergedComputedPane = stylesSplitWidget.showMode() === UI22.SplitWidget.ShowMode.BOTH;
       if (showMergedComputedPane) {
         showMetricsWidgetInComputedPane();
       } else {
@@ -25284,6 +25382,7 @@ ${node.simpleSelector()} {}`, false);
         if (!this.stylesWidget.hasMatchedStyles) {
           this.metricsWidget.hideWidget();
         }
+        this.stylesWidget.removeEventListener("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, toggleMetricsWidget);
         this.stylesWidget.addEventListener("StylesUpdateCompleted" /* STYLES_UPDATE_COMPLETED */, toggleMetricsWidget);
       }
     };
@@ -25305,8 +25404,8 @@ ${node.simpleSelector()} {}`, false);
         showMetricsWidgetInStylesPane();
       }
     };
-    this.sidebarPaneView = UI21.ViewManager.ViewManager.instance().createTabbedLocation(
-      () => UI21.ViewManager.ViewManager.instance().showView("elements"),
+    this.sidebarPaneView = UI22.ViewManager.ViewManager.instance().createTabbedLocation(
+      () => UI22.ViewManager.ViewManager.instance().showView("elements"),
       "styles-pane-sidebar",
       true,
       true
@@ -25320,24 +25419,24 @@ ${node.simpleSelector()} {}`, false);
       this.splitWidget.installResizer(tabbedPane.headerElement());
     }
     const headerElement = tabbedPane.headerElement();
-    UI21.ARIAUtils.markAsNavigation(headerElement);
-    UI21.ARIAUtils.setLabel(headerElement, i18nString18(UIStrings19.sidePanelToolbar));
+    UI22.ARIAUtils.markAsNavigation(headerElement);
+    UI22.ARIAUtils.setLabel(headerElement, i18nString18(UIStrings19.sidePanelToolbar));
     const contentElement = tabbedPane.tabbedPaneContentElement();
-    UI21.ARIAUtils.markAsComplementary(contentElement);
-    UI21.ARIAUtils.setLabel(contentElement, i18nString18(UIStrings19.sidePanelContent));
-    const stylesView = new UI21.View.SimpleView({
+    UI22.ARIAUtils.markAsComplementary(contentElement);
+    UI22.ARIAUtils.setLabel(contentElement, i18nString18(UIStrings19.sidePanelContent));
+    const stylesView = new UI22.View.SimpleView({
       title: i18nString18(UIStrings19.styles),
       viewId: "styles" /* STYLES */
     });
     this.sidebarPaneView.appendView(stylesView);
     stylesView.element.classList.add("flex-auto");
     stylesSplitWidget.show(stylesView.element);
-    const computedView = new UI21.View.SimpleView({
+    const computedView = new UI22.View.SimpleView({
       title: i18nString18(UIStrings19.computed),
       viewId: "computed" /* COMPUTED */
     });
     computedView.element.classList.add("composite", "fill");
-    tabbedPane.addEventListener(UI21.TabbedPane.Events.TabSelected, tabSelected, this);
+    tabbedPane.addEventListener(UI22.TabbedPane.Events.TabSelected, tabSelected, this);
     this.sidebarPaneView.appendView(computedView);
     this.stylesViewToReveal = stylesView;
     this.sidebarPaneView.appendApplicableItems("elements-sidebar");
@@ -25655,7 +25754,7 @@ var ElementsActionDelegate = class {
         ElementsPanel.instance().selectAndShowSidebarTab("computed" /* COMPUTED */);
         return true;
       case "elements.toggle-eye-dropper": {
-        const colorSwatchPopoverIcon = UI21.Context.Context.instance().flavor(ColorSwatchPopoverIcon);
+        const colorSwatchPopoverIcon = UI22.Context.Context.instance().flavor(ColorSwatchPopoverIcon);
         if (!colorSwatchPopoverIcon) {
           return false;
         }
@@ -25693,7 +25792,7 @@ var InspectElementModeController = class _InspectElementModeController {
   mode;
   showDetailedInspectTooltipSetting;
   constructor() {
-    this.toggleSearchAction = UI22.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
+    this.toggleSearchAction = UI23.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     this.mode = Overlay.InspectMode.None;
     SDK19.TargetManager.TargetManager.instance().addEventListener(
       SDK19.TargetManager.Events.SUSPEND_STATE_CHANGED,
@@ -25714,7 +25813,7 @@ var InspectElementModeController = class _InspectElementModeController {
     );
     this.showDetailedInspectTooltipSetting.addChangeListener(this.showDetailedInspectTooltipChanged.bind(this));
     document.addEventListener("keydown", (event) => {
-      if (event.keyCode !== UI22.KeyboardShortcut.Keys.Esc.code) {
+      if (event.keyCode !== UI23.KeyboardShortcut.Keys.Esc.code) {
         return;
       }
       if (!this.isInInspectElementMode()) {
@@ -25775,11 +25874,11 @@ var InspectElementModeController = class _InspectElementModeController {
     this.toggleSearchAction.setToggled(false);
   }
   inspectNode(node) {
-    const returnToPanel = UI22.Context.Context.instance().flavor(Common15.ReturnToPanel.ReturnToPanelFlavor);
-    UI22.Context.Context.instance().setFlavor(Common15.ReturnToPanel.ReturnToPanelFlavor, null);
+    const returnToPanel = UI23.Context.Context.instance().flavor(Common15.ReturnToPanel.ReturnToPanelFlavor);
+    UI23.Context.Context.instance().setFlavor(Common15.ReturnToPanel.ReturnToPanelFlavor, null);
     if (returnToPanel) {
       return ElementsPanel.instance().revealAndSelectNode(node, { showPanel: false, highlightInOverlay: false }).then(() => {
-        void UI22.ViewManager.ViewManager.instance().showView(returnToPanel.viewId, false, false);
+        void UI23.ViewManager.ViewManager.instance().showView(returnToPanel.viewId, false, false);
       });
     }
     return ElementsPanel.instance().revealAndSelectNode(
@@ -25813,19 +25912,19 @@ var ToggleSearchActionDelegate = class {
 var EventListenersWidget_exports = {};
 __export(EventListenersWidget_exports, {
   ActionDelegate: () => ActionDelegate2,
-  DEFAULT_VIEW: () => DEFAULT_VIEW10,
+  DEFAULT_VIEW: () => DEFAULT_VIEW11,
   DispatchFilterBy: () => DispatchFilterBy,
   EventListenersWidget: () => EventListenersWidget
 });
 import * as Common16 from "../../core/common/common.js";
 import * as i18n40 from "../../core/i18n/i18n.js";
 import * as SDK20 from "../../core/sdk/sdk.js";
-import * as UI23 from "../../ui/legacy/legacy.js";
-import { html as html20, render as render16 } from "../../ui/lit/lit.js";
+import * as UI24 from "../../ui/legacy/legacy.js";
+import { html as html20, render as render17 } from "../../ui/lit/lit.js";
 import * as SettingsUI9 from "../../ui/settings/settings.js";
 import * as VisualLogging16 from "../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "../event_listeners/event_listeners.js";
-var { bindToAction, bindToSetting: bindToSetting3 } = UI23.UIUtils;
+var { bindToAction, bindToSetting: bindToSetting3 } = UI24.UIUtils;
 var UIStrings20 = {
   /**
    * @description Title of show framework listeners setting in the Event listeners tab of the Elements panel.
@@ -25862,10 +25961,10 @@ var UIStrings20 = {
 };
 var str_20 = i18n40.i18n.registerUIStrings("panels/elements/EventListenersWidget.ts", UIStrings20);
 var i18nString19 = i18n40.i18n.getLocalizedString.bind(void 0, str_20);
-var { widget: widget3 } = UI23.Widget;
+var { widget: widget6 } = UI24.Widget;
 var eventListenersWidgetInstance;
-var DEFAULT_VIEW10 = (input, _output, target) => {
-  render16(html20`
+var DEFAULT_VIEW11 = (input, _output, target) => {
+  render17(html20`
     <div jslog=${VisualLogging16.pane("elements.event-listeners").track({ resize: true })}>
       <devtools-toolbar class="event-listener-toolbar" role="presentation">
         <devtools-button ${bindToAction(input.refreshEventListenersActionName)}></devtools-button>
@@ -25888,19 +25987,19 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           ${i18nString19(UIStrings20.frameworkListeners)}
         </devtools-checkbox>
       </devtools-toolbar>
-      ${widget3(EventListeners.EventListenersView.EventListenersView, {
+      ${widget6(EventListeners.EventListenersView.EventListenersView, {
     objects: input.eventListenerObjects,
     filter: input.filter
   })}
     </div>`, target);
 };
-var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox {
+var EventListenersWidget = class _EventListenersWidget extends UI24.Widget.VBox {
   showForAncestorsSetting;
   dispatchFilterBySetting;
   showFrameworkListenersSetting;
   lastRequestedNode;
   #view;
-  constructor(view = DEFAULT_VIEW10) {
+  constructor(view = DEFAULT_VIEW11) {
     super();
     this.#view = view;
     this.showForAncestorsSetting = Common16.Settings.Settings.instance().resolve(
@@ -25913,7 +26012,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox 
       SettingsUI9.ElementsSettings.showFrameworkListenersSettingDescriptor
     );
     this.showFrameworkListenersSetting.addChangeListener(this.requestUpdate.bind(this));
-    UI23.Context.Context.instance().addFlavorChangeListener(SDK20.DOMModel.DOMNode, this.requestUpdate.bind(this));
+    UI24.Context.Context.instance().addFlavorChangeListener(SDK20.DOMModel.DOMNode, this.requestUpdate.bind(this));
     this.requestUpdate();
   }
   static instance(opts = { forceNew: null }) {
@@ -25949,7 +26048,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox 
       this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(objectGroupName);
       delete this.lastRequestedNode;
     }
-    const node = UI23.Context.Context.instance().flavor(SDK20.DOMModel.DOMNode);
+    const node = UI24.Context.Context.instance().flavor(SDK20.DOMModel.DOMNode);
     if (node) {
       this.lastRequestedNode = node;
       const selectedNodeOnly = !this.showForAncestorsSetting.get();
@@ -25965,15 +26064,15 @@ var EventListenersWidget = class _EventListenersWidget extends UI23.Widget.VBox 
       }
       input.eventListenerObjects = await Promise.all(promises);
     }
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   wasShown() {
-    UI23.Context.Context.instance().setFlavor(_EventListenersWidget, this);
+    UI24.Context.Context.instance().setFlavor(_EventListenersWidget, this);
     super.wasShown();
   }
   willHide() {
     super.willHide();
-    UI23.Context.Context.instance().setFlavor(_EventListenersWidget, null);
+    UI24.Context.Context.instance().setFlavor(_EventListenersWidget, null);
   }
   windowObjectInNodeContext(node) {
     const executionContexts = node.domModel().runtimeModel().executionContexts();
@@ -26030,7 +26129,7 @@ var ActionDelegate2 = class {
 // ../../front_end/panels/elements/PropertiesWidget.ts
 var PropertiesWidget_exports = {};
 __export(PropertiesWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW11,
+  DEFAULT_VIEW: () => DEFAULT_VIEW12,
   PropertiesWidget: () => PropertiesWidget
 });
 import "../../ui/legacy/legacy.js";
@@ -26040,8 +26139,8 @@ import * as i18n42 from "../../core/i18n/i18n.js";
 import * as Platform11 from "../../core/platform/platform.js";
 import * as SDK21 from "../../core/sdk/sdk.js";
 import * as ObjectUI from "../../ui/legacy/components/object_ui/object_ui.js";
-import * as UI24 from "../../ui/legacy/legacy.js";
-import { html as html21, nothing as nothing8, render as render17 } from "../../ui/lit/lit.js";
+import * as UI25 from "../../ui/legacy/legacy.js";
+import { html as html21, nothing as nothing9, render as render18 } from "../../ui/lit/lit.js";
 import * as VisualLogging17 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/propertiesWidget.css.js
@@ -26069,8 +26168,8 @@ var propertiesWidget_css_default = `/*
 
 // ../../front_end/panels/elements/PropertiesWidget.ts
 var OBJECT_GROUP_NAME = "properties-sidebar-pane";
-var { bindToSetting: bindToSetting4 } = UI24.UIUtils;
-var { widget: widget4, widgetRef } = UI24.Widget;
+var { bindToSetting: bindToSetting4 } = UI25.UIUtils;
+var { widget: widget7, widgetRef } = UI25.Widget;
 var UIStrings21 = {
   /**
    * @description Text on the checkbox in the Properties tab of the Elements panel, which controls whether
@@ -26092,8 +26191,8 @@ var UIStrings21 = {
 };
 var str_21 = i18n42.i18n.registerUIStrings("panels/elements/PropertiesWidget.ts", UIStrings21);
 var i18nString20 = i18n42.i18n.getLocalizedString.bind(void 0, str_21);
-var DEFAULT_VIEW11 = (input, _output, target) => {
-  render17(html21`
+var DEFAULT_VIEW12 = (input, _output, target) => {
+  render18(html21`
     <div jslog=${VisualLogging17.pane("element-properties").track({ resize: true })}>
       <div class="hbox properties-widget-toolbar">
         <devtools-toolbar class="styles-pane-toolbar" role="presentation">
@@ -26111,11 +26210,11 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
       </div>
       ${input.objectTree && input.allChildrenFiltered ? html21`
         <div class="gray-info-message">${i18nString20(UIStrings21.noMatchingProperty)}</div>
-      ` : nothing8}
+      ` : nothing9}
       <devtools-tree show-selection-on-keyboard-focus @treeelementexpand=${onExpand} .template=${html21`
         <style>${ObjectUI.ObjectPropertiesSection.objectValueStyles}</style>
         <style>${ObjectUI.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
-        <ul role=tree open class="source-code object-properties-section" ${widget4(ObjectUI.ObjectPropertiesSection.ObjectTreeWidget, {
+        <ul role=tree open class="source-code object-properties-section" ${widget7(ObjectUI.ObjectPropertiesSection.ObjectTreeWidget, {
     objectTree: input.objectTree ?? void 0,
     skipProto: true,
     skipGettersAndSetters: true
@@ -26136,7 +26235,7 @@ function onExpand(event) {
     Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.DOMPropertiesExpanded);
   }
 }
-var PropertiesWidget = class extends UI24.Widget.VBox {
+var PropertiesWidget = class extends UI25.Widget.VBox {
   showAllPropertiesSetting;
   filterRegex = null;
   #lastRequestedNode = null;
@@ -26145,7 +26244,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
   #objectTree = null;
   #isRegex = false;
   #filterText = "";
-  constructor(view = DEFAULT_VIEW11) {
+  constructor(view = DEFAULT_VIEW12) {
     super({ useShadowDom: true });
     this.registerRequiredCSS(propertiesWidget_css_default);
     this.showAllPropertiesSetting = getShowAllPropertiesSetting();
@@ -26178,7 +26277,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
       this,
       { scoped: true }
     );
-    UI24.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.setNode, this);
+    UI25.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.setNode, this);
     this.#view = view;
     this.requestUpdate();
   }
@@ -26224,7 +26323,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
     }
     this.#pendingNodeUpdate = false;
     this.#lastRequestedNode?.domModel().runtimeModel().releaseObjectGroup(OBJECT_GROUP_NAME);
-    this.#lastRequestedNode = UI24.Context.Context.instance().flavor(SDK21.DOMModel.DOMNode);
+    this.#lastRequestedNode = UI25.Context.Context.instance().flavor(SDK21.DOMModel.DOMNode);
     if (!this.#lastRequestedNode) {
       this.#objectTree = null;
       return;
@@ -26252,7 +26351,7 @@ var PropertiesWidget = class extends UI24.Widget.VBox {
         allChildrenFiltered,
         objectTree: this.#objectTree
       },
-      {},
+      void 0,
       this.contentElement
     );
   }
@@ -26275,13 +26374,15 @@ var ClassesPaneWidget_exports = {};
 __export(ClassesPaneWidget_exports, {
   ButtonProvider: () => ButtonProvider4,
   ClassNamePrompt: () => ClassNamePrompt,
-  ClassesPaneWidget: () => ClassesPaneWidget
+  ClassesPaneWidget: () => ClassesPaneWidget,
+  DEFAULT_VIEW: () => DEFAULT_VIEW13
 });
 import * as Common18 from "../../core/common/common.js";
 import * as i18n44 from "../../core/i18n/i18n.js";
 import * as Platform12 from "../../core/platform/platform.js";
 import * as SDK22 from "../../core/sdk/sdk.js";
-import * as UI25 from "../../ui/legacy/legacy.js";
+import * as UI26 from "../../ui/legacy/legacy.js";
+import { Directives as Directives4, html as html22, render as render19 } from "../../ui/lit/lit.js";
 import * as VisualLogging18 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/classesPaneWidget.css.js
@@ -26355,33 +26456,53 @@ var UIStrings22 = {
 };
 var str_22 = i18n44.i18n.registerUIStrings("panels/elements/ClassesPaneWidget.ts", UIStrings22);
 var i18nString21 = i18n44.i18n.getLocalizedString.bind(void 0, str_22);
-var ClassesPaneWidget = class extends UI25.Widget.Widget {
-  input;
-  classesContainer;
-  prompt;
-  mutatingNodes;
-  pendingNodeClasses;
-  updateNodeThrottler;
-  previousTarget;
-  constructor() {
-    super({
-      jslog: `${VisualLogging18.pane("elements-classes")}`,
+var { ref: ref7, repeat: repeat3 } = Directives4;
+var DEFAULT_VIEW13 = (input, output, target) => {
+  const onKeyDown = (event) => {
+    if (event.key === Platform12.KeyboardUtilities.ENTER_KEY && !event.isComposing) {
+      event.consume();
+      input.onCommit();
+    } else if (Platform12.KeyboardUtilities.isEscKey(event) && input.onCancel()) {
+      event.consume(true);
+    }
+  };
+  render19(html22`
+    <style>${classesPaneWidget_css_default}</style>
+    <div class="styles-element-classes-pane">
+      <div class="title-container" @keydown=${onKeyDown}>
+        <div class="new-class-input monospace" autofocus ${ref7((element) => {
+    output.attachPrompt = element instanceof HTMLElement ? (prompt) => prompt.attach(element) : void 0;
+  })}></div>
+      </div>
+      <div class="source-code styles-element-classes-container">
+        ${repeat3(input.classes, (item2) => item2.className, (item2) => html22`
+          <devtools-checkbox
+              class="monospace"
+              small
+              .checked=${item2.enabled}
+              title=${item2.className}
+              jslog=${VisualLogging18.toggle("element-class").track({ change: true })}
+              @click=${(event) => input.onClick(item2.className, event.target.checked)}>${item2.className}</devtools-checkbox>`)}
+      </div>
+    </div>`, target, { container: { attributes: { jslog: `${VisualLogging18.pane("elements-classes")}` } } });
+};
+var ClassesPaneWidget = class extends UI26.Widget.Widget {
+  #view;
+  #prompt;
+  #promptAttached = false;
+  #mutatingNodes;
+  #pendingNodeClasses;
+  #updateNodeThrottler;
+  #previousTarget;
+  constructor(element, view = DEFAULT_VIEW13) {
+    super(element, {
       useShadowDom: true
     });
-    this.registerRequiredCSS(classesPaneWidget_css_default);
-    this.contentElement.className = "styles-element-classes-pane";
-    const container = this.contentElement.createChild("div", "title-container");
-    this.input = container.createChild("div", "new-class-input monospace");
-    this.setDefaultFocusedElement(this.input);
-    this.classesContainer = this.contentElement.createChild("div", "source-code");
-    this.classesContainer.classList.add("styles-element-classes-container");
-    this.prompt = new ClassNamePrompt(this.nodeClasses.bind(this));
-    this.prompt.setAutocompletionTimeout(0);
-    this.prompt.renderAsBlock();
-    const proxyElement = this.prompt.attach(this.input);
-    this.prompt.setPlaceholder(i18nString21(UIStrings22.addNewClass));
-    this.prompt.addEventListener(UI25.TextPrompt.Events.TEXT_CHANGED, this.onTextChanged, this);
-    proxyElement.addEventListener("keydown", this.onKeyDown.bind(this), false);
+    this.#view = view;
+    this.#prompt = new ClassNamePrompt(this.nodeClasses.bind(this));
+    this.#prompt.setAutocompletionTimeout(0);
+    this.#prompt.renderAsBlock();
+    this.#prompt.addEventListener(UI26.TextPrompt.Events.TEXT_CHANGED, this.onTextChanged, this);
     SDK22.TargetManager.TargetManager.instance().addModelListener(
       SDK22.DOMModel.DOMModel,
       SDK22.DOMModel.Events.DOMMutated,
@@ -26389,36 +26510,30 @@ var ClassesPaneWidget = class extends UI25.Widget.Widget {
       this,
       { scoped: true }
     );
-    this.mutatingNodes = /* @__PURE__ */ new Set();
-    this.pendingNodeClasses = /* @__PURE__ */ new Map();
-    this.updateNodeThrottler = new Common18.Throttler.Throttler(0);
-    this.previousTarget = null;
-    UI25.Context.Context.instance().addFlavorChangeListener(SDK22.DOMModel.DOMNode, this.onSelectedNodeChanged, this);
+    this.#mutatingNodes = /* @__PURE__ */ new Set();
+    this.#pendingNodeClasses = /* @__PURE__ */ new Map();
+    this.#updateNodeThrottler = new Common18.Throttler.Throttler(0);
+    this.#previousTarget = null;
+    UI26.Context.Context.instance().addFlavorChangeListener(SDK22.DOMModel.DOMNode, this.onSelectedNodeChanged, this);
   }
   splitTextIntoClasses(text) {
     return text.split(/[,\s]/).map((className) => className.trim().replace(/^\./, "")).filter((className) => className.length);
   }
-  onKeyDown(event) {
-    if (!(event.key === "Enter") && !Platform12.KeyboardUtilities.isEscKey(event)) {
+  onCommit() {
+    if (this.#prompt.acceptAutoComplete()) {
       return;
     }
-    if (event.key === "Enter") {
-      event.consume();
-      if (this.prompt.acceptAutoComplete()) {
-        return;
-      }
-    }
-    const eventTarget = event.target;
-    let text = eventTarget.textContent;
-    if (Platform12.KeyboardUtilities.isEscKey(event)) {
-      if (!Platform12.StringUtilities.isWhitespace(text)) {
-        event.consume(true);
-      }
-      text = "";
-    }
-    this.prompt.clearAutocomplete();
-    eventTarget.textContent = "";
-    const node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+    this.applyPromptText(this.#prompt.text());
+  }
+  /** Discards the prompt text and returns whether there was any non-whitespace text to discard. */
+  onCancel() {
+    const hadText = !Platform12.StringUtilities.isWhitespace(this.#prompt.text());
+    this.applyPromptText("");
+    return hadText;
+  }
+  applyPromptText(text) {
+    this.#prompt.setText("");
+    const node = UI26.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -26432,12 +26547,12 @@ var ClassesPaneWidget = class extends UI25.Widget.Widget {
     }
     const joinClassString = classNames.join(" ");
     const announcementString = classNames.length > 1 ? i18nString21(UIStrings22.classesSAdded, { PH1: joinClassString }) : i18nString21(UIStrings22.classSAdded, { PH1: joinClassString });
-    UI25.ARIAUtils.LiveAnnouncer.alert(announcementString);
+    UI26.ARIAUtils.LiveAnnouncer.alert(announcementString);
     this.installNodeClasses(node);
-    this.update();
+    this.requestUpdate();
   }
   onTextChanged() {
-    const node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+    const node = UI26.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -26445,55 +26560,57 @@ var ClassesPaneWidget = class extends UI25.Widget.Widget {
   }
   onDOMMutated(event) {
     const node = event.data;
-    if (this.mutatingNodes.has(node)) {
+    if (this.#mutatingNodes.has(node)) {
       return;
     }
     cachedClassesMap.delete(node);
-    this.update();
+    this.requestUpdate();
   }
   onSelectedNodeChanged(event) {
-    if (this.previousTarget && this.prompt.text()) {
-      this.input.textContent = "";
-      this.installNodeClasses(this.previousTarget);
+    if (this.#previousTarget && this.#promptAttached && this.#prompt.text()) {
+      this.#prompt.setText("");
+      this.installNodeClasses(this.#previousTarget);
     }
-    this.previousTarget = event.data;
-    this.update();
+    this.#previousTarget = event.data;
+    this.requestUpdate();
   }
   wasShown() {
     super.wasShown();
-    this.update();
+    this.performUpdate();
   }
-  update() {
-    if (!this.isShowing()) {
-      return;
-    }
-    let node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+  performUpdate() {
+    let node = UI26.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
-    this.classesContainer.removeChildren();
-    this.input.disabled = !node;
-    if (!node) {
-      return;
-    }
-    const classes = this.nodeClasses(node);
+    const classes = node ? this.nodeClasses(node) : /* @__PURE__ */ new Map();
     const keys = [...classes.keys()];
     keys.sort(Platform12.StringUtilities.caseInsensetiveComparator);
-    for (const className of keys) {
-      const checkbox = UI25.UIUtils.CheckboxLabel.createWithStringLiteral(className, classes.get(className), "element-class", true);
-      checkbox.classList.add("monospace");
-      checkbox.addEventListener("click", this.onClick.bind(this, className), false);
-      this.classesContainer.appendChild(checkbox);
+    const input = {
+      classes: keys.map((className) => ({ className, enabled: Boolean(classes.get(className)) })),
+      onCommit: this.onCommit.bind(this),
+      onCancel: this.onCancel.bind(this),
+      onClick: this.onClick.bind(this)
+    };
+    const output = {};
+    this.#view(input, output, this.contentElement);
+    if (output.attachPrompt && !this.#promptAttached) {
+      output.attachPrompt(this.#prompt);
+      this.#prompt.setPlaceholder(i18nString21(UIStrings22.addNewClass));
+      this.#promptAttached = true;
+    }
+    if (this.#promptAttached) {
+      this.#prompt.setEnabled(Boolean(node));
     }
   }
-  onClick(className, event) {
-    const node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+  onClick(className, enabled) {
+    const node = UI26.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     if (!node) {
       return;
     }
-    const enabled = event.target.checked;
     this.toggleClass(node, className, enabled);
     this.installNodeClasses(node);
+    this.requestUpdate();
   }
   nodeClasses(node) {
     let result = cachedClassesMap.get(node);
@@ -26525,25 +26642,25 @@ var ClassesPaneWidget = class extends UI25.Widget.Widget {
         activeClasses.add(className);
       }
     }
-    const additionalClasses = this.splitTextIntoClasses(this.prompt.textWithCurrentSuggestion());
+    const additionalClasses = this.splitTextIntoClasses(this.#prompt.textWithCurrentSuggestion());
     for (const className of additionalClasses) {
       activeClasses.add(className);
     }
     const newClasses = [...activeClasses.values()].sort();
-    this.pendingNodeClasses.set(node, newClasses.join(" "));
-    void this.updateNodeThrottler.schedule(this.flushPendingClasses.bind(this));
+    this.#pendingNodeClasses.set(node, newClasses.join(" "));
+    void this.#updateNodeThrottler.schedule(this.flushPendingClasses.bind(this));
   }
   async flushPendingClasses() {
     const promises = [];
-    for (const node of this.pendingNodeClasses.keys()) {
-      this.mutatingNodes.add(node);
-      const promise = node.setAttributeValuePromise("class", this.pendingNodeClasses.get(node)).then(onClassValueUpdated.bind(this, node));
+    for (const node of this.#pendingNodeClasses.keys()) {
+      this.#mutatingNodes.add(node);
+      const promise = node.setAttributeValuePromise("class", this.#pendingNodeClasses.get(node)).then(onClassValueUpdated.bind(this, node));
       promises.push(promise);
     }
-    this.pendingNodeClasses.clear();
+    this.#pendingNodeClasses.clear();
     await Promise.all(promises);
     function onClassValueUpdated(node) {
-      this.mutatingNodes.delete(node);
+      this.#mutatingNodes.delete(node);
     }
   }
 };
@@ -26553,14 +26670,14 @@ var ButtonProvider4 = class _ButtonProvider {
   button;
   view;
   constructor() {
-    this.button = new UI25.Toolbar.ToolbarToggle(i18nString21(UIStrings22.elementClasses), "class");
+    this.button = new UI26.Toolbar.ToolbarToggle(i18nString21(UIStrings22.elementClasses), "class");
     this.button.element.style.setProperty("--dot-toggle-top", "12px");
     this.button.element.style.setProperty("--dot-toggle-left", "18px");
     this.button.element.setAttribute(
       "jslog",
       `${VisualLogging18.toggleSubpane("elements-classes").track({ click: true })}`
     );
-    this.button.addEventListener(UI25.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
+    this.button.addEventListener(UI26.Toolbar.ToolbarButton.Events.CLICK, this.clicked, this);
     this.view = new ClassesPaneWidget();
   }
   static instance(opts = { forceNew: null }) {
@@ -26577,7 +26694,7 @@ var ButtonProvider4 = class _ButtonProvider {
     return this.button;
   }
 };
-var ClassNamePrompt = class extends UI25.TextPrompt.TextPrompt {
+var ClassNamePrompt = class extends UI26.TextPrompt.TextPrompt {
   nodeClasses;
   selectedFrameId;
   classNamesPromise;
@@ -26620,7 +26737,7 @@ var ClassNamePrompt = class extends UI25.TextPrompt.TextPrompt {
     if (!prefix || force) {
       this.classNamesPromise = null;
     }
-    const selectedNode = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+    const selectedNode = UI26.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     if (!selectedNode || !prefix && !force && !expression.trim()) {
       return [];
     }
@@ -26653,7 +26770,7 @@ var ClassNamePrompt = class extends UI25.TextPrompt.TextPrompt {
 // ../../front_end/panels/elements/StandaloneStylesContainer.ts
 var StandaloneStylesContainer_exports = {};
 __export(StandaloneStylesContainer_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW12,
+  DEFAULT_VIEW: () => DEFAULT_VIEW14,
   Events: () => Events2,
   StandaloneStylesContainer: () => StandaloneStylesContainer
 });
@@ -26661,14 +26778,13 @@ import * as Common19 from "../../core/common/common.js";
 import * as ComputedStyle4 from "../../models/computed_style/computed_style.js";
 import * as InlineEditor5 from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components7 from "../../ui/legacy/components/utils/utils.js";
-import * as UI26 from "../../ui/legacy/legacy.js";
-import { html as html22, render as render18 } from "../../ui/lit/lit.js";
+import * as UI27 from "../../ui/legacy/legacy.js";
+import { html as html23, render as render20 } from "../../ui/lit/lit.js";
 import * as SettingsUI10 from "../../ui/settings/settings.js";
 import * as VisualLogging19 from "../../ui/visual_logging/visual_logging.js";
-import * as ElementsComponents8 from "./components/components.js";
-var DEFAULT_VIEW12 = (input, _output, target) => {
-  render18(
-    html22`
+var DEFAULT_VIEW14 = (input, _output, target) => {
+  render20(
+    html23`
     <style>${stylesSidebarPane_css_default}</style>
     <div class="style-panes-wrapper" jslog=${VisualLogging19.section("standalone-styles").track({
       resize: true
@@ -26686,7 +26802,7 @@ var Events2 = /* @__PURE__ */ ((Events3) => {
   return Events3;
 })(Events2 || {});
 var StandaloneStylesContainerBase = Common19.ObjectWrapper.eventMixin(
-  UI26.Widget.VBox
+  UI27.Widget.VBox
 );
 var StandaloneStylesContainer = class extends StandaloneStylesContainerBase {
   activeCSSAngle = null;
@@ -26702,7 +26818,7 @@ var StandaloneStylesContainer = class extends StandaloneStylesContainerBase {
   #view;
   #filter = null;
   #rebuildThrottler = new Common19.Throttler.Throttler(200);
-  constructor(element, view = DEFAULT_VIEW12) {
+  constructor(element, view = DEFAULT_VIEW14) {
     super(element, { useShadowDom: true });
     this.#view = view;
   }
@@ -26892,15 +27008,10 @@ var StandaloneStylesContainer = class extends StandaloneStylesContainerBase {
   allSections() {
     return this.#sections;
   }
-  getVariablePopoverContents(matchedStyles, variableName, computedValue) {
+  getRegisteredPropertyDetails(matchedStyles, variableName) {
     const registration = matchedStyles.getRegisteredProperty(variableName);
-    return new ElementsComponents8.CSSVariableValueView.CSSVariableValueView({
-      variableName,
-      value: computedValue ?? void 0,
-      // TODO: provide a goToDefinition to jump to the StylesSidebarPane
-      details: registration ? { registration, goToDefinition: () => {
-      } } : void 0
-    });
+    return registration ? { registration, goToDefinition: () => {
+    } } : void 0;
   }
   getVariableParserError(_matchedStyles, _variableName) {
     return null;

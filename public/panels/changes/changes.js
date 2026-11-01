@@ -151,7 +151,7 @@ var ChangesSidebar = class extends ChangesSidebarBase {
       this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#removeUISourceCode.bind(this));
       this.#workspaceDiff.removeEventListener(
         WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
-        this.uiSourceCodeModifiedStatusChanged,
+        this.#uiSourceCodeModifiedStatusChanged,
         this
       );
     }
@@ -159,7 +159,7 @@ var ChangesSidebar = class extends ChangesSidebarBase {
     this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
     this.#workspaceDiff.addEventListener(
       WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED,
-      this.uiSourceCodeModifiedStatusChanged,
+      this.#uiSourceCodeModifiedStatusChanged,
       this
     );
     this.requestUpdate();
@@ -173,7 +173,7 @@ var ChangesSidebar = class extends ChangesSidebarBase {
       sourceCodes: this.#sourceCodes,
       selectedSourceCode: this.#selectedUISourceCode
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   #selectionChanged(selectedUISourceCode) {
     this.#selectedUISourceCode = selectedUISourceCode;
@@ -232,7 +232,7 @@ var ChangesSidebar = class extends ChangesSidebarBase {
     }
     this.requestUpdate();
   }
-  uiSourceCodeModifiedStatusChanged(event) {
+  #uiSourceCodeModifiedStatusChanged(event) {
     const { isModified, uiSourceCode } = event.data;
     if (isModified) {
       this.#addUISourceCode(uiSourceCode);
@@ -685,7 +685,7 @@ var ChangesView = class _ChangesView extends UI3.Widget.VBox {
           this.requestUpdate();
         }
       },
-      {},
+      void 0,
       this.contentElement
     );
   }

@@ -24,7 +24,7 @@ export interface EditFileSystemViewInput {
     }>) => void;
     onDelete: (event: CustomEvent) => void;
 }
-export type View = (input: EditFileSystemViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: EditFileSystemViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class EditFileSystemView extends UI.Widget.VBox {
     #private;

@@ -559,7 +559,7 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
                 showOverflow: false,
                 onRootItemContextMenu: () => { },
                 onExpand: () => { },
-            }, {}, container);
+            }, undefined, container);
             renderElementIntoDOM(container);
             await UI.Widget.Widget.allUpdatesComplete;
             await raf();
@@ -592,7 +592,7 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
             showOverflow: false,
             onRootItemContextMenu: () => { },
             onExpand: () => { },
-        }, {}, container);
+        }, undefined, container);
         renderElementIntoDOM(container);
         await UI.Widget.Widget.allUpdatesComplete;
         await raf();
@@ -625,7 +625,7 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
             showOverflow: false,
             onRootItemContextMenu: () => { },
             onExpand: () => { },
-        }, {}, container);
+        }, undefined, container);
         renderElementIntoDOM(container);
         await UI.Widget.Widget.allUpdatesComplete;
         await raf();
@@ -708,6 +708,48 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
         assert.exists(treeWidget.contentElement.querySelector('[data-object-property-name-for-test="foo"]'));
         assert.isNull(treeWidget.contentElement.querySelector('[data-object-property-name-for-test="get foo"]'));
         assert.isNull(treeWidget.contentElement.querySelector('[data-object-property-name-for-test="set foo"]'));
+        treeWidget.detach();
+    });
+    it('removes root and child node listeners when ObjectTreeWidget is hidden or switched to another tree', async () => {
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 1 });
+        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        objectTree.expanded = true;
+        const treeWidget = new ObjectUI.ObjectPropertiesSection.ObjectTreeWidget();
+        treeWidget.objectTree = objectTree;
+        renderElementIntoDOM(treeWidget);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await raf();
+        const child = objectTree.children?.properties?.[0];
+        assert.exists(child);
+        const hasWidgetListener = (node) => Boolean(node.listeners?.get("expanded-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED */)) &&
+            Array
+                .from(node.listeners?.get("expanded-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED */) ??
+                [])
+                .some(tuple => tuple.thisObject === treeWidget);
+        assert.isTrue(hasWidgetListener(objectTree));
+        assert.isTrue(hasWidgetListener(child));
+        const secondObject = SDK.RemoteObject.RemoteObject.fromLocalObject({ bar: 2 });
+        const secondObjectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(secondObject, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        secondObjectTree.expanded = true;
+        treeWidget.objectTree = secondObjectTree;
+        await UI.Widget.Widget.allUpdatesComplete;
+        await raf();
+        assert.isFalse(hasWidgetListener(objectTree));
+        assert.isFalse(hasWidgetListener(child));
+        const secondChild = secondObjectTree.children?.properties?.[0];
+        assert.exists(secondChild);
+        assert.isTrue(hasWidgetListener(secondObjectTree));
+        assert.isTrue(hasWidgetListener(secondChild));
+        treeWidget.setHideOnDetach();
+        treeWidget.detach();
+        assert.isFalse(hasWidgetListener(secondObjectTree));
+        assert.isFalse(hasWidgetListener(secondChild));
     });
     it('does not edit readonly values', async () => {
         const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject(42), true, true);
@@ -779,6 +821,22 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
         firstInput.startEditing();
         const [secondInput] = await secondExpectedCall;
         assert.isTrue(secondInput.editing);
+        section.detach();
+    });
+    it('only listens to property node events while ObjectPropertyWidget is shown', () => {
+        const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject(42), true, true);
+        const node = new ObjectUI.ObjectPropertiesSection.ObjectTreeNode(property, undefined, {
+            readOnly: false,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertyWidget();
+        section.property = node;
+        assert.isFalse(node.hasEventListeners("value-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.VALUE_CHANGED */));
+        renderElementIntoDOM(section);
+        assert.isTrue(node.hasEventListeners("value-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.VALUE_CHANGED */));
+        section.setHideOnDetach();
+        section.detach();
+        assert.isFalse(node.hasEventListeners("value-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.VALUE_CHANGED */));
     });
     function createAndRenderPropertyValue(value, wasThrown, showPreview) {
         const fragment = document.createDocumentFragment();

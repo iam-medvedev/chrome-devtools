@@ -10,8 +10,10 @@ __export(SettingsScreen_exports, {
   ActionDelegate: () => ActionDelegate,
   EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW: () => EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW,
   ExperimentsSettingsTab: () => ExperimentsSettingsTab,
+  GENERIC_SETTINGS_TAB_DEFAULT_VIEW: () => GENERIC_SETTINGS_TAB_DEFAULT_VIEW,
   GenericSettingsTab: () => GenericSettingsTab,
   Revealer: () => Revealer,
+  SETTINGS_SCREEN_DEFAULT_VIEW: () => SETTINGS_SCREEN_DEFAULT_VIEW,
   SettingsScreen: () => SettingsScreen
 });
 import "../../ui/kit/kit.js";
@@ -185,12 +187,6 @@ devtools-button.link-icon {
   margin-left: var(--sys-size-3);
 }
 
-.tabbed-pane-content slot::slotted(.widget) {
-  /* '!important' in order to overwrite the slotted widget's 'overflow-auto' class.
-  This prevents the focus-ring of selectable elements from being cut off. */
-  overflow: visible !important; /* stylelint-disable-line declaration-no-important */
-}
-
 .experiments-warning-subsection {
   display: flex;
   align-items: center;
@@ -205,30 +201,13 @@ devtools-button.link-icon {
   .settings-window-title {
     color: canvastext;
   }
-
-  .tabbed-pane-header-tab {
-    background: ButtonFace;
-  }
-
-  .tabbed-pane-header-tab-title {
-    color: canvastext;
-  }
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-  .tabbed-pane-header-tab.selected {
-    background: ButtonFace;
-  }
-
-  .tabbed-pane-header-tab.selected .tabbed-pane-header-tab-title {
-    color: HighlightText;
-  }
 }
 
 /*# sourceURL=${import.meta.resolve("./settingsScreen.css")} */`;
 
 // ../../front_end/panels/settings/SettingsScreen.ts
-var { html, render, Directives: { ref } } = Lit;
+var { html, nothing: nothing2, render, Directives: { ref, repeat } } = Lit;
+var { widget, widgetRef } = UI.Widget;
 var UIStrings = {
   /**
    * @description Name of the Settings view.
@@ -283,45 +262,72 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/settings/SettingsScreen.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var settingsScreenInstance;
-function createSettingsCard(heading, ...content) {
-  const card = document.createElement("devtools-card");
-  card.heading = heading;
-  card.append(...content);
-  return card;
-}
+var SETTINGS_SCREEN_DEFAULT_VIEW = (input, _output, target) => {
+  render(
+    html`
+        <devtools-tabbed-pane
+          vertical
+          ?focus-header=${input.focusTabHeader}
+          selected-tab=${input.selectedTabId}
+          @tabinvoked=${(event) => input.onTabInvoked(event.detail)}>
+          <div slot="left" class="settings-window-label-element">
+            <div class="settings-window-title" role="heading" aria-level="1">
+              ${i18nString(UIStrings.settings)}
+            </div>
+          </div>
+          ${repeat(input.views, (view) => view.viewId(), (view) => {
+      const iconName = view.iconName();
+      return html`
+              <devtools-widget
+                id=${view.viewId()}
+                label=${view.title()}
+                ${widget(UI.ViewManager.ContainerWidget, { view })}>
+              </devtools-widget>
+              ${iconName ? html`<devtools-icon slot="icon-${view.viewId()}" name=${iconName}></devtools-icon>` : nothing2}
+            `;
+    })}
+        </devtools-tabbed-pane>
+      `,
+    target,
+    { container: { classes: ["settings-window-main", "vbox"] } }
+  );
+};
 var SettingsScreen = class _SettingsScreen extends UI.Widget.VBox {
-  tabbedLocation;
   keybindsTab;
   reportTabOnReveal;
-  constructor() {
+  #view;
+  #views = [];
+  #onTabInvokedBound = this.tabInvoked.bind(this);
+  #selectedTabId = "preferences";
+  #focusTabHeader = false;
+  constructor(view = SETTINGS_SCREEN_DEFAULT_VIEW) {
     super({ useShadowDom: true });
+    this.#view = view;
     this.registerRequiredCSS(settingsScreen_css_default);
-    this.contentElement.classList.add("settings-window-main");
-    this.contentElement.classList.add("vbox");
-    const settingsLabelElement = document.createElement("div");
-    settingsLabelElement.classList.add("settings-window-label-element");
-    const settingsTitleElement = UI.UIUtils.createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: settingsScreen_css_default }).createChild("div", "settings-window-title");
-    UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
-    settingsTitleElement.textContent = i18nString(UIStrings.settings);
-    this.tabbedLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(
-      () => _SettingsScreen.revealSettingsScreen(),
-      "settings-view"
-    );
-    const tabbedPane = this.tabbedLocation.tabbedPane();
-    tabbedPane.registerRequiredCSS(settingsScreen_css_default);
-    tabbedPane.headerElement().prepend(settingsLabelElement);
-    tabbedPane.setShrinkableTabs(false);
-    tabbedPane.makeVerticalTabLayout();
-    const keyBindsView = UI.ViewManager.ViewManager.instance().view("keybinds");
+    this.appendApplicableItems(UI.ViewManager.ViewLocationValues.SETTINGS_VIEW);
+    const keyBindsView = this.#views.find((v) => v.viewId() === "keybinds");
     if (keyBindsView) {
-      void keyBindsView.widget().then((widget2) => {
-        this.keybindsTab = widget2;
+      void keyBindsView.widget().then((widget3) => {
+        this.keybindsTab = widget3;
       });
     }
-    tabbedPane.show(this.contentElement);
-    tabbedPane.selectTab("preferences");
-    tabbedPane.addEventListener(UI.TabbedPane.Events.TabInvoked, this.tabInvoked, this);
     this.reportTabOnReveal = false;
+  }
+  wasShown() {
+    super.wasShown();
+    this.performUpdate();
+  }
+  performUpdate() {
+    this.#view(
+      {
+        views: this.#views,
+        selectedTabId: this.#selectedTabId,
+        focusTabHeader: this.#focusTabHeader,
+        onTabInvoked: this.#onTabInvokedBound
+      },
+      void 0,
+      this.contentElement
+    );
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -358,29 +364,96 @@ var SettingsScreen = class _SettingsScreen extends UI.Widget.VBox {
   static async showSettingsScreen(options = {}) {
     const { name, focusTabHeader } = options;
     const settingsScreen = _SettingsScreen.revealSettingsScreen();
-    settingsScreen.selectTab(name || "preferences");
-    const tabbedPane = settingsScreen.tabbedLocation.tabbedPane();
-    await tabbedPane.waitForTabElementUpdate();
-    if (focusTabHeader) {
-      tabbedPane.focusSelectedTabHeader();
-    } else {
-      tabbedPane.focus();
-    }
+    await settingsScreen.selectTab(name || "preferences", Boolean(focusTabHeader));
   }
   resolveLocation(_locationName) {
-    return this.tabbedLocation;
+    return this;
   }
-  selectTab(name) {
-    this.tabbedLocation.tabbedPane().selectTab(
-      name,
-      /* userGesture */
-      true
-    );
+  appendApplicableItems(locationName) {
+    for (const view of UI.ViewManager.ViewManager.instance().viewsForLocation(locationName)) {
+      if (!view.isTransient()) {
+        this.appendView(view);
+      }
+    }
   }
-  tabInvoked(event) {
-    const eventData = event.data;
+  appendView(view, insertBefore) {
+    if (this.#views.includes(view)) {
+      return;
+    }
+    const index = insertBefore ? this.#views.indexOf(insertBefore) : -1;
+    if (index !== -1) {
+      this.#views.splice(index, 0, view);
+    } else {
+      this.#views.push(view);
+    }
+    this.requestUpdate();
+  }
+  async showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
+    this.appendView(view, insertBefore);
+    if (shouldSelectTab) {
+      const prevTabId = this.#selectedTabId;
+      this.#selectedTabId = view.viewId();
+      this.#focusTabHeader = false;
+      if (userGesture && (this.reportTabOnReveal || prevTabId !== view.viewId())) {
+        this.reportTabOnReveal = false;
+        this.reportSettingsPanelShown(view.viewId());
+      }
+    }
+    this.performUpdate();
+    await view.widget();
+    if (!omitFocus) {
+      this.focus();
+    }
+  }
+  removeView(view) {
+    const index = this.#views.indexOf(view);
+    if (index !== -1) {
+      this.#views.splice(index, 1);
+      if (this.#selectedTabId === view.viewId()) {
+        this.#selectedTabId = this.#views[0]?.viewId() ?? "preferences";
+      }
+      this.requestUpdate();
+    }
+  }
+  isViewVisible(view) {
+    return this.isShowing() && this.#selectedTabId === view.viewId();
+  }
+  widget() {
+    return this;
+  }
+  reveal() {
+    _SettingsScreen.revealSettingsScreen();
+  }
+  async selectTab(name, focusTabHeader = false) {
+    const prevTabId = this.#selectedTabId;
+    this.#selectedTabId = name;
+    this.#focusTabHeader = focusTabHeader;
+    if (this.reportTabOnReveal || prevTabId !== name) {
+      this.reportTabOnReveal = false;
+      this.reportSettingsPanelShown(name);
+    }
+    this.performUpdate();
+    const view = this.#views.find((v) => v.viewId() === name);
+    if (view) {
+      await view.widget();
+    }
+    this.focus();
+    if (this.#focusTabHeader) {
+      this.#focusTabHeader = false;
+      this.requestUpdate();
+    }
+  }
+  tabInvoked(eventData) {
+    if (this.#selectedTabId !== eventData.tabId) {
+      this.#selectedTabId = eventData.tabId;
+      this.requestUpdate();
+    }
     if (!eventData.isUserGesture) {
       return;
+    }
+    if (this.#focusTabHeader) {
+      this.#focusTabHeader = false;
+      this.requestUpdate();
     }
     const prevTabId = eventData.prevTabId;
     const tabId = eventData.tabId;
@@ -398,24 +471,86 @@ var SettingsScreen = class _SettingsScreen extends UI.Widget.VBox {
     UI.UIUserMetrics.UIUserMetrics.instance().settingsPanelShown(tabId);
   }
   onEscapeKeyPressed(event) {
-    if (this.tabbedLocation.tabbedPane().selectedTabId === "keybinds" && this.keybindsTab) {
+    if (this.#selectedTabId === "keybinds" && this.keybindsTab) {
       this.keybindsTab.onEscapeKeyPressed(event);
     }
   }
 };
+var GENERIC_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
+  const settingToControl = /* @__PURE__ */ new Map();
+  let syncSection;
+  output.highlightSetting = (setting) => {
+    const element = settingToControl.get(setting);
+    if (element) {
+      PanelUtils.highlightElement(element);
+    } else if (setting.name === "receive-gdp-badges") {
+      void syncSection?.highlightReceiveBadgesSetting();
+    }
+  };
+  render(
+    html`
+        <div class="settings-card-container-wrapper">
+          <div class="settings-multicolumn-card-container">
+            ${input.sections.map((section2) => html`
+              <devtools-card heading=${section2.heading}>
+                ${section2.category === Common.Settings.SettingCategory.ACCOUNT ? html`<devtools-widget
+                        ${widget(PanelComponents.SyncSection.SyncSection, { syncInfo: input.syncInfo })}
+                        ${widgetRef(PanelComponents.SyncSection.SyncSection, (w) => {
+      syncSection = w;
+    })}>
+                      </devtools-widget>` : html`
+                      <div ${ref((el) => {
+      if (!el) {
+        return;
+      }
+      let childIndex = 0;
+      for (const setting of section2.settings) {
+        if (setting.type() !== Common.Settings.SettingType.BOOLEAN && setting.type() !== Common.Settings.SettingType.ENUM) {
+          continue;
+        }
+        const child = el.children[childIndex++];
+        if (child instanceof HTMLElement) {
+          settingToControl.set(setting, child);
+        }
+      }
+    })}>
+                        ${section2.settings.map((setting) => SettingsUI.SettingsUI.renderControlForSetting(setting))}
+                        ${section2.category === Common.Settings.SettingCategory.EXTENSIONS ? Components.Linkifier.LinkHandlerSettingUI.instance().settingElement() : nothing2}
+                      </div>
+                    `}
+              </devtools-card>
+            `)}
+            <devtools-button
+              .variant=${Buttons.Button.Variant.OUTLINED}
+              .jslogContext=${"settings.restore-defaults-and-reload"}
+              @click=${input.onRestoreDefaults}>
+              ${i18nString(UIStrings.restoreDefaultsAndReload)}
+            </devtools-button>
+          </div>
+        </div>
+      `,
+    target,
+    {
+      container: {
+        classes: ["settings-tab-container"],
+        attributes: {
+          id: "preferences-tab-content",
+          jslog: `${VisualLogging.pane("preferences")}`
+        }
+      }
+    }
+  );
+};
 var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
-  syncSection = new PanelComponents.SyncSection.SyncSection();
-  settingToControl = /* @__PURE__ */ new Map();
-  containerElement;
+  #sections = [];
+  #view;
+  #viewOutput = {};
+  #syncInfo = { isSyncActive: false };
   #updateSyncSectionTimerId = -1;
   #syncSectionUpdatePromise = null;
-  constructor() {
-    super({ jslog: `${VisualLogging.pane("preferences")}` });
-    this.element.classList.add("settings-tab-container");
-    this.element.id = "preferences-tab-content";
-    this.containerElement = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
-    this.containerElement.classList.add("settings-multicolumn-card-container");
-    this.syncSection.markAsRoot();
+  constructor(element, view = GENERIC_SETTINGS_TAB_DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
     const explicitSectionOrder = [
       Common.Settings.SettingCategory.NONE,
       Common.Settings.SettingCategory.APPEARANCE,
@@ -453,16 +588,22 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
       );
       this.createSectionElement(sectionCategory, settingsForSection);
     }
-    const restoreAndReloadButton = UI.UIUtils.createTextButton(
-      i18nString(UIStrings.restoreDefaultsAndReload),
-      restoreAndReload,
-      { jslogContext: "settings.restore-defaults-and-reload" }
+    this.requestUpdate();
+  }
+  #restoreAndReload() {
+    Common.Settings.Settings.instance().clearAll();
+    Components.Reload.reload();
+  }
+  performUpdate() {
+    this.#view(
+      {
+        sections: this.#sections,
+        syncInfo: this.#syncInfo,
+        onRestoreDefaults: this.#restoreAndReload.bind(this)
+      },
+      this.#viewOutput,
+      this.contentElement
     );
-    this.containerElement.appendChild(restoreAndReloadButton);
-    function restoreAndReload() {
-      Common.Settings.Settings.instance().clearAll();
-      Components.Reload.reload();
-    }
   }
   static isSettingVisible(setting) {
     return Boolean(setting.uiDescriptor.title?.()) && Boolean(setting.uiDescriptor.category);
@@ -470,6 +611,7 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
   wasShown() {
     UI.Context.Context.instance().setFlavor(_GenericSettingsTab, this);
     super.wasShown();
+    this.performUpdate();
     this.updateSyncSection();
   }
   willHide() {
@@ -488,57 +630,31 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
     this.#syncSectionUpdatePromise = new Promise(
       (resolve) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)
     ).then((syncInfo) => {
-      this.syncSection.syncInfo = syncInfo;
+      this.#syncInfo = syncInfo;
+      this.requestUpdate();
       if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
         this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
       }
     });
   }
-  createExtensionSection(settings) {
-    const sectionName = Common.Settings.SettingCategory.EXTENSIONS;
-    const settingUI = Components.Linkifier.LinkHandlerSettingUI.instance();
-    const element = settingUI.settingElement();
-    this.createStandardSectionElement(sectionName, settings, element);
-  }
   createSectionElement(category, settings) {
-    if (category === Common.Settings.SettingCategory.EXTENSIONS) {
-      this.createExtensionSection(settings);
-    } else if (category === Common.Settings.SettingCategory.ACCOUNT && settings.length > 0) {
-      const syncCard = createSettingsCard(
-        Common.SettingRegistration.getLocalizedSettingsCategory(Common.SettingRegistration.SettingCategory.ACCOUNT),
-        this.syncSection.element
-      );
-      this.containerElement.appendChild(syncCard);
-    } else if (settings.length > 0) {
-      this.createStandardSectionElement(category, settings);
+    if (category !== Common.Settings.SettingCategory.EXTENSIONS && settings.length === 0) {
+      return;
     }
-  }
-  createStandardSectionElement(category, settings, content) {
-    const uiSectionName = Common.Settings.getLocalizedSettingsCategory(category);
-    const sectionElement = document.createElement("div");
-    for (const settingRegistration of settings) {
-      const setting = Common.Settings.Settings.instance().resolve(settingRegistration.descriptor);
-      const settingControl = SettingsUI.SettingsUI.createControlForSetting(setting);
-      if (settingControl) {
-        this.settingToControl.set(setting, settingControl);
-        sectionElement.appendChild(settingControl);
-      }
-    }
-    if (content) {
-      sectionElement.appendChild(content);
-    }
-    const card = createSettingsCard(uiSectionName, sectionElement);
-    this.containerElement.appendChild(card);
+    this.#sections.push({
+      category,
+      heading: Common.Settings.getLocalizedSettingsCategory(category),
+      settings: settings.map((settingRegistration) => Common.Settings.Settings.instance().resolve(settingRegistration.descriptor))
+    });
   }
   highlightObject(setting) {
     if (setting instanceof Common.Settings.Setting) {
-      const element = this.settingToControl.get(setting);
-      if (element) {
-        PanelUtils.highlightElement(element);
-      } else if (setting.name === "receive-gdp-badges") {
+      if (setting.name === "receive-gdp-badges") {
         void this.#syncSectionUpdatePromise?.then(() => {
-          void this.syncSection.highlightReceiveBadgesSetting();
+          this.#viewOutput.highlightSetting?.(setting);
         });
+      } else {
+        this.#viewOutput.highlightSetting?.(setting);
       }
     }
   }
@@ -567,7 +683,7 @@ var EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
                   <span>${i18nString(UIStrings.theseExperimentsCouldBeUnstable)}</span>
                 </div>
                 <div class="settings-experiments-block">
-                  ${input.experiments.map((experiment) => html`
+                  ${repeat(input.experiments, (experiment) => experiment.name, (experiment) => html`
                     <p class="settings-experiment" ${ref((el) => {
       if (el) {
         output.setExperimentElement(experiment, el);
@@ -577,7 +693,7 @@ var EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
                         class="experiment-label"
                         name=${experiment.name}
                         title=${experiment.title}
-                        ?checked=${experiment.isEnabled()}
+                        .checked=${experiment.isEnabled()}
                         .jslogContext=${experiment.name}
                         @click=${(e) => {
       const checkbox = e.currentTarget;
@@ -618,7 +734,16 @@ var EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
           </div>
         </div>
       `,
-    target
+    target,
+    {
+      container: {
+        classes: ["settings-tab-container"],
+        attributes: {
+          id: "experiments-tab-content",
+          jslog: `${VisualLogging.pane("experiments")}`
+        }
+      }
+    }
   );
 };
 var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.Widget {
@@ -631,9 +756,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.Wid
   };
   #filterText = "";
   constructor(element, view = EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW) {
-    super(element, { jslog: `${VisualLogging.pane("experiments")}` });
-    this.element.classList.add("settings-tab-container");
-    this.element.id = "experiments-tab-content";
+    super(element);
     this.#view = view;
   }
   #filterExperiments(filterText) {
@@ -754,9 +877,9 @@ var Revealer = class {
       if (settings && settings.indexOf(object.name) !== -1) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
         await SettingsScreen.showSettingsScreen({ name: id });
-        const widget2 = await view.widget();
-        if ("highlightObject" in widget2 && typeof widget2.highlightObject === "function") {
-          widget2.highlightObject(object);
+        const widget3 = await view.widget();
+        if ("highlightObject" in widget3 && typeof widget3.highlightObject === "function") {
+          widget3.highlightObject(object);
         }
         return;
       }
@@ -1000,6 +1123,7 @@ var aiSettingsTab_css_default = `/*
     background-color: var(--app-color-card-background);
     overflow: hidden;
     width: 100%;
+    padding-bottom: var(--sys-size-6);
   }
 
   .allowed-tools-description {
@@ -1019,10 +1143,6 @@ var aiSettingsTab_css_default = `/*
     min-height: var(--sys-size-12);
     font: var(--sys-typescale-body5-regular);
     color: var(--sys-color-on-surface);
-
-    & ~ .allowed-tool-row {
-      border-top: var(--sys-size-1) solid var(--sys-color-divider);
-    }
   }
 
   .allowed-tool-name {
@@ -1035,7 +1155,7 @@ var aiSettingsTab_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./aiSettingsTab.css")} */`;
 
 // ../../front_end/panels/settings/AISettingsTab.ts
-var { html: html2, nothing: nothing2, render: render2, Directives: { ifDefined, classMap, ref: ref2 } } = Lit2;
+var { html: html2, nothing: nothing3, render: render2, Directives: { ifDefined, classMap, ref: ref2 } } = Lit2;
 var UIStrings2 = {
   /**
    * @description Header text for a list of things to consider in the context of generative AI features.
@@ -1269,7 +1389,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
         </div>
       `)}
     </div>
-  ` : nothing2;
+  ` : nothing3;
   const sharedDisclaimer = html2`
     <div class="shared-disclaimer">
       <h2>${i18nString2(UIStrings2.boostYourProductivity)}</h2>
@@ -1326,7 +1446,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
       <div class="divider"></div>
       <div class="toggle-container centered"
         title=${ifDefined(disabledReasonsJoined)}
-        @click=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing2}
+        @click=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing3}
       >
         <devtools-switch
           .checked=${isChecked && !isSettingDisabled}
@@ -1334,7 +1454,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
           .disabled=${isSettingDisabled || !settingData.setting}
           .label=${disabledReasonsJoined || settingData.enableSettingText}
           data-testid=${settingData.enableSettingText}
-          @switchchange=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing2}
+          @switchchange=${settingData.setting ? input.toggleSetting.bind(void 0, settingName) : nothing3}
         ></devtools-switch>
       </div>
       <div class=${classMap(detailsClasses)}>
@@ -1366,7 +1486,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
     size: Buttons2.Button.Size.SMALL,
     iconName: "bin",
     title: lockedString(UIStringsNotTranslate.removeAllowedTool),
-    accessibleLabel: `${lockedString(UIStringsNotTranslate.removeAllowedTool)}: ${tool.displayName}`,
+    accessibleLabel: lockedString(`Remove ${tool.displayName} from allowed tools`),
     jslogContext: "ai-remove-allowed-tool"
   }}
         @click=${() => input.removeAllowedTool(tool.toolName)}
@@ -1388,7 +1508,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
         `}
       </div>
     </div>
-  ` : nothing2;
+  ` : nothing3;
   render2(html2`
     <style>${Input.checkboxStyles}</style>
     <style>${aiSettingsTab_css_default}</style>
@@ -1400,7 +1520,7 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
         <div class="settings-container">
           ${settings}
         </div>
-      ` : nothing2}
+      ` : nothing3}
       ${allowedTools}
     </div></div>
   `, target);
@@ -1751,7 +1871,7 @@ import "../../ui/legacy/components/data_grid/data_grid.js";
 import * as Common3 from "../../core/common/common.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
-import { Directives, html as html3, nothing as nothing3, render as render3 } from "../../ui/lit/lit.js";
+import { Directives, html as html3, nothing as nothing4, render as render3 } from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "../network/forward/forward.js";
 
@@ -2022,7 +2142,7 @@ var DEFAULT_VIEW = (input, output, target) => {
                 <devtools-icon name="warning-filled" class="small"></devtools-icon>
                 <span>${i18nString3(UIStrings3.invalidRulesWarning)}</span>
               </div>
-            ` : nothing3}
+            ` : nothing4}
           </devtools-card>
           <devtools-card heading=${i18nString3(UIStrings3.placeholderDocHeading)}>
             <dl class="intro-section">
@@ -2054,6 +2174,8 @@ var DEFAULT_VIEW = (input, output, target) => {
 var BackendLinkingSettingsTab = class extends UI3.Widget.VBox {
   #view;
   #rulesSetting;
+  #rules = [];
+  #isSaving = false;
   constructor(target, view = DEFAULT_VIEW) {
     super(target);
     this.#view = view;
@@ -2067,43 +2189,53 @@ var BackendLinkingSettingsTab = class extends UI3.Widget.VBox {
   }
   wasShown() {
     super.wasShown();
-    this.#rulesSetting.addChangeListener(this.requestUpdate, this);
+    this.#rules = [...this.#rulesSetting.get()];
+    this.#rulesSetting.addChangeListener(this.#onRulesSettingChanged, this);
     this.requestUpdate();
   }
   willHide() {
     super.willHide();
-    this.#rulesSetting.removeChangeListener(this.requestUpdate, this);
+    this.#rulesSetting.removeChangeListener(this.#onRulesSettingChanged, this);
+  }
+  #onRulesSettingChanged() {
+    if (this.#isSaving) {
+      return;
+    }
+    this.#rules = [...this.#rulesSetting.get()];
+    this.requestUpdate();
+  }
+  #saveRules() {
+    this.#isSaving = true;
+    try {
+      this.#rulesSetting.set(this.#rules.filter(isRuleValid));
+    } finally {
+      this.#isSaving = false;
+    }
+    this.requestUpdate();
   }
   performUpdate() {
     const input = {
-      rules: this.#rulesSetting.get(),
+      rules: [...this.#rules],
       onAddRule: (rule) => {
-        if (!isRuleValid(rule)) {
-          return;
-        }
-        this.#rulesSetting.set([...this.#rulesSetting.get(), rule]);
+        this.#rules.push(rule);
+        this.#saveRules();
       },
       onUpdateRule: (oldRule, newRule) => {
-        if (!isRuleValid(newRule)) {
-          return;
-        }
-        const rules = [...this.#rulesSetting.get()];
-        const index = rules.indexOf(oldRule);
+        const index = this.#rules.indexOf(oldRule);
         if (index !== -1) {
-          rules[index] = newRule;
-          this.#rulesSetting.set(rules);
+          this.#rules[index] = newRule;
+          this.#saveRules();
         }
       },
       onDeleteRule: (rule) => {
-        const rules = [...this.#rulesSetting.get()];
-        const index = rules.indexOf(rule);
+        const index = this.#rules.indexOf(rule);
         if (index !== -1) {
-          rules.splice(index, 1);
-          this.#rulesSetting.set(rules);
+          this.#rules.splice(index, 1);
+          this.#saveRules();
         }
       }
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 
@@ -2255,7 +2387,7 @@ var EditFileSystemView = class _EditFileSystemView extends UI4.Widget.VBox {
       ),
       onDelete: (e) => this.#onDelete(e.currentTarget.dataset.index ?? "-1")
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   #onCreate(url) {
     if (url === void 0) {
@@ -2314,16 +2446,19 @@ var EditFileSystemView = class _EditFileSystemView extends UI4.Widget.VBox {
 // ../../front_end/panels/settings/FrameworkIgnoreListSettingsTab.ts
 var FrameworkIgnoreListSettingsTab_exports = {};
 __export(FrameworkIgnoreListSettingsTab_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   FrameworkIgnoreListSettingsTab: () => FrameworkIgnoreListSettingsTab
 });
+import "../../ui/components/lists/lists.js";
 import "../../ui/kit/kit.js";
 import * as Common4 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
+import * as Platform4 from "../../core/platform/platform.js";
 import * as Workspace from "../../models/workspace/workspace.js";
 import * as Buttons3 from "../../ui/components/buttons/buttons.js";
 import * as UIHelpers2 from "../../ui/helpers/helpers.js";
-import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html5, nothing as nothing5, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
@@ -2406,18 +2541,47 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
   text-align: inherit;
 }
 
-.list:has(.ignore-list-empty),
-.list:has(.ignore-list-edit-row),
-.list:has(.ignore-list-item) {
-  border: none;
-}
-
-.editor-container:has(.ignore-list-edit-row) {
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: none;
   background: var(--sys-color-surface1);
   border-radius: 10px;
+  overflow: hidden;
 }
 
-.ignore-list.list-editing ~ .add-button {
+.editor-content {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.editor-content input {
+  margin-right: 10px;
+}
+
+.editor-content input.error-input {
+  background-color: var(--sys-color-cdt-base-container);
+}
+
+.editor-buttons {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5px;
+  gap: var(--sys-size-6);
+}
+
+.list-widget-input-validation-error {
+  color: var(--sys-color-error);
+  margin: 0 5px;
+}
+
+.editor-container ~ .add-button {
   display: none;
 }
 
@@ -2428,6 +2592,7 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./frameworkIgnoreListSettingsTab.css")} */`;
 
 // ../../front_end/panels/settings/FrameworkIgnoreListSettingsTab.ts
+var { bindToSetting } = UI5.UIUtils;
 var UIStrings5 = {
   /**
    * @description Header text content in Framework Ignore List settings tab of the Settings for enabling or disabling ignore listing.
@@ -2498,219 +2663,377 @@ var UIStrings5 = {
   /**
    * @description Text that is usually a hyperlink to more documentation.
    */
-  learnMore: "Learn more"
+  learnMore: "Learn more",
+  /**
+   * @description Button text to save changes when editing an item in Framework Ignore List settings tab.
+   */
+  save: "Save",
+  /**
+   * @description Button text to add a new item in Framework Ignore List settings tab.
+   */
+  add: "Add",
+  /**
+   * @description Button text to cancel editing an item in Framework Ignore List settings tab.
+   */
+  cancel: "Cancel"
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/settings/FrameworkIgnoreListSettingsTab.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+function renderRuleItem(item2, index, enabled, onTogglePattern) {
+  const helpText = i18nString5(UIStrings5.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
+  return html5`
+    <div class="ignore-list-item">
+      <devtools-checkbox
+          .checked=${!item2.disabled}
+          .disabled=${!enabled}
+          title=${helpText}
+          aria-label=${helpText}
+          jslogcontext="settings.ignore-list-pattern"
+          @change=${(e) => onTogglePattern(index, e.target.checked)}>
+        ${item2.pattern}
+      </devtools-checkbox>
+    </div>
+  `;
+}
+function renderEditor(input) {
+  const isNew = input.editingIndex === input.patterns.length;
+  const isInvalid = input.showValidationError && input.validationError !== null;
+  return html5`
+    <div
+        class="editor-container"
+        jslog=${VisualLogging4.pane("editor").track({ resize: true })}
+        @keydown=${(e) => {
+    if (Platform4.KeyboardUtilities.isEscKey(e)) {
+      e.consume(true);
+      input.onCancelEdit();
+    }
+  }}>
+      <div
+          class="editor-content"
+          @keydown=${(e) => {
+    if (e.key === "Enter" && !e.isComposing) {
+      e.consume(true);
+      input.onCommitEdit();
+    }
+  }}>
+        <div class="ignore-list-edit-row">
+          <div class="ignore-list-pattern">${i18nString5(UIStrings5.pattern)}</div>
+        </div>
+        <div class="ignore-list-edit-row">
+          <div class="ignore-list-pattern">
+            <input
+                class=${Directives3.classMap({
+    "harmony-input": true,
+    "error-input": isInvalid
+  })}
+                type="text"
+                autofocus
+                placeholder="/framework\\.js$"
+                aria-label=${i18nString5(UIStrings5.pattern)}
+                aria-invalid=${isInvalid ? "true" : "false"}
+                .value=${Directives3.live(input.editingValue)}
+                jslog=${VisualLogging4.textField().track({ change: true, keydown: "Enter" }).context("pattern")}
+                @input=${(e) => input.onEditorInput(e.target.value)}>
+          </div>
+        </div>
+      </div>
+      <div class="editor-buttons">
+        <devtools-button
+            .variant=${Buttons3.Button.Variant.OUTLINED}
+            .jslogContext=${"cancel"}
+            jslog=${VisualLogging4.action("cancel").track({ click: true })}
+            @click=${input.onCancelEdit}>
+          ${i18nString5(UIStrings5.cancel)}
+        </devtools-button>
+        <devtools-button
+            .variant=${Buttons3.Button.Variant.PRIMARY}
+            .jslogContext=${"commit"}
+            .disabled=${input.validationError !== null}
+            @click=${input.onCommitEdit}>
+          ${isNew ? i18nString5(UIStrings5.add) : i18nString5(UIStrings5.save)}
+        </devtools-button>
+      </div>
+      <div class="list-widget-input-validation-error" role="alert" aria-live="polite">
+        ${isInvalid && input.validationError ? input.validationError : nothing5}
+      </div>
+    </div>
+  `;
+}
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  const editingIndex = input.editingIndex;
+  const patternsBefore = editingIndex !== null ? input.patterns.slice(0, editingIndex) : input.patterns;
+  const patternsAfter = editingIndex !== null ? input.patterns.slice(editingIndex + 1) : [];
+  render5(html5`
+    <div class="settings-card-container-wrapper">
+      <div class="settings-card-container ignore-list-settings">
+        <devtools-card .heading=${i18nString5(UIStrings5.frameworkIgnoreList)}>
+          <span>${i18nString5(UIStrings5.ignoreListingDescription)}</span>
+          <div class="enable-ignore-listing" title=${i18nString5(UIStrings5.enableIgnoreListingTooltip)}>
+            <devtools-checkbox
+                name=${i18nString5(UIStrings5.ignoreListing)}
+                title=${i18nString5(UIStrings5.ignoreListing)}
+                ${bindToSetting(input.enabledSetting)}>
+              ${i18nString5(UIStrings5.ignoreListing)}
+            </devtools-checkbox>
+          </div>
+        </devtools-card>
+        <devtools-card class="ignore-list-options" .heading=${i18nString5(UIStrings5.generalExclusionRules)}>
+          <div class="ignore-list-option-group general-exclusion-group" role="group">
+            <div class="ignore-list-option">
+              <devtools-checkbox
+                  name=${i18nString5(UIStrings5.ignoreListContentScripts)}
+                  title=${i18nString5(UIStrings5.ignoreListContentScripts)}
+                  ?disabled=${!input.enabled}
+                  ${bindToSetting(input.skipContentScriptsSetting)}>
+                ${i18nString5(UIStrings5.ignoreListContentScripts)}
+              </devtools-checkbox>
+            </div>
+            <div class="ignore-list-option">
+              <devtools-checkbox
+                  name=${i18nString5(UIStrings5.automaticallyIgnoreListKnownThirdPartyScripts)}
+                  title=${i18nString5(UIStrings5.automaticallyIgnoreListKnownThirdPartyScripts)}
+                  ?disabled=${!input.enabled}
+                  ${bindToSetting(input.automaticallyIgnoreListSetting)}>
+                ${i18nString5(UIStrings5.automaticallyIgnoreListKnownThirdPartyScripts)}
+              </devtools-checkbox>
+              <devtools-button
+                  .iconName=${"help"}
+                  .variant=${Buttons3.Button.Variant.ICON}
+                  .size=${Buttons3.Button.Size.SMALL}
+                  .jslogContext=${"learn-more"}
+                  .title=${i18nString5(UIStrings5.learnMore)}
+                  .disabled=${!input.enabled}
+                  @click=${input.onLearnMoreClick}>
+              </devtools-button>
+            </div>
+            <div class="ignore-list-option">
+              <devtools-checkbox
+                  name=${i18nString5(UIStrings5.ignoreListAnonymousScripts)}
+                  title=${i18nString5(UIStrings5.ignoreListAnonymousScripts)}
+                  ?disabled=${!input.enabled}
+                  ${bindToSetting(input.skipAnonymousScriptsSetting)}>
+                ${i18nString5(UIStrings5.ignoreListAnonymousScripts)}
+              </devtools-checkbox>
+            </div>
+          </div>
+        </devtools-card>
+        <devtools-card class="ignore-list-options" .heading=${i18nString5(UIStrings5.customExclusionRules)}>
+          <div class="ignore-list-option-group custom-exclusion-group" role="group">
+            ${patternsBefore.length > 0 ? html5`
+              <devtools-list
+                  class="ignore-list"
+                  .editable=${input.enabled}
+                  .deletable=${input.enabled}
+                  @edit=${(e) => input.onBeginEdit(e.detail.index)}
+                  @delete=${(e) => input.onRemovePattern(e.detail.index)}>
+                ${Directives3.repeat(
+    patternsBefore,
+    (item2) => item2.pattern,
+    (item2, index) => renderRuleItem(item2, index, input.enabled, input.onTogglePattern)
+  )}
+              </devtools-list>
+            ` : nothing5}
+            ${editingIndex !== null ? renderEditor(input) : nothing5}
+            ${editingIndex !== null && patternsAfter.length > 0 ? html5`
+              <devtools-list
+                  class="ignore-list"
+                  .editable=${input.enabled}
+                  .deletable=${input.enabled}
+                  @edit=${(e) => input.onBeginEdit(editingIndex + 1 + e.detail.index)}
+                  @delete=${(e) => input.onRemovePattern(editingIndex + 1 + e.detail.index)}>
+                ${Directives3.repeat(
+    patternsAfter,
+    (item2) => item2.pattern,
+    (item2, index) => renderRuleItem(item2, editingIndex + 1 + index, input.enabled, input.onTogglePattern)
+  )}
+              </devtools-list>
+            ` : nothing5}
+            <devtools-button
+                class="add-button"
+                .variant=${Buttons3.Button.Variant.OUTLINED}
+                .jslogContext=${"settings.add-ignore-list-pattern"}
+                aria-label=${i18nString5(UIStrings5.addFilenamePattern)}
+                .disabled=${!input.enabled}
+                @click=${input.onAddPatternClick}>
+              ${i18nString5(UIStrings5.addPattern)}
+            </devtools-button>
+          </div>
+        </devtools-card>
+      </div>
+    </div>
+  `, target, { container: { attributes: { jslog: `${VisualLogging4.pane("blackbox")}` } } });
+};
 var FrameworkIgnoreListSettingsTab = class extends UI5.Widget.VBox {
-  list;
   setting;
-  editor;
-  constructor() {
+  enabledSetting;
+  skipContentScriptsSetting;
+  automaticallyIgnoreListSetting;
+  skipAnonymousScriptsSetting;
+  #view;
+  #editingIndex = null;
+  #editingValue = "";
+  #showValidationError = false;
+  constructor(view = DEFAULT_VIEW3) {
     super({
-      jslog: `${VisualLogging4.pane("blackbox")}`,
       useShadowDom: true
     });
+    this.#view = view;
     this.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default, settingsScreen_css_default);
-    const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
-    settingsContent.classList.add("settings-card-container", "ignore-list-settings");
-    const ignoreListingDescription = document.createElement("span");
-    ignoreListingDescription.textContent = i18nString5(UIStrings5.ignoreListingDescription);
-    const enabledSetting = Common4.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor);
-    const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
-    enableIgnoreListing.appendChild(
-      SettingsUI3.SettingsUI.createSettingCheckbox(i18nString5(UIStrings5.ignoreListing), enabledSetting)
+    const settings = Common4.Settings.Settings.instance();
+    this.enabledSetting = settings.resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor);
+    this.skipContentScriptsSetting = settings.resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor);
+    this.automaticallyIgnoreListSetting = settings.resolve(Workspace.IgnoreListManager.automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor);
+    this.skipAnonymousScriptsSetting = settings.resolve(Workspace.IgnoreListManager.skipAnonymousScriptsSettingDescriptor);
+    this.setting = settings.resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
+    this.setting.addChangeListener(this.#settingUpdated, this);
+    this.enabledSetting.addChangeListener(this.#settingUpdated, this);
+    this.performUpdate();
+  }
+  performUpdate() {
+    const patterns = this.setting.getAsArray();
+    const validationError = this.#editingIndex !== null ? this.#validatePattern(this.#editingValue, this.#editingIndex) : null;
+    this.#view(
+      {
+        enabledSetting: this.enabledSetting,
+        skipContentScriptsSetting: this.skipContentScriptsSetting,
+        automaticallyIgnoreListSetting: this.automaticallyIgnoreListSetting,
+        skipAnonymousScriptsSetting: this.skipAnonymousScriptsSetting,
+        enabled: this.enabledSetting.get(),
+        patterns,
+        editingIndex: this.#editingIndex,
+        editingValue: this.#editingValue,
+        validationError,
+        showValidationError: this.#showValidationError,
+        onLearnMoreClick: () => {
+          UIHelpers2.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party");
+        },
+        onAddPatternClick: this.#addButtonClicked.bind(this),
+        onTogglePattern: this.#togglePattern.bind(this),
+        onBeginEdit: this.#beginEdit.bind(this),
+        onRemovePattern: this.#removePattern.bind(this),
+        onEditorInput: this.#onEditorInput.bind(this),
+        onCommitEdit: this.#commitEdit.bind(this),
+        onCancelEdit: this.#cancelEdit.bind(this)
+      },
+      void 0,
+      this.contentElement
     );
-    UI5.Tooltip.Tooltip.install(enableIgnoreListing, i18nString5(UIStrings5.enableIgnoreListingTooltip));
-    const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
-    enableIgnoreListingCard.heading = i18nString5(UIStrings5.frameworkIgnoreList);
-    enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
-    const generalExclusionGroup = this.createSettingGroup();
-    generalExclusionGroup.classList.add("general-exclusion-group");
-    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(
-      i18nString5(UIStrings5.ignoreListContentScripts),
-      Common4.Settings.Settings.instance().resolve(
-        Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor
-      )
-    ));
-    const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
-    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(
-      i18nString5(UIStrings5.automaticallyIgnoreListKnownThirdPartyScripts),
-      Common4.Settings.Settings.instance().resolve(
-        Workspace.IgnoreListManager.automaticallyIgnoreListKnownThirdPartyScriptsSettingDescriptor
-      )
-    ));
-    const automaticallyIgnoreLinkButton = new Buttons3.Button.Button();
-    automaticallyIgnoreLinkButton.data = {
-      iconName: "help",
-      variant: Buttons3.Button.Variant.ICON,
-      size: Buttons3.Button.Size.SMALL,
-      jslogContext: "learn-more",
-      title: i18nString5(UIStrings5.learnMore)
-    };
-    automaticallyIgnoreLinkButton.addEventListener(
-      "click",
-      () => UIHelpers2.openInNewTab(
-        "https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"
-      )
-    );
-    automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
-    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(SettingsUI3.SettingsUI.createSettingCheckbox(
-      i18nString5(UIStrings5.ignoreListAnonymousScripts),
-      Common4.Settings.Settings.instance().resolve(
-        Workspace.IgnoreListManager.skipAnonymousScriptsSettingDescriptor
-      )
-    ));
-    const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    generalExclusionGroupCard.heading = i18nString5(UIStrings5.generalExclusionRules);
-    generalExclusionGroupCard.append(generalExclusionGroup);
-    const customExclusionGroup = this.createSettingGroup();
-    customExclusionGroup.classList.add("custom-exclusion-group");
-    const customExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    customExclusionGroupCard.heading = i18nString5(UIStrings5.customExclusionRules);
-    customExclusionGroupCard.append(customExclusionGroup);
-    this.list = new UI5.ListWidget.ListWidget(this);
-    this.list.element.classList.add("ignore-list");
-    this.list.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default);
-    const placeholder = document.createElement("div");
-    placeholder.classList.add("ignore-list-empty");
-    this.list.setEmptyPlaceholder(placeholder);
-    this.list.show(customExclusionGroup);
-    const addPatternButton = UI5.UIUtils.createTextButton(
-      i18nString5(UIStrings5.addPattern),
-      this.addButtonClicked.bind(this),
-      { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" }
-    );
-    UI5.ARIAUtils.setLabel(addPatternButton, i18nString5(UIStrings5.addFilenamePattern));
-    customExclusionGroup.appendChild(addPatternButton);
-    this.setting = Common4.Settings.Settings.instance().resolve(
-      Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor
-    );
-    this.setting.addChangeListener(this.settingUpdated, this);
-    const enabledChanged = () => {
-      const enabled = enabledSetting.get();
-      ignoreListContentScripts.disabled = !enabled;
-      automaticallyIgnoreList.disabled = !enabled;
-      automaticallyIgnoreLinkButton.disabled = !enabled;
-      ignoreListAnonymousScripts.disabled = !enabled;
-      addPatternButton.disabled = !enabled;
-      this.settingUpdated();
-    };
-    enabledSetting.addChangeListener(enabledChanged);
-    enabledChanged();
   }
   wasShown() {
     super.wasShown();
-    this.settingUpdated();
+    this.#cancelEdit();
   }
-  settingUpdated() {
-    const editable = Common4.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor).get();
-    this.list.clear();
+  #settingUpdated() {
+    this.#editingIndex = null;
+    this.#editingValue = "";
+    this.#showValidationError = false;
+    this.performUpdate();
+  }
+  #addButtonClicked() {
+    this.#editingIndex = this.setting.getAsArray().length;
+    this.#editingValue = "";
+    this.#showValidationError = false;
+    this.performUpdate();
+  }
+  #beginEdit(index) {
     const patterns = this.setting.getAsArray();
-    for (let i = 0; i < patterns.length; ++i) {
-      this.list.appendItem(patterns[i], editable);
+    if (index < 0 || index >= patterns.length) {
+      return;
+    }
+    this.#editingIndex = index;
+    this.#editingValue = patterns[index].pattern;
+    this.#showValidationError = false;
+    this.performUpdate();
+  }
+  #onEditorInput(value) {
+    this.#editingValue = value;
+    this.#showValidationError = true;
+    this.performUpdate();
+  }
+  #cancelEdit() {
+    this.#editingIndex = null;
+    this.#editingValue = "";
+    this.#showValidationError = false;
+    this.performUpdate();
+  }
+  #commitEdit() {
+    if (this.#editingIndex === null) {
+      return;
+    }
+    const validationError = this.#validatePattern(this.#editingValue, this.#editingIndex);
+    if (validationError !== null) {
+      this.#showValidationError = true;
+      this.performUpdate();
+      return;
+    }
+    const pattern = this.#editingValue.trim();
+    const list = this.setting.getAsArray();
+    if (this.#editingIndex === list.length) {
+      list.push({ pattern, disabled: false });
+    } else if (list[this.#editingIndex]) {
+      list[this.#editingIndex].pattern = pattern;
+    }
+    this.#editingIndex = null;
+    this.#editingValue = "";
+    this.#showValidationError = false;
+    this.setting.setAsArray(list);
+  }
+  #togglePattern(index, checked) {
+    const patterns = this.setting.getAsArray();
+    const item2 = patterns[index];
+    if (!item2) {
+      return;
+    }
+    const disabled = !checked;
+    if (item2.disabled !== disabled) {
+      item2.disabled = disabled;
+      item2.disabledForUrl = void 0;
+      this.setting.setAsArray(patterns);
     }
   }
-  addButtonClicked() {
-    this.list.addNewItem(this.setting.getAsArray().length, { pattern: "", disabled: false });
-  }
-  createSettingGroup() {
-    const group = document.createElement("div");
-    group.classList.add("ignore-list-option-group");
-    UI5.ARIAUtils.markAsGroup(group);
-    return group;
-  }
-  renderItem(item2, editable) {
-    const element = document.createElement("div");
-    const listSetting = this.setting;
-    const checkbox = UI5.UIUtils.CheckboxLabel.createWithStringLiteral(item2.pattern, !item2.disabled, "settings.ignore-list-pattern");
-    const helpText = i18nString5(UIStrings5.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
-    UI5.Tooltip.Tooltip.install(checkbox, helpText);
-    checkbox.ariaLabel = helpText;
-    checkbox.addEventListener("change", inputChanged, false);
-    checkbox.disabled = !editable;
-    element.appendChild(checkbox);
-    element.classList.add("ignore-list-item");
-    return element;
-    function inputChanged() {
-      const disabled = !checkbox.checked;
-      if (item2.disabled !== disabled) {
-        item2.disabled = disabled;
-        item2.disabledForUrl = void 0;
-        listSetting.setAsArray(listSetting.getAsArray());
-      }
-    }
-  }
-  removeItemRequested(_item, index) {
+  #removePattern(index) {
     const patterns = this.setting.getAsArray();
     patterns.splice(index, 1);
     this.setting.setAsArray(patterns);
   }
-  commitEdit(item2, editor, isNew) {
-    item2.pattern = editor.control("pattern").value.trim();
-    const list = this.setting.getAsArray();
-    if (isNew) {
-      list.push(item2);
+  #validatePattern(value, index) {
+    const pattern = value.trim();
+    const patterns = this.setting.getAsArray();
+    if (!pattern.length) {
+      return i18nString5(UIStrings5.patternCannotBeEmpty);
     }
-    this.setting.setAsArray(list);
-  }
-  beginEdit(item2) {
-    const editor = this.createEditor();
-    editor.control("pattern").value = item2.pattern;
-    return editor;
-  }
-  createEditor() {
-    if (this.editor) {
-      return this.editor;
+    for (let i = 0; i < patterns.length; ++i) {
+      if (i !== index && patterns[i].pattern === pattern) {
+        return i18nString5(UIStrings5.patternAlreadyExists);
+      }
     }
-    const editor = new UI5.ListWidget.Editor();
-    this.editor = editor;
-    const content = editor.contentElement();
-    const titles = content.createChild("div", "ignore-list-edit-row");
-    titles.createChild("div", "ignore-list-pattern").textContent = i18nString5(UIStrings5.pattern);
-    const fields = content.createChild("div", "ignore-list-edit-row");
-    const pattern = editor.createInput("pattern", "text", "/framework\\.js$", patternValidator.bind(this));
-    UI5.ARIAUtils.setLabel(pattern, i18nString5(UIStrings5.pattern));
-    fields.createChild("div", "ignore-list-pattern").appendChild(pattern);
-    return editor;
-    function patternValidator(_item, index, input) {
-      const pattern2 = input.value.trim();
-      const patterns = this.setting.getAsArray();
-      if (!pattern2.length) {
-        return { valid: false, errorMessage: i18nString5(UIStrings5.patternCannotBeEmpty) };
-      }
-      for (let i = 0; i < patterns.length; ++i) {
-        if (i !== index && patterns[i].pattern === pattern2) {
-          return { valid: false, errorMessage: i18nString5(UIStrings5.patternAlreadyExists) };
-        }
-      }
-      let regex;
-      try {
-        regex = new RegExp(pattern2);
-      } catch {
-      }
-      if (!regex) {
-        return { valid: false, errorMessage: i18nString5(UIStrings5.patternMustBeAValidRegular) };
-      }
-      return { valid: true };
+    let regex;
+    try {
+      regex = new RegExp(pattern);
+    } catch {
     }
+    if (!regex) {
+      return i18nString5(UIStrings5.patternMustBeAValidRegular);
+    }
+    return null;
   }
 };
 
 // ../../front_end/panels/settings/KeybindsSettingsTab.ts
 var KeybindsSettingsTab_exports = {};
 __export(KeybindsSettingsTab_exports, {
-  KeybindsSettingsTab: () => KeybindsSettingsTab,
-  ShortcutListItem: () => ShortcutListItem
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  KeybindsSettingsTab: () => KeybindsSettingsTab
 });
+import "../../ui/kit/kit.js";
 import * as Common5 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
 import * as i18n11 from "../../core/i18n/i18n.js";
-import * as Platform5 from "../../core/platform/platform.js";
+import * as Platform6 from "../../core/platform/platform.js";
 import * as Buttons4 from "../../ui/components/buttons/buttons.js";
-import { createIcon, Link } from "../../ui/kit/kit.js";
-import * as SettingsUI5 from "../../ui/legacy/components/settings_ui/settings_ui.js";
+import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
+import * as Lit3 from "../../ui/lit/lit.js";
 import * as Settings6 from "../../ui/settings/settings.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
@@ -2938,6 +3261,7 @@ button.text-button {
 /*# sourceURL=${import.meta.resolve("./keybindsSettingsTab.css")} */`;
 
 // ../../front_end/panels/settings/KeybindsSettingsTab.ts
+var { html: html6, nothing: nothing6, render: render6, Directives: { classMap: classMap2, repeat: repeat2 } } = Lit3;
 var UIStrings6 = {
   /**
    * @description Text for keyboard shortcuts.
@@ -3025,82 +3349,369 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/settings/KeybindsSettingsTab.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var KeybindsSettingsTab = class extends UI6.Widget.VBox {
-  items;
-  list;
-  editingItem;
-  editingRow;
-  constructor() {
-    super({
-      jslog: `${VisualLogging5.pane("keybinds")}`,
-      useShadowDom: true
-    });
-    this.registerRequiredCSS(keybindsSettingsTab_css_default, settingsScreen_css_default);
-    const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
-    settingsContent.classList.add("settings-card-container");
-    const keybindsSetSetting = Common5.Settings.Settings.instance().resolve(Settings6.MainSettings.activeKeybindSetSettingDescriptor);
-    const userShortcutsSetting = Common5.Settings.Settings.instance().resolve(Settings6.MainSettings.userShortcutsSettingDescriptor);
-    keybindsSetSetting.addChangeListener(this.update, this);
-    const keybindsSetSelect = SettingsUI5.SettingsUI.createControlForSetting(
-      keybindsSetSetting,
+function renderActionRow(item2, input) {
+  const renderEditButton = () => html6`
+    <devtools-button
+      class="keybinds-edit-button"
+      title=${i18nString6(UIStrings6.editShortcut)}
+      aria-label=${i18nString6(UIStrings6.editShortcut)}
+      .iconName=${"edit"}
+      .variant=${Buttons4.Button.Variant.ICON}
+      .jslogContext=${"edit"}
+      @click=${() => input.onStartEditing(item2.action)}>
+    </devtools-button>
+  `;
+  return html6`
+    <div
+      class="keybinds-list-item-wrapper"
+      @focusin=${() => input.onActionFocused(item2.action)}>
+      <div
+        class=${classMap2({
+    "keybinds-list-item": true,
+    "keybinds-editing": item2.isEditing
+  })}
+        role="listitem"
+        aria-level="2"
+        tabindex=${item2.tabIndex}
+        ?autofocus=${item2.isAutofocus}
+        jslog=${VisualLogging5.item().context(item2.actionId).track({ keydown: "Escape", resize: true })}
+        @keydown=${item2.isEditing ? input.onEditingRowKeyDown : nothing6}>
+        <div class="keybinds-action-name keybinds-list-text">${item2.actionTitle}</div>
+        ${repeat2(item2.rows, (row) => row.shortcut, (row, index) => html6`
+          ${row.isModified ? html6`
+            <devtools-icon
+              class="keybinds-modified"
+              name="keyboard-pen"
+              aria-label=${i18nString6(UIStrings6.shortcutModified)}>
+            </devtools-icon>
+          ` : nothing6}
+          <div class="keybinds-shortcut keybinds-list-text">
+            ${item2.isEditing ? html6`
+              <input
+                class=${classMap2({
+    "harmony-input": true,
+    "error-input": row.isInvalid
+  })}
+                jslog=${VisualLogging5.textField().track({ change: true })}
+                placeholder=${i18nString6(UIStrings6.recordingKeys)}
+                .spellcheck=${false}
+                maxlength="0"
+                ?autofocus=${row.isAutofocus}
+                aria-invalid=${row.isInvalid ? "true" : "false"}
+                .value=${row.value}
+                @keydown=${(event) => input.onShortcutInputKeyDown(row.shortcut, event)}
+                @focus=${() => input.onShortcutInputFocus(row.shortcut)}
+                @blur=${input.onShortcutInputBlur}
+              />
+              <devtools-button
+                class="keybinds-delete-button"
+                title=${i18nString6(UIStrings6.removeShortcut)}
+                aria-label=${i18nString6(UIStrings6.removeShortcut)}
+                .iconName=${"bin"}
+                .variant=${Buttons4.Button.Variant.ICON}
+                .jslogContext=${"delete"}
+                @click=${() => input.onDeleteShortcut(row.shortcut)}>
+              </devtools-button>
+            ` : html6`
+              ${row.keys.map((key) => html6`
+                <div class="keybinds-key"><span>${key}</span></div>
+              `)}
+            `}
+          </div>
+          ${!item2.isEditing && index === 0 ? renderEditButton() : nothing6}
+        `)}
+        ${item2.hasEmptyInfo ? html6`
+          ${item2.hasDefaultShortcutWhenEmpty ? html6`
+            <devtools-icon
+              class="keybinds-modified"
+              name="keyboard-pen"
+              aria-label=${i18nString6(UIStrings6.shortcutModified)}>
+            </devtools-icon>
+          ` : nothing6}
+          ${!item2.isEditing ? html6`
+            <div
+              class="keybinds-shortcut keybinds-list-text"
+              aria-label=${i18nString6(UIStrings6.noShortcutForAction)}>
+            </div>
+            ${renderEditButton()}
+          ` : nothing6}
+        ` : nothing6}
+        ${item2.isEditing ? html6`
+          <div class="keybinds-shortcut">
+            <devtools-button
+              .variant=${Buttons4.Button.Variant.OUTLINED}
+              .jslogContext=${"add-shortcut"}
+              ?autofocus=${item2.rows.length === 0}
+              @click=${input.onAddShortcut}>
+              ${i18nString6(UIStrings6.addAShortcut)}
+            </devtools-button>
+          </div>
+          <div
+            class=${classMap2({
+    "keybinds-info": true,
+    "keybinds-error": true,
+    hidden: !item2.errorMessage
+  })}
+            role="alert"
+            aria-live="polite">
+            ${item2.errorMessage ?? ""}
+          </div>
+          <devtools-button
+            title=${i18nString6(UIStrings6.ResetShortcutsForAction)}
+            aria-label=${i18nString6(UIStrings6.ResetShortcutsForAction)}
+            .iconName=${"undo"}
+            .variant=${Buttons4.Button.Variant.ICON}
+            .jslogContext=${"undo"}
+            @click=${input.onResetShortcutsToDefaults}>
+          </devtools-button>
+          <devtools-button
+            class="keybinds-confirm-button"
+            title=${i18nString6(UIStrings6.confirmChanges)}
+            aria-label=${i18nString6(UIStrings6.confirmChanges)}
+            .iconName=${"checkmark"}
+            .variant=${Buttons4.Button.Variant.ICON}
+            .jslogContext=${"confirm"}
+            .disabled=${item2.isConfirmDisabled}
+            @click=${input.onConfirmChanges}>
+          </devtools-button>
+          <devtools-button
+            class="keybinds-cancel-button"
+            title=${i18nString6(UIStrings6.discardChanges)}
+            aria-label=${i18nString6(UIStrings6.discardChanges)}
+            .iconName=${"cross"}
+            .variant=${Buttons4.Button.Variant.ICON}
+            .jslogContext=${"cancel"}
+            @click=${input.onDiscardChanges}>
+          </devtools-button>
+        ` : nothing6}
+      </div>
+    </div>
+  `;
+}
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  render6(
+    html6`
+        <style>${keybindsSettingsTab_css_default}</style>
+        <style>${settingsScreen_css_default}</style>
+        <div class="settings-card-container-wrapper">
+          <div class="settings-card-container">
+            <devtools-card heading=${i18nString6(UIStrings6.shortcuts)}>
+              <div class="keybinds-set-select">
+                ${SettingsUI3.SettingsUI.renderControlForSetting(
+      input.keybindsSetSetting,
       i18nString6(UIStrings6.matchShortcutsFromPreset)
-    );
-    const card = settingsContent.createChild("devtools-card");
-    card.heading = i18nString6(UIStrings6.shortcuts);
-    if (keybindsSetSelect) {
-      keybindsSetSelect.classList.add("keybinds-set-select");
-    }
-    this.items = new UI6.ListModel.ListModel();
-    this.list = new UI6.ListControl.ListControl(this.items, this, UI6.ListControl.ListMode.NonViewport);
-    this.list.element.classList.add("shortcut-list");
-    this.items.replaceAll(this.createListItems());
-    UI6.ARIAUtils.markAsList(this.list.element);
-    UI6.ARIAUtils.setLabel(this.list.element, i18nString6(UIStrings6.keyboardShortcutsList));
-    const footer = document.createElement("div");
-    footer.classList.add("keybinds-footer");
-    const docsLink = Link.create(
-      "https://developer.chrome.com/docs/devtools/shortcuts/",
-      i18nString6(UIStrings6.FullListOfDevtoolsKeyboard),
-      void 0,
-      "learn-more"
-    );
-    docsLink.classList.add("docs-link");
-    footer.appendChild(docsLink);
-    const restoreDefaultShortcutsButton = UI6.UIUtils.createTextButton(i18nString6(UIStrings6.RestoreDefaultShortcuts), () => {
-      userShortcutsSetting.set([]);
-      keybindsSetSetting.set(UI6.ShortcutRegistry.DefaultShortcutSetting);
-    }, { jslogContext: "restore-default-shortcuts" });
-    footer.appendChild(restoreDefaultShortcutsButton);
-    this.editingItem = null;
-    this.editingRow = null;
-    if (keybindsSetSelect) {
-      card.append(keybindsSetSelect);
-    }
-    card.append(this.list.element, footer);
-    this.update();
-  }
-  createElementForItem(item2) {
-    const element = document.createElement("div");
-    let itemContent;
-    if (typeof item2 === "string") {
-      itemContent = element;
-      itemContent.classList.add("keybinds-category-header");
-      itemContent.textContent = UI6.ActionRegistration.getLocalizedActionCategory(item2);
-      UI6.ARIAUtils.setLevel(itemContent, 1);
-    } else {
-      const listItem = new ShortcutListItem(item2, this, item2 === this.editingItem);
-      itemContent = listItem.element;
-      UI6.ARIAUtils.setLevel(itemContent, 2);
-      if (item2 === this.editingItem) {
-        this.editingRow = listItem;
+    )}
+              </div>
+              <div
+                class="shortcut-list"
+                role="list"
+                aria-label=${i18nString6(UIStrings6.keyboardShortcutsList)}
+                @keydown=${input.onListKeyDown}>
+                ${repeat2(
+      input.items,
+      (item2) => typeof item2 === "string" ? item2 : item2.actionId,
+      (item2) => {
+        if (typeof item2 === "string") {
+          return html6`
+                          <div
+                            class="keybinds-category-header"
+                            role="listitem"
+                            aria-level="1"
+                            tabindex="-1">
+                            ${UI6.ActionRegistration.getLocalizedActionCategory(item2)}
+                          </div>
+                        `;
+        }
+        return renderActionRow(item2, input);
       }
-      itemContent.classList.add("keybinds-list-item");
-      element.classList.add("keybinds-list-item-wrapper");
-      element.appendChild(itemContent);
+    )}
+              </div>
+              <div class="keybinds-footer">
+                <devtools-link
+                  class="docs-link"
+                  href="https://developer.chrome.com/docs/devtools/shortcuts/"
+                  jslogcontext="learn-more">
+                  ${i18nString6(UIStrings6.FullListOfDevtoolsKeyboard)}
+                </devtools-link>
+                <devtools-button
+                  .variant=${Buttons4.Button.Variant.OUTLINED}
+                  .jslogContext=${"restore-default-shortcuts"}
+                  @click=${input.onRestoreDefaultShortcuts}>
+                  ${i18nString6(UIStrings6.RestoreDefaultShortcuts)}
+                </devtools-button>
+              </div>
+            </devtools-card>
+          </div>
+        </div>
+      `,
+    target,
+    {
+      container: {
+        classes: ["flex-auto"],
+        attributes: {
+          jslog: `${VisualLogging5.pane("keybinds")}`
+        }
+      }
     }
-    UI6.ARIAUtils.markAsListitem(itemContent);
-    itemContent.tabIndex = item2 === this.list.selectedItem() && item2 !== this.editingItem ? 0 : -1;
-    return element;
+  );
+};
+var KeybindsSettingsTab = class extends UI6.Widget.VBox {
+  #items;
+  #actions;
+  #selectedItem = null;
+  #editingItem = null;
+  #editingShortcuts = [];
+  #editedShortcuts = /* @__PURE__ */ new Map();
+  #focusedShortcut = null;
+  #validated = false;
+  #secondKeyTimeout = null;
+  #keybindsSetSetting;
+  #userShortcutsSetting;
+  #view;
+  constructor(view = DEFAULT_VIEW4) {
+    super({ useShadowDom: "pure" });
+    this.#view = view;
+    this.#keybindsSetSetting = Common5.Settings.Settings.instance().resolve(Settings6.MainSettings.activeKeybindSetSettingDescriptor);
+    this.#userShortcutsSetting = Common5.Settings.Settings.instance().resolve(Settings6.MainSettings.userShortcutsSettingDescriptor);
+    this.#keybindsSetSetting.addChangeListener(this.update, this);
+    this.#items = this.#createListItems();
+    this.#actions = this.#items.filter((item2) => item2 instanceof UI6.ActionRegistration.Action);
+    this.#selectedItem = this.#actions[0] ?? null;
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.performUpdate();
+  }
+  #onRestoreDefaultShortcuts() {
+    this.#userShortcutsSetting.set([]);
+    this.#keybindsSetSetting.set(UI6.ShortcutRegistry.DefaultShortcutSetting);
+  }
+  #buildActionRowViewData(item2) {
+    const isEditing = item2 === this.#editingItem;
+    const isSelected = item2 === this.#selectedItem;
+    const isAutofocus = isSelected && !this.#editingItem;
+    const tabIndex = isSelected && !isEditing ? 0 : -1;
+    const shortcuts = isEditing ? this.#editingShortcuts : UI6.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());
+    const separator = Host3.Platform.isMac() ? "\u2004" : "\u200A+\u200A";
+    let errorMessage = null;
+    let isConfirmDisabled = false;
+    const rows = [];
+    for (const shortcut of shortcuts) {
+      if (isEditing && this.#editedShortcuts.has(shortcut) && !this.#editedShortcuts.get(shortcut)) {
+        continue;
+      }
+      const isModified = shortcut.type !== UI6.KeyboardShortcut.Type.UNSET_SHORTCUT && !shortcut.isDefault();
+      const userDescriptors = isEditing ? this.#editedShortcuts.get(shortcut) : void 0;
+      const value = userDescriptors ? this.#shortcutInputTextForDescriptors(userDescriptors) : shortcut.title();
+      const keys = shortcut.descriptors.flatMap((descriptor) => descriptor.name.split(separator));
+      let isInvalid = false;
+      if (isEditing && this.#validated && userDescriptors) {
+        if (userDescriptors.some((descriptor) => UI6.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
+          isConfirmDisabled = true;
+          isInvalid = true;
+          errorMessage = i18nString6(UIStrings6.shortcutsCannotContainOnly);
+        } else {
+          const conflicts = UI6.ShortcutRegistry.ShortcutRegistry.instance().actionsForDescriptors(userDescriptors).filter((actionId) => actionId !== item2.id());
+          if (conflicts.length) {
+            isConfirmDisabled = true;
+            isInvalid = true;
+            if (UI6.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
+              const action3 = UI6.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
+              errorMessage = i18nString6(UIStrings6.thisShortcutIsInUseByS, { PH1: action3.category(), PH2: action3.title() });
+            }
+          }
+        }
+      }
+      rows.push({
+        shortcut,
+        isModified,
+        value,
+        keys,
+        isInvalid,
+        isAutofocus: false
+      });
+    }
+    if (isEditing && rows.length > 0) {
+      const autofocusRow = rows.find((row) => row.shortcut === this.#focusedShortcut) ?? rows[0];
+      autofocusRow.isAutofocus = true;
+    }
+    return {
+      action: item2,
+      actionId: item2.id(),
+      actionTitle: item2.title(),
+      isEditing,
+      isAutofocus,
+      tabIndex,
+      hasEmptyInfo: shortcuts.length === 0,
+      hasDefaultShortcutWhenEmpty: shortcuts.length === 0 && UI6.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(item2.id()),
+      rows,
+      errorMessage,
+      isConfirmDisabled
+    };
+  }
+  performUpdate() {
+    const viewItems = this.#items.map((item2) => typeof item2 === "string" ? item2 : this.#buildActionRowViewData(item2));
+    this.#view(
+      {
+        keybindsSetSetting: this.#keybindsSetSetting,
+        items: viewItems,
+        onRestoreDefaultShortcuts: this.#onRestoreDefaultShortcuts.bind(this),
+        onListKeyDown: this.#onListKeyDown.bind(this),
+        onActionFocused: this.#onActionFocused.bind(this),
+        onStartEditing: this.startEditing.bind(this),
+        onAddShortcut: this.#addShortcut.bind(this),
+        onResetShortcutsToDefaults: this.#resetShortcutsToDefaults.bind(this),
+        onConfirmChanges: this.#onConfirmChanges.bind(this),
+        onDiscardChanges: this.#onDiscardChanges.bind(this),
+        onEditingRowKeyDown: this.#onEditingRowKeyDown.bind(this),
+        onShortcutInputKeyDown: this.#onShortcutInputKeyDown.bind(this),
+        onShortcutInputFocus: this.#onShortcutInputFocus.bind(this),
+        onShortcutInputBlur: this.#onShortcutInputBlur.bind(this),
+        onDeleteShortcut: this.#onDeleteShortcut.bind(this)
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  #onActionFocused(action3) {
+    if (this.#selectedItem === action3) {
+      return;
+    }
+    this.#selectedItem = action3;
+    this.performUpdate();
+  }
+  #onListKeyDown(event) {
+    if (this.#editingItem || this.#actions.length === 0) {
+      return;
+    }
+    const currentIndex = this.#selectedItem ? this.#actions.indexOf(this.#selectedItem) : -1;
+    let nextIndex = -1;
+    switch (event.key) {
+      case "ArrowDown":
+      case "PageDown":
+        nextIndex = currentIndex < this.#actions.length - 1 ? currentIndex + 1 : this.#actions.length - 1;
+        break;
+      case "ArrowUp":
+      case "PageUp":
+        nextIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = this.#actions.length - 1;
+        break;
+      default:
+        return;
+    }
+    event.consume(true);
+    const nextAction = this.#actions[nextIndex];
+    if (nextAction) {
+      this.#selectedItem = nextAction;
+      this.performUpdate();
+      this.focus();
+    }
   }
   commitChanges(item2, editedShortcuts) {
     for (const [originalShortcut, newDescriptors] of editedShortcuts) {
@@ -3123,52 +3734,166 @@ var KeybindsSettingsTab = class extends UI6.Widget.VBox {
     }
     this.stopEditing(item2);
   }
-  /**
-   * This method will never be called.
-   */
-  heightForItem(_item) {
-    return 0;
-  }
-  isItemSelectable(item2) {
-    return item2 instanceof UI6.ActionRegistration.Action;
-  }
-  selectedItemChanged(_from, to, fromElement, toElement) {
-    if (fromElement) {
-      fromElement.tabIndex = -1;
+  startEditing(action3) {
+    this.#selectedItem = action3;
+    if (this.#editingItem) {
+      this.stopEditing(this.#editingItem);
     }
-    if (toElement) {
-      if (to === this.editingItem && this.editingRow) {
-        this.editingRow.focus();
-      } else {
-        toElement.tabIndex = 0;
-        if (this.list.element.hasFocus()) {
-          toElement.focus();
-        }
-      }
-      this.setDefaultFocusedElement(toElement);
-    }
-  }
-  updateSelectedItemARIA(_fromElement, _toElement) {
-    return true;
-  }
-  startEditing(action2) {
-    this.list.selectItem(action2);
-    if (this.editingItem) {
-      this.stopEditing(this.editingItem);
-    }
-    UI6.UIUtils.markBeingEdited(this.list.element, true);
-    this.editingItem = action2;
-    this.list.refreshItem(action2);
-  }
-  stopEditing(action2) {
-    UI6.UIUtils.markBeingEdited(this.list.element, false);
-    this.editingItem = null;
-    this.editingRow = null;
-    this.list.refreshItem(action2);
+    UI6.UIUtils.markBeingEdited(this.element, true);
+    this.#editingItem = action3;
+    this.#editedShortcuts.clear();
+    this.#focusedShortcut = null;
+    this.#validated = false;
+    this.#editingShortcuts = UI6.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(action3.id());
+    this.performUpdate();
     this.focus();
   }
-  createListItems() {
-    const actions = UI6.ActionRegistry.ActionRegistry.instance().actions().filter((action2) => action2.configurableBindings()).sort((actionA, actionB) => {
+  stopEditing(_action) {
+    if (this.#secondKeyTimeout !== null) {
+      clearTimeout(this.#secondKeyTimeout);
+      this.#secondKeyTimeout = null;
+    }
+    UI6.UIUtils.markBeingEdited(this.element, false);
+    this.#editingItem = null;
+    this.#editingShortcuts = [];
+    this.#editedShortcuts.clear();
+    this.#focusedShortcut = null;
+    this.#validated = false;
+    this.performUpdate();
+    this.focus();
+  }
+  #onConfirmChanges() {
+    if (!this.#editingItem) {
+      return;
+    }
+    const item2 = this.#editingItem;
+    this.commitChanges(item2, this.#editedShortcuts);
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesApplied, { PH1: item2.title() }));
+  }
+  #onDiscardChanges() {
+    if (!this.#editingItem) {
+      return;
+    }
+    this.stopEditing(this.#editingItem);
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesDiscarded));
+  }
+  #onEditingRowKeyDown(event) {
+    if (this.#editingItem && Platform6.KeyboardUtilities.isEscKey(event)) {
+      this.stopEditing(this.#editingItem);
+      event.consume(true);
+    }
+  }
+  #onShortcutInputFocus(shortcut) {
+    this.#focusedShortcut = shortcut;
+  }
+  #onShortcutInputBlur() {
+    this.#focusedShortcut = null;
+    if (this.#secondKeyTimeout !== null) {
+      clearTimeout(this.#secondKeyTimeout);
+      this.#secondKeyTimeout = null;
+    }
+  }
+  #onDeleteShortcut(shortcut) {
+    if (!this.#editingItem) {
+      return;
+    }
+    const index = this.#editingShortcuts.indexOf(shortcut);
+    if (!shortcut.isDefault() && index !== -1) {
+      this.#editingShortcuts.splice(index, 1);
+    }
+    this.#editedShortcuts.set(shortcut, null);
+    this.#focusedShortcut = null;
+    this.#validated = true;
+    this.performUpdate();
+    this.focus();
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutRemoved, { PH1: this.#editingItem.title() }));
+  }
+  #addShortcut() {
+    if (!this.#editingItem) {
+      return;
+    }
+    const shortcut = new UI6.KeyboardShortcut.KeyboardShortcut([], this.#editingItem.id(), UI6.KeyboardShortcut.Type.UNSET_SHORTCUT);
+    this.#editingShortcuts.push(shortcut);
+    this.#focusedShortcut = shortcut;
+    this.performUpdate();
+    this.focus();
+  }
+  #onShortcutInputKeyDown(shortcut, event) {
+    if (event.key !== "Tab") {
+      const eventDescriptor = this.#descriptorForEvent(event);
+      const userDescriptors = this.#editedShortcuts.get(shortcut) || [];
+      this.#editedShortcuts.set(shortcut, userDescriptors);
+      const isLastKeyOfShortcut = userDescriptors.length === 2 && UI6.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
+      const shouldClearOldShortcut = userDescriptors.length === 2 && !isLastKeyOfShortcut;
+      if (shouldClearOldShortcut) {
+        userDescriptors.splice(0, 2);
+      }
+      if (this.#secondKeyTimeout) {
+        clearTimeout(this.#secondKeyTimeout);
+        this.#secondKeyTimeout = null;
+        userDescriptors.push(eventDescriptor);
+      } else if (isLastKeyOfShortcut) {
+        userDescriptors[1] = eventDescriptor;
+      } else if (!UI6.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
+        userDescriptors[0] = eventDescriptor;
+        this.#secondKeyTimeout = window.setTimeout(() => {
+          this.#secondKeyTimeout = null;
+        }, UI6.ShortcutRegistry.KeyTimeout);
+      } else {
+        userDescriptors[0] = eventDescriptor;
+      }
+      this.#validated = true;
+      this.performUpdate();
+      event.consume(true);
+    }
+  }
+  #descriptorForEvent(event) {
+    const userKey = UI6.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
+    const codeAndModifiers = UI6.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
+    let key = UI6.KeyboardShortcut.Keys[event.key] || UI6.KeyboardShortcut.KeyBindings[event.key];
+    if (!key && !/^[a-z]$/i.test(event.key)) {
+      const keyCode = event.code;
+      key = UI6.KeyboardShortcut.Keys[keyCode] || UI6.KeyboardShortcut.KeyBindings[keyCode];
+      if (keyCode.startsWith("Digit")) {
+        key = keyCode.slice(5);
+      } else if (keyCode.startsWith("Key")) {
+        key = keyCode.slice(3);
+      }
+    }
+    return UI6.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
+  }
+  #shortcutInputTextForDescriptors(descriptors) {
+    return descriptors.map((descriptor) => descriptor.name).join(" ");
+  }
+  #resetShortcutsToDefaults() {
+    if (!this.#editingItem) {
+      return;
+    }
+    this.#editedShortcuts.clear();
+    for (const shortcut of this.#editingShortcuts) {
+      if (shortcut.type === UI6.KeyboardShortcut.Type.UNSET_SHORTCUT) {
+        const index = this.#editingShortcuts.indexOf(shortcut);
+        this.#editingShortcuts.splice(index, 1);
+      } else if (shortcut.type === UI6.KeyboardShortcut.Type.USER_SHORTCUT) {
+        this.#editedShortcuts.set(shortcut, null);
+      }
+    }
+    const disabledDefaults = UI6.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.#editingItem.id());
+    disabledDefaults.forEach((shortcut) => {
+      if (this.#editingShortcuts.includes(shortcut)) {
+        return;
+      }
+      this.#editingShortcuts.push(shortcut);
+      this.#editedShortcuts.set(shortcut, shortcut.descriptors);
+    });
+    this.#focusedShortcut = null;
+    this.#validated = false;
+    this.performUpdate();
+    this.focus();
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesRestored, { PH1: this.#editingItem.title() }));
+  }
+  #createListItems() {
+    const actions = UI6.ActionRegistry.ActionRegistry.instance().actions().filter((action3) => action3.configurableBindings()).sort((actionA, actionB) => {
       if (actionA.category() < actionB.category()) {
         return -1;
       }
@@ -3185,352 +3910,41 @@ var KeybindsSettingsTab = class extends UI6.Widget.VBox {
     });
     const items = [];
     let currentCategory;
-    actions.forEach((action2) => {
-      if (currentCategory !== action2.category()) {
-        items.push(action2.category());
+    actions.forEach((action3) => {
+      if (currentCategory !== action3.category()) {
+        items.push(action3.category());
       }
-      items.push(action2);
-      currentCategory = action2.category();
+      items.push(action3);
+      currentCategory = action3.category();
     });
     return items;
   }
   onEscapeKeyPressed(event) {
-    const deepActiveElement = UI6.DOMUtilities.deepActiveElement(document);
-    if (this.editingRow && deepActiveElement?.nodeName === "INPUT") {
-      this.editingRow.onEscapeKeyPressed(event);
+    if (this.#editingItem && this.#focusedShortcut && UI6.DOMUtilities.deepActiveElement(document)?.nodeName === "INPUT") {
+      this.#onShortcutInputKeyDown(this.#focusedShortcut, event);
     }
   }
   update() {
-    if (this.editingItem) {
-      this.stopEditing(this.editingItem);
+    if (this.#editingItem) {
+      this.stopEditing(this.#editingItem);
     }
-    this.list.refreshAllItems();
-    if (!this.list.selectedItem()) {
-      this.list.selectFirstItem();
+    if (!this.#selectedItem && this.#actions.length > 0) {
+      this.#selectedItem = this.#actions[0];
     }
+    this.performUpdate();
   }
   willHide() {
     super.willHide();
-    if (this.editingItem) {
-      this.stopEditing(this.editingItem);
+    if (this.#editingItem) {
+      this.stopEditing(this.#editingItem);
     }
-  }
-};
-var ShortcutListItem = class {
-  isEditing;
-  settingsTab;
-  item;
-  element;
-  editedShortcuts;
-  shortcutInputs;
-  shortcuts;
-  elementToFocus;
-  confirmButton;
-  addShortcutLinkContainer;
-  errorMessageElement;
-  secondKeyTimeout;
-  constructor(item2, settingsTab, isEditing) {
-    this.isEditing = Boolean(isEditing);
-    this.settingsTab = settingsTab;
-    this.item = item2;
-    this.element = document.createElement("div");
-    this.element.setAttribute(
-      "jslog",
-      `${VisualLogging5.item().context(item2.id()).track({ keydown: "Escape", resize: true })}`
-    );
-    this.editedShortcuts = /* @__PURE__ */ new Map();
-    this.shortcutInputs = /* @__PURE__ */ new Map();
-    this.shortcuts = UI6.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());
-    this.elementToFocus = null;
-    this.confirmButton = null;
-    this.addShortcutLinkContainer = null;
-    this.errorMessageElement = null;
-    this.secondKeyTimeout = null;
-    this.update();
-  }
-  focus() {
-    if (this.elementToFocus) {
-      this.elementToFocus.focus();
-    }
-  }
-  update() {
-    this.element.removeChildren();
-    this.elementToFocus = null;
-    this.shortcutInputs.clear();
-    this.element.classList.toggle("keybinds-editing", this.isEditing);
-    this.element.createChild("div", "keybinds-action-name keybinds-list-text").textContent = this.item.title();
-    this.shortcuts.forEach(this.createShortcutRow, this);
-    if (this.shortcuts.length === 0) {
-      this.createEmptyInfo();
-    }
-    if (this.isEditing) {
-      this.setupEditor();
-    }
-  }
-  createEmptyInfo() {
-    if (UI6.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(this.item.id())) {
-      const icon = createIcon("keyboard-pen", "keybinds-modified");
-      UI6.ARIAUtils.setLabel(icon, i18nString6(UIStrings6.shortcutModified));
-      this.element.appendChild(icon);
-    }
-    if (!this.isEditing) {
-      const emptyElement = this.element.createChild("div", "keybinds-shortcut keybinds-list-text");
-      UI6.ARIAUtils.setLabel(emptyElement, i18nString6(UIStrings6.noShortcutForAction));
-      this.element.appendChild(this.createEditButton());
-    }
-  }
-  setupEditor() {
-    this.addShortcutLinkContainer = this.element.createChild("div", "keybinds-shortcut");
-    const addShortcutButton = UI6.UIUtils.createTextButton(
-      i18nString6(UIStrings6.addAShortcut),
-      this.addShortcut.bind(this),
-      { jslogContext: "add-shortcut" }
-    );
-    this.addShortcutLinkContainer.appendChild(addShortcutButton);
-    if (!this.elementToFocus) {
-      this.elementToFocus = addShortcutButton;
-    }
-    this.errorMessageElement = this.element.createChild("div", "keybinds-info keybinds-error hidden");
-    UI6.ARIAUtils.markAsAlert(this.errorMessageElement);
-    this.element.appendChild(this.createIconButton(
-      i18nString6(UIStrings6.ResetShortcutsForAction),
-      "undo",
-      "",
-      "undo",
-      this.resetShortcutsToDefaults.bind(this)
-    ));
-    this.confirmButton = this.createIconButton(
-      i18nString6(UIStrings6.confirmChanges),
-      "checkmark",
-      "keybinds-confirm-button",
-      "confirm",
-      () => {
-        this.settingsTab.commitChanges(this.item, this.editedShortcuts);
-        UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesApplied, { PH1: this.item.title() }));
-      }
-    );
-    this.element.appendChild(this.confirmButton);
-    this.element.appendChild(
-      this.createIconButton(i18nString6(UIStrings6.discardChanges), "cross", "keybinds-cancel-button", "cancel", () => {
-        this.settingsTab.stopEditing(this.item);
-        UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesDiscarded));
-      })
-    );
-    this.element.addEventListener("keydown", (event) => {
-      if (Platform5.KeyboardUtilities.isEscKey(event)) {
-        this.settingsTab.stopEditing(this.item);
-        event.consume(true);
-      }
-    });
-  }
-  addShortcut() {
-    const shortcut = new UI6.KeyboardShortcut.KeyboardShortcut([], this.item.id(), UI6.KeyboardShortcut.Type.UNSET_SHORTCUT);
-    this.shortcuts.push(shortcut);
-    this.update();
-    const shortcutInput = this.shortcutInputs.get(shortcut);
-    if (shortcutInput) {
-      shortcutInput.focus();
-    }
-  }
-  createShortcutRow(shortcut, index) {
-    if (this.editedShortcuts.has(shortcut) && !this.editedShortcuts.get(shortcut)) {
-      return;
-    }
-    let icon;
-    if (shortcut.type !== UI6.KeyboardShortcut.Type.UNSET_SHORTCUT && !shortcut.isDefault()) {
-      icon = createIcon("keyboard-pen", "keybinds-modified");
-      UI6.ARIAUtils.setLabel(icon, i18nString6(UIStrings6.shortcutModified));
-      this.element.appendChild(icon);
-    }
-    const shortcutElement = this.element.createChild("div", "keybinds-shortcut keybinds-list-text");
-    if (this.isEditing) {
-      const shortcutInput = shortcutElement.createChild("input", "harmony-input");
-      shortcutInput.setAttribute("jslog", `${VisualLogging5.textField().track({ change: true })}`);
-      shortcutInput.setAttribute("placeholder", i18nString6(UIStrings6.recordingKeys));
-      shortcutInput.spellcheck = false;
-      shortcutInput.maxLength = 0;
-      this.shortcutInputs.set(shortcut, shortcutInput);
-      if (!this.elementToFocus) {
-        this.elementToFocus = shortcutInput;
-      }
-      shortcutInput.value = shortcut.title();
-      const userDescriptors = this.editedShortcuts.get(shortcut);
-      if (userDescriptors) {
-        shortcutInput.value = this.shortcutInputTextForDescriptors(userDescriptors);
-      }
-      shortcutInput.addEventListener("keydown", this.onShortcutInputKeyDown.bind(this, shortcut, shortcutInput));
-      shortcutInput.addEventListener("blur", () => {
-        if (this.secondKeyTimeout !== null) {
-          clearTimeout(this.secondKeyTimeout);
-          this.secondKeyTimeout = null;
-        }
-      });
-      shortcutElement.appendChild(
-        this.createIconButton(i18nString6(UIStrings6.removeShortcut), "bin", "keybinds-delete-button", "delete", () => {
-          const index2 = this.shortcuts.indexOf(shortcut);
-          if (!shortcut.isDefault()) {
-            this.shortcuts.splice(index2, 1);
-          }
-          this.editedShortcuts.set(shortcut, null);
-          this.update();
-          this.focus();
-          this.validateInputs();
-          UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutRemoved, { PH1: this.item.title() }));
-        })
-      );
-    } else {
-      const separator = Host3.Platform.isMac() ? "\u2004" : "\u200A+\u200A";
-      const keys = shortcut.descriptors.flatMap((descriptor) => descriptor.name.split(separator));
-      keys.forEach((key) => {
-        shortcutElement.createChild("div", "keybinds-key").createChild("span").textContent = key;
-      });
-      if (index === 0) {
-        this.element.appendChild(this.createEditButton());
-      }
-    }
-  }
-  createEditButton() {
-    return this.createIconButton(
-      i18nString6(UIStrings6.editShortcut),
-      "edit",
-      "keybinds-edit-button",
-      "edit",
-      () => this.settingsTab.startEditing(this.item)
-    );
-  }
-  createIconButton(label, iconName, className, jslogContext, listener) {
-    const button = new Buttons4.Button.Button();
-    button.data = { variant: Buttons4.Button.Variant.ICON, iconName, jslogContext, title: label };
-    button.addEventListener("click", listener);
-    UI6.ARIAUtils.setLabel(button, label);
-    if (className) {
-      button.classList.add(className);
-    }
-    return button;
-  }
-  onShortcutInputKeyDown(shortcut, shortcutInput, event) {
-    if (event.key !== "Tab") {
-      const eventDescriptor = this.descriptorForEvent(event);
-      const userDescriptors = this.editedShortcuts.get(shortcut) || [];
-      this.editedShortcuts.set(shortcut, userDescriptors);
-      const isLastKeyOfShortcut = userDescriptors.length === 2 && UI6.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
-      const shouldClearOldShortcut = userDescriptors.length === 2 && !isLastKeyOfShortcut;
-      if (shouldClearOldShortcut) {
-        userDescriptors.splice(0, 2);
-      }
-      if (this.secondKeyTimeout) {
-        clearTimeout(this.secondKeyTimeout);
-        this.secondKeyTimeout = null;
-        userDescriptors.push(eventDescriptor);
-      } else if (isLastKeyOfShortcut) {
-        userDescriptors[1] = eventDescriptor;
-      } else if (!UI6.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
-        userDescriptors[0] = eventDescriptor;
-        this.secondKeyTimeout = window.setTimeout(() => {
-          this.secondKeyTimeout = null;
-        }, UI6.ShortcutRegistry.KeyTimeout);
-      } else {
-        userDescriptors[0] = eventDescriptor;
-      }
-      shortcutInput.value = this.shortcutInputTextForDescriptors(userDescriptors);
-      this.validateInputs();
-      event.consume(true);
-    }
-  }
-  descriptorForEvent(event) {
-    const userKey = UI6.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
-    const codeAndModifiers = UI6.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
-    let key = UI6.KeyboardShortcut.Keys[event.key] || UI6.KeyboardShortcut.KeyBindings[event.key];
-    if (!key && !/^[a-z]$/i.test(event.key)) {
-      const keyCode = event.code;
-      key = UI6.KeyboardShortcut.Keys[keyCode] || UI6.KeyboardShortcut.KeyBindings[keyCode];
-      if (keyCode.startsWith("Digit")) {
-        key = keyCode.slice(5);
-      } else if (keyCode.startsWith("Key")) {
-        key = keyCode.slice(3);
-      }
-    }
-    return UI6.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
-  }
-  shortcutInputTextForDescriptors(descriptors) {
-    return descriptors.map((descriptor) => descriptor.name).join(" ");
-  }
-  resetShortcutsToDefaults() {
-    this.editedShortcuts.clear();
-    for (const shortcut of this.shortcuts) {
-      if (shortcut.type === UI6.KeyboardShortcut.Type.UNSET_SHORTCUT) {
-        const index = this.shortcuts.indexOf(shortcut);
-        this.shortcuts.splice(index, 1);
-      } else if (shortcut.type === UI6.KeyboardShortcut.Type.USER_SHORTCUT) {
-        this.editedShortcuts.set(shortcut, null);
-      }
-    }
-    const disabledDefaults = UI6.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.item.id());
-    disabledDefaults.forEach((shortcut) => {
-      if (this.shortcuts.includes(shortcut)) {
-        return;
-      }
-      this.shortcuts.push(shortcut);
-      this.editedShortcuts.set(shortcut, shortcut.descriptors);
-    });
-    this.update();
-    this.focus();
-    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString6(UIStrings6.shortcutChangesRestored, { PH1: this.item.title() }));
-  }
-  onEscapeKeyPressed(event) {
-    const activeElement = UI6.DOMUtilities.deepActiveElement(document);
-    for (const [shortcut, shortcutInput] of this.shortcutInputs.entries()) {
-      if (activeElement === shortcutInput) {
-        this.onShortcutInputKeyDown(shortcut, shortcutInput, event);
-      }
-    }
-  }
-  validateInputs() {
-    const confirmButton = this.confirmButton;
-    const errorMessageElement = this.errorMessageElement;
-    if (!confirmButton || !errorMessageElement) {
-      return;
-    }
-    confirmButton.disabled = false;
-    errorMessageElement.classList.add("hidden");
-    this.shortcutInputs.forEach((shortcutInput, shortcut) => {
-      const userDescriptors = this.editedShortcuts.get(shortcut);
-      if (!userDescriptors) {
-        return;
-      }
-      if (userDescriptors.some((descriptor) => UI6.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
-        confirmButton.disabled = true;
-        shortcutInput.classList.add("error-input");
-        UI6.ARIAUtils.setInvalid(shortcutInput, true);
-        errorMessageElement.classList.remove("hidden");
-        errorMessageElement.textContent = i18nString6(UIStrings6.shortcutsCannotContainOnly);
-        return;
-      }
-      const conflicts = UI6.ShortcutRegistry.ShortcutRegistry.instance().actionsForDescriptors(userDescriptors).filter((actionId) => actionId !== this.item.id());
-      if (conflicts.length) {
-        confirmButton.disabled = true;
-        shortcutInput.classList.add("error-input");
-        UI6.ARIAUtils.setInvalid(shortcutInput, true);
-        errorMessageElement.classList.remove("hidden");
-        if (!UI6.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
-          return;
-        }
-        const action2 = UI6.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
-        const actionTitle = action2.title();
-        const actionCategory = action2.category();
-        errorMessageElement.textContent = i18nString6(UIStrings6.thisShortcutIsInUseByS, { PH1: actionCategory, PH2: actionTitle });
-        return;
-      }
-      shortcutInput.classList.remove("error-input");
-      UI6.ARIAUtils.setInvalid(shortcutInput, false);
-    });
   }
 };
 
 // ../../front_end/panels/settings/WorkspaceSettingsTab.ts
 var WorkspaceSettingsTab_exports = {};
 __export(WorkspaceSettingsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   WorkspaceSettingsTab: () => WorkspaceSettingsTab
 });
 import "../../ui/legacy/legacy.js";
@@ -3541,7 +3955,7 @@ import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Persistence from "../../models/persistence/persistence.js";
 import * as Buttons5 from "../../ui/components/buttons/buttons.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
-import { html as html5, render as render5 } from "../../ui/lit/lit.js";
+import { html as html7, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/workspaceSettingsTab.css.js
@@ -3618,10 +4032,10 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/settings/WorkspaceSettingsTab.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var { widget } = UI7.Widget;
-var DEFAULT_VIEW3 = (input, _output, target) => {
-  render5(
-    html5`
+var { widget: widget2 } = UI7.Widget;
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render7(
+    html7`
     <style>${workspaceSettingsTab_css_default}</style>
     <div class="settings-card-container-wrapper" jslog=${VisualLogging6.pane("workspace")}>
       <div class="settings-card-container">
@@ -3636,11 +4050,11 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
           </div>
           <div class="mappings-info">${i18nString7(UIStrings7.mappingsAreInferredAutomatically)}</div>
         </devtools-card>
-        ${input.fileSystems.map((fileSystem) => html5`
+        ${input.fileSystems.map((fileSystem) => html7`
           <devtools-card heading=${fileSystem.displayName}>
             <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
             <div class="mapping-view-container">
-              ${widget(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}
+              ${widget2(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}
             </div>
             <devtools-button
               slot="heading-suffix"
@@ -3664,7 +4078,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
 var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI7.Widget.VBox {
   #view;
   #eventListeners = [];
-  constructor(view = DEFAULT_VIEW3) {
+  constructor(view = DEFAULT_VIEW5) {
     super();
     this.#view = view;
   }
@@ -3705,7 +4119,7 @@ var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI7.Widget.VBox {
         };
       }).sort((fs1, fs2) => fs1.displayName.localeCompare(fs2.displayName))
     };
-    this.#view(input, {}, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   static #getFilename(fileSystem) {
     const fileSystemPath = fileSystem.path();

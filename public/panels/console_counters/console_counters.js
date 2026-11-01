@@ -159,7 +159,7 @@ var WarningErrorCounterWidget = class _WarningErrorCounterWidget extends UI.Widg
     const issues = issuesManager.numberOfIssues();
     this.view(
       { compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) },
-      {},
+      void 0,
       this.contentElement
     );
     this.setVisibility(Boolean(errors || warnings || issues));

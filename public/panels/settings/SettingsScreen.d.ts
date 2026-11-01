@@ -1,14 +1,29 @@
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingUIRegistration from '../../ui/settings/settings.js';
-export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocationResolver {
-    private readonly tabbedLocation;
+export interface SettingsScreenViewInput {
+    views: UI.View.View[];
+    selectedTabId: string;
+    focusTabHeader: boolean;
+    onTabInvoked: (eventData: {
+        tabId: string;
+        prevTabId?: string;
+        isUserGesture?: boolean;
+    }) => void;
+}
+export type SettingsScreenView = (input: SettingsScreenViewInput, output: undefined, target: HTMLElement) => void;
+export declare const SETTINGS_SCREEN_DEFAULT_VIEW: SettingsScreenView;
+export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocationResolver, UI.View.ViewLocation {
+    #private;
     private keybindsTab?;
     private reportTabOnReveal;
-    private constructor();
+    constructor(view?: SettingsScreenView);
+    wasShown(): void;
+    performUpdate(): void;
     static instance(opts?: {
         forceNew: boolean | null;
     }): SettingsScreen;
@@ -16,6 +31,13 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
     private static revealSettingsScreen;
     static showSettingsScreen(options?: ShowSettingsScreenOptions): Promise<void>;
     resolveLocation(_locationName: string): UI.View.ViewLocation | null;
+    appendApplicableItems(locationName: string): void;
+    appendView(view: UI.View.View, insertBefore?: UI.View.View | null): void;
+    showView(view: UI.View.View, insertBefore?: UI.View.View | null, userGesture?: boolean, omitFocus?: boolean, shouldSelectTab?: boolean): Promise<void>;
+    removeView(view: UI.View.View): void;
+    isViewVisible(view: UI.View.View): boolean;
+    widget(): UI.Widget.AnyWidget;
+    reveal(): void;
     private selectTab;
     private tabInvoked;
     private reportSettingsPanelShown;
@@ -24,19 +46,30 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
 interface SettingsTab {
     highlightObject(object: Object): void;
 }
+export interface GenericSettingsSection {
+    category: Common.Settings.SettingCategory;
+    heading: Common.UIString.LocalizedString;
+    settings: Array<Common.Settings.Setting<unknown>>;
+}
+export interface GenericSettingsTabViewInput {
+    sections: GenericSettingsSection[];
+    syncInfo: Host.InspectorFrontendHostAPI.SyncInformation;
+    onRestoreDefaults: () => void;
+}
+export interface GenericSettingsTabViewOutput {
+    highlightSetting?: (setting: Common.Settings.Setting<unknown>) => void;
+}
+export type GenericSettingsTabView = (input: GenericSettingsTabViewInput, output: GenericSettingsTabViewOutput, target: HTMLElement) => void;
+export declare const GENERIC_SETTINGS_TAB_DEFAULT_VIEW: GenericSettingsTabView;
 export declare class GenericSettingsTab extends UI.Widget.VBox implements SettingsTab {
     #private;
-    private readonly syncSection;
-    private readonly settingToControl;
-    private readonly containerElement;
-    constructor();
+    constructor(element?: HTMLElement, view?: GenericSettingsTabView);
+    performUpdate(): void;
     static isSettingVisible(setting: SettingUIRegistration.SettingUIRegistration.RegisteredSettingUI): boolean;
     wasShown(): void;
     willHide(): void;
     private updateSyncSection;
-    private createExtensionSection;
     private createSectionElement;
-    private createStandardSectionElement;
     highlightObject(setting: Object): void;
 }
 export interface ExperimentsSettingsTabViewInput {

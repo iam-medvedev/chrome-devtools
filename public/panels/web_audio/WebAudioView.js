@@ -194,7 +194,7 @@ export class WebAudioView extends UI.Widget.VBox {
             onContextSelectorSelectionChanged: this.onContextSelectorSelectionChanged.bind(this),
             contextRealtimeData: this.contextRealtimeData,
         };
-        this.view(input, {}, this.contentElement);
+        this.view(input, undefined, this.contentElement);
     }
     addEventListeners(webAudioModel) {
         webAudioModel.ensureEnabled();

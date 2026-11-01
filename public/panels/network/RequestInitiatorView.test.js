@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 describe('RequestInitiatorView', () => {
@@ -33,7 +36,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: null,
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await assertScreenshot('network/request-initiator-view-empty.png');
     });
     it('renders the initiator view with stack trace correctly', async () => {
@@ -52,7 +56,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: StubStackTrace.create(['https://example.com/foo.js:foo:10:5']),
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await Promise.resolve(); // Trigger MutationObserver (which requests widget updates).
         await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('network/request-initiator-view-stack.png');
@@ -75,7 +80,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: null,
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await assertScreenshot('network/request-initiator-view-chain.png');
     });
     it('renders the initiator view with both stack trace and initiator chain correctly', async () => {
@@ -99,7 +105,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: StubStackTrace.create(['https://example.com/foo.js:foo:10:5']),
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await Promise.resolve(); // Trigger MutationObserver (which requests widget updates).
         await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('network/request-initiator-view-chain-and-stack.png');
@@ -120,7 +127,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: StubStackTrace.create(['https://example.com/api::0:0']),
             request,
             isConsoleOriginated: true,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await Promise.resolve();
         await UI.Widget.Widget.allUpdatesComplete;
         const tree = component.querySelector('devtools-tree');
@@ -145,7 +153,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: StubStackTrace.create(['https://example.com/foo.js:foo:10:5']),
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         await Promise.resolve();
         await UI.Widget.Widget.allUpdatesComplete;
         const tree = component.querySelector('devtools-tree');
@@ -174,7 +183,8 @@ describe('RequestInitiatorView', () => {
             stackTrace: null,
             request,
             isConsoleOriginated: false,
-        }, undefined, component);
+        }, 
+        /* output= */ undefined, component);
         // devtools-tree uses a MutationObserver to asynchronously copy elements from the light DOM template to the shadow DOM.
         // We yield back to the event loop so the mutation observer can run and populate the shadow root.
         await new Promise(resolve => setTimeout(resolve, 0));
@@ -189,6 +199,23 @@ describe('RequestInitiatorView', () => {
         assert.isOk(textContent);
         assert.isTrue(textContent.includes('…'));
         assert.isTrue(textContent.length < longUrl.length);
+    });
+    describeWithEnvironment('presenter', () => {
+        it('passes initiator graph and request to view on wasShown', async () => {
+            Logs.NetworkLog.NetworkLog.instance();
+            const request = createNetworkRequest({
+                url: 'https://example.com/foo.js',
+                documentURL: 'https://example.com',
+            });
+            const view = createViewFunctionStub(Network.RequestInitiatorView.RequestInitiatorView);
+            const widget = new Network.RequestInitiatorView.RequestInitiatorView(request, view);
+            widget.wasShown();
+            const input = await view.nextInput;
+            assert.strictEqual(input.request, request);
+            assert.isFalse(input.isConsoleOriginated);
+            assert.isNull(input.stackTrace);
+            assert.deepEqual(Array.from(input.initiatorGraph.initiators), [request]);
+        });
     });
 });
 //# sourceMappingURL=RequestInitiatorView.test.js.map

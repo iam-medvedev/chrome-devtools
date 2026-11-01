@@ -43,7 +43,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/css_overview/CSSOverviewUnusedDeclarations.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var CSSOverviewUnusedDeclarations = class {
-  static add(target, key, item3) {
+  static #add(target, key, item3) {
     const values = target.get(key) || [];
     values.push(item3);
     target.set(key, values);
@@ -54,28 +54,28 @@ var CSSOverviewUnusedDeclarations = class {
     }
     if (strings[topIdx] !== "auto") {
       const reason = i18nString(UIStrings.topAppliedToAStatically);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `top: ${strings[topIdx]}`,
         nodeId
       });
     }
     if (strings[leftIdx] !== "auto") {
       const reason = i18nString(UIStrings.leftAppliedToAStatically);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `left: ${strings[leftIdx]}`,
         nodeId
       });
     }
     if (strings[rightIdx] !== "auto") {
       const reason = i18nString(UIStrings.rightAppliedToAStatically);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `right: ${strings[rightIdx]}`,
         nodeId
       });
     }
     if (strings[bottomIdx] !== "auto") {
       const reason = i18nString(UIStrings.bottomAppliedToAStatically);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `bottom: ${strings[bottomIdx]}`,
         nodeId
       });
@@ -87,14 +87,14 @@ var CSSOverviewUnusedDeclarations = class {
     }
     if (strings[widthIdx] !== "auto") {
       const reason = i18nString(UIStrings.widthAppliedToAnInlineElement);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `width: ${strings[widthIdx]}`,
         nodeId
       });
     }
     if (strings[heightIdx] !== "auto") {
       const reason = i18nString(UIStrings.heightAppliedToAnInlineElement);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `height: ${strings[heightIdx]}`,
         nodeId
       });
@@ -106,7 +106,7 @@ var CSSOverviewUnusedDeclarations = class {
     }
     if (strings[verticalAlignIdx] !== "baseline") {
       const reason = i18nString(UIStrings.verticalAlignmentAppliedTo);
-      this.add(unusedDeclarations, reason, {
+      this.#add(unusedDeclarations, reason, {
         declaration: `vertical-align: ${strings[verticalAlignIdx]}`,
         nodeId
       });
@@ -582,7 +582,7 @@ var CSSOverviewProcessingView = class extends UI.Widget.Widget {
     this.requestUpdate();
   }
   performUpdate() {
-    this.#view({ onCancel: this.#onCancel }, {}, this.element);
+    this.#view({ onCancel: this.#onCancel }, void 0, this.element);
   }
 };
 
@@ -1128,7 +1128,7 @@ var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
       onItemClick: this.#onItemClick.bind(this),
       onItemKeyDown: this.#onItemKeyDown.bind(this)
     };
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
   set items(items) {
     this.#items = items;
@@ -1939,7 +1939,7 @@ var ElementDetailsView = class extends UI3.Widget.Widget {
   async performUpdate() {
     const visibility = /* @__PURE__ */ new Set();
     if (!this.#data.length) {
-      this.#view({ items: [], visibility }, {}, this.element);
+      this.#view({ items: [], visibility }, void 0, this.element);
       return;
     }
     const [firstItem] = this.#data;
@@ -1980,7 +1980,7 @@ var ElementDetailsView = class extends UI3.Widget.Widget {
       }
       return { data: item3, link, showNode };
     }));
-    this.#view({ items, visibility }, {}, this.element);
+    this.#view({ items, visibility }, void 0, this.element);
   }
 };
 function renderNode(data, link, showNode) {
@@ -2228,7 +2228,7 @@ var CSSOverviewStartView = class extends UI4.Widget.Widget {
     this.performUpdate();
   }
   performUpdate() {
-    this.#view({ onStartCapture: this.onStartCapture }, {}, this.contentElement);
+    this.#view({ onStartCapture: this.onStartCapture }, void 0, this.contentElement);
   }
 };
 
@@ -2355,7 +2355,7 @@ var CSSOverviewPanel = class extends UI5.Panel.Panel {
         unusedDeclarations: this.#unusedDeclarations
       }
     };
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
   async #startOverview() {
     this.#renderOverviewStartedView();

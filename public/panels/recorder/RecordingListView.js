@@ -154,7 +154,7 @@ export class RecordingListView extends UI.Widget.Widget {
             onOpenClick: this.#onOpenClick.bind(this),
             onPlayRecordingClick: this.#onPlayRecordingClick.bind(this),
             onKeyDown: this.#onKeyDown.bind(this),
-        }, {}, this.contentElement);
+        }, undefined, this.contentElement);
     }
     wasShown() {
         super.wasShown();

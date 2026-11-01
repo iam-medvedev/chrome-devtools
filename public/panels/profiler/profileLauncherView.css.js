@@ -48,6 +48,11 @@ export default `/*
   & > .profile-isolate-selector-block {
     flex: auto 1 0;
     overflow: hidden;
+
+    & > devtools-widget {
+      flex: auto 1 0;
+      overflow: hidden;
+    }
   }
 }
 
@@ -68,7 +73,7 @@ export default `/*
   line-height: var(--sys-size-8);
 }
 
-.profile-isolate-selector-block > .profile-memory-usage-item {
+.profile-isolate-selector-block > devtools-widget > .profile-memory-usage-item {
   margin-left: var(--sys-size-1);
   margin-bottom: var(--sys-size-3);
   font-weight: bolder;

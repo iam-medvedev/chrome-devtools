@@ -6,7 +6,8 @@ import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
 import { AnimationUI } from './AnimationUI.js';
 interface ToolbarViewInput {
     selectedPlaybackRate: number;
-    playbackRateButtonsDisabled: boolean;
+    controlsEnabled: boolean;
+    playbackControlsEnabled: boolean;
     allPaused: boolean;
     onClearClick: () => void;
     onTogglePauseAllClick: () => void;

@@ -164,7 +164,7 @@ export default `/*
     height: var(--sys-size-6);
     display: inline-block;
     background: var(--sys-color-primary);
-    border-radius: 50%;
+    border-radius: var(--sys-shape-corner-full);
     margin-right: 7px;
   }
 

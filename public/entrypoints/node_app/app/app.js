@@ -7,15 +7,17 @@ var __export = (target, all) => {
 // ../../front_end/entrypoints/node_app/app/NodeConnectionsPanel.ts
 var NodeConnectionsPanel_exports = {};
 __export(NodeConnectionsPanel_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   NodeConnectionsPanel: () => NodeConnectionsPanel,
   NodeConnectionsView: () => NodeConnectionsView
 });
+import "../../../ui/components/lists/lists.js";
+import "../../../ui/kit/kit.js";
 import * as Host from "../../../core/host/host.js";
 import * as i18n from "../../../core/i18n/i18n.js";
 import * as Buttons from "../../../ui/components/buttons/buttons.js";
-import * as uiI18n from "../../../ui/i18n/i18n.js";
-import { Link } from "../../../ui/kit/kit.js";
 import * as UI from "../../../ui/legacy/legacy.js";
+import { html, i18nTemplate, render } from "../../../ui/lit/lit.js";
 
 // gen/front_end/entrypoints/node_app/app/nodeConnectionsPanel.css.js
 var nodeConnectionsPanel_css_default = `/*
@@ -132,6 +134,7 @@ var nodeConnectionsPanel_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./nodeConnectionsPanel.css")} */`;
 
 // ../../front_end/entrypoints/node_app/app/NodeConnectionsPanel.ts
+var { widget } = UI.Widget;
 var UIStrings = {
   /**
    * @description Text in Node connections panel of the Sources panel when debugging a Node.js app.
@@ -158,138 +161,202 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("entrypoints/node_app/app/NodeConnectionsPanel.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var nodejsIconUrl = new URL("../../../Images/node-stack-icon.svg", import.meta.url).toString();
+var PANEL_DEFAULT_VIEW = (input, _output, target) => {
+  render(html`
+    <style>${nodeConnectionsPanel_css_default}</style>
+    <div class="node-panel vbox flex-auto" tabindex="0" autofocus>
+      <div class="node-panel-center">
+        <img class="node-panel-logo" src=${nodejsIconUrl} alt="">
+        ${widget(NodeConnectionsView, {
+    discoveryConfig: input.discoveryConfig,
+    callback: input.onDiscoveryConfigChanged
+  })}
+      </div>
+    </div>
+  `, target);
+};
 var NodeConnectionsPanel = class extends UI.Panel.Panel {
   #config;
-  #networkDiscoveryView;
-  constructor() {
+  #view;
+  constructor(view = PANEL_DEFAULT_VIEW) {
     super("node-connection");
-    this.contentElement.classList.add("node-panel");
-    const container = this.contentElement.createChild("div", "node-panel-center");
-    const image = container.createChild("img", "node-panel-logo");
-    image.src = nodejsIconUrl;
+    this.#view = view;
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
       Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged,
       this.#devicesDiscoveryConfigChanged,
       this
     );
-    this.contentElement.tabIndex = 0;
-    this.setDefaultFocusedElement(this.contentElement);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(false);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesUpdatesEnabled(true);
-    this.#networkDiscoveryView = new NodeConnectionsView((config) => {
-      this.#config.networkDiscoveryConfig = config;
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesDiscoveryConfig(this.#config);
-    });
-    this.#networkDiscoveryView.show(container);
+    this.performUpdate();
   }
+  performUpdate() {
+    this.#view(
+      {
+        discoveryConfig: this.#config?.networkDiscoveryConfig ?? [],
+        onDiscoveryConfigChanged: this.#onDiscoveryConfigChanged
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  #onDiscoveryConfigChanged = (config) => {
+    if (!this.#config) {
+      return;
+    }
+    this.#config.networkDiscoveryConfig = config;
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesDiscoveryConfig(this.#config);
+  };
   #devicesDiscoveryConfigChanged({ data: config }) {
     this.#config = config;
-    this.#networkDiscoveryView.discoveryConfigChanged(this.#config.networkDiscoveryConfig);
-  }
-  wasShown() {
-    super.wasShown();
-    this.registerRequiredCSS(nodeConnectionsPanel_css_default);
+    this.requestUpdate();
   }
 };
-var NodeConnectionsView = class extends UI.Widget.VBox {
+var DEFAULT_VIEW = (input, _output, target) => {
+  const documentationLink = html`
+    <devtools-link href="https://nodejs.org/learn/getting-started/debugging"
+                   jslogcontext="node-js-debugging">
+      ${i18nString(UIStrings.nodejsDebuggingGuide)}
+    </devtools-link>`;
+  const items = input.editingIndex === input.connections.length ? [...input.connections, ""] : input.connections;
+  render(html`
+    <style>${nodeConnectionsPanel_css_default}</style>
+    <div class="vbox network-discovery-view node-frontend">
+      <div class="network-discovery-footer">
+        ${i18nTemplate(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink })}
+      </div>
+      ${items.length === 0 ? html`
+        <div class="network-discovery-list-empty">${i18nString(UIStrings.noConnectionsSpecified)}</div>
+      ` : html`
+        <devtools-list
+          class="network-discovery-list"
+          .editable=${true}
+          .deletable=${true}
+          @edit=${(e) => input.onBeginEdit(e.detail.index)}
+          @delete=${(e) => input.onDelete(e.detail.index)}>
+          ${items.map((address, index) => {
+    const editing = input.editingIndex === index;
+    return html`
+              <div slot="slot-${index}" class="network-discovery-list-item">
+                <devtools-prompt
+                  class="network-discovery-value network-discovery-address"
+                  placeholder=${i18nString(UIStrings.networkAddressEgLocalhost)}
+                  value=${address}
+                  ?editing=${editing}
+                  .validator=${input.validator}
+                  @click=${(e) => {
+      if (!editing) {
+        input.onBeginEdit(index);
+        e.consume(true);
+      }
+    }}
+                  @keydown=${(e) => {
+      if (!editing && e.key === "Enter") {
+        input.onBeginEdit(index);
+        e.consume(true);
+      }
+    }}
+                  @commit=${(e) => input.onCommitEdit(index, e.detail)}
+                  @cancel=${input.onCancelEdit}>
+                  ${address}
+                </devtools-prompt>
+              </div>
+            `;
+  })}
+        </devtools-list>
+      `}
+      <devtools-button
+          class="add-network-target-button"
+          .variant=${Buttons.Button.Variant.PRIMARY}
+          .jslogContext=${"add-network-target"}
+          @click=${input.onAddClick}>
+        ${i18nString(UIStrings.addConnection)}
+      </devtools-button>
+    </div>
+  `, target);
+};
+var NodeConnectionsView = class _NodeConnectionsView extends UI.Widget.VBox {
   #callback;
-  #list;
-  #editor;
-  #networkDiscoveryConfig;
-  constructor(callback) {
-    super();
+  #networkDiscoveryConfig = [];
+  #editingIndex = null;
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+    this.performUpdate();
+  }
+  static validateAddress(value) {
+    const match = value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
+    if (!match) {
+      return i18nString(UIStrings.networkAddressEgLocalhost);
+    }
+    const port = parseInt(match[2], 10);
+    return port <= 65535 ? null : i18nString(UIStrings.networkAddressEgLocalhost);
+  }
+  set callback(callback) {
     this.#callback = callback;
-    this.element.classList.add("network-discovery-view");
-    const networkDiscoveryFooter = this.element.createChild("div", "network-discovery-footer");
-    const documentationLink = Link.create(
-      "https://nodejs.org/learn/getting-started/debugging",
-      i18nString(UIStrings.nodejsDebuggingGuide),
+  }
+  set discoveryConfig(networkDiscoveryConfig) {
+    this.discoveryConfigChanged(networkDiscoveryConfig);
+  }
+  performUpdate() {
+    this.#view(
+      {
+        connections: this.#networkDiscoveryConfig,
+        editingIndex: this.#editingIndex,
+        onAddClick: this.#addNetworkTargetButtonClicked.bind(this),
+        onBeginEdit: this.#beginEdit.bind(this),
+        onCommitEdit: this.#commitEdit.bind(this),
+        onCancelEdit: this.#cancelEdit.bind(this),
+        onDelete: this.#deleteItem.bind(this),
+        validator: _NodeConnectionsView.validateAddress
+      },
       void 0,
-      "node-js-debugging"
+      this.element
     );
-    networkDiscoveryFooter.appendChild(
-      uiI18n.getFormatLocalizedString(str_, UIStrings.specifyNetworkEndpointAnd, { PH1: documentationLink })
-    );
-    this.#list = new UI.ListWidget.ListWidget(this);
-    this.#list.registerRequiredCSS(nodeConnectionsPanel_css_default);
-    this.#list.element.classList.add("network-discovery-list");
-    const placeholder = document.createElement("div");
-    placeholder.classList.add("network-discovery-list-empty");
-    placeholder.textContent = i18nString(UIStrings.noConnectionsSpecified);
-    this.#list.setEmptyPlaceholder(placeholder);
-    this.#list.show(this.element);
-    this.#editor = null;
-    const addButton = UI.UIUtils.createTextButton(
-      i18nString(UIStrings.addConnection),
-      this.#addNetworkTargetButtonClicked.bind(this),
-      { className: "add-network-target-button", variant: Buttons.Button.Variant.PRIMARY }
-    );
-    this.element.appendChild(addButton);
-    this.#networkDiscoveryConfig = [];
-    this.element.classList.add("node-frontend");
   }
   #update() {
-    const config = this.#networkDiscoveryConfig.map((item) => item.address);
-    this.#callback.call(null, config);
+    this.#callback?.call(null, [...this.#networkDiscoveryConfig]);
   }
   #addNetworkTargetButtonClicked() {
-    this.#list.addNewItem(this.#networkDiscoveryConfig.length, { address: "", port: "" });
+    this.#editingIndex = this.#networkDiscoveryConfig.length;
+    this.requestUpdate();
+  }
+  #beginEdit(index) {
+    this.#editingIndex = index;
+    this.requestUpdate();
+  }
+  #commitEdit(index, value) {
+    const trimmed = value.trim();
+    if (index === this.#networkDiscoveryConfig.length) {
+      this.#networkDiscoveryConfig.push(trimmed);
+    } else if (index >= 0 && index < this.#networkDiscoveryConfig.length) {
+      this.#networkDiscoveryConfig[index] = trimmed;
+    }
+    this.#editingIndex = null;
+    this.requestUpdate();
+    this.#update();
+  }
+  #cancelEdit() {
+    this.#editingIndex = null;
+    this.requestUpdate();
+  }
+  #deleteItem(index) {
+    this.#networkDiscoveryConfig.splice(index, 1);
+    if (this.#editingIndex !== null) {
+      if (this.#editingIndex === index) {
+        this.#editingIndex = null;
+      } else if (this.#editingIndex > index) {
+        this.#editingIndex--;
+      }
+    }
+    this.requestUpdate();
+    this.#update();
   }
   discoveryConfigChanged(networkDiscoveryConfig) {
-    this.#networkDiscoveryConfig = [];
-    this.#list.clear();
-    for (const address of networkDiscoveryConfig) {
-      const item = { address, port: "" };
-      this.#networkDiscoveryConfig.push(item);
-      this.#list.appendItem(item, true);
-    }
-  }
-  renderItem(rule, _editable) {
-    const element = document.createElement("div");
-    element.classList.add("network-discovery-list-item");
-    element.createChild("div", "network-discovery-value network-discovery-address").textContent = rule.address;
-    return element;
-  }
-  removeItemRequested(_rule, index) {
-    this.#networkDiscoveryConfig.splice(index, 1);
-    this.#list.removeItem(index);
-    this.#update();
-  }
-  commitEdit(rule, editor, isNew) {
-    rule.address = editor.control("address").value.trim();
-    if (isNew) {
-      this.#networkDiscoveryConfig.push(rule);
-    }
-    this.#update();
-  }
-  beginEdit(rule) {
-    const editor = this.#createEditor();
-    editor.control("address").value = rule.address;
-    return editor;
-  }
-  #createEditor() {
-    if (this.#editor) {
-      return this.#editor;
-    }
-    const editor = new UI.ListWidget.Editor();
-    this.#editor = editor;
-    const content = editor.contentElement();
-    const fields = content.createChild("div", "network-discovery-edit-row");
-    const input = editor.createInput("address", "text", i18nString(UIStrings.networkAddressEgLocalhost), addressValidator);
-    fields.createChild("div", "network-discovery-value network-discovery-address").appendChild(input);
-    return editor;
-    function addressValidator(_rule, _index, input2) {
-      const match = input2.value.trim().match(/^([a-zA-Z0-9\.\-_]+):(\d+)$/);
-      if (!match) {
-        return {
-          valid: false
-        };
-      }
-      const port = parseInt(match[2], 10);
-      return {
-        valid: port <= 65535
-      };
-    }
+    this.#networkDiscoveryConfig = [...networkDiscoveryConfig];
+    this.#editingIndex = null;
+    this.requestUpdate();
   }
 };
 

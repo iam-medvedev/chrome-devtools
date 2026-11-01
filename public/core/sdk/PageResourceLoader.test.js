@@ -287,6 +287,7 @@ describe('PageResourceLoader', () => {
             const target = createTarget({ connection, targetManager, url: 'https://example.com' });
             const frame = {
                 id: '123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
             };
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -437,6 +438,7 @@ describe('PageResourceLoader', () => {
             const resourceTreeModel = frameTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
             sinon.stub(resourceTreeModel, 'mainFrame').get(() => ({
                 id: 'main-frame-123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
             }));
             sinon.stub(resourceTreeModel, 'frameForId').callsFake((id) => {
@@ -510,6 +512,7 @@ describe('PageResourceLoader', () => {
                 sinon.stub(resourceTreeModel, 'mainFrame')
                     .get(() => ({
                     id: 'main-frame-123',
+                    isMainFrame: () => true,
                     securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
                 }));
                 // Simulates a worker registered by a cross-origin iframe. It is auto-attached via the page
@@ -563,6 +566,7 @@ describe('PageResourceLoader', () => {
             const resourceTreeModel = mainFrameTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
             sinon.stub(resourceTreeModel, 'mainFrame').get(() => ({
                 id: 'main-frame-123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
             }));
             const subframeTarget = createTarget({
@@ -574,6 +578,7 @@ describe('PageResourceLoader', () => {
             const subframeModel = subframeTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
             sinon.stub(subframeModel, 'mainFrame').get(() => ({
                 id: 'subframe-123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://cross-origin.com'),
             }));
             const initiator = {
@@ -626,6 +631,7 @@ describe('PageResourceLoader', () => {
             const resourceTreeModel = mainFrameTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
             sinon.stub(resourceTreeModel, 'mainFrame').get(() => ({
                 id: 'main-frame-123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
             }));
             sinon.stub(resourceTreeModel, 'frameForId').returns(null);
@@ -661,6 +667,7 @@ describe('PageResourceLoader', () => {
             const resourceTreeModel = mainFrameTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
             sinon.stub(resourceTreeModel, 'mainFrame').get(() => ({
                 id: 'main-frame-123',
+                isMainFrame: () => true,
                 securityOrigin: () => SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
             }));
             sinon.stub(resourceTreeModel, 'frameForId').returns(null);

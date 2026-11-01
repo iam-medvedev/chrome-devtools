@@ -165,7 +165,7 @@ export class NodeIndicator extends UI.Widget.Widget {
         const input = {
             nodeProcessRunning,
         };
-        this.#view(input, {}, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 export class NodeIndicatorProvider {

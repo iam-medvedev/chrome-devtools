@@ -764,5 +764,24 @@ describeWithEnvironment('ElementsPanel', () => {
         assert.strictEqual(selectStub.lastCall.args[0].id, uaInnerDiv.id);
         panel.detach();
     });
+    it('does not accumulate STYLES_UPDATE_COMPLETED listeners when switching sidebar tabs', () => {
+        const panel = new Elements.ElementsPanel.ElementsPanel(SDK.TargetManager.TargetManager.instance(), universe.settings);
+        panel.markAsRoot();
+        renderElementIntoDOM(panel);
+        assert.exists(panel.sidebarPaneView);
+        panel.sidebarPaneView.appendView(new UI.View.SimpleView({ title: 'Extra', viewId: 'extra' }));
+        const tabbedPane = panel.sidebarPaneView.tabbedPane();
+        tabbedPane.selectTab("styles" /* Elements.ElementsPanel.SidebarPaneTabId.STYLES */);
+        const addSpy = sinon.spy(panel.stylesWidget, 'addEventListener');
+        const removeSpy = sinon.spy(panel.stylesWidget, 'removeEventListener');
+        const eventName = "StylesUpdateCompleted" /* Elements.StylesSidebarPane.Events.STYLES_UPDATE_COMPLETED */;
+        const isStylesUpdateCompleted = (call) => call.args[0] === eventName;
+        for (let i = 0; i < 3; i++) {
+            tabbedPane.selectTab('extra');
+            tabbedPane.selectTab("styles" /* Elements.ElementsPanel.SidebarPaneTabId.STYLES */);
+        }
+        assert.strictEqual(addSpy.getCalls().filter(isStylesUpdateCompleted).length, removeSpy.getCalls().filter(isStylesUpdateCompleted).length);
+        panel.detach();
+    });
 });
 //# sourceMappingURL=ElementsPanel.test.js.map

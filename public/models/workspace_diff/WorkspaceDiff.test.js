@@ -18,6 +18,7 @@ describe('UISourceCodeDiff', () => {
         universe = new TestUniverse();
     });
     afterEach(() => {
+        universe.dispose();
         Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
     it('returns formatted mapping with a diff', async () => {

@@ -6,9 +6,11 @@ import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SourceMapScopes from './source_map_scopes.js';
 describe('ScopeChainResolver', () => {
+    setupRuntimeHooks();
     let universe;
     let stubPluginManager;
     beforeEach(() => {
@@ -19,7 +21,12 @@ describe('ScopeChainResolver', () => {
     afterEach(() => {
         universe.dispose();
     });
-    function createFakeCallFrame(debuggerModel, script = sinon.createStubInstance(SDK.Script.Script, { isWasm: false })) {
+    function createFakeCallFrame(debuggerModel, script = sinon.createStubInstance(SDK.Script.Script, {
+        isWasm: false,
+        isContentScript: false,
+        target: debuggerModel.target(),
+        securityOrigin: SDK.SecurityOrigin.SecurityOrigin.create('http://example.com'),
+    })) {
         const fakeFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
         fakeFrame.debuggerModel = debuggerModel;
         // @ts-expect-error readonly for test.
@@ -55,7 +62,7 @@ describe('ScopeChainResolver', () => {
             const fakeFrame = createFakeCallFrame(debuggerModel);
             const resolver = universe.scopeChainResolver;
             const promise1 = resolver.resolveScopeChain(fakeFrame);
-            const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap);
+            const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap, { sourceURLs: [] });
             debuggerModel.sourceMapManager().dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapAttached, { client: fakeFrame.script, sourceMap });
             assert.notStrictEqual(resolver.resolveScopeChain(fakeFrame), promise1);
         });
@@ -64,7 +71,7 @@ describe('ScopeChainResolver', () => {
             const fakeFrame = createFakeCallFrame(debuggerModel);
             const resolver = universe.scopeChainResolver;
             const promise1 = resolver.resolveScopeChain(fakeFrame);
-            const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap);
+            const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap, { sourceURLs: [] });
             debuggerModel.sourceMapManager().dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapDetached, { client: fakeFrame.script, sourceMap });
             assert.notStrictEqual(resolver.resolveScopeChain(fakeFrame), promise1);
         });
@@ -104,11 +111,16 @@ describe('ScopeChainResolver', () => {
     });
     it('dispatches SCOPE_CHAIN_INVALIDATED with the affected script', () => {
         const debuggerModel = universe.createTarget().model(SDK.DebuggerModel.DebuggerModel);
-        const script = sinon.createStubInstance(SDK.Script.Script);
+        const script = sinon.createStubInstance(SDK.Script.Script, {
+            isWasm: false,
+            isContentScript: false,
+            target: debuggerModel.target(),
+            securityOrigin: SDK.SecurityOrigin.SecurityOrigin.create('http://example.com'),
+        });
         const resolver = universe.scopeChainResolver;
         const listenerStub = sinon.stub();
         resolver.addEventListener("ScopeChainInvalidated" /* SourceMapScopes.ScopeChainResolver.Events.SCOPE_CHAIN_INVALIDATED */, listenerStub);
-        const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap);
+        const sourceMap = sinon.createStubInstance(SDK.SourceMap.SourceMap, { sourceURLs: [] });
         debuggerModel.sourceMapManager().dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapAttached, { client: script, sourceMap });
         debuggerModel.sourceMapManager().dispatchEventToListeners(SDK.SourceMapManager.Events.SourceMapDetached, { client: script, sourceMap });
         debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.DebugInfoAttached, script);

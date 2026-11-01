@@ -38,9 +38,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/profiler/ProfileLauncherView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { widget, widgetRef } = UI.Widget;
+const { widget } = UI.Widget;
 // clang-format off
-export const DEFAULT_VIEW = (input, output, target) => {
+export const DEFAULT_VIEW = (input, _output, target) => {
     render(html `
     <style>${profileLauncherViewStyles}</style>
     <div class="profile-launcher-view-content vbox" jslog=${VisualLogging.section('profiler.launcher')}>
@@ -74,13 +74,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
       </div>
       <div class="vbox profile-isolate-selector-block">
         <h1>${i18nString(UIStrings.selectJavascriptVmInstance)}</h1>
-        <div class="vbox profile-launcher-target-list profile-launcher-target-list-container">
-          <devtools-widget
-            ${widget(IsolateSelector)}
-            ${widgetRef(IsolateSelector, e => { output.isolateSelector = e; })}
-          ></devtools-widget>
-        </div>
-        ${input.isolateSelector?.totalMemoryElement() ?? nothing}
+        ${widget(IsolateSelector)}
       </div>
       <div class="hbox profile-launcher-buttons">
         <devtools-button
@@ -98,7 +92,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         >${input.controlButtonText}</devtools-button>
       </div>
     </div>
-  `, target);
+  `, target, { container: { classes: ['profile-launcher-view'] } });
 };
 // clang-format on
 const ProfileLauncherViewBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
@@ -106,7 +100,6 @@ export class ProfileLauncherView extends ProfileLauncherViewBase {
     panel;
     selectedProfileTypeSetting;
     #view;
-    #isolateSelector = null;
     #profileTypes = new Map();
     #isProfiling = false;
     #isInstantProfile = false;
@@ -114,7 +107,7 @@ export class ProfileLauncherView extends ProfileLauncherViewBase {
     #recordButtonEnabled = true;
     #selectedTypeId = '';
     constructor(profilesPanel, view = DEFAULT_VIEW) {
-        super({ classes: ['profile-launcher-view'] });
+        super();
         this.#view = view;
         this.panel = profilesPanel;
         this.selectedProfileTypeSetting = Common.Settings.Settings.instance().createSetting('selected-profile-type', 'CPU');
@@ -194,7 +187,6 @@ export class ProfileLauncherView extends ProfileLauncherViewBase {
             (this.#isProfiling ? i18nString(UIStrings.stop) : i18nString(UIStrings.start));
         const controlButtonDisabled = !(this.#isEnabled && this.#recordButtonEnabled);
         const controlButtonTooltip = this.#recordButtonEnabled ? '' : UI.UIUtils.anotherProfilerActiveLabel();
-        const that = this;
         this.#view({
             headerText: this.#getHeaderText(),
             profileTypes: profileTypeEntries,
@@ -202,7 +194,6 @@ export class ProfileLauncherView extends ProfileLauncherViewBase {
             controlButtonDisabled,
             controlButtonTooltip,
             isProfiling: this.#isProfiling,
-            isolateSelector: this.#isolateSelector,
             onControlClick: () => {
                 this.panel.toggleRecord();
             },
@@ -213,15 +204,7 @@ export class ProfileLauncherView extends ProfileLauncherViewBase {
             onProfileTypeChange: (profileType) => {
                 this.#profileTypeChanged(profileType);
             },
-        }, {
-            set isolateSelector(isolateSelector) {
-                if (that.#isolateSelector === isolateSelector) {
-                    return;
-                }
-                that.#isolateSelector = isolateSelector;
-                that.requestUpdate();
-            },
-        }, this.contentElement);
+        }, undefined, this.contentElement);
     }
 }
 export var Events;

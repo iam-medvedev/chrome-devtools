@@ -7,7 +7,7 @@ import type { IssueView } from './IssueView.js';
 export interface ViewInput {
     issueDetails: readonly Protocol.Audits.CookieDeprecationMetadataIssueDetails[];
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class AffectedMetadataAllowedSitesView extends AffectedResourcesView {
     #private;

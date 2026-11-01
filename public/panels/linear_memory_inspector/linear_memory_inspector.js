@@ -14,22 +14,210 @@ import * as Common2 from "../../core/common/common.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as Bindings from "../../models/bindings/bindings.js";
-import * as UI2 from "../../ui/legacy/legacy.js";
+import * as UI3 from "../../ui/legacy/legacy.js";
 import * as LinearMemoryInspectorComponents2 from "./components/components.js";
 
 // ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.ts
 var LinearMemoryInspectorPane_exports = {};
 __export(LinearMemoryInspectorPane_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   Events: () => Events,
-  LinearMemoryInspectorPane: () => LinearMemoryInspectorPane,
-  LinearMemoryInspectorView: () => LinearMemoryInspectorView
+  LinearMemoryInspectorPane: () => LinearMemoryInspectorPane
 });
+import "../../ui/kit/kit.js";
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
-import { Link } from "../../ui/kit/kit.js";
-import * as UI from "../../ui/legacy/legacy.js";
+import * as UI2 from "../../ui/legacy/legacy.js";
+import { Directives, html as html2, render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+
+// ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorView.ts
+var LinearMemoryInspectorView_exports = {};
+__export(LinearMemoryInspectorView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  LinearMemoryInspectorView: () => LinearMemoryInspectorView
+});
+import * as UI from "../../ui/legacy/legacy.js";
+import { html, nothing, render } from "../../ui/lit/lit.js";
 import * as LinearMemoryInspectorComponents from "./components/components.js";
+var { widget } = UI.Widget;
+var DEFAULT_VIEW = (input, _output, target) => {
+  if (!input.memory) {
+    render(nothing, target);
+    return;
+  }
+  render(html`
+    ${widget(LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector, {
+    memory: input.memory,
+    memoryOffset: input.offset,
+    address: input.address,
+    outerMemoryLength: input.outerMemoryLength,
+    highlightInfo: input.highlightInfo,
+    hideValueInspector: input.hideValueInspector,
+    valueTypes: input.valueTypes,
+    valueTypeModes: input.valueTypeModes,
+    endianness: input.endianness,
+    onMemoryRequest: input.onMemoryRequest,
+    onAddressChanged: input.onAddressChanged,
+    onSettingsChanged: input.onSettingsChanged,
+    onDeleteMemoryHighlight: input.onDeleteMemoryHighlight
+  })}
+  `, target);
+};
+var LinearMemoryInspectorView = class extends UI.Widget.VBox {
+  #memoryWrapper;
+  #memory;
+  #offset = 0;
+  #address = 0;
+  #tabId = "";
+  #hideValueInspector = false;
+  #refreshSequence = 0;
+  #currentRequestId = 0;
+  #settings;
+  #onAddressChanged;
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+  }
+  set memoryWrapper(memoryWrapper) {
+    if (this.#memoryWrapper === memoryWrapper) {
+      return;
+    }
+    if (memoryWrapper.length() === 0 || this.#address >= memoryWrapper.length()) {
+      throw new Error("Requested address is out of bounds.");
+    }
+    this.#memoryWrapper = memoryWrapper;
+    this.#memory = void 0;
+    this.refreshData();
+  }
+  set address(address) {
+    if (address < 0 || this.#memoryWrapper && address >= this.#memoryWrapper.length()) {
+      throw new Error("Requested address is out of bounds.");
+    }
+    if (this.#address === address) {
+      return;
+    }
+    this.#address = address;
+    this.requestUpdate();
+  }
+  set tabId(tabId) {
+    if (this.#tabId === tabId) {
+      return;
+    }
+    this.#tabId = tabId;
+    this.requestUpdate();
+  }
+  set hideValueInspector(hideValueInspector) {
+    if (this.#hideValueInspector === hideValueInspector) {
+      return;
+    }
+    this.#hideValueInspector = hideValueInspector;
+    this.requestUpdate();
+  }
+  set onAddressChanged(onAddressChanged) {
+    this.#onAddressChanged = onAddressChanged;
+  }
+  set refreshSequence(value) {
+    if (this.#refreshSequence === value) {
+      return;
+    }
+    this.#refreshSequence = value;
+    if (this.isShowing()) {
+      this.refreshData();
+    }
+  }
+  performUpdate() {
+    if (!this.#settings) {
+      this.#settings = LinearMemoryInspectorController.instance().loadSettings();
+    }
+    if (!this.#memoryWrapper) {
+      return;
+    }
+    const viewInput = {
+      memory: this.#memory,
+      offset: this.#offset,
+      address: this.#address,
+      outerMemoryLength: this.#memoryWrapper.length(),
+      highlightInfo: this.#getHighlightInfo(),
+      hideValueInspector: this.#hideValueInspector,
+      valueTypes: this.#settings.valueTypes,
+      valueTypeModes: this.#settings.modes,
+      endianness: this.#settings.endianness,
+      onMemoryRequest: this.#memoryRequested,
+      onAddressChanged: this.updateAddress.bind(this),
+      onSettingsChanged: this.#settingsChanged,
+      onDeleteMemoryHighlight: this.#deleteMemoryHighlight
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+  wasShown() {
+    super.wasShown();
+    this.#settings = LinearMemoryInspectorController.instance().loadSettings();
+    this.refreshData();
+  }
+  updateAddress(address) {
+    this.address = address;
+    this.#onAddressChanged?.(this.#tabId, address);
+  }
+  refreshData() {
+    if (!this.#memoryWrapper) {
+      return;
+    }
+    const requestId = ++this.#currentRequestId;
+    void LinearMemoryInspectorController.getMemoryForAddress(this.#memoryWrapper, this.#address).then(({ memory, offset }) => {
+      if (requestId !== this.#currentRequestId) {
+        return;
+      }
+      this.#memory = memory;
+      this.#offset = offset;
+      this.requestUpdate();
+    });
+  }
+  #memoryRequested = (request) => {
+    if (!this.#memoryWrapper) {
+      return;
+    }
+    const { start, end, address } = request;
+    if (address < start || address >= end) {
+      throw new Error("Requested address is out of bounds.");
+    }
+    const requestId = ++this.#currentRequestId;
+    void LinearMemoryInspectorController.getMemoryRange(this.#memoryWrapper, start, end).then((memory) => {
+      if (requestId !== this.#currentRequestId) {
+        return;
+      }
+      this.#memory = memory;
+      this.#offset = start;
+      this.requestUpdate();
+    });
+  };
+  #settingsChanged = (settings) => {
+    this.#settings = settings;
+    LinearMemoryInspectorController.instance().saveSettings(settings);
+    this.requestUpdate();
+  };
+  #deleteMemoryHighlight = (highlightInfo) => {
+    LinearMemoryInspectorController.instance().removeHighlight(this.#tabId, highlightInfo);
+    this.refreshData();
+  };
+  #getHighlightInfo() {
+    const highlightInfo = LinearMemoryInspectorController.instance().getHighlightInfo(this.#tabId);
+    if (highlightInfo !== void 0 && this.#memoryWrapper) {
+      if (highlightInfo.startAddress < 0 || highlightInfo.startAddress >= this.#memoryWrapper.length()) {
+        throw new Error("HighlightInfo start address is out of bounds.");
+      }
+      if (highlightInfo.size <= 0) {
+        throw new Error("Highlight size must be a positive number.");
+      }
+    }
+    return highlightInfo;
+  }
+};
+
+// ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorPane.ts
+var { repeat } = Directives;
+var { widget: widget2 } = UI2.Widget;
 var UIStrings = {
   /**
    * @description Label in the Memory inspector panel that serves as a placeholder if no inspections are open (i.e., nothing to see here).
@@ -50,33 +238,66 @@ var str_ = i18n.i18n.registerUIStrings("panels/linear_memory_inspector/LinearMem
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var inspectorInstance;
 var MEMORY_INSPECTOR_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/memory-inspector";
+function renderPlaceholder() {
+  return html2`
+    <div class="empty-state">
+      <span class="empty-state-header">${i18nString(UIStrings.noOpenInspections)}</span>
+      <div class="empty-state-description">
+        <span>${i18nString(UIStrings.memoryInspectorExplanation)}</span>
+        <devtools-link
+          class="devtools-link"
+          href=${MEMORY_INSPECTOR_EXPLANATION_URL}
+          jslogcontext="learn-more"
+        >${i18nString(UIStrings.learnMore)}</devtools-link>
+      </div>
+    </div>`;
+}
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render2(html2`
+    <devtools-tabbed-pane
+      .closeableTabs=${true}
+      .allowTabReorder=${true}
+      .automaticReorder=${true}
+      .placeholder=${renderPlaceholder()}
+      .headerJslog=${`${VisualLogging.toolbar().track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`}
+      @close=${(event) => input.onTabClosed(event.detail.tabId)}
+      @select=${(event) => input.onTabSelected(event.detail.tabId)}
+    >
+      ${repeat(input.tabs, (tab) => tab.tabId, (tab) => html2`
+        <devtools-widget
+          id=${tab.tabId}
+          label=${tab.title}
+          ?closeable=${true}
+          ?selected=${tab.tabId === input.selectedTabId}
+          ${widget2(LinearMemoryInspectorView, {
+    tabId: tab.tabId,
+    address: tab.address,
+    memoryWrapper: tab.memoryWrapper,
+    refreshSequence: tab.refreshSequence,
+    onAddressChanged: input.onAddressChanged
+  })}
+        ></devtools-widget>
+      `)}
+    </devtools-tabbed-pane>
+  `, target, {
+    container: {
+      attributes: {
+        jslog: `${VisualLogging.panel("linear-memory-inspector").track({ resize: true })}`
+      }
+    }
+  });
+  target.querySelector("devtools-tabbed-pane")?.tabs;
+};
 var LinearMemoryInspectorPaneBase = Common.ObjectWrapper.eventMixin(
-  UI.Widget.VBox
+  UI2.Widget.VBox
 );
 var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends LinearMemoryInspectorPaneBase {
-  #tabbedPane;
-  constructor() {
-    super({ jslog: `${VisualLogging.panel("linear-memory-inspector").track({ resize: true })}` });
-    this.#tabbedPane = new UI.TabbedPane.TabbedPane();
-    this.#tabbedPane.setPlaceholderElement(this.createPlaceholder());
-    this.#tabbedPane.setCloseableTabs(true);
-    this.#tabbedPane.setAllowTabReorder(true, true);
-    this.#tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this.#tabClosed, this);
-    this.#tabbedPane.show(this.contentElement);
-    this.#tabbedPane.headerElement().setAttribute(
-      "jslog",
-      `${VisualLogging.toolbar().track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`
-    );
-  }
-  createPlaceholder() {
-    const placeholder = document.createElement("div");
-    placeholder.classList.add("empty-state");
-    placeholder.createChild("span", "empty-state-header").textContent = i18nString(UIStrings.noOpenInspections);
-    const description = placeholder.createChild("div", "empty-state-description");
-    description.createChild("span").textContent = i18nString(UIStrings.memoryInspectorExplanation);
-    const link = Link.create(MEMORY_INSPECTOR_EXPLANATION_URL, i18nString(UIStrings.learnMore), void 0, "learn-more");
-    description.appendChild(link);
-    return placeholder;
+  #view;
+  #tabs = /* @__PURE__ */ new Map();
+  #selectedTabId;
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
   }
   static instance() {
     if (!inspectorInstance) {
@@ -84,146 +305,92 @@ var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends LinearM
     }
     return inspectorInstance;
   }
-  #tabView(tabId) {
-    const view = this.#tabbedPane.tabView(tabId);
-    if (view === null) {
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const viewInput = {
+      tabs: Array.from(this.#tabs.values()),
+      selectedTabId: this.#selectedTabId,
+      onTabClosed: this.#onTabClosed,
+      onTabSelected: this.#onTabSelected,
+      onAddressChanged: this.#onAddressChanged
+    };
+    this.#view(viewInput, void 0, this.contentElement);
+  }
+  #getTab(tabId) {
+    const tab = this.#tabs.get(tabId);
+    if (!tab) {
       throw new Error(`No linear memory inspector view for the given tab id: ${tabId}`);
     }
-    return view;
+    return tab;
   }
-  create(tabId, title, arrayWrapper, address) {
-    const inspectorView = new LinearMemoryInspectorView(arrayWrapper, address, tabId);
-    this.#tabbedPane.appendTab(tabId, title, inspectorView, void 0, false, true);
-    this.#tabbedPane.selectTab(tabId);
+  create(tabId, title, arrayWrapper, address = 0) {
+    if (address < 0 || arrayWrapper.length() === 0 || address >= arrayWrapper.length()) {
+      throw new Error("Requested address is out of bounds.");
+    }
+    this.#tabs.set(tabId, {
+      tabId,
+      title,
+      memoryWrapper: arrayWrapper,
+      address,
+      refreshSequence: 0
+    });
+    this.#selectedTabId = tabId;
+    this.requestUpdate();
   }
   close(tabId) {
-    this.#tabbedPane.closeTab(tabId, false);
+    this.#onTabClosed(tabId);
   }
   reveal(tabId, address) {
-    const view = this.#tabView(tabId);
+    const tab = this.#getTab(tabId);
     if (address !== void 0) {
-      view.updateAddress(address);
+      if (address < 0 || address >= tab.memoryWrapper.length()) {
+        throw new Error("Requested address is out of bounds.");
+      }
+      this.#tabs.set(tabId, { ...tab, address });
     }
     this.refreshView(tabId);
-    this.#tabbedPane.selectTab(tabId);
+    this.#selectedTabId = tabId;
+    this.requestUpdate();
   }
   refreshView(tabId) {
-    const view = this.#tabView(tabId);
-    view.refreshData();
+    const tab = this.#getTab(tabId);
+    this.#tabs.set(tabId, { ...tab, refreshSequence: tab.refreshSequence + 1 });
+    this.requestUpdate();
   }
-  #tabClosed(event) {
-    const { tabId } = event.data;
+  #onTabClosed = (tabId) => {
+    if (!this.#tabs.has(tabId)) {
+      return;
+    }
+    this.#tabs.delete(tabId);
+    if (this.#selectedTabId === tabId) {
+      this.#selectedTabId = this.#tabs.keys().next().value;
+    }
     this.dispatchEventToListeners("ViewClosed" /* VIEW_CLOSED */, tabId);
-  }
+    this.requestUpdate();
+  };
+  #onTabSelected = (tabId) => {
+    if (!tabId || !this.#tabs.has(tabId) || this.#selectedTabId === tabId) {
+      return;
+    }
+    this.#selectedTabId = tabId;
+    this.requestUpdate();
+  };
+  #onAddressChanged = (tabId, address) => {
+    const tab = this.#tabs.get(tabId);
+    if (!tab || tab.address === address) {
+      return;
+    }
+    this.#tabs.set(tabId, { ...tab, address });
+    this.requestUpdate();
+  };
 };
 var Events = /* @__PURE__ */ ((Events2) => {
   Events2["VIEW_CLOSED"] = "ViewClosed";
   return Events2;
 })(Events || {});
-var LinearMemoryInspectorView = class extends UI.Widget.VBox {
-  #memoryWrapper;
-  #memory;
-  #offset = 0;
-  #address;
-  #tabId;
-  #inspector;
-  firstTimeOpen;
-  #hideValueInspector;
-  constructor(memoryWrapper, address = 0, tabId, hideValueInspector) {
-    super();
-    if (address < 0 || address >= memoryWrapper.length()) {
-      throw new Error("Requested address is out of bounds.");
-    }
-    this.#memoryWrapper = memoryWrapper;
-    this.#address = address;
-    this.#tabId = tabId;
-    this.#hideValueInspector = Boolean(hideValueInspector);
-    this.firstTimeOpen = true;
-    this.#inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
-    this.#inspector.addEventListener(
-      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.MEMORY_REQUEST,
-      this.#memoryRequested,
-      this
-    );
-    this.#inspector.addEventListener(
-      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.ADDRESS_CHANGED,
-      (event) => this.updateAddress(event.data)
-    );
-    this.#inspector.addEventListener(
-      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.SETTINGS_CHANGED,
-      (event) => this.saveSettings(event.data)
-    );
-    this.#inspector.addEventListener(
-      LinearMemoryInspectorComponents.LinearMemoryInspector.Events.DELETE_MEMORY_HIGHLIGHT,
-      (event) => {
-        LinearMemoryInspectorController.instance().removeHighlight(this.#tabId, event.data);
-        this.refreshData();
-      }
-    );
-    this.#inspector.show(this.contentElement);
-  }
-  render() {
-    if (this.firstTimeOpen) {
-      const settings = LinearMemoryInspectorController.instance().loadSettings();
-      this.#inspector.valueTypes = settings.valueTypes;
-      this.#inspector.valueTypeModes = settings.modes;
-      this.#inspector.endianness = settings.endianness;
-      this.firstTimeOpen = false;
-    }
-    if (!this.#memory) {
-      return;
-    }
-    this.#inspector.memory = this.#memory;
-    this.#inspector.memoryOffset = this.#offset;
-    this.#inspector.address = this.#address;
-    this.#inspector.outerMemoryLength = this.#memoryWrapper.length();
-    this.#inspector.highlightInfo = this.#getHighlightInfo();
-    this.#inspector.hideValueInspector = this.#hideValueInspector;
-  }
-  wasShown() {
-    super.wasShown();
-    this.refreshData();
-  }
-  saveSettings(settings) {
-    LinearMemoryInspectorController.instance().saveSettings(settings);
-  }
-  updateAddress(address) {
-    if (address < 0 || address >= this.#memoryWrapper.length()) {
-      throw new Error("Requested address is out of bounds.");
-    }
-    this.#address = address;
-  }
-  refreshData() {
-    void LinearMemoryInspectorController.getMemoryForAddress(this.#memoryWrapper, this.#address).then(({ memory, offset }) => {
-      this.#memory = memory;
-      this.#offset = offset;
-      this.render();
-    });
-  }
-  #memoryRequested(event) {
-    const { start, end, address } = event.data;
-    if (address < start || address >= end) {
-      throw new Error("Requested address is out of bounds.");
-    }
-    void LinearMemoryInspectorController.getMemoryRange(this.#memoryWrapper, start, end).then((memory) => {
-      this.#memory = memory;
-      this.#offset = start;
-      this.render();
-    });
-  }
-  #getHighlightInfo() {
-    const highlightInfo = LinearMemoryInspectorController.instance().getHighlightInfo(this.#tabId);
-    if (highlightInfo !== void 0) {
-      if (highlightInfo.startAddress < 0 || highlightInfo.startAddress >= this.#memoryWrapper.length()) {
-        throw new Error("HighlightInfo start address is out of bounds.");
-      }
-      if (highlightInfo.size <= 0) {
-        throw new Error("Highlight size must be a positive number.");
-      }
-    }
-    return highlightInfo;
-  }
-};
 
 // ../../front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.ts
 var UIStrings2 = {
@@ -463,14 +630,14 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
     }
     if (this.#bufferIdToRemoteObject.has(id)) {
       this.#paneInstance.reveal(id, memoryAddress);
-      void UI2.ViewManager.ViewManager.instance().showView("linear-memory-inspector", omitFocus);
+      void UI3.ViewManager.ViewManager.instance().showView("linear-memory-inspector", omitFocus);
       return;
     }
     const title = String(memory ? memory.description : buffer.object().description);
     this.#bufferIdToRemoteObject.set(id, buffer.object());
     const arrayBufferWrapper = new RemoteArrayBufferWrapper(buffer);
     this.#paneInstance.create(id, title, arrayBufferWrapper, memoryAddress);
-    void UI2.ViewManager.ViewManager.instance().showView("linear-memory-inspector", omitFocus);
+    void UI3.ViewManager.ViewManager.instance().showView("linear-memory-inspector", omitFocus);
   }
   appendApplicableItems(_event, contextMenu, target) {
     if (target.object?.isLinearMemoryInspectable()) {
@@ -560,6 +727,7 @@ var LinearMemoryInspectorController = class _LinearMemoryInspectorController ext
 };
 export {
   LinearMemoryInspectorController_exports as LinearMemoryInspectorController,
-  LinearMemoryInspectorPane_exports as LinearMemoryInspectorPane
+  LinearMemoryInspectorPane_exports as LinearMemoryInspectorPane,
+  LinearMemoryInspectorView_exports as LinearMemoryInspectorView
 };
 //# sourceMappingURL=linear_memory_inspector.js.map

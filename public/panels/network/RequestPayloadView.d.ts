@@ -27,7 +27,7 @@ export interface ViewInput {
     binaryPayloadContentData: TextUtils.ContentData.ContentData | null;
     requestUrl: Platform.DevToolsPath.UrlString;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class RequestPayloadView extends UI.Widget.VBox {
     #private;
@@ -37,7 +37,6 @@ export declare class RequestPayloadView extends UI.Widget.VBox {
     get refreshFormDataPromiseForTest(): Promise<void>;
     wasShown(): void;
     willHide(): void;
-    private addEntryContextMenuHandler;
     performUpdate(): void;
     static decodeParameter(value: string, decodeParameters: boolean): {
         value: string;

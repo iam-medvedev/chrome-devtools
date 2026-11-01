@@ -25,7 +25,7 @@ describeWithEnvironment('EditFileSystemView view', () => {
             onCreate: () => { },
             onEdit: () => { },
             onDelete: () => { },
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('persistence/edit_file_system_basic.png');
     });
     it('renders errors for invalid sub-directories', async () => {
@@ -42,7 +42,7 @@ describeWithEnvironment('EditFileSystemView view', () => {
             onCreate: () => { },
             onEdit: () => { },
             onDelete: () => { },
-        }, {}, target);
+        }, undefined, target);
         await assertScreenshot('persistence/edit_file_system_error.png');
     });
 });

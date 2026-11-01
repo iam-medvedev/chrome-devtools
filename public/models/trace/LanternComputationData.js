@@ -47,6 +47,19 @@ function createParsedUrl(url) {
     };
 }
 /**
+ * ResourceSendRequest URLs in the trace retain #hash fragments, whereas CDP
+ * Network.requestWillBeSent, Page.frameNavigated, initiator.url, documentURL,
+ * and V8 script events strip #hash fragments, and NetworkAnalyzer requires
+ * request.url not to have a fragment.
+ */
+function stripUrlHash(url, rawUrl) {
+    if (!rawUrl.includes('#')) {
+        return rawUrl;
+    }
+    url.hash = '';
+    return url.href;
+}
+/**
  * Returns a map of `pid` -> `tid[]`.
  */
 function findWorkerThreads(trace) {
@@ -141,7 +154,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
         requestId: request.args.data.requestId,
         connectionId: request.args.data.connectionId ?? 0,
         connectionReused: request.args.data.connectionReused ?? false,
-        url: request.args.data.url,
+        url: stripUrlHash(url, request.args.data.url),
         protocol: request.args.data.protocol,
         parsedURL: createParsedUrl(url),
         documentURL: request.args.data.requestingFrameUrl,
@@ -283,8 +296,9 @@ function createNetworkRequests(trace, data, startTime = 0, endTime = Number.POSI
                 pushStart: -1,
                 pushEnd: -1,
             };
-            redirectedRequest.url = redirect.url;
-            redirectedRequest.parsedURL = createParsedUrl(redirect.url);
+            const redirectUrl = new URL(redirect.url);
+            redirectedRequest.url = stripUrlHash(redirectUrl, redirect.url);
+            redirectedRequest.parsedURL = createParsedUrl(redirectUrl);
             // TODO: Trace Engine is not retaining the actual status code.
             redirectedRequest.statusCode = 302;
             redirectedRequest.resourceType = undefined;
@@ -352,15 +366,23 @@ function createGraph(requests, trace, data, url) {
     // url defines the initial request that the Lantern graph starts at (the root node) and the
     // main document request. These are equal if there are no redirects.
     if (!url) {
-        url = {
-            requestedUrl: requests[0].url,
-            mainDocumentUrl: '',
-        };
-        let request = requests[0];
-        while (request.redirectDestination) {
-            request = request.redirectDestination;
+        if (!requests.length) {
+            throw new Lantern.Core.LanternError('No network requests found in trace');
         }
-        url.mainDocumentUrl = request.url;
+        const followRedirects = (request) => {
+            while (request.redirectDestination) {
+                request = request.redirectDestination;
+            }
+            return request;
+        };
+        const isMainFrameDoc = (r) => r.frameId === data.Meta.mainFrameId && followRedirects(r).resourceType === 'Document';
+        const isAnyDoc = (r) => followRedirects(r).resourceType === 'Document';
+        const initialRequest = requests.find(isMainFrameDoc) ?? requests.find(isAnyDoc) ?? requests[0];
+        const lastDocChainStart = requests.findLast(isMainFrameDoc) ?? requests.findLast(isAnyDoc) ?? requests[0];
+        url = {
+            requestedUrl: initialRequest.url,
+            mainDocumentUrl: followRedirects(lastDocChainStart).url,
+        };
     }
     return Lantern.Graph.PageDependencyGraph.createGraph(mainThreadEvents, requests, url);
 }

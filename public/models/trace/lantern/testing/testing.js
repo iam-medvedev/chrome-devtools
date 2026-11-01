@@ -27,7 +27,7 @@ async function getComputationDataFromFixture(context, { trace, settings, url, pa
     throw new Error("no networkAnalysis");
   }
   const frameId = data.Meta.mainFrameId;
-  const navigation = data.Meta.mainFrameNavigations[0];
+  const navigation = data.Meta.mainFrameNavigations.at(-1);
   if (!navigation) {
     throw new Error("no navigation found");
   }

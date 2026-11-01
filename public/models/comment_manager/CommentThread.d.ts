@@ -14,7 +14,10 @@ export interface DOMNodeAnchorSignature {
 export interface TimelineAnchorSignature {
     /** Identifier of the trace to scope comments to a specific recording */
     traceId: string;
-    /** Serializable key from Trace.EventsSerializer (e.g. 'r-123', 'p-1-2-3-4', 's-5') */
+    /**
+     * Serializable key from Trace.EventsSerializer (e.g. 'r-123', 'p-1-2-3-4', 's-5'), or
+     * 'fc-<chartLocation>-<entryIndex>' for flame chart entries that EventsSerializer cannot key.
+     */
     traceEventKey: string;
     /** Primary event title or category name */
     entryName: string;
@@ -85,14 +88,30 @@ export declare class CommentThread extends Common.ObjectWrapper.ObjectWrapper<Ev
     readonly isGeneratedComment: boolean;
     comments: Comment[];
     status: CommentThreadStatus;
-    transmitted: boolean;
+    /**
+     * False until the developer has opened the thread since the agent last
+     * responded. Only meaningful for RESOLVED threads.
+     */
+    responseSeen: boolean;
     constructor(options: CommentThreadOptions);
     get isOrphaned(): boolean;
     setOrphaned(isOrphaned: boolean): void;
+    /**
+     * True once the thread has been taken by the agent (e.g. via CD4ABridge).
+     */
+    get transmitted(): boolean;
+    /**
+     * Marks the thread as taken by the agent.
+     */
+    markTransmitted(): void;
     save(text?: string, author?: 'DEVELOPER' | 'AGENT'): void;
     editComment(text: string): void;
     sendToAgent(text?: string, author?: 'DEVELOPER' | 'AGENT'): void;
     resolve(replyText?: string): void;
+    /**
+     * Marks the agent response of a RESOLVED thread as seen by the developer.
+     */
+    markResponseSeen(): void;
 }
 export declare class RevealableThread {
     readonly thread: CommentThread;

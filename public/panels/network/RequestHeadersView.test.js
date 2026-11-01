@@ -236,7 +236,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 toggleShowRawResponseHeaders: () => { },
                 toggleShowRawRequestHeaders: () => { },
                 backendLink: null,
-            }, {}, container);
+            }, undefined, container);
             assert.strictEqual(Boolean(container.querySelector('.early-hints-warning')), expectsWarning, `cacheDisabled=${cacheDisabled}, rel=${relation}`);
         }
     });
@@ -266,7 +266,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 throw new Error('Function not implemented.');
             },
             backendLink: null,
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
         const rawHeadersDiv = container.querySelector('.raw-headers');
@@ -285,7 +285,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 throw new Error('Function not implemented.');
             },
             backendLink: null,
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
         const category = container.querySelector('[aria-label="Response headers"]');
@@ -313,7 +313,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 throw new Error('Function not implemented.');
             },
             backendLink: null,
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
         const responseHeadersCategory = container.querySelector('[aria-label="Response headers"]');
@@ -563,7 +563,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 label: 'APM Trace',
                 url: new URL('http://localhost:8080/apm/trace/123'),
             },
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
         const button = container.querySelector('.backend-link-button');
@@ -589,7 +589,7 @@ describeWithEnvironment('RequestHeadersView', () => {
                 label: 'APM Trace',
                 url: new URL('http://localhost:8080/apm/trace/123'),
             },
-        }, {}, container);
+        }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
         const button = container.querySelector('.backend-link-button');

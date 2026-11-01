@@ -232,8 +232,7 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                 SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
             },
         };
-        const output = {};
-        this.#view(input, output, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=DeveloperResourcesListView.js.map

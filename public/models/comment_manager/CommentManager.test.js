@@ -139,6 +139,16 @@ describe('CommentManager', () => {
         assert.isTrue(thread.isGeneratedComment);
         assert.strictEqual(thread.status, 'DRAFT');
     });
+    it('creates comment thread with empty string text', () => {
+        const anchor = {
+            vePath: 'Panel: elements > TreeOutline > TreeItem',
+            textSignature: 'div.header',
+        };
+        const thread = manager.createCommentThread(anchor, '');
+        assert.isNotNull(thread);
+        assert.lengthOf(thread.comments, 1);
+        assert.strictEqual(thread.comments[0].text, '');
+    });
     it('returns undefined for non-existent comment thread ID', () => {
         assert.isUndefined(manager.getCommentThread('non-existent-id'));
     });
@@ -220,6 +230,21 @@ describe('CommentManager', () => {
         // Resolving thread with agent reply
         manager.resolveCommentThread(thread2.id, 'Agent reply');
         assert.lengthOf(manager.takeComments(), 0);
+    });
+    it('dispatches COMMENT_THREADS_CHANGED when takeComments() marks threads as transmitted', () => {
+        const anchor = {
+            vePath: 'Panel: elements > TreeItem: rule',
+            textSignature: 'color: red;',
+        };
+        const thread = manager.createCommentThread(anchor, 'Comment', 'DEVELOPER');
+        thread.sendToAgent();
+        const changedSpy = sinon.spy();
+        manager.addEventListener("CommentThreadsChanged" /* CommentManager.CommentManager.Events.COMMENT_THREADS_CHANGED */, changedSpy);
+        manager.takeComments();
+        sinon.assert.calledOnce(changedSpy);
+        // Nothing new to take, so no further change is dispatched.
+        manager.takeComments();
+        sinon.assert.calledOnce(changedSpy);
     });
     it('supports timeline anchor signatures with traceId', () => {
         const anchor = {

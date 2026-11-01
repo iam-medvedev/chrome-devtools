@@ -4,7 +4,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     onStartCapture: () => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class CSSOverviewStartView extends UI.Widget.Widget {
     #private;
     onStartCapture: () => void;

@@ -1534,14 +1534,16 @@ var ExtensionButton = class {
     return this.#toolbarButton;
   }
 };
+var hashIdentifier = (id) => Platform.StringUtilities.hashCode(id).toString(36);
+var cleanIdentifier = (id) => Platform.StringUtilities.sanitizeIdentifier(id) || hashIdentifier(id);
 var ExtensionSidebarPane = class extends UI6.View.SimpleView {
   #panelName;
   server;
   #id;
   extensionView;
   objectPropertiesView;
-  constructor(server, panelName, title, id) {
-    const viewId = Platform.StringUtilities.toKebabCase(title);
+  constructor(server, panelName, title, id, extensionId = "extension") {
+    const viewId = `extension-sidebar-${cleanIdentifier(extensionId)}-${cleanIdentifier(panelName)}-${hashIdentifier(title)}`;
     super({ title, viewId });
     this.element.classList.add("fill");
     this.#panelName = panelName;
@@ -2328,6 +2330,17 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     }
     return origin;
   }
+  static extensionIdFromOrigin(extensionOrigin) {
+    const url = Common5.ParsedURL.ParsedURL.fromString(extensionOrigin);
+    if (url?.scheme === "chrome-extension" && url.host) {
+      return url.host;
+    }
+    const sanitized = Platform2.StringUtilities.sanitizeIdentifier(extensionOrigin);
+    return sanitized || "unknown";
+  }
+  getExtensionId(port) {
+    return _ExtensionServer.extensionIdFromOrigin(this.getExtensionOrigin(port));
+  }
   onCreatePanel(message, port) {
     if (message.command !== Extensions2.ExtensionAPI.PrivateAPI.Commands.CreatePanel) {
       return this.status.E_BADARG("command", `expected ${Extensions2.ExtensionAPI.PrivateAPI.Commands.CreatePanel}`);
@@ -2401,7 +2414,7 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     button.update(resourcePath, message.tooltip, message.disabled);
     return this.status.OK();
   }
-  onCreateSidebarPane(message) {
+  onCreateSidebarPane(message, port) {
     if (message.command !== Extensions2.ExtensionAPI.PrivateAPI.Commands.CreateSidebarPane) {
       return this.status.E_BADARG(
         "command",
@@ -2409,7 +2422,13 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
       );
     }
     const id = message.id;
-    const sidebar = new ExtensionSidebarPane(this, message.panel, i18n11.i18n.lockedString(message.title), id);
+    const sidebar = new ExtensionSidebarPane(
+      this,
+      message.panel,
+      i18n11.i18n.lockedString(message.title),
+      id,
+      this.getExtensionId(port)
+    );
     this.#sidebarPanes.push(sidebar);
     this.clientObjects.set(id, sidebar);
     this.dispatchEventToListeners("SidebarPaneAdded" /* SidebarPaneAdded */, sidebar);
@@ -2470,14 +2489,20 @@ var ExtensionServer = class _ExtensionServer extends Common5.ObjectWrapper.Objec
     sidebar.setPage(resourcePath);
     return void 0;
   }
-  onOpenResource(message) {
+  onOpenResource(message, port) {
     if (message.command !== Extensions2.ExtensionAPI.PrivateAPI.Commands.OpenResource) {
       return this.status.E_BADARG("command", `expected ${Extensions2.ExtensionAPI.PrivateAPI.Commands.OpenResource}`);
     }
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(message.url);
     if (uiSourceCode) {
+      if (!this.extensionAllowedOnContentProvider(uiSourceCode, port)) {
+        return this.status.E_FAILED("Permission denied");
+      }
       void Common5.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, message.columnNumber));
       return this.status.OK();
+    }
+    if (!this.extensionAllowedOnURL(message.url, port)) {
+      return this.status.E_FAILED("Permission denied");
     }
     const resource = Bindings.ResourceUtils.resourceForURL(message.url);
     if (resource) {
@@ -3610,10 +3635,10 @@ var PersistenceUtils = class _PersistenceUtils {
 var LinkDecorator = class extends Common6.ObjectWrapper.ObjectWrapper {
   constructor(persistence) {
     super();
-    persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, this.bindingChanged, this);
-    persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, this.bindingChanged, this);
+    persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, this.#bindingChanged, this);
+    persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, this.#bindingChanged, this);
   }
-  bindingChanged(event) {
+  #bindingChanged(event) {
     const binding = event.data;
     this.dispatchEventToListeners(Components2.Linkifier.LinkDecorator.Events.LINK_ICON_CHANGED, binding.network);
   }
@@ -3783,7 +3808,7 @@ var DOMNodeLink = class extends UI8.Widget.Widget {
       ariaDescription: options.ariaDescription
     };
     if (!this.#node) {
-      this.#view(viewInput, {}, this.contentElement);
+      this.#view(viewInput, void 0, this.contentElement);
       return;
     }
     let node = this.#node;
@@ -3793,12 +3818,12 @@ var DOMNodeLink = class extends UI8.Widget.Widget {
     }
     if (node.isViewTransitionPseudoNode()) {
       viewInput.pseudo = `::${this.#node.pseudoType()}(${this.#node.pseudoIdentifier()})`;
-      this.#view(viewInput, {}, this.contentElement);
+      this.#view(viewInput, void 0, this.contentElement);
       return;
     }
     if (options.textContent) {
       viewInput.tagName = options.textContent;
-      this.#view(viewInput, {}, this.contentElement);
+      this.#view(viewInput, void 0, this.contentElement);
       return;
     }
     viewInput.tagName = node.nodeNameInCorrectCase();
@@ -3828,7 +3853,7 @@ var DOMNodeLink = class extends UI8.Widget.Widget {
       }
       viewInput.pseudo = pseudoText;
     }
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
 var DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
@@ -3839,7 +3864,7 @@ var DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
           tabindex=${input.preventKeyboardFocus ? -1 : 0}
           @click=${input.onClick}
           @mousedown=${(e) => e.consume()}>
-        <slot></slot>
+        <slot>${input.textContent ?? nothing3}</slot>
       </button>`, target);
 };
 var DeferredDOMNodeLink = class extends UI8.Widget.Widget {
@@ -3856,9 +3881,31 @@ var DeferredDOMNodeLink = class extends UI8.Widget.Widget {
     this.#view = view;
     this.performUpdate();
   }
+  set deferredNode(deferredNode) {
+    if (this.#deferredNode === deferredNode) {
+      return;
+    }
+    this.#deferredNode = deferredNode;
+    this.requestUpdate();
+  }
+  set options(options) {
+    if (this.#options === options) {
+      return;
+    }
+    this.#options = options;
+    this.requestUpdate();
+  }
+  set styleSheetId(styleSheetId) {
+    if (this.#styleSheetId === styleSheetId) {
+      return;
+    }
+    this.#styleSheetId = styleSheetId;
+    this.requestUpdate();
+  }
   performUpdate() {
     const viewInput = {
       preventKeyboardFocus: this.#options?.preventKeyboardFocus,
+      textContent: this.#options?.textContent,
       onClick: () => {
         this.#deferredNode?.resolve?.((node) => {
           if (node && this.#styleSheetId) {
@@ -3875,7 +3922,7 @@ var DeferredDOMNodeLink = class extends UI8.Widget.Widget {
         });
       }
     };
-    this.#view(viewInput, {}, this.contentElement);
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
 var linkifierInstance;
@@ -3905,7 +3952,9 @@ __export(CommentThreadWidget_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
   computeCommentTitle: () => computeCommentTitle
 });
+import "../../ui/components/spinners/spinners.js";
 import "../../ui/components/tooltips/tooltips.js";
+import * as Host6 from "../../core/host/host.js";
 import * as i18n17 from "../../core/i18n/i18n.js";
 import * as SDK5 from "../../core/sdk/sdk.js";
 import * as Buttons4 from "../../ui/components/buttons/buttons.js";
@@ -3955,7 +4004,8 @@ var commentThreadWidget_css_default = `/*
     flex-shrink: 0;
   }
 
-  .sent-status {
+  .sent-status,
+  .working-status {
     display: flex;
     align-items: center;
     gap: var(--sys-size-2);
@@ -3984,6 +4034,23 @@ var commentThreadWidget_css_default = `/*
     overflow: hidden;
     max-width: 100%;
     min-width: 0;
+  }
+
+  .thread-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-4);
+    width: 100%;
+    max-height: min(var(--sys-size-32), 50vh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .thread-body:hover,
+  .thread-body:focus-within {
+    scrollbar-color: var(--sys-color-neutral-outline) transparent;
   }
 
   .comment-text {
@@ -4092,6 +4159,29 @@ var commentThreadWidget_css_default = `/*
     cursor: pointer;
   }
 
+  .element-removed-banner {
+    display: flex;
+    align-self: stretch;
+    align-items: center;
+    gap: var(--sys-size-3);
+    /* Bleed past the widget padding so the banner spans the full width and sits flush with the bottom edge. */
+    margin: var(--sys-size-4) calc(-1 * var(--sys-size-8)) calc(-1 * var(--sys-size-8));
+    padding: var(--sys-size-5) var(--sys-size-8);
+    border-radius: 0 0 var(--sys-shape-corner-medium) var(--sys-shape-corner-medium);
+    background: var(--sys-color-tonal-container);
+    font-family: var(--default-font-family);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-size-8);
+    color: var(--sys-color-on-tonal-container);
+  }
+
+  .element-removed-icon {
+    width: var(--sys-size-7);
+    height: var(--sys-size-7);
+    flex-shrink: 0;
+    color: var(--sys-color-on-tonal-container);
+  }
+
   .selected-item devtools-widget,
   .selected-item-text {
     display: block;
@@ -4125,6 +4215,11 @@ var UIStrings7 = {
    */
   sentCheckmark: "Sent checkmark",
   /**
+   * @description Text next to a spinner in the comment thread header indicating that the agent has picked up the
+   * comments and is working on them.
+   */
+  working: "Working",
+  /**
    * @description Label for the agent response section in the comment thread.
    */
   response: "Response:",
@@ -4144,7 +4239,18 @@ var UIStrings7 = {
   /**
    * @description aria-label for the comment text area.
    */
-  commentInputAriaLabel: "Comment input"
+  commentInputAriaLabel: "Comment input",
+  /**
+   * @description Placeholder text for the comment text area, explaining the keyboard shortcut that queues a comment
+   * (saves it locally so it is sent to the agent together with the next comment).
+   * @example {Ctrl} PH1
+   */
+  queueCommentsPlaceholder: "{PH1} + \u21B5 to queue comments",
+  /**
+   * @description Banner text shown at the bottom of a comment thread when the element the comment was
+   * attached to has been removed and can no longer be found.
+   */
+  elementNoLongerAvailable: "The element is no longer available"
 };
 var UIStringsNotTranslate2 = {
   /**
@@ -4181,6 +4287,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
     }
     switch (input.status) {
       case "SENT_TO_AGENT":
+        if (input.transmitted) {
+          return html8`
+            <div class="working-status">
+              <devtools-spinner></devtools-spinner>
+              <span>${i18nString7(UIStrings7.working)}</span>
+            </div>
+          `;
+        }
         return html8`
           <div class="sent-status">
             <devtools-icon
@@ -4242,6 +4356,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           @keyup=${(event) => input.onQueueModifierChange(UI9.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event))}
           @blur=${() => input.onQueueModifierChange(false)}
           jslog=${VisualLogging4.textField("comments-input").track({ keydown: "Enter" })}
+          placeholder=${input.placeholder}
         ></textarea>
         <div class="footer">
           <devtools-icon
@@ -4272,7 +4387,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
             ${buttonText}
           </devtools-button>
         </div>
-      ` : html8`${input.comments.map((comment) => comment.author === "DEVELOPER" ? html8`
+      ` : html8`<div class="thread-body">${input.comments.map((comment) => comment.author === "DEVELOPER" ? html8`
           <div class="comment-text"
             @click=${() => {
     input.onSetEditMode(true);
@@ -4291,8 +4406,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   )}
             </div>
           </div>
-        `)}
+        `)}</div>
       `}
+
+      ${input.elementRemoved ? html8`
+        <div class="element-removed-banner" role="status">
+          <span>${i18nString7(UIStrings7.elementNoLongerAvailable)}</span>
+        </div>
+      ` : Lit3.nothing}
     </div>
   `, target);
 };
@@ -4301,7 +4422,9 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
   #comments = [];
   #commentText = "";
   #status = "DRAFT";
+  #transmitted = false;
   #isQueueModifierPressed = false;
+  #elementRemoved = false;
   #textAreaRef = createRef();
   #view;
   #isEditing = false;
@@ -4332,6 +4455,26 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
   set status(commentStatus) {
     this.#status = commentStatus;
     this.requestUpdate();
+  }
+  set transmitted(transmitted) {
+    if (this.#transmitted === transmitted) {
+      return;
+    }
+    this.#transmitted = transmitted;
+    this.requestUpdate();
+  }
+  /**
+   * When true, shows a banner indicating that the element the thread is anchored to has been removed.
+   */
+  set elementRemoved(elementRemoved) {
+    if (this.#elementRemoved === elementRemoved) {
+      return;
+    }
+    this.#elementRemoved = elementRemoved;
+    this.requestUpdate();
+  }
+  get elementRemoved() {
+    return this.#elementRemoved;
   }
   #onSetEditMode = (value) => {
     const commentText = this.#comments.find((c) => c.author === "DEVELOPER")?.text;
@@ -4381,9 +4524,12 @@ var CommentThreadWidget = class extends UI9.Widget.Widget {
       title: this.title,
       comments: this.#comments,
       commentText: this.#commentText,
+      placeholder: i18nString7(UIStrings7.queueCommentsPlaceholder, { PH1: Host6.Platform.isMac() ? "\u2318" : "Ctrl" }),
       isQueueModifierPressed: this.#isQueueModifierPressed,
+      elementRemoved: this.#elementRemoved,
       textAreaRef: this.#textAreaRef,
       status: this.#status,
+      transmitted: this.#transmitted,
       onAddComment: this.#handleAddComment,
       onQueueComment: this.#handleQueueComment,
       onCommentTextChange: this.#handleCommentTextChange,
@@ -4426,8 +4572,10 @@ __export(CommentsOverlayWidget_exports, {
   ActionDelegate: () => ActionDelegate,
   ButtonProvider: () => ButtonProvider,
   CommentsOverlayWidget: () => CommentsOverlayWidget,
+  ContextMenuProvider: () => ContextMenuProvider,
   ThreadRevealer: () => ThreadRevealer
 });
+import * as i18n19 from "../../core/i18n/i18n.js";
 import * as Root3 from "../../core/root/root.js";
 import * as CommentManager from "../../models/comment_manager/comment_manager.js";
 import * as Comments from "../../ui/comments/comments.js";
@@ -4487,10 +4635,14 @@ var commentsOverlay_css_default = `/*
     top: 0;
     left: 0;
     pointer-events: none;
-    border: var(--sys-size-2) dashed var(--sys-color-primary);
+    border: var(--sys-size-2) solid var(--sys-color-primary);
     background-color: color-mix(in srgb, var(--sys-color-primary), transparent 90%);
     box-sizing: border-box;
     will-change: transform;
+  }
+
+  .comment-anchor-highlight.resolved {
+    border-style: dashed;
   }
 
   .comment-hover-highlight {
@@ -4517,17 +4669,26 @@ var commentsOverlay_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./commentsOverlay.css")} */`;
 
 // ../../front_end/panels/common/CommentsOverlayWidget.ts
+var UIStrings8 = {
+  /**
+   * @description Context menu item that creates a comment anchored to the right-clicked part of the DevTools UI.
+   */
+  addComment: "Add comment"
+};
+var str_8 = i18n19.i18n.registerUIStrings("panels/common/CommentsOverlayWidget.ts", UIStrings8);
+var i18nString8 = i18n19.i18n.getLocalizedString.bind(void 0, str_8);
 var {
   html: html9,
   render: render8,
   nothing: nothing5,
-  Directives: { repeat, styleMap }
+  Directives: { classMap: classMap3, repeat, styleMap }
 } = Lit4;
 var POPUP_MARGIN = 8;
 var PIN_HEIGHT = 30;
 var POPUP_WIDTH = 288;
 var POPUP_HEIGHT = 220;
 var AUTO_CLOSE_DELAY_MS = 2e3;
+var COMMENTS_VIEW_ID = "comments";
 var DEFAULT_VIEW7 = (input, _output, target) => {
   const popupPosition = input.activePin ?? input.fallbackPosition;
   render8(html9`
@@ -4543,20 +4704,19 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
   })}>
         </div>
       ` : nothing5}
-      ${repeat(
-    input.highlights.filter((h) => h.visible),
-    (h) => h.id,
-    (h) => html9`
-          <div
-            class="comment-anchor-highlight"
-            style=${styleMap({
-      transform: `translate3d(${h.left}px, ${h.top}px, 0)`,
-      width: `${h.width}px`,
-      height: `${h.height}px`
-    })}>
-          </div>
-        `
-  )}
+      ${input.activeHighlight?.visible && input.activeThread ? html9`
+        <div
+          class=${classMap3({
+    "comment-anchor-highlight": true,
+    resolved: input.activeThread.status === "RESOLVED"
+  })}
+          style=${styleMap({
+    transform: `translate3d(${input.activeHighlight.left}px, ${input.activeHighlight.top}px, 0)`,
+    width: `${input.activeHighlight.width}px`,
+    height: `${input.activeHighlight.height}px`
+  })}>
+        </div>
+      ` : nothing5}
       ${repeat(
     input.pins.filter((p) => p.visible),
     (p) => p.id,
@@ -4593,11 +4753,13 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         title: input.title,
         comments: [...item2.thread.comments],
         status: item2.thread.status,
+        transmitted: item2.thread.transmitted,
         onAddComment: input.onAddComment,
         onDeleteQueuedComment: input.onDeleteQueuedComment,
         onQueueComment: input.onQueueComment,
         onSaveEdit: input.onSaveEdit,
-        onStartEdit: input.onStartEdit
+        onStartEdit: input.onStartEdit,
+        elementRemoved: item2.thread.isOrphaned
       })}
             </div>
           `;
@@ -4606,6 +4768,11 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
     </div>
   `, target);
 };
+function isEventInsidePopupOrPin(event) {
+  const composedTarget = event.composedPath()[0];
+  const target = composedTarget instanceof Element ? composedTarget : event.target;
+  return target instanceof Element && Boolean(Comments.CommentAnchorResolver.closestAcrossShadow(target, ".comment-popup-widget, .comment-pin"));
+}
 var CommentsOverlayWidget = class extends UI10.Widget.Widget {
   static INJECT = [CommentManager.CommentManager.CommentManager];
   #view;
@@ -4623,10 +4790,22 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#activeThreadId = threadId;
       if (threadId && this.isShowing()) {
         document.documentElement.addEventListener("keydown", this.#onKeyDown);
+        document.documentElement.addEventListener("click", this.#onClickOutside, { capture: true });
       } else {
         document.documentElement.removeEventListener("keydown", this.#onKeyDown);
+        document.documentElement.removeEventListener("click", this.#onClickOutside, { capture: true });
       }
+      this.#markActiveThreadResponseSeen();
     }
+  }
+  /**
+   * The open thread shows the agent response, so the developer has seen it.
+   */
+  #markActiveThreadResponseSeen() {
+    if (!this.#activeThreadId) {
+      return;
+    }
+    this.#commentManager.getCommentThread(this.#activeThreadId)?.markResponseSeen();
   }
   constructor(element, [commentManager], view = DEFAULT_VIEW7) {
     super(element, { useShadowDom: false });
@@ -4669,12 +4848,14 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     );
     if (this.#activeThreadId) {
       document.documentElement.addEventListener("keydown", this.#onKeyDown);
+      document.documentElement.addEventListener("click", this.#onClickOutside, { capture: true });
     }
     this.requestUpdate();
   }
   willHide() {
     this.#clearCloseTimeout();
     document.documentElement.removeEventListener("keydown", this.#onKeyDown);
+    document.documentElement.removeEventListener("click", this.#onClickOutside, { capture: true });
     this.#commentOverlayManager.stop();
     this.#commentOverlayManager.removeEventListener(
       Comments.CommentOverlayManager.Events.POSITIONS_UPDATED,
@@ -4750,6 +4931,7 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
   }
   #onStateChanged() {
     this.#syncActiveThreadFromManager();
+    this.#markActiveThreadResponseSeen();
     this.requestUpdate();
   }
   #trySynchronousRender() {
@@ -4806,11 +4988,17 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#handleCloseCommentThread();
     }
   };
+  #onClickOutside = (event) => {
+    if (!this.#activeThreadId || isEventInsidePopupOrPin(event)) {
+      return;
+    }
+    this.#handleCloseCommentThread();
+  };
   #renderDisconnectedView() {
     this.#view(
       {
         pins: [],
-        highlights: [],
+        activeHighlight: null,
         hoverHighlight: null,
         commentMode: false,
         onPinClick: this.#handlePinClick,
@@ -4834,11 +5022,11 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
   }
   #renderWithTitle(activeThread, title) {
     const pins = this.#commentOverlayManager.getPinPositions();
-    const highlights = this.#commentOverlayManager.getHighlightRects();
     const activePin = this.#activeThreadId ? pins.find((p) => p.id === this.#activeThreadId) ?? null : null;
+    const activeHighlight = this.#activeThreadId ? this.#commentOverlayManager.getHighlight(this.#activeThreadId) ?? null : null;
     const viewInput = {
       pins,
-      highlights,
+      activeHighlight,
       hoverHighlight: this.#commentOverlayManager.getHoverHighlight(),
       commentMode: this.#commentManager.isCommentMode(),
       onPinClick: this.#handlePinClick,
@@ -4913,6 +5101,14 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     this.#fallbackPosition = fallbackPosition ?? null;
     this.requestUpdate();
   }
+  /**
+   * Opens a draft comment anchored to `element`. Comment mode must already be
+   * active.
+   * @returns whether a draft comment was created.
+   */
+  addCommentAt(element, coordinates) {
+    return this.#commentOverlayManager.handleElementClick(element, coordinates);
+  }
 };
 var widgetInstance = null;
 function getOrCreateOverlayWidget(commentManager) {
@@ -4941,6 +5137,41 @@ var ThreadRevealer = class {
     overlay.openThread(thread.id, position);
   }
 };
+function revealCommentsDrawerView(enteringCommentMode) {
+  const viewManager = UI10.ViewManager.ViewManager.instance();
+  if (!viewManager.hasView(COMMENTS_VIEW_ID)) {
+    return;
+  }
+  if (enteringCommentMode) {
+    if (!UI10.InspectorView.InspectorView.maybeGetInspectorViewInstance()?.drawerVisible()) {
+      return;
+    }
+    void viewManager.resolveLocation(viewManager.locationNameForViewId(COMMENTS_VIEW_ID)).then((location) => {
+      return location?.showView(
+        viewManager.view(COMMENTS_VIEW_ID),
+        void 0,
+        false,
+        /* omitFocus */
+        true,
+        /* shouldSelectTab */
+        false
+      );
+    });
+    return;
+  }
+  void viewManager.showView(
+    COMMENTS_VIEW_ID,
+    /* userGesture */
+    true
+  );
+}
+function setCommentModeByUser(commentManager, active) {
+  getOrCreateOverlayWidget(commentManager);
+  if (commentManager.isCommentMode() !== active) {
+    commentManager.setCommentMode(active);
+    revealCommentsDrawerView(active);
+  }
+}
 var ActionDelegate = class {
   #commentManager;
   constructor(commentManager) {
@@ -4953,10 +5184,7 @@ var ActionDelegate = class {
       if (!this.#commentManager.isAgentAttached()) {
         return false;
       }
-      getOrCreateOverlayWidget(this.#commentManager);
-      this.#commentManager.setCommentMode(
-        !this.#commentManager.isCommentMode()
-      );
+      setCommentModeByUser(this.#commentManager, !this.#commentManager.isCommentMode());
       return true;
     }
     return false;
@@ -4966,6 +5194,24 @@ var ActionDelegate = class {
       widgetInstance.detach();
       widgetInstance = null;
     }
+  }
+};
+var menusWithAddComment = /* @__PURE__ */ new WeakSet();
+var ContextMenuProvider = class {
+  appendApplicableItems(event, contextMenu, target) {
+    if (menusWithAddComment.has(contextMenu) || !Root3.Runtime.hostConfig.devToolsComments?.enabled || !(target instanceof HTMLElement) || !(event instanceof MouseEvent)) {
+      return;
+    }
+    const commentManager = UI10.Widget.lookupUniverseForElement(target)?.commentManager;
+    const coordinates = { clientX: event.clientX, clientY: event.clientY };
+    if (!commentManager?.isAgentAttached() || !Comments.CommentAnchorResolver.resolveCommentAnchorElement(target, coordinates)) {
+      return;
+    }
+    menusWithAddComment.add(contextMenu);
+    contextMenu.annotationSection().appendItem(i18nString8(UIStrings8.addComment), () => {
+      setCommentModeByUser(commentManager, true);
+      getOrCreateOverlayWidget(commentManager).addCommentAt(target, coordinates);
+    }, { jslogContext: "add-comment" });
   }
 };
 var ButtonProvider = class {
@@ -4998,20 +5244,25 @@ __export(CommentsStatusBarPill_exports, {
   CommentsStatusBarPill: () => CommentsStatusBarPill,
   DEFAULT_VIEW: () => DEFAULT_VIEW8
 });
-import * as i18n19 from "../../core/i18n/i18n.js";
+import * as i18n21 from "../../core/i18n/i18n.js";
 import * as CommentManager3 from "../../models/comment_manager/comment_manager.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
 import * as Lit5 from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
-var UIStrings8 = {
+var UIStrings9 = {
   /**
-   * @description Button text for the comments status bar pill showing the number of open comments.
+   * @description Button text for the comments status bar pill. Clicking it opens the Comments panel.
+   */
+  showComments: "Show comments",
+  /**
+   * @description Button text for the comments status bar pill when the AI agent has responded to some
+   * comments and the user has not seen these responses yet. Clicking it opens the Comments panel.
    * @example {2} PH1
    */
-  commentsCount: "Comments ({PH1})"
+  showCommentsWithCount: "Show comments ({PH1})"
 };
-var str_8 = i18n19.i18n.registerUIStrings("panels/common/CommentsStatusBarPill.ts", UIStrings8);
-var i18nString8 = i18n19.i18n.getLocalizedString.bind(void 0, str_8);
+var str_9 = i18n21.i18n.registerUIStrings("panels/common/CommentsStatusBarPill.ts", UIStrings9);
+var i18nString9 = i18n21.i18n.getLocalizedString.bind(void 0, str_9);
 var { html: html10, render: render9 } = Lit5;
 var DEFAULT_VIEW8 = (input, _output, target) => {
   const tooltip = input.threads.flatMap((thread) => thread.comments.map((comment) => comment.text)).join("\n");
@@ -5023,7 +5274,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
         ?disabled=${input.disabled}
         @click=${input.onPillClick}
         jslog=${VisualLogging5.action("comments-status-bar-pill").track({ click: true })}>
-        ${i18nString8(UIStrings8.commentsCount, { PH1: input.threads.length })}
+        ${input.unseenResponseCount > 0 ? i18nString9(UIStrings9.showCommentsWithCount, { PH1: input.unseenResponseCount }) : i18nString9(UIStrings9.showComments)}
       </button>
     `}
   `, target);
@@ -5068,8 +5319,10 @@ var CommentsStatusBarPill = class extends UI11.Widget.Widget {
     super.willHide();
   }
   performUpdate() {
+    const threads = this.#commentManager.isAgentAttached() ? this.#commentManager.getCommentThreads().filter((thread) => thread.status !== "DRAFT") : [];
     const viewInput = {
-      threads: this.#commentManager.isAgentAttached() ? this.#commentManager.getCommentThreads().filter((thread) => thread.status !== "DRAFT") : [],
+      threads,
+      unseenResponseCount: threads.filter((thread) => thread.status === "RESOLVED" && !thread.responseSeen).length,
       onPillClick: this.#handlePillClick
     };
     this.#view(viewInput, void 0, this.contentElement);

@@ -283,8 +283,7 @@ var DeveloperResourcesListView = class extends UI.Widget.VBox {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
       }
     };
-    const output = {};
-    this.#view(input, output, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 
@@ -430,7 +429,7 @@ var DeveloperResourcesView = class extends UI2.Widget.VBox {
     const { loading, resources } = this.#loader.getScopedNumberOfResources();
     const input = {
       onFilterChanged: (e) => {
-        this.onFilterChanged(e.detail);
+        this.#onFilterChanged(e.detail);
       },
       items: this.#loader.getResourcesLoaded().values(),
       selectedItem: this.#selectedItem,
@@ -442,8 +441,7 @@ var DeveloperResourcesView = class extends UI2.Widget.VBox {
       numLoading: loading,
       loadThroughTargetSetting: this.#loader.getLoadThroughTargetSetting()
     };
-    const output = {};
-    this.#view(input, output, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
   async select(resource) {
     await this.updateComplete;
@@ -454,7 +452,7 @@ var DeveloperResourcesView = class extends UI2.Widget.VBox {
     await this.updateComplete;
     return this.#selectedItem;
   }
-  onFilterChanged(text) {
+  #onFilterChanged(text) {
     const textFilterRegExp = text ? Platform2.StringUtilities.createPlainTextSearchRegex(text, "i") : null;
     if (textFilterRegExp) {
       this.#filters = [

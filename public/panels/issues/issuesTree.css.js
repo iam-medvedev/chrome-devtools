@@ -122,12 +122,13 @@ p {
   }
 }
 
-.header devtools-hide-issues-menu {
+.header .hide-issues-menu {
   visibility: hidden;
+  flex: none;
 }
 
-.header:hover devtools-hide-issues-menu,
-.issue.selected devtools-hide-issues-menu {
+.header:hover .hide-issues-menu,
+.issue.selected .hide-issues-menu {
   visibility: visible;
 }
 
@@ -309,7 +310,6 @@ ul > li.plain-enum::before {
 
 .affected-resource-element {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
   border-collapse: collapse;

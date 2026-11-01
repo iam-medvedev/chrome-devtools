@@ -8,7 +8,7 @@ interface ViewInput {
     issues: number;
     showIssuesHandler: () => void;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class WarningErrorCounterWidget extends UI.Widget.Widget {
     private readonly setVisibility;
     private readonly view;

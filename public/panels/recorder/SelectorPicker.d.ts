@@ -6,8 +6,7 @@ export interface ViewInput {
     disabled: boolean;
     onClick: (event: MouseEvent) => void;
 }
-export type ViewOutput = object;
-export declare const DEFAULT_VIEW: (input: ViewInput, _output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 export declare class SelectorPicker extends UI.Widget.Widget implements SDK.TargetManager.Observer {
     #private;
     onSelectorPicked?: (data: Models.Schema.StepWithSelectors & Pick<Models.Schema.ClickAttributes, 'offsetX' | 'offsetY'>) => void;

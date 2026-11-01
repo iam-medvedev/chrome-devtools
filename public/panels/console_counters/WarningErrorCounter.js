@@ -137,7 +137,7 @@ export class WarningErrorCounterWidget extends UI.Widget.Widget {
         const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings(SDK.TargetManager.TargetManager.instance());
         const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         const issues = issuesManager.numberOfIssues();
-        this.view({ compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) }, {}, this.contentElement);
+        this.view({ compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) }, undefined, this.contentElement);
         this.setVisibility(Boolean(errors || warnings || issues));
         UI.InspectorView.InspectorView.instance().toolbarItemResized();
         this.updatingForTest = false;

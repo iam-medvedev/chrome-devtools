@@ -10,11 +10,12 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
-import { assertScreenshot, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lighthouse from '../../lighthouse/lighthouse.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
@@ -431,7 +432,7 @@ describeWithEnvironment('ChatMessage', () => {
         const openInNewTabStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'openInNewTab');
         const [view] = createComponent();
         view.input.onReportClick();
-        sinon.assert.calledOnceWithExactly(openInNewTabStub, urlString `https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504`);
+        sinon.assert.calledOnceWithExactly(openInNewTabStub, urlString `https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504`, undefined);
     });
     it('should show actions when it is not the last message and it is loading', async () => {
         const [view] = createComponent({
@@ -496,7 +497,7 @@ describeWithEnvironment('ChatMessage', () => {
                     step: {
                         state: { type: 'completed' },
                         title: 'Step 1',
-                        code: 'console.log("test")',
+                        action: 'console.log("test")',
                     },
                 },
             ],
@@ -581,7 +582,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
-                            code: 'console.log("test")',
+                            action: 'console.log("test")',
                         },
                     },
                 ],
@@ -608,7 +609,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
-                            code: 'console.log("test")',
+                            action: 'console.log("test")',
                         },
                     },
                 ],
@@ -661,7 +662,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'in_progress' },
                             title: 'Investigating XYZ',
-                            code: 'console.log("test")',
+                            action: 'console.log("test")',
                         },
                     },
                 ],
@@ -700,7 +701,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'completed' },
                             title: 'Investigating XYZ',
-                            code: 'console.log("test")',
+                            action: 'console.log("test")',
                         },
                     },
                 ],
@@ -727,7 +728,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'completed' },
                             title: 'Investigating XYZ',
-                            code: 'console.log("test")',
+                            action: 'console.log("test")',
                             // Don't need a proper widget for this test
                             widgets: [{}],
                         },
@@ -787,7 +788,7 @@ describeWithEnvironment('ChatMessage', () => {
                                 },
                             },
                             title: 'Side Effect Step',
-                            code: 'doSomethingDangerous()',
+                            action: 'doSomethingDangerous()',
                         },
                     },
                 ],
@@ -834,7 +835,7 @@ describeWithEnvironment('ChatMessage', () => {
                                 },
                             },
                             title: 'Side Effect Step',
-                            code: 'doSomethingDangerous()',
+                            action: 'doSomethingDangerous()',
                         },
                     },
                 ],
@@ -886,7 +887,7 @@ describeWithEnvironment('ChatMessage', () => {
                                 },
                             },
                             title: 'Side Effect Step',
-                            code: 'doSomethingDangerous()',
+                            action: 'doSomethingDangerous()',
                         },
                     },
                 ],
@@ -913,12 +914,12 @@ describeWithEnvironment('ChatMessage', () => {
             const stepA = {
                 state: { type: 'needs_approval', sideEffectDialog: { description: null, onAnswer: () => { } } },
                 title: 'Setting the color',
-                code: 'a()',
+                action: 'a()',
             };
             const stepB = {
                 state: { type: 'needs_approval', sideEffectDialog: { description: null, onAnswer: () => { } } },
                 title: 'Setting the background color',
-                code: 'b()',
+                action: 'b()',
             };
             const walkthrough = { ...DEFAULT_WALKTHROUGH, isInlined: true, isExpanded: false };
             const target = renderView({
@@ -961,7 +962,7 @@ describeWithEnvironment('ChatMessage', () => {
                                 },
                             },
                             title: 'Side Effect Step',
-                            code: 'doSomethingDangerous()',
+                            action: 'doSomethingDangerous()',
                         },
                     },
                 ],
@@ -990,7 +991,7 @@ describeWithEnvironment('ChatMessage', () => {
                         step: {
                             state: { type: 'canceled' },
                             title: 'Side Effect Step',
-                            code: 'doSomethingDangerous()',
+                            action: 'doSomethingDangerous()',
                         },
                     },
                 ],
@@ -1026,7 +1027,7 @@ describeWithEnvironment('ChatMessage', () => {
                                     },
                                 },
                                 title: 'Reading cookie values and metadata',
-                                code: 'getCookieValues({cookieNames: ["session"]})',
+                                action: 'getCookieValues({cookieNames: ["session"]})',
                             },
                         },
                     ],
@@ -1556,12 +1557,19 @@ describeWithEnvironment('ChatMessage', () => {
                 rpcId: 99,
                 id: '1',
             };
-            const targetElement = renderView({ message });
+            const targetElement = renderView({ message }, renderElementIntoDOM(new UI.Widget.Widget()).contentElement);
             const widgetHeader = await waitFor('.widget-header', targetElement);
             assert.isNotNull(widgetHeader);
             assert.strictEqual(widgetHeader.querySelector('.widget-name')?.textContent, 'Network activity');
-            const devtoolsWidget = await waitFor('devtools-performance-agent-network-track', targetElement);
+            const devtoolsWidget = await waitFor('devtools-widget.network-track-widget', targetElement);
             assert.isNotNull(devtoolsWidget);
+            await doubleRaf();
+            const container = querySelectorErrorOnMissing(devtoolsWidget, 'devtools-widget.container');
+            const canvas = container.shadowRoot?.querySelector('canvas');
+            assert.exists(canvas);
+            assert.isAtLeast(container.getBoundingClientRect().height, 150);
+            assert.isAtLeast(canvas.clientHeight, 148);
+            assert.isAbove(canvas.clientWidth, 0);
         });
         it('renders quota error message', async () => {
             const message = {

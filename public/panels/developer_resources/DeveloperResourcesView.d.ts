@@ -16,7 +16,7 @@ interface ViewInput {
     numLoading: number;
     loadThroughTargetSetting: Common.Settings.Setting<boolean>;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class DeveloperResourcesView extends UI.Widget.VBox {
     #private;
@@ -24,6 +24,5 @@ export declare class DeveloperResourcesView extends UI.Widget.VBox {
     performUpdate(): Promise<void>;
     select(resource: SDK.PageResourceLoader.PageResource): Promise<void>;
     selectedItem(): Promise<SDK.PageResourceLoader.PageResource | null>;
-    private onFilterChanged;
 }
 export {};

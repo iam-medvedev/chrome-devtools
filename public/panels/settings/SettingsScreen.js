@@ -1,7 +1,6 @@
 // Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -18,7 +17,8 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { PanelUtils } from '../utils/utils.js';
 import * as PanelComponents from './components/components.js';
 import settingsScreenStyles from './settingsScreen.css.js';
-const { html, render, Directives: { ref } } = Lit;
+const { html, nothing, render, Directives: { ref, repeat } } = Lit;
+const { widget, widgetRef } = UI.Widget;
 const UIStrings = {
     /**
      * @description Name of the Settings view.
@@ -73,43 +73,68 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/settings/SettingsScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let settingsScreenInstance;
-function createSettingsCard(heading, ...content) {
-    const card = document.createElement('devtools-card');
-    card.heading = heading;
-    card.append(...content);
-    return card;
-}
+export const SETTINGS_SCREEN_DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+        <devtools-tabbed-pane
+          vertical
+          ?focus-header=${input.focusTabHeader}
+          selected-tab=${input.selectedTabId}
+          @tabinvoked=${(event) => input.onTabInvoked(event.detail)}>
+          <div slot="left" class="settings-window-label-element">
+            <div class="settings-window-title" role="heading" aria-level="1">
+              ${i18nString(UIStrings.settings)}
+            </div>
+          </div>
+          ${repeat(input.views, view => view.viewId(), view => {
+        const iconName = view.iconName();
+        return html `
+              <devtools-widget
+                id=${view.viewId()}
+                label=${view.title()}
+                ${widget(UI.ViewManager.ContainerWidget, { view })}>
+              </devtools-widget>
+              ${iconName
+            ? html `<devtools-icon slot="icon-${view.viewId()}" name=${iconName}></devtools-icon>`
+            : nothing}
+            `;
+    })}
+        </devtools-tabbed-pane>
+      `, target, { container: { classes: ['settings-window-main', 'vbox'] } });
+    // clang-format on
+};
 export class SettingsScreen extends UI.Widget.VBox {
-    tabbedLocation;
     keybindsTab;
     reportTabOnReveal;
-    constructor() {
+    #view;
+    #views = [];
+    #onTabInvokedBound = this.tabInvoked.bind(this);
+    #selectedTabId = 'preferences';
+    #focusTabHeader = false;
+    constructor(view = SETTINGS_SCREEN_DEFAULT_VIEW) {
         super({ useShadowDom: true });
+        this.#view = view;
         this.registerRequiredCSS(settingsScreenStyles);
-        this.contentElement.classList.add('settings-window-main');
-        this.contentElement.classList.add('vbox');
-        const settingsLabelElement = document.createElement('div');
-        settingsLabelElement.classList.add('settings-window-label-element');
-        const settingsTitleElement = UI.UIUtils.createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: settingsScreenStyles })
-            .createChild('div', 'settings-window-title');
-        UI.ARIAUtils.markAsHeading(settingsTitleElement, 1);
-        settingsTitleElement.textContent = i18nString(UIStrings.settings);
-        this.tabbedLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => SettingsScreen.revealSettingsScreen(), 'settings-view');
-        const tabbedPane = this.tabbedLocation.tabbedPane();
-        tabbedPane.registerRequiredCSS(settingsScreenStyles);
-        tabbedPane.headerElement().prepend(settingsLabelElement);
-        tabbedPane.setShrinkableTabs(false);
-        tabbedPane.makeVerticalTabLayout();
-        const keyBindsView = UI.ViewManager.ViewManager.instance().view('keybinds');
+        this.appendApplicableItems("settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */);
+        const keyBindsView = this.#views.find(v => v.viewId() === 'keybinds');
         if (keyBindsView) {
             void keyBindsView.widget().then(widget => {
                 this.keybindsTab = widget;
             });
         }
-        tabbedPane.show(this.contentElement);
-        tabbedPane.selectTab('preferences');
-        tabbedPane.addEventListener(UI.TabbedPane.Events.TabInvoked, this.tabInvoked, this);
         this.reportTabOnReveal = false;
+    }
+    wasShown() {
+        super.wasShown();
+        this.performUpdate();
+    }
+    performUpdate() {
+        this.#view({
+            views: this.#views,
+            selectedTabId: this.#selectedTabId,
+            focusTabHeader: this.#focusTabHeader,
+            onTabInvoked: this.#onTabInvokedBound,
+        }, undefined, this.contentElement);
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -145,26 +170,97 @@ export class SettingsScreen extends UI.Widget.VBox {
     static async showSettingsScreen(options = {}) {
         const { name, focusTabHeader } = options;
         const settingsScreen = SettingsScreen.revealSettingsScreen();
-        settingsScreen.selectTab(name || 'preferences');
-        const tabbedPane = settingsScreen.tabbedLocation.tabbedPane();
-        await tabbedPane.waitForTabElementUpdate();
-        if (focusTabHeader) {
-            tabbedPane.focusSelectedTabHeader();
-        }
-        else {
-            tabbedPane.focus();
-        }
+        await settingsScreen.selectTab(name || 'preferences', Boolean(focusTabHeader));
     }
     resolveLocation(_locationName) {
-        return this.tabbedLocation;
+        return this;
     }
-    selectTab(name) {
-        this.tabbedLocation.tabbedPane().selectTab(name, /* userGesture */ true);
+    appendApplicableItems(locationName) {
+        for (const view of UI.ViewManager.ViewManager.instance().viewsForLocation(locationName)) {
+            if (!view.isTransient()) {
+                this.appendView(view);
+            }
+        }
     }
-    tabInvoked(event) {
-        const eventData = event.data;
+    appendView(view, insertBefore) {
+        if (this.#views.includes(view)) {
+            return;
+        }
+        const index = insertBefore ? this.#views.indexOf(insertBefore) : -1;
+        if (index !== -1) {
+            this.#views.splice(index, 0, view);
+        }
+        else {
+            this.#views.push(view);
+        }
+        this.requestUpdate();
+    }
+    async showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
+        this.appendView(view, insertBefore);
+        if (shouldSelectTab) {
+            const prevTabId = this.#selectedTabId;
+            this.#selectedTabId = view.viewId();
+            this.#focusTabHeader = false;
+            if (userGesture && (this.reportTabOnReveal || prevTabId !== view.viewId())) {
+                this.reportTabOnReveal = false;
+                this.reportSettingsPanelShown(view.viewId());
+            }
+        }
+        this.performUpdate();
+        await view.widget();
+        if (!omitFocus) {
+            this.focus();
+        }
+    }
+    removeView(view) {
+        const index = this.#views.indexOf(view);
+        if (index !== -1) {
+            this.#views.splice(index, 1);
+            if (this.#selectedTabId === view.viewId()) {
+                this.#selectedTabId = this.#views[0]?.viewId() ?? 'preferences';
+            }
+            this.requestUpdate();
+        }
+    }
+    isViewVisible(view) {
+        return this.isShowing() && this.#selectedTabId === view.viewId();
+    }
+    widget() {
+        return this;
+    }
+    reveal() {
+        SettingsScreen.revealSettingsScreen();
+    }
+    async selectTab(name, focusTabHeader = false) {
+        const prevTabId = this.#selectedTabId;
+        this.#selectedTabId = name;
+        this.#focusTabHeader = focusTabHeader;
+        if (this.reportTabOnReveal || prevTabId !== name) {
+            this.reportTabOnReveal = false;
+            this.reportSettingsPanelShown(name);
+        }
+        this.performUpdate();
+        const view = this.#views.find(v => v.viewId() === name);
+        if (view) {
+            await view.widget();
+        }
+        this.focus();
+        if (this.#focusTabHeader) {
+            this.#focusTabHeader = false;
+            this.requestUpdate();
+        }
+    }
+    tabInvoked(eventData) {
+        if (this.#selectedTabId !== eventData.tabId) {
+            this.#selectedTabId = eventData.tabId;
+            this.requestUpdate();
+        }
         if (!eventData.isUserGesture) {
             return;
+        }
+        if (this.#focusTabHeader) {
+            this.#focusTabHeader = false;
+            this.requestUpdate();
         }
         const prevTabId = eventData.prevTabId;
         const tabId = eventData.tabId;
@@ -182,25 +278,88 @@ export class SettingsScreen extends UI.Widget.VBox {
         UI.UIUserMetrics.UIUserMetrics.instance().settingsPanelShown(tabId);
     }
     onEscapeKeyPressed(event) {
-        if (this.tabbedLocation.tabbedPane().selectedTabId === 'keybinds' && this.keybindsTab) {
+        if (this.#selectedTabId === 'keybinds' && this.keybindsTab) {
             this.keybindsTab.onEscapeKeyPressed(event);
         }
     }
 }
+export const GENERIC_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
+    const settingToControl = new Map();
+    let syncSection;
+    output.highlightSetting = (setting) => {
+        const element = settingToControl.get(setting);
+        if (element) {
+            PanelUtils.highlightElement(element);
+        }
+        else if (setting.name === 'receive-gdp-badges') {
+            void syncSection?.highlightReceiveBadgesSetting();
+        }
+    };
+    // clang-format off
+    render(html `
+        <div class="settings-card-container-wrapper">
+          <div class="settings-multicolumn-card-container">
+            ${input.sections.map(section => html `
+              <devtools-card heading=${section.heading}>
+                ${section.category === "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */
+        ? html `<devtools-widget
+                        ${widget(PanelComponents.SyncSection.SyncSection, { syncInfo: input.syncInfo })}
+                        ${widgetRef(PanelComponents.SyncSection.SyncSection, w => { syncSection = w; })}>
+                      </devtools-widget>`
+        : html `
+                      <div ${ref(el => {
+            if (!el) {
+                return;
+            }
+            let childIndex = 0;
+            for (const setting of section.settings) {
+                if (setting.type() !== "boolean" /* Common.Settings.SettingType.BOOLEAN */ &&
+                    setting.type() !== "enum" /* Common.Settings.SettingType.ENUM */) {
+                    continue;
+                }
+                const child = el.children[childIndex++];
+                if (child instanceof HTMLElement) {
+                    settingToControl.set(setting, child);
+                }
+            }
+        })}>
+                        ${section.settings.map(setting => SettingsUI.SettingsUI.renderControlForSetting(setting))}
+                        ${section.category === "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */
+            ? Components.Linkifier.LinkHandlerSettingUI.instance().settingElement()
+            : nothing}
+                      </div>
+                    `}
+              </devtools-card>
+            `)}
+            <devtools-button
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              .jslogContext=${'settings.restore-defaults-and-reload'}
+              @click=${input.onRestoreDefaults}>
+              ${i18nString(UIStrings.restoreDefaultsAndReload)}
+            </devtools-button>
+          </div>
+        </div>
+      `, target, {
+        container: {
+            classes: ['settings-tab-container'],
+            attributes: {
+                id: 'preferences-tab-content',
+                jslog: `${VisualLogging.pane('preferences')}`,
+            },
+        },
+    });
+    // clang-format on
+};
 export class GenericSettingsTab extends UI.Widget.VBox {
-    syncSection = new PanelComponents.SyncSection.SyncSection();
-    settingToControl = new Map();
-    containerElement;
+    #sections = [];
+    #view;
+    #viewOutput = {};
+    #syncInfo = { isSyncActive: false };
     #updateSyncSectionTimerId = -1;
     #syncSectionUpdatePromise = null;
-    constructor() {
-        super({ jslog: `${VisualLogging.pane('preferences')}` });
-        this.element.classList.add('settings-tab-container');
-        this.element.id = 'preferences-tab-content';
-        this.containerElement =
-            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        this.containerElement.classList.add('settings-multicolumn-card-container');
-        this.syncSection.markAsRoot();
+    constructor(element, view = GENERIC_SETTINGS_TAB_DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
         // AI, GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
         // AI settings are displayed in their own tab.
         const explicitSectionOrder = [
@@ -238,12 +397,18 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             const settingsForSection = preRegisteredSettings.filter(setting => setting.uiDescriptor.category === sectionCategory && GenericSettingsTab.isSettingVisible(setting));
             this.createSectionElement(sectionCategory, settingsForSection);
         }
-        const restoreAndReloadButton = UI.UIUtils.createTextButton(i18nString(UIStrings.restoreDefaultsAndReload), restoreAndReload, { jslogContext: 'settings.restore-defaults-and-reload' });
-        this.containerElement.appendChild(restoreAndReloadButton);
-        function restoreAndReload() {
-            Common.Settings.Settings.instance().clearAll();
-            Components.Reload.reload();
-        }
+        this.requestUpdate();
+    }
+    #restoreAndReload() {
+        Common.Settings.Settings.instance().clearAll();
+        Components.Reload.reload();
+    }
+    performUpdate() {
+        this.#view({
+            sections: this.#sections,
+            syncInfo: this.#syncInfo,
+            onRestoreDefaults: this.#restoreAndReload.bind(this),
+        }, this.#viewOutput, this.contentElement);
     }
     static isSettingVisible(setting) {
         return Boolean(setting.uiDescriptor.title?.()) && Boolean(setting.uiDescriptor.category);
@@ -251,6 +416,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
     wasShown() {
         UI.Context.Context.instance().setFlavor(GenericSettingsTab, this);
         super.wasShown();
+        this.performUpdate();
         this.updateSyncSection();
     }
     willHide() {
@@ -269,58 +435,33 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         this.#syncSectionUpdatePromise =
             new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve))
                 .then(syncInfo => {
-                this.syncSection.syncInfo = syncInfo;
+                this.#syncInfo = syncInfo;
+                this.requestUpdate();
                 if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
                     this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
                 }
             });
     }
-    createExtensionSection(settings) {
-        const sectionName = "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */;
-        const settingUI = Components.Linkifier.LinkHandlerSettingUI.instance();
-        const element = settingUI.settingElement();
-        this.createStandardSectionElement(sectionName, settings, element);
-    }
     createSectionElement(category, settings) {
         // Always create the EXTENSIONS section and append the link handling control.
-        if (category === "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */) {
-            this.createExtensionSection(settings);
+        if (category !== "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */ && settings.length === 0) {
+            return;
         }
-        else if (category === "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */ && settings.length > 0) {
-            const syncCard = createSettingsCard(Common.SettingRegistration.getLocalizedSettingsCategory("ACCOUNT" /* Common.SettingRegistration.SettingCategory.ACCOUNT */), this.syncSection.element);
-            this.containerElement.appendChild(syncCard);
-        }
-        else if (settings.length > 0) {
-            this.createStandardSectionElement(category, settings);
-        }
-    }
-    createStandardSectionElement(category, settings, content) {
-        const uiSectionName = Common.Settings.getLocalizedSettingsCategory(category);
-        const sectionElement = document.createElement('div');
-        for (const settingRegistration of settings) {
-            const setting = Common.Settings.Settings.instance().resolve(settingRegistration.descriptor);
-            const settingControl = SettingsUI.SettingsUI.createControlForSetting(setting);
-            if (settingControl) {
-                this.settingToControl.set(setting, settingControl);
-                sectionElement.appendChild(settingControl);
-            }
-        }
-        if (content) {
-            sectionElement.appendChild(content);
-        }
-        const card = createSettingsCard(uiSectionName, sectionElement);
-        this.containerElement.appendChild(card);
+        this.#sections.push({
+            category,
+            heading: Common.Settings.getLocalizedSettingsCategory(category),
+            settings: settings.map(settingRegistration => Common.Settings.Settings.instance().resolve(settingRegistration.descriptor)),
+        });
     }
     highlightObject(setting) {
         if (setting instanceof Common.Settings.Setting) {
-            const element = this.settingToControl.get(setting);
-            if (element) {
-                PanelUtils.highlightElement(element);
-            }
-            else if (setting.name === 'receive-gdp-badges') {
+            if (setting.name === 'receive-gdp-badges') {
                 void this.#syncSectionUpdatePromise?.then(() => {
-                    void this.syncSection.highlightReceiveBadgesSetting();
+                    this.#viewOutput.highlightSetting?.(setting);
                 });
+            }
+            else {
+                this.#viewOutput.highlightSetting?.(setting);
             }
         }
     }
@@ -349,7 +490,7 @@ export const EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => 
                   <span>${i18nString(UIStrings.theseExperimentsCouldBeUnstable)}</span>
                 </div>
                 <div class="settings-experiments-block">
-                  ${input.experiments.map(experiment => html `
+                  ${repeat(input.experiments, experiment => experiment.name, experiment => html `
                     <p class="settings-experiment" ${ref(el => {
         if (el) {
             output.setExperimentElement(experiment, el);
@@ -359,7 +500,7 @@ export const EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => 
                         class="experiment-label"
                         name=${experiment.name}
                         title=${experiment.title}
-                        ?checked=${experiment.isEnabled()}
+                        .checked=${experiment.isEnabled()}
                         .jslogContext=${experiment.name}
                         @click=${(e) => {
         const checkbox = e.currentTarget;
@@ -399,7 +540,15 @@ export const EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => 
             </devtools-card>
           </div>
         </div>
-      `, target);
+      `, target, {
+        container: {
+            classes: ['settings-tab-container'],
+            attributes: {
+                id: 'experiments-tab-content',
+                jslog: `${VisualLogging.pane('experiments')}`,
+            },
+        },
+    });
     // clang-format on
 };
 export class ExperimentsSettingsTab extends UI.Widget.Widget {
@@ -412,9 +561,7 @@ export class ExperimentsSettingsTab extends UI.Widget.Widget {
     };
     #filterText = '';
     constructor(element, view = EXPERIMENTS_SETTINGS_TAB_DEFAULT_VIEW) {
-        super(element, { jslog: `${VisualLogging.pane('experiments')}` });
-        this.element.classList.add('settings-tab-container');
-        this.element.id = 'experiments-tab-content';
+        super(element);
         this.#view = view;
     }
     #filterExperiments(filterText) {

@@ -53,10 +53,17 @@ export declare class TracingContext {
         match: SDK.CSSPropertyParser.Match;
         context: RenderingContext;
     } | null): TracingContext[] | null;
-    applyEvaluation(children: TracingContext[], evaluation: () => ({
+    applyEvaluation(children: TracingContext[], evaluation: () => {
         placeholder: Node[];
         asyncEvalCallback?: () => Promise<boolean>;
-    })): Node[] | null;
+    }): Node[] | null;
+    applyEvaluation(children: TracingContext[], evaluation: () => ({
+        placeholder: LitTemplate;
+        asyncEvalCallback?: () => Promise<boolean>;
+    } | {
+        template: LitTemplate;
+        asyncEvalCallback?: () => Promise<LitTemplate | null>;
+    })): LitTemplate | null;
     substitution(root?: {
         match: SDK.CSSPropertyParser.Match;
         context: RenderingContext;

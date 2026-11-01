@@ -1731,5 +1731,192 @@ describe('CSSMatchedStyles', () => {
             assert.deepEqual(propertyTexts(styles[0]), ['display: block', 'unicode-bidi: isolate']);
         });
     });
+    it('resolves !important precedence across UserAgent, Injected, and Regular origins', async () => {
+        const uaRule = ruleMatch('div', [
+            { name: 'color', value: 'black', important: true },
+            { name: 'margin', value: '0px' },
+        ], { origin: "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */ });
+        const injectedLowSpecRule = ruleMatch('div', [
+            { name: 'color', value: 'green', important: true },
+            { name: 'margin', value: '10px', important: true },
+        ], { origin: "injected" /* Protocol.CSS.StyleSheetOrigin.Injected */ });
+        const regularRule = ruleMatch('.cls', [
+            { name: 'color', value: 'red', important: true },
+            { name: 'margin', value: '20px', important: true },
+            { name: 'padding', value: '10px', important: true },
+        ], { origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */ });
+        const injectedHighSpecRule = ruleMatch('#inspected', [
+            { name: 'padding', value: '20px', important: true },
+        ], { origin: "injected" /* Protocol.CSS.StyleSheetOrigin.Injected */ });
+        const matchedStyles = await getMatchedStyles({
+            connection,
+            matchedPayload: [uaRule, injectedLowSpecRule, regularRule, injectedHighSpecRule],
+        });
+        const [injectedHighSpecStyle, regularStyle, injectedLowSpecStyle, uaStyle] = matchedStyles.nodeStyles();
+        // UserAgent !important overrides both Injected and Regular !important rules.
+        assert.strictEqual(matchedStyles.propertyState(uaStyle.allProperties()[0]), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+        assert.strictEqual(matchedStyles.propertyState(injectedLowSpecStyle.allProperties()[0]), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        assert.strictEqual(matchedStyles.propertyState(regularStyle.allProperties()[0]), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        // Injected and Regular share the author origin: higher specificity wins for !important.
+        assert.strictEqual(matchedStyles.propertyState(regularStyle.allProperties()[1]), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+        assert.strictEqual(matchedStyles.propertyState(injectedLowSpecStyle.allProperties()[1]), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        assert.strictEqual(matchedStyles.propertyState(uaStyle.allProperties()[1]), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        assert.strictEqual(matchedStyles.propertyState(injectedHighSpecStyle.allProperties()[0]), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+        assert.strictEqual(matchedStyles.propertyState(regularStyle.allProperties()[2]), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+    });
+    describe('shadow cascade context', () => {
+        function createStubNode(id, backendNodeId, parentNode = null) {
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = id;
+            node.backendNodeId.returns(backendNodeId);
+            node.nodeType.returns(1 /* SDK.DOMModel.NodeType.ELEMENT_NODE */);
+            node.parentNode = parentNode;
+            return node;
+        }
+        function findProperty(matchedStyles, name, value) {
+            for (const style of matchedStyles.nodeStyles()) {
+                for (const prop of style.allProperties()) {
+                    if (prop.name === name && prop.value === value) {
+                        return prop;
+                    }
+                }
+            }
+            assert.fail(`Property ${name}: ${value} not found`);
+        }
+        it('keeps animations, transitions, attribute styles, and :host rules active on shadow hosts', async () => {
+            const docScope = 10;
+            const shadowScope = 30;
+            const docNode = createStubNode(1, docScope);
+            const hostNode = createStubNode(2, 20, docNode);
+            hostNode.getTreeRoot.returns(docNode);
+            const shadowRoot = createStubNode(3, shadowScope, hostNode);
+            hostNode.shadowRoots.returns([shadowRoot]);
+            const uaRule = ruleMatch('div', [
+                { name: 'display', value: 'block' },
+                { name: 'list-style-type', value: 'disc' },
+            ], { origin: "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */ });
+            const hostRule = ruleMatch(':host', [
+                { name: 'display', value: 'inline-block' },
+                { name: 'opacity', value: '0.8' },
+                { name: 'transform', value: 'scale(1)' },
+            ], { originTreeScopeNodeId: shadowScope });
+            const docRule = ruleMatch('#host', [
+                { name: 'opacity', value: '1' },
+                { name: 'transform', value: 'scale(2)' },
+            ], { originTreeScopeNodeId: docScope });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                node: hostNode,
+                matchedPayload: [uaRule, hostRule, docRule],
+                attributesPayload: {
+                    cssProperties: [{ name: 'list-style-type', value: 'square' }],
+                    shorthandEntries: [],
+                },
+                animationStylesPayload: [{
+                        style: {
+                            cssProperties: [{ name: 'opacity', value: '0.4' }],
+                            shorthandEntries: [],
+                        },
+                    }],
+                transitionsStylePayload: {
+                    cssProperties: [{ name: 'transform', value: 'scale(3)' }],
+                    shorthandEntries: [],
+                },
+            });
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'opacity', '0.4')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            const docOpacity = findProperty(matchedStyles, 'opacity', '1');
+            assert.strictEqual(matchedStyles.propertyState(docOpacity), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'opacity', '0.8')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.isTrue(matchedStyles.isPropertyOverriddenByAnimation(docOpacity));
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'transform', 'scale(3)')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            const docTransform = findProperty(matchedStyles, 'transform', 'scale(2)');
+            assert.strictEqual(matchedStyles.propertyState(docTransform), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'transform', 'scale(1)')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.isTrue(matchedStyles.isPropertyOverriddenByAnimation(docTransform));
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'list-style-type', 'square')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'list-style-type', 'disc')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'display', 'inline-block')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'display', 'block')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        });
+        it('resolves normal and !important precedence across :host, ::slotted(), and element scope', async () => {
+            const docScope = 10;
+            const outerShadowScope = 30;
+            const innerShadowScope = 60;
+            const docNode = createStubNode(1, docScope);
+            const outerHost = createStubNode(2, 20, docNode);
+            const innerHost = createStubNode(5, 50, outerHost);
+            innerHost.getTreeRoot.returns(docNode);
+            const innerShadowRoot = createStubNode(6, innerShadowScope, innerHost);
+            innerHost.shadowRoots.returns([innerShadowRoot]);
+            innerHost.hasAssignedSlot.returns(true);
+            const hostRule = ruleMatch(':host', [
+                { name: 'color', value: 'red' },
+                { name: 'background-color', value: 'lightgreen', important: true },
+            ], { originTreeScopeNodeId: innerShadowScope });
+            const slottedRule = ruleMatch('::slotted(#inner)', [
+                { name: 'color', value: 'green' },
+                { name: 'margin', value: '10px' },
+                { name: 'background-color', value: 'pink', important: true },
+                { name: 'padding', value: '10px', important: true },
+            ], { originTreeScopeNodeId: outerShadowScope });
+            const docRule = ruleMatch('#inner', [
+                { name: 'margin', value: '20px' },
+                { name: 'padding', value: '20px', important: true },
+            ], { originTreeScopeNodeId: docScope });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                node: innerHost,
+                matchedPayload: [hostRule, slottedRule, docRule],
+                inlinePayload: {
+                    cssProperties: [{ name: 'padding', value: '30px', important: true }],
+                    shorthandEntries: [],
+                },
+            });
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'color', 'green')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'color', 'red')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'margin', '20px')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'margin', '10px')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'background-color', 'lightgreen')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'background-color', 'pink')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'padding', '10px')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'padding', '20px')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'padding', '30px')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        });
+        it('unwraps pseudo-element nodes when resolving shadow and ::slotted() cascade context', async () => {
+            const docScope = 10;
+            const outerShadowScope = 30;
+            const innerShadowScope = 60;
+            const docNode = createStubNode(1, docScope);
+            const outerHost = createStubNode(2, 20, docNode);
+            const innerHost = createStubNode(5, 50, outerHost);
+            innerHost.getTreeRoot.returns(docNode);
+            const innerShadowRoot = createStubNode(6, innerShadowScope, innerHost);
+            innerHost.shadowRoots.returns([innerShadowRoot]);
+            innerHost.hasAssignedSlot.returns(true);
+            const beforeNode = createStubNode(7, 70, innerHost);
+            beforeNode.pseudoType.returns("before" /* Protocol.DOM.PseudoType.Before */);
+            const hostBeforeRule = ruleMatch(':host::before', [
+                { name: 'color', value: 'red' },
+                { name: 'background-color', value: 'lightgreen', important: true },
+            ], { originTreeScopeNodeId: innerShadowScope });
+            const slottedBeforeRule = ruleMatch('::slotted(#inner)::before', [
+                { name: 'color', value: 'green' },
+                { name: 'background-color', value: 'pink', important: true },
+                { name: 'padding', value: '10px', important: true },
+            ], { originTreeScopeNodeId: outerShadowScope });
+            const docBeforeRule = ruleMatch('#inner::before', [{ name: 'padding', value: '20px', important: true }], { originTreeScopeNodeId: docScope });
+            const matchedStyles = await getMatchedStyles({
+                connection,
+                node: beforeNode,
+                matchedPayload: [hostBeforeRule, slottedBeforeRule, docBeforeRule],
+            });
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'color', 'green')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'color', 'red')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'background-color', 'lightgreen')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'background-color', 'pink')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'padding', '10px')), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
+            assert.strictEqual(matchedStyles.propertyState(findProperty(matchedStyles, 'padding', '20px')), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        });
+    });
 });
 //# sourceMappingURL=CSSMatchedStyles.test.js.map

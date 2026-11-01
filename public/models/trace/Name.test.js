@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { before, beforeEach, describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { allThreadEntriesInTrace, getMainThread } from '../../testing/TraceHelpersCore.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -107,7 +107,7 @@ describe('Name', () => {
     });
     describe('profile calls', () => {
         let parsedTrace;
-        before(async function () {
+        beforeEach(async function () {
             parsedTrace = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
         });
         it('uses the profile name for a ProfileCall if it has been set', () => {

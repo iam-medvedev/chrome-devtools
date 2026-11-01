@@ -747,7 +747,6 @@ __export(UIUtils_exports, {
   PromotionManager: () => PromotionManager,
   StyleValueDelimiters: () => StyleValueDelimiters,
   addPlatformClass: () => addPlatformClass,
-  animateFunction: () => animateFunction,
   animateOn: () => animateOn,
   anotherProfilerActiveLabel: () => anotherProfilerActiveLabel,
   asyncFragmentLabel: () => asyncFragmentLabel,
@@ -936,7 +935,7 @@ var KeyboardShortcut = class _KeyboardShortcut {
       keyCode = keyCode.charCodeAt(0) - (/^[a-z]/.test(keyCode) ? 32 : 0);
     }
     modifiers = modifiers || Modifiers.None.value;
-    return _KeyboardShortcut.makeKeyFromCodeAndModifiers(keyCode, modifiers);
+    return _KeyboardShortcut.#makeKeyFromCodeAndModifiers(keyCode, modifiers);
   }
   static makeKeyFromEvent(keyboardEvent) {
     let modifiers = Modifiers.None.value;
@@ -953,7 +952,7 @@ var KeyboardShortcut = class _KeyboardShortcut {
       modifiers |= Modifiers.Meta.value;
     }
     const keyCode = keyboardEvent.keyCode || keyboardEvent["__keyCode"];
-    return _KeyboardShortcut.makeKeyFromCodeAndModifiers(keyCode, modifiers);
+    return _KeyboardShortcut.#makeKeyFromCodeAndModifiers(keyCode, modifiers);
   }
   // This checks if a "control equivalent" key is pressed. For non-mac platforms this means checking
   // if control is pressed but not meta. On mac, we instead check if meta is pressed but not control.
@@ -996,11 +995,11 @@ var KeyboardShortcut = class _KeyboardShortcut {
   }
   static shortcutToString(key, modifiers) {
     if (typeof key !== "string" && _KeyboardShortcut.isModifier(key.code)) {
-      return _KeyboardShortcut.modifiersToString(modifiers);
+      return _KeyboardShortcut.#modifiersToString(modifiers);
     }
-    return _KeyboardShortcut.modifiersToString(modifiers) + _KeyboardShortcut.keyName(key);
+    return _KeyboardShortcut.#modifiersToString(modifiers) + _KeyboardShortcut.#keyName(key);
   }
-  static keyName(key) {
+  static #keyName(key) {
     if (typeof key === "string") {
       return key.toUpperCase();
     }
@@ -1009,7 +1008,7 @@ var KeyboardShortcut = class _KeyboardShortcut {
     }
     return key.name[Host.Platform.platform()] || key.name.other || "";
   }
-  static makeKeyFromCodeAndModifiers(keyCode, modifiers) {
+  static #makeKeyFromCodeAndModifiers(keyCode, modifiers) {
     return keyCode & 255 | (modifiers || 0) << 8;
   }
   static keyCodeAndModifiersFromKey(key) {
@@ -1019,7 +1018,7 @@ var KeyboardShortcut = class _KeyboardShortcut {
     const { keyCode } = _KeyboardShortcut.keyCodeAndModifiersFromKey(key);
     return keyCode === Keys.Shift.code || keyCode === Keys.Ctrl.code || keyCode === Keys.Alt.code || keyCode === Keys.Meta.code;
   }
-  static modifiersToString(modifiers) {
+  static #modifiersToString(modifiers) {
     const isMac = Host.Platform.isMac();
     const m = Modifiers;
     const modifierNames = /* @__PURE__ */ new Map([
@@ -2828,6 +2827,9 @@ function setUpLifecycleTracking(element) {
     element.appendChild(tracker);
   }
   tracker.onDisconnect = () => {
+    if (element.parentElement instanceof WidgetElement && element.parentElement.controlsChildWidget(element)) {
+      return;
+    }
     const widget2 = Widget.get(element);
     if (widget2) {
       widget2.setHideOnDetach();
@@ -2846,7 +2848,7 @@ function setUpLifecycleTracking(element) {
     const parent = element.parentNode instanceof DocumentFragment ? element.parentNode : element.parentElementOrShadowHost();
     if (!parent) {
       widget2.markAsRoot();
-    } else {
+    } else if (!(parent instanceof WidgetElement && parent.controlsChildWidget(element))) {
       widget2.show(
         parent,
         void 0,
@@ -2862,6 +2864,9 @@ var WidgetElement = class extends HTMLElement {
   #disconnectTimeout;
   getWidget() {
     return Widget.get(this);
+  }
+  controlsChildWidget(_child) {
+    return false;
   }
   connectedCallback() {
     if (this.#disconnectTimeout) {
@@ -2882,28 +2887,38 @@ var WidgetElement = class extends HTMLElement {
     }
   }
   appendChild(child) {
-    const widget2 = child instanceof HTMLElement ? Widget.get(child) : null;
-    if (widget2) {
-      widget2.show(
-        this,
-        void 0,
-        /* suppressOrphanWidgetError= */
-        true
-      );
-      return child;
+    if (child instanceof HTMLElement) {
+      const widget2 = Widget.get(child);
+      if (widget2) {
+        if (this.controlsChildWidget(child)) {
+          return originalAppendChild.call(this, child);
+        }
+        widget2.show(
+          this,
+          void 0,
+          /* suppressOrphanWidgetError= */
+          true
+        );
+        return child;
+      }
     }
     return super.appendChild(child);
   }
   insertBefore(child, referenceChild) {
-    const widget2 = child instanceof HTMLElement ? Widget.get(child) : null;
-    if (widget2) {
-      widget2.show(
-        this,
-        referenceChild,
-        /* suppressOrphanWidgetError= */
-        true
-      );
-      return child;
+    if (child instanceof HTMLElement) {
+      const widget2 = Widget.get(child);
+      if (widget2) {
+        if (this.controlsChildWidget(child)) {
+          return originalInsertBefore.call(this, child, referenceChild);
+        }
+        widget2.show(
+          this,
+          referenceChild,
+          /* suppressOrphanWidgetError= */
+          true
+        );
+        return child;
+      }
     }
     return super.insertBefore(child, referenceChild);
   }
@@ -3056,14 +3071,14 @@ var Widget = class _Widget {
     }
     this.#shadowRoot = this.element.shadowRoot;
     if (options?.useShadowDom && !this.#shadowRoot) {
-      this.element.classList.add("vbox");
-      this.element.classList.add("flex-auto");
       this.#shadowRoot = createShadowRootWithCoreStyles(this.element, {
         delegatesFocus: options?.delegatesFocus
       });
       if (options.useShadowDom === "pure") {
         this.#contentElement = this.#shadowRoot;
       } else {
+        this.element.classList.add("vbox");
+        this.element.classList.add("flex-auto");
         const div = document.createElement("div");
         this.#shadowRoot.appendChild(div);
         this.#contentElement = div;
@@ -3354,6 +3369,10 @@ var Widget = class _Widget {
   }
   detach(overrideHideOnDetach) {
     if (!this.#parentWidget && !this.#isRoot) {
+      if (overrideHideOnDetach && this.element.parentElement) {
+        decrementWidgetCounter(this.element.parentElement, this.element);
+        originalRemoveChild.call(this.element.parentElement, this.element);
+      }
       return;
     }
     cancelUpdate(this);
@@ -3677,7 +3696,6 @@ var HBox = class extends Widget {
     if (this.contentElement instanceof HTMLElement) {
       this.contentElement.classList.add("hbox");
     } else {
-      this.element.classList.remove("vbox");
       this.element.classList.add("hbox");
     }
   }
@@ -4903,6 +4921,12 @@ var tabbedPane_css_default = `/*
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-content {
   padding-top: var(--sys-size-10);
   overflow-x: hidden;
+
+  slot::slotted(.widget) {
+    /* '!important' in order to overwrite the slotted widget's 'overflow-auto' class.
+    This prevents the focus-ring of selectable elements from being cut off. */
+    overflow: visible !important; /* stylelint-disable-line declaration-no-important */
+  }
 }
 
 .tabbed-pane-shadow.vertical-tab-layout .tabbed-pane-header-contents {
@@ -5279,7 +5303,19 @@ var TabbedPane = class extends TabbedPaneBase {
   setCloseableTabs(closeableTabs) {
     this.closeableTabs = closeableTabs;
   }
+  #focusHeader = false;
+  get focusHeader() {
+    return this.#focusHeader;
+  }
+  set focusHeader(focusHeader) {
+    this.#focusHeader = focusHeader;
+  }
   focus() {
+    if (this.#focusHeader) {
+      this.performUpdate();
+      this.focusSelectedTabHeader();
+      return;
+    }
     if (this.visibleView) {
       this.visibleView.focus();
     } else {
@@ -5322,7 +5358,7 @@ var TabbedPane = class extends TabbedPaneBase {
       this.#tabs.push(tab);
     }
     this.tabsHistory.push(tab);
-    if (this.tabsHistory[0] === tab && this.isShowing()) {
+    if (this.tabsHistory[0] === tab && this.isShowing() && this.autoSelectFirstItemOnShow) {
       this.selectTab(tab.id, userGesture);
     }
     this.requestUpdate();
@@ -6571,9 +6607,53 @@ var TabbedPaneTab = class {
 var tabIcons = /* @__PURE__ */ new WeakMap();
 var tabSuffixElements = /* @__PURE__ */ new WeakMap();
 var TabbedPaneElement = class extends WidgetElement {
+  static observedAttributes = ["vertical", "focus-header", "selected-tab"];
   #closeableTabs = false;
   #allowTabReorder = false;
   #automaticReorder = false;
+  #vertical = false;
+  #focusHeader = false;
+  #selectedTab;
+  get vertical() {
+    return this.#vertical;
+  }
+  set vertical(vertical) {
+    if (this.#vertical === vertical) {
+      return;
+    }
+    this.#vertical = vertical;
+    if (vertical) {
+      this.getWidget()?.makeVerticalTabLayout();
+    }
+  }
+  get focusHeader() {
+    return this.#focusHeader;
+  }
+  set focusHeader(focusHeader) {
+    this.#focusHeader = focusHeader;
+    const widget2 = this.getWidget();
+    if (widget2) {
+      widget2.focusHeader = focusHeader;
+    }
+  }
+  get selectedTab() {
+    return this.getWidget()?.selectedTabId ?? this.#selectedTab ?? null;
+  }
+  set selectedTab(tabId) {
+    this.#selectedTab = tabId ?? void 0;
+    const widget2 = this.getWidget();
+    if (widget2 && tabId) {
+      this.#updateTabs(widget2);
+      widget2.selectTab(tabId);
+    }
+  }
+  controlsChildWidget(child) {
+    return child.id !== "" && !child.hasAttribute("slot") && !child.classList.contains("tabbed-pane-header") && !child.classList.contains("tabbed-pane-content");
+  }
+  focus() {
+    this.#updateTabs();
+    super.focus();
+  }
   set closeableTabs(closeable) {
     this.#closeableTabs = closeable;
     this.getWidget()?.setCloseableTabs(closeable);
@@ -6602,6 +6682,8 @@ var TabbedPaneElement = class extends WidgetElement {
   #placeholderElement;
   #headerJslog;
   #managedTabIds = /* @__PURE__ */ new Set();
+  #tabBadges = /* @__PURE__ */ new Map();
+  #updatingTabs = false;
   set placeholder(element) {
     this.#placeholderElement = element;
     this.getWidget()?.setPlaceholderElement(element);
@@ -6617,6 +6699,10 @@ var TabbedPaneElement = class extends WidgetElement {
       this,
       widgetConfig((element) => {
         const widget2 = new TabbedPane(element);
+        if (this.#vertical) {
+          widget2.makeVerticalTabLayout();
+        }
+        widget2.focusHeader = this.#focusHeader;
         widget2.setCloseableTabs(this.#closeableTabs);
         widget2.setAllowTabReorder(this.#allowTabReorder, this.#automaticReorder);
         if (this.#delegate) {
@@ -6629,19 +6715,33 @@ var TabbedPaneElement = class extends WidgetElement {
         if (slot) {
           slot.addEventListener("slotchange", () => this.#syncTabs());
         }
+        widget2.addEventListener("TabInvoked" /* TabInvoked */, (event) => {
+          this.dispatchEvent(new CustomEvent("tabinvoked", {
+            detail: {
+              tabId: event.data.tabId,
+              prevTabId: event.data.prevTabId,
+              isUserGesture: event.data.isUserGesture
+            }
+          }));
+        });
         widget2.addEventListener("TabSelected" /* TabSelected */, (event) => {
+          if (!this.#updatingTabs && this.#selectedTab !== void 0 && widget2.selectedTabId !== null) {
+            this.#selectedTab = widget2.selectedTabId;
+          }
           const nodes = this.#getTabNodes(widget2);
           for (const child of nodes) {
-            if (child.id === widget2.selectedTabId) {
-              child.setAttribute("selected", "");
-            } else {
-              child.removeAttribute("selected");
+            const isSelected = child.id === widget2.selectedTabId;
+            if (isSelected !== child.hasAttribute("selected")) {
+              child.toggleAttribute("selected", isSelected);
             }
           }
-          this.dispatchEvent(new CustomEvent(
-            "select",
-            { detail: { tabId: widget2.selectedTabId, isUserGesture: event.data?.isUserGesture } }
-          ));
+          this.dispatchEvent(new CustomEvent("select", {
+            detail: {
+              tabId: widget2.selectedTabId,
+              prevTabId: event.data?.prevTabId,
+              isUserGesture: event.data?.isUserGesture
+            }
+          }));
         });
         widget2.addEventListener("TabClosed" /* TabClosed */, (event) => {
           this.dispatchEvent(
@@ -6660,6 +6760,19 @@ var TabbedPaneElement = class extends WidgetElement {
         return widget2;
       })
     );
+  }
+  attributeChangedCallback(name, _oldValue, newValue) {
+    if (name === "vertical") {
+      this.vertical = newValue !== null;
+    } else if (name === "focus-header") {
+      this.focusHeader = newValue !== null;
+    } else if (name === "selected-tab") {
+      this.selectedTab = newValue;
+    }
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.#syncTabs();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -6682,6 +6795,7 @@ var TabbedPaneElement = class extends WidgetElement {
           "label",
           "title",
           "tab-tooltip",
+          "badge",
           "jslogcontext",
           "selected",
           "disabled",
@@ -6695,82 +6809,100 @@ var TabbedPaneElement = class extends WidgetElement {
     return Array.from(widget2.element.children).filter((c) => c.id !== "" && !c.hasAttribute("slot") && !c.classList.contains("tabbed-pane-header") && !c.classList.contains("tabbed-pane-content"));
   }
   #updateTabs(widget2 = this.getWidget()) {
-    if (!widget2) {
+    if (!widget2 || this.#updatingTabs) {
       return;
     }
-    const tabs = [];
-    const nodes = this.#getTabNodes(widget2);
-    for (const child of nodes) {
-      const id2 = child.id;
-      const title = child.getAttribute("label") || child.getAttribute("title") || "";
-      const tabTooltip = child.getAttribute("tab-tooltip") ?? void 0;
-      const jslogContext = child.getAttribute("jslogcontext") || void 0;
-      const selected = child.hasAttribute("selected");
-      const enabled = !child.hasAttribute("disabled");
-      const isCloseable = child.hasAttribute("closeable") ? true : child.hasAttribute("uncloseable") ? false : void 0;
-      const view = Widget.getOrCreateWidget(child);
-      view.setHideOnDetach();
-      if (widget2.selectedTabId !== id2) {
-        child.classList.add("hidden");
-      }
-      tabs.push({
-        id: id2,
-        title,
-        view,
-        tabTooltip,
-        jslogContext,
-        selected,
-        enabled,
-        isCloseable
-      });
-    }
-    const newIds = new Set(tabs.map((tab) => tab.id));
-    for (const id2 of this.#managedTabIds) {
-      if (!newIds.has(id2)) {
-        widget2.closeTab(id2);
-      }
-    }
-    this.#managedTabIds = newIds;
-    let index = 0;
-    for (const tab of tabs) {
-      const existingTab = widget2.tabsById.get(tab.id);
-      if (existingTab) {
-        widget2.changeTabView(tab.id, tab.view);
-        widget2.changeTabTitle(tab.id, tab.title, tab.tabTooltip);
-        if (tab.jslogContext !== void 0) {
-          existingTab.jslogContext = tab.jslogContext;
+    this.#updatingTabs = true;
+    try {
+      const tabs = [];
+      const nodes = this.#getTabNodes(widget2);
+      for (const child of nodes) {
+        const id2 = child.id;
+        const title = child.getAttribute("label") || child.getAttribute("title") || "";
+        const tabTooltip = child.getAttribute("tab-tooltip") ?? void 0;
+        const badge2 = child.getAttribute("badge");
+        const jslogContext = child.getAttribute("jslogcontext") || void 0;
+        const selected = this.#selectedTab !== void 0 ? id2 === this.#selectedTab : child.hasAttribute("selected");
+        const enabled = !child.hasAttribute("disabled");
+        const isCloseable = child.hasAttribute("closeable") ? true : child.hasAttribute("uncloseable") ? false : void 0;
+        const view = Widget.getOrCreateWidget(child);
+        view.setHideOnDetach();
+        if (widget2.selectedTabId !== id2) {
+          child.classList.add("hidden");
         }
-        if (tab.isCloseable !== void 0) {
-          existingTab.closeable = tab.isCloseable;
-        }
-        if (tab.previewFeature !== void 0) {
-          existingTab.previewFeature = tab.previewFeature;
-        }
-        const currentIndex = widget2.tabIndex(tab.id);
-        if (currentIndex !== index) {
-          widget2.insertBefore(existingTab, index);
-        }
-      } else {
-        widget2.appendTab(
-          tab.id,
-          tab.title,
-          tab.view,
-          tab.tabTooltip,
-          /* userGesture=*/
-          false,
-          tab.isCloseable,
-          tab.previewFeature,
-          index,
-          tab.jslogContext
-        );
+        tabs.push({
+          id: id2,
+          title,
+          view,
+          tabTooltip,
+          badge: badge2,
+          jslogContext,
+          selected,
+          enabled,
+          isCloseable
+        });
       }
-      if (tab.enabled !== void 0) {
-        widget2.setTabEnabled(tab.id, tab.enabled);
+      const newIds = new Set(tabs.map((tab) => tab.id));
+      for (const id2 of this.#managedTabIds) {
+        if (!newIds.has(id2)) {
+          widget2.closeTab(id2);
+          this.#tabBadges.delete(id2);
+        }
       }
-      if (tab.selected) {
-        widget2.selectTab(tab.id);
+      this.#managedTabIds = newIds;
+      const autoSelect = widget2.autoSelectFirstItemOnShow;
+      if (tabs.some((tab) => tab.selected)) {
+        widget2.setAutoSelectFirstItemOnShow(false);
       }
-      ++index;
+      let index = 0;
+      for (const tab of tabs) {
+        const existingTab = widget2.tabsById.get(tab.id);
+        if (existingTab) {
+          widget2.changeTabView(tab.id, tab.view);
+          widget2.changeTabTitle(tab.id, tab.title, tab.tabTooltip);
+          if (tab.jslogContext !== void 0) {
+            existingTab.jslogContext = tab.jslogContext;
+          }
+          if (tab.isCloseable !== void 0) {
+            existingTab.closeable = tab.isCloseable;
+          }
+          if (tab.previewFeature !== void 0) {
+            existingTab.previewFeature = tab.previewFeature;
+          }
+          const currentIndex = widget2.tabIndex(tab.id);
+          if (currentIndex !== index) {
+            widget2.insertBefore(existingTab, index);
+          }
+        } else {
+          widget2.appendTab(
+            tab.id,
+            tab.title,
+            tab.view,
+            tab.tabTooltip,
+            /* userGesture=*/
+            false,
+            tab.isCloseable,
+            tab.previewFeature,
+            index,
+            tab.jslogContext
+          );
+        }
+        const badge2 = tab.badge ?? null;
+        if (this.#tabBadges.get(tab.id) !== badge2 && (badge2 !== null || this.#tabBadges.has(tab.id))) {
+          this.#tabBadges.set(tab.id, badge2);
+          widget2.setBadge(tab.id, badge2);
+        }
+        if (tab.enabled !== void 0) {
+          widget2.setTabEnabled(tab.id, tab.enabled);
+        }
+        if (tab.selected) {
+          widget2.selectTab(tab.id);
+        }
+        ++index;
+      }
+      widget2.setAutoSelectFirstItemOnShow(autoSelect);
+    } finally {
+      this.#updatingTabs = false;
     }
   }
 };
@@ -7674,16 +7806,32 @@ var ViewManager = class _ViewManager extends Common9.ObjectWrapper.ObjectWrapper
 };
 var widgetForView = /* @__PURE__ */ new WeakMap();
 var ContainerWidget = class extends VBox {
-  view;
+  #view;
   materializePromise;
-  constructor(view) {
-    super();
+  constructor(element, view) {
+    super(element instanceof HTMLElement ? element : void 0);
     this.element.classList.add("flex-auto", "view-container", "overflow-auto");
-    this.view = view;
     this.element.tabIndex = -1;
     markAsTabpanel(this.element);
-    setLabel(this.element, i18nString7(UIStrings7.sPanel, { PH1: view.title() }));
     this.setDefaultFocusedElement(this.element);
+    if (element && !(element instanceof HTMLElement)) {
+      this.view = element;
+    } else if (view) {
+      this.view = view;
+    }
+  }
+  get view() {
+    if (!this.#view) {
+      throw new Error("ContainerWidget is missing a view");
+    }
+    return this.#view;
+  }
+  set view(view) {
+    if (this.#view === view) {
+      return;
+    }
+    this.#view = view;
+    setLabel(this.element, i18nString7(UIStrings7.sPanel, { PH1: view.title() }));
   }
   materialize() {
     if (this.materializePromise) {
@@ -14945,7 +15093,7 @@ input[type='range']::-webkit-slider-thumb,
   width: var(--sys-size-6);
   height: var(--sys-size-6);
   margin-top: -5px;
-  border-radius: 50%;
+  border-radius: var(--sys-shape-corner-full);
   background-color: var(--sys-color-primary);
 }
 
@@ -15161,7 +15309,7 @@ dt-icon-label {
   content: var(--image-file-empty);
   width: var(--sys-size-4);
   height: var(--sys-size-4);
-  border-radius: 50%;
+  border-radius: var(--sys-shape-corner-full);
   outline: var(--sys-size-1) solid var(--icon-gap-default);
   left: 9px;
   position: absolute;
@@ -15558,7 +15706,7 @@ devtools-toolbar {
     height: 4.5px;
     border: var(--sys-size-2) solid
       var(--override-toolbar-background-color, --sys-color-cdt-base-container);
-    border-radius: 50%;
+    border-radius: var(--sys-shape-corner-full);
     right: 0;
   }
 
@@ -16012,7 +16160,7 @@ div {
    * We need an "inverted" color here - because the text is on a darker background the regular foreground text colors don't work. It's been logged to the dark mode tracking spreadsheet
    */
   color: var(--sys-color-inverse-on-surface);
-  border-radius: 7px;
+  border-radius: var(--sys-shape-corner-full);
 }
 
 div.verbose {
@@ -16680,20 +16828,6 @@ function endBatchUpdate() {
     postUpdateHandlers = null;
   }
 }
-function animateFunction(window2, func, params, duration, animationComplete) {
-  const start = window2.performance.now();
-  let raf = window2.requestAnimationFrame(animationStep);
-  function animationStep(timestamp) {
-    const progress = Platform15.NumberUtilities.clamp((timestamp - start) / duration, 0, 1);
-    func(...params.map((p) => p.from + (p.to - p.from) * progress));
-    if (progress < 1) {
-      raf = window2.requestAnimationFrame(animationStep);
-    } else if (animationComplete) {
-      animationComplete();
-    }
-  }
-  return () => window2.cancelAnimationFrame(raf);
-}
 var LongClickController = class _LongClickController {
   element;
   callback;
@@ -16904,7 +17038,7 @@ function setTitle(element, title) {
   Tooltip.install(element, title);
 }
 var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
-  static observedAttributes = ["checked", "disabled", "indeterminate", "name", "title", "aria-label", "small"];
+  static observedAttributes = ["checked", "disabled", "indeterminate", "name", "title", "aria-label", "small", "jslogcontext"];
   #shadowRoot;
   #checkboxElement;
   #textElement;
@@ -16926,10 +17060,7 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
     const element = document.createElement("devtools-checkbox");
     element.#checkboxElement.checked = Boolean(checked);
     if (jslogContext) {
-      element.#checkboxElement.setAttribute(
-        "jslog",
-        `${VisualLogging16.toggle().track({ change: true }).context(jslogContext)}`
-      );
+      element.jslogContext = jslogContext;
     }
     if (title !== void 0) {
       element.#textElement.textContent = title;
@@ -16945,7 +17076,7 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
     element.#checkboxElement.classList.toggle("small", small);
     return element;
   }
-  attributeChangedCallback(name, _oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, newValue) {
     if (name === "checked") {
       this.#checkboxElement.checked = newValue !== null;
     } else if (name === "disabled") {
@@ -16961,6 +17092,24 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
       this.#checkboxElement.ariaLabel = newValue;
     } else if (name === "small") {
       this.#checkboxElement.classList.toggle("small", newValue !== null);
+    } else if (name === "jslogcontext" && oldValue !== newValue) {
+      const oldCheckbox = this.#checkboxElement;
+      const hadFocus = this.shadowRoot?.activeElement === oldCheckbox;
+      const newCheckbox = oldCheckbox.cloneNode(false);
+      newCheckbox.checked = oldCheckbox.checked;
+      newCheckbox.disabled = oldCheckbox.disabled;
+      newCheckbox.indeterminate = oldCheckbox.indeterminate;
+      if (newValue) {
+        newCheckbox.setAttribute("jslog", `${VisualLogging16.toggle().track({ change: true }).context(newValue)}`);
+      } else {
+        newCheckbox.removeAttribute("jslog");
+      }
+      newCheckbox.addEventListener("change", () => this.dispatchEvent(new Event("change")));
+      oldCheckbox.replaceWith(newCheckbox);
+      this.#checkboxElement = newCheckbox;
+      if (hadFocus) {
+        newCheckbox.focus();
+      }
     }
   }
   getLabelText() {
@@ -16979,7 +17128,7 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
     return this.#checkboxElement.checked;
   }
   set checked(checked) {
-    this.toggleAttribute("checked", checked);
+    this.toggleAttribute("checked", Boolean(checked));
   }
   get small() {
     return this.hasAttribute("small");
@@ -17010,6 +17159,16 @@ var CheckboxLabel = class _CheckboxLabel extends HTMLElement {
   }
   get name() {
     return this.#checkboxElement.name;
+  }
+  set jslogContext(jslogContext) {
+    if (jslogContext) {
+      this.setAttribute("jslogcontext", jslogContext);
+    } else {
+      this.removeAttribute("jslogcontext");
+    }
+  }
+  get jslogContext() {
+    return this.getAttribute("jslogcontext");
   }
   click() {
     this.#checkboxElement.click();
@@ -17763,9 +17922,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     }
     template.values = template.values.map(patchValue);
     function isLitTemplate(value) {
-      return Boolean(
-        typeof value === "object" && value && "_$litType$" in value && "strings" in value && "values" in value && value["_$litType$"] === 1
-      );
+      return Boolean(typeof value === "object" && value && "_$litType$" in value && "strings" in value && "values" in value && value["_$litType$"] === 1);
     }
     function isCallable(value) {
       return typeof value === "function" && Object.getOwnPropertyDescriptor(value, "prototype")?.writable !== false;
@@ -18122,7 +18279,10 @@ var GlassPane = class _GlassPane {
     if (!this.isShowing()) {
       return;
     }
-    this.#widget.detach();
+    this.#widget.detach(
+      /* overrideHideOnDetach= */
+      true
+    );
     if (this.#onHideCallback) {
       this.#onHideCallback();
     }
@@ -19110,7 +19270,8 @@ var emptyWidget_css_default = `/*
   flex: auto;
 }
 
-.empty-view-scroller {
+.empty-view-scroller,
+:host(.empty-view-scroller) {
   overflow: auto;
 }
 
@@ -19136,7 +19297,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
         ${input.link ? html6`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString15(UIStrings15.learnMore)}</devtools-link>` : ""}
       </div>
       <slot></slot>
-    </div>`, target, { container: { classes: ["empty-view-scroller"] } });
+    </div>`, target, { container: { classes: ["empty-widget-container", "empty-view-scroller"] } });
 };
 var EmptyWidget = class extends VBox {
   #header;
@@ -19148,7 +19309,7 @@ var EmptyWidget = class extends VBox {
     if (!element && headerOrElement instanceof HTMLElement) {
       element = headerOrElement;
     }
-    super(element, { useShadowDom: true, classes: ["empty-widget-container"] });
+    super(element, { useShadowDom: "pure" });
     this.#header = header;
     this.#text = text;
     this.#link = void 0;
@@ -19861,11 +20022,11 @@ var ForwardedInputEventHandler = class {
   constructor() {
     Host11.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
       Host11.InspectorFrontendHostAPI.Events.KeyEventUnhandled,
-      this.onKeyEventUnhandled,
+      this.#onKeyEventUnhandled,
       this
     );
   }
-  async onKeyEventUnhandled(event) {
+  async #onKeyEventUnhandled(event) {
     const { type, key, keyCode, modifiers } = event.data;
     if (type !== "keydown") {
       return;
@@ -21254,7 +21415,7 @@ var RemoteDebuggingTerminatedScreen = class _RemoteDebuggingTerminatedScreen ext
         window.location.reload();
       }
     };
-    view(input, {}, this.contentElement);
+    view(input, void 0, this.contentElement);
   }
   static show(reason) {
     const dialog3 = new Dialog("remote-debnugging-terminated");
@@ -22983,7 +23144,7 @@ var SimpleView = class extends VBox {
   #viewId;
   constructor(elementOrOptions, options) {
     super(elementOrOptions, options);
-    const optionsObj = elementOrOptions instanceof HTMLElement ? options : elementOrOptions;
+    const optionsObj = elementOrOptions instanceof HTMLElement || elementOrOptions === void 0 ? options : elementOrOptions;
     this.#title = optionsObj.title;
     this.#viewId = optionsObj.viewId;
     if (!Platform23.StringUtilities.isExtendedKebabCase(this.#viewId)) {
@@ -23166,7 +23327,7 @@ var TargetCrashedScreen = class extends VBox {
   hideCallback;
   constructor(hideCallback, view = DEFAULT_VIEW5) {
     super({ useShadowDom: true });
-    view({}, {}, this.contentElement);
+    view({}, void 0, this.contentElement);
     this.hideCallback = hideCallback;
   }
   willHide() {

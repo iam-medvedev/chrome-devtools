@@ -105,15 +105,11 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         ]);
         const shadowRoot = tab.element.shadowRoot;
         assert.exists(shadowRoot);
-        const listWidgetElement = shadowRoot.querySelector('.ignore-list');
-        assert.exists(listWidgetElement);
-        const listWidgetShadowRoot = listWidgetElement.shadowRoot;
-        assert.exists(listWidgetShadowRoot);
-        const items = listWidgetShadowRoot.querySelectorAll('.ignore-list-item devtools-checkbox');
+        const items = shadowRoot.querySelectorAll('.ignore-list-item devtools-checkbox');
         assert.lengthOf(items, 2);
-        assert.strictEqual(items[0].getLabelText(), 'pattern1');
+        assert.strictEqual(items[0].textContent?.trim(), 'pattern1');
         assert.isTrue(items[0].checked); // !disabled => checked = true
-        assert.strictEqual(items[1].getLabelText(), 'pattern2');
+        assert.strictEqual(items[1].textContent?.trim(), 'pattern2');
         assert.isFalse(items[1].checked); // disabled => checked = false
         // Toggle first pattern (checked true -> false)
         const firstCheckboxInput = items[0].shadowRoot?.querySelector('input');
@@ -126,19 +122,20 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         assert.strictEqual(updatedPatterns[1].pattern, 'pattern2');
         assert.isTrue(updatedPatterns[1].disabled);
     });
-    it('removes custom regex rules', () => {
+    it('removes custom regex rules', async () => {
         const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
         regexSetting.setAsArray([
             { pattern: 'pattern1', disabled: false },
             { pattern: 'pattern2', disabled: true },
         ]);
+        await tab.updateComplete;
         const shadowRoot = tab.element.shadowRoot;
         assert.exists(shadowRoot);
         const listWidgetElement = shadowRoot.querySelector('.ignore-list');
         assert.exists(listWidgetElement);
         const listWidgetShadowRoot = listWidgetElement.shadowRoot;
         assert.exists(listWidgetShadowRoot);
-        const listItems = listWidgetShadowRoot.querySelectorAll('.list-item');
+        const listItems = listWidgetShadowRoot.querySelectorAll('li');
         assert.lengthOf(listItems, 2);
         const firstItem = listItems[0];
         const removeButton = firstItem.querySelectorAll('devtools-button')[1];
@@ -156,11 +153,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         const addPatternButton = shadowRoot.querySelector('.add-button');
         assert.exists(addPatternButton);
         addPatternButton.click();
-        const listWidgetElement = shadowRoot.querySelector('.ignore-list');
-        assert.exists(listWidgetElement);
-        const listWidgetShadowRoot = listWidgetElement.shadowRoot;
-        assert.exists(listWidgetShadowRoot);
-        const editorContainer = listWidgetShadowRoot.querySelector('.editor-container');
+        const editorContainer = shadowRoot.querySelector('.editor-container');
         assert.exists(editorContainer);
         const input = editorContainer.querySelector('input[type="text"]');
         assert.exists(input);
@@ -183,11 +176,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         const addPatternButton = shadowRoot.querySelector('.add-button');
         assert.exists(addPatternButton);
         addPatternButton.click();
-        const listWidgetElement = shadowRoot.querySelector('.ignore-list');
-        assert.exists(listWidgetElement);
-        const listWidgetShadowRoot = listWidgetElement.shadowRoot;
-        assert.exists(listWidgetShadowRoot);
-        const editorContainer = listWidgetShadowRoot.querySelector('.editor-container');
+        const editorContainer = shadowRoot.querySelector('.editor-container');
         assert.exists(editorContainer);
         const input = editorContainer.querySelector('input[type="text"]');
         assert.exists(input);
@@ -199,17 +188,17 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         input.value = '   ';
         input.dispatchEvent(new Event('input'));
         commitButton.dispatchEvent(new Event('click'));
-        assert.strictEqual(errorContainer.textContent, 'Rule can’t be empty');
+        assert.strictEqual(errorContainer.textContent?.trim(), 'Rule can’t be empty');
         // Test 2: Duplicate pattern
         input.value = 'duplicate-pattern';
         input.dispatchEvent(new Event('input'));
         commitButton.dispatchEvent(new Event('click'));
-        assert.strictEqual(errorContainer.textContent, 'Rule already exists');
+        assert.strictEqual(errorContainer.textContent?.trim(), 'Rule already exists');
         // Test 3: Invalid regex pattern
         input.value = '[';
         input.dispatchEvent(new Event('input'));
         commitButton.dispatchEvent(new Event('click'));
-        assert.strictEqual(errorContainer.textContent, 'Rule must be a valid regular expression');
+        assert.strictEqual(errorContainer.textContent?.trim(), 'Rule must be a valid regular expression');
     });
     it('renders ignore list tab screenshot', async () => {
         const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
@@ -236,11 +225,7 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         const addPatternButton = shadowRoot.querySelector('.add-button');
         assert.exists(addPatternButton);
         addPatternButton.click();
-        const listWidgetElement = shadowRoot.querySelector('.ignore-list');
-        assert.exists(listWidgetElement);
-        const listWidgetShadowRoot = listWidgetElement.shadowRoot;
-        assert.exists(listWidgetShadowRoot);
-        const editorContainer = listWidgetShadowRoot.querySelector('.editor-container');
+        const editorContainer = shadowRoot.querySelector('.editor-container');
         assert.exists(editorContainer);
         const input = editorContainer.querySelector('input[type="text"]');
         assert.exists(input);

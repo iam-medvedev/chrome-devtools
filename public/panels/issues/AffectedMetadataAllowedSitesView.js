@@ -64,7 +64,7 @@ export class AffectedMetadataAllowedSitesView extends AffectedResourcesView {
     }
     update() {
         const issueDetails = Array.from(this.issue.getCookieDeprecationMetadataIssues(), issue => issue.details());
-        this.#view({ issueDetails }, {}, this.affectedResources);
+        this.#view({ issueDetails }, undefined, this.affectedResources);
         this.updateAffectedResourceCount(issueDetails.length);
     }
 }

@@ -8,7 +8,7 @@ interface ViewInput {
     onSelect: (uiSourceCode: Workspace.UISourceCode.UISourceCode | null) => void;
     sourceCodes: Set<Workspace.UISourceCode.UISourceCode>;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 declare const ChangesSidebarBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof UI.Widget.Widget>;
 export declare class ChangesSidebar extends ChangesSidebarBase {
@@ -17,7 +17,6 @@ export declare class ChangesSidebar extends ChangesSidebarBase {
     set workspaceDiff(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
     selectedUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
     performUpdate(): void;
-    private uiSourceCodeModifiedStatusChanged;
 }
 export declare const enum Events {
     SELECTED_UI_SOURCE_CODE_CHANGED = "SelectedUISourceCodeChanged"

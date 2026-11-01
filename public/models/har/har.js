@@ -163,19 +163,19 @@ var HAREntry = class extends HARBase {
     this.comment = HARBase.optionalString(data["comment"]);
     this.custom.set("connectionId", HARBase.optionalString(data["_connectionId"]));
     this.custom.set("fromCache", HARBase.optionalString(data["_fromCache"]));
-    this.custom.set("initiator", this.importInitiator(data["_initiator"]));
+    this.custom.set("initiator", this.#importInitiator(data["_initiator"]));
     this.custom.set("priority", HARBase.optionalString(data["_priority"]));
     this.custom.set("resourceType", HARBase.optionalString(data["_resourceType"]));
     this.custom.set("eventSourceMessages", this.#importEventSourceMessages(data["_eventSourceMessages"]));
-    this.custom.set("webSocketMessages", this.importWebSocketMessages(data["_webSocketMessages"]));
+    this.custom.set("webSocketMessages", this.#importWebSocketMessages(data["_webSocketMessages"]));
   }
-  importInitiator(initiator) {
+  #importInitiator(initiator) {
     if (typeof initiator !== "object") {
       return;
     }
     return new HARInitiator(initiator);
   }
-  importWebSocketMessages(inputMessages) {
+  #importWebSocketMessages(inputMessages) {
     if (!Array.isArray(inputMessages)) {
       return;
     }
@@ -2070,6 +2070,7 @@ var Network;
     DeviceBoundSessionFetchResult2["PreProvisionedKeyNotFound"] = "PreProvisionedKeyNotFound";
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
+    DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2752,6 +2753,7 @@ var Preload;
     PrerenderFinalStatus2["PrerenderHostReused"] = "PrerenderHostReused";
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
+    PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {

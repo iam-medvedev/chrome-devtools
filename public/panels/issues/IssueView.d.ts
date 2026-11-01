@@ -11,7 +11,6 @@ export declare class IssueView extends UI.TreeOutline.TreeElement {
      * title and issue description will not be updated.
      */
     setIssue(issue: IssuesManager.IssueAggregator.AggregatedIssue): void;
-    private static getBodyCSSClass;
     getIssueTitle(): string;
     onattach(): void;
     createContent(): void;
