@@ -214,9 +214,9 @@ input {
 
     &:not(:disabled):focus-visible::before {
       content: '';
-      height: 15px;
-      width: 15px;
-      border-radius: 5px;
+      height: var(--sys-size-7);
+      width: var(--sys-size-7);
+      border-radius: var(--sys-shape-corner-extra-small);
       position: absolute;
       border: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
     }
@@ -244,7 +244,7 @@ input::placeholder {
 .harmony-input:not([type]),
 .harmony-input[type='number'],
 .harmony-input[type='text'] {
-  padding: 3px var(--sys-size-4);
+  padding: var(--sys-size-2) var(--sys-size-4);
   height: var(--sys-size-11);
   border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   border-radius: var(--sys-shape-corner-extra-small);
@@ -265,12 +265,12 @@ input::placeholder {
 
 /* Radio inputs */
 input[type='radio'] {
-  height: 17px;
-  width: 17px;
-  min-width: 17px;
+  height: var(--sys-size-8);
+  width: var(--sys-size-8);
+  min-width: var(--sys-size-8);
   border-radius: var(--sys-shape-corner-small);
   vertical-align: sub;
-  margin: 0 5px 5px 0;
+  margin: 0 var(--sys-size-4) var(--sys-size-4) 0;
   accent-color: var(--sys-color-primary-bright);
   color: var(--sys-color-on-primary);
 
@@ -310,7 +310,8 @@ input[type='range']::-webkit-slider-thumb,
   border: 0;
   width: var(--sys-size-6);
   height: var(--sys-size-6);
-  margin-top: -5px;
+  /* Center 12px (--sys-size-6) thumb over 2px (--sys-size-2) track: (2px - 12px) / 2 = -5px. */
+  margin-top: calc((var(--sys-size-2) - var(--sys-size-6)) / 2);
   border-radius: var(--sys-shape-corner-full);
   background-color: var(--sys-color-primary);
 }
@@ -552,7 +553,7 @@ dt-icon-label {
   background-color: var(--sys-color-tonal-container);
   color: var(--sys-color-on-tonal-container);
   font-weight: var(--ref-typeface-weight-bold);
-  font-size: 9px;
+  font-size: var(--sys-typescale-label-size);
   text-align: center;
 }
 
@@ -565,13 +566,13 @@ dt-icon-label {
   background-color: var(--sys-color-cdt-base-container);
   color: var(--sys-color-on-surface);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 .undisplayable-text,
 .expandable-inline-button {
   border: none;
-  padding: var(--sys-size-1) 3px;
+  padding: var(--sys-size-1) var(--sys-size-3);
   margin: 0 var(--sys-size-2);
   font-size: var(--sys-typescale-body5-size);
   font-family: inherit;
@@ -618,7 +619,9 @@ button.link:focus-visible {
 .data-grid-data-grid-node button.link:focus-visible {
   border-radius: var(--sys-shape-corner-extra-small);
   padding: 0;
-  margin-top: 3px;
+  /* 4px focus ring clearance (--sys-size-3: 2px outline + 2px outline-offset)
+     minus 1px data-grid cell top padding (--sys-size-1) = 3px. */
+  margin-top: calc(var(--sys-size-3) - var(--sys-size-1));
 }
 
 @media (forced-colors: active) {
@@ -638,23 +641,6 @@ button.link:focus-visible {
   .harmony-input[type='text']:focus {
     border: var(--sys-size-1) solid Highlight;
   }
-}
-/* search input with customized styling */
-input.custom-search-input::-webkit-search-cancel-button {
-  appearance: none;
-  width: var(--sys-size-8);
-  height: 15px;
-  margin-right: 0;
-  opacity: 70%;
-  mask-image: var(--image-file-cross-circle-filled);
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: 99%;
-  background-color: var(--icon-default);
-}
-
-input.custom-search-input::-webkit-search-cancel-button:hover {
-  opacity: 99%;
 }
 /* loading spinner */
 .spinner::before {
@@ -691,7 +677,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
 }
 
 .adorner-container devtools-adorner {
-  margin-left: 3px;
+  margin-left: var(--sys-size-2);
 }
 
 :host-context(.theme-with-dark-background) devtools-adorner {
@@ -898,34 +884,8 @@ devtools-toolbar {
     opacity: 50%;
   }
 
-  .toolbar-button.copied-to-clipboard::after {
-    content: attr(data-content);
-    position: fixed;
-    margin-top: calc(2 * var(--toolbar-height));
-    padding: 3px 5px;
-    color: var(--sys-color-token-subtle);
-    background: var(--sys-color-cdt-base-container);
-    animation: 2s fade-out;
-    font-weight: normal;
-    border: var(--sys-size-1) solid var(--sys-color-divider);
-    border-radius: 3px;
-  }
-
   .toolbar-button.toolbar-state-on .toolbar-glyph {
     color: var(--icon-toggled);
-  }
-
-  .toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
-    content: '';
-    position: absolute;
-    bottom: var(--sys-size-2);
-    background-color: var(--sys-color-primary-bright);
-    width: 4.5px;
-    height: 4.5px;
-    border: var(--sys-size-2) solid
-      var(--override-toolbar-background-color, --sys-color-cdt-base-container);
-    border-radius: var(--sys-shape-corner-full);
-    right: 0;
   }
 
   .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
@@ -994,12 +954,12 @@ devtools-toolbar {
   .toolbar-input {
     box-shadow: inset 0 0 0 var(--sys-size-2) transparent;
     box-sizing: border-box;
-    width: 120px;
+    width: var(--sys-size-20);
     height: var(--sys-size-9);
     padding: 0 var(--sys-size-2) 0 var(--sys-size-5);
-    margin: var(--sys-size-1) 3px;
+    margin: var(--sys-size-1) var(--sys-size-2);
     border-radius: var(--sys-shape-corner-full);
-    min-width: 35px;
+    min-width: var(--sys-size-14);
     position: relative;
 
     &.focused {
@@ -1095,10 +1055,6 @@ devtools-toolbar {
     & > .title {
       color: var(--sys-color-on-tonal-container);
     }
-  }
-
-  devtools-icon.leading-issue-icon {
-    margin: 0 7px;
   }
 
   @media (forced-colors: active) {

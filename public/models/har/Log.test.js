@@ -79,6 +79,18 @@ describe('HAR', function () {
                 const requestId = 'r0';
                 const { build } = HAR.Log.Entry;
                 const url = urlString `p0.com`;
+                it('exports the initial priority next to the current one', async () => {
+                    const request = createNetworkRequest({
+                        requestId,
+                        url,
+                        documentURL: '',
+                    });
+                    request.setInitialPriority("Low" /* Protocol.Network.ResourcePriority.Low */);
+                    request.setPriority("High" /* Protocol.Network.ResourcePriority.High */);
+                    const entry = await build(request, { sanitize: false });
+                    assert.strictEqual(entry._initialPriority, "Low" /* Protocol.Network.ResourcePriority.Low */);
+                    assert.strictEqual(entry._priority, "High" /* Protocol.Network.ResourcePriority.High */);
+                });
                 it('exports request cookies and authorization headers by default', async () => {
                     const request = createNetworkRequest({
                         requestId,

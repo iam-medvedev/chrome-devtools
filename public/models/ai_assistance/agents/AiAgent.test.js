@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient, MockAidaPayloadLimitError, MockAidaQuotaError } from '../../../testing/AiAssistanceHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
@@ -353,6 +354,65 @@ describe('AiAgent', () => {
                     error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
                 },
             ]);
+        });
+        it('should yield unknown error and log diagnostic details when model returns an empty text response without tool calls', async () => {
+            const mockStorage = {
+                length: 0,
+                clear: () => { },
+                getItem: (key) => key === 'devToolsAiDebug' ?
+                    JSON.stringify({ assistance: true, gca: false, codeGenComplete: false }) :
+                    null,
+                key: () => null,
+                removeItem: () => { },
+                setItem: () => { },
+            };
+            sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'getLocalStorage').returns(mockStorage);
+            const consoleLogStub = sinon.stub(console, 'log');
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([[{ explanation: '', metadata: { rpcGlobalId: 123 } }]]),
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            assert.deepEqual(responses, [
+                {
+                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
+                },
+                {
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
+                },
+            ]);
+            sinon.assert.calledWithExactly(consoleLogStub, '[AiAgent] Model returned an empty text response without tool calls:', { step: 1, rpcId: 123, functionCalls: undefined });
+        });
+        it('should yield unknown error and log functionCalls when model returns an empty text response with only suggestFollowUps', async () => {
+            const mockStorage = {
+                length: 0,
+                clear: () => { },
+                getItem: (key) => key === 'devToolsAiDebug' ?
+                    JSON.stringify({ assistance: true, gca: false, codeGenComplete: false }) :
+                    null,
+                key: () => null,
+                removeItem: () => { },
+                setItem: () => { },
+            };
+            sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'getLocalStorage').returns(mockStorage);
+            const consoleLogStub = sinon.stub(console, 'log');
+            const functionCalls = [
+                { name: 'suggestFollowUps', args: { suggestions: ['Follow-up question'] } },
+            ];
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient([[{ explanation: '', functionCalls }]]),
+            });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            assert.deepEqual(responses, [
+                {
+                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
+                },
+                {
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
+                },
+            ]);
+            sinon.assert.calledWithExactly(consoleLogStub, '[AiAgent] Model returned an empty text response without tool calls:', { step: 1, rpcId: undefined, functionCalls });
         });
         it('should yield quota error when aida throws AidaQuotaError', async () => {
             const agent = new AiAgentMock({
@@ -1049,6 +1109,71 @@ describe('AiAgent', () => {
                     error: "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */,
                 });
                 assert.deepEqual(invocations, ['fnA', 'fnA:approved', 'fnB']);
+                sinon.assert.callCount(aidaClient.doConversation, 1);
+                assert.deepEqual(agent.history, []);
+            });
+            it('unblocks and stops the remaining calls when the user aborts while a handler never resolves', async () => {
+                const aidaClient = mockAidaClient([
+                    [{ explanation: '', functionCalls: [{ name: 'fnA', args: {} }, { name: 'fnB', args: {} }] }],
+                ]);
+                const abortController = new AbortController();
+                const pendingHandler = Promise.withResolvers();
+                const agent = new AiAgentMock({ aidaClient });
+                const invocations = [];
+                declareFn(agent, 'fnA', () => {
+                    invocations.push('fnA');
+                    queueMicrotask(() => abortController.abort());
+                    return pendingHandler.promise;
+                });
+                declareFn(agent, 'fnB', async () => {
+                    invocations.push('fnB');
+                    return { result: 'b' };
+                });
+                const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext(), signal: abortController.signal }));
+                pendingHandler.resolve({ result: 'late' });
+                assert.deepEqual(responses, [
+                    { type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */ },
+                    {
+                        type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                        error: "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */,
+                    },
+                ]);
+                assert.deepEqual(invocations, ['fnA']);
+                sinon.assert.callCount(aidaClient.doConversation, 1);
+                assert.deepEqual(agent.history, []);
+            });
+            it('unblocks when the user aborts while an approved handler never resolves', async () => {
+                const aidaClient = mockAidaClient([
+                    [{ explanation: '', functionCalls: [{ name: 'fnA', args: {} }] }],
+                ]);
+                const abortController = new AbortController();
+                const pendingHandler = Promise.withResolvers();
+                const agent = new AiAgentMock({
+                    aidaClient,
+                    confirmSideEffectForTest: confirmInOrder(["allow-once" /* AiAssistance.Tool.PermissionDecision.ALLOW_ONCE */]),
+                });
+                const invocations = [];
+                declareFn(agent, 'fnA', (_args, options) => {
+                    if (!options?.approved) {
+                        invocations.push('fnA');
+                        return Promise.resolve({ requiresApproval: true, description: 'approve fnA' });
+                    }
+                    invocations.push('fnA:approved');
+                    queueMicrotask(() => abortController.abort());
+                    return pendingHandler.promise;
+                });
+                const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext(), signal: abortController.signal }));
+                pendingHandler.resolve({ result: 'late' });
+                assert.deepEqual(responses.map(r => r.type), [
+                    "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
+                    "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */,
+                    "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                ]);
+                assert.deepEqual(responses.at(-1), {
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */,
+                });
+                assert.deepEqual(invocations, ['fnA', 'fnA:approved']);
                 sinon.assert.callCount(aidaClient.doConversation, 1);
                 assert.deepEqual(agent.history, []);
             });

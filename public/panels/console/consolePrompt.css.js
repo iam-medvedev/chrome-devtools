@@ -9,18 +9,6 @@ export default `/*
  * found in the LICENSE file.
  */
 
-#console-prompt .CodeMirror {
-  padding: 3px 0 1px;
-}
-
-#console-prompt .CodeMirror-line {
-  padding-top: 0;
-}
-
-#console-prompt .CodeMirror-lines {
-  padding-top: 0;
-}
-
 #console-prompt .console-prompt-icon {
   position: absolute;
   left: calc(-1 * var(--sys-size-6));
@@ -45,8 +33,10 @@ export default `/*
 
 .preview-result-icon {
   position: absolute;
-  left: -13px;
-  top: calc(-1 * var(--sys-size-1));
+  /* Offset both .console-prompt-icon's 12px (--sys-size-6) gutter offset and
+   * .console-eager-preview's 4px (--sys-size-3) left margin so both icons align. */
+  left: calc(-1 * (var(--sys-size-6) + var(--sys-size-3)));
+  top: 0;
 }
 
 .console-eager-inner-preview:empty,

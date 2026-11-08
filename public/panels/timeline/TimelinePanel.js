@@ -416,6 +416,7 @@ export class TimelinePanel extends TimelinePanelBase {
     #navigationRadioButtons = document.createElement('form');
     #modernNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Modern - normal scrolling', 'timeline.select-modern-navigation');
     #classicNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Classic - scroll to zoom', 'timeline.select-classic-navigation');
+    #navigationSettingInitialized = false;
     #onMainEntryHovered;
     #hiddenTracksInfoBarByParsedTrace = new WeakMap();
     #resourceLoader;
@@ -1283,7 +1284,12 @@ export class TimelinePanel extends TimelinePanelBase {
                 sourceMaps: filteredMetadataSourceMaps,
                 resources: filteredResources,
             });
-            blobParts = Array.from(formattedTraceIter);
+            // Wrap each chunk in a Blob as soon as it is generated, so that each
+            // chunk string can be garbage collected straight away. Collecting all
+            // the strings first would hold the whole serialized trace in the JS heap.
+            for (const chunk of formattedTraceIter) {
+                blobParts.push(new Blob([chunk]));
+            }
         }
         if (!blobParts.length) {
             throw new Error('Trace content empty');
@@ -1453,7 +1459,6 @@ export class TimelinePanel extends TimelinePanelBase {
         this.createFileSelector();
     }
     #launchRehydratedSession(traceJson) {
-        let rehydratingWindow = null;
         let pathToLaunch = null;
         const url = new URL(window.location.href);
         const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf('/'));
@@ -1462,19 +1467,20 @@ export class TimelinePanel extends TimelinePanelBase {
         pathToLaunch = url.toString();
         // Clarifying the window the code is referring to
         const hostWindow = window;
+        const rehydratingWindow = this.isDocked() ?
+            hostWindow.open(pathToLaunch, /* target: */ '_blank', 'noopener=false,popup=false') :
+            hostWindow.open(pathToLaunch, /* target: */ undefined, 'noopener=false,popup=true');
+        if (!rehydratingWindow) {
+            return;
+        }
         function onMessageHandler(ev) {
-            if (url && ev.data?.type === 'REHYDRATING_WINDOW_READY') {
-                rehydratingWindow?.postMessage({ type: 'REHYDRATING_TRACE_FILE', traceJson }, url.origin);
+            if (ev.source !== rehydratingWindow || ev.data?.type !== 'REHYDRATING_WINDOW_READY') {
+                return;
             }
+            rehydratingWindow?.postMessage({ type: 'REHYDRATING_TRACE_FILE', traceJson }, url.origin);
             hostWindow.removeEventListener('message', onMessageHandler);
         }
         hostWindow.addEventListener('message', onMessageHandler);
-        if (this.isDocked()) {
-            rehydratingWindow = hostWindow.open(pathToLaunch, /* target: */ '_blank', 'noopener=false,popup=false');
-        }
-        else {
-            rehydratingWindow = hostWindow.open(pathToLaunch, /* target: */ undefined, 'noopener=false,popup=true');
-        }
     }
     async loadFromURL(url) {
         if (this.state !== "Idle" /* State.IDLE */) {
@@ -1924,7 +1930,8 @@ export class TimelinePanel extends TimelinePanelBase {
         }
         // When the timeline is loaded for the first time, setup the shortcuts dialog and log what navigation setting is selected.
         // Logging the setting on the first timeline load will allow us to get an estimate number of people using each option.
-        if (this.#traceEngineModel.size() === 1) {
+        if (!this.#navigationSettingInitialized && this.#traceEngineModel.size() === 1) {
+            this.#navigationSettingInitialized = true;
             this.#setupNavigationSetting();
             if (Common.Settings.Settings.instance()
                 .resolve(SettingUIRegistration.TimelineSettings.flamechartSelectedNavigationSettingDescriptor)
@@ -2672,16 +2679,37 @@ export class TimelinePanel extends TimelinePanelBase {
             this.#setActiveInsight(null);
         }
     }
-    static async executeRecordAndReload() {
+    static async executeRecordAndReload(options) {
+        if (options?.signal?.aborted) {
+            throw new Error('Recording was aborted');
+        }
         await UI.ViewManager.ViewManager.instance().showView('timeline');
         await SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.pageAgent().invoke_bringToFront();
+        if (options?.signal?.aborted) {
+            throw new Error('Recording was aborted');
+        }
         const panelInstance = TimelinePanel.instance();
-        const result = await new Promise(resolve => {
-            function listener(e) {
-                resolve(e.data);
+        const result = await new Promise((resolve, reject) => {
+            function cleanup() {
                 panelInstance.removeEventListener("RecordingCompleted" /* Events.RECORDING_COMPLETED */, listener);
+                options?.signal?.removeEventListener('abort', onAbort);
+            }
+            function listener(e) {
+                cleanup();
+                resolve(e.data);
+            }
+            function onAbort() {
+                cleanup();
+                // Only stop once State.RECORDING is reached; calling stopRecording()
+                // during State.START_PENDING nulls out this.controller while
+                // #startTraceRecording() is still awaiting setup.
+                if (panelInstance.state === "Recording" /* State.RECORDING */) {
+                    void panelInstance.stopRecording();
+                }
+                reject(new Error('Recording was aborted'));
             }
             panelInstance.addEventListener("RecordingCompleted" /* Events.RECORDING_COMPLETED */, listener);
+            options?.signal?.addEventListener('abort', onAbort, { once: true });
             panelInstance.recordReload();
         });
         if ('errorText' in result) {

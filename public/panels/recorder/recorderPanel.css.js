@@ -45,15 +45,15 @@ devtools-create-recording-view {
   flex-flow: row wrap;
   align-items: center;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding: 0 5px;
-  gap: 3px;
+  padding: 0 var(--sys-size-3);
+  gap: var(--sys-size-2);
   flex-shrink: 0;
 }
 
 .separator {
   background-color: var(--sys-color-divider);
   width: var(--sys-size-1);
-  height: 17px;
+  height: var(--sys-size-8);
   margin: 0;
 }
 
@@ -63,8 +63,8 @@ select {
   border: none;
   border-radius: var(--sys-shape-corner-extra-small);
   height: var(--sys-size-9);
-  max-width: 140px;
-  min-width: 140px;
+  max-width: var(--sys-size-22);
+  min-width: var(--sys-size-22);
   padding: 0 var(--sys-size-6) 0 var(--sys-size-5);
   position: relative;
   color: var(--sys-color-on-surface);
@@ -140,7 +140,7 @@ devtools-recording-list-view {
   font-size: var(--sys-typescale-body4-size);
   line-height: var(--sys-typescale-body4-line-height);
   color: var(--sys-color-primary);
-  outline-offset: 3px;
+  outline-offset: var(--sys-size-2);
 }
 
 .feedback .devtools-link:focus-visible,

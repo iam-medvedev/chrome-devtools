@@ -293,6 +293,89 @@ export function renderGroupTrailingIcons(project) {
     }
     return [];
 }
+export const DEFAULT_NAVIGATOR_SOURCE_TITLE_VIEW = (input, _output, target) => {
+    const stopPropagationIfEditing = (event) => {
+        if (input.editing) {
+            event.stopPropagation();
+        }
+    };
+    // clang-format off
+    render(html `
+    <devtools-prompt
+      value=${input.title}
+      ?editing=${input.editing}
+      @commit=${(event) => input.onCommit(event.detail)}
+      @cancel=${() => input.onCancel()}
+      @mousedown=${stopPropagationIfEditing}
+      @click=${stopPropagationIfEditing}
+      @dblclick=${stopPropagationIfEditing}>${input.title}</devtools-prompt>
+  `, target);
+    // clang-format on
+};
+export class NavigatorSourceTitleWidget extends UI.Widget.Widget {
+    #title = '';
+    #editing = false;
+    #view;
+    onCommit;
+    onCancel;
+    set title(title) {
+        if (this.#title === title) {
+            return;
+        }
+        this.#title = title;
+        this.requestUpdate();
+    }
+    get title() {
+        return this.#title;
+    }
+    set editing(editing) {
+        if (this.#editing === editing) {
+            return;
+        }
+        this.#editing = editing;
+        this.requestUpdate();
+    }
+    get editing() {
+        return this.#editing;
+    }
+    constructor(element, view = DEFAULT_NAVIGATOR_SOURCE_TITLE_VIEW) {
+        super(element);
+        this.#view = view;
+    }
+    wasShown() {
+        super.wasShown();
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const viewInput = {
+            title: this.#title,
+            editing: this.#editing,
+            onCommit: (detail) => this.onCommit?.(detail),
+            onCancel: () => this.onCancel?.(),
+        };
+        this.#view(viewInput, undefined, this.contentElement);
+    }
+}
+export const renderSourceTitleWidget = (input, _output, target) => {
+    // clang-format off
+    render(html `
+        <devtools-widget style="display: contents" ${UI.Widget.widget(NavigatorSourceTitleWidget, {
+        title: input.title,
+        editing: input.editing,
+        onCommit: input.onCommit,
+        onCancel: input.onCancel,
+    })}></devtools-widget>
+      `, target);
+    // clang-format on
+    const widgetElement = target.firstElementChild;
+    if (widgetElement) {
+        // Temporary adapter: instantiates and renders the widget synchronously
+        // for detached TreeOutlineInShadow elements. This will be removed once
+        // NavigatorView renders <devtools-tree> declaratively.
+        const widget = UI.Widget.Widget.getOrCreateWidget(widgetElement);
+        void widget.performUpdate();
+    }
+};
 export var Events;
 (function (Events) {
     Events["UI_SOURCE_CODE_ADDED"] = "ui-source-code-added";
@@ -323,6 +406,7 @@ export class NavigatorView extends NavigatorViewBase {
     selectedNode = null;
     expandedNodes = new WeakSet();
     treeElementNodes = new WeakMap();
+    #renamingNode = null;
     #view;
     constructor(element, [networkProjectManager] = [Bindings.NetworkProject.NetworkProjectManager.instance()], view = DEFAULT_VIEW) {
         super(element, { useShadowDom: true });
@@ -913,11 +997,11 @@ export class NavigatorView extends NavigatorViewBase {
             return null;
         }
         if (this.selectedNode) {
-            // If the tree outline is being marked as "being edited" (i.e. we're renaming a file
-            // or choosing the name for a new snippet), we shall not proceed with revealing here,
-            // as that will steal focus from the input widget and thus cancel editing. The
-            // test/e2e/snippets/breakpoint.test.ts exercises this.
-            if (UI.UIUtils.isBeingEdited(this.scriptsTree.element)) {
+            // If a file is currently being renamed (or choosing the name for a new snippet),
+            // we shall not proceed with revealing here, as that will steal focus from the
+            // input widget and thus cancel editing. The test/e2e/snippets/breakpoint.test.ts
+            // exercises this.
+            if (this.isRenaming()) {
                 return null;
             }
             this.selectedNode.treeNode().deselect();
@@ -1016,6 +1100,7 @@ export class NavigatorView extends NavigatorViewBase {
         this.scriptsTree.removeChildren();
         this.scriptsTree.setFocusable(false);
         this.selectedNode = null;
+        this.#renamingNode = null;
         this.expandedNodes = new WeakSet();
         this.uiSourceCodeNodes.clear();
         this.subfolderNodes.clear();
@@ -1072,8 +1157,18 @@ export class NavigatorView extends NavigatorViewBase {
         if (!node.uiSourceCode().canRename() || !node.treeElement) {
             return false;
         }
-        return this.selectedNode === node && this.scriptsTree.element.hasFocus() &&
-            !UI.UIUtils.isBeingEdited(this.scriptsTree.element);
+        return this.selectedNode === node && this.scriptsTree.element.hasFocus() && !this.isRenaming();
+    }
+    startRenamingNode(node) {
+        this.#renamingNode = node;
+    }
+    stopRenamingNode(node) {
+        if (this.#renamingNode === node) {
+            this.#renamingNode = null;
+        }
+    }
+    isRenaming() {
+        return this.#renamingNode !== null;
     }
     handleFileContextMenu(event, node) {
         const uiSourceCode = node.uiSourceCode();
@@ -1527,6 +1622,9 @@ export class NavigatorRootTreeNode extends NavigatorTreeNode {
 export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
     #uiSourceCode;
     treeElement;
+    isEditing = false;
+    #renameCallback;
+    #disposed = false;
     eventListeners;
     #frame;
     constructor(navigatorView, uiSourceCode, frame) {
@@ -1578,6 +1676,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
             return this.treeElement;
         }
         this.treeElement = new UI.TreeOutline.TreeElement('', false, this.#uiSourceCode.contentType().name());
+        this.treeElement.title = this.treeElement.titleElement;
         this.treeElement.listItemElement.classList.add('navigator-' + this.#uiSourceCode.contentType().name() + '-tree-item', 'navigator-file-tree-item');
         this.treeElement.listItemElement.draggable = true;
         this.treeElement.titleElement.setAttribute('jslog', `${VisualLogging.value('title').track({
@@ -1637,7 +1736,12 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         if (!this.treeElement) {
             return;
         }
-        this.treeElement.title = this.title;
+        renderSourceTitleWidget({
+            title: this.title,
+            editing: this.isEditing,
+            onCommit: this.#handlePromptCommit.bind(this),
+            onCancel: this.#handlePromptCancel.bind(this),
+        }, undefined, this.treeElement.titleElement);
         this.updateIcon();
         this.updateTrailingIcons();
         this.treeElement.listItemElement.classList.toggle('is-ignore-listed', Boolean(this.recursiveProperties.exclusivelyIgnored));
@@ -1649,7 +1753,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         this.recursiveProperties.exclusivelyIgnored =
             (this.#uiSourceCode.contentType().isScript() || isIgnoreListed) ? isIgnoreListed : null;
         let titleText = this.#uiSourceCode.displayName();
-        if (!ignoreIsDirty && this.#uiSourceCode.isDirty()) {
+        if (!ignoreIsDirty && !this.isEditing && this.#uiSourceCode.isDirty()) {
             titleText = '*' + titleText;
         }
         this.title = titleText;
@@ -1669,6 +1773,16 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
     }
     dispose() {
         Common.EventTarget.removeEventListeners(this.eventListeners);
+        if (this.isEditing) {
+            this.isEditing = false;
+            this.navigatorView.stopRenamingNode(this);
+        }
+        const callback = this.#renameCallback;
+        this.#renameCallback = undefined;
+        if (callback) {
+            callback(false);
+        }
+        this.#disposed = true;
     }
     reveal(select) {
         if (this.parent) {
@@ -1683,53 +1797,71 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         }
     }
     rename(callback) {
-        if (!this.treeElement) {
+        if (this.#disposed || !this.treeElement) {
             return;
         }
         this.treeElement.listItemElement.focus();
         if (!this.treeElement.treeOutline) {
             return;
         }
-        // Tree outline should be marked as edited as well as the tree element to prevent search from starting.
-        const treeOutlineElement = this.treeElement.treeOutline.element;
-        UI.UIUtils.markBeingEdited(treeOutlineElement, true);
-        const commitHandler = (_element, newTitle, oldTitle) => {
-            if (newTitle !== oldTitle) {
-                if (this.treeElement) {
-                    this.treeElement.title = newTitle;
-                }
-                // necessary cast to RawPathString as alternative would be altering type of Config<T>
-                void this.#uiSourceCode.rename(newTitle).then(renameCallback);
-                return;
-            }
-            afterEditing(true);
-        };
-        const renameCallback = (success) => {
-            if (!success) {
-                UI.UIUtils.markBeingEdited(treeOutlineElement, false);
-                this.updateTitle();
-                this.rename(callback);
-                return;
-            }
-            if (this.treeElement) {
-                const { parent } = this.treeElement;
-                if (parent) {
-                    parent.removeChild(this.treeElement);
-                    parent.appendChild(this.treeElement);
-                    this.navigatorView.selectNode(this);
-                }
-            }
-            afterEditing(true);
-        };
-        const afterEditing = (committed) => {
-            UI.UIUtils.markBeingEdited(treeOutlineElement, false);
-            this.updateTitle();
-            if (callback) {
-                callback(committed);
-            }
-        };
+        this.#renameCallback = callback;
+        this.navigatorView.startRenamingNode(this);
+        this.isEditing = true;
         this.updateTitle(true);
-        this.treeElement.startEditingTitle(new UI.InplaceEditor.Config(commitHandler, () => afterEditing(false), undefined));
+    }
+    #handlePromptCommit(newTitle) {
+        if (this.#disposed || !this.treeElement?.treeOutline) {
+            return;
+        }
+        const oldTitle = this.title;
+        if (newTitle !== oldTitle) {
+            this.isEditing = false;
+            this.title = newTitle;
+            this.navigatorView.stopRenamingNode(this);
+            this.updateTreeElement();
+            // necessary cast to RawPathString as alternative would be altering type of Config<T>
+            void this.#uiSourceCode.rename(newTitle)
+                .then(this.#handleRenameCallback.bind(this));
+            return;
+        }
+        this.#afterEditing(true);
+    }
+    #handleRenameCallback(success) {
+        if (this.#disposed) {
+            return;
+        }
+        if (!success) {
+            this.isEditing = false;
+            this.navigatorView.stopRenamingNode(this);
+            this.updateTitle();
+            this.rename(this.#renameCallback);
+            return;
+        }
+        if (this.treeElement) {
+            const { parent } = this.treeElement;
+            if (parent) {
+                parent.removeChild(this.treeElement);
+                parent.appendChild(this.treeElement);
+                this.navigatorView.selectNode(this);
+            }
+        }
+        this.#afterEditing(true);
+    }
+    #handlePromptCancel() {
+        if (this.#disposed) {
+            return;
+        }
+        this.#afterEditing(false);
+    }
+    #afterEditing(committed) {
+        this.isEditing = false;
+        this.navigatorView.stopRenamingNode(this);
+        this.updateTitle();
+        const callback = this.#renameCallback;
+        this.#renameCallback = undefined;
+        if (callback) {
+            callback(committed);
+        }
     }
 }
 export class NavigatorFolderTreeNode extends NavigatorTreeNode {

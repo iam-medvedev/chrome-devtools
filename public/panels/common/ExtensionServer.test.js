@@ -432,7 +432,7 @@ describe('Extensions', () => {
         };
         server.addExtension(attackerDescriptor);
         const channel = new MessageChannel();
-        server.registerExtension(attackerOrigin, channel.port1);
+        window.dispatchEvent(new MessageEvent('message', { data: 'registerExtension', origin: attackerOrigin, ports: [channel.port1] }));
         const responsePromise = new Promise(resolve => {
             channel.port2.onmessage = (event) => resolve(event.data);
         });
@@ -1094,9 +1094,8 @@ describe('Runtime hosts policy', () => {
      * GetResourceContent requests through it.
      */
     function registerExtensionForResourceContent() {
-        const server = PanelCommon.ExtensionServer.ExtensionServer.instance();
         const channel = new MessageChannel();
-        server.registerExtension(urlString `${getExtensionOrigin()}`, channel.port1);
+        window.dispatchEvent(new MessageEvent('message', { data: 'registerExtension', origin: urlString `${getExtensionOrigin()}`, ports: [channel.port1] }));
         let nextRequestId = 1;
         return (url) => {
             const requestId = nextRequestId++;
@@ -2207,7 +2206,7 @@ describe('Extension Panels', () => {
         };
         server.addExtension(extensionDescriptor);
         const channel = new MessageChannel();
-        server.registerExtension(extensionOrigin, channel.port1);
+        window.dispatchEvent(new MessageEvent('message', { data: 'registerExtension', origin: extensionOrigin, ports: [channel.port1] }));
         const responsePromise = new Promise(resolve => {
             channel.port2.onmessage = (event) => resolve(event.data);
         });

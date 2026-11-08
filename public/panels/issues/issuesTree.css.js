@@ -38,7 +38,9 @@ export default `/*
 }
 
 .issues li.parent::before {
-  margin-top: 7px;
+  /* Center the 16px chevron on the 20px leading issue icon:
+     4px header padding + 2px header child margin + (20px - 16px) / 2 = 8px. */
+  margin-top: var(--sys-size-5);
 }
 
 .issues .affected-resources li.parent::before {
@@ -149,8 +151,8 @@ p {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding: var(--sys-size-4) 0;
   position: relative;
-  padding-left: calc(var(--issue-indent) + 43px);
-  padding-bottom: 26px;
+  padding-left: calc(var(--issue-indent) + var(--sys-size-14));
+  padding-bottom: var(--sys-size-11);
   padding-right: var(--sys-size-5);
 }
 
@@ -166,7 +168,8 @@ p {
   content: "";
   display: block;
   position: absolute;
-  left: calc(var(--issue-indent) + 23px);
+  /* Align with .leading-issue-icon left edge: --issue-indent + 16px disclosure arrow (--sys-size-8) + 7px icon margin-left (--sys-size-5 - --sys-size-1). */
+  left: calc(var(--issue-indent) + var(--sys-size-8) + var(--sys-size-5) - var(--sys-size-1));
   top: 0;
   bottom: var(--sys-size-9);
   width: var(--sys-size-2);
@@ -189,32 +192,8 @@ p {
 }
 
 devtools-icon.leading-issue-icon {
-  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) 7px;
-}
-
-.message {
-  line-height: 18px;
-  font-size: var(--sys-typescale-body4-size);
-  color: var(--sys-color-token-subtle);
-  margin-bottom: var(--sys-size-3);
-  user-select: text;
-}
-
-.message p {
-  margin-bottom: var(--sys-size-8);
-}
-
-.message li {
-  margin-top: var(--sys-size-5);
-}
-
-.message code {
-  color: var(--sys-color-on-surface);
-  padding: 0 var(--sys-size-2);
-  font-size: var(--sys-typescale-body4-size);
-  user-select: text;
-  cursor: text;
-  background: var(--sys-color-surface2);
+  /* 8px (--sys-size-5) minus 1px (--sys-size-1) aligns the 20px icon after the 16px disclosure arrow with the 23px .issue-body::before border and 43px body indent. */
+  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) calc(var(--sys-size-5) - var(--sys-size-1));
 }
 
 .separator::before {
@@ -235,8 +214,8 @@ devtools-icon.leading-issue-icon {
 
 .affected-resources-label,
 .resolutions-label {
-  margin-top: 5px;
-  font-size: 10px;
+  margin-top: var(--sys-size-3);
+  font-size: var(--sys-typescale-body5-size);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -295,7 +274,6 @@ ul > li.plain-enum::before {
 
 .affected-resource-label {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   color: var(--sys-color-on-surface);
   position: relative;
   cursor: pointer;
@@ -303,7 +281,6 @@ ul > li.plain-enum::before {
 
 .affected-resource-cookie {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
@@ -325,14 +302,12 @@ ul > li.plain-enum::before {
 
 .affected-resource-mixed-content {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-heavy-ad {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
@@ -353,7 +328,8 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-list {
-  border-spacing: 10px 0;
+  /* 12px left margin offset minus 2px cell left padding so column 1 aligns flush with parent container */
+  border-spacing: calc(var(--sys-size-6) - var(--sys-size-2)) 0;
   margin-left: calc(-1 * var(--sys-size-6));
 }
 
@@ -428,11 +404,12 @@ ul > li.plain-enum::before {
 
 .affected-resources > .children.expanded {
   background: var(--sys-color-cdt-base-container);
-  padding: var(--sys-size-4) 0 9px 5px;
+  padding: var(--sys-size-4) 0 var(--sys-size-5) var(--sys-size-3);
 }
 
 .aggregated-issues-count {
-  padding: 3px 7px 0;
+  /* Center the 14px (--sys-size-7) adorner pill vertically against the 20px (--sys-size-9) issue icon. */
+  padding: calc((var(--sys-size-9) - var(--sys-size-7)) / 2) var(--sys-size-4) 0;
 }
 
 .affected-resource-directive-info-header {

@@ -103,5 +103,17 @@ export declare const UIStrings: {
     /**
      * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
      */
+    readonly loadingScopes: 'Loading scopes…';
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
+    readonly loadingScopeContextVars: 'Loading scope context vars…';
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
+    readonly loadingScopeUses: 'Loading scope uses…';
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
     readonly loadingStrings: 'Loading strings…';
 };

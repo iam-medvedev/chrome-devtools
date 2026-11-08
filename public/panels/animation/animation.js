@@ -710,7 +710,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1768,7 +1767,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -1822,7 +1820,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -1846,6 +1843,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2150,6 +2148,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -3038,7 +3041,7 @@ circle.animation-keyframe-point:active {
 
 .animation-timeline-current-time {
   flex: 0 0 auto;
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .animation-grid-header {
@@ -3082,7 +3085,7 @@ circle.animation-keyframe-point:active {
 .animation-scrubber {
   opacity: 100%;
   position: absolute;
-  left: 10px;
+  left: var(--sys-size-5);
   height: 100%;
   width: 100%;
   top: var(--sys-size-12);
@@ -3091,11 +3094,13 @@ circle.animation-keyframe-point:active {
 }
 
 .animation-scrubber-line {
-  width: 11px;
+  /* 11px width: 2 * 6px left inset (--sys-size-4) - 1px line (--sys-size-1). */
+  width: calc(2 * var(--sys-size-4) - var(--sys-size-1));
+  /* 6px inset (--sys-size-4) - 1px border (--sys-size-1) aligns the 1px stem. */
   background: linear-gradient(
     to right,
-    transparent 5px,
-    var(--sys-color-error) 5px,
+    transparent calc(var(--sys-size-4) - var(--sys-size-1)),
+    var(--sys-color-error) calc(var(--sys-size-4) - var(--sys-size-1)),
     var(--sys-color-error) var(--sys-size-4),
     transparent var(--sys-size-4)
   );
@@ -3103,7 +3108,8 @@ circle.animation-keyframe-point:active {
   top: calc(-1 * var(--sys-size-12));
   height: var(--sys-size-12);
   left: calc(-1 * var(--sys-size-4));
-  padding: 0 5px;
+  /* 5px side hit padding: 6px (--sys-size-4) - 1px line width (--sys-size-1). */
+  padding: 0 calc(var(--sys-size-4) - var(--sys-size-1));
   z-index: 3;
 }
 
@@ -3120,8 +3126,10 @@ circle.animation-keyframe-point:active {
 
 .grid-overflow-wrapper {
   position: absolute;
-  left: calc(var(--timeline-controls-width) - 10px);
-  top: 76px;
+  /* Offset left by the 8px scrubber origin inset (--sys-size-5) so t=0 aligns with --timeline-controls-width without clipping the scrubber head. */
+  left: calc(var(--timeline-controls-width) - var(--sys-size-5));
+  /* Position below the 28px top toolbar (--sys-size-12) + 48px animation group preview buffer (--sys-size-16) = 76px. */
+  top: calc(var(--sys-size-12) + var(--sys-size-16));
   z-index: 1;
   overflow: hidden;
   width: 100%;
@@ -3185,7 +3193,7 @@ svg.animation-ui path:focus-visible {
 }
 
 text.animation-timeline-grid-label {
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   fill: var(--sys-color-token-subtle);
   text-anchor: middle;
 }
@@ -3222,7 +3230,7 @@ text.animation-timeline-grid-label {
   align-items: center;
   justify-content: center;
   margin-left: var(--timeline-controls-width);
-  padding: 10px;
+  padding: var(--sys-size-5);
 }
 
 .animation-controls-toolbar {
@@ -3276,7 +3284,7 @@ text.animation-timeline-grid-label {
 }
 
 .animation-buffer-preview:focus-visible {
-  outline: -webkit-focus-ring-color auto 5px;
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
 }
 
 .animation-buffer-preview.selected .preview-icon {
@@ -3340,7 +3348,6 @@ text.animation-timeline-grid-label {
 .animation-playback-rate-control {
   margin: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-2);
   display: flex;
-  width: 120px;
 }
 
 .animation-playback-rate-button {
@@ -3353,7 +3360,7 @@ text.animation-timeline-grid-label {
   margin-right: calc(-1 * var(--sys-size-1));
   padding: var(--sys-size-1) var(--sys-size-3);
   background-color: transparent;
-  flex: 1 0 auto;
+  width: var(--sys-size-14);
   text-align: center;
 }
 
@@ -4332,7 +4339,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     let lastDraw = void 0;
     for (let time = 0; time < this.duration(); time += gridSize) {
       const line = UI.UIUtils.createSVGChild(this.#grid, "rect", "animation-timeline-grid-line");
-      line.setAttribute("x", (time * this.pixelTimeRatio() + 10).toString());
+      line.setAttribute("x", (time * this.pixelTimeRatio() + 8).toString());
       line.setAttribute("y", "23");
       line.setAttribute("height", "100%");
       line.setAttribute("width", "1");
@@ -4343,7 +4350,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
         lastDraw = gridWidth;
         const label = UI.UIUtils.createSVGChild(this.#grid, "text", "animation-timeline-grid-label");
         label.textContent = isScrollDriven ? `${time.toFixed(0)}px` : i18n.TimeUtilities.millisToString(time);
-        label.setAttribute("x", (gridWidth + 12).toString());
+        label.setAttribute("x", (gridWidth + 10).toString());
         label.setAttribute("y", "16");
       }
     }
@@ -4426,7 +4433,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
       return false;
     }
     if (!this.#gridOffsetLeft) {
-      this.#gridOffsetLeft = this.#grid.getBoundingClientRect().left + 10;
+      this.#gridOffsetLeft = this.#grid.getBoundingClientRect().left + 8;
     }
     const { x } = event;
     const seekTime = Math.max(0, x - this.#gridOffsetLeft) / this.pixelTimeRatio();

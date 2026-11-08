@@ -10,8 +10,7 @@ export default `/*
  */
 
 :host {
-  width: 270px;
-  height: 350px;
+  width: var(--sys-size-30);
   user-select: none;
   padding: var(--sys-size-8);
   overflow: hidden;
@@ -25,22 +24,31 @@ export default `/*
   --override-bezier-control-color: var(--sys-color-purple-bright);
 
   display: flex;
-  margin-top: 38px;
+  /* 38px top margin (40px - 2px) between preview track and curve box */
+  margin-top: calc(var(--sys-size-14) - var(--sys-size-2));
   flex-shrink: 0;
   /* overflown bezier visualization must be on top of the source text */
   z-index: 2;
   background-image: radial-gradient(circle, var(--sys-color-surface-variant) var(--sys-size-1), var(--color-background-inverted-opacity-0) var(--sys-size-1));
-  background-size: 17px 17px;
-  background-position: -5px -10px;
+  /* 17px (16px + 1px) divides 136px BezierUI square into an 8x8 grid */
+  background-size:
+    calc(var(--sys-size-8) + var(--sys-size-1))
+    calc(var(--sys-size-8) + var(--sys-size-1));
+  /* -5px (-4px - 1px) and -10px (-6px - 4px) align grid dots with endpoints */
+  background-position:
+    calc(-1 * (var(--sys-size-3) + var(--sys-size-1)))
+    calc(-1 * (var(--sys-size-4) + var(--sys-size-3)));
 }
 
 .bezier-preset {
-  width: 50px;
-  height: 50px;
-  padding: 5px;
+  /* 48px (--sys-size-16) - 2 * 4px (--sys-size-3)
+     preserves the 40x40 PresetUI SVG canvas. */
+  width: var(--sys-size-16);
+  height: var(--sys-size-16);
+  padding: var(--sys-size-3);
   margin: auto;
   background-color: var(--sys-color-surface1);
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 .bezier-preset line.bezier-control-line {
@@ -133,7 +141,7 @@ export default `/*
 
 svg.bezier-preset-modify {
   background-color: var(--sys-color-cdt-base-container);
-  border-radius: 35px;
+  border-radius: var(--sys-shape-corner-full);
   display: inline-block;
   visibility: hidden;
   transition: transform 100ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -188,7 +196,8 @@ svg.bezier-curve {
 }
 
 svg.bezier-curve.linear {
-  margin-top: 42px;
+  /* 50px curve overshoot headroom (--sys-size-16 + --sys-size-2) minus 8px svg.bezier-curve upward offset (--sys-size-5) = 42px. */
+  margin-top: calc(var(--sys-size-16) + var(--sys-size-2) - var(--sys-size-5));
   overflow: visible;
 }
 

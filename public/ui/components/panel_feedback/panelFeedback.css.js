@@ -20,7 +20,7 @@ export default `/*
   font-size: var(--sys-typescale-body3-size);
   line-height: var(--sys-typescale-body3-line-height);
   border-radius: var(--sys-shape-corner-medium-small);
-  margin: 42px 0;
+  margin: var(--sys-size-14) 0;
   letter-spacing: 0.01em;
 }
 
@@ -29,10 +29,10 @@ h2 {
   font-size: var(--sys-typescale-body3-size);
   line-height: var(--sys-typescale-body3-line-height);
   letter-spacing: 0.01em;
-  margin: 9px 0 var(--sys-size-7);
+  margin: var(--sys-size-5) 0 var(--sys-size-7);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sys-size-3);
   font-weight: normal;
 }
 
@@ -50,7 +50,8 @@ h3 {
 }
 
 .thumbnail {
-  height: 92px;
+  /* 80px (--sys-size-19) + 12px (--sys-size-6) = 92px to match the 144x92 preview_feature_video_thumbnail.svg height without inline descender gap. */
+  height: calc(var(--sys-size-19) + var(--sys-size-6));
 }
 
 .video {

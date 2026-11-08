@@ -44,13 +44,6 @@ var settingsScreen_css_default = `/*
   background-color: var(--sys-color-cdt-base-container);
 }
 
-.settings-content {
-  overflow: hidden auto;
-  margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) 0;
-  padding: 0 var(--sys-size-3);
-  flex: auto;
-}
-
 .settings-experiments-block {
   padding: 0 var(--sys-size-6) var(--sys-size-5) var(--sys-size-4);
 }
@@ -1657,6 +1650,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
   }
   #removeAllowedTool(name) {
     this.#alwaysAllowedTools.remove(name);
+    void VisualLogging2.logFunctionCall("ai-permission-revoked", Platform2.StringUtilities.toKebabCase(name));
   }
   /**
    * Called by `SettingsScreen.Revealer` after this tab is shown via `Common.Revealer.reveal(setting)`.
@@ -2243,14 +2237,14 @@ var BackendLinkingSettingsTab = class extends UI3.Widget.VBox {
 var EditFileSystemView_exports = {};
 __export(EditFileSystemView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW2,
-  EditFileSystemView: () => EditFileSystemView,
-  ExcludedFolderStatus: () => ExcludedFolderStatus
+  EditFileSystemView: () => EditFileSystemView
 });
-import "../../ui/legacy/components/data_grid/data_grid.js";
+import "../../ui/components/lists/lists.js";
 import * as i18n7 from "../../core/i18n/i18n.js";
 import * as Platform3 from "../../core/platform/platform.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html4, render as render4 } from "../../ui/lit/lit.js";
+import { Directives as Directives2, html as html4, nothing as nothing5, render as render4 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/settings/editFileSystemView.css.js
 var editFileSystemView_css_default = `/*
@@ -2273,19 +2267,45 @@ var editFileSystemView_css_default = `/*
     }
   }
 
-  .exclude-subfolders-table {
-    padding: var(--sys-size-4) 0;
+  .excluded-folder-row {
+    display: flex;
+    align-items: center;
+    flex: auto;
+    min-width: 0;
+    padding: var(--sys-size-2) var(--sys-size-4);
+
+    &:has(devtools-prompt[editing]) {
+      align-self: stretch;
+      background-color: var(--app-color-card-background, var(--sys-color-cdt-base-container));
+    }
   }
 
-  .excluded-folder-error {
-    color: var(--sys-color-error);
+  .excluded-folder-path {
+    flex: auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    --devtools-text-prompt-min-width: 6em;
+  }
+
+  devtools-prompt.excluded-folder-path {
+    cursor: text;
+  }
+
+  devtools-prompt.excluded-folder-path[editing] {
+    overflow: visible;
+  }
+
+  .add-subfolder-button {
+    align-self: flex-start;
   }
 }
 
 /*# sourceURL=${import.meta.resolve("./editFileSystemView.css")} */`;
 
 // ../../front_end/panels/settings/EditFileSystemView.ts
-var { styleMap } = Directives2;
+var { ifDefined: ifDefined3, repeat: repeat2 } = Directives2;
 var UIStrings4 = {
   /**
    * @description Text in edit file system view of the Workspace settings in Settings to indicate that the following string is a folder URL.
@@ -2302,138 +2322,194 @@ var UIStrings4 = {
   /**
    * @description Error message when a file system path is identical to an existing path.
    */
-  enterAUniquePath: "Enter a unique path"
+  enterAUniquePath: "Enter a unique path",
+  /**
+   * @description Text for the button to add a new excluded sub-folder.
+   */
+  addSubfolder: "Add sub-folder",
+  /**
+   * @description Accessible label for the excluded sub-folder path input in Workspace settings.
+   */
+  folderPath: "Folder path"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/settings/EditFileSystemView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var ExcludedFolderStatus = /* @__PURE__ */ ((ExcludedFolderStatus2) => {
-  ExcludedFolderStatus2[ExcludedFolderStatus2["VALID"] = 1] = "VALID";
-  ExcludedFolderStatus2[ExcludedFolderStatus2["ERROR_NOT_A_PATH"] = 2] = "ERROR_NOT_A_PATH";
-  ExcludedFolderStatus2[ExcludedFolderStatus2["ERROR_NOT_UNIQUE"] = 3] = "ERROR_NOT_UNIQUE";
-  return ExcludedFolderStatus2;
-})(ExcludedFolderStatus || {});
-function statusString(status) {
-  switch (status) {
-    case 2 /* ERROR_NOT_A_PATH */:
-      return i18nString4(UIStrings4.enterAPath);
-    case 3 /* ERROR_NOT_UNIQUE */:
-      return i18nString4(UIStrings4.enterAUniquePath);
-    case 1 /* VALID */:
-      throw new Error("unreachable");
-  }
+var NEW_ITEM_KEY = /* @__PURE__ */ Symbol("new-excluded-folder");
+function renderExcludedFolderRow(folder, index, input) {
+  const editing = input.editingIndex === index;
+  const onPromptActivate = (event) => {
+    if (editing) {
+      return;
+    }
+    input.onEdit(index);
+    event.consume(true);
+  };
+  return html4`
+    <div
+      class="excluded-folder-row"
+      ?editable=${!editing}
+      ?deletable=${!editing}>
+      <devtools-prompt
+        class="excluded-folder-path"
+        render-as-block
+        title=${ifDefined3(folder || void 0)}
+        aria-label=${ifDefined3(editing ? i18nString4(UIStrings4.folderPath) : void 0)}
+        value=${folder}
+        ?editing=${editing}
+        .validator=${(value) => input.validateFolder(index, value)}
+        @click=${onPromptActivate}
+        @commit=${(event) => input.onCommit(index, event.detail)}
+        @cancel=${input.onCancel}>
+        ${folder}
+      </devtools-prompt>
+    </div>
+  `;
 }
 var DEFAULT_VIEW2 = (input, _output, target) => {
+  const isAdding = input.editingIndex === input.excludedFolders.length;
+  const items = isAdding ? [...input.excludedFolders, ""] : input.excludedFolders;
   render4(html4`
-      <style>${editFileSystemView_css_default}</style>
-      <div class="excluded-folder-header">
-        <span>${i18nString4(UIStrings4.url)}</span>
-        <span class="excluded-folder-url">${input.fileSystemPath}</span>
-        <devtools-data-grid
-          @create=${input.onCreate}
-          class="exclude-subfolders-table"
-          parts="excluded-folder-row-with-error"
-          inline striped deletable>
-          <table>
-            <thead>
-              <tr>
-                <th id="url" editable>${i18nString4(UIStrings4.excludedFolders)}</th>
-              </tr>
-            </thead>
-            <tbody>
-            ${input.excludedFolderPaths.map((path, index) => html4`
-              <tr data-url=${path.path} data-index=${index}
-                  @edit=${input.onEdit}
-                  @delete=${input.onDelete}>
-                <td style=${styleMap({ backgroundColor: path.status !== 1 /* VALID */ ? "var(--sys-color-error-container)" : void 0 })}>${path.path}</td>
-              </tr>
-            `)}
-            <tr placeholder></tr>
-            </tbody>
-          </table>
-        </devtools-data-grid>
-        ${input.excludedFolderPaths.filter(({ status }) => status !== 1 /* VALID */).map(({ status }) => html4`<span class="excluded-folder-error">${statusString(status)}</span>`)}
-    </div>`, target);
+    <style>${editFileSystemView_css_default}</style>
+    <div class="excluded-folder-header">
+      <span>${i18nString4(UIStrings4.url)}</span>
+      <span class="excluded-folder-url">${input.fileSystemPath}</span>
+      <div class="excluded-folders-title">${i18nString4(UIStrings4.excludedFolders)}</div>
+      ${items.length > 0 ? html4`
+        <devtools-list
+          ?disable-li-focus=${input.editingIndex !== null}
+          @edit=${(e) => input.onEdit(e.detail.index)}
+          @delete=${(e) => input.onDelete(e.detail.index)}>
+          ${repeat2(
+    items,
+    (folder, index) => index === input.excludedFolders.length ? NEW_ITEM_KEY : folder,
+    (folder, index) => renderExcludedFolderRow(folder, index, input)
+  )}
+        </devtools-list>
+      ` : nothing5}
+      <devtools-button
+        class="add-subfolder-button"
+        .variant=${Buttons3.Button.Variant.OUTLINED}
+        .jslogContext=${"settings.add-excluded-folder"}
+        @click=${input.onAdd}>
+        ${i18nString4(UIStrings4.addSubfolder)}
+      </devtools-button>
+    </div>
+  `, target);
 };
 var EditFileSystemView = class _EditFileSystemView extends UI4.Widget.VBox {
   #fileSystem;
-  #excludedFolderPaths = [];
+  #excludedFolders = [];
+  #editingIndex = null;
   #view;
   constructor(element, view = DEFAULT_VIEW2) {
     super(element);
     this.#view = view;
   }
   set fileSystem(fileSystem) {
+    if (this.#fileSystem === fileSystem) {
+      return;
+    }
     this.#fileSystem = fileSystem;
-    this.#resyncExcludedFolderPaths();
+    this.#editingIndex = null;
+    this.#resyncExcludedFolders();
     this.requestUpdate();
   }
   wasShown() {
     super.wasShown();
-    this.#resyncExcludedFolderPaths();
+    this.#editingIndex = null;
+    this.#resyncExcludedFolders();
     this.requestUpdate();
   }
-  #resyncExcludedFolderPaths() {
-    this.#excludedFolderPaths = this.#fileSystem?.excludedFolders().values().map((path) => ({ path, status: 1 /* VALID */ })).toArray() ?? [];
+  willHide() {
+    super.willHide();
+    this.#editingIndex = null;
+  }
+  #resyncExcludedFolders() {
+    this.#excludedFolders = this.#fileSystem?.excludedFolders().values().toArray() ?? [];
   }
   performUpdate() {
     const input = {
       fileSystemPath: this.#fileSystem?.path() ?? Platform3.DevToolsPath.urlString``,
-      excludedFolderPaths: this.#excludedFolderPaths,
-      onCreate: (e) => this.#onCreate(e.detail.url),
-      onEdit: (e) => this.#onEdit(
-        e.currentTarget.dataset.index ?? "-1",
-        e.detail.valueBeforeEditing,
-        e.detail.newText
-      ),
-      onDelete: (e) => this.#onDelete(e.currentTarget.dataset.index ?? "-1")
+      excludedFolders: [...this.#excludedFolders],
+      editingIndex: this.#editingIndex,
+      onAdd: this.#onAdd.bind(this),
+      onEdit: this.#onEdit.bind(this),
+      onDelete: this.#onDelete.bind(this),
+      onCommit: this.#onCommit.bind(this),
+      onCancel: this.#onCancel.bind(this),
+      validateFolder: this.#validateFolder.bind(this)
     };
     this.#view(input, void 0, this.contentElement);
   }
-  #onCreate(url) {
-    if (url === void 0) {
+  #onAdd() {
+    if (this.#editingIndex === this.#excludedFolders.length) {
       return;
     }
-    const pathWithStatus = this.#validateFolder(url);
-    this.#excludedFolderPaths.push(pathWithStatus);
-    if (pathWithStatus.status === 1 /* VALID */) {
-      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
+    this.#editingIndex = this.#excludedFolders.length;
+    this.requestUpdate();
+  }
+  #onEdit(index) {
+    if (index < 0 || index >= this.#excludedFolders.length) {
+      return;
+    }
+    this.#editingIndex = index;
+    this.requestUpdate();
+  }
+  #onCancel() {
+    if (!this.isShowing() || this.#editingIndex === null) {
+      return;
+    }
+    this.#editingIndex = null;
+    this.requestUpdate();
+  }
+  #onCommit(index, rawValue) {
+    if (!this.isShowing() || this.#editingIndex === null) {
+      return;
+    }
+    const isNew = index === this.#excludedFolders.length;
+    if (!isNew && (index < 0 || index >= this.#excludedFolders.length)) {
+      return;
+    }
+    if (this.#validateFolder(index, rawValue) !== null) {
+      return;
+    }
+    const path = _EditFileSystemView.#normalizePrefix(rawValue.trim());
+    if (isNew) {
+      this.#excludedFolders.push(path);
+      this.#fileSystem?.addExcludedFolder(path);
+    } else if (this.#excludedFolders[index] !== path) {
+      this.#fileSystem?.removeExcludedFolder(this.#excludedFolders[index]);
+      this.#excludedFolders[index] = path;
+      this.#fileSystem?.addExcludedFolder(path);
+    }
+    this.#editingIndex = null;
+    this.requestUpdate();
+  }
+  #onDelete(index) {
+    if (index < 0 || index >= this.#excludedFolders.length) {
+      return;
+    }
+    this.#fileSystem?.removeExcludedFolder(this.#excludedFolders[index]);
+    this.#excludedFolders.splice(index, 1);
+    if (this.#editingIndex !== null) {
+      if (this.#editingIndex === index) {
+        this.#editingIndex = null;
+      } else if (this.#editingIndex > index) {
+        this.#editingIndex--;
+      }
     }
     this.requestUpdate();
   }
-  #onEdit(idx, valueBeforeEditing, newText) {
-    const index = Number.parseInt(idx, 10);
-    if (index < 0 || index >= this.#excludedFolderPaths.length) {
-      return;
-    }
-    const pathWithStatus = this.#validateFolder(newText);
-    const oldPathWithStatus = this.#excludedFolderPaths[index];
-    this.#excludedFolderPaths[index] = pathWithStatus;
-    if (oldPathWithStatus.status === 1 /* VALID */) {
-      this.#fileSystem?.removeExcludedFolder(valueBeforeEditing);
-    }
-    if (pathWithStatus.status === 1 /* VALID */) {
-      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
-    }
-    this.requestUpdate();
-  }
-  #onDelete(idx) {
-    const index = Number.parseInt(idx, 10);
-    if (index < 0 || index >= this.#excludedFolderPaths.length) {
-      return;
-    }
-    this.#fileSystem?.removeExcludedFolder(this.#excludedFolderPaths[index].path);
-    this.#excludedFolderPaths.splice(index, 1);
-    this.requestUpdate();
-  }
-  #validateFolder(rawInput) {
+  #validateFolder(index, rawInput) {
     const path = _EditFileSystemView.#normalizePrefix(rawInput.trim());
     if (!path) {
-      return { path, status: 2 /* ERROR_NOT_A_PATH */ };
+      return i18nString4(UIStrings4.enterAPath);
     }
-    if (this.#excludedFolderPaths.findIndex(({ path: p }) => p === path) !== -1) {
-      return { path, status: 3 /* ERROR_NOT_UNIQUE */ };
+    const isDuplicate = this.#excludedFolders.some((p, i) => i !== index && p === path);
+    if (isDuplicate) {
+      return i18nString4(UIStrings4.enterAUniquePath);
     }
-    return { path, status: 1 /* VALID */ };
+    return null;
   }
   static #normalizePrefix(prefix) {
     if (!prefix) {
@@ -2455,10 +2531,10 @@ import * as Common4 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as Platform4 from "../../core/platform/platform.js";
 import * as Workspace from "../../models/workspace/workspace.js";
-import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as Buttons4 from "../../ui/components/buttons/buttons.js";
 import * as UIHelpers2 from "../../ui/helpers/helpers.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html5, nothing as nothing5, render as render5 } from "../../ui/lit/lit.js";
+import { Directives as Directives3, html as html5, nothing as nothing6, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
@@ -2739,14 +2815,14 @@ function renderEditor(input) {
       </div>
       <div class="editor-buttons">
         <devtools-button
-            .variant=${Buttons3.Button.Variant.OUTLINED}
+            .variant=${Buttons4.Button.Variant.OUTLINED}
             .jslogContext=${"cancel"}
             jslog=${VisualLogging4.action("cancel").track({ click: true })}
             @click=${input.onCancelEdit}>
           ${i18nString5(UIStrings5.cancel)}
         </devtools-button>
         <devtools-button
-            .variant=${Buttons3.Button.Variant.PRIMARY}
+            .variant=${Buttons4.Button.Variant.PRIMARY}
             .jslogContext=${"commit"}
             .disabled=${input.validationError !== null}
             @click=${input.onCommitEdit}>
@@ -2754,7 +2830,7 @@ function renderEditor(input) {
         </devtools-button>
       </div>
       <div class="list-widget-input-validation-error" role="alert" aria-live="polite">
-        ${isInvalid && input.validationError ? input.validationError : nothing5}
+        ${isInvalid && input.validationError ? input.validationError : nothing6}
       </div>
     </div>
   `;
@@ -2764,6 +2840,8 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   const patternsBefore = editingIndex !== null ? input.patterns.slice(0, editingIndex) : input.patterns;
   const patternsAfter = editingIndex !== null ? input.patterns.slice(editingIndex + 1) : [];
   render5(html5`
+    <style>${frameworkIgnoreListSettingsTab_css_default}</style>
+    <style>${settingsScreen_css_default}</style>
     <div class="settings-card-container-wrapper">
       <div class="settings-card-container ignore-list-settings">
         <devtools-card .heading=${i18nString5(UIStrings5.frameworkIgnoreList)}>
@@ -2798,8 +2876,8 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
               </devtools-checkbox>
               <devtools-button
                   .iconName=${"help"}
-                  .variant=${Buttons3.Button.Variant.ICON}
-                  .size=${Buttons3.Button.Size.SMALL}
+                  .variant=${Buttons4.Button.Variant.ICON}
+                  .size=${Buttons4.Button.Size.SMALL}
                   .jslogContext=${"learn-more"}
                   .title=${i18nString5(UIStrings5.learnMore)}
                   .disabled=${!input.enabled}
@@ -2832,8 +2910,8 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     (item2, index) => renderRuleItem(item2, index, input.enabled, input.onTogglePattern)
   )}
               </devtools-list>
-            ` : nothing5}
-            ${editingIndex !== null ? renderEditor(input) : nothing5}
+            ` : nothing6}
+            ${editingIndex !== null ? renderEditor(input) : nothing6}
             ${editingIndex !== null && patternsAfter.length > 0 ? html5`
               <devtools-list
                   class="ignore-list"
@@ -2847,10 +2925,10 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     (item2, index) => renderRuleItem(item2, editingIndex + 1 + index, input.enabled, input.onTogglePattern)
   )}
               </devtools-list>
-            ` : nothing5}
+            ` : nothing6}
             <devtools-button
                 class="add-button"
-                .variant=${Buttons3.Button.Variant.OUTLINED}
+                .variant=${Buttons4.Button.Variant.OUTLINED}
                 .jslogContext=${"settings.add-ignore-list-pattern"}
                 aria-label=${i18nString5(UIStrings5.addFilenamePattern)}
                 .disabled=${!input.enabled}
@@ -2878,7 +2956,6 @@ var FrameworkIgnoreListSettingsTab = class extends UI5.Widget.VBox {
       useShadowDom: true
     });
     this.#view = view;
-    this.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default, settingsScreen_css_default);
     const settings = Common4.Settings.Settings.instance();
     this.enabledSetting = settings.resolve(Workspace.IgnoreListManager.enableIgnoreListingSettingDescriptor);
     this.skipContentScriptsSetting = settings.resolve(Workspace.IgnoreListManager.skipContentScriptsSettingDescriptor);
@@ -3030,7 +3107,7 @@ import * as Common5 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
 import * as i18n11 from "../../core/i18n/i18n.js";
 import * as Platform6 from "../../core/platform/platform.js";
-import * as Buttons4 from "../../ui/components/buttons/buttons.js";
+import * as Buttons5 from "../../ui/components/buttons/buttons.js";
 import * as SettingsUI3 from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
@@ -3261,7 +3338,7 @@ button.text-button {
 /*# sourceURL=${import.meta.resolve("./keybindsSettingsTab.css")} */`;
 
 // ../../front_end/panels/settings/KeybindsSettingsTab.ts
-var { html: html6, nothing: nothing6, render: render6, Directives: { classMap: classMap2, repeat: repeat2 } } = Lit3;
+var { html: html6, nothing: nothing7, render: render6, Directives: { classMap: classMap2, repeat: repeat3 } } = Lit3;
 var UIStrings6 = {
   /**
    * @description Text for keyboard shortcuts.
@@ -3356,7 +3433,7 @@ function renderActionRow(item2, input) {
       title=${i18nString6(UIStrings6.editShortcut)}
       aria-label=${i18nString6(UIStrings6.editShortcut)}
       .iconName=${"edit"}
-      .variant=${Buttons4.Button.Variant.ICON}
+      .variant=${Buttons5.Button.Variant.ICON}
       .jslogContext=${"edit"}
       @click=${() => input.onStartEditing(item2.action)}>
     </devtools-button>
@@ -3375,16 +3452,16 @@ function renderActionRow(item2, input) {
         tabindex=${item2.tabIndex}
         ?autofocus=${item2.isAutofocus}
         jslog=${VisualLogging5.item().context(item2.actionId).track({ keydown: "Escape", resize: true })}
-        @keydown=${item2.isEditing ? input.onEditingRowKeyDown : nothing6}>
+        @keydown=${item2.isEditing ? input.onEditingRowKeyDown : nothing7}>
         <div class="keybinds-action-name keybinds-list-text">${item2.actionTitle}</div>
-        ${repeat2(item2.rows, (row) => row.shortcut, (row, index) => html6`
+        ${repeat3(item2.rows, (row) => row.shortcut, (row, index) => html6`
           ${row.isModified ? html6`
             <devtools-icon
               class="keybinds-modified"
               name="keyboard-pen"
               aria-label=${i18nString6(UIStrings6.shortcutModified)}>
             </devtools-icon>
-          ` : nothing6}
+          ` : nothing7}
           <div class="keybinds-shortcut keybinds-list-text">
             ${item2.isEditing ? html6`
               <input
@@ -3408,7 +3485,7 @@ function renderActionRow(item2, input) {
                 title=${i18nString6(UIStrings6.removeShortcut)}
                 aria-label=${i18nString6(UIStrings6.removeShortcut)}
                 .iconName=${"bin"}
-                .variant=${Buttons4.Button.Variant.ICON}
+                .variant=${Buttons5.Button.Variant.ICON}
                 .jslogContext=${"delete"}
                 @click=${() => input.onDeleteShortcut(row.shortcut)}>
               </devtools-button>
@@ -3418,7 +3495,7 @@ function renderActionRow(item2, input) {
               `)}
             `}
           </div>
-          ${!item2.isEditing && index === 0 ? renderEditButton() : nothing6}
+          ${!item2.isEditing && index === 0 ? renderEditButton() : nothing7}
         `)}
         ${item2.hasEmptyInfo ? html6`
           ${item2.hasDefaultShortcutWhenEmpty ? html6`
@@ -3427,19 +3504,19 @@ function renderActionRow(item2, input) {
               name="keyboard-pen"
               aria-label=${i18nString6(UIStrings6.shortcutModified)}>
             </devtools-icon>
-          ` : nothing6}
+          ` : nothing7}
           ${!item2.isEditing ? html6`
             <div
               class="keybinds-shortcut keybinds-list-text"
               aria-label=${i18nString6(UIStrings6.noShortcutForAction)}>
             </div>
             ${renderEditButton()}
-          ` : nothing6}
-        ` : nothing6}
+          ` : nothing7}
+        ` : nothing7}
         ${item2.isEditing ? html6`
           <div class="keybinds-shortcut">
             <devtools-button
-              .variant=${Buttons4.Button.Variant.OUTLINED}
+              .variant=${Buttons5.Button.Variant.OUTLINED}
               .jslogContext=${"add-shortcut"}
               ?autofocus=${item2.rows.length === 0}
               @click=${input.onAddShortcut}>
@@ -3460,7 +3537,7 @@ function renderActionRow(item2, input) {
             title=${i18nString6(UIStrings6.ResetShortcutsForAction)}
             aria-label=${i18nString6(UIStrings6.ResetShortcutsForAction)}
             .iconName=${"undo"}
-            .variant=${Buttons4.Button.Variant.ICON}
+            .variant=${Buttons5.Button.Variant.ICON}
             .jslogContext=${"undo"}
             @click=${input.onResetShortcutsToDefaults}>
           </devtools-button>
@@ -3469,7 +3546,7 @@ function renderActionRow(item2, input) {
             title=${i18nString6(UIStrings6.confirmChanges)}
             aria-label=${i18nString6(UIStrings6.confirmChanges)}
             .iconName=${"checkmark"}
-            .variant=${Buttons4.Button.Variant.ICON}
+            .variant=${Buttons5.Button.Variant.ICON}
             .jslogContext=${"confirm"}
             .disabled=${item2.isConfirmDisabled}
             @click=${input.onConfirmChanges}>
@@ -3479,11 +3556,11 @@ function renderActionRow(item2, input) {
             title=${i18nString6(UIStrings6.discardChanges)}
             aria-label=${i18nString6(UIStrings6.discardChanges)}
             .iconName=${"cross"}
-            .variant=${Buttons4.Button.Variant.ICON}
+            .variant=${Buttons5.Button.Variant.ICON}
             .jslogContext=${"cancel"}
             @click=${input.onDiscardChanges}>
           </devtools-button>
-        ` : nothing6}
+        ` : nothing7}
       </div>
     </div>
   `;
@@ -3507,7 +3584,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
                 role="list"
                 aria-label=${i18nString6(UIStrings6.keyboardShortcutsList)}
                 @keydown=${input.onListKeyDown}>
-                ${repeat2(
+                ${repeat3(
       input.items,
       (item2) => typeof item2 === "string" ? item2 : item2.actionId,
       (item2) => {
@@ -3534,7 +3611,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
                   ${i18nString6(UIStrings6.FullListOfDevtoolsKeyboard)}
                 </devtools-link>
                 <devtools-button
-                  .variant=${Buttons4.Button.Variant.OUTLINED}
+                  .variant=${Buttons5.Button.Variant.OUTLINED}
                   .jslogContext=${"restore-default-shortcuts"}
                   @click=${input.onRestoreDefaultShortcuts}>
                   ${i18nString6(UIStrings6.RestoreDefaultShortcuts)}
@@ -3953,7 +4030,7 @@ import "../../ui/kit/kit.js";
 import * as Common6 from "../../core/common/common.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Persistence from "../../models/persistence/persistence.js";
-import * as Buttons5 from "../../ui/components/buttons/buttons.js";
+import * as Buttons6 from "../../ui/components/buttons/buttons.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
 import { html as html7, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
@@ -4058,7 +4135,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
             </div>
             <devtools-button
               slot="heading-suffix"
-              .variant=${Buttons5.Button.Variant.OUTLINED}
+              .variant=${Buttons6.Button.Variant.OUTLINED}
               jslog=${VisualLogging6.action().track({ click: true }).context("settings.remove-file-system")}
               @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString7(UIStrings7.remove)}</devtools-button>
           </devtools-card>
@@ -4066,7 +4143,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
         <div class="add-button-container">
           <devtools-button
             class="add-folder"
-            .variant=${Buttons5.Button.Variant.OUTLINED}
+            .variant=${Buttons6.Button.Variant.OUTLINED}
             jslog=${VisualLogging6.action().track({ click: true }).context("sources.add-folder-to-workspace")}
             @click=${input.onAddClicked}>${i18nString7(UIStrings7.addFolder)}</devtools-button>
         </div>

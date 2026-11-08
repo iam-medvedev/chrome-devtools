@@ -682,7 +682,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1740,7 +1739,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -1794,7 +1792,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -1818,6 +1815,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2122,6 +2120,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -2870,7 +2873,6 @@ var webauthnPane_css_default = `/*
 @scope to (devtools-widget > *) {
   .webauthn-pane {
     overflow: auto;
-    min-width: 500px;
   }
 
   .webauthn-toolbar-container {
@@ -2936,7 +2938,7 @@ var webauthnPane_css_default = `/*
   }
 
   .webauthn-pane select {
-    width: 120px;
+    width: var(--sys-size-20);
   }
   /* Active Authenticator Section */
   .authenticator-section {
@@ -2951,7 +2953,7 @@ var webauthnPane_css_default = `/*
   .authenticator-fields {
     border: none;
     flex: 0 0 auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--sys-size-5);
   }
 
   .authenticator-section-header {
@@ -3000,8 +3002,7 @@ var webauthnPane_css_default = `/*
     font: var(--sys-typescale-body5-medium);
     padding-right: var(--sys-size-6);
     text-align: left;
-    min-width: 152px;
-    line-height: 18px;
+    min-width: var(--sys-size-23);
   }
 
   ::part(action-button) {
@@ -3568,22 +3569,6 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
       credentials: []
     });
     this.requestUpdate();
-    this.#model.addEventListener(
-      SDK.WebAuthnModel.Events.CREDENTIAL_ADDED,
-      this.#addCredential.bind(this, authenticatorId)
-    );
-    this.#model.addEventListener(
-      SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED,
-      this.#updateCredential.bind(this, authenticatorId)
-    );
-    this.#model.addEventListener(
-      SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED,
-      this.#updateCredential.bind(this, authenticatorId)
-    );
-    this.#model.addEventListener(
-      SDK.WebAuthnModel.Events.CREDENTIAL_DELETED,
-      this.#deleteCredential.bind(this, authenticatorId)
-    );
     return authenticatorId;
   }
   #activeAuthId = null;
@@ -3643,10 +3628,18 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
   modelAdded(model) {
     if (model.target() === model.target().outermostTarget()) {
       this.#model = model;
+      model.addEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_ADDED, this.#addCredential, this);
+      model.addEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED, this.#updateCredential, this);
+      model.addEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED, this.#updateCredential, this);
+      model.addEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_DELETED, this.#deleteCredential, this);
     }
   }
   modelRemoved(model) {
     if (model.target() === model.target().outermostTarget()) {
+      model.removeEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_ADDED, this.#addCredential, this);
+      model.removeEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED, this.#updateCredential, this);
+      model.removeEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED, this.#updateCredential, this);
+      model.removeEventListener(SDK.WebAuthnModel.Events.CREDENTIAL_DELETED, this.#deleteCredential, this);
       this.#model = void 0;
     }
   }
@@ -3672,20 +3665,20 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
     this.#enabled = false;
     await this.#setVirtualAuthEnvEnabled(false);
   }
-  #addCredential(authenticatorId, {
+  #addCredential({
     data: event
   }) {
-    const authenticator = this.#authenticators.get(authenticatorId);
+    const authenticator = this.#authenticators.get(event.authenticatorId);
     if (!authenticator) {
       return;
     }
     authenticator.credentials.push(event.credential);
     this.requestUpdate();
   }
-  #updateCredential(authenticatorId, {
+  #updateCredential({
     data: event
   }) {
-    const authenticator = this.#authenticators.get(authenticatorId);
+    const authenticator = this.#authenticators.get(event.authenticatorId);
     if (!authenticator) {
       return;
     }
@@ -3696,10 +3689,10 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
     Object.assign(credential, event.credential);
     this.requestUpdate();
   }
-  #deleteCredential(authenticatorId, {
+  #deleteCredential({
     data: event
   }) {
-    const authenticator = this.#authenticators.get(authenticatorId);
+    const authenticator = this.#authenticators.get(event.authenticatorId);
     if (!authenticator) {
       return;
     }

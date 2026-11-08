@@ -157,6 +157,28 @@ describe('CD4ABridge', () => {
         assert.strictEqual(threads[0].text, 'Changed attribute "class" from "old" to "new"\n\n- DevTools VEPath: Panel: elements > Tree: elements > TreeItem');
         assert.strictEqual(threads[1].text, 'Changed text from "Submit" to "Send"\n\n- DevTools VEPath: Panel: elements > Tree: elements > TreeItem\n- DevTools element: button.cta');
     });
+    it('returns previously transmitted threads marked as such when includeTransmitted is set', () => {
+        const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
+        const transmittedThread = commentManager.createCommentThread({ vePath: 'Panel: elements' }, 'Transmitted');
+        transmittedThread.sendToAgent();
+        const [firstPayload] = bridge.getCommentThreads();
+        assert.strictEqual(firstPayload.id, transmittedThread.id);
+        assert.isUndefined(firstPayload.previouslyTransmitted);
+        const newThread = commentManager.createCommentThread({ vePath: 'Panel: elements' }, 'New');
+        newThread.sendToAgent();
+        const threads = bridge.getCommentThreads({ includeTransmitted: true });
+        assert.deepEqual(threads, [
+            {
+                id: transmittedThread.id,
+                text: 'Transmitted\n\n- DevTools VEPath: Panel: elements',
+                previouslyTransmitted: true,
+            },
+            {
+                id: newThread.id,
+                text: 'New\n\n- DevTools VEPath: Panel: elements',
+            },
+        ]);
+    });
     it('delegates resolve to CommentManager and dispatches events', () => {
         const bridge = new CommentManager.CD4ABridge.CD4ABridge(commentManager);
         const thread = commentManager.createCommentThread({

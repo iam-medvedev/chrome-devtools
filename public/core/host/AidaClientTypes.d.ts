@@ -50,7 +50,7 @@ export interface FunctionPrimitiveParams extends BaseFunctionParam {
 }
 export interface FunctionArrayParam extends BaseFunctionParam {
     type: ParametersTypes.ARRAY;
-    items: FunctionPrimitiveParams;
+    items: FunctionPrimitiveParams | FunctionObjectParam;
 }
 export interface FunctionObjectParam<T extends string | number | symbol = string> extends BaseFunctionParam {
     type: ParametersTypes.OBJECT;
@@ -143,7 +143,11 @@ export interface DoConversationRequest {
     options?: ConversationOptions;
     metadata: RequestMetadata;
     functionality_type?: FunctionalityType;
-    client_feature?: ClientFeature;
+    /**
+     * Identifies the DevTools agent or feature making the request so GCA can resolve
+     * the corresponding server-side experience configuration.
+     */
+    client_feature: ClientFeature;
 }
 export interface CompleteCodeOptions {
     temperature?: number;
@@ -287,11 +291,19 @@ export interface FactualityMetadata {
 export interface InferenceOptionMetadata {
     modelId: string;
 }
+export interface UsageMetadata {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+    thoughtsTokenCount?: number;
+    cachedContentTokenCount?: number;
+}
 export interface ResponseMetadata {
     rpcGlobalId?: RpcGlobalId;
     attributionMetadata?: AttributionMetadata;
     factualityMetadata?: FactualityMetadata;
     inferenceOptionMetadata?: InferenceOptionMetadata;
+    usageMetadata?: UsageMetadata;
 }
 export interface DoConversationResponse {
     explanation: string;
@@ -349,7 +361,14 @@ export interface AidaChunkResponse {
     functionCallChunk?: {
         functionCall: AidaFunctionCall;
     };
-    error?: string;
+    /**
+     * Error information returned in the chunk.
+     * Supports direct AIDA stream chunk error strings (for example,
+     * "RESOURCE_EXHAUSTED: quota exceeded") and structured google.rpc.Status
+     * error objects translated from GCA stream chunks (for example,
+     * {"code": 429, "message": "You have exhausted your capacity on this model.", "status": "RESOURCE_EXHAUSTED", "details": [...]}).
+     */
+    error?: string | Record<string, unknown>;
 }
 export declare function debugLog(...log: unknown[]): void;
 export {};

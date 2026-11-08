@@ -915,7 +915,9 @@ var issuesTree_css_default = `/*
 }
 
 .issues li.parent::before {
-  margin-top: 7px;
+  /* Center the 16px chevron on the 20px leading issue icon:
+     4px header padding + 2px header child margin + (20px - 16px) / 2 = 8px. */
+  margin-top: var(--sys-size-5);
 }
 
 .issues .affected-resources li.parent::before {
@@ -1026,8 +1028,8 @@ p {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding: var(--sys-size-4) 0;
   position: relative;
-  padding-left: calc(var(--issue-indent) + 43px);
-  padding-bottom: 26px;
+  padding-left: calc(var(--issue-indent) + var(--sys-size-14));
+  padding-bottom: var(--sys-size-11);
   padding-right: var(--sys-size-5);
 }
 
@@ -1043,7 +1045,8 @@ p {
   content: "";
   display: block;
   position: absolute;
-  left: calc(var(--issue-indent) + 23px);
+  /* Align with .leading-issue-icon left edge: --issue-indent + 16px disclosure arrow (--sys-size-8) + 7px icon margin-left (--sys-size-5 - --sys-size-1). */
+  left: calc(var(--issue-indent) + var(--sys-size-8) + var(--sys-size-5) - var(--sys-size-1));
   top: 0;
   bottom: var(--sys-size-9);
   width: var(--sys-size-2);
@@ -1066,32 +1069,8 @@ p {
 }
 
 devtools-icon.leading-issue-icon {
-  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) 7px;
-}
-
-.message {
-  line-height: 18px;
-  font-size: var(--sys-typescale-body4-size);
-  color: var(--sys-color-token-subtle);
-  margin-bottom: var(--sys-size-3);
-  user-select: text;
-}
-
-.message p {
-  margin-bottom: var(--sys-size-8);
-}
-
-.message li {
-  margin-top: var(--sys-size-5);
-}
-
-.message code {
-  color: var(--sys-color-on-surface);
-  padding: 0 var(--sys-size-2);
-  font-size: var(--sys-typescale-body4-size);
-  user-select: text;
-  cursor: text;
-  background: var(--sys-color-surface2);
+  /* 8px (--sys-size-5) minus 1px (--sys-size-1) aligns the 20px icon after the 16px disclosure arrow with the 23px .issue-body::before border and 43px body indent. */
+  margin: var(--sys-size-1) 0 calc(-1 * var(--sys-size-1)) calc(var(--sys-size-5) - var(--sys-size-1));
 }
 
 .separator::before {
@@ -1112,8 +1091,8 @@ devtools-icon.leading-issue-icon {
 
 .affected-resources-label,
 .resolutions-label {
-  margin-top: 5px;
-  font-size: 10px;
+  margin-top: var(--sys-size-3);
+  font-size: var(--sys-typescale-body5-size);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1172,7 +1151,6 @@ ul > li.plain-enum::before {
 
 .affected-resource-label {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   color: var(--sys-color-on-surface);
   position: relative;
   cursor: pointer;
@@ -1180,7 +1158,6 @@ ul > li.plain-enum::before {
 
 .affected-resource-cookie {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
@@ -1202,14 +1179,12 @@ ul > li.plain-enum::before {
 
 .affected-resource-mixed-content {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-heavy-ad {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
@@ -1230,7 +1205,8 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-list {
-  border-spacing: 10px 0;
+  /* 12px left margin offset minus 2px cell left padding so column 1 aligns flush with parent container */
+  border-spacing: calc(var(--sys-size-6) - var(--sys-size-2)) 0;
   margin-left: calc(-1 * var(--sys-size-6));
 }
 
@@ -1305,11 +1281,12 @@ ul > li.plain-enum::before {
 
 .affected-resources > .children.expanded {
   background: var(--sys-color-cdt-base-container);
-  padding: var(--sys-size-4) 0 9px 5px;
+  padding: var(--sys-size-4) 0 var(--sys-size-5) var(--sys-size-3);
 }
 
 .aggregated-issues-count {
-  padding: 3px 7px 0;
+  /* Center the 14px (--sys-size-7) adorner pill vertically against the 20px (--sys-size-9) issue icon. */
+  padding: calc((var(--sys-size-9) - var(--sys-size-7)) / 2) var(--sys-size-4) 0;
 }
 
 .affected-resource-directive-info-header {
@@ -2033,7 +2010,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -3091,7 +3067,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -3145,7 +3120,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -3169,6 +3143,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -3473,6 +3448,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";

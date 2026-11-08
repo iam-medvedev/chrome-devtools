@@ -39,8 +39,8 @@ var chartViewport_css_default = `/*
 
 :host-context(.platform-mac) .chart-viewport-v-scroll {
   right: var(--sys-size-2);
-  top: 3px;
-  bottom: 3px;
+  top: var(--sys-size-2);
+  bottom: var(--sys-size-2);
 }
 
 :host-context(.platform-mac) ::-webkit-scrollbar {
@@ -58,7 +58,7 @@ var chartViewport_css_default = `/*
 /* force non overlay scrollbars for Aura Overlay Scrollbar enabled */
 
 :host-context(.overlay-scrollbar-enabled) ::-webkit-scrollbar {
-  width: 10px;
+  width: var(--sys-size-5);
 }
 
 :host-context(.overlay-scrollbar-enabled) ::-webkit-scrollbar-thumb {
@@ -172,9 +172,11 @@ var flameChart_css_default = `/*
 .flame-chart-marker-highlight-element {
   position: absolute;
   top: var(--sys-size-1);
-  height: 18px;
+  /* 20px header (--sys-size-9) minus two 1px top/bottom borders (2 * --sys-size-1). */
+  height: calc(var(--sys-size-9) - 2 * var(--sys-size-1));
   width: var(--sys-size-4);
-  margin: 0 -3px;
+  /* Half of 6px width (--sys-size-4) to center horizontally on left: barX. */
+  margin: 0 calc(-1 * var(--sys-size-4) / 2);
   content: "";
   display: block;
 }
@@ -230,7 +232,7 @@ var flameChart_css_default = `/*
 }
 
 .flame-chart-entry-info table tr td:not(:empty) {
-  padding: 0 5px;
+  padding: 0 var(--sys-size-3);
   white-space: nowrap;
 }
 
@@ -238,14 +240,15 @@ var flameChart_css_default = `/*
   font-weight: bold;
 }
 
-.flame-chart-entry-info table tr td span {
-  margin-right: 5px;
-}
-
 .flame-chart-edit-confirm {
   position: fixed;
-  bottom: 10px;
-  right: 10px;
+  bottom: var(--sys-size-6);
+  right: var(--sys-size-6);
+}
+
+:has(+ .chart-viewport-v-scroll:not(.hidden)) > .flame-chart-edit-confirm {
+  /* 12px margin (--sys-size-6) + 16px scrollbar gutter (--sys-size-8) = 28px (--sys-size-12). */
+  right: var(--sys-size-12);
 }
 
 /*# sourceURL=${import.meta.resolve("./flameChart.css")} */`;
@@ -4577,7 +4580,7 @@ var filmStripView_css_default = `/*
 .film-strip-view {
   overflow: auto hidden;
   align-content: flex-start;
-  min-height: 81px;
+  min-height: var(--sys-size-19);
 }
 
 .film-strip-view .frame .time {
@@ -4619,9 +4622,9 @@ var filmStripView_css_default = `/*
   height: auto;
   width: auto;
   max-width: var(--sys-size-19);
-  max-height: 50px;
+  max-height: var(--sys-size-16);
   pointer-events: none;
-  box-shadow: 0 0 3px var(--box-shadow-outline-color);
+  box-shadow: 0 0 var(--sys-size-3) var(--box-shadow-outline-color);
   flex: 0 0 auto;
 }
 
@@ -5789,7 +5792,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -6847,7 +6849,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -6901,7 +6902,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -6925,6 +6925,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -7229,6 +7230,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -8057,13 +8063,16 @@ var overviewGrid_css_default = `/*
 .overview-grid-window-resizer {
   position: absolute;
   top: 0;
-  height: 19px;
-  width: 10px;
-  margin-left: -5px; /* half width (incl the border) */
+  /* 20px (--sys-size-9) timeline header height minus 1px (--sys-size-1) bottom clearance */
+  height: calc(var(--sys-size-9) - var(--sys-size-1));
+  /* 8px (--sys-size-5) inner grip box plus 2x 1px (--sys-size-1) for left and right borders */
+  width: calc(var(--sys-size-5) + 2 * var(--sys-size-1));
+  /* Negative half of the 10px outer width: 4px (--sys-size-3) inner half-width plus 1px (--sys-size-1) border */
+  margin-left: calc(-1 * (var(--sys-size-3) + var(--sys-size-1)));
   background-color: var(--sys-color-tonal-container);
   border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
   z-index: 500;
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 /* Grip lines within the handle */
@@ -8072,10 +8081,11 @@ var overviewGrid_css_default = `/*
   content: "";
   width: var(--sys-size-1);
   background: var(--sys-color-primary);
-  height: 7px;
   position: absolute;
   left: var(--sys-size-2);
-  top: 5px;
+  /* 6px (--sys-size-4) outer offset minus 1px (--sys-size-1) handle border
+   * gives symmetric 5px top/bottom insets (7px grip line) in 17px box */
+  inset-block: calc(var(--sys-size-4) - var(--sys-size-1));
   border-radius: var(--sys-size-1);
 }
 
@@ -8133,7 +8143,7 @@ var overviewGrid_css_default = `/*
   transition: opacity 100ms 250ms;
   display: flex;
   position: absolute;
-  top: 15px;
+  top: var(--sys-size-8);
   justify-content: center;
   z-index: 600;
   left: 0;
@@ -8827,7 +8837,7 @@ var pieChart_css_default = `/*
 
 .root {
   align-items: flex-start; /* keep chart at top so it doesnt change position as the legend changes height */
-  gap: var(--sys-size-6) 30px;
+  gap: var(--sys-size-6) var(--sys-size-12);
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
@@ -8851,7 +8861,6 @@ var pieChart_css_default = `/*
 
 .pie-chart-total {
   margin: auto;
-  padding: var(--sys-size-2) 5px;
   pointer-events: auto;
 }
 
@@ -8872,8 +8881,8 @@ var pieChart_css_default = `/*
 }
 
 .pie-chart-legend-row {
-  margin: 5px var(--sys-size-2) 5px auto;
-  padding-right: 25px;
+  margin: var(--sys-size-3) var(--sys-size-2) var(--sys-size-3) auto;
+  padding-right: var(--sys-size-11);
 }
 
 .pie-chart-legend-row.selected {
@@ -8901,7 +8910,7 @@ var pieChart_css_default = `/*
 .pie-chart-size {
   display: inline-block;
   text-align: right;
-  width: 70px;
+  width: var(--sys-size-19);
 }
 
 @media (forced-colors: active) {

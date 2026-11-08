@@ -11,7 +11,7 @@ export default `/*
 
 @scope to (devtools-widget > *) {
   .registered-property-popup-wrapper {
-    max-width: 232px;
+    max-width: var(--sys-size-28);
     font-size: var(--sys-typescale-body4-size);
     line-height: 1.4;
     word-break: break-all;
@@ -23,7 +23,9 @@ export default `/*
   }
 
   .divider {
-    margin: var(--sys-size-5) -7px;
+    /* Bleed across the 8px (--sys-size-5) inline padding
+     * of devtools-tooltip's .container. */
+    margin: var(--sys-size-5) calc(-1 * var(--sys-size-5));
     border: var(--sys-size-1) solid var(--sys-color-divider);
   }
 

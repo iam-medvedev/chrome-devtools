@@ -84,6 +84,19 @@ describeWithEnvironment('PermissionPrompt', () => {
         buttons[1].click();
         sinon.assert.calledOnceWithExactly(onAnswer, "allow-always" /* AIAssistanceModel.Tool.PermissionDecision.ALLOW_ALWAYS */);
     });
+    it('sets dedicated visual logging contexts on the prompt and buttons', () => {
+        const target = renderPrompt(createStep({
+            permissionPrompt: "allow-once-or-always" /* AIAssistanceModel.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */,
+        }));
+        const prompt = querySelectorErrorOnMissing(target, '.permission-prompt');
+        assert.strictEqual(prompt.getAttribute('jslog'), 'Section; context: ai-permission-prompt');
+        const buttons = getButtons(target);
+        assert.deepEqual(buttons.map(b => b.jslogContext), [
+            'ai-permission-reject',
+            'ai-permission-allow-always',
+            'ai-permission-allow-once',
+        ]);
+    });
     it('focuses the "No" button when the prompt appears', async () => {
         const target = document.createElement('div');
         renderElementIntoDOM(target);

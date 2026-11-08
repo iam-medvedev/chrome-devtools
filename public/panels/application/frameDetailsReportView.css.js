@@ -42,18 +42,9 @@ button.link {
   height: var(--sys-size-8);
 }
 
-button.link:has(devtools-icon) {
-  margin-top: 5px;
-}
-
 devtools-button.help-button {
   top: var(--sys-size-3);
   position: relative;
-}
-
-button.text-link {
-  padding-left: var(--sys-size-2);
-  height: 26px;
 }
 
 .inline-button {
@@ -112,11 +103,6 @@ button.text-link {
 
 .bold {
   font-weight: bold;
-}
-
-.link:not(button):has(devtools-icon) {
-  vertical-align: baseline;
-  margin-inline-start: 3px;
 }
 
 .inline-icon {

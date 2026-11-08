@@ -114,7 +114,7 @@ li.search-match .search-match-line-number {
   vertical-align: top;
   word-break: normal;
   padding: var(--sys-size-2) var(--sys-size-3) var(--sys-size-2) var(--sys-size-4);
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .tree-outline .devtools-link {
@@ -134,7 +134,7 @@ ol.children.expanded {
 li.search-match .link-style.search-match-link {
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: 9px;
+  margin-left: var(--sys-size-5);
   text-align: left;
 }
 
@@ -529,10 +529,11 @@ var searchView_css_default = `/*
 .search-toolbar-summary {
   background-color: var(--sys-color-cdt-base-container);
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  padding-left: 5px;
-  flex: 0 0 19px;
+  padding-left: var(--sys-size-3);
+  /* 20px footer bar (--sys-size-9) minus 1px top divider border (--sys-size-1). */
+  flex: 0 0 calc(var(--sys-size-9) - var(--sys-size-1));
   display: flex;
-  padding-right: 5px;
+  padding-right: var(--sys-size-3);
 }
 
 .search-results:has(.empty-widget-container) + .search-toolbar-summary {

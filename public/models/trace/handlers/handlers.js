@@ -355,6 +355,9 @@ var flows = [];
 var ID_COMPONENT_SEPARATOR = "-$-";
 function reset3() {
   flows = [];
+  resetIntermediateState();
+}
+function resetIntermediateState() {
   flowEvents = [];
   nonFlowEvents = [];
   flowDataByGroupToken = /* @__PURE__ */ new Map();
@@ -436,6 +439,7 @@ async function finalize3() {
   flowEvents.forEach(processFlowEvent);
   nonFlowEvents.forEach(processNonFlowEvent);
   flows = [...flowsById.values()].map((flowMapping) => [...flowMapping.values()]).map((flow) => flow.filter((event) => event !== void 0)).filter((flow) => flow.length > 1);
+  resetIntermediateState();
 }
 function data3() {
   return {
@@ -1461,7 +1465,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -2519,7 +2522,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -2573,7 +2575,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -2597,6 +2598,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2901,6 +2903,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -4151,7 +4158,6 @@ function parseCPUProfileData(parseOptions) {
       profileTree.maxDepth = profileModel.maxDepth;
       const selectedProfileId = chosen.id;
       const finalizedData = {
-        rawProfile: chosenData.rawProfile,
         parsedProfile: profileModel,
         profileCalls: [],
         profileTree,
@@ -4234,6 +4240,7 @@ function handleEvent6(event) {
 }
 async function finalize6(parseOptions = {}) {
   parseCPUProfileData(parseOptions);
+  preprocessedData = /* @__PURE__ */ new Map();
 }
 function assignProfileSourceIfKnown(profileData, source) {
   if (Types7.Events.VALID_PROFILE_SOURCES.includes(source)) {
@@ -7049,18 +7056,6 @@ function findNetworkRequest(networkRequests, script) {
   }
   return networkRequests.find((request) => request.args.data.url === script.url) ?? null;
 }
-function computeMappingEndColumns(map) {
-  const result = /* @__PURE__ */ new Map();
-  const mappings = map.mappings();
-  for (let i = 0; i < mappings.length - 1; i++) {
-    const mapping = mappings[i];
-    const nextMapping = mappings[i + 1];
-    if (mapping.lineNumber === nextMapping.lineNumber) {
-      result.set(mapping, nextMapping.columnNumber);
-    }
-  }
-  return result;
-}
 function computeGeneratedFileSizes(script) {
   if (!script.sourceMap) {
     throw new Error("expected source map");
@@ -7068,37 +7063,48 @@ function computeGeneratedFileSizes(script) {
   const map = script.sourceMap;
   const content = script.content ?? "";
   const contentLength = content.length;
-  const lines = content.split("\n");
+  const lineLengths = [];
+  for (let start = 0; ; ) {
+    const newlineIndex = content.indexOf("\n", start);
+    if (newlineIndex === -1) {
+      lineLengths.push(contentLength - start);
+      break;
+    }
+    lineLengths.push(newlineIndex - start);
+    start = newlineIndex + 1;
+  }
   const files = {};
   const totalBytes = contentLength;
   let unmappedBytes = totalBytes;
-  const mappingEndCols = computeMappingEndColumns(script.sourceMap);
-  for (const mapping of map.mappings()) {
+  const mappings = map.mappings();
+  for (let i = 0; i < mappings.length; i++) {
+    const mapping = mappings[i];
     const source = mapping.sourceURL;
     const lineNum = mapping.lineNumber;
     const colNum = mapping.columnNumber;
-    const lastColNum = mappingEndCols.get(mapping);
+    const nextMapping = mappings[i + 1];
+    const lastColNum = nextMapping !== void 0 && nextMapping.lineNumber === lineNum ? nextMapping.columnNumber : void 0;
     if (!source) {
       continue;
     }
-    const line = lines[lineNum];
-    if (line === null || line === void 0) {
+    const lineLength = lineLengths[lineNum];
+    if (lineLength === void 0) {
       const errorMessage = `${map.url()} mapping for line out of bounds: ${lineNum + 1}`;
       return { errorMessage };
     }
-    if (colNum > line.length) {
+    if (colNum > lineLength) {
       const errorMessage = `${map.url()} mapping for column out of bounds: ${lineNum + 1}:${colNum}`;
       return { errorMessage };
     }
     let mappingLength = 0;
     if (lastColNum !== void 0) {
-      if (lastColNum > line.length) {
+      if (lastColNum > lineLength) {
         const errorMessage = `${map.url()} mapping for last column out of bounds: ${lineNum + 1}:${lastColNum}`;
         return { errorMessage };
       }
       mappingLength = lastColNum - colNum;
     } else {
-      mappingLength = line.length - colNum + 1;
+      mappingLength = lineLength - colNum + 1;
     }
     files[source] = (files[source] || 0) + mappingLength;
     unmappedBytes -= mappingLength;
@@ -7142,6 +7148,7 @@ function findCachedRawSourceMap(script, options) {
   return;
 }
 async function finalize25(options) {
+  frameIdByIsolate = /* @__PURE__ */ new Map();
   const meta = data4();
   const networkRequests = [...data5().byId.values()];
   const documentUrls = /* @__PURE__ */ new Set();

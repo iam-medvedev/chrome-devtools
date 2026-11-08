@@ -67,19 +67,6 @@ var nodeConnectionsPanel_css_default = `/*
   overflow: hidden;
 }
 
-.network-discovery-edit-row {
-  flex: none;
-  display: flex;
-  flex-direction: row;
-  margin: var(--sys-size-4) 5px;
-  align-items: center;
-}
-
-.network-discovery-edit-row input {
-  width: 100%;
-  text-align: inherit;
-}
-
 .network-discovery-footer {
   margin: 0;
   overflow: hidden;
@@ -120,15 +107,6 @@ var nodeConnectionsPanel_css_default = `/*
 .node-panel-logo {
   width: 400px;
   margin-bottom: 50px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row input {
-  height: 30px;
-  padding-left: 5px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row {
-  margin: var(--sys-size-4) 9px;
 }
 
 /*# sourceURL=${import.meta.resolve("./nodeConnectionsPanel.css")} */`;
@@ -462,10 +440,6 @@ var NodeChildTargetManager = class extends SDK.SDKModel.SDKModel {
       void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false });
     }
   }
-  targetInfoChanged(_event) {
-  }
-  targetDestroyed(_event) {
-  }
   async attachedToTarget({ sessionId, targetInfo }) {
     let target;
     if (targetInfo.type === "node_worker") {
@@ -526,8 +500,6 @@ var NodeChildTargetManager = class extends SDK.SDKModel.SDKModel {
     if (onMessage) {
       onMessage.call(null, message);
     }
-  }
-  targetCrashed(_event) {
   }
 };
 var NodeConnection = class {

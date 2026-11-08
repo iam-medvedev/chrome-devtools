@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import { beforeEach, it } from 'mocha';
 import * as Common from '../../core/common/common.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { getAxeViolations } from '../../testing/AxeHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -236,6 +237,47 @@ describeWithEnvironment('FrameworkIgnoreListSettingsTab', () => {
         input.dispatchEvent(new Event('input'));
         commitButton.dispatchEvent(new Event('click'));
         await assertScreenshot('settings/framework_ignore_list_settings_tab_edit_error.png');
+    });
+    it('has zero aXe violations when opening the add-pattern editor', async () => {
+        const shadowRoot = tab.element.shadowRoot;
+        assert.exists(shadowRoot);
+        const addPatternButton = shadowRoot.querySelector('.add-button');
+        assert.exists(addPatternButton);
+        addPatternButton.click();
+        const editorContainer = shadowRoot.querySelector('.editor-container');
+        assert.exists(editorContainer);
+        const input = editorContainer.querySelector('input[type="text"]');
+        assert.exists(input);
+        assert.isEmpty(await getAxeViolations(tab.contentElement));
+    });
+    it('has zero aXe violations when patterns are populated in the ignore list', async () => {
+        const regexSetting = Common.Settings.Settings.instance().resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
+        regexSetting.setAsArray([
+            { pattern: '/node_modules/|/bower_components/', disabled: false },
+            { pattern: 'test*', disabled: false },
+        ]);
+        const shadowRoot = tab.element.shadowRoot;
+        assert.exists(shadowRoot);
+        const items = shadowRoot.querySelectorAll('.ignore-list-item');
+        assert.lengthOf(items, 2);
+        assert.isEmpty(await getAxeViolations(tab.contentElement));
+    });
+    it('has zero aXe violations when an input validation error is shown', async () => {
+        const shadowRoot = tab.element.shadowRoot;
+        assert.exists(shadowRoot);
+        const addPatternButton = shadowRoot.querySelector('.add-button');
+        assert.exists(addPatternButton);
+        addPatternButton.click();
+        const editorContainer = shadowRoot.querySelector('.editor-container');
+        assert.exists(editorContainer);
+        const input = editorContainer.querySelector('input[type="text"]');
+        assert.exists(input);
+        input.value = '   ';
+        input.dispatchEvent(new Event('input'));
+        const errorContainer = editorContainer.querySelector('.list-widget-input-validation-error');
+        assert.exists(errorContainer);
+        assert.strictEqual(errorContainer.textContent?.trim(), 'Rule can’t be empty');
+        assert.isEmpty(await getAxeViolations(tab.contentElement));
     });
 });
 //# sourceMappingURL=FrameworkIgnoreListSettingsTab.test.js.map

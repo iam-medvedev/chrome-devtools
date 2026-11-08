@@ -19,7 +19,7 @@ export default `/**
 
   .font-usage {
     color: var(--sys-color-token-subtle);
-    padding-left: 3px;
+    padding-left: var(--sys-size-3);
   }
 
   .title {
@@ -37,7 +37,7 @@ export default `/**
   }
 
   .font-stats-item {
-    padding: 5px 1em;
+    padding: var(--sys-size-3) 1em;
 
     div {
       margin-bottom: var(--sys-size-2);

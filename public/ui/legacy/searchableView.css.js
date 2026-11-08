@@ -10,7 +10,8 @@ export default `/*
  */
 
 .search-bar {
-  flex: 0 0 33px;
+  /* 32px search toolbar (28px row + 2x2px margin) plus 1px top border. */
+  flex: 0 0 calc(var(--sys-size-13) + var(--sys-size-1));
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
 
   devtools-icon[name="search"] {
@@ -122,7 +123,7 @@ export default `/*
     grid-auto-rows: var(--sys-size-12);
     flex-grow: 1;
     align-items: center;
-    min-width: 150px;
+    min-width: var(--sys-size-23);
   }
 
   .first-row-buttons {

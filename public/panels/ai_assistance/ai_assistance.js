@@ -636,10 +636,9 @@ var chatMessage_css_default = `/*
 
     .answer-body-wrapper {
       @container(min-width: 700px) {
-        /* Purposefully not using design system variables, this is a
-         * specific size to indent the content in and align it with the
-         * walkthrough CTA. */
-        padding-left: 35px;
+        /* Indent the content to align with the walkthrough CTA
+         * (icon width + flex gap + button horizontal padding). */
+        padding-left: calc(var(--sys-size-9) + var(--sys-size-2) + var(--sys-size-6));
       }
     }
 
@@ -892,7 +891,7 @@ var chatMessage_css_default = `/*
 
   .styling-preview-widget {
     width: 100%;
-    min-height: 100px;
+    min-height: var(--sys-size-19);
   }
 
   .main-widgets-wrapper {
@@ -3515,9 +3514,14 @@ async function makeTimelineRangeSummaryWidget(widgetData) {
     jslogContext: "timeline-range-summary"
   };
 }
+var networkTrackDataProviders = /* @__PURE__ */ new WeakMap();
 async function makeNetworkTrackWidget(widgetData) {
   const { parsedTrace, bounds } = widgetData.data;
-  const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+  let dataProvider = networkTrackDataProviders.get(widgetData);
+  if (!dataProvider) {
+    dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+    networkTrackDataProviders.set(widgetData, dataProvider);
+  }
   const template = html5`
     <devtools-widget
       class="network-track-widget"
@@ -4272,7 +4276,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -5330,7 +5333,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -5384,7 +5386,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -5408,6 +5409,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -5712,6 +5714,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -6610,11 +6617,11 @@ var chatInput_css_default = `/*
   field-sizing: content;
   resize: none;
   width: 100%;
-  max-height: 84px; /* 4 rows */
+  max-height: var(--sys-size-19);
   border: 0;
   border-radius: var(--sys-shape-corner-small);
   font: var(--sys-typescale-body4-regular);
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   min-height: var(--sys-size-11);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
@@ -6668,7 +6675,7 @@ var chatInput_css_default = `/*
 }
 
 .chat-inline-button {
-  padding-left: 3px;
+  padding-left: var(--sys-size-3);
 }
 
 .select-element {
@@ -6760,9 +6767,9 @@ var chatInput_css_default = `/*
       height: var(--sys-size-4);
       border-radius: var(--sys-shape-corner-full);
       outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
-      left: 11px;
+      left: var(--sys-size-6);
       position: absolute;
-      top: 13px;
+      top: var(--sys-size-6);
       z-index: 1;
       background-color: var(--sys-color-purple-bright);
     }
@@ -7105,6 +7112,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
             aria-label=${lockedString4(UIStringsNotTranslate3.startNewChat)}
             class="chat-inline-button"
             @click=${input.onNewConversation}
+            .reducedFocusRing=${true}
             .data=${{
     variant: Buttons3.Button.Variant.TEXT,
     title: lockedString4(UIStringsNotTranslate3.startNewChat),
@@ -7277,6 +7285,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                         class="start-new-chat-button"
                         aria-label=${lockedString4(UIStringsNotTranslate3.startNewChat)}
                         @click=${input.onNewConversation}
+                        .reducedFocusRing=${true}
                         .data=${{
     variant: Buttons3.Button.Variant.OUTLINED,
     size: Buttons3.Button.Size.SMALL,
@@ -8480,13 +8489,13 @@ function renderPermissionPrompt(step, disclaimerText) {
   const allowAlwaysButton = dialog3.permissionPrompt === AiAssistanceModel6.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS ? html9`<devtools-button
       .data=${{
     variant: Buttons5.Button.Variant.OUTLINED,
-    jslogContext: "always-allow-execute-code"
+    jslogContext: "ai-permission-allow-always"
   }}
       @click=${() => dialog3.onAnswer(AiAssistanceModel6.Tool.PermissionDecision.ALLOW_ALWAYS)}
     >${lockedString5(UIStringsNotTranslate4.allowAlways)}</devtools-button>` : Lit9.nothing;
   return html9`${repeat([step], (step2) => step2, () => html9`
   <div class="permission-prompt"
-    jslog=${VisualLogging6.section("side-effect-confirmation")}>
+    jslog=${VisualLogging6.section("ai-permission-prompt")}>
     <div class="permission-prompt-header">
       <devtools-icon name="lock"></devtools-icon>
       <h2 class="permission-prompt-title">${title}</h2>
@@ -8497,7 +8506,7 @@ function renderPermissionPrompt(step, disclaimerText) {
       <devtools-button
         .data=${{
     variant: Buttons5.Button.Variant.TEXT,
-    jslogContext: "decline-execute-code"
+    jslogContext: "ai-permission-reject"
   }}
         @click=${() => dialog3.onAnswer(AiAssistanceModel6.Tool.PermissionDecision.REJECT)}
         ${ref4(focusOnFirstRender)}
@@ -8506,7 +8515,7 @@ function renderPermissionPrompt(step, disclaimerText) {
       <devtools-button
         .data=${{
     variant: Buttons5.Button.Variant.PRIMARY,
-    jslogContext: "accept-execute-code"
+    jslogContext: "ai-permission-allow-once"
   }}
         @click=${() => dialog3.onAnswer(AiAssistanceModel6.Tool.PermissionDecision.ALLOW_ONCE)}
       >${lockedString5(UIStringsNotTranslate4.allowThisTime)}</devtools-button>
@@ -9021,7 +9030,7 @@ var exploreWidget_css_default = `/*
 
     .link {
       padding: 0;
-      margin: 0 3px;
+      margin: 0 var(--sys-size-3);
     }
 
     .header {
@@ -9091,8 +9100,8 @@ var exploreWidget_css_default = `/*
         border-radius: var(--sys-shape-corner-full);
 
         devtools-icon {
-          width: 18px;
-          height: 18px;
+          width: var(--sys-size-9);
+          height: var(--sys-size-9);
         }
       }
 
@@ -9103,7 +9112,7 @@ var exploreWidget_css_default = `/*
 
         p {
           font: var(--sys-typescale-body4-regular);
-          line-height: 18px;
+          line-height: var(--sys-typescale-body4-line-height);
         }
       }
     }
@@ -9953,6 +9962,7 @@ function defaultView(input, output, target) {
     }
   }
   Lit12.render(html15`
+    <style>${aiAssistancePanel_css_default}</style>
     ${toolbarView(input)}
     <div class="ai-assistance-view-container">
       <devtools-split-view
@@ -10052,7 +10062,6 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
   constructor(view = defaultView, { aidaClient, aidaAvailability }) {
     super(_AiAssistancePanel.panelName);
     this.view = view;
-    this.registerRequiredCSS(aiAssistancePanel_css_default);
     this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
     this.#aidaClient = aidaClient;
     this.#aidaAvailability = aidaAvailability;
@@ -10284,13 +10293,20 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     }
   }
   async #handlePerformanceRecordAndReload() {
-    return await TimelinePanel2.TimelinePanel.TimelinePanel.executeRecordAndReload();
+    return await TimelinePanel2.TimelinePanel.TimelinePanel.executeRecordAndReload({
+      signal: this.#runAbortController.signal
+    });
   }
   async #handleLighthouseRun(overrides) {
-    return await LighthousePanel2.LighthousePanel.LighthousePanel.executeLighthouseRecording({
-      isAIControlled: true,
-      ...overrides
-    });
+    return await LighthousePanel2.LighthousePanel.LighthousePanel.executeLighthouseRecording(
+      {
+        isAIControlled: true,
+        ...overrides
+      },
+      {
+        signal: this.#runAbortController.signal
+      }
+    );
   }
   #getDefaultConversationType() {
     const { hostConfig } = Root4.Runtime;
@@ -10472,6 +10488,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     );
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
+    if (AiAssistanceModel8.AiUtils.isNaturalLanguageInterfaceEnabled()) {
+      void VisualLogging9.logFunctionCall("ai-allowed-tools-count", String(this.#alwaysAllowedTools.list().length));
+    }
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistancePanelOpened);
   }
   willHide() {
@@ -11089,6 +11108,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
       let announcedAnswerLoading = false;
       let announcedAnswerReady = false;
       for await (const data of items) {
+        const toolNameForLogging = "toolName" in data && data.toolName !== void 0 ? Platform5.StringUtilities.toKebabCase(data.toolName) : void 0;
         switch (data.type) {
           case AiAssistanceModel8.AiAgent.ResponseType.USER_QUERY: {
             this.#messages.push({
@@ -11117,6 +11137,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             break;
           }
           case AiAssistanceModel8.AiAgent.ResponseType.CONTEXT: {
+            if (data.widgets?.length) {
+              const newWidgetNames = new Set(data.widgets.map((widget5) => widget5.name));
+              for (const part of systemMessage.parts) {
+                if (part.type === "step" && part.step.contextDetails && part.step.widgets) {
+                  const remainingWidgets = part.step.widgets.filter((widget5) => !newWidgetNames.has(widget5.name));
+                  part.step.widgets = remainingWidgets.length > 0 ? remainingWidgets : void 0;
+                }
+              }
+            }
             step.title = lockedString8(UIStringsNotTranslate7.analyzingData);
             step.contextDetails = data.details;
             step.widgets = data.widgets;
@@ -11165,6 +11194,19 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
                   if (decision !== AiAssistanceModel8.Tool.PermissionDecision.REJECT && performance.now() - promptShownAt < PERMISSION_PROMPT_INPUT_PROTECTION_MS) {
                     return;
                   }
+                  if (AiAssistanceModel8.AiUtils.isNaturalLanguageInterfaceEnabled() && !this.#conversation?.isReadOnly) {
+                    switch (decision) {
+                      case AiAssistanceModel8.Tool.PermissionDecision.REJECT:
+                        void VisualLogging9.logFunctionCall("ai-permission-rejected", toolNameForLogging);
+                        break;
+                      case AiAssistanceModel8.Tool.PermissionDecision.ALLOW_ONCE:
+                        void VisualLogging9.logFunctionCall("ai-permission-allowed-once", toolNameForLogging);
+                        break;
+                      case AiAssistanceModel8.Tool.PermissionDecision.ALLOW_ALWAYS:
+                        void VisualLogging9.logFunctionCall("ai-permission-allowed-always", toolNameForLogging);
+                        break;
+                    }
+                  }
                   data.confirm(decision);
                   approvalStep.state = { type: "completed" };
                   this.requestUpdate();
@@ -11172,6 +11214,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
               }
             };
             commitStep();
+            if (AiAssistanceModel8.AiUtils.isNaturalLanguageInterfaceEnabled() && !this.#conversation?.isReadOnly) {
+              void VisualLogging9.logFunctionCall("ai-permission-prompt-shown", toolNameForLogging);
+            }
             break;
           }
           case AiAssistanceModel8.AiAgent.ResponseType.ACTION: {
@@ -11181,16 +11226,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             step.output ??= data.output;
             step.widgets ??= data.widgets;
             commitStep();
-            if (AiAssistanceModel8.AiUtils.isAiV2Enabled() && !this.#conversation?.isReadOnly) {
-              if (data.toolName === "learnSkills") {
-                for (const skill of data.loadedSkills ?? []) {
-                  void VisualLogging9.logFunctionCall("ai-v2-learn-skill", skill);
+            if (!this.#conversation?.isReadOnly) {
+              if (AiAssistanceModel8.AiUtils.isAiV2Enabled()) {
+                if (data.toolName === "learnSkills") {
+                  for (const skill of data.loadedSkills ?? []) {
+                    void VisualLogging9.logFunctionCall("ai-v2-learn-skill", skill);
+                  }
+                } else if (toolNameForLogging) {
+                  void VisualLogging9.logFunctionCall("ai-v2-tool-call", toolNameForLogging);
                 }
-              } else if (data.toolName) {
-                void VisualLogging9.logFunctionCall(
-                  "ai-v2-tool-call",
-                  Platform5.StringUtilities.toKebabCase(data.toolName)
-                );
+              }
+              if (AiAssistanceModel8.AiUtils.isNaturalLanguageInterfaceEnabled() && data.autoApproved) {
+                void VisualLogging9.logFunctionCall("ai-permission-auto-allowed", toolNameForLogging);
               }
             }
             break;
@@ -11251,11 +11298,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             break;
           }
           case AiAssistanceModel8.AiAgent.ResponseType.CONTEXT_CHANGE: {
-            if (AiAssistanceModel8.AiUtils.isAiV2Enabled() && !this.#conversation?.isReadOnly && data.toolName) {
-              void VisualLogging9.logFunctionCall(
-                "ai-v2-tool-call",
-                Platform5.StringUtilities.toKebabCase(data.toolName)
-              );
+            if (!this.#conversation?.isReadOnly) {
+              if (AiAssistanceModel8.AiUtils.isAiV2Enabled() && toolNameForLogging) {
+                void VisualLogging9.logFunctionCall("ai-v2-tool-call", toolNameForLogging);
+              }
+              if (AiAssistanceModel8.AiUtils.isNaturalLanguageInterfaceEnabled() && data.autoApproved) {
+                void VisualLogging9.logFunctionCall("ai-permission-auto-allowed", toolNameForLogging);
+              }
             }
             this.#handleConversationContextChange(data.context);
             step.state = { type: "completed" };
@@ -11419,7 +11468,7 @@ function getMatchingFlavorContext(contextOptions) {
   return null;
 }
 async function handleExternalAIRequest(options) {
-  localStorage.setItem("aiAssistanceStructuredLogEnabled", "true");
+  AiAssistanceModel9.Debug.setDevToolsAIDebug({ assistance: true });
   localStorage.removeItem("aiAssistanceStructuredLog");
   const conversationType = resolveConversationType(options.context?.type);
   const aidaClient = new Host6.AidaClient.AidaClient();

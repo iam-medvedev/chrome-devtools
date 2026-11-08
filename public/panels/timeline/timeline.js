@@ -109,7 +109,8 @@ __export(CompatibilityTracksAppender_exports, {
   CompatibilityTracksAppender: () => CompatibilityTracksAppender,
   TrackNames: () => TrackNames,
   VisualLoggingTrackName: () => VisualLoggingTrackName,
-  entryIsVisibleInTimeline: () => entryIsVisibleInTimeline
+  entryIsVisibleInTimeline: () => entryIsVisibleInTimeline,
+  renderPopoverUrl: () => renderPopoverUrl
 });
 import * as Common18 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
@@ -118,6 +119,7 @@ import * as Trace37 from "../../models/trace/trace.js";
 import * as SourceMapsResolver9 from "../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace8 from "../../models/workspace/workspace.js";
 import * as ThemeSupport25 from "../../ui/legacy/theme_support/theme_support.js";
+import { html as html13, render as render11 } from "../../ui/lit/lit.js";
 import * as SettingsUI7 from "../../ui/settings/settings.js";
 import * as TimelineComponents7 from "./components/components.js";
 
@@ -2063,12 +2065,12 @@ var timelineFlamechartPopover_css_default = `/*
   margin: calc(-1 * var(--sys-size-3));
 }
 
-.timeline-flamechart-popover devtools-interaction-breakdown {
-  margin-top: 10px;
+.timeline-flamechart-popover devtools-widget {
+  margin-top: var(--sys-size-5);
 }
 
 .timeline-flamechart-popover span {
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .timeline-flamechart-popover span.popoverinfo-network-time {
@@ -2344,9 +2346,6 @@ var CountersGraph = class extends UI.Widget.VBox {
         if (counter && typeof value === "number") {
           counter.appendSample(startTime, value);
         }
-      }
-      if (typeof counters.gpuMemoryLimitKB !== "undefined") {
-        this.gpuMemoryCounter.setLimit(counters.gpuMemoryLimitKB);
       }
     }
     this.#showNoEventsMessage = counterEventsFound === 0;
@@ -3298,7 +3297,7 @@ var imagePreview_css_default = `/*
 .image-preview-container img {
   margin: var(--sys-size-4) 0;
   width: auto;
-  max-height: 100px;
+  max-height: var(--sys-size-20);
   background-image: var(--image-file-checker);
   user-select: text;
   vertical-align: top;
@@ -3310,7 +3309,7 @@ var imagePreview_css_default = `/*
 }
 
 .image-container > div {
-  min-height: 50px;
+  min-height: var(--sys-size-16);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4065,7 +4064,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -5123,7 +5121,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -5177,7 +5174,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -5201,6 +5197,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -5505,6 +5502,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -6474,7 +6476,7 @@ var timelineStatusDialog_css_default = `/*
   align-self: center;
   background-color: var(--sys-color-cdt-base-container);
   box-shadow: var(--drop-shadow);
-  border-radius: 10px;
+  border-radius: var(--sys-shape-corner-small);
 }
 
 .status-dialog-line {
@@ -7870,7 +7872,7 @@ var timelineHistoryManager_css_default = `/*
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
-  padding: var(--sys-size-4) 10px;
+  padding: var(--sys-size-4) var(--sys-size-5);
   position: relative;
 
   .metadata {
@@ -8548,20 +8550,21 @@ var TimelineLoader = class _TimelineLoader {
   }
   static async loadFromURL(url, client) {
     const loader = new _TimelineLoader(client);
-    const stream = new Common8.StringOutputStream.StringOutputStream();
+    let stream = new Common8.StringOutputStream.StringOutputStream();
     client.loadingStarted();
     const allowRemoteFilePaths = Common8.Settings.Settings.instance().resolve(SDK6.SDKSettings.enableRemoteFileLoadingSettingDescriptor).get();
     Host.ResourceLoader.loadAsStream(url, null, stream, finishedCallback, allowRemoteFilePaths);
     async function finishedCallback(success, _headers, errorDescription) {
-      if (!success) {
+      if (!success || !stream) {
+        stream = null;
         return loader.reportErrorAndCancelLoading(errorDescription.message);
       }
       try {
-        const txt = stream.data();
-        const trace = JSON.parse(txt);
-        loader.#processParsedFile(trace);
+        loader.#processParsedFile(JSON.parse(stream.data()));
+        stream = null;
         await loader.complete();
       } catch (e) {
+        stream = null;
         const message = e instanceof Error ? e.message : "";
         return loader.reportErrorAndCancelLoading(i18nString14(UIStrings14.malformedTimelineDataS, { PH1: message }));
       }
@@ -8607,6 +8610,7 @@ var TimelineLoader = class _TimelineLoader {
     }
   }
   async #cleanup() {
+    this.#collectedEvents = [];
     if (this.client) {
       await this.client.loadingComplete(
         /* collectedEvents */
@@ -8648,7 +8652,9 @@ var TimelineLoader = class _TimelineLoader {
     if (!this.#metadata && this.#traceIsCPUProfile) {
       this.#metadata = forCPUProfile();
     }
-    await this.client.loadingComplete(this.#collectedEvents, this.filter, this.#metadata);
+    const loadingCompletePromise = this.client.loadingComplete(this.#collectedEvents, this.filter, this.#metadata);
+    this.#collectedEvents = [];
+    await loadingCompletePromise;
     this.#traceLoadedCallback?.("SUCCESS" /* SUCCESS */);
   }
   traceLoaded() {
@@ -8709,12 +8715,13 @@ var timelineMiniMap_css_default = `/*
 
 .timeline-minimap .overview-strip .timeline-overview-strip-title {
   color: var(--sys-color-token-subtle);
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   font-weight: bold;
   z-index: 100;
   background-color: var(--sys-color-cdt-base-container);
   padding: 0 var(--sys-size-3);
   position: absolute;
+  /* 2px upward offset (--sys-size-2 = 2px) matching parent .overview-strip top margin */
   top: calc(var(--sys-size-2) * -1);
   right: 0;
 }
@@ -8751,7 +8758,7 @@ var timelineMiniMap_css_default = `/*
 }
 
 .timeline-minimap #timeline-overview-responsiveness {
-  flex-basis: 5px;
+  flex-basis: var(--sys-size-4);
   margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
 }
 
@@ -8788,7 +8795,7 @@ var timelineMiniMap_css_default = `/*
   position: absolute;
   right: 0;
   bottom: 0;
-  font-size: 9px;
+  font-size: var(--sys-size-5);
   color: var(--sys-color-token-subtle);
   white-space: nowrap;
   padding: 0 var(--sys-size-3);
@@ -10121,6 +10128,7 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
     "Classic - scroll to zoom",
     "timeline.select-classic-navigation"
   );
+  #navigationSettingInitialized = false;
   #onMainEntryHovered;
   #hiddenTracksInfoBarByParsedTrace = /* @__PURE__ */ new WeakMap();
   #resourceLoader;
@@ -11002,7 +11010,9 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
         sourceMaps: filteredMetadataSourceMaps,
         resources: filteredResources
       });
-      blobParts = Array.from(formattedTraceIter);
+      for (const chunk of formattedTraceIter) {
+        blobParts.push(new Blob([chunk]));
+      }
     }
     if (!blobParts.length) {
       throw new Error("Trace content empty");
@@ -11171,7 +11181,6 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
     this.createFileSelector();
   }
   #launchRehydratedSession(traceJson) {
-    let rehydratingWindow = null;
     let pathToLaunch = null;
     const url = new URL(window.location.href);
     const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf("/"));
@@ -11179,28 +11188,28 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
     url.search = "";
     pathToLaunch = url.toString();
     const hostWindow = window;
+    const rehydratingWindow = this.isDocked() ? hostWindow.open(
+      pathToLaunch,
+      /* target: */
+      "_blank",
+      "noopener=false,popup=false"
+    ) : hostWindow.open(
+      pathToLaunch,
+      /* target: */
+      void 0,
+      "noopener=false,popup=true"
+    );
+    if (!rehydratingWindow) {
+      return;
+    }
     function onMessageHandler(ev) {
-      if (url && ev.data?.type === "REHYDRATING_WINDOW_READY") {
-        rehydratingWindow?.postMessage({ type: "REHYDRATING_TRACE_FILE", traceJson }, url.origin);
+      if (ev.source !== rehydratingWindow || ev.data?.type !== "REHYDRATING_WINDOW_READY") {
+        return;
       }
+      rehydratingWindow?.postMessage({ type: "REHYDRATING_TRACE_FILE", traceJson }, url.origin);
       hostWindow.removeEventListener("message", onMessageHandler);
     }
     hostWindow.addEventListener("message", onMessageHandler);
-    if (this.isDocked()) {
-      rehydratingWindow = hostWindow.open(
-        pathToLaunch,
-        /* target: */
-        "_blank",
-        "noopener=false,popup=false"
-      );
-    } else {
-      rehydratingWindow = hostWindow.open(
-        pathToLaunch,
-        /* target: */
-        void 0,
-        "noopener=false,popup=true"
-      );
-    }
   }
   async loadFromURL(url) {
     if (this.state !== "Idle" /* IDLE */) {
@@ -11610,7 +11619,8 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
         }
       }
     }
-    if (this.#traceEngineModel.size() === 1) {
+    if (!this.#navigationSettingInitialized && this.#traceEngineModel.size() === 1) {
+      this.#navigationSettingInitialized = true;
       this.#setupNavigationSetting();
       if (Common10.Settings.Settings.instance().resolve(SettingUIRegistration2.TimelineSettings.flamechartSelectedNavigationSettingDescriptor).get() === "classic") {
         Host2.userMetrics.navigationSettingAtFirstTimelineLoad(
@@ -12300,16 +12310,34 @@ var TimelinePanel = class _TimelinePanel extends TimelinePanelBase {
       this.#setActiveInsight(null);
     }
   }
-  static async executeRecordAndReload() {
+  static async executeRecordAndReload(options) {
+    if (options?.signal?.aborted) {
+      throw new Error("Recording was aborted");
+    }
     await UI8.ViewManager.ViewManager.instance().showView("timeline");
     await SDK7.TargetManager.TargetManager.instance().primaryPageTarget()?.pageAgent().invoke_bringToFront();
+    if (options?.signal?.aborted) {
+      throw new Error("Recording was aborted");
+    }
     const panelInstance = _TimelinePanel.instance();
-    const result = await new Promise((resolve) => {
-      function listener(e) {
-        resolve(e.data);
+    const result = await new Promise((resolve, reject) => {
+      function cleanup() {
         panelInstance.removeEventListener("RecordingCompleted" /* RECORDING_COMPLETED */, listener);
+        options?.signal?.removeEventListener("abort", onAbort);
+      }
+      function listener(e) {
+        cleanup();
+        resolve(e.data);
+      }
+      function onAbort() {
+        cleanup();
+        if (panelInstance.state === "Recording" /* RECORDING */) {
+          void panelInstance.stopRecording();
+        }
+        reject(new Error("Recording was aborted"));
       }
       panelInstance.addEventListener("RecordingCompleted" /* RECORDING_COMPLETED */, listener);
+      options?.signal?.addEventListener("abort", onAbort, { once: true });
       panelInstance.recordReload();
     });
     if ("errorText" in result) {
@@ -13344,7 +13372,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       return contentHelper.fragment;
     }
     if (Trace24.Types.Events.isNavigationStart(event)) {
-      url = event.args.data?.documentLoaderURL ?? event.args.data?.url;
+      url = event.args.data?.documentLoaderURL;
       if (url) {
         contentHelper.appendElementRow(i18nString18(UIStrings18.url), LegacyComponents.Linkifier.Linkifier.linkifyURL(url));
       }
@@ -17782,6 +17810,7 @@ var SelectorTimingsKey = Trace30.Types.Events.SelectorTimingsKey;
 var DEFAULT_VIEW4 = (input, _output, target) => {
   render9(
     html9`
+      <style>${timelineSelectorStatsView_css_default}</style>
       <devtools-data-grid striped name=${i18nString22(UIStrings22.selectorStats)}
           @contextmenu=${input.onContextMenu.bind(input)}>
         <table>
@@ -17862,7 +17891,6 @@ var TimelineSelectorStatsView = class extends UI14.Widget.VBox {
   #timings = [];
   constructor(parsedTrace, view = DEFAULT_VIEW4) {
     super();
-    this.registerRequiredCSS(timelineSelectorStatsView_css_default);
     this.#view = view;
     this.#selectorLocations = /* @__PURE__ */ new Map();
     this.#parsedTrace = parsedTrace;
@@ -19569,7 +19597,7 @@ var timelineFlameChartView_css_default = `/*
 
 .overlay-type-CANDY_STRIPED_TIME_RANGE {
   --red-stripe-width: var(--sys-size-2);
-  --white-stripe-width: 7px;
+  --white-stripe-width: var(--sys-size-4);
 
   background-image:
     repeating-linear-gradient(
@@ -19608,11 +19636,11 @@ var timelineFlameChartView_css_default = `/*
   bottom: 0;
 
   &.overlap-1 {
-    bottom: 55px;
+    bottom: var(--sys-size-17);
   }
 
   &.overlap-2 {
-    bottom: 105px;
+    bottom: var(--sys-size-20);
   }
 }
 
@@ -19642,7 +19670,7 @@ var timelineFlameChartView_css_default = `/*
   /* This overlay by default is shown at the bottom of the UI, not the top */
   top: unset;
   bottom: 0;
-  height: 100px;
+  height: var(--sys-size-19);
 
   &.positioned-by-event {
     top: 0;
@@ -19652,7 +19680,7 @@ var timelineFlameChartView_css_default = `/*
 
 .overlay-type-TIMINGS_MARKER {
   bottom: 0;
-  width: 0.5px;
+  width: var(--sys-size-1);
   pointer-events: auto;
   background-color: var(--marker-color); /* stylelint-disable-line plugin/use_theme_colors */
 }
@@ -22680,6 +22708,12 @@ var TimingsTrackAppender = class {
 
 // ../../front_end/panels/timeline/CompatibilityTracksAppender.ts
 import * as TimelineUtils from "./utils/utils.js";
+function renderPopoverUrl(input, _output, target) {
+  render11(
+    html13`<div><span class="popoverinfo-url-path">${input.path}</span><span class="popoverinfo-url-origin">(${input.originWithEntity})</span></div>`,
+    target
+  );
+}
 function entryIsVisibleInTimeline(entry, parsedTrace) {
   if (parsedTrace?.data.Meta.traceIsGeneric) {
     return true;
@@ -22747,6 +22781,7 @@ var CompatibilityTracksAppender = class {
   #layoutShiftsTrackAppender;
   #threadAppenders = [];
   #entityMapper;
+  #view;
   /**
    * @param flameChartData the data used by the flame chart renderer on
    * which the track data will be appended.
@@ -22760,12 +22795,14 @@ var CompatibilityTracksAppender = class {
    * architecture and should be removed once all tracks use the new
    * system.
    * @param entityMapper 3P entity data for the trace.
+   * @param view function to render popover url content.
    */
-  constructor(flameChartData, parsedTrace, entryData, legacyEntryTypeByLevel, entityMapper) {
+  constructor(flameChartData, parsedTrace, entryData, legacyEntryTypeByLevel, entityMapper, view = renderPopoverUrl) {
     this.#flameChartData = flameChartData;
     this.#parsedTrace = parsedTrace;
     this.#entityMapper = entityMapper;
     this.#entryData = entryData;
+    this.#view = view;
     this.#colorGenerator = new Common18.Color.Generator(
       /* hueSpace= */
       { min: 30, max: 55 },
@@ -23113,12 +23150,14 @@ var CompatibilityTracksAppender = class {
     if (url) {
       const MAX_PATH_LENGTH = 45;
       const path = Platform17.StringUtilities.trimMiddle(url.href.replace(url.origin, ""), MAX_PATH_LENGTH);
-      const urlElems = document.createElement("div");
-      urlElems.createChild("span", "popoverinfo-url-path").textContent = path;
       const entity = this.#entityMapper ? this.#entityMapper.entityForEvent(event) : null;
       const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity);
-      urlElems.createChild("span", "popoverinfo-url-origin").textContent = `(${originWithEntity})`;
-      info.additionalElements.push(urlElems);
+      const fragment = document.createDocumentFragment();
+      this.#view({ path, originWithEntity }, void 0, fragment);
+      const urlElement = fragment.firstElementChild;
+      if (urlElement instanceof HTMLElement) {
+        info.additionalElements.push(urlElement);
+      }
     }
     return info;
   }

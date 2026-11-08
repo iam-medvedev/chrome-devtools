@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as FormatterWorker from './formatter_worker.js';
 describe('ScopeParser', () => {
     describe('parseScopes', () => {
@@ -158,6 +159,85 @@ describe('ScopeParser', () => {
             const scopeFn = scopes?.children[0];
             assert.strictEqual(scopeFn?.kind, 4 /* FormatterAction.ScopeKind.ARROW_FUNCTION */);
             assert.deepEqual(scopeFn?.nameMappingLocations, [10, 19]);
+        });
+        it('handles var redeclaration of function parameters inside nested blocks', () => {
+            const consoleAssertSpy = sinon.spy(console, 'assert');
+            const source = `
+        const fn = function(a, b) {
+          for (var i = 0; i < 1; i++) {
+            var a = 1;
+          }
+        };
+        function decl(x) {
+          {
+            var x = 2;
+          }
+        }
+      `;
+            const scopes = parseScopes(source);
+            assert.exists(scopes);
+            for (const call of consoleAssertSpy.getCalls()) {
+                assert.isTrue(Boolean(call.args[0]), 'Expected console.assert not to fail');
+            }
+            const exprScope = scopes.children[0];
+            assert.strictEqual(exprScope?.kind, 2 /* FormatterAction.ScopeKind.FUNCTION */);
+            assert.deepEqual(exprScope?.variables.get('a')?.uses.map(u => u.offset), [source.indexOf('a, b'), source.indexOf('a = 1')]);
+            const declScope = scopes.children[1];
+            assert.strictEqual(declScope?.kind, 2 /* FormatterAction.ScopeKind.FUNCTION */);
+            assert.deepEqual(declScope?.variables.get('x')?.uses.map(u => u.offset), [source.indexOf('x)'), source.indexOf('x = 2')]);
+        });
+        it('handles var redeclaration of catch parameters', () => {
+            const consoleAssertSpy = sinon.spy(console, 'assert');
+            const source = `
+        function fn() {
+          try {
+            throw 1;
+          } catch (e) {
+            {
+              var e = 2;
+            }
+            return e;
+          }
+        }
+        try {
+          throw 1;
+        } catch (globalErr) {
+          for (var i = 0; i < 1; i++) {
+            var globalErr = i;
+          }
+        }
+        try {
+          throw 1;
+        } catch (scopedErr) {
+          void scopedErr;
+        }
+      `;
+            const scopes = parseScopes(source);
+            assert.exists(scopes);
+            for (const call of consoleAssertSpy.getCalls()) {
+                assert.isTrue(Boolean(call.args[0]), 'Expected console.assert not to fail');
+            }
+            const fnScope = scopes.children[0];
+            assert.strictEqual(fnScope?.kind, 2 /* FormatterAction.ScopeKind.FUNCTION */);
+            const fnErr = fnScope?.variables.get('e');
+            assert.strictEqual(fnErr?.definitionKind, 2 /* FormatterAction.DefinitionKind.VAR */);
+            assert.deepEqual(fnErr?.uses.map(u => u.offset), [
+                source.indexOf('e) {'),
+                source.indexOf('e = 2'),
+                source.indexOf('e;\n          }'),
+            ]);
+            const catchScope = fnScope?.children[1];
+            assert.strictEqual(catchScope?.kind, 1 /* FormatterAction.ScopeKind.BLOCK */);
+            assert.isFalse(catchScope?.variables.has('e'));
+            const globalErr = scopes.variables.get('globalErr');
+            assert.strictEqual(globalErr?.definitionKind, 2 /* FormatterAction.DefinitionKind.VAR */);
+            assert.deepEqual(globalErr?.uses.map(u => u.offset), [
+                source.indexOf('globalErr) {'),
+                source.indexOf('globalErr = i'),
+            ]);
+            assert.isFalse(scopes.variables.has('scopedErr'));
+            const scopedCatch = scopes.children[4];
+            assert.strictEqual(scopedCatch?.variables.get('scopedErr')?.definitionKind, 1 /* FormatterAction.DefinitionKind.LET */);
         });
     });
 });

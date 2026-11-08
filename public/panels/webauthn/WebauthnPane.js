@@ -507,10 +507,6 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
             credentials: [],
         });
         this.requestUpdate();
-        this.#model.addEventListener("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, this.#addCredential.bind(this, authenticatorId));
-        this.#model.addEventListener("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, this.#updateCredential.bind(this, authenticatorId));
-        this.#model.addEventListener("CredentialUpdated" /* SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED */, this.#updateCredential.bind(this, authenticatorId));
-        this.#model.addEventListener("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */, this.#deleteCredential.bind(this, authenticatorId));
         return authenticatorId;
     }
     #activeAuthId = null;
@@ -568,10 +564,18 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
     modelAdded(model) {
         if (model.target() === model.target().outermostTarget()) {
             this.#model = model;
+            model.addEventListener("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, this.#addCredential, this);
+            model.addEventListener("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, this.#updateCredential, this);
+            model.addEventListener("CredentialUpdated" /* SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED */, this.#updateCredential, this);
+            model.addEventListener("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */, this.#deleteCredential, this);
         }
     }
     modelRemoved(model) {
         if (model.target() === model.target().outermostTarget()) {
+            model.removeEventListener("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, this.#addCredential, this);
+            model.removeEventListener("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, this.#updateCredential, this);
+            model.removeEventListener("CredentialUpdated" /* SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED */, this.#updateCredential, this);
+            model.removeEventListener("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */, this.#deleteCredential, this);
             this.#model = undefined;
         }
     }
@@ -599,16 +603,16 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
         this.#enabled = false;
         await this.#setVirtualAuthEnvEnabled(false);
     }
-    #addCredential(authenticatorId, { data: event, }) {
-        const authenticator = this.#authenticators.get(authenticatorId);
+    #addCredential({ data: event, }) {
+        const authenticator = this.#authenticators.get(event.authenticatorId);
         if (!authenticator) {
             return;
         }
         authenticator.credentials.push(event.credential);
         this.requestUpdate();
     }
-    #updateCredential(authenticatorId, { data: event, }) {
-        const authenticator = this.#authenticators.get(authenticatorId);
+    #updateCredential({ data: event, }) {
+        const authenticator = this.#authenticators.get(event.authenticatorId);
         if (!authenticator) {
             return;
         }
@@ -619,8 +623,8 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
         Object.assign(credential, event.credential);
         this.requestUpdate();
     }
-    #deleteCredential(authenticatorId, { data: event, }) {
-        const authenticator = this.#authenticators.get(authenticatorId);
+    #deleteCredential({ data: event, }) {
+        const authenticator = this.#authenticators.get(event.authenticatorId);
         if (!authenticator) {
             return;
         }

@@ -50,19 +50,6 @@ export default `/*
   overflow: hidden;
 }
 
-.network-discovery-edit-row {
-  flex: none;
-  display: flex;
-  flex-direction: row;
-  margin: var(--sys-size-4) 5px;
-  align-items: center;
-}
-
-.network-discovery-edit-row input {
-  width: 100%;
-  text-align: inherit;
-}
-
 .network-discovery-footer {
   margin: 0;
   overflow: hidden;
@@ -103,15 +90,6 @@ export default `/*
 .node-panel-logo {
   width: 400px;
   margin-bottom: 50px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row input {
-  height: 30px;
-  padding-left: 5px;
-}
-
-:host-context(.node-frontend) .network-discovery-edit-row {
-  margin: var(--sys-size-4) 9px;
 }
 
 /*# sourceURL=${import.meta.resolve('./nodeConnectionsPanel.css')} */`;

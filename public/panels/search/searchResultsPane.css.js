@@ -96,7 +96,7 @@ li.search-match .search-match-line-number {
   vertical-align: top;
   word-break: normal;
   padding: var(--sys-size-2) var(--sys-size-3) var(--sys-size-2) var(--sys-size-4);
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .tree-outline .devtools-link {
@@ -116,7 +116,7 @@ ol.children.expanded {
 li.search-match .link-style.search-match-link {
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: 9px;
+  margin-left: var(--sys-size-5);
   text-align: left;
 }
 

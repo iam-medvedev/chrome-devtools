@@ -19,28 +19,22 @@ export default `/*
   min-height: fit-content;
 }
 
-.web-audio-landing-page {
-  position: absolute;
-  background-color: var(--sys-color-cdt-base-container);
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-  font-size: var(--sys-typescale-body3-size);
-  color: var(--sys-color-on-surface);
-}
-
-.web-audio-landing-page > div {
-  max-width: 500px;
-  margin: 10px;
-}
-
-.web-audio-landing-page > div > p {
-  flex: none;
-  white-space: pre-line;
+.web-audio-toolbar-container[hidden] {
+  display: none;
 }
 
 .web-audio-content-container {
   overflow-y: auto;
+}
+
+.web-audio-paused {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: var(--sys-typescale-headline5);
+  color: var(--sys-color-on-surface-subtle);
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 .web-audio-details-container {
@@ -96,9 +90,9 @@ export default `/*
 }
 
 .context-summary-container {
-  flex: 0 0 27px;
-  line-height: 27px;
-  padding-left: 5px;
+  /* 28px summary bar height minus 1px top border. */
+  line-height: calc(var(--sys-size-12) - var(--sys-size-1));
+  padding-left: var(--sys-size-4);
   background-color: var(--sys-color-cdt-base-container);
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
   white-space: nowrap;

@@ -1,12 +1,12 @@
 // Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 let colorGeneratorInstance = null;
 export class ProfileFlameChartDataProvider {
     #colorGenerator;
@@ -99,6 +99,14 @@ export class ProfileFlameChartDataProvider {
         return this.entryNodes.length;
     }
 }
+// clang-format off
+export const DEFAULT_VIEW = (input, _output, target) => {
+    render(html `
+    <devtools-widget class="cpu-profile-flame-chart-overview-pane">${input.overviewPane.element}</devtools-widget>
+    <devtools-widget class="vbox flex-auto">${input.mainPane.element}</devtools-widget>
+  `, target, { container: { attributes: { id: 'cpu-flame-chart' } } });
+};
+// clang-format on
 const ProfileFlameChartBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
 export class ProfileFlameChart extends ProfileFlameChartBase {
     searchableView;
@@ -108,17 +116,16 @@ export class ProfileFlameChart extends ProfileFlameChartBase {
     dataProvider;
     searchResults;
     searchResultIndex = -1;
-    constructor(searchableView, dataProvider, element) {
+    #view;
+    constructor(searchableView, dataProvider, element, view = DEFAULT_VIEW) {
         super(element);
-        this.element.id = 'cpu-flame-chart';
+        this.#view = view;
         this.searchableView = searchableView;
         this.overviewPane = new OverviewPane(dataProvider);
-        this.overviewPane.show(this.element);
         this.mainPane = new PerfUI.FlameChart.FlameChart(dataProvider, this.overviewPane);
         this.mainPane.setBarHeight(15);
         this.mainPane.setTextBaseline(4);
         this.mainPane.setTextPadding(2);
-        this.mainPane.show(this.element);
         this.mainPane.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.ENTRY_SELECTED */, this.onEntrySelected, this);
         this.mainPane.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.ENTRY_INVOKED */, this.onEntryInvoked, this);
         this.entrySelected = false;
@@ -126,6 +133,16 @@ export class ProfileFlameChart extends ProfileFlameChartBase {
         this.overviewPane.addEventListener("WindowChanged" /* OverviewPaneEvents.WINDOW_CHANGED */, this.onWindowChanged, this);
         this.dataProvider = dataProvider;
         this.searchResults = [];
+    }
+    wasShown() {
+        super.wasShown();
+        this.requestUpdate();
+    }
+    performUpdate() {
+        this.#view({
+            overviewPane: this.overviewPane,
+            mainPane: this.mainPane,
+        }, undefined, this.contentElement);
     }
     focus() {
         this.mainPane.focus();
@@ -251,27 +268,59 @@ export class OverviewCalculator {
         return this.maximumBoundaries - this.minimumBoundaries;
     }
 }
+// clang-format off
+export const DEFAULT_OVERVIEW_PANE_VIEW = (input, output, target) => {
+    render(html `
+    <div class="cpu-profile-flame-chart-overview-container" ${Directives.ref(el => {
+        output.container = el;
+    })}>
+      <canvas class="cpu-profile-flame-chart-overview-canvas" ${Directives.ref(el => {
+        output.canvas = el;
+    })}></canvas>
+      ${input.overviewGridElement}
+    </div>
+  `, target, { container: { classes: ['cpu-profile-flame-chart-overview-pane'] } });
+};
+// clang-format on
 const OverviewPaneBase = Common.ObjectWrapper.eventMixin(UI.Widget.VBox);
 export class OverviewPane extends OverviewPaneBase {
-    overviewContainer;
+    #view;
+    #viewOutput = {};
     overviewCalculator;
     overviewGrid;
-    overviewCanvas;
     dataProvider;
     windowTimeLeft;
     windowTimeRight;
     updateTimerId;
-    constructor(dataProvider) {
-        super();
-        this.element.classList.add('cpu-profile-flame-chart-overview-pane');
-        this.overviewContainer = this.element.createChild('div', 'cpu-profile-flame-chart-overview-container');
+    constructor(dataProvider, element, view = DEFAULT_OVERVIEW_PANE_VIEW) {
+        super(element);
+        this.#view = view;
         this.overviewCalculator = new OverviewCalculator(dataProvider.formatValue);
         this.overviewGrid = new PerfUI.OverviewGrid.OverviewGrid('cpu-profile-flame-chart', this.overviewCalculator);
         this.overviewGrid.element.classList.add('fill');
-        this.overviewCanvas = this.overviewContainer.createChild('canvas', 'cpu-profile-flame-chart-overview-canvas');
-        this.overviewContainer.appendChild(this.overviewGrid.element);
         this.dataProvider = dataProvider;
         this.overviewGrid.addEventListener("WindowChangedWithPosition" /* PerfUI.OverviewGrid.Events.WINDOW_CHANGED_WITH_POSITION */, this.onWindowChanged, this);
+    }
+    get overviewContainer() {
+        if (!this.#viewOutput.container) {
+            this.performUpdate();
+        }
+        return this.#viewOutput.container ?? this.contentElement;
+    }
+    get overviewCanvas() {
+        if (!this.#viewOutput.canvas) {
+            this.performUpdate();
+        }
+        return this.#viewOutput.canvas;
+    }
+    wasShown() {
+        super.wasShown();
+        this.requestUpdate();
+    }
+    performUpdate() {
+        this.#view({
+            overviewGridElement: this.overviewGrid.element,
+        }, this.#viewOutput, this.contentElement);
     }
     windowChanged(windowStartTime, windowEndTime) {
         this.selectRange(windowStartTime, windowEndTime);
@@ -306,7 +355,7 @@ export class OverviewPane extends OverviewPaneBase {
     update() {
         this.updateTimerId = 0;
         const timelineData = this.timelineData();
-        if (!timelineData) {
+        if (!timelineData || !this.overviewCanvas) {
             return;
         }
         this.resetCanvas(this.overviewContainer.clientWidth, this.overviewContainer.clientHeight - PerfUI.FlameChart.RulerHeight);
@@ -315,6 +364,9 @@ export class OverviewPane extends OverviewPaneBase {
         this.drawOverviewCanvas();
     }
     drawOverviewCanvas() {
+        if (!this.overviewCanvas) {
+            return;
+        }
         const canvasWidth = this.overviewCanvas.width;
         const canvasHeight = this.overviewCanvas.height;
         const drawData = this.calculateDrawData(canvasWidth);
@@ -363,6 +415,9 @@ export class OverviewPane extends OverviewPaneBase {
         return drawData;
     }
     resetCanvas(width, height) {
+        if (!this.overviewCanvas) {
+            return;
+        }
         const ratio = window.devicePixelRatio;
         this.overviewCanvas.width = width * ratio;
         this.overviewCanvas.height = height * ratio;

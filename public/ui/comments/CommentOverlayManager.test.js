@@ -345,6 +345,55 @@ describeWithEnvironment('CommentOverlayManager', () => {
         // Second pin should have a 26px vertical offset compared to first pin
         assert.strictEqual(pins[1].top - pins[0].top, 26);
     });
+    describe('RESOLVED threads', () => {
+        function createItem(context) {
+            const item = document.createElement('div');
+            item.setAttribute('jslog', `TreeItem; context: ${context}`);
+            item.textContent = context;
+            item.getBoundingClientRect = () => new DOMRect(50, 100, 200, 30);
+            container.appendChild(item);
+            return item;
+        }
+        it('marks the pin as hidden', () => {
+            const thread = manager.createComment(createItem('resolved-hidden'), 'Comment');
+            assert.exists(thread);
+            assert.isTrue(manager.getPinPositions()[0].visible);
+            thread.resolve('Done');
+            const pins = manager.getPinPositions();
+            assert.lengthOf(pins, 1);
+            assert.strictEqual(pins[0].id, thread.id);
+            assert.isFalse(pins[0].visible);
+        });
+        it('does not take a slot in the pin stack of its element', () => {
+            const item = createItem('resolved-stack');
+            const resolvedThread = manager.createComment(item, 'First comment');
+            const activeThread = manager.createComment(item, 'Second comment');
+            assert.exists(resolvedThread);
+            assert.exists(activeThread);
+            const firstPinTop = manager.getPinPositions()[0].top;
+            resolvedThread.resolve('Done');
+            const activePin = manager.getPinPositions().find(pin => pin.id === activeThread.id);
+            assert.exists(activePin);
+            assert.strictEqual(activePin.top, firstPinTop);
+        });
+        it('places all resolved pins in the slot below the other pins of their element', () => {
+            const item = createItem('resolved-shared-slot');
+            const resolved1 = manager.createComment(item, 'First comment');
+            const activeThread = manager.createComment(item, 'Second comment');
+            const resolved2 = manager.createComment(item, 'Third comment');
+            assert.exists(resolved1);
+            assert.exists(activeThread);
+            assert.exists(resolved2);
+            resolved1.resolve('Done');
+            resolved2.resolve('Done');
+            const pins = manager.getPinPositions();
+            const topOf = (id) => pins.find(pin => pin.id === id)?.top;
+            const activeTop = topOf(activeThread.id);
+            assert.exists(activeTop);
+            assert.strictEqual(topOf(resolved1.id), activeTop + 26);
+            assert.strictEqual(topOf(resolved2.id), activeTop + 26);
+        });
+    });
     it('observes connected elements with IntersectionObserver even when hidden', () => {
         const observeSpy = sinon.spy(IntersectionObserver.prototype, 'observe');
         try {
@@ -581,6 +630,44 @@ describeWithEnvironment('CommentOverlayManager', () => {
             const pins = manager.getPinPositions();
             assert.lengthOf(pins, 0);
         });
+        it('clips the highlight against sticky occluders collected during rematch', async () => {
+            const clock = sinon.useFakeTimers();
+            try {
+                const scrollParent = document.createElement('div');
+                scrollParent.style.overflow = 'hidden auto';
+                scrollParent.getBoundingClientRect = () => new DOMRect(0, 0, 400, 200);
+                container.appendChild(scrollParent);
+                const header = document.createElement('div');
+                header.setAttribute(Comments.CommentAnchorResolver.STICKY_OCCLUDER_ATTRIBUTE, '');
+                header.getBoundingClientRect = () => new DOMRect(0, 0, 400, 20);
+                scrollParent.appendChild(header);
+                const item = document.createElement('div');
+                item.setAttribute('jslog', 'TreeItem; context: sticky-item');
+                item.textContent = 'color: red;';
+                item.getBoundingClientRect = () => new DOMRect(10, 10, 200, 40);
+                scrollParent.appendChild(item);
+                manager.start(container);
+                manager.setCommentMode(true);
+                const thread = manager.createComment(item, 'Under header');
+                assert.isNotNull(thread);
+                assert.strictEqual(manager.getHighlight(thread.id)?.top, 20);
+                // Re-render the header taller; the rematch scan must pick up the new element.
+                header.remove();
+                const tallerHeader = document.createElement('div');
+                tallerHeader.setAttribute(Comments.CommentAnchorResolver.STICKY_OCCLUDER_ATTRIBUTE, '');
+                tallerHeader.getBoundingClientRect = () => new DOMRect(0, 0, 400, 30);
+                scrollParent.prepend(tallerHeader);
+                await Promise.resolve();
+                clock.tick(250);
+                const highlight = manager.getHighlight(thread.id);
+                assert.exists(highlight);
+                assert.strictEqual(highlight.top, 30);
+                assert.strictEqual(highlight.height, 20);
+            }
+            finally {
+                clock.restore();
+            }
+        });
         it('clips hover highlight to ancestor scroll container boundaries', () => {
             const scrollParent = document.createElement('div');
             scrollParent.style.overflow = 'hidden';
@@ -803,6 +890,7 @@ describeWithEnvironment('CommentOverlayManager', () => {
                     top: 48,
                     left: 128,
                     visible: true,
+                    resolved: false,
                 }]);
         });
         it('repositions pins when notifyCustomAnchorsMoved() is called', () => {

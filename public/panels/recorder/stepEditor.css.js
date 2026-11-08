@@ -69,7 +69,7 @@ export default `/*
 }
 
 .gap.row {
-  gap: 5px;
+  gap: var(--sys-size-3);
 }
 
 .gap.row devtools-button {
@@ -86,11 +86,11 @@ export default `/*
 }
 
 .row-buttons {
-  margin-top: 3px;
+  margin-top: var(--sys-size-3);
 }
 
 .error {
-  margin: 3px 0 var(--sys-size-4);
+  margin: var(--sys-size-3) 0 var(--sys-size-4);
   padding: var(--sys-size-5) var(--sys-size-6);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);

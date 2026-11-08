@@ -731,7 +731,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1789,7 +1788,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -1843,7 +1841,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -1867,6 +1864,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2171,6 +2169,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -5217,9 +5220,6 @@ var generatedProperties = [
     "runtime_flag_status": "test"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-left-radius",
       "corner-top-left-shape",
@@ -5235,9 +5235,6 @@ var generatedProperties = [
     "runtime_flag_status": "experimental"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-end-start-radius",
       "corner-end-start-shape",
@@ -5256,9 +5253,6 @@ var generatedProperties = [
     "name": "corner-block-end-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-start-start-radius",
       "corner-start-start-shape",
@@ -5277,9 +5271,6 @@ var generatedProperties = [
     "name": "corner-block-start-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-bottom-left-radius",
       "corner-bottom-left-shape",
@@ -5291,9 +5282,6 @@ var generatedProperties = [
     "runtime_flag_status": "experimental"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-bottom-left-radius",
       "corner-bottom-left-shape"
@@ -5314,9 +5302,6 @@ var generatedProperties = [
     "name": "corner-bottom-left-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-bottom-right-radius",
       "corner-bottom-right-shape"
@@ -5344,9 +5329,6 @@ var generatedProperties = [
     "name": "corner-bottom-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-end-end-radius",
       "corner-end-end-shape"
@@ -5359,9 +5341,6 @@ var generatedProperties = [
     "name": "corner-end-end-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-end-start-radius",
       "corner-end-start-shape"
@@ -5374,9 +5353,6 @@ var generatedProperties = [
     "name": "corner-end-start-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-start-end-radius",
       "corner-start-end-shape",
@@ -5395,9 +5371,6 @@ var generatedProperties = [
     "name": "corner-inline-end-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-start-start-radius",
       "corner-start-start-shape",
@@ -5416,9 +5389,6 @@ var generatedProperties = [
     "name": "corner-inline-start-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-left-radius",
       "corner-top-left-shape",
@@ -5437,9 +5407,6 @@ var generatedProperties = [
     "name": "corner-left-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-right-radius",
       "corner-top-right-shape",
@@ -5467,9 +5434,6 @@ var generatedProperties = [
     "name": "corner-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-start-end-radius",
       "corner-start-end-shape"
@@ -5482,9 +5446,6 @@ var generatedProperties = [
     "name": "corner-start-end-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-start-start-radius",
       "corner-start-start-shape"
@@ -5497,9 +5458,6 @@ var generatedProperties = [
     "name": "corner-start-start-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-left-radius",
       "corner-top-left-shape",
@@ -5511,9 +5469,6 @@ var generatedProperties = [
     "runtime_flag_status": "experimental"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-left-radius",
       "corner-top-left-shape"
@@ -5534,9 +5489,6 @@ var generatedProperties = [
     "name": "corner-top-left-shape"
   },
   {
-    "keywords": [
-      "normal"
-    ],
     "longhands": [
       "border-top-right-radius",
       "corner-top-right-shape"
@@ -7098,9 +7050,9 @@ var generatedProperties = [
       "thin"
     ],
     "longhands": [
-      "outline-color",
+      "outline-width",
       "outline-style",
-      "outline-width"
+      "outline-color"
     ],
     "name": "outline"
   },
@@ -7616,6 +7568,9 @@ var generatedProperties = [
       "grid-rows",
       "grid-columns",
       "grid-order",
+      "grid-lanes-flow",
+      "grid-lanes-track",
+      "grid-lanes-order",
       "source-order"
     ],
     "name": "reading-flow"
@@ -10125,31 +10080,6 @@ var generatedPropertyValues = {
       "-webkit-legacy"
     ]
   },
-  "corner": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-block-end": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-block-start": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-bottom": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-bottom-left": {
-    "values": [
-      "normal"
-    ]
-  },
   "corner-bottom-left-shape": {
     "values": [
       "notch",
@@ -10158,11 +10088,6 @@ var generatedPropertyValues = {
       "round",
       "squircle",
       "square"
-    ]
-  },
-  "corner-bottom-right": {
-    "values": [
-      "normal"
     ]
   },
   "corner-bottom-right-shape": {
@@ -10175,56 +10100,6 @@ var generatedPropertyValues = {
       "square"
     ]
   },
-  "corner-end-end": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-end-start": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-inline-end": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-inline-start": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-left": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-right": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-start-end": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-start-start": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-top": {
-    "values": [
-      "normal"
-    ]
-  },
-  "corner-top-left": {
-    "values": [
-      "normal"
-    ]
-  },
   "corner-top-left-shape": {
     "values": [
       "notch",
@@ -10233,11 +10108,6 @@ var generatedPropertyValues = {
       "round",
       "squircle",
       "square"
-    ]
-  },
-  "corner-top-right": {
-    "values": [
-      "normal"
     ]
   },
   "corner-top-right-shape": {
@@ -11471,6 +11341,9 @@ var generatedPropertyValues = {
       "grid-rows",
       "grid-columns",
       "grid-order",
+      "grid-lanes-flow",
+      "grid-lanes-track",
+      "grid-lanes-order",
       "source-order"
     ]
   },
@@ -27568,10 +27441,6 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   async hasStyleSheetText(url) {
     return await this.#windowControls.initializeStyleSheetText(url);
   }
-  inspectPanelShowRequested(_event) {
-  }
-  inspectedElementWindowRestored(_event) {
-  }
 };
 var WindowControls = class _WindowControls {
   #cssModel;
@@ -30289,12 +30158,12 @@ var DOMNode = class _DOMNode extends Common21.ObjectWrapper.ObjectWrapper {
     };
   }
   async saveNodeToTempVariable() {
-    const remoteObjectForConsole = await this.resolveToObject();
+    const runtimeModel = this.#domModel.runtimeModel();
+    const frameId = this.frameId() ?? this.ownerDocument?.frameId();
+    const executionContext = (frameId ? runtimeModel.executionContexts().find((context) => context.frameId === frameId && context.isDefault) : null) ?? runtimeModel.defaultExecutionContext();
+    const remoteObjectForConsole = await this.resolveToObject(void 0, executionContext?.id);
     const consoleModel = this.#domModel.target().model(ConsoleModel);
-    await consoleModel?.saveToTempVariable(
-      remoteObjectForConsole?.runtimeModel().defaultExecutionContext() ?? null,
-      remoteObjectForConsole
-    );
+    await consoleModel?.saveToTempVariable(executionContext, remoteObjectForConsole);
   }
   async scrollIntoView() {
     const node = this.enclosingElementOrSelf();
@@ -32665,20 +32534,8 @@ var PageDispatcher = class {
   frameDetached({ frameId, reason }) {
     this.#resourceTreeModel.frameDetached(frameId, reason === Page.FrameDetachedEventReason.Swap);
   }
-  frameSubtreeWillBeDetached(_params) {
-  }
-  frameStartedLoading({}) {
-  }
   frameStoppedLoading({ frameId }) {
     this.#resourceTreeModel.frameStoppedLoading(frameId);
-  }
-  frameRequestedNavigation({}) {
-  }
-  frameScheduledNavigation({}) {
-  }
-  frameClearedScheduledNavigation({}) {
-  }
-  frameStartedNavigating({}) {
   }
   navigatedWithinDocument({ frameId, url }) {
     this.#resourceTreeModel.navigatedWithinDocument(frameId, url);
@@ -32692,12 +32549,6 @@ var PageDispatcher = class {
       void this.#resourceTreeModel.agent.invoke_handleJavaScriptDialog({ accept: false });
     }
   }
-  javascriptDialogClosed({}) {
-  }
-  screencastFrame({}) {
-  }
-  screencastVisibilityChanged({}) {
-  }
   interstitialShown() {
     this.#resourceTreeModel.isInterstitialShowing = true;
     this.#resourceTreeModel.dispatchEventToListeners("InterstitialShown" /* InterstitialShown */);
@@ -32705,16 +32556,6 @@ var PageDispatcher = class {
   interstitialHidden() {
     this.#resourceTreeModel.isInterstitialShowing = false;
     this.#resourceTreeModel.dispatchEventToListeners("InterstitialHidden" /* InterstitialHidden */);
-  }
-  windowOpen({}) {
-  }
-  compilationCacheProduced({}) {
-  }
-  fileChooserOpened({}) {
-  }
-  downloadWillBegin({}) {
-  }
-  downloadProgress() {
   }
 };
 SDKModel.register(ResourceTreeModel, { capabilities: 2 /* DOM */, autostart: true, early: true });
@@ -35734,8 +35575,6 @@ var FetchDispatcher = class {
       )
     );
   }
-  authRequired({}) {
-  }
 };
 function multicastMembership(event) {
   return event.sourceAddress ? `${event.IPAddress}@${event.sourceAddress}` : event.IPAddress;
@@ -35867,7 +35706,7 @@ var NetworkDispatcher = class {
     return this.#requestsByURL.get(url) || null;
   }
   requestForLoaderId(loaderId) {
-    return this.#requestsByLoaderId.get(loaderId) || null;
+    return this.#requestsByLoaderId.get(loaderId) || this.#multitargetNetworkManager.inflightMainResourceRequests.get(loaderId) || null;
   }
   resourceChangedPriority({ requestId, newPriority }) {
     const networkRequest = this.#requestsById.get(requestId);
@@ -36628,8 +36467,6 @@ var NetworkDispatcher = class {
   }
   deviceBoundSessionEventOccurred(_params) {
     this.#manager.dispatchEventToListeners("DeviceBoundSessionEventOccurred" /* DeviceBoundSessionEventOccurred */, _params);
-  }
-  policyUpdated() {
   }
   /**
    * @deprecated
@@ -42338,8 +42175,10 @@ var RehydratingConnectionTransport = class {
     if (!this.trace) {
       return;
     }
+    const trace = this.trace;
+    this.trace = null;
     this.rehydratingConnectionState = 3 /* REHYDRATED */;
-    await Common36.Revealer.reveal(this.trace);
+    await Common36.Revealer.reveal(trace);
   }
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
@@ -43010,6 +42849,9 @@ var CPUThrottlingManager = class _CPUThrottlingManager extends Common38.ObjectWr
     }
   }
   setHardwareConcurrency(concurrency) {
+    if (concurrency < 1 || Number.isNaN(concurrency)) {
+      return;
+    }
     this.#hardwareConcurrency = concurrency;
     for (const emulationModel of this.#targetManager.models(EmulationModel)) {
       void emulationModel.setHardwareConcurrency(concurrency);
@@ -45175,7 +45017,7 @@ function convertPreloadingStatus(status) {
   }
   throw new Error("unreachable");
 }
-function makePreloadingAttemptId(key) {
+function makePreloadingSourceId(key) {
   let action;
   switch (key.action) {
     case Preload.SpeculationAction.Prefetch:
@@ -45201,6 +45043,13 @@ function makePreloadingAttemptId(key) {
       break;
   }
   return `${key.loaderId}:${action}:${key.url}:${targetHint}:${key.formSubmission ? "formSubmission" : "undefined"}`;
+}
+function makePreloadingAttemptId(key, pipelineId) {
+  const baseId = makePreloadingSourceId(key);
+  if (pipelineId) {
+    return `${baseId}:${pipelineId}`;
+  }
+  return baseId;
 }
 var PreloadPipeline = class _PreloadPipeline {
   inner;
@@ -45309,7 +45158,7 @@ var PreloadingAttemptRegistry = class {
     if (attempt === null) {
       return null;
     }
-    return this.enrich(attempt, sources.getById(id));
+    return this.enrich(attempt, sources.getByKey(attempt.key));
   }
   // Returns representative preloading attempts that triggered by the rule set with `ruleSetId`.
   // `ruleSetId === null` means "do not filter".
@@ -45319,7 +45168,7 @@ var PreloadingAttemptRegistry = class {
   getAllRepresentative(ruleSetId, sources) {
     return [...this.map.entries()].map(([id, value]) => ({
       id,
-      value: this.enrich(value, sources.getById(id))
+      value: this.enrich(value, sources.getByKey(value.key))
     })).filter(({ value }) => !ruleSetId || value.ruleSetIds.includes(ruleSetId)).filter(({ value }) => this.isAttemptRepresentative(value));
   }
   getPipeline(pipelineId, sources) {
@@ -45340,7 +45189,12 @@ var PreloadingAttemptRegistry = class {
     );
   }
   upsert(attempt) {
-    const id = makePreloadingAttemptId(attempt.key);
+    const baseId = makePreloadingSourceId(attempt.key);
+    let id = baseId;
+    const existing = this.map.get(baseId);
+    if (existing?.pipelineId && attempt.pipelineId && existing.pipelineId !== attempt.pipelineId) {
+      id = makePreloadingAttemptId(attempt.key, attempt.pipelineId);
+    }
     this.map.set(id, attempt);
     if (attempt.pipelineId !== null) {
       this.pipelines.getOrInsertComputed(attempt.pipelineId, () => /* @__PURE__ */ new Map()).set(attempt.action, id);
@@ -45412,9 +45266,7 @@ var PreloadingAttemptRegistry = class {
   // Removes keys in `this.map` that are not in `sources`. This is used to
   // remove attempts that no longer have a matching speculation rule.
   cleanUpRemovedAttempts(sources) {
-    const keysToRemove = Array.from(this.map.keys()).filter(
-      (key) => !sources.getById(key)
-    );
+    const keysToRemove = Array.from(this.map.entries()).filter(([, attempt]) => !sources.getByKey(attempt.key)).map(([id]) => id);
     for (const key of keysToRemove) {
       this.map.delete(key);
     }
@@ -45439,8 +45291,11 @@ var SourceRegistry = class {
   getById(id) {
     return this.map.get(id) || null;
   }
+  getByKey(key) {
+    return this.getById(makePreloadingSourceId(key));
+  }
   update(sources) {
-    this.map = new Map(sources.map((s) => [makePreloadingAttemptId(s.key), s]));
+    this.map = new Map(sources.map((s) => [makePreloadingSourceId(s.key), s]));
   }
 };
 
@@ -45482,18 +45337,6 @@ var PrivateVerificationTokensModel = class extends SDKModel {
   }
   privateVerificationTokensUpdated() {
     this.dispatchEventToListeners("TokensUpdated" /* TOKENS_UPDATED */);
-  }
-  cacheStorageContentUpdated(_event) {
-  }
-  cacheStorageListUpdated(_event) {
-  }
-  indexedDBContentUpdated(_event) {
-  }
-  indexedDBListUpdated(_event) {
-  }
-  storageBucketCreatedOrUpdated(_event) {
-  }
-  storageBucketDeleted(_event) {
   }
 };
 SDKModel.register(PrivateVerificationTokensModel, { capabilities: 8192 /* STORAGE */, autostart: false });
@@ -45606,62 +45449,6 @@ var ScreenCaptureModel = class extends SDKModel {
     if (currentRequest) {
       currentRequest.callbacks.onScreencastVisibilityChanged.call(null, visible);
     }
-  }
-  backForwardCacheNotUsed(_params) {
-  }
-  domContentEventFired(_params) {
-  }
-  loadEventFired(_params) {
-  }
-  lifecycleEvent(_params) {
-  }
-  navigatedWithinDocument(_params) {
-  }
-  frameAttached(_params) {
-  }
-  frameNavigated(_params) {
-  }
-  documentOpened(_params) {
-  }
-  frameDetached(_params) {
-  }
-  frameStartedLoading(_params) {
-  }
-  frameStoppedLoading(_params) {
-  }
-  frameRequestedNavigation(_params) {
-  }
-  frameStartedNavigating(_params) {
-  }
-  frameSubtreeWillBeDetached(_params) {
-  }
-  frameScheduledNavigation(_params) {
-  }
-  frameClearedScheduledNavigation(_params) {
-  }
-  frameResized() {
-  }
-  javascriptDialogOpening(_params) {
-  }
-  javascriptDialogClosed(_params) {
-  }
-  interstitialShown() {
-  }
-  interstitialHidden() {
-  }
-  windowOpen(_params) {
-  }
-  fileChooserOpened(_params) {
-  }
-  compilationCacheProduced(_params) {
-  }
-  downloadWillBegin(_params) {
-  }
-  downloadProgress() {
-  }
-  prefetchStatusUpdated(_params) {
-  }
-  prerenderStatusUpdated(_params) {
   }
 };
 SDKModel.register(ScreenCaptureModel, { capabilities: 64 /* SCREEN_CAPTURE */, autostart: false });
@@ -45792,16 +45579,6 @@ var StorageBucketsModel = class extends SDKModel {
         `Received an event that Storage Bucket '${bucketId}' was deleted, but it wasn't in the StorageBucketsModel.`
       );
     }
-  }
-  indexedDBListUpdated(_event) {
-  }
-  indexedDBContentUpdated(_event) {
-  }
-  cacheStorageListUpdated(_event) {
-  }
-  cacheStorageContentUpdated(_event) {
-  }
-  privateVerificationTokensUpdated() {
   }
 };
 SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* STORAGE */, autostart: false });
@@ -46033,16 +45810,6 @@ var ServiceWorkerCacheModel = class extends SDKModel {
     if (storageBucket) {
       this.dispatchEventToListeners("CacheStorageContentUpdated" /* CACHE_STORAGE_CONTENT_UPDATED */, { storageBucket, cacheName });
     }
-  }
-  indexedDBListUpdated(_event) {
-  }
-  indexedDBContentUpdated(_event) {
-  }
-  storageBucketCreatedOrUpdated(_event) {
-  }
-  storageBucketDeleted(_event) {
-  }
-  privateVerificationTokensUpdated() {
   }
   setThrottlerSchedulesAsSoonAsPossibleForTest() {
     this.#scheduleAsSoonAsPossible = true;

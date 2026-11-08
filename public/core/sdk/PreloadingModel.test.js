@@ -979,5 +979,132 @@ describe('PreloadingModel', () => {
         assert.lengthOf(model.getRepresentativePreloadingAttempts(null), 1);
         assert.strictEqual(model.getRepresentativePreloadingAttempts(null)[0].value.key.url, 'https://example.com/new-page.js');
     });
+    it('tracks multiple prerender attempts with the same URL and different pipelineIds', async () => {
+        const target = universe.createTarget({ connection });
+        const model = target.model(SDK.PreloadingModel.PreloadingModel);
+        assert.exists(model);
+        const loaderId = getMainFrame(target).loaderId;
+        dispatchEvent(target, 'Preload.ruleSetUpdated', {
+            ruleSet: {
+                id: 'ruleSetId:1',
+                loaderId,
+                sourceText: '{"prerender":[{"source":"list","urls":["/page.html"]}]}',
+            },
+        });
+        dispatchEvent(target, 'Preload.prerenderStatusUpdated', {
+            key: {
+                loaderId,
+                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                url: 'https://other.com/iframe.html',
+            },
+            pipelineId: 'pipelineId:subframe1',
+            status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
+            prerenderStatus: "PrefetchFailedCrossOriginSubframe" /* Protocol.Preload.PrerenderFinalStatus.PrefetchFailedCrossOriginSubframe */,
+        });
+        dispatchEvent(target, 'Preload.prerenderStatusUpdated', {
+            key: {
+                loaderId,
+                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                url: 'https://other.com/iframe.html',
+            },
+            pipelineId: 'pipelineId:subframe2',
+            status: "Ready" /* Protocol.Preload.PreloadingStatus.Ready */,
+        });
+        assert.deepEqual(model.getRepresentativePreloadingAttempts(null), [
+            {
+                id: `${loaderId}:Prerender:https://other.com/iframe.html:undefined:undefined`,
+                value: {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId,
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: urlString `https://other.com/iframe.html`,
+                    },
+                    pipelineId: 'pipelineId:subframe1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prerenderStatus: "PrefetchFailedCrossOriginSubframe" /* Protocol.Preload.PrerenderFinalStatus.PrefetchFailedCrossOriginSubframe */,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: [],
+                    nodeIds: [],
+                },
+            },
+            {
+                id: `${loaderId}:Prerender:https://other.com/iframe.html:undefined:undefined:pipelineId:subframe2`,
+                value: {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId,
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: urlString `https://other.com/iframe.html`,
+                    },
+                    pipelineId: 'pipelineId:subframe2',
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: [],
+                    nodeIds: [],
+                },
+            },
+        ]);
+        dispatchEvent(target, 'Preload.preloadingAttemptSourcesUpdated', {
+            loaderId,
+            preloadingAttemptSources: [
+                {
+                    key: {
+                        loaderId,
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: 'https://other.com/iframe.html',
+                    },
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+            ],
+        });
+        assert.deepEqual(model.getRepresentativePreloadingAttempts(null), [
+            {
+                id: `${loaderId}:Prerender:https://other.com/iframe.html:undefined:undefined`,
+                value: {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId,
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: urlString `https://other.com/iframe.html`,
+                    },
+                    pipelineId: 'pipelineId:subframe1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prerenderStatus: "PrefetchFailedCrossOriginSubframe" /* Protocol.Preload.PrerenderFinalStatus.PrefetchFailedCrossOriginSubframe */,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+            },
+            {
+                id: `${loaderId}:Prerender:https://other.com/iframe.html:undefined:undefined:pipelineId:subframe2`,
+                value: {
+                    action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                    key: {
+                        loaderId,
+                        action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        url: urlString `https://other.com/iframe.html`,
+                    },
+                    pipelineId: 'pipelineId:subframe2',
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId:1'],
+                    nodeIds: [1],
+                },
+            },
+        ]);
+        dispatchEvent(target, 'Preload.preloadingAttemptSourcesUpdated', {
+            loaderId,
+            preloadingAttemptSources: [],
+        });
+        assert.deepEqual(model.getRepresentativePreloadingAttempts(null), []);
+    });
 });
 //# sourceMappingURL=PreloadingModel.test.js.map

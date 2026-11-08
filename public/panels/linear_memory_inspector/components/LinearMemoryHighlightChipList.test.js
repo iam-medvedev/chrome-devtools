@@ -6,6 +6,7 @@ import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const HIGHLIGHT_CHIP = '.highlight-chip';
 export const HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR = '.jump-to-highlight-button';
@@ -97,7 +98,7 @@ describe('LinearMemoryInspectorHighlightChipList', () => {
         component.deleteHighlight = deleteHighlight;
         await component.updateComplete;
         const button = component.contentElement.querySelector(HIGHLIGHT_ROW_REMOVE_BUTTON_SELECTOR);
-        assert.instanceOf(button, HTMLButtonElement);
+        assert.instanceOf(button, Buttons.Button.Button);
         button.click();
         assert.isTrue(deleteHighlight.calledOnceWith(highlightInfo));
     });

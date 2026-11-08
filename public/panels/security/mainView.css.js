@@ -23,7 +23,7 @@ export default `/*
 }
 
 .security-summary-section-title {
-  font-size: 15px;
+  font-size: var(--sys-typescale-headline4-size);
   margin: var(--sys-size-6) var(--sys-size-8);
   user-select: text;
 }
@@ -109,7 +109,7 @@ export default `/*
   padding: var(--sys-size-8) var(--sys-size-11);
   border-style: solid;
   border-width: var(--sys-size-1) 0;
-  font-size: 15px;
+  font-size: var(--sys-typescale-body2-size);
   background: var(--sys-color-cdt-base-container);
   border-color: var(--sys-color-neutral-outline);
   user-select: text;
@@ -159,7 +159,7 @@ export default `/*
 .security-explanation-text {
   flex: auto;
   white-space: normal;
-  max-width: 400px;
+  max-width: var(--sys-size-33);
 }
 
 .origin-button {

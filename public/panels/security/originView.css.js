@@ -82,7 +82,7 @@ export default `/*
 
 .security-origin-view .details-table-row > td:first-child {
   color: var(--sys-color-token-subtle);
-  width: calc(120px + 1em);
+  width: calc(var(--sys-size-21) + 1em); /* 128px label column + 1em right padding */
   text-align: right;
   padding-right: 1em;
 }
@@ -93,7 +93,7 @@ export default `/*
 
 .security-origin-view .sct-details .details-table .details-table-row:last-child td:last-child {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding-bottom: 10px;
+  padding-bottom: var(--sys-size-5);
 }
 
 .security-origin-view .sct-details .details-table:last-child .details-table-row:last-child td:last-child {
@@ -105,10 +105,6 @@ export default `/*
   margin-left: 126px;
 }
 
-.security-origin-view .sct-toggle {
-  margin-left: 145px;
-  padding-top: 5px;
-}
 
 .security-origin-view .details-table .empty-san {
   color: var(--sys-color-state-disabled);

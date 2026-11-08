@@ -615,6 +615,7 @@ describe('AiConversation', () => {
             output: 'output',
             canceled: false,
             loadedSkills: ['styling'],
+            autoApproved: true,
             widgets: [{
                     name: 'COMPUTED_STYLES',
                     data: {
@@ -641,10 +642,11 @@ describe('AiConversation', () => {
         // ContextResponse should have widgets removed
         assert.strictEqual(serialized.history[1].type, "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
         assert.isUndefined(serialized.history[1].widgets);
-        // ActionResponse should have widgets and loadedSkills removed.
+        // ActionResponse should have widgets, loadedSkills, and autoApproved removed.
         assert.strictEqual(serialized.history[2].type, "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
         assert.isUndefined(serialized.history[2].widgets);
         assert.isUndefined(serialized.history[2].loadedSkills);
+        assert.isUndefined(serialized.history[2].autoApproved);
     });
     it('redacts action outputs of tools annotated with REDACT_FROM_HISTORY', () => {
         const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });

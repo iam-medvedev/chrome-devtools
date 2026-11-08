@@ -131,7 +131,7 @@ var menuItem_css_default = `/*
   display: inline-block;
   mask-repeat: no-repeat;
   mask-position: center;
-  width: calc(var(--menu-checkmark-width) - 10px);
+  width: var(--menu-checkmark-width);
   height: var(--menu-checkmark-height);
   mask-image: var(--selected-item-check);
   background: var(--sys-color-token-subtle);
@@ -243,7 +243,7 @@ var Menu = class extends HTMLElement {
   connectedCallback() {
     void RenderCoordinator.write(() => {
       this.style.setProperty("--selected-item-check", `url(${selectedItemCheckmark})`);
-      this.style.setProperty("--menu-checkmark-width", this.#props.showSelectedItem ? "26px" : "0px");
+      this.style.setProperty("--menu-checkmark-width", this.#props.showSelectedItem ? "var(--sys-size-8)" : "0px");
       this.style.setProperty("--menu-checkmark-height", this.#props.showSelectedItem ? "12px" : "0px");
       const dividerLine = this.showDivider ? "1px var(--divider-line) solid" : "none";
       this.style.setProperty("--override-divider-line", dividerLine);

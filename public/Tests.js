@@ -610,6 +610,21 @@
     this.takeControl();
   };
 
+  TestSuite.prototype.showExtensionSidebarPane = function(title) {
+    const viewManager = UI.ViewManager.ViewManager.instance();
+    for (const view of viewManager.views.values()) {
+      if (view.viewId().startsWith('extension-sidebar-') && view.title() === title) {
+        return viewManager.revealView(view);
+      }
+    }
+    return Promise.reject(new Error(`Extension sidebar pane '${title}' not found`));
+  };
+
+  TestSuite.prototype.switchToExtensionSidebarPane = function(title) {
+    this.showExtensionSidebarPane(title).then(this.releaseControl.bind(this));
+    this.takeControl();
+  };
+
   // Regression test for crbug.com/370035.
   TestSuite.prototype.testDeviceMetricsOverrides = function() {
     function dumpPageMetrics() {

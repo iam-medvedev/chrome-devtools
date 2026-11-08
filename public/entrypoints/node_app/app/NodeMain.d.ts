@@ -14,12 +14,9 @@ export declare class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> 
     constructor(parentTarget: SDK.Target.Target);
     dispose(): void;
     targetCreated({ targetInfo }: Protocol.Target.TargetCreatedEvent): void;
-    targetInfoChanged(_event: Protocol.Target.TargetInfoChangedEvent): void;
-    targetDestroyed(_event: Protocol.Target.TargetDestroyedEvent): void;
     attachedToTarget({ sessionId, targetInfo }: Protocol.Target.AttachedToTargetEvent): Promise<void>;
     detachedFromTarget({ sessionId }: Protocol.Target.DetachedFromTargetEvent): void;
     receivedMessageFromTarget({ sessionId, message }: Protocol.Target.ReceivedMessageFromTargetEvent): void;
-    targetCrashed(_event: Protocol.Target.TargetCrashedEvent): void;
 }
 export declare class NodeConnection implements ProtocolClient.ConnectionTransport.ConnectionTransport {
     #private;

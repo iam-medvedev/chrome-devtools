@@ -217,14 +217,14 @@ h1 {
   font-weight: 500;
   font-size: var(--sys-typescale-body5-size);
   line-height: var(--sys-typescale-body5-line-height);
-  letter-spacing: 0.8px;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--sys-color-secondary);
   margin-bottom: var(--sys-size-5);
   margin-top: var(--sys-size-13);
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--sys-size-3);
 }
 
 .footer {
@@ -723,15 +723,15 @@ devtools-create-recording-view {
   flex-flow: row wrap;
   align-items: center;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding: 0 5px;
-  gap: 3px;
+  padding: 0 var(--sys-size-3);
+  gap: var(--sys-size-2);
   flex-shrink: 0;
 }
 
 .separator {
   background-color: var(--sys-color-divider);
   width: var(--sys-size-1);
-  height: 17px;
+  height: var(--sys-size-8);
   margin: 0;
 }
 
@@ -741,8 +741,8 @@ select {
   border: none;
   border-radius: var(--sys-shape-corner-extra-small);
   height: var(--sys-size-9);
-  max-width: 140px;
-  min-width: 140px;
+  max-width: var(--sys-size-22);
+  min-width: var(--sys-size-22);
   padding: 0 var(--sys-size-6) 0 var(--sys-size-5);
   position: relative;
   color: var(--sys-color-on-surface);
@@ -818,7 +818,7 @@ devtools-recording-list-view {
   font-size: var(--sys-typescale-body4-size);
   line-height: var(--sys-typescale-body4-line-height);
   color: var(--sys-color-primary);
-  outline-offset: 3px;
+  outline-offset: var(--sys-size-2);
 }
 
 .feedback .devtools-link:focus-visible,
@@ -944,7 +944,7 @@ var recordingListView_css_default = `/*
   .row {
     display: flex;
     align-items: center;
-    padding-right: 5px;
+    padding-right: var(--sys-size-3);
     height: var(--sys-size-12);
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
@@ -973,7 +973,7 @@ var recordingListView_css_default = `/*
 
   .actions .divider {
     width: var(--sys-size-1);
-    height: 17px;
+    height: var(--sys-size-8);
     background-color: var(--sys-color-divider);
     margin: 0 var(--sys-size-4);
   }
@@ -1212,7 +1212,7 @@ iframe {
 
 header {
   display: flex;
-  padding: 3px var(--sys-size-5);
+  padding: var(--sys-size-3) var(--sys-size-5);
   justify-content: space-between;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
@@ -2386,7 +2386,7 @@ var stepEditor_css_default = `/*
 }
 
 .gap.row {
-  gap: 5px;
+  gap: var(--sys-size-3);
 }
 
 .gap.row devtools-button {
@@ -2403,11 +2403,11 @@ var stepEditor_css_default = `/*
 }
 
 .row-buttons {
-  margin-top: 3px;
+  margin-top: var(--sys-size-3);
 }
 
 .error {
-  margin: 3px 0 var(--sys-size-4);
+  margin: var(--sys-size-3) 0 var(--sys-size-4);
   padding: var(--sys-size-5) var(--sys-size-6);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
@@ -3444,13 +3444,6 @@ var stepView_css_default = `/*
   cy: var(--sys-size-5);
 }
 
-.is-start-of-group:not(:first-of-type) .circle-icon {
-  r: 7px;
-  fill: var(--sys-color-cdt-base-container);
-  stroke: var(--sys-color-primary);
-  stroke-width: var(--sys-size-2);
-}
-
 .step.is-success .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-primary);
@@ -3539,10 +3532,6 @@ var stepView_css_default = `/*
   transform: rotate(0deg);
 }
 
-.is-start-of-group .chevron {
-  top: 34px;
-}
-
 .details {
   display: none;
   margin-top: var(--sys-size-5);
@@ -3555,26 +3544,6 @@ var stepView_css_default = `/*
 
 .step-details {
   overflow: auto;
-}
-
-devtools-recorder-step-editor {
-  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-  padding: 3px 6px 6px;
-  margin-left: calc(-1 * var(--sys-size-4));
-  border-radius: 3px;
-}
-
-devtools-recorder-step-editor:hover {
-  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-}
-
-devtools-recorder-step-editor.is-selected {
-  background-color: color-mix(
-    in srgb,
-    var(--sys-color-tonal-container),
-    var(--sys-color-cdt-base-container) 50%
-  );
-  border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
 }
 
 .summary {
@@ -3719,7 +3688,7 @@ var timelineSection_css_default = `/*
   left: var(--sys-size-3);
   display: block;
   transform: translateX(-50%);
-  top: 18px;
+  top: var(--sys-size-8);
   height: 100%;
   z-index: 1; /* We want this to be below of \\'.overlay\\' for stopped case */
 }

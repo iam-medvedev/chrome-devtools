@@ -23,6 +23,9 @@ import { createContentProviderUISourceCodes, createFileSystemUISourceCode, } fro
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { urlString } = Platform.DevToolsPath;
+function getTreeOutline(navigatorView) {
+    return navigatorView.scriptsTree;
+}
 describe('NetworkNavigatorView', () => {
     setupRuntimeHooks();
     setupLocaleHooks();
@@ -95,11 +98,11 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const folder = rootElement.firstChild();
             const file = folder?.firstChild();
             assert.strictEqual(folder?.title, 'example.com');
-            assert.strictEqual(file?.title, 'script.js');
+            assert.strictEqual(file?.titleAsText(), 'script.js');
             project.removeProject();
         });
         it('does not show Fetch and XHR requests', async () => {
@@ -120,29 +123,29 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             assert.lengthOf(rootElement.children(), 0);
             project.removeProject();
         });
         it('reveals main frame target on navigation', async () => {
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             assert.strictEqual(rootElement.childCount(), 1);
             assert.strictEqual(rootElement.firstChild()?.childCount(), 3);
             assert.isFalse(rootElement.firstChild()?.expanded);
             assert.isTrue(rootElement.firstChild()?.selected);
             target.setInspectedURL(urlString `http://example.com/`);
-            assert.isTrue(navigatorView.scriptsTree.firstChild()?.expanded);
-            assert.isTrue(navigatorView.scriptsTree.firstChild()?.firstChild()?.selected);
+            assert.isTrue(getTreeOutline(navigatorView).firstChild()?.expanded);
+            assert.isTrue(getTreeOutline(navigatorView).firstChild()?.firstChild()?.selected);
         });
         it('reveals main frame target when added', async () => {
             target.setInspectedURL(urlString `http://example.com/`);
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             assert.strictEqual(rootElement.childCount(), 1);
             assert.strictEqual(rootElement.firstChild()?.childCount(), 3);
-            assert.isTrue(navigatorView.scriptsTree.firstChild()?.expanded);
-            assert.isTrue(navigatorView.scriptsTree.firstChild()?.firstChild()?.selected);
+            assert.isTrue(getTreeOutline(navigatorView).firstChild()?.expanded);
+            assert.isTrue(getTreeOutline(navigatorView).firstChild()?.firstChild()?.selected);
         });
         it('does not add inline style stylesheets without sourceURL as standalone items in NetworkNavigatorView', async () => {
             void backend.universe.cssWorkspaceBinding;
@@ -186,10 +189,10 @@ describe('NetworkNavigatorView', () => {
                 },
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const exampleComNode = rootElement.firstChild();
             assert.exists(exampleComNode);
-            const childTitles = exampleComNode.children().map(child => child.title);
+            const childTitles = exampleComNode.children().map(child => child.titleAsText());
             assert.include(childTitles, 'external.css');
             assert.lengthOf(childTitles.filter(title => title === '(index)'), 1);
             assert.deepEqual(childTitles, ['(index)', 'gtm.js', 'external.css', 'favicon.ico']);
@@ -219,15 +222,15 @@ describe('NetworkNavigatorView', () => {
         });
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const navigatorView = await createNetworkNavigatorView();
-        let rootElement = navigatorView.scriptsTree.rootElement();
+        let rootElement = getTreeOutline(navigatorView).rootElement();
         assert.strictEqual(rootElement.childCount(), 1);
         assert.strictEqual(rootElement.firstChild()?.childCount(), 3);
-        assert.deepEqual(rootElement.firstChild()?.children().map(i => i.title), ['(index)', 'gtm.js', 'favicon.ico']);
+        assert.deepEqual(rootElement.firstChild()?.children().map(i => i.titleAsText()), ['(index)', 'gtm.js', 'favicon.ico']);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(anotherTarget);
-        rootElement = navigatorView.scriptsTree.rootElement();
+        rootElement = getTreeOutline(navigatorView).rootElement();
         assert.strictEqual(rootElement.childCount(), 1);
         assert.strictEqual(rootElement.firstChild()?.childCount(), 2);
-        assert.deepEqual(rootElement.firstChild()?.children().map(i => i.title), ['(index)', 'background.bmp']);
+        assert.deepEqual(rootElement.firstChild()?.children().map(i => i.titleAsText()), ['(index)', 'background.bmp']);
         project.removeProject();
         anotherProject.removeProject();
         anotherTarget.dispose('test');
@@ -256,7 +259,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const exampleComNode = rootElement.firstChild();
             assert.exists(exampleComNode);
             const nodeA = exampleComNode.childAt(0);
@@ -286,7 +289,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const nodeExampleCom = rootElement.firstChild();
             assert.exists(nodeExampleCom);
             const nodeA = nodeExampleCom.childAt(0);
@@ -328,7 +331,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const exampleComNode = rootElement.firstChild();
             assert.exists(exampleComNode);
             const nodeD = exampleComNode.childAt(0);
@@ -375,7 +378,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const exampleComNode = rootElement.firstChild();
             assert.exists(exampleComNode);
             const nodeD = exampleComNode.childAt(0);
@@ -423,7 +426,7 @@ describe('NetworkNavigatorView', () => {
             await backend.addScript(target, { content: '42', url: 'http://example.com/b.js', executionContextId: 2, hasSourceURL: false }, null);
             await backend.addScript(target, { content: '42', url: 'http://example.com/c.js', hasSourceURL: false }, null);
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const exampleComNode = rootElement.firstChild();
             assert.exists(exampleComNode);
             const nodeA = exampleComNode.childAt(0);
@@ -493,7 +496,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const nodeExampleCom = rootElement.firstChild();
             const ignoredFolder = nodeExampleCom.childAt(0);
             const mixedFolder = nodeExampleCom.childAt(1);
@@ -526,7 +529,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const nodeExampleCom = rootElement.firstChild();
             const ignoredFolder = nodeExampleCom.childAt(0);
             const mixedFolder = nodeExampleCom.childAt(1);
@@ -561,7 +564,7 @@ describe('NetworkNavigatorView', () => {
                 target,
             });
             const navigatorView = await createNetworkNavigatorView();
-            const rootElement = navigatorView.scriptsTree.rootElement();
+            const rootElement = getTreeOutline(navigatorView).rootElement();
             const nodeExampleCom = rootElement.firstChild();
             const ignoredFolder = nodeExampleCom.childAt(0);
             const mixedFolder = nodeExampleCom.childAt(1);
@@ -673,20 +676,20 @@ describe('FilesNavigatorView', () => {
         });
         const navigatorView = await createFilesNavigatorView();
         await assertScreenshot('sources/files-navigator-populated.png');
-        const rootElement = navigatorView.scriptsTree.rootElement();
+        const rootElement = getTreeOutline(navigatorView).rootElement();
         const children = rootElement.children();
         assert.lengthOf(children, 3);
         const expectedTitles = ['bad/foo/bar', 'good/foo/bar', 'ugly/bar'];
         assert.deepEqual(children.map((c) => c.title).sort(), expectedTitles);
         const badProjectNode = children.find((c) => c.title === 'bad/foo/bar');
         assert.strictEqual(badProjectNode?.childCount(), 1);
-        assert.strictEqual(badProjectNode?.childAt(0)?.title, '2.js');
+        assert.strictEqual(badProjectNode?.childAt(0)?.titleAsText(), '2.js');
         const goodProjectNode = children.find((c) => c.title === 'good/foo/bar');
         assert.strictEqual(goodProjectNode?.childCount(), 1);
-        assert.strictEqual(goodProjectNode?.childAt(0)?.title, '1.js');
+        assert.strictEqual(goodProjectNode?.childAt(0)?.titleAsText(), '1.js');
         const uglyProjectNode = children.find((c) => c.title === 'ugly/bar');
         assert.strictEqual(uglyProjectNode?.childCount(), 1);
-        assert.strictEqual(uglyProjectNode?.childAt(0)?.title, '3.js');
+        assert.strictEqual(uglyProjectNode?.childAt(0)?.titleAsText(), '3.js');
         project1.removeProject();
         project2.removeProject();
         project3.removeProject();
@@ -778,7 +781,7 @@ describe('OverridesNavigatorView', () => {
             .set(true);
         const navigatorView = await createOverridesNavigatorView();
         await assertScreenshot('sources/overrides-navigator-populated.png');
-        const rootElement = navigatorView.scriptsTree.rootElement();
+        const rootElement = getTreeOutline(navigatorView).rootElement();
         const children = rootElement.children();
         assert.lengthOf(children, 1);
         const overridesNode = children[0];

@@ -188,17 +188,27 @@ var commentsPane_css_default = `/*
   }
 
   .comment-pin-badge {
+    box-sizing: border-box;
     width: var(--sys-size-9);
     height: var(--sys-size-9);
     margin-right: var(--sys-size-2);
     border-radius: var(--sys-shape-corner-full) var(--sys-shape-corner-full) var(--sys-shape-corner-full) var(--sys-shape-corner-extra-small);
-    background-color: var(--sys-color-primary);
+    border: var(--sys-size-2) solid var(--sys-color-primary);
+    background-color: var(--sys-color-cdt-base-container);
     flex-shrink: 0;
   }
 
+  .comment-pin-badge.resolved {
+    border: none;
+    background-color: var(--sys-color-primary);
+  }
+
   .comment-thread-item.orphaned .comment-pin-badge {
+    border-color: var(--sys-color-surface-variant);
+  }
+
+  .comment-thread-item.orphaned .comment-pin-badge.resolved {
     background-color: var(--sys-color-surface-variant);
-    color: var(--sys-color-on-surface-subtle);
   }
 
   .anchor-chip {
@@ -279,6 +289,10 @@ var commentsPane_css_default = `/*
     width: var(--sys-size-8);
     height: var(--sys-size-8);
     color: var(--sys-color-on-surface-subtle);
+  }
+
+  .see-response-button {
+    margin-right: calc(-1 * var(--sys-size-6));
   }
 
   .comments-empty-state {
@@ -370,9 +384,9 @@ var commentsPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./commentsPane.css")} */`;
 
 // ../../front_end/panels/comments/CommentsPane.ts
-var { html, render, i18nTemplate, Directives: { ref, repeat } } = Lit;
+var { html, render, i18nTemplate, Directives: { classMap, ref, repeat } } = Lit;
 var { widget } = UI.Widget;
-var { computeCommentTitle } = CommonPanels.CommentThreadWidget;
+var { computeCommentTitle, inputDisclaimer } = CommonPanels.CommentThreadWidget;
 var UIStrings = {
   /**
    * @description Tooltip text for clearing all comments.
@@ -443,15 +457,8 @@ var UIStrings = {
    */
   sentComments: "Sent comments"
 };
-var UIStringsNotTranslate = {
-  /**
-   * @description Disclaimer text in the comments pane info tooltip.
-   */
-  inputDisclaimer: "Comment strings, DOM hierarchy snippets, tracked CSS and DOM changes, Visual Element (VE) paths and signatures, and tracked presenter changes are sent to the connected third-party agent to assist with debugging and code updates"
-};
 var str_ = i18n.i18n.registerUIStrings("panels/comments/CommentsPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var lockedString = i18n.i18n.lockedString;
 var TOGGLE_COMMENT_MODE_ACTION_ID = "comments.toggle-comment-mode";
 function renderThreadStatus(thread, onDeleteThread) {
   switch (thread.status) {
@@ -477,6 +484,7 @@ function renderThreadStatus(thread, onDeleteThread) {
     case "RESOLVED":
       return html`
         <devtools-button
+          class="see-response-button"
           .data=${{
         variant: Buttons.Button.Variant.TEXT,
         jslogContext: "comments-see-response"
@@ -554,7 +562,13 @@ var DEFAULT_VIEW = (input, output, target) => {
       }
     }}
             jslog=${VisualLogging.item("comment-thread").track({ click: true })}>
-            <div class="comment-pin-badge" aria-hidden="true"></div>
+            <div
+              class=${classMap({
+      "comment-pin-badge": true,
+      resolved: item2.thread.status === "RESOLVED"
+    })}
+              aria-hidden="true">
+            </div>
             <span class="anchor-chip ${item2.thread.isOrphaned ? "orphaned" : ""}">
               ${"node" in item2.title ? widget(CommonPanels.DOMLinkifier.DOMNodeLink, {
       node: item2.title.node,
@@ -583,7 +597,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         variant="rich"
       >
         <div class="info-tooltip-container">
-          ${lockedString(UIStringsNotTranslate.inputDisclaimer)}
+          ${inputDisclaimer()}
         </div>
       </devtools-tooltip>
       <button
@@ -682,7 +696,7 @@ var CommentsPane = class extends UI.Widget.Widget {
   ];
   #view;
   #commentManager;
-  #cachedTitles = /* @__PURE__ */ new Map();
+  #cachedTitles = /* @__PURE__ */ new WeakMap();
   #viewOutput = {};
   #activeTab = "queued";
   // Set while a tab click smoothly scrolls the list. Scroll events then don't
@@ -752,15 +766,16 @@ var CommentsPane = class extends UI.Widget.Widget {
     this.#handleScroll();
   };
   #handleClearAll = () => {
-    this.#cachedTitles.clear();
     this.#commentManager.clear();
     this.requestUpdate();
   };
   #handleThreadClick = (thread, position) => {
+    if (thread.isGeneratedComment && thread.status !== "RESOLVED") {
+      return;
+    }
     void Common.Revealer.reveal(new CommentManager.CommentThread.RevealableThread(thread, position));
   };
   #handleDeleteThread = (threadId) => {
-    this.#cachedTitles.delete(threadId);
     this.#commentManager.removeCommentThread(threadId);
     this.requestUpdate();
   };
@@ -775,10 +790,10 @@ var CommentsPane = class extends UI.Widget.Widget {
     void actionRegistry.getAction(TOGGLE_COMMENT_MODE_ACTION_ID).execute();
   };
   async #toViewData(thread) {
-    let title = this.#cachedTitles.get(thread.id);
+    let title = this.#cachedTitles.get(thread);
     if (!title) {
       title = await computeCommentTitle(thread.anchor);
-      this.#cachedTitles.set(thread.id, title);
+      this.#cachedTitles.set(thread, title);
     }
     return {
       thread,

@@ -64,11 +64,6 @@ export default `/*
     border-radius: var(--sys-shape-corner-medium) var(--sys-shape-corner-medium) var(--sys-shape-corner-extra-small) var(--sys-shape-corner-extra-small);
   }
 
-  .wrapper.bottom {
-    margin-top: 5px;
-    border-radius: var(--sys-shape-corner-extra-small) var(--sys-shape-corner-extra-small) var(--sys-shape-corner-medium) var(--sys-shape-corner-medium);
-  }
-
   header {
     display: flex;
     flex-direction: row;
@@ -197,19 +192,9 @@ export default `/*
     gap: var(--sys-size-5);
   }
 
-  textarea {
-    height: 84px;
-    padding: 10px;
-    border-radius: var(--sys-shape-corner-small);
-    border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-    width: 100%;
-    font-family: var(--default-font-family);
-    font-size: inherit;
-  }
-
   .buttons {
     display: flex;
-    gap: 5px;
+    gap: var(--sys-size-3);
   }
 
   @media (width <= 500px) {
@@ -279,7 +264,7 @@ export default `/*
 
   details {
     overflow: hidden;
-    margin-top: 10px;
+    margin-top: var(--sys-size-6);
   }
 
   ::details-content {
@@ -334,8 +319,8 @@ export default `/*
   .header-icon-container {
     background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
     border-radius: var(--sys-size-4);
-    height: 36px;
-    width: 36px;
+    height: var(--sys-size-13);
+    width: var(--sys-size-13);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -388,7 +373,7 @@ export default `/*
   }
 
   details h3 {
-    font-size: 10px;
+    font-size: var(--sys-typescale-body5-size);
     font-weight: var(--ref-typeface-weight-medium);
     text-transform: uppercase;
     color: var(--sys-color-on-surface-subtle);
@@ -407,14 +392,14 @@ export default `/*
       display: block;
     }
 
-    ul {
+    :scope ul {
       color: var(--sys-color-primary);
       font-size: var(--sys-typescale-body4-size);
       font-style: normal;
       font-weight: 400;
-      line-height: 18px;
-      margin-top: var(--sys-size-5);
-      padding-left: var(--sys-size-6);
+      line-height: var(--sys-typescale-body4-line-height);
+      margin-top: var(--sys-size-6);
+      padding-inline-start: var(--sys-size-3);
     }
 
     li {

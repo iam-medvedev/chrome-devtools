@@ -67,13 +67,6 @@ export default `/*
   cy: var(--sys-size-5);
 }
 
-.is-start-of-group:not(:first-of-type) .circle-icon {
-  r: 7px;
-  fill: var(--sys-color-cdt-base-container);
-  stroke: var(--sys-color-primary);
-  stroke-width: var(--sys-size-2);
-}
-
 .step.is-success .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-primary);
@@ -162,10 +155,6 @@ export default `/*
   transform: rotate(0deg);
 }
 
-.is-start-of-group .chevron {
-  top: 34px;
-}
-
 .details {
   display: none;
   margin-top: var(--sys-size-5);
@@ -178,26 +167,6 @@ export default `/*
 
 .step-details {
   overflow: auto;
-}
-
-devtools-recorder-step-editor {
-  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-  padding: 3px 6px 6px;
-  margin-left: calc(-1 * var(--sys-size-4));
-  border-radius: 3px;
-}
-
-devtools-recorder-step-editor:hover {
-  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-}
-
-devtools-recorder-step-editor.is-selected {
-  background-color: color-mix(
-    in srgb,
-    var(--sys-color-tonal-container),
-    var(--sys-color-cdt-base-container) 50%
-  );
-  border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
 }
 
 .summary {

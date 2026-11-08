@@ -2314,9 +2314,6 @@ export const generatedProperties = [
         "runtime_flag_status": "test"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-left-radius",
             "corner-top-left-shape",
@@ -2332,9 +2329,6 @@ export const generatedProperties = [
         "runtime_flag_status": "experimental"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-end-start-radius",
             "corner-end-start-shape",
@@ -2353,9 +2347,6 @@ export const generatedProperties = [
         "name": "corner-block-end-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-start-start-radius",
             "corner-start-start-shape",
@@ -2374,9 +2365,6 @@ export const generatedProperties = [
         "name": "corner-block-start-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-bottom-left-radius",
             "corner-bottom-left-shape",
@@ -2388,9 +2376,6 @@ export const generatedProperties = [
         "runtime_flag_status": "experimental"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-bottom-left-radius",
             "corner-bottom-left-shape"
@@ -2411,9 +2396,6 @@ export const generatedProperties = [
         "name": "corner-bottom-left-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-bottom-right-radius",
             "corner-bottom-right-shape"
@@ -2441,9 +2423,6 @@ export const generatedProperties = [
         "name": "corner-bottom-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-end-end-radius",
             "corner-end-end-shape"
@@ -2456,9 +2435,6 @@ export const generatedProperties = [
         "name": "corner-end-end-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-end-start-radius",
             "corner-end-start-shape"
@@ -2471,9 +2447,6 @@ export const generatedProperties = [
         "name": "corner-end-start-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-start-end-radius",
             "corner-start-end-shape",
@@ -2492,9 +2465,6 @@ export const generatedProperties = [
         "name": "corner-inline-end-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-start-start-radius",
             "corner-start-start-shape",
@@ -2513,9 +2483,6 @@ export const generatedProperties = [
         "name": "corner-inline-start-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-left-radius",
             "corner-top-left-shape",
@@ -2534,9 +2501,6 @@ export const generatedProperties = [
         "name": "corner-left-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-right-radius",
             "corner-top-right-shape",
@@ -2564,9 +2528,6 @@ export const generatedProperties = [
         "name": "corner-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-start-end-radius",
             "corner-start-end-shape"
@@ -2579,9 +2540,6 @@ export const generatedProperties = [
         "name": "corner-start-end-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-start-start-radius",
             "corner-start-start-shape"
@@ -2594,9 +2552,6 @@ export const generatedProperties = [
         "name": "corner-start-start-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-left-radius",
             "corner-top-left-shape",
@@ -2608,9 +2563,6 @@ export const generatedProperties = [
         "runtime_flag_status": "experimental"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-left-radius",
             "corner-top-left-shape"
@@ -2631,9 +2583,6 @@ export const generatedProperties = [
         "name": "corner-top-left-shape"
     },
     {
-        "keywords": [
-            "normal"
-        ],
         "longhands": [
             "border-top-right-radius",
             "corner-top-right-shape"
@@ -4195,9 +4144,9 @@ export const generatedProperties = [
             "thin"
         ],
         "longhands": [
-            "outline-color",
+            "outline-width",
             "outline-style",
-            "outline-width"
+            "outline-color"
         ],
         "name": "outline"
     },
@@ -4713,6 +4662,9 @@ export const generatedProperties = [
             "grid-rows",
             "grid-columns",
             "grid-order",
+            "grid-lanes-flow",
+            "grid-lanes-track",
+            "grid-lanes-order",
             "source-order"
         ],
         "name": "reading-flow"
@@ -7222,31 +7174,6 @@ export const generatedPropertyValues = {
             "-webkit-legacy"
         ]
     },
-    "corner": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-block-end": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-block-start": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-bottom": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-bottom-left": {
-        "values": [
-            "normal"
-        ]
-    },
     "corner-bottom-left-shape": {
         "values": [
             "notch",
@@ -7255,11 +7182,6 @@ export const generatedPropertyValues = {
             "round",
             "squircle",
             "square"
-        ]
-    },
-    "corner-bottom-right": {
-        "values": [
-            "normal"
         ]
     },
     "corner-bottom-right-shape": {
@@ -7272,56 +7194,6 @@ export const generatedPropertyValues = {
             "square"
         ]
     },
-    "corner-end-end": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-end-start": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-inline-end": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-inline-start": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-left": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-right": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-start-end": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-start-start": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-top": {
-        "values": [
-            "normal"
-        ]
-    },
-    "corner-top-left": {
-        "values": [
-            "normal"
-        ]
-    },
     "corner-top-left-shape": {
         "values": [
             "notch",
@@ -7330,11 +7202,6 @@ export const generatedPropertyValues = {
             "round",
             "squircle",
             "square"
-        ]
-    },
-    "corner-top-right": {
-        "values": [
-            "normal"
         ]
     },
     "corner-top-right-shape": {
@@ -8568,6 +8435,9 @@ export const generatedPropertyValues = {
             "grid-rows",
             "grid-columns",
             "grid-order",
+            "grid-lanes-flow",
+            "grid-lanes-track",
+            "grid-lanes-order",
             "source-order"
         ]
     },

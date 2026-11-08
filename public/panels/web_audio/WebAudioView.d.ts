@@ -4,6 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { WebAudioModel } from './WebAudioModel.js';
 export interface ViewInput {
+    suspended: boolean;
     contexts: Protocol.WebAudio.BaseAudioContext[];
     selectedContextIndex: number;
     onContextSelectorSelectionChanged: (contextId: string) => void;
@@ -12,6 +13,7 @@ export interface ViewInput {
 export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class WebAudioView extends UI.Widget.VBox<ShadowRoot> implements SDK.TargetManager.SDKModelObserver<WebAudioModel> {
+    #private;
     private readonly knownContexts;
     private readonly contextSelectorItems;
     private contextRealtimeData;

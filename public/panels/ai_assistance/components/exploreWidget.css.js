@@ -32,7 +32,7 @@ export default `/*
 
     .link {
       padding: 0;
-      margin: 0 3px;
+      margin: 0 var(--sys-size-3);
     }
 
     .header {
@@ -102,8 +102,8 @@ export default `/*
         border-radius: var(--sys-shape-corner-full);
 
         devtools-icon {
-          width: 18px;
-          height: 18px;
+          width: var(--sys-size-9);
+          height: var(--sys-size-9);
         }
       }
 
@@ -114,7 +114,7 @@ export default `/*
 
         p {
           font: var(--sys-typescale-body4-regular);
-          line-height: 18px;
+          line-height: var(--sys-typescale-body4-line-height);
         }
       }
     }

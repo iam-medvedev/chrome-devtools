@@ -35,7 +35,7 @@ describe('ExternalHandler', () => {
         const result = await AiAssistancePanel.ExternalHandler.handleExternalAIRequest({
             prompts: ['test prompt'],
         });
-        sinon.assert.calledWith(setItemStub, 'aiAssistanceStructuredLogEnabled', 'true');
+        sinon.assert.calledWith(setItemStub, 'devToolsAiDebug', JSON.stringify({ assistance: true, gca: false, codeGenComplete: false }));
         sinon.assert.calledWith(removeItemStub, 'aiAssistanceStructuredLog');
         assert.deepEqual(result, []);
     });

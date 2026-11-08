@@ -42,7 +42,7 @@ export default `/*
 
 .perfmon-chart-suspend-overlay {
   display: flex;
-  font-size: 26px;
+  font-size: var(--sys-typescale-headline1-size);
   align-items: center;
   justify-content: center;
 }
@@ -74,12 +74,8 @@ export default `/*
   width: 210px;
 }
 
-.perfmon-indicator span {
-  flex: 0 0 135px;
-}
-
 .perfmon-indicator-value {
-  flex: 0 0 55px;
+  flex: 0 0 var(--sys-size-17);
   text-align: right;
   overflow: visible;
   align-self: center;

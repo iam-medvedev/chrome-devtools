@@ -177,13 +177,9 @@ class SecurityDispatcher {
     constructor(model) {
         this.model = model;
     }
-    securityStateChanged(_event) {
-    }
     visibleSecurityStateChanged({ visibleSecurityState }) {
         const pageVisibleSecurityState = new PageVisibleSecurityState(visibleSecurityState.securityState, visibleSecurityState.certificateSecurityState || null, visibleSecurityState.safetyTipInfo || null, visibleSecurityState.securityStateIssueIds);
         this.model.dispatchEventToListeners(Events.VisibleSecurityStateChanged, pageVisibleSecurityState);
-    }
-    certificateError(_event) {
     }
 }
 //# sourceMappingURL=SecurityModel.js.map

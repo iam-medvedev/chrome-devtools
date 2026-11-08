@@ -85,10 +85,6 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
             void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false });
         }
     }
-    targetInfoChanged(_event) {
-    }
-    targetDestroyed(_event) {
-    }
     async attachedToTarget({ sessionId, targetInfo }) {
         let target;
         if (targetInfo.type === 'node_worker') {
@@ -133,8 +129,6 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
         if (onMessage) {
             onMessage.call(null, message);
         }
-    }
-    targetCrashed(_event) {
     }
 }
 export class NodeConnection {

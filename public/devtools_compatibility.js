@@ -28,6 +28,29 @@
   // eslint-disable-next-line no-unused-vars
   const majorVersion = getRemoteMajorVersion();
 
+  /**
+   * Mirrors host-provided `userColorSource` to `--user-color-source` on the
+   * root element when inspecting remote targets whose bundled `ThemeSupport.ts`
+   * may still read `--user-color-source` from computed CSS.
+   *
+   * @param {string=} colorSource
+   */
+  function syncLegacyUserColorSource(colorSource) {
+    const remoteMajorVersion = getRemoteMajorVersion();
+    if (remoteMajorVersion === null || Number.isNaN(remoteMajorVersion) || !colorSource) {
+      return;
+    }
+    const rootStyle = window.document?.documentElement?.style;
+    if (!rootStyle) {
+      return;
+    }
+    if (colorSource === 'baseline-default' || colorSource === 'baseline-grayscale') {
+      rootStyle.setProperty('--user-color-source', colorSource);
+    } else {
+      rootStyle.removeProperty('--user-color-source');
+    }
+  }
+
   // DevToolsAPI ----------------------------------------------------------------
   /**
    * @typedef {{runtimeAllowedHosts: string[], runtimeBlockedHosts: string[]}} ExtensionHostsPolicy
@@ -337,8 +360,12 @@
       this._dispatchOnInspectorFrontendAPI('searchCompleted', [requestId, fileSystemPath, files]);
     }
 
-    colorThemeChanged() {
-      this._dispatchOnInspectorFrontendAPI('colorThemeChanged', []);
+    /**
+     * @param {string=} colorSource
+     */
+    colorThemeChanged(colorSource) {
+      syncLegacyUserColorSource(colorSource);
+      this._dispatchOnInspectorFrontendAPI('colorThemeChanged', colorSource !== undefined ? [colorSource] : []);
     }
 
     /**
@@ -1295,6 +1322,26 @@
       OTHER: 15,
       MAX_VALUE: 16,
     },
+    AiClientRequestResult: {
+      SUCCESS: 0,
+      ABORTED: 1,
+      VALIDATION_FAILED: 2,
+      OAUTH_TOKEN_ERROR: 3,
+      NETWORK_TIMEOUT: 4,
+      NETWORK_ERROR: 5,
+      HTTP_400_PAYLOAD_TOO_LARGE: 6,
+      HTTP_400_INVALID_ARGUMENT: 7,
+      HTTP_401_UNAUTHORIZED: 8,
+      HTTP_403_PERMISSION_DENIED: 9,
+      HTTP_404_NOT_FOUND: 10,
+      HTTP_429_QUOTA_EXCEEDED: 11,
+      HTTP_5XX_SERVER_ERROR: 12,
+      STREAM_CHUNK_PARSE_ERROR: 13,
+      INVALID_JSON_RESPONSE: 14,
+      BLOCKED_BY_SAFETY_OR_RECITATION: 15,
+      UNKNOWN_ERROR: 16,
+      MAX_VALUE: 17,
+    },
   };
   // LINT.ThenChange(/front_end/core/host/UserMetricsEnums.ts)
 
@@ -1339,6 +1386,13 @@
     BuiltInAiAvailability: 'DevTools.BuiltInAiAvailability',
     ResendRequest: 'DevTools.ResendRequest',
     EditResendRequest: 'DevTools.EditResendRequest',
+    AiClientRequestResult: 'DevTools.AiClient.RequestResult',
+    AiClientRequestResultAiAssistance: 'DevTools.AiClient.RequestResult.AiAssistance',
+    AiClientRequestResultCodeComplete: 'DevTools.AiClient.RequestResult.CodeComplete',
+    AiClientRequestResultCodeGenerate: 'DevTools.AiClient.RequestResult.CodeGenerate',
+    AiClientRequestResultConsoleInsights: 'DevTools.AiClient.RequestResult.ConsoleInsights',
+    AiClientRequestResultConversationSummary: 'DevTools.AiClient.RequestResult.ConversationSummary',
+    AiClientRequestResultPerformanceAnnotations: 'DevTools.AiClient.RequestResult.PerformanceAnnotations',
     // LINT.ThenChange(/front_end/core/host/InspectorFrontendHostAPI.ts:EnumeratedHistogram)
   };
 
@@ -1500,6 +1554,7 @@
      */
     getHostConfig(callback) {
       DevToolsAPI.sendMessageToEmbedder('getHostConfig', [], hostConfig => {
+        syncLegacyUserColorSource(hostConfig?.userColorSource);
         const majorVersion = getRemoteMajorVersion();
         if (majorVersion && majorVersion < 129 && hostConfig?.aidaAvailability) {
           return callback(this.hostConfigNewToOld(hostConfig));

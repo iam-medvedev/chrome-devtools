@@ -2428,7 +2428,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -3486,7 +3485,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -3540,7 +3538,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -3564,6 +3561,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -3868,6 +3866,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -5823,9 +5826,14 @@ var ResourceScriptMapping = class {
       )
     ];
   }
-  #project(script) {
+  #projectId(script) {
     const prefix = script.isContentScript() ? "js:extensions:" : "js::";
-    const projectId = prefix + this.debuggerModel.target().id() + ":" + script.frameId;
+    const securityOrigin = script.securityOrigin();
+    const originPart = securityOrigin.isOpaque() ? "" : `:${securityOrigin.siteId()}`;
+    return `${prefix}${this.debuggerModel.target().id()}:${script.frameId}${originPart}`;
+  }
+  #project(script) {
+    const projectId = this.#projectId(script);
     let project = this.#projects.get(projectId);
     if (!project) {
       const projectType = script.isContentScript() ? Workspace15.Workspace.projectTypes.ContentScripts : Workspace15.Workspace.projectTypes.Network;
@@ -5834,8 +5842,8 @@ var ResourceScriptMapping = class {
         projectId,
         projectType,
         "",
-        false
-        /* isServiceProject */
+        false,
+        script.securityOrigin()
       );
       NetworkProject.setTargetForProject(project, this.debuggerModel.target());
       this.#projects.set(projectId, project);
@@ -5966,8 +5974,7 @@ var ResourceScriptMapping = class {
       if (!this.#isTrustworthySourceURL(script, url)) {
         return;
       }
-      const previousUISourceCode = this.#project(script).uiSourceCodeForURL(url);
-      if (previousUISourceCode && !NetworkProject.isSourceURLSynthesized(previousUISourceCode)) {
+      if (this.#hasNetworkUISourceCode(url, script.isContentScript())) {
         return;
       }
     } else {
@@ -5981,14 +5988,8 @@ var ResourceScriptMapping = class {
         }
       }
     }
+    this.#removePreviousUISourceCodes(script, url);
     const project = this.#project(script);
-    const oldUISourceCode = project.uiSourceCodeForURL(url);
-    if (oldUISourceCode) {
-      const oldScriptFile = this.#uiSourceCodeToScriptFile.get(oldUISourceCode);
-      if (oldScriptFile?.script) {
-        this.#removeScripts([oldScriptFile.script]);
-      }
-    }
     const originalContentProvider = script.originalContentProvider();
     const uiSourceCode = project.createUISourceCode(url, originalContentProvider.contentType());
     if (script.hasSourceURL) {
@@ -6002,6 +6003,22 @@ var ResourceScriptMapping = class {
     const mimeType = script.isWasm() ? "application/wasm" : "text/javascript";
     project.addUISourceCodeWithProvider(uiSourceCode, originalContentProvider, metadata, mimeType);
     void this.debuggerWorkspaceBinding.updateLocations(script);
+  }
+  #uiSourceCodesForURL(url, isContentScript) {
+    const projectType = isContentScript ? Workspace15.Workspace.projectTypes.ContentScripts : Workspace15.Workspace.projectTypes.Network;
+    const result = [];
+    for (const project of this.#projects.values()) {
+      if (project.type() === projectType) {
+        const uiSourceCode = project.uiSourceCodeForURL(url);
+        if (uiSourceCode) {
+          result.push(uiSourceCode);
+        }
+      }
+    }
+    return result;
+  }
+  #hasNetworkUISourceCode(url, isContentScript) {
+    return this.#uiSourceCodesForURL(url, isContentScript).some((uiSourceCode) => !NetworkProject.isSourceURLSynthesized(uiSourceCode));
   }
   /**
    * Whether the (already resolved) `//# sourceURL=` annotation `url` of `script` may
@@ -6035,6 +6052,27 @@ var ResourceScriptMapping = class {
   }
   scriptFile(uiSourceCode) {
     return this.#uiSourceCodeToScriptFile.get(uiSourceCode) || null;
+  }
+  #removePreviousUISourceCodes(script, url) {
+    const scriptsToRemove = /* @__PURE__ */ new Set();
+    if (!script.hasSourceURL) {
+      for (const existing of this.#uiSourceCodesForURL(url, script.isContentScript())) {
+        if (NetworkProject.isSourceURLSynthesized(existing)) {
+          const oldScript2 = this.#uiSourceCodeToScriptFile.get(existing)?.script;
+          if (oldScript2) {
+            scriptsToRemove.add(oldScript2);
+          }
+        }
+      }
+    }
+    const oldUISourceCode = this.#projects.get(this.#projectId(script))?.uiSourceCodeForURL(url);
+    const oldScript = oldUISourceCode ? this.#uiSourceCodeToScriptFile.get(oldUISourceCode)?.script : null;
+    if (oldScript) {
+      scriptsToRemove.add(oldScript);
+    }
+    if (scriptsToRemove.size > 0) {
+      this.#removeScripts([...scriptsToRemove]);
+    }
   }
   #removeScripts(scripts) {
     const uiSourceCodesByProject = new Platform5.MapUtilities.Multimap();

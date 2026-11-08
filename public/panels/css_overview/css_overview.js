@@ -1629,7 +1629,6 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
   constructor(element, view = DEFAULT_VIEW3) {
     super(element);
     this.#view = view;
-    this.registerRequiredCSS(cssOverviewCompletedView_css_default);
     this.#linkifier = new Components.Linkifier.Linkifier(
       /* maxLinkLength */
       20,

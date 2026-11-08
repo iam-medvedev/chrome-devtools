@@ -10,16 +10,12 @@ export default `/*
  */
 
 .network-timing-table {
-  width: 380px;
+  width: var(--sys-size-32);
   border-spacing: 0;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: var(--sys-size-6);
+  padding-right: var(--sys-size-6);
   line-height: initial;
   table-layout: fixed;
-}
-
-.network-timing-start {
-  border-top: 5px solid transparent;
 }
 
 .network-timing-start th span.network-timing-hidden-header {
@@ -77,7 +73,7 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 
 .network-timing-row {
   position: relative;
-  height: 15px;
+  height: var(--sys-size-7);
 }
 
 .network-timing-bar {
@@ -177,7 +173,7 @@ tr:has([aria-expanded="true"].network-fetch-timing-bar-clickable) ~ .network-fet
 
 .network-fetch-timing-bar-details,
 .router-evaluation-timing-bar-details {
-  padding-left: 11px;
+  padding-left: var(--sys-size-5);
   width: fit-content;
 }
 
@@ -232,7 +228,7 @@ tr.synthetic {
 
 .network-timing-table td.network-timing-metric {
   white-space: nowrap;
-  max-width: 150px;
+  max-width: var(--sys-size-22);
   overflow-x: hidden;
   text-overflow: ellipsis;
 }
@@ -242,7 +238,7 @@ tr.synthetic {
 .network-timing-bar.ssl,
 .network-timing-bar.connecting,
 .network-timing-bar.blocking {
-  height: 10px;
+  height: var(--sys-size-5);
   margin: auto;
 }
 

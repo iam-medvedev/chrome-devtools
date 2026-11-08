@@ -9,6 +9,7 @@ import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
 export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): Icon;
 export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string): Icon;
 export declare function renderHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): TemplateResult;
+export declare function renderCertificateViewerButton(text: string, jslogContext: string, onClick: () => void): TemplateResult;
 export interface ViewInput {
     panel: SecurityPanel;
 }
@@ -47,7 +48,6 @@ export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetM
     private processRequest;
     private onRequestFinished;
     private updateFilterRequestCounts;
-    filterRequestCount(filterKey: string): number;
     modelAdded(securityModel: SecurityModel): void;
     modelRemoved(securityModel: SecurityModel): void;
     private onPrimaryPageChanged;
@@ -61,27 +61,11 @@ export declare enum OriginGroup {
     Unknown = "Unknown"
 }
 export declare class SecurityMainView extends UI.Widget.VBox {
-    panel: SecurityPanel;
-    private readonly summarySection;
-    private readonly securityExplanationsMain;
-    private readonly securityExplanationsExtra;
-    private readonly lockSpectrum;
-    private summaryText;
-    private explanations;
-    private securityState;
+    #private;
     constructor(element?: HTMLElement);
-    getLockSpectrumDiv(securityState: Protocol.Security.SecurityState): HTMLElement;
-    private addExplanation;
+    setFilterRequestCounts(filterRequestCounts: ReadonlyMap<string, number>): void;
     updateVisibleSecurityState(visibleSecurityState: PageVisibleSecurityState): void;
-    private getSecuritySummaryAndExplanations;
-    private explainSafetyTipSecurity;
-    private explainCertificateSecurity;
-    private explainConnectionSecurity;
-    private explainContentSecurity;
-    private orderExplanations;
     refreshExplanations(): void;
-    private addMixedContentExplanation;
-    showNetworkFilter(filterKey: string, e: Event): void;
 }
 export interface SecurityOriginViewInput {
     origin: Platform.DevToolsPath.UrlString;
@@ -90,10 +74,10 @@ export interface SecurityOriginViewInput {
     loadedFromCache: boolean;
     isSanListTruncated: boolean;
     isCertificateTransparencyDetailsShown: boolean;
-    onRevealInNetwork: (event: Event) => void;
+    onRevealInNetwork: () => void;
     onToggleSanTruncation: () => void;
     onToggleCertificateTransparencyDetails: () => void;
-    onViewCertificate: (event: Event) => void;
+    onViewCertificate: () => void;
 }
 export type SecurityOriginViewFunction = (input: SecurityOriginViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_SECURITY_ORIGIN_VIEW: SecurityOriginViewFunction;
