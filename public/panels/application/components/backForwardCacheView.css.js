@@ -23,7 +23,7 @@ devtools-report-value {
 
 .gray-text {
   color: var(--sys-color-token-subtle);
-  margin: 0 0 5px var(--sys-size-17);
+  margin: 0 0 var(--sys-size-3) var(--sys-size-17);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -43,21 +43,13 @@ devtools-report-value {
 }
 
 .circled-exclamation-icon {
-  margin-right: 10px;
+  margin-right: var(--sys-size-5);
   flex-shrink: 0;
 }
 
 .status {
   margin-right: 11px;
   flex-shrink: 0;
-}
-
-.report-line {
-  grid-column-start: span 2;
-  display: flex;
-  align-items: center;
-  margin: 0 30px;
-  line-height: 26px;
 }
 
 .report-key {
@@ -88,10 +80,6 @@ devtools-report-value:has(devtools-tree-outline) {
 
 .cache-status-section:focus-visible {
  outline: 0;
-}
-
-.tree-outline li .selection {
-  margin-left: -5px;
 }
 
 @media (forced-colors: active) {

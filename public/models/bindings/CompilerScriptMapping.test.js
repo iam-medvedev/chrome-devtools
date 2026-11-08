@@ -14,7 +14,6 @@ import { encodeSourceMap, waitForAllSourceMapsProcessed } from '../../testing/So
 import { protocolCallFrame, stringifyFrame } from '../../testing/StackTraceHelpers.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Formatter from '../formatter/formatter.js';
-// eslint-disable-next-line @devtools/es-modules-import
 import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';

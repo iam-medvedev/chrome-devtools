@@ -5059,8 +5059,7 @@ var Scope = class {
     }
     variable.uses.push(...defUses.uses);
     if (defUses.definitionKind === DefinitionKind.VAR) {
-      console.assert(variable.definitionKind !== DefinitionKind.LET);
-      if (variable.definitionKind === DefinitionKind.NONE) {
+      if (variable.definitionKind === DefinitionKind.NONE || variable.definitionKind === DefinitionKind.LET) {
         variable.definitionKind = defUses.definitionKind;
       }
     } else {
@@ -5217,7 +5216,7 @@ var ScopeVariableAnalysis = class {
         );
         this.#addVariable("this", node.start, DefinitionKind.FIXED);
         this.#addVariable("arguments", node.start, DefinitionKind.FIXED);
-        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.LET, false));
+        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.VAR, false));
         node.body.body.forEach(this.#processNode.bind(this));
         this.#popScope(true);
         break;
@@ -5233,7 +5232,7 @@ var ScopeVariableAnalysis = class {
         this.#methodName = void 0;
         this.#addVariable("this", node.start, DefinitionKind.FIXED);
         this.#addVariable("arguments", node.start, DefinitionKind.FIXED);
-        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.LET, false));
+        node.params.forEach(this.#processNodeAsDefinition.bind(this, DefinitionKind.VAR, false));
         node.body.body.forEach(this.#processNode.bind(this));
         this.#popScope(true);
         break;

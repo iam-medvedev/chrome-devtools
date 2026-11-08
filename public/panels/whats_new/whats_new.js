@@ -32,8 +32,16 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 156,
+  version: 158,
   header: "New in DevTools (November 2026)",
+  announcement: {
+    title: "Modern Web Guidance is now stable!",
+    description: "Upgrade your coding agents with expert-vetted web development best practices.",
+    link: {
+      url: "https://goo.gle/mwg-stable",
+      text: "Read the announcement"
+    }
+  },
   markdownLinks: [
     {
       key: "mcp",
@@ -68,7 +76,7 @@ import * as Marked from "../../third_party/marked/marked.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "../../ui/helpers/helpers.js";
 import * as UI from "../../ui/legacy/legacy.js";
-import { html, render } from "../../ui/lit/lit.js";
+import { html, nothing, render } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/whats_new/releaseNoteView.css.js
@@ -128,6 +136,46 @@ var releaseNoteView_css_default = `/*
     padding: 0 var(--sys-size-8) var(--sys-size-8);
     border-radius: var(--sys-shape-corner-medium);
     margin: 0 var(--sys-size-9) var(--sys-size-9);
+  }
+
+  .announcement {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sys-size-6);
+    padding: var(--sys-size-8);
+    margin: var(--sys-size-9) var(--sys-size-9) 0;
+    background: linear-gradient(135deg, var(--sys-color-gradient-primary), var(--sys-color-gradient-tertiary));
+    border: var(--sys-size-1) solid var(--sys-color-tonal-outline);
+    color: var(--sys-color-on-surface);
+    user-select: text;
+
+    &::before {
+      content: "";
+      width: var(--sys-size-9);
+      height: var(--sys-size-9);
+      flex-shrink: 0;
+      background-color: var(--sys-color-primary-bright);
+      mask-image: var(--image-file-bell);
+      mask-repeat: no-repeat;
+      mask-position: center;
+      mask-size: contain;
+    }
+  }
+
+  .announcement-content {
+    flex: 1;
+    min-width: 0;
+
+    h3 {
+      font: var(--sys-typescale-body2-bold);
+      margin: 0 0 var(--sys-size-7);
+    }
+
+    p {
+      font: var(--sys-typescale-body4-regular);
+      line-height: 18px;
+      margin: 0;
+    }
   }
 
   .video-container {
@@ -191,6 +239,15 @@ var releaseNoteView_css_default = `/*
     .video {
       border: var(--sys-size-1) solid ButtonText;
     }
+
+    .announcement {
+      border-width: var(--sys-size-2);
+
+      &::before {
+        background-color: ButtonText;
+        forced-color-adjust: none;
+      }
+    }
   }
 }
 
@@ -246,6 +303,19 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
           </div>
 
           <div class="feature-container">
+            ${releaseNote2.announcement ? html`
+              <div class="feature announcement">
+                <div class="announcement-content">
+                  <h3>${releaseNote2.announcement.title}</h3>
+                  <p>
+                    ${releaseNote2.announcement.description}${releaseNote2.announcement.link ? html`${" "}<devtools-link
+                        href=${releaseNote2.announcement.link.url}
+                        jslogcontext="learn-more"
+                      >${releaseNote2.announcement.link.text}</devtools-link>` : nothing}
+                  </p>
+                </div>
+              </div>
+            ` : nothing}
             <div class="video-container">
               ${releaseNote2.videoLinks.map((value) => {
       return html`

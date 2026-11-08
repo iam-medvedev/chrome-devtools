@@ -175,7 +175,6 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
-        this.registerRequiredCSS(lockIconStyles, sidebarStyles);
     }
     set onShowOrigin(callback) {
         this.#onShowOrigin = callback;

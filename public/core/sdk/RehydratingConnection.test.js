@@ -251,6 +251,7 @@ describeWithEnvironment('RehydratingConnection emittance', function () {
         const sanitizedLog = messageLog.map(sanitizeLog).join('\n');
         snapshotTester.assert(this, sanitizedLog);
         sinon.assert.calledOnce(reveal);
+        assert.isNull(conn.trace);
     });
 });
 // `trace_app` reads the `?traceURL` query parameter and fetches it. Because the response is replayed
@@ -339,6 +340,7 @@ describeWithEnvironment('RehydratingConnection ?traceURL loading', () => {
         sinon.assert.calledOnceWithExactly(fetchStub, allowedUrl);
         sinon.assert.notCalled(onConnectionLost);
         assert.exists(messages.find(m => m.method === 'Target.targetCreated'));
+        assert.isNull(conn.trace);
     });
     it('reports an error when the fetch fails instead of throwing', async () => {
         const allowedUrl = new URL('/broken-trace.json', window.location.href).href;

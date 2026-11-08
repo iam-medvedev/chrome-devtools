@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { after, describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as LegacyUI from './legacy.js';
@@ -44,7 +46,7 @@ async function registerDockingSettings(currentValue) {
     await initializeGlobalVars({ reset: false });
 }
 describe('DockController', () => {
-    after(async () => {
+    afterEach(async () => {
         await deinitializeGlobalVars();
     });
     it('defaults the dockside to undefined when first created', async () => {
@@ -75,6 +77,63 @@ describe('DockController', () => {
         assert.strictEqual(dockController.dockSide(), "left" /* LegacyUI.DockController.DockState.LEFT */);
         dockController.toggleDockSide();
         assert.strictEqual(dockController.dockSide(), "bottom" /* LegacyUI.DockController.DockState.BOTTOM */);
+    });
+    it('resets an invalid last dock state without changing the current dock state', async () => {
+        await deinitializeGlobalVars();
+        await registerDockingSettings('left');
+        const lastDockStateSetting = Common.Settings.Settings.instance().createSetting('last-dock-state', 'bottom');
+        lastDockStateSetting.set('not-a-dock-state');
+        const dockController = LegacyUI.DockController.DockController.instance({ forceNew: true, canDock: true });
+        dockController.initialize();
+        assert.strictEqual(dockController.dockSide(), "left" /* LegacyUI.DockController.DockState.LEFT */);
+        assert.strictEqual(lastDockStateSetting.get(), "bottom" /* LegacyUI.DockController.DockState.BOTTOM */);
+        dockController.toggleDockSide();
+        assert.strictEqual(dockController.dockSide(), "bottom" /* LegacyUI.DockController.DockState.BOTTOM */);
+    });
+    describe('AFTER_DOCK_SIDE_CHANGED', () => {
+        const { DockState, Events } = LegacyUI.DockController;
+        // Holds the callbacks passed to `setIsDocked` until the test lets the embedder respond.
+        let pendingSetIsDockedResponses;
+        function respondToSetIsDocked() {
+            for (const respond of pendingSetIsDockedResponses.splice(0)) {
+                respond();
+            }
+        }
+        async function createDockController() {
+            await registerDockingSettings('right');
+            pendingSetIsDockedResponses = [];
+            sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'setIsDocked')
+                .callsFake((_isDocked, callback) => pendingSetIsDockedResponses.push(callback));
+            const dockController = LegacyUI.DockController.DockController.instance({ forceNew: true, canDock: true });
+            dockController.initialize();
+            respondToSetIsDocked();
+            const afterEvents = [];
+            dockController.addEventListener("AfterDockSideChanged" /* Events.AFTER_DOCK_SIDE_CHANGED */, ({ data }) => afterEvents.push(data));
+            return { dockController, afterEvents };
+        }
+        it('is dispatched once the embedder acknowledges each dock side change', async () => {
+            const { dockController, afterEvents } = await createDockController();
+            dockController.setDockSide("undocked" /* DockState.UNDOCKED */);
+            assert.isEmpty(afterEvents);
+            respondToSetIsDocked();
+            dockController.setDockSide("bottom" /* DockState.BOTTOM */);
+            respondToSetIsDocked();
+            assert.deepEqual(afterEvents, [
+                { from: "right" /* DockState.RIGHT */, to: "undocked" /* DockState.UNDOCKED */ },
+                { from: "undocked" /* DockState.UNDOCKED */, to: "bottom" /* DockState.BOTTOM */ },
+            ]);
+        });
+        it('is only dispatched for the latest of overlapping dock side changes', async () => {
+            const { dockController, afterEvents } = await createDockController();
+            // The dock side changes again before the embedder acknowledges the first change, e.g. when the
+            // toggle dock side shortcut is pressed twice in quick succession.
+            dockController.setDockSide("undocked" /* DockState.UNDOCKED */);
+            dockController.setDockSide("bottom" /* DockState.BOTTOM */);
+            assert.lengthOf(pendingSetIsDockedResponses, 2);
+            respondToSetIsDocked();
+            assert.deepEqual(afterEvents, [{ from: "undocked" /* DockState.UNDOCKED */, to: "bottom" /* DockState.BOTTOM */ }]);
+            assert.strictEqual(dockController.dockSide(), "bottom" /* DockState.BOTTOM */);
+        });
     });
 });
 //# sourceMappingURL=DockController.test.js.map

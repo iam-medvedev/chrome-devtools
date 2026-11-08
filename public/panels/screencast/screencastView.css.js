@@ -34,7 +34,7 @@ export default `/*
   .screencast-navigation input {
     flex: 1;
     margin: var(--sys-size-2);
-    max-height: 19px;
+    max-height: var(--sys-size-9);
   }
 
   .screencast-navigation .progress {
@@ -88,7 +88,8 @@ export default `/*
     position: absolute;
     bottom: 100%;
     left: var(--sys-size-7);
-    border: 7px solid transparent;
+    /* 6px protruding arrow (--sys-size-4) plus 1px top border overlap (--sys-size-1) = 7px. */
+    border: calc(var(--sys-size-4) + var(--sys-size-1)) solid transparent;
     border-bottom-color: var(--sys-color-yellow-container);
   }
 
@@ -97,7 +98,7 @@ export default `/*
     position: absolute;
     top: 100%;
     left: var(--sys-size-7);
-    border: 7px solid transparent;
+    border: var(--sys-size-5) solid transparent;
     border-top-color: var(--sys-color-yellow-container);
   }
 

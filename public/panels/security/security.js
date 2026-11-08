@@ -683,7 +683,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1741,7 +1740,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -1795,7 +1793,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -1819,6 +1816,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2123,6 +2121,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -3027,8 +3030,6 @@ var SecurityDispatcher = class {
   constructor(model) {
     this.model = model;
   }
-  securityStateChanged(_event) {
-  }
   visibleSecurityStateChanged({ visibleSecurityState }) {
     const pageVisibleSecurityState = new PageVisibleSecurityState(
       visibleSecurityState.securityState,
@@ -3037,8 +3038,6 @@ var SecurityDispatcher = class {
       visibleSecurityState.securityStateIssueIds
     );
     this.model.dispatchEventToListeners("VisibleSecurityStateChanged" /* VisibleSecurityStateChanged */, pageVisibleSecurityState);
-  }
-  certificateError(_event) {
   }
 };
 
@@ -3052,6 +3051,7 @@ __export(SecurityPanel_exports, {
   SecurityPanel: () => SecurityPanel,
   getSecurityStateIconForDetailedView: () => getSecurityStateIconForDetailedView,
   getSecurityStateIconForOverview: () => getSecurityStateIconForOverview,
+  renderCertificateViewerButton: () => renderCertificateViewerButton,
   renderHighlightedUrl: () => renderHighlightedUrl
 });
 import * as Common from "../../core/common/common.js";
@@ -3147,7 +3147,7 @@ var mainView_css_default = `/*
 }
 
 .security-summary-section-title {
-  font-size: 15px;
+  font-size: var(--sys-typescale-headline4-size);
   margin: var(--sys-size-6) var(--sys-size-8);
   user-select: text;
 }
@@ -3233,7 +3233,7 @@ var mainView_css_default = `/*
   padding: var(--sys-size-8) var(--sys-size-11);
   border-style: solid;
   border-width: var(--sys-size-1) 0;
-  font-size: 15px;
+  font-size: var(--sys-typescale-body2-size);
   background: var(--sys-color-cdt-base-container);
   border-color: var(--sys-color-neutral-outline);
   user-select: text;
@@ -3283,7 +3283,7 @@ var mainView_css_default = `/*
 .security-explanation-text {
   flex: auto;
   white-space: normal;
-  max-width: 400px;
+  max-width: var(--sys-size-33);
 }
 
 .origin-button {
@@ -3397,7 +3397,7 @@ var originView_css_default = `/*
 
 .security-origin-view .details-table-row > td:first-child {
   color: var(--sys-color-token-subtle);
-  width: calc(120px + 1em);
+  width: calc(var(--sys-size-21) + 1em); /* 128px label column + 1em right padding */
   text-align: right;
   padding-right: 1em;
 }
@@ -3408,7 +3408,7 @@ var originView_css_default = `/*
 
 .security-origin-view .sct-details .details-table .details-table-row:last-child td:last-child {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding-bottom: 10px;
+  padding-bottom: var(--sys-size-5);
 }
 
 .security-origin-view .sct-details .details-table:last-child .details-table-row:last-child td:last-child {
@@ -3420,10 +3420,6 @@ var originView_css_default = `/*
   margin-left: 126px;
 }
 
-.security-origin-view .sct-toggle {
-  margin-left: 145px;
-  padding-top: 5px;
-}
 
 .security-origin-view .details-table .empty-san {
   color: var(--sys-color-state-disabled);
@@ -3696,7 +3692,6 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
   constructor(element, view = DEFAULT_VIEW) {
     super(element);
     this.#view = view;
-    this.registerRequiredCSS(lockIcon_css_default, sidebar_css_default);
   }
   set onShowOrigin(callback) {
     this.#onShowOrigin = callback;
@@ -4240,6 +4235,18 @@ function renderHighlightedUrl(url, securityState) {
       <span>${content}</span>
     </span>`;
 }
+function renderCertificateViewerButton(text, jslogContext, onClick) {
+  return html2`
+    <devtools-button
+        class="origin-button"
+        title=${text}
+        .variant=${Buttons.Button.Variant.OUTLINED}
+        .jslogContext=${jslogContext}
+        @click=${(e) => {
+    e.consume();
+    onClick();
+  }}>${text}</devtools-button>`;
+}
 var DEFAULT_VIEW2 = (input, output, target) => {
   render2(
     html2`
@@ -4277,7 +4284,6 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     this.sidebar.element.classList.add("panel-sidebar");
     this.sidebar.element.setAttribute("jslog", `${VisualLogging.pane("sidebar").track({ resize: true })}`);
     this.mainView = new SecurityMainView();
-    this.mainView.panel = this;
     this.sidebar.onShowOrigin = (origin) => {
       if (origin) {
         this.showOrigin(origin);
@@ -4417,10 +4423,7 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     } else {
       this.filterRequestCounts.set(filterKey, currentCount + 1);
     }
-    this.mainView.refreshExplanations();
-  }
-  filterRequestCount(filterKey) {
-    return this.filterRequestCounts.get(filterKey) || 0;
+    this.mainView.setFilterRequestCounts(new Map(this.filterRequestCounts));
   }
   modelAdded(securityModel) {
     if (securityModel.target() !== securityModel.target().outermostTarget()) {
@@ -4466,7 +4469,7 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     this.origins.clear();
     this.lastResponseReceivedForLoaderId.clear();
     this.filterRequestCounts.clear();
-    this.mainView.refreshExplanations();
+    this.mainView.setFilterRequestCounts(new Map(this.filterRequestCounts));
     const origin = Common.ParsedURL.ParsedURL.extractOrigin(request ? request.url() : frame.url);
     this.sidebar.setMainOrigin(origin);
     if (request) {
@@ -4495,27 +4498,27 @@ var OriginGroup = /* @__PURE__ */ ((OriginGroup2) => {
   return OriginGroup2;
 })(OriginGroup || {});
 var SecurityMainView = class extends UI2.Widget.VBox {
-  panel;
-  summarySection;
-  securityExplanationsMain;
-  securityExplanationsExtra;
-  lockSpectrum;
-  summaryText;
-  explanations;
-  securityState;
+  #summarySection;
+  #securityExplanationsMain;
+  #securityExplanationsExtra;
+  #lockSpectrum;
+  #summaryText;
+  #explanations;
+  #securityState;
+  #filterRequestCounts = /* @__PURE__ */ new Map();
   constructor(element) {
     super(element, { jslog: `${VisualLogging.pane("security.main-view")}` });
     this.registerRequiredCSS(lockIcon_css_default, mainView_css_default);
     this.setMinimumSize(200, 100);
     this.contentElement.classList.add("security-main-view");
-    this.summarySection = this.contentElement.createChild("div", "security-summary");
-    this.securityExplanationsMain = this.contentElement.createChild("div", "security-explanation-list security-explanations-main");
-    this.securityExplanationsExtra = this.contentElement.createChild("div", "security-explanation-list security-explanations-extra");
-    const summaryDiv = this.summarySection.createChild("div", "security-summary-section-title");
+    this.#summarySection = this.contentElement.createChild("div", "security-summary");
+    this.#securityExplanationsMain = this.contentElement.createChild("div", "security-explanation-list security-explanations-main");
+    this.#securityExplanationsExtra = this.contentElement.createChild("div", "security-explanation-list security-explanations-extra");
+    const summaryDiv = this.#summarySection.createChild("div", "security-summary-section-title");
     summaryDiv.textContent = i18nString3(UIStrings3.securityOverview);
     UI2.ARIAUtils.markAsHeading(summaryDiv, 1);
-    const lockSpectrum = this.summarySection.createChild("div", "lock-spectrum");
-    this.lockSpectrum = /* @__PURE__ */ new Map([
+    const lockSpectrum = this.#summarySection.createChild("div", "lock-spectrum");
+    this.#lockSpectrum = /* @__PURE__ */ new Map([
       [
         Security.SecurityState.Secure,
         lockSpectrum.appendChild(
@@ -4536,31 +4539,35 @@ var SecurityMainView = class extends UI2.Widget.VBox {
       ]
     ]);
     UI2.Tooltip.Tooltip.install(
-      this.getLockSpectrumDiv(Security.SecurityState.Secure),
+      this.#getLockSpectrumDiv(Security.SecurityState.Secure),
       i18nString3(UIStrings3.secure)
     );
     UI2.Tooltip.Tooltip.install(
-      this.getLockSpectrumDiv(Security.SecurityState.Neutral),
+      this.#getLockSpectrumDiv(Security.SecurityState.Neutral),
       i18nString3(UIStrings3.info)
     );
     UI2.Tooltip.Tooltip.install(
-      this.getLockSpectrumDiv(Security.SecurityState.Insecure),
+      this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
       i18nString3(UIStrings3.notSecure)
     );
-    this.summarySection.createChild("div", "triangle-pointer-container").createChild("div", "triangle-pointer-wrapper").createChild("div", "triangle-pointer");
-    this.summaryText = this.summarySection.createChild("div", "security-summary-text");
-    UI2.ARIAUtils.markAsHeading(this.summaryText, 2);
-    this.explanations = null;
-    this.securityState = null;
+    this.#summarySection.createChild("div", "triangle-pointer-container").createChild("div", "triangle-pointer-wrapper").createChild("div", "triangle-pointer");
+    this.#summaryText = this.#summarySection.createChild("div", "security-summary-text");
+    UI2.ARIAUtils.markAsHeading(this.#summaryText, 2);
+    this.#explanations = null;
+    this.#securityState = null;
   }
-  getLockSpectrumDiv(securityState) {
-    const element = this.lockSpectrum.get(securityState);
+  setFilterRequestCounts(filterRequestCounts) {
+    this.#filterRequestCounts = filterRequestCounts;
+    this.#refreshExplanations();
+  }
+  #getLockSpectrumDiv(securityState) {
+    const element = this.#lockSpectrum.get(securityState);
     if (!element) {
       throw new Error(`Invalid argument: ${securityState}`);
     }
     return element;
   }
-  addExplanation(parent, explanation) {
+  #addExplanation(parent, explanation) {
     const explanationSection = parent.createChild("div", "security-explanation");
     explanationSection.classList.add("security-explanation-" + explanation.securityState);
     const icon = getSecurityStateIconForDetailedView(
@@ -4592,34 +4599,34 @@ var SecurityMainView = class extends UI2.Widget.VBox {
     return text;
   }
   updateVisibleSecurityState(visibleSecurityState) {
-    this.summarySection.classList.remove("security-summary-" + this.securityState);
-    this.securityState = visibleSecurityState.securityState;
-    this.summarySection.classList.add("security-summary-" + this.securityState);
-    if (this.securityState === Security.SecurityState.Insecure) {
-      this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure");
-      this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure-broken");
+    this.#summarySection.classList.remove("security-summary-" + this.#securityState);
+    this.#securityState = visibleSecurityState.securityState;
+    this.#summarySection.classList.add("security-summary-" + this.#securityState);
+    if (this.#securityState === Security.SecurityState.Insecure) {
+      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure");
+      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure-broken");
       UI2.Tooltip.Tooltip.install(
-        this.getLockSpectrumDiv(Security.SecurityState.Insecure),
+        this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
         i18nString3(UIStrings3.notSecure)
       );
-    } else if (this.securityState === Security.SecurityState.InsecureBroken) {
-      this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure-broken");
-      this.getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure");
+    } else if (this.#securityState === Security.SecurityState.InsecureBroken) {
+      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure-broken");
+      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure");
       UI2.Tooltip.Tooltip.install(
-        this.getLockSpectrumDiv(Security.SecurityState.Insecure),
+        this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
         i18nString3(UIStrings3.notSecureBroken)
       );
     }
-    const { summary, explanations } = this.getSecuritySummaryAndExplanations(visibleSecurityState);
-    this.summaryText.textContent = summary || SummaryMessages[this.securityState]();
-    this.explanations = this.orderExplanations(explanations);
-    this.refreshExplanations();
+    const { summary, explanations } = this.#getSecuritySummaryAndExplanations(visibleSecurityState);
+    this.#summaryText.textContent = summary || SummaryMessages[this.#securityState]();
+    this.#explanations = this.#orderExplanations(explanations);
+    this.#refreshExplanations();
   }
-  getSecuritySummaryAndExplanations(visibleSecurityState) {
+  #getSecuritySummaryAndExplanations(visibleSecurityState) {
     const { securityState, securityStateIssueIds } = visibleSecurityState;
     let summary;
     const explanations = [];
-    summary = this.explainSafetyTipSecurity(visibleSecurityState, summary, explanations);
+    summary = this.#explainSafetyTipSecurity(visibleSecurityState, summary, explanations);
     if (securityStateIssueIds.includes("malicious-content")) {
       summary = i18nString3(UIStrings3.thisPageIsDangerousFlaggedBy);
       explanations.unshift(new SecurityStyleExplanation(
@@ -4640,12 +4647,12 @@ var SecurityMainView = class extends UI2.Widget.VBox {
       }
       return { summary, explanations };
     }
-    this.explainCertificateSecurity(visibleSecurityState, explanations);
-    this.explainConnectionSecurity(visibleSecurityState, explanations);
-    this.explainContentSecurity(visibleSecurityState, explanations);
+    this.#explainCertificateSecurity(visibleSecurityState, explanations);
+    this.#explainConnectionSecurity(visibleSecurityState, explanations);
+    this.#explainContentSecurity(visibleSecurityState, explanations);
     return { summary, explanations };
   }
-  explainSafetyTipSecurity(visibleSecurityState, summary, explanations) {
+  #explainSafetyTipSecurity(visibleSecurityState, summary, explanations) {
     const { securityStateIssueIds, safetyTipInfo } = visibleSecurityState;
     const currentExplanations = [];
     if (securityStateIssueIds.includes("bad_reputation")) {
@@ -4677,7 +4684,7 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
     }
     return summary;
   }
-  explainCertificateSecurity(visibleSecurityState, explanations) {
+  #explainCertificateSecurity(visibleSecurityState, explanations) {
     const { certificateSecurityState, securityStateIssueIds } = visibleSecurityState;
     const title = i18nString3(UIStrings3.certificate);
     if (certificateSecurityState?.certificateHasSha1Signature) {
@@ -4749,7 +4756,7 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
       ));
     }
   }
-  explainConnectionSecurity(visibleSecurityState, explanations) {
+  #explainConnectionSecurity(visibleSecurityState, explanations) {
     const certificateSecurityState = visibleSecurityState.certificateSecurityState;
     if (!certificateSecurityState) {
       return;
@@ -4797,7 +4804,7 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
       recommendations
     ));
   }
-  explainContentSecurity(visibleSecurityState, explanations) {
+  #explainContentSecurity(visibleSecurityState, explanations) {
     let addSecureExplanation = true;
     const title = i18nString3(UIStrings3.resources);
     const securityStateIssueIds = visibleSecurityState.securityStateIssueIds;
@@ -4863,7 +4870,7 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
       }
     }
   }
-  orderExplanations(explanations) {
+  #orderExplanations(explanations) {
     if (explanations.length === 0) {
       return explanations;
     }
@@ -4880,37 +4887,40 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
     return orderedExplanations;
   }
   refreshExplanations() {
-    this.securityExplanationsMain.removeChildren();
-    this.securityExplanationsExtra.removeChildren();
-    if (!this.explanations) {
+    this.#refreshExplanations();
+  }
+  #refreshExplanations() {
+    this.#securityExplanationsMain.removeChildren();
+    this.#securityExplanationsExtra.removeChildren();
+    if (!this.#explanations) {
       return;
     }
-    for (const explanation of this.explanations) {
+    for (const explanation of this.#explanations) {
       if (explanation.securityState === Security.SecurityState.Info) {
-        this.addExplanation(this.securityExplanationsExtra, explanation);
+        this.#addExplanation(this.#securityExplanationsExtra, explanation);
       } else {
         switch (explanation.mixedContentType) {
           case Security.MixedContentType.Blockable:
-            this.addMixedContentExplanation(
-              this.securityExplanationsMain,
+            this.#addMixedContentExplanation(
+              this.#securityExplanationsMain,
               explanation,
               NetworkForward.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN
             );
             break;
           case Security.MixedContentType.OptionallyBlockable:
-            this.addMixedContentExplanation(
-              this.securityExplanationsMain,
+            this.#addMixedContentExplanation(
+              this.#securityExplanationsMain,
               explanation,
               NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED
             );
             break;
           default:
-            this.addExplanation(this.securityExplanationsMain, explanation);
+            this.#addExplanation(this.#securityExplanationsMain, explanation);
             break;
         }
       }
     }
-    if (this.panel.filterRequestCount(NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED) > 0) {
+    if ((this.#filterRequestCounts.get(NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED) ?? 0) > 0) {
       const explanation = {
         securityState: Security.SecurityState.Info,
         summary: i18nString3(UIStrings3.blockedMixedContent),
@@ -4919,16 +4929,16 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
         certificate: [],
         title: ""
       };
-      this.addMixedContentExplanation(
-        this.securityExplanationsMain,
+      this.#addMixedContentExplanation(
+        this.#securityExplanationsMain,
         explanation,
         NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED
       );
     }
   }
-  addMixedContentExplanation(parent, explanation, filterKey) {
-    const element = this.addExplanation(parent, explanation);
-    const filterRequestCount = this.panel.filterRequestCount(filterKey);
+  #addMixedContentExplanation(parent, explanation, filterKey) {
+    const element = this.#addExplanation(parent, explanation);
+    const filterRequestCount = this.#filterRequestCounts.get(filterKey) ?? 0;
     if (!filterRequestCount) {
       const refreshPrompt = element.createChild("div", "security-mixed-content");
       refreshPrompt.textContent = i18nString3(UIStrings3.reloadThePageToRecordRequestsFor);
@@ -4938,9 +4948,9 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
     UI2.ARIAUtils.markAsLink(requestsAnchor);
     requestsAnchor.tabIndex = 0;
     requestsAnchor.textContent = i18nString3(UIStrings3.viewDRequestsInNetworkPanel, { n: filterRequestCount });
-    requestsAnchor.addEventListener("click", this.showNetworkFilter.bind(this, filterKey));
+    requestsAnchor.addEventListener("click", this.#showNetworkFilter.bind(this, filterKey));
   }
-  showNetworkFilter(filterKey, e) {
+  #showNetworkFilter(filterKey, e) {
     e.consume();
     void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
       [{ filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey }]
@@ -5032,7 +5042,10 @@ function renderTitleSection(origin, securityState, onRevealInNetwork) {
       <devtools-button
           .variant=${Buttons.Button.Variant.OUTLINED}
           .jslogContext=${"reveal-in-network"}
-          @click=${onRevealInNetwork}>${i18nString3(UIStrings3.viewRequestsInNetworkPanel)}</devtools-button>
+          @click=${(e) => {
+    e.consume();
+    onRevealInNetwork();
+  }}>${i18nString3(UIStrings3.viewRequestsInNetworkPanel)}</devtools-button>
     </div>`;
 }
 function buildCertificateDetailsRows(input) {
@@ -5053,13 +5066,11 @@ function buildCertificateDetailsRows(input) {
     { key: i18nString3(UIStrings3.validUntil), value: new Date(1e3 * securityDetails.validTo).toUTCString() },
     { key: i18nString3(UIStrings3.issuer), value: securityDetails.issuer },
     {
-      value: html2`
-        <devtools-button
-            class="origin-button"
-            title=${certificateButtonText}
-            .variant=${Buttons.Button.Variant.OUTLINED}
-            .jslogContext=${"security.view-certificate-for-origin"}
-            @click=${onViewCertificate}>${certificateButtonText}</devtools-button>`
+      value: renderCertificateViewerButton(
+        certificateButtonText,
+        "security.view-certificate-for-origin",
+        onViewCertificate
+      )
     }
   ];
 }
@@ -5220,8 +5231,7 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
     this.#isCertificateTransparencyDetailsShown = !this.#isCertificateTransparencyDetailsShown;
     this.#renderView();
   };
-  #showCertificateViewer = async (event) => {
-    event.consume();
+  #showCertificateViewer = async () => {
     const names = await SDK2.NetworkManager.MultitargetNetworkManager.instance().getCertificate(this.#origin);
     if (names.length > 0) {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
@@ -5253,8 +5263,7 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       this.contentElement
     );
   }
-  #revealInNetwork = (event) => {
-    event.consume();
+  #revealInNetwork = () => {
     const parsedURL = new Common.ParsedURL.ParsedURL(this.#origin);
     void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
       { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },

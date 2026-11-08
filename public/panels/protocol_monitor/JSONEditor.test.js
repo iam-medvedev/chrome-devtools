@@ -202,8 +202,7 @@ describeWithEnvironment('JSONEditor', () => {
                     bubbles: true,
                     composed: true,
                 });
-                clock.tick(300);
-                clock.restore();
+                await clock.runAllAsync();
             }
             finally {
                 clock.restore();

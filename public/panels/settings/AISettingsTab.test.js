@@ -9,7 +9,9 @@ import * as Host from '../../core/host/host.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import { getVeHash } from '../../testing/VisualLoggingHelpers.js';
 import * as Switch from '../../ui/components/switch/switch.js';
 import * as Settings from './settings.js';
 describeWithEnvironment('AISettingsTab', () => {
@@ -313,7 +315,10 @@ describeWithEnvironment('AISettingsTab', () => {
                 { toolName: "getStorageValues" /* ToolName.GET_STORAGE_VALUES */, displayName: 'Read storage values' },
             ]);
         });
-        it('removes a tool', async () => {
+        it('removes a tool and logs ai-permission-revoked with the tool name', async () => {
+            const recordFunctionCallStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordFunctionCall');
+            const expectedRevoked = await getVeHash('ai-permission-revoked');
+            const expectedGetCookieValuesTool = await getVeHash('get-cookie-values');
             const alwaysAllowedTools = createAlwaysAllowedTools();
             alwaysAllowedTools.allow("getCookieValues" /* ToolName.GET_COOKIE_VALUES */);
             alwaysAllowedTools.allow("getStorageValues" /* ToolName.GET_STORAGE_VALUES */);
@@ -323,6 +328,11 @@ describeWithEnvironment('AISettingsTab', () => {
             assert.deepEqual(input.allowedTools, [{ toolName: "getStorageValues" /* ToolName.GET_STORAGE_VALUES */, displayName: 'Read storage values' }]);
             assert.isFalse(alwaysAllowedTools.isAllowed("getCookieValues" /* ToolName.GET_COOKIE_VALUES */));
             assert.isTrue(alwaysAllowedTools.isAllowed("getStorageValues" /* ToolName.GET_STORAGE_VALUES */));
+            await expectCalled(recordFunctionCallStub);
+            sinon.assert.calledOnceWithExactly(recordFunctionCallStub, {
+                name: expectedRevoked,
+                context: expectedGetCookieValuesTool,
+            });
         });
         it('re-renders when a tool is allowed elsewhere', async () => {
             const { view } = await setupWidget();

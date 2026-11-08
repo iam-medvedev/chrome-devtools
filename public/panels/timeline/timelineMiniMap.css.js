@@ -25,12 +25,13 @@ export default `/*
 
 .timeline-minimap .overview-strip .timeline-overview-strip-title {
   color: var(--sys-color-token-subtle);
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   font-weight: bold;
   z-index: 100;
   background-color: var(--sys-color-cdt-base-container);
   padding: 0 var(--sys-size-3);
   position: absolute;
+  /* 2px upward offset (--sys-size-2 = 2px) matching parent .overview-strip top margin */
   top: calc(var(--sys-size-2) * -1);
   right: 0;
 }
@@ -67,7 +68,7 @@ export default `/*
 }
 
 .timeline-minimap #timeline-overview-responsiveness {
-  flex-basis: 5px;
+  flex-basis: var(--sys-size-4);
   margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
 }
 
@@ -104,7 +105,7 @@ export default `/*
   position: absolute;
   right: 0;
   bottom: 0;
-  font-size: 9px;
+  font-size: var(--sys-size-5);
   color: var(--sys-color-token-subtle);
   white-space: nowrap;
   padding: 0 var(--sys-size-3);

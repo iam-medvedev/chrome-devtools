@@ -1372,7 +1372,7 @@ var objectValue_css_default = `/*
 
 // ../../front_end/panels/profiler/ProfilesPanel.ts
 import * as UI12 from "../../ui/legacy/legacy.js";
-import { render as render7 } from "../../ui/lit/lit.js";
+import { render as render8 } from "../../ui/lit/lit.js";
 import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/profiler/heapProfiler.css.js
@@ -1617,7 +1617,7 @@ var heapProfiler_css_default = `/*
 // ../../front_end/panels/profiler/HeapProfileView.ts
 var HeapProfileView_exports = {};
 __export(HeapProfileView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   HeapFlameChartDataProvider: () => HeapFlameChartDataProvider,
   HeapProfileView: () => HeapProfileView,
   NodeFormatter: () => NodeFormatter,
@@ -1644,7 +1644,7 @@ import * as PerfUI3 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html3, nothing, render as render3 } from "../../ui/lit/lit.js";
+import { Directives as Directives3, html as html4, nothing, render as render4 } from "../../ui/lit/lit.js";
 import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/HeapTimelineOverview.ts
@@ -2018,6 +2018,8 @@ var OverviewCalculator = class {
 // ../../front_end/panels/profiler/ProfileFlameChartDataProvider.ts
 var ProfileFlameChartDataProvider_exports = {};
 __export(ProfileFlameChartDataProvider_exports, {
+  DEFAULT_OVERVIEW_PANE_VIEW: () => DEFAULT_OVERVIEW_PANE_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   OverviewCalculator: () => OverviewCalculator2,
   OverviewPane: () => OverviewPane,
   OverviewPaneEvents: () => OverviewPaneEvents,
@@ -2029,6 +2031,7 @@ import * as i18n6 from "../../core/i18n/i18n.js";
 import * as Platform5 from "../../core/platform/platform.js";
 import * as PerfUI2 from "../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html3, render as render3 } from "../../ui/lit/lit.js";
 var colorGeneratorInstance = null;
 var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
   #colorGenerator;
@@ -2123,6 +2126,12 @@ var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
     return this.entryNodes.length;
   }
 };
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render3(html3`
+    <devtools-widget class="cpu-profile-flame-chart-overview-pane">${input.overviewPane.element}</devtools-widget>
+    <devtools-widget class="vbox flex-auto">${input.mainPane.element}</devtools-widget>
+  `, target, { container: { attributes: { id: "cpu-flame-chart" } } });
+};
 var ProfileFlameChartBase = Common5.ObjectWrapper.eventMixin(
   UI4.Widget.VBox
 );
@@ -2134,17 +2143,16 @@ var ProfileFlameChart = class extends ProfileFlameChartBase {
   dataProvider;
   searchResults;
   searchResultIndex = -1;
-  constructor(searchableView, dataProvider, element) {
+  #view;
+  constructor(searchableView, dataProvider, element, view = DEFAULT_VIEW3) {
     super(element);
-    this.element.id = "cpu-flame-chart";
+    this.#view = view;
     this.searchableView = searchableView;
     this.overviewPane = new OverviewPane(dataProvider);
-    this.overviewPane.show(this.element);
     this.mainPane = new PerfUI2.FlameChart.FlameChart(dataProvider, this.overviewPane);
     this.mainPane.setBarHeight(15);
     this.mainPane.setTextBaseline(4);
     this.mainPane.setTextPadding(2);
-    this.mainPane.show(this.element);
     this.mainPane.addEventListener(PerfUI2.FlameChart.Events.ENTRY_SELECTED, this.onEntrySelected, this);
     this.mainPane.addEventListener(PerfUI2.FlameChart.Events.ENTRY_INVOKED, this.onEntryInvoked, this);
     this.entrySelected = false;
@@ -2152,6 +2160,20 @@ var ProfileFlameChart = class extends ProfileFlameChartBase {
     this.overviewPane.addEventListener("WindowChanged" /* WINDOW_CHANGED */, this.onWindowChanged, this);
     this.dataProvider = dataProvider;
     this.searchResults = [];
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    this.#view(
+      {
+        overviewPane: this.overviewPane,
+        mainPane: this.mainPane
+      },
+      void 0,
+      this.contentElement
+    );
   }
   focus() {
     this.mainPane.focus();
@@ -2279,32 +2301,66 @@ var OverviewCalculator2 = class {
     return this.maximumBoundaries - this.minimumBoundaries;
   }
 };
+var DEFAULT_OVERVIEW_PANE_VIEW = (input, output, target) => {
+  render3(html3`
+    <div class="cpu-profile-flame-chart-overview-container" ${Directives2.ref((el) => {
+    output.container = el;
+  })}>
+      <canvas class="cpu-profile-flame-chart-overview-canvas" ${Directives2.ref((el) => {
+    output.canvas = el;
+  })}></canvas>
+      ${input.overviewGridElement}
+    </div>
+  `, target, { container: { classes: ["cpu-profile-flame-chart-overview-pane"] } });
+};
 var OverviewPaneBase = Common5.ObjectWrapper.eventMixin(
   UI4.Widget.VBox
 );
 var OverviewPane = class extends OverviewPaneBase {
-  overviewContainer;
+  #view;
+  #viewOutput = {};
   overviewCalculator;
   overviewGrid;
-  overviewCanvas;
   dataProvider;
   windowTimeLeft;
   windowTimeRight;
   updateTimerId;
-  constructor(dataProvider) {
-    super();
-    this.element.classList.add("cpu-profile-flame-chart-overview-pane");
-    this.overviewContainer = this.element.createChild("div", "cpu-profile-flame-chart-overview-container");
+  constructor(dataProvider, element, view = DEFAULT_OVERVIEW_PANE_VIEW) {
+    super(element);
+    this.#view = view;
     this.overviewCalculator = new OverviewCalculator2(dataProvider.formatValue);
     this.overviewGrid = new PerfUI2.OverviewGrid.OverviewGrid("cpu-profile-flame-chart", this.overviewCalculator);
     this.overviewGrid.element.classList.add("fill");
-    this.overviewCanvas = this.overviewContainer.createChild("canvas", "cpu-profile-flame-chart-overview-canvas");
-    this.overviewContainer.appendChild(this.overviewGrid.element);
     this.dataProvider = dataProvider;
     this.overviewGrid.addEventListener(
       PerfUI2.OverviewGrid.Events.WINDOW_CHANGED_WITH_POSITION,
       this.onWindowChanged,
       this
+    );
+  }
+  get overviewContainer() {
+    if (!this.#viewOutput.container) {
+      this.performUpdate();
+    }
+    return this.#viewOutput.container ?? this.contentElement;
+  }
+  get overviewCanvas() {
+    if (!this.#viewOutput.canvas) {
+      this.performUpdate();
+    }
+    return this.#viewOutput.canvas;
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    this.#view(
+      {
+        overviewGridElement: this.overviewGrid.element
+      },
+      this.#viewOutput,
+      this.contentElement
     );
   }
   windowChanged(windowStartTime, windowEndTime) {
@@ -2340,7 +2396,7 @@ var OverviewPane = class extends OverviewPaneBase {
   update() {
     this.updateTimerId = 0;
     const timelineData = this.timelineData();
-    if (!timelineData) {
+    if (!timelineData || !this.overviewCanvas) {
       return;
     }
     this.resetCanvas(
@@ -2352,6 +2408,9 @@ var OverviewPane = class extends OverviewPaneBase {
     this.drawOverviewCanvas();
   }
   drawOverviewCanvas() {
+    if (!this.overviewCanvas) {
+      return;
+    }
     const canvasWidth = this.overviewCanvas.width;
     const canvasHeight = this.overviewCanvas.height;
     const drawData = this.calculateDrawData(canvasWidth);
@@ -2400,6 +2459,9 @@ var OverviewPane = class extends OverviewPaneBase {
     return drawData;
   }
   resetCanvas(width, height) {
+    if (!this.overviewCanvas) {
+      return;
+    }
     const ratio = window.devicePixelRatio;
     this.overviewCanvas.width = width * ratio;
     this.overviewCanvas.height = height * ratio;
@@ -2647,7 +2709,7 @@ var TopDownProfileDataGridTree = class extends ProfileDataGridTree {
 };
 
 // ../../front_end/panels/profiler/HeapProfileView.ts
-var { repeat, ref: ref2 } = Directives2;
+var { repeat, ref: ref2 } = Directives3;
 var { widget: widget2, widgetRef } = UI5.Widget;
 var UIStrings3 = {
   /**
@@ -2798,10 +2860,10 @@ var ViewTypes = /* @__PURE__ */ ((ViewTypes2) => {
   ViewTypes2["HEAVY"] = "Heavy";
   return ViewTypes2;
 })(ViewTypes || {});
-var DEFAULT_VIEW3 = (input, output, target) => {
+var DEFAULT_VIEW4 = (input, output, target) => {
   const { searchableView, dataProvider } = input;
-  render3(html3`
-    ${input.hasTemporaryView ? html3`
+  render4(html4`
+    ${input.hasTemporaryView ? html4`
       <devtools-widget ${widget2(() => input.timelineOverview)}></devtools-widget>` : nothing}
     <devtools-widget ${widget2((element) => {
     const searchableViewWidget = new UI5.SearchableView.SearchableView(input.searchable, null, void 0, element);
@@ -2809,7 +2871,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     return searchableViewWidget;
   })}
       ${widgetRef(UI5.SearchableView.SearchableView, input.onSearchableViewMount)}>
-      ${input.viewType === "Flame" /* FLAME */ && searchableView && dataProvider ? html3`
+      ${input.viewType === "Flame" /* FLAME */ && searchableView && dataProvider ? html4`
           <devtools-widget
             autofocus
             ${widget2((e) => new ProfileFlameChart(searchableView, dataProvider, e), { range: input.range })}
@@ -2820,7 +2882,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     output.jumpToPreviousSearchResult = widget4.jumpToPreviousSearchResult.bind(widget4);
     output.onSearchCanceled = widget4.onSearchCanceled.bind(widget4);
   })}>
-          </devtools-widget>` : input.profileDataGridTree ? html3`
+          </devtools-widget>` : input.profileDataGridTree ? html4`
           <div class="data-grid-target vbox flex-auto">${renderDataGrid(input)}</div>` : nothing}
     </devtools-widget>`, target);
 };
@@ -2832,11 +2894,11 @@ function renderDataGrid(input) {
   if (input.profileDataGridTree && input.profileDataGridTree.searchResults) {
     highlightIndex = input.profileDataGridTree.searchResultIndex + 1;
   }
-  return html3`
+  return html4`
     <style>${profilesPanel_css_default}</style>
     <devtools-data-grid class="flex-auto" name=${i18nString3(UIStrings3.profiler)} striped autofocus resize="last"
                         highlight=${highlightIndex >= 1 ? highlightIndex : nothing}
-                        @deselect=${input.onDeselect} .template=${html3`
+                        @deselect=${input.onDeselect} .template=${html4`
       <style>${profilesPanel_css_default}</style>
       <table>
         <tr>
@@ -2871,7 +2933,7 @@ function renderNode(node, input) {
   const onCollapse = () => {
     input.onCollapse(node);
   };
-  return html3`
+  return html4`
   <tr data-uid=${node.callUID} ?selected=${input.selectedNode === node} ?expanded=${node.expanded}
       ?highlighted=${node.searchMatchedSelfColumn || node.searchMatchedTotalColumn || node.searchMatchedFunctionColumn}
       @select=${onSelect}
@@ -2892,7 +2954,7 @@ function renderNode(node, input) {
       </div>
     </td>
     <td data-value=${node.functionName} class="${node.searchMatchedFunctionColumn ? "highlight" : ""} ${node.deoptReason ? "not-optimized" : ""}">
-      ${node.deoptReason ? html3`
+      ${node.deoptReason ? html4`
         <devtools-icon name="warning-filled" class="profile-warn-marker small"
                         title=${i18nString3(UIStrings3.notOptimizedS, { PH1: node.deoptReason })}>
         </devtools-icon>` : nothing}
@@ -2909,9 +2971,9 @@ function renderNode(node, input) {
     }
   }) : nothing}
     </td>
-    ${node.hasChildren() ? html3`
+    ${node.hasChildren() ? html4`
       <td><table>
-        ${node.expanded ? html3`${repeat(
+        ${node.expanded ? html4`${repeat(
     node.children,
     (child) => child.callUID,
     (child) => renderNode(child, input)
@@ -2955,7 +3017,7 @@ var HeapProfileView = class extends UI5.View.SimpleView {
   #range;
   #lastAppliedRange = null;
   #lastAppliedViewType = null;
-  constructor(profileHeader, view = DEFAULT_VIEW3) {
+  constructor(profileHeader, view = DEFAULT_VIEW4) {
     super({
       title: i18nString3(UIStrings3.profile),
       viewId: "profile"
@@ -2999,7 +3061,7 @@ var HeapProfileView = class extends UI5.View.SimpleView {
   async toolbarItems() {
     const currentViewType = this.viewType.get();
     const isFlame = currentViewType === "Flame" /* FLAME */;
-    return html3`
+    return html4`
       <select title=${i18nString3(UIStrings3.profileViewMode)} aria-label=${i18nString3(UIStrings3.profileViewMode)}
               @change=${this.changeView.bind(this)}
               jslog=${VisualLogging3.dropDown("profile-view.selected-view").track({ change: true })}
@@ -3120,8 +3182,8 @@ var HeapProfileView = class extends UI5.View.SimpleView {
     );
   }
   static buildPopoverTable(popoverInfo) {
-    return html3`<table>
-      ${popoverInfo.map((entry) => html3`
+    return html4`<table>
+      ${popoverInfo.map((entry) => html4`
         <tr>
           <td>${entry.title}</td>
           <td>${entry.value}</td>
@@ -3911,7 +3973,7 @@ import * as HeapSnapshotModel from "../../models/heap_snapshot/heap_snapshot.js"
 import { createIcon } from "../../ui/kit/kit.js";
 import * as DataGrid from "../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html4, render as render4 } from "../../ui/lit/lit.js";
+import { Directives as Directives4, html as html5, render as render5 } from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings4 = {
   /**
@@ -4123,10 +4185,10 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends HeapSnapshotGridN
       const tooltipColumn = `${columnId}-tooltip`;
       const tooltip = this.data[tooltipColumn];
       if (percent) {
-        render4(
-          html4`
+        render5(
+          html5`
           <div class="profile-multiple-values">
-            <span aria-hidden="true" title=${Directives3.ifDefined(tooltip)}>${value2}</span>
+            <span aria-hidden="true" title=${Directives4.ifDefined(tooltip)}>${value2}</span>
             <span class="percent-column" aria-hidden="true">${percent}</span>
           </div>`,
           cell
@@ -4137,10 +4199,10 @@ var HeapSnapshotGridNode = class _HeapSnapshotGridNode extends HeapSnapshotGridN
           columnId
         );
       } else {
-        render4(
-          html4`
+        render5(
+          html5`
           <div>
-            <span title=${Directives3.ifDefined(tooltip)}>${value2}</span>
+            <span title=${Directives4.ifDefined(tooltip)}>${value2}</span>
           </div>`,
           cell
         );
@@ -4425,11 +4487,11 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     cell.className = "object-column disclosure";
     cell.setAttribute("jslog", jslog.toString());
     const output = {};
-    render4(
-      html4`<div
+    render5(
+      html5`<div
         class="source-code event-properties"
         style="overflow: visible;"
-        ${Directives3.ref((el) => {
+        ${Directives4.ref((el) => {
         output.div = el;
       })}
       >
@@ -4917,8 +4979,8 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   createCell(columnId) {
     const cell = columnId === "object" ? super.createCell(columnId) : this.createValueCell(columnId);
     if (columnId === "object" && this.count > 1) {
-      const template = html4`<span class="objects-count">×${this.data.count}</span>`;
-      render4(template, cell);
+      const template = html5`<span class="objects-count">×${this.data.count}</span>`;
+      render5(template, cell);
     }
     return cell;
   }
@@ -6223,11 +6285,23 @@ var UIStrings6 = {
   /**
    * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
    */
+  loadingScopes: "Loading scopes\u2026",
+  /**
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+   */
+  loadingScopeContextVars: "Loading scope context vars\u2026",
+  /**
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+   */
+  loadingScopeUses: "Loading scope uses\u2026",
+  /**
+   * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+   */
   loadingStrings: "Loading strings\u2026"
 };
 
 // ../../front_end/panels/profiler/HeapSnapshotView.ts
-var { html: html5 } = Lit2;
+var { html: html6 } = Lit2;
 var UIStrings7 = {
   /**
    * @description Text to find an item.
@@ -6864,7 +6938,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI8.View.SimpleView {
     }
     result.push(this.selectedSizeText);
     result.push(this.resetRetainersButton);
-    return html5`${result.map((item3) => item3.element)}`;
+    return html6`${result.map((item3) => item3.element)}`;
   }
   willHide() {
     super.willHide();
@@ -8051,7 +8125,7 @@ var stackFrameToURLElement = /* @__PURE__ */ new WeakMap();
 // ../../front_end/panels/profiler/ProfileLauncherView.ts
 var ProfileLauncherView_exports = {};
 __export(ProfileLauncherView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   Events: () => Events3,
   ProfileLauncherView: () => ProfileLauncherView
 });
@@ -8060,22 +8134,22 @@ import * as i18n17 from "../../core/i18n/i18n.js";
 import * as Platform9 from "../../core/platform/platform.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UI10 from "../../ui/legacy/legacy.js";
-import { html as html7, nothing as nothing2, render as render6 } from "../../ui/lit/lit.js";
+import { html as html8, nothing as nothing2, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/IsolateSelector.ts
 var IsolateSelector_exports = {};
 __export(IsolateSelector_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   IsolateSelector: () => IsolateSelector
 });
 import * as Common10 from "../../core/common/common.js";
 import * as i18n15 from "../../core/i18n/i18n.js";
 import * as SDK5 from "../../core/sdk/sdk.js";
 import * as UI9 from "../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html6, render as render5 } from "../../ui/lit/lit.js";
+import { Directives as Directives5, html as html7, render as render6 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
-var { classMap, ifDefined, repeat: repeat2 } = Directives4;
+var { classMap, ifDefined, repeat: repeat2 } = Directives5;
 var UIStrings8 = {
   /**
    * @description Aria label for JavaScript VM instances target list in heap profiler.
@@ -8125,7 +8199,7 @@ var UIStrings8 = {
 };
 var str_7 = i18n15.i18n.registerUIStrings("panels/profiler/IsolateSelector.ts", UIStrings8);
 var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW4 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, _output, target) => {
   const onKeyDown = (event) => {
     if (!input.items.length) {
       return;
@@ -8155,7 +8229,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
       input.onSelect(nextIndex);
     }
   };
-  render5(html6`
+  render6(html7`
     <div class="vbox profile-launcher-target-list profile-launcher-target-list-container">
       <div class="javascript-vm-instances-list"
            role="listbox"
@@ -8164,7 +8238,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
            @keydown=${onKeyDown}>
         ${repeat2(input.items, (item3) => item3.id, (item3, index) => {
     const isSelected = index === input.selectedIndex;
-    return html6`
+    return html7`
             <div class=${classMap({
       "profile-memory-usage-item": true,
       hbox: true,
@@ -8193,7 +8267,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
                 ${item3.trend.text}
               </div>
               <div class="profile-memory-usage-item-name">
-                ${item3.titles.map((title) => html6`<div title=${String(title)}>${title}</div>`)}
+                ${item3.titles.map((title) => html7`<div title=${String(title)}>${title}</div>`)}
               </div>
             </div>
           `;
@@ -8263,7 +8337,7 @@ var IsolateSelector = class extends UI9.Widget.VBox {
   #selectedIsolate = null;
   #totalText = "";
   #totalTrend = { text: "", increasing: false };
-  constructor(element, view = DEFAULT_VIEW4) {
+  constructor(element, view = DEFAULT_VIEW5) {
     super(element);
     this.#view = view;
     SDK5.IsolateManager.IsolateManager.instance().observeIsolates(this);
@@ -8610,8 +8684,8 @@ var UIStrings9 = {
 var str_8 = i18n17.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.ts", UIStrings9);
 var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_8);
 var { widget: widget3 } = UI10.Widget;
-var DEFAULT_VIEW5 = (input, _output, target) => {
-  render6(html7`
+var DEFAULT_VIEW6 = (input, _output, target) => {
+  render7(html8`
     <style>${profileLauncherView_css_default}</style>
     <div class="profile-launcher-view-content vbox" jslog=${VisualLogging7.section("profiler.launcher")}>
       <div class="vbox">
@@ -8620,7 +8694,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
           ${input.profileTypes.map((entry) => {
     const radioId = `profile-type-${entry.profileType.id}`;
     const customContent = entry.customContent;
-    return html7`
+    return html8`
               <div class="profile-type-option" jslog=${VisualLogging7.item(Platform9.StringUtilities.toKebabCase(entry.profileType.id))}>
                 <input id=${radioId} type="radio" name="profile-type"
                     .checked=${entry.selected}
@@ -8630,7 +8704,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
                   />
                 <label for=${radioId}>${entry.profileType.name}</label>
                 <p>${entry.profileType.description}</p>
-                ${customContent ? html7`
+                ${customContent ? html8`
                   <p>
                     <span role="group" aria-labelledby=${radioId}>
                       ${customContent}
@@ -8677,7 +8751,7 @@ var ProfileLauncherView = class extends ProfileLauncherViewBase {
   #isEnabled = false;
   #recordButtonEnabled = true;
   #selectedTypeId = "";
-  constructor(profilesPanel, view = DEFAULT_VIEW5) {
+  constructor(profilesPanel, view = DEFAULT_VIEW6) {
     super();
     this.#view = view;
     this.panel = profilesPanel;
@@ -9523,7 +9597,7 @@ var ProfilesPanel = class _ProfilesPanel extends UI12.Panel.PanelWithSidebar {
     }
     this.profileViewToolbar.removeToolbarItems();
     void view.toolbarItems().then((items) => {
-      render7(items, this.profileViewToolbar);
+      render8(items, this.profileViewToolbar);
     });
     return view;
   }

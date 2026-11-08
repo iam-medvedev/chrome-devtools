@@ -10,8 +10,9 @@ export default `/*
  */
 
 .drawer-tabbed-pane.drawer-minimized-vertical {
-  min-width: 27px;
-  width: 27px;
+  /* 28px toolbar width minus 1px SplitWidget splitter border. */
+  min-width: calc(var(--sys-size-12) - var(--sys-size-1));
+  width: calc(var(--sys-size-12) - var(--sys-size-1));
 }
 
 .hide-element {
@@ -43,7 +44,7 @@ devtools-toolbar.collapsed-vertical-drawer-toolbar-content {
   align-items: center;
   justify-content: center;
   height: auto !important; /* stylelint-disable-line declaration-no-important */
-  width: 27px;
+  width: 100%;
   padding: 0 !important; /* stylelint-disable-line declaration-no-important */
   gap: 0;
 }

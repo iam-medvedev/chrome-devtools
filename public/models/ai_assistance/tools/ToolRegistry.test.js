@@ -18,6 +18,12 @@ describe('ToolRegistry', () => {
         assert.instanceOf(tool, AiAssistance.GetStyles.GetStylesTool);
         assert.strictEqual(tool?.name, "getStyles" /* AiAssistance.Tool.ToolName.GET_STYLES */);
     });
+    it('can retrieve setElementStyles tool by name', () => {
+        const tool = AiAssistance.ToolRegistry.ToolRegistry.get("setElementStyles" /* AiAssistance.Tool.ToolName.SET_ELEMENT_STYLES */);
+        assert.exists(tool);
+        assert.instanceOf(tool, AiAssistance.SetElementStyles.SetElementStylesTool);
+        assert.strictEqual(tool?.name, "setElementStyles" /* AiAssistance.Tool.ToolName.SET_ELEMENT_STYLES */);
+    });
     it('can retrieve getDetailedCallTree tool by name', () => {
         const tool = AiAssistance.ToolRegistry.ToolRegistry.get("getDetailedCallTree" /* AiAssistance.Tool.ToolName.GET_DETAILED_CALL_TREE */);
         assert.exists(tool);
@@ -99,6 +105,7 @@ describe('ToolRegistry', () => {
                 "resolveDevtoolsNodePath" /* AiAssistance.Tool.ToolName.RESOLVE_DEVTOOLS_NODE_PATH */,
                 "runLighthouse" /* AiAssistance.Tool.ToolName.RUN_LIGHTHOUSE */,
                 "selectTraceEventByKey" /* AiAssistance.Tool.ToolName.SELECT_TRACE_EVENT_BY_KEY */,
+                "setElementStyles" /* AiAssistance.Tool.ToolName.SET_ELEMENT_STYLES */,
             ].sort();
             const permissionPrompt = "never" /* AiAssistance.Tool.PermissionPrompt.NEVER */;
             const toolNames = filterToolNames(permissionPrompt);

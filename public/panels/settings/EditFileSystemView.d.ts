@@ -1,35 +1,25 @@
-import '../../ui/legacy/components/data_grid/data_grid.js';
+import '../../ui/components/lists/lists.js';
 import * as Platform from '../../core/platform/platform.js';
 import type * as Persistence from '../../models/persistence/persistence.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare const enum ExcludedFolderStatus {
-    VALID = 1,
-    ERROR_NOT_A_PATH = 2,
-    ERROR_NOT_UNIQUE = 3
-}
-export interface PathWithStatus {
-    path: Platform.DevToolsPath.EncodedPathString;
-    status: ExcludedFolderStatus;
-}
 export interface EditFileSystemViewInput {
     fileSystemPath: Platform.DevToolsPath.UrlString;
-    excludedFolderPaths: PathWithStatus[];
-    onCreate: (event: CustomEvent<{
-        url?: string;
-    }>) => void;
-    onEdit: (event: CustomEvent<{
-        columnId: string;
-        valueBeforeEditing: string;
-        newText: string;
-    }>) => void;
-    onDelete: (event: CustomEvent) => void;
+    excludedFolders: Platform.DevToolsPath.EncodedPathString[];
+    editingIndex: number | null;
+    onAdd: () => void;
+    onEdit: (index: number) => void;
+    onDelete: (index: number) => void;
+    onCommit: (index: number, value: string) => void;
+    onCancel: () => void;
+    validateFolder: (index: number, value: string) => Platform.UIString.LocalizedString | null;
 }
 export type View = (input: EditFileSystemViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class EditFileSystemView extends UI.Widget.VBox {
     #private;
-    constructor(element: HTMLElement | undefined, view?: View);
+    constructor(element?: HTMLElement, view?: View);
     set fileSystem(fileSystem: Persistence.PlatformFileSystem.PlatformFileSystem);
     wasShown(): void;
+    willHide(): void;
     performUpdate(): void;
 }

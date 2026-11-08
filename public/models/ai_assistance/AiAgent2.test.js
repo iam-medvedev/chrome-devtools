@@ -729,8 +729,11 @@ describe('AiAgent2', () => {
         });
         it('stores the tool when the user picks ALLOW_ALWAYS', async () => {
             const alwaysAllowedTools = new AiAssistance.AlwaysAllowedTools.AlwaysAllowedTools(universe.settings);
-            await runGetCookieValuesApprovalFlow("allow-always" /* AiAssistance.Tool.PermissionDecision.ALLOW_ALWAYS */, { alwaysAllowedTools });
+            const { responses } = await runGetCookieValuesApprovalFlow("allow-always" /* AiAssistance.Tool.PermissionDecision.ALLOW_ALWAYS */, { alwaysAllowedTools, permissionPrompt: "allow-once-or-always" /* AiAssistance.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */ });
             assert.isTrue(alwaysAllowedTools.isAllowed("getCookieValues" /* AiAssistance.Tool.ToolName.GET_COOKIE_VALUES */));
+            const cookieAction = responses.find((r) => r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */ && r.toolName === 'getCookieValues');
+            assert.exists(cookieAction);
+            assert.isFalse(cookieAction.autoApproved);
         });
         it('does not store the tool when the user picks ALLOW_ONCE', async () => {
             const alwaysAllowedTools = new AiAssistance.AlwaysAllowedTools.AlwaysAllowedTools(universe.settings);
@@ -744,6 +747,51 @@ describe('AiAgent2', () => {
             sinon.assert.calledOnce(handlerStub);
             assert.propertyVal(handlerStub.getCall(0).args[2], 'approved', true);
             assert.notExists(responses.find(r => r.type === "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */));
+            const cookieAction = responses.find((r) => r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */ && r.toolName === 'getCookieValues');
+            assert.exists(cookieAction);
+            assert.isTrue(cookieAction.autoApproved);
+        });
+        it('sets autoApproved on CONTEXT_CHANGE when an always-allowed context tool skips the prompt', async () => {
+            const alwaysAllowedTools = new AiAssistance.AlwaysAllowedTools.AlwaysAllowedTools(universe.settings);
+            alwaysAllowedTools.allow("recordPerformanceTrace" /* AiAssistance.Tool.ToolName.RECORD_PERFORMANCE_TRACE */);
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['performance'] } }],
+                    }],
+                [{
+                        explanation: 'Recording trace',
+                        functionCalls: [{ name: 'recordPerformanceTrace', args: {} }],
+                    }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({
+                aidaClient,
+                originLock: defaultOriginLock,
+                alwaysAllowedTools,
+            });
+            const recordTraceTool = AiAssistance.ToolRegistry.ToolRegistry.get('recordPerformanceTrace');
+            assert.exists(recordTraceTool);
+            sinon.stub(recordTraceTool, 'permissionPrompt').value("allow-once-or-always" /* AiAssistance.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */);
+            const fakeContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext);
+            const handlerStub = sinon.stub(recordTraceTool, 'handler').callsFake(async (_args, _capabilities, options) => {
+                if (options?.approved !== true) {
+                    return {
+                        requiresApproval: true,
+                        description: 'Allow recording performance trace?',
+                    };
+                }
+                return {
+                    context: fakeContext,
+                    description: 'User recorded a performance trace',
+                };
+            });
+            const responses = await Array.fromAsync(agent.run('measure performance', { selected: null }));
+            sinon.assert.calledOnce(handlerStub);
+            assert.propertyVal(handlerStub.getCall(0).args[2], 'approved', true);
+            assert.notExists(responses.find(r => r.type === "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */));
+            const contextChange = getContextChangeResponse(responses);
+            assert.strictEqual(contextChange.toolName, 'recordPerformanceTrace');
+            assert.isTrue(contextChange.autoApproved);
         });
         it('still prompts for an always-allowed tool with an ALLOW_ONCE prompt', async () => {
             const alwaysAllowedTools = new AiAssistance.AlwaysAllowedTools.AlwaysAllowedTools(universe.settings);
@@ -789,10 +837,11 @@ describe('AiAgent2', () => {
         assert.exists(canceled);
         assert.strictEqual(canceled.output, 'Error: User denied code execution with side effects.');
     });
-    it('includes the tool permissionPrompt and permissionTitle in the SIDE_EFFECT response', async () => {
+    it('includes the tool name, permissionPrompt, and permissionTitle in the SIDE_EFFECT response', async () => {
         const { responses } = await runGetCookieValuesApprovalFlow();
         const sideEffectResponse = responses.find((r) => r.type === "side-effect" /* AiAssistance.AiAgent.ResponseType.SIDE_EFFECT */);
         assert.exists(sideEffectResponse);
+        assert.strictEqual(sideEffectResponse.toolName, 'getCookieValues');
         assert.strictEqual(sideEffectResponse.permissionPrompt, "allow-once" /* AiAssistance.Tool.PermissionPrompt.ALLOW_ONCE */);
         assert.strictEqual(sideEffectResponse.permissionTitle, 'Allow reading cookie values?');
     });

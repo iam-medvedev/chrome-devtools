@@ -163,6 +163,7 @@ var HAREntry = class extends HARBase {
     this.comment = HARBase.optionalString(data["comment"]);
     this.custom.set("connectionId", HARBase.optionalString(data["_connectionId"]));
     this.custom.set("fromCache", HARBase.optionalString(data["_fromCache"]));
+    this.custom.set("initialPriority", HARBase.optionalString(data["_initialPriority"]));
     this.custom.set("initiator", this.#importInitiator(data["_initiator"]));
     this.custom.set("priority", HARBase.optionalString(data["_priority"]));
     this.custom.set("resourceType", HARBase.optionalString(data["_resourceType"]));
@@ -1150,7 +1151,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -2208,7 +2208,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -2262,7 +2261,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -2286,6 +2284,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2590,6 +2589,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -3467,6 +3471,10 @@ var Importer = class _Importer {
     request.setIncludedRequestCookies(includedRequestCookies);
     const responseCookies = entry.response.cookies.map(this.fillCookieFromHARCookie.bind(this, SDK2.Cookie.Type.RESPONSE));
     request.responseCookies = responseCookies;
+    const initialPriority = entry.customAsString("initialPriority");
+    if (initialPriority && Network.ResourcePriority.hasOwnProperty(initialPriority)) {
+      request.setInitialPriority(initialPriority);
+    }
     const priority = entry.customAsString("priority");
     if (priority && Network.ResourcePriority.hasOwnProperty(priority)) {
       request.setPriority(priority);
@@ -3691,6 +3699,7 @@ var Entry = class _Entry {
       }
     }
     const entry = {
+      _initialPriority: harEntry.request.initialPriority(),
       _initiator: exportedInitiator,
       _priority: harEntry.request.priority(),
       _resourceType: harEntry.request.resourceType().name(),

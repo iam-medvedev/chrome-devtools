@@ -38,7 +38,7 @@ export default `/*
 }
 
 .watch-expressions {
-  min-height: 26px;
+  min-height: var(--sys-size-11);
 }
 
 .watch-expression-title {
@@ -54,7 +54,7 @@ li.watch-expression-tree-item > span.tree-element-title {
 
 .watch-expression-title:hover,
 .watch-expression-title:focus-within {
-  padding-right: 26px;
+  padding-right: var(--sys-size-11);
 }
 
 .watch-expression-object-header .watch-expression-title {
@@ -108,13 +108,13 @@ li.watch-expression-tree-item > span.tree-element-title {
 
 .watch-expression-text-prompt-proxy {
   margin: var(--sys-size-2) var(--sys-size-6) var(--sys-size-2) calc(-1 * var(--sys-size-3));
-  padding-bottom: 3px;
 }
 
 .watch-expression-header {
   flex: auto;
   margin-left: calc(-1 * var(--sys-size-8));
-  padding-left: 15px;
+  /* 16px (--sys-size-8) negative margin offset minus 1px (--sys-size-1) object header title margin */
+  padding-left: calc(var(--sys-size-8) - var(--sys-size-1));
 }
 
 li.watch-expression-tree-item {

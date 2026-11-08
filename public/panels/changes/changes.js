@@ -480,6 +480,7 @@ function renderSingleDiffView(singleDiffViewInput) {
 var DEFAULT_VIEW2 = (input, output, target) => {
   Lit2.render(
     html2`
+      <style>${combinedDiffView_css_default}</style>
       <div class="combined-diff-view">
         ${input.singleDiffViewInputs.map((singleDiffViewInput) => renderSingleDiffView(singleDiffViewInput))}
       </div>
@@ -500,7 +501,6 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
   #viewOutput = {};
   constructor(element, view = DEFAULT_VIEW2) {
     super(element);
-    this.registerRequiredCSS(combinedDiffView_css_default);
     this.#view = view;
   }
   wasShown() {

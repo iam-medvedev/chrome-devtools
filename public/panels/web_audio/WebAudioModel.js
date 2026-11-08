@@ -4,10 +4,12 @@
 import * as SDK from '../../core/sdk/sdk.js';
 export class WebAudioModel extends SDK.SDKModel.SDKModel {
     enabled;
+    #suspended;
     agent;
     constructor(target) {
         super(target);
         this.enabled = false;
+        this.#suspended = target.suspended();
         this.agent = target.webAudioAgent();
         target.registerWebAudioDispatcher(this);
         // TODO(crbug.com/963510): Some OfflineAudioContexts are not uninitialized
@@ -24,21 +26,25 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel {
         this.dispatchEventToListeners("ModelReset" /* Events.MODEL_RESET */);
     }
     async suspendModel() {
+        this.#suspended = true;
         this.dispatchEventToListeners("ModelSuspend" /* Events.MODEL_SUSPEND */);
         await this.agent.invoke_disable();
+        this.flushContexts();
     }
     async resumeModel() {
-        if (!this.enabled) {
-            return await Promise.resolve();
+        if (this.enabled) {
+            await this.agent.invoke_enable();
         }
-        await this.agent.invoke_enable();
+        this.#suspended = false;
     }
     ensureEnabled() {
         if (this.enabled) {
             return;
         }
-        void this.agent.invoke_enable();
         this.enabled = true;
+        if (!this.#suspended) {
+            void this.agent.invoke_enable();
+        }
     }
     contextCreated({ context }) {
         this.dispatchEventToListeners("ContextCreated" /* Events.CONTEXT_CREATED */, context);
@@ -80,8 +86,11 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel {
         this.dispatchEventToListeners("NodeParamDisconnected" /* Events.NODE_PARAM_DISCONNECTED */, { contextId, sourceId, destinationId, sourceOutputIndex });
     }
     async requestRealtimeData(contextId) {
+        if (this.#suspended) {
+            return null;
+        }
         const realtimeResponse = await this.agent.invoke_getRealtimeData({ contextId });
-        return realtimeResponse.realtimeData;
+        return this.#suspended ? null : realtimeResponse.realtimeData;
     }
 }
 SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });

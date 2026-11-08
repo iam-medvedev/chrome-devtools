@@ -25,7 +25,7 @@ h1 {
 .intro-steps {
   counter-reset: custom-counter;
   list-style: none;
-  margin: var(--sys-size-8) 0 30px 30px;
+  margin: var(--sys-size-8) 0 var(--sys-size-12) var(--sys-size-12);
   padding: 0;
 }
 
@@ -35,7 +35,7 @@ h1 {
   font-size: var(--sys-typescale-body3-size);
   letter-spacing: 0.03em;
   line-height: 1.54;
-  margin-bottom: 9px;
+  margin-bottom: var(--sys-size-5);
   position: relative;
 }
 
@@ -48,13 +48,15 @@ h1 {
   color: var(--sys-color-primary);
   content: counter(custom-counter);
   font-size: var(--sys-typescale-body4-size);
-  height: 18px;
-  left: -30px;
+  height: var(--sys-size-8);
+  /* 24px (--sys-size-11) + 6px (--sys-size-4) matches the 30px .intro-steps left margin */
+  left: calc(-1 * (var(--sys-size-11) + var(--sys-size-4)));
   line-height: var(--sys-size-9);
   position: absolute;
   text-align: center;
-  top: 0;
-  width: 18px;
+  /* 2px (--sys-size-2) + 1px (--sys-size-1) aligns the 16px badge with body3 step text */
+  top: calc(var(--sys-size-2) + var(--sys-size-1));
+  width: var(--sys-size-8);
   display: flex;
   align-items: center;
   justify-content: center;

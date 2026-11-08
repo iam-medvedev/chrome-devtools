@@ -10,7 +10,7 @@ export default `/**
  */
 
 .styles-section {
-  min-height: 18px;
+  min-height: var(--sys-size-8);
   white-space: nowrap;
   user-select: text;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
@@ -167,7 +167,6 @@ export default `/**
   float: right;
   padding: var(--sys-size-2) var(--sys-size-2) 0 var(--sys-size-8);
   max-width: 100%;
-  height: 15px;
   margin-bottom: calc(-1 * var(--sys-size-1));
 }
 
@@ -183,9 +182,10 @@ export default `/**
   color: var(--sys-color-on-surface);
 }
 
+/* 64px (--sys-size-18) matches a 2-row .cls toolbar pane height for full retraction into overflow: hidden. */
 @keyframes styles-element-state-pane-slidein {
   from {
-    margin-top: -60px;
+    margin-top: calc(-1 * var(--sys-size-18));
   }
 
   to {
@@ -199,7 +199,7 @@ export default `/**
   }
 
   to {
-    margin-top: -60px;
+    margin-top: calc(-1 * var(--sys-size-18));
   }
 }
 
@@ -258,15 +258,6 @@ export default `/**
   text-overflow: ellipsis;
   overflow: hidden;
   line-height: var(--sys-size-10);
-
-  > span.monospace {
-    max-width: 180px;
-    display: inline-block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-    margin-left: var(--sys-size-2);
-  }
 
   &.layer-separator {
     display: flex;

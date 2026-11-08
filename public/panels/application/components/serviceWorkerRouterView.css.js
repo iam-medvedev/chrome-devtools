@@ -11,14 +11,14 @@ export default `/*
 :host {
   display: block;
   white-space: normal;
-  max-width: 400px;
+  max-width: var(--sys-size-32);
 }
 
 .router-rules {
   border: var(--sys-size-1) solid var(--sys-color-divider);
   border-spacing: 0;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: var(--sys-size-6);
+  padding-right: var(--sys-size-6);
   line-height: initial;
   margin-top: 0;
   padding-bottom: var(--sys-size-6);
@@ -38,7 +38,7 @@ export default `/*
 .item {
   display: flex;
   flex-direction: column;
-  padding-left: 10px;
+  padding-left: var(--sys-size-5);
 }
 
 .condition,

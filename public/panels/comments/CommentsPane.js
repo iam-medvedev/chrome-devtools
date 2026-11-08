@@ -12,9 +12,9 @@ import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as CommonPanels from '../common/common.js';
 import commentsPaneStyles from './commentsPane.css.js';
-const { html, render, i18nTemplate, Directives: { ref, repeat } } = Lit;
+const { html, render, i18nTemplate, Directives: { classMap, ref, repeat } } = Lit;
 const { widget } = UI.Widget;
-const { computeCommentTitle } = CommonPanels.CommentThreadWidget;
+const { computeCommentTitle, inputDisclaimer } = CommonPanels.CommentThreadWidget;
 const UIStrings = {
     /**
      * @description Tooltip text for clearing all comments.
@@ -85,15 +85,8 @@ const UIStrings = {
      */
     sentComments: 'Sent comments',
 };
-const UIStringsNotTranslate = {
-    /**
-     * @description Disclaimer text in the comments pane info tooltip.
-     */
-    inputDisclaimer: 'Comment strings, DOM hierarchy snippets, tracked CSS and DOM changes, Visual Element (VE) paths and signatures, and tracked presenter changes are sent to the connected third-party agent to assist with debugging and code updates',
-};
 const str_ = i18n.i18n.registerUIStrings('panels/comments/CommentsPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const lockedString = i18n.i18n.lockedString;
 const TOGGLE_COMMENT_MODE_ACTION_ID = 'comments.toggle-comment-mode';
 function renderThreadStatus(thread, onDeleteThread) {
     // clang-format off
@@ -120,6 +113,7 @@ function renderThreadStatus(thread, onDeleteThread) {
         case 'RESOLVED':
             return html `
         <devtools-button
+          class="see-response-button"
           .data=${{
                 variant: "text" /* Buttons.Button.Variant.TEXT */,
                 jslogContext: 'comments-see-response',
@@ -197,7 +191,13 @@ export const DEFAULT_VIEW = (input, output, target) => {
         }
     }}
             jslog=${VisualLogging.item('comment-thread').track({ click: true })}>
-            <div class="comment-pin-badge" aria-hidden="true"></div>
+            <div
+              class=${classMap({
+        'comment-pin-badge': true,
+        resolved: item.thread.status === 'RESOLVED',
+    })}
+              aria-hidden="true">
+            </div>
             <span class="anchor-chip ${item.thread.isOrphaned ? 'orphaned' : ''}">
               ${'node' in item.title ?
         widget(CommonPanels.DOMLinkifier.DOMNodeLink, {
@@ -229,7 +229,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         variant="rich"
       >
         <div class="info-tooltip-container">
-          ${lockedString(UIStringsNotTranslate.inputDisclaimer)}
+          ${inputDisclaimer()}
         </div>
       </devtools-tooltip>
       <button
@@ -329,7 +329,7 @@ export class CommentsPane extends UI.Widget.Widget {
     ];
     #view;
     #commentManager;
-    #cachedTitles = new Map();
+    #cachedTitles = new WeakMap();
     #viewOutput = {};
     #activeTab = 'queued';
     // Set while a tab click smoothly scrolls the list. Scroll events then don't
@@ -393,15 +393,17 @@ export class CommentsPane extends UI.Widget.Widget {
         this.#handleScroll();
     };
     #handleClearAll = () => {
-        this.#cachedTitles.clear();
         this.#commentManager.clear();
         this.requestUpdate();
     };
     #handleThreadClick = (thread, position) => {
+        // Generated comments can only be revealed once resolved, to read the response.
+        if (thread.isGeneratedComment && thread.status !== 'RESOLVED') {
+            return;
+        }
         void Common.Revealer.reveal(new CommentManager.CommentThread.RevealableThread(thread, position));
     };
     #handleDeleteThread = (threadId) => {
-        this.#cachedTitles.delete(threadId);
         this.#commentManager.removeCommentThread(threadId);
         this.requestUpdate();
     };
@@ -416,10 +418,10 @@ export class CommentsPane extends UI.Widget.Widget {
         void actionRegistry.getAction(TOGGLE_COMMENT_MODE_ACTION_ID).execute();
     };
     async #toViewData(thread) {
-        let title = this.#cachedTitles.get(thread.id);
+        let title = this.#cachedTitles.get(thread);
         if (!title) {
             title = await computeCommentTitle(thread.anchor);
-            this.#cachedTitles.set(thread.id, title);
+            this.#cachedTitles.set(thread, title);
         }
         return {
             thread,

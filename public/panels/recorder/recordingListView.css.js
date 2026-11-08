@@ -64,7 +64,7 @@ export default `/*
   .row {
     display: flex;
     align-items: center;
-    padding-right: 5px;
+    padding-right: var(--sys-size-3);
     height: var(--sys-size-12);
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   }
@@ -93,7 +93,7 @@ export default `/*
 
   .actions .divider {
     width: var(--sys-size-1);
-    height: 17px;
+    height: var(--sys-size-8);
     background-color: var(--sys-color-divider);
     margin: 0 var(--sys-size-4);
   }

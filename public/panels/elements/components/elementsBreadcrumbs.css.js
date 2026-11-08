@@ -44,13 +44,13 @@ export default `/*
 
 .crumb {
   display: block;
-  padding: 0 7px;
-  line-height: 23px;
+  padding: 0 var(--sys-size-4);
+  line-height: var(--sys-size-10);
   white-space: nowrap;
 }
 
 .overflow {
-  padding: 0 5px;
+  padding: 0 var(--sys-size-3);
   font-weight: bold;
   display: block;
   border: none;

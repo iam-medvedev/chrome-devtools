@@ -900,7 +900,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1958,7 +1957,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -2012,7 +2010,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -2036,6 +2033,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2340,6 +2338,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -3848,10 +3851,6 @@ var lighthousePanel_css_default = `/*
   position: relative;
 }
 
-button.view-trace {
-  margin: 10px;
-}
-
 /** \\'window.opener\\' is null for windows opened from DevTools. This breaks
     the LH viewer app, so disable this feature. */
 
@@ -3871,9 +3870,10 @@ button.view-trace {
 }
 
 select.lighthouse-report {
-  min-width: 140px;
-  /* Up to 180px wide, but if window is very small ensure dropdown arrow is visible */
-  max-width: min(180px, calc(100% - 30px));
+  min-width: var(--sys-size-22);
+  /* Up to 176px (--sys-size-24) wide; reserve 28px (--sys-size-12)
+     in narrow viewports so the dropdown arrow stays visible. */
+  max-width: min(var(--sys-size-24), calc(100% - var(--sys-size-12)));
 }
 
 .lighthouse-toolbar-container {
@@ -3912,7 +3912,7 @@ select.lighthouse-report {
     }
 
     &.lh-active + .lh-tools__dropdown {
-      clip: rect(calc(-1 * var(--sys-size-5)), 204px, 270px, -10px);  /* stylelint-disable-line property-no-deprecated */
+      clip: rect(calc(-1 * var(--sys-size-5)), var(--sys-size-26), var(--sys-size-30), calc(-1 * var(--sys-size-6)));  /* stylelint-disable-line property-no-deprecated */
     }
   }
 
@@ -4613,8 +4613,8 @@ var lighthouseStartView_css_default = `/*
 }
 
 .lighthouse-start-view .lighthouse-logo {
-  width: 45px;
-  height: 45px;
+  width: var(--sys-size-15);
+  height: var(--sys-size-15);
 }
 
 .lighthouse-form-section {
@@ -4629,7 +4629,7 @@ var lighthouseStartView_css_default = `/*
 }
 
 .lighthouse-form-section-label {
-  margin: 7px 0;
+  margin: var(--sys-size-5) 0;
   font-weight: 500;
 }
 
@@ -4698,7 +4698,6 @@ var lighthouseStartView_css_default = `/*
   color: #f00; /* stylelint-disable-line plugin/use_theme_colors */
   /* See: crbug.com/1152736 for color variable migration. */
   font-weight: bold;
-  padding-left: 10px;
 }
 
 .lighthouse-warning-text {
@@ -6174,10 +6173,24 @@ var LighthousePanel = class _LighthousePanel extends UI8.Panel.Panel {
   selectReport(report) {
     this.reportSelector.selectReport(report);
   }
-  static async executeLighthouseRecording(overrides) {
+  static async executeLighthouseRecording(overrides, options) {
+    if (options?.signal?.aborted) {
+      return { status: "cancelled" };
+    }
     const panel = _LighthousePanel.instance();
     await UI8.ViewManager.ViewManager.instance().showView("lighthouse");
-    return await panel.handleCompleteRun(overrides);
+    if (options?.signal?.aborted) {
+      return { status: "cancelled" };
+    }
+    const onAbort = () => {
+      void panel.handleRunCancel();
+    };
+    options?.signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      return await panel.handleCompleteRun(overrides);
+    } finally {
+      options?.signal?.removeEventListener("abort", onAbort);
+    }
   }
 };
 var ReportRevealer = class {

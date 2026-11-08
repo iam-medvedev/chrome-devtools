@@ -595,6 +595,42 @@ describeWithEnvironment('ElementsPanel', () => {
         assert.strictEqual(panel.selectedDOMNode(), parentDiv);
         panel.detach();
     });
+    // Regression test for crbug.com/581467760.
+    it('selects and focuses a revealed DOM node when adopted style sheets are present', async () => {
+        const targetDiv = makeElementNode(8, 'DIV', { attributes: ['id', 'target'] });
+        connection.setHandler('DOM.getDocument', null);
+        connection.setSuccessHandler('DOM.getDocument', () => ({
+            root: {
+                nodeId: 1,
+                backendNodeId: 2,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                childNodeCount: 1,
+                adoptedStyleSheets: ['sheet-id'],
+                children: [makeElementNode(4, 'HTML', {
+                        parentId: 1,
+                        children: [makeElementNode(6, 'BODY', { parentId: 4, children: [targetDiv] })],
+                    })],
+            },
+        }));
+        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+        const model = target.model(SDK.DOMModel.DOMModel);
+        await model.requestDocument();
+        const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
+        const viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true });
+        sinon.stub(viewManager, 'showView').callsFake(async (_viewId, _userGesture, omitFocus) => {
+            panel.markAsRoot();
+            renderElementIntoDOM(panel);
+            if (!omitFocus) {
+                panel.focus();
+            }
+        });
+        const node = model.nodeForId(8);
+        assert.exists(node);
+        await panel.revealAndSelectNode(node, { showPanel: true, focusNode: true, highlightInOverlay: false });
+        assert.strictEqual(panel.selectedDOMNode(), node);
+        panel.detach();
+    });
     it('updates execution context flavor to match the selected DOMNode frame', async () => {
         const mainFrameId = 'main-frame';
         const childFrameId = 'child-frame';

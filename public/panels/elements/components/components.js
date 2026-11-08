@@ -573,7 +573,7 @@ var cssHintDetailsView_css_default = `/*
 
 @scope to (devtools-widget > *) {
   .hint-popup-wrapper {
-    max-width: 232px;
+    max-width: var(--sys-size-28);
   }
 
   code {
@@ -642,11 +642,16 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
 var CSSHintDetailsView = class extends UI4.Widget.Widget {
   #authoringHint;
   #view;
-  constructor(authoringHint, element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element);
-    this.#authoringHint = authoringHint;
     this.#view = view;
-    this.performUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  get authoringHint() {
+    return this.#authoringHint;
   }
   set authoringHint(authoringHint) {
     if (this.#authoringHint === authoringHint) {
@@ -684,7 +689,7 @@ var cssPropertyDocsView_css_default = `/*
 
 @scope to (devtools-widget > *) {
   .docs-popup-wrapper {
-    max-width: 420px;
+    max-width: var(--sys-size-32);
     font-size: var(--sys-typescale-body4-size);
     line-height: 1.4;
   }
@@ -1427,7 +1432,7 @@ var cssVariableValueView_css_default = `/*
 
 @scope to (devtools-widget > *) {
   .registered-property-popup-wrapper {
-    max-width: 232px;
+    max-width: var(--sys-size-28);
     font-size: var(--sys-typescale-body4-size);
     line-height: 1.4;
     word-break: break-all;
@@ -1439,7 +1444,9 @@ var cssVariableValueView_css_default = `/*
   }
 
   .divider {
-    margin: var(--sys-size-5) -7px;
+    /* Bleed across the 8px (--sys-size-5) inline padding
+     * of devtools-tooltip's .container. */
+    margin: var(--sys-size-5) calc(-1 * var(--sys-size-5));
     border: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
@@ -1827,13 +1834,13 @@ var elementsBreadcrumbs_css_default = `/*
 
 .crumb {
   display: block;
-  padding: 0 7px;
-  line-height: 23px;
+  padding: 0 var(--sys-size-4);
+  line-height: var(--sys-size-10);
   white-space: nowrap;
 }
 
 .overflow {
-  padding: 0 5px;
+  padding: 0 var(--sys-size-3);
   font-weight: bold;
   display: block;
   border: none;
@@ -2243,10 +2250,11 @@ var elementsTreeExpandButton_css_default = `/*
   align-items: center;
   box-sizing: border-box;
   width: var(--sys-size-7);
-  height: 10px;
+  /* 8px (--sys-size-5) interior height + 2 * 1px (--sys-size-1) top/bottom borders. */
+  height: calc(var(--sys-size-5) + 2 * var(--sys-size-1));
   margin: 0 var(--sys-size-2);
   border: var(--sys-size-1) solid var(--override-adorner-border-color, var(--sys-color-tonal-outline));
-  border-radius: 10px;
+  border-radius: var(--sys-shape-corner-full);
   background: var(--override-adorner-background-color, var(--sys-color-cdt-base-container));
   padding: 0;
   position: relative;
@@ -2522,7 +2530,7 @@ var stylePropertyEditor_css_default = `/*
  */
 
 .container {
-  min-width: 170px;
+  min-width: var(--sys-size-24);
 }
 
 .row {
@@ -2558,11 +2566,11 @@ var stylePropertyEditor_css_default = `/*
 }
 
 .buttons > :first-child {
-  border-radius: 3px 0 0 3px;
+  border-radius: var(--sys-shape-corner-extra-small) 0 0 var(--sys-shape-corner-extra-small);
 }
 
 .buttons > :last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--sys-shape-corner-extra-small) var(--sys-shape-corner-extra-small) 0;
 }
 
 .button {
@@ -2578,10 +2586,6 @@ var stylePropertyEditor_css_default = `/*
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
-
-.button:focus-visible {
-  outline: auto 5px -webkit-focus-ring-color;
 }
 
 .button devtools-icon {

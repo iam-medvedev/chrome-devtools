@@ -676,7 +676,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -1734,7 +1733,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -1788,7 +1786,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -1812,6 +1809,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2116,6 +2114,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -4127,7 +4130,7 @@ __export(DeprecationIssue_exports, {
 });
 import * as i18n17 from "../../core/i18n/i18n.js";
 
-// ../../front_end/generated/Deprecation.ts
+// gen/front_end/generated/Deprecation.ts
 var UIStrings9 = {
   /**
    * @description This warning occurs when the website uses Attribution Reporting.
@@ -4198,10 +4201,6 @@ var UIStrings9 = {
    */
   FencedFrame: "Fenced Frame API is deprecated and scheduled for removal.",
   /**
-   * @description A deprecation warning shown in the DevTools Issues tab. It's shown when one of the Protected Audience APIs like `navigator.joinAdInterestGroup`, `navigator.getInterestGroupAdAuctionData` or `navigator.runAdAuction` are called.
-   */
-  Fledge: "The Protected Audience API is deprecated and will be removed in a future release.",
-  /**
    * @description Warning displayed to developers when the Geolocation API is used from an insecure origin (one that isn't localhost or doesn't use HTTPS) to notify them that this use is no longer supported.
    */
   GeolocationInsecureOrigin: "`getCurrentPosition()` and `watchPosition()` no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://www.chromium.org/Home/chromium-security/deprecating-powerful-features-on-insecure-origins/ for more details.",
@@ -4225,10 +4224,6 @@ var UIStrings9 = {
    * @description This warning occurs when an insecure context (e.g., HTTP) requests a private resource (not on open internet). This is done to mitigate the potential for CSRF and other attacks.
    */
   InsecurePrivateNetworkSubresourceRequest: "The website requested a subresource from a network that it could only access because of its users' privileged network position. These requests expose non-public devices and servers to the internet, increasing the risk of a cross-site request forgery (CSRF) attack, and/or information leakage. To mitigate these risks, Chrome deprecates requests to non-public subresources when initiated from non-secure contexts, and will start blocking them.",
-  /**
-   * @description This is a deprecated warning to developers that a field in a structure has been renamed.
-   */
-  InterestGroupDailyUpdateUrl: "The `dailyUpdateUrl` field of `InterestGroups` passed to `joinAdInterestGroup()` has been renamed to `updateUrl`, to more accurately reflect its behavior.",
   /**
    * @description Warning displayed to developers that instead of calling the `Intl.v8BreakIterator` constructor, which is not a standard JavaScript API, use ECMA402 standard API Intl.Segmenter shipped in end of 2020 instead.
    */

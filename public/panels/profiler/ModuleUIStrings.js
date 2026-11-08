@@ -106,6 +106,18 @@ export const UIStrings = {
     /**
      * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
      */
+    loadingScopes: 'Loading scopes…',
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
+    loadingScopeContextVars: 'Loading scope context vars…',
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
+    loadingScopeUses: 'Loading scope uses…',
+    /**
+     * @description Text in heap snapshot loader of the Memory panel when taking a heap snapshot.
+     */
     loadingStrings: 'Loading strings…',
 };
 //# sourceMappingURL=ModuleUIStrings.js.map

@@ -60,6 +60,7 @@ const { classMap, ref } = Directives;
 const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
+    <style>${performanceMonitorStyles}</style>
     <devtools-widget ${widget(ControlPane, {
         onMetricChanged: input.onMetricChanged,
         chartsInfo: input.chartsInfo,
@@ -105,7 +106,6 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     constructor(pollIntervalMs = 500, view = DEFAULT_VIEW) {
         super({ useShadowDom: 'pure' });
         this.view = view;
-        this.registerRequiredCSS(performanceMonitorStyles);
         this.metricsBuffer = [];
         /** @constant */
         this.pixelsPerMs = 10 / 1000;

@@ -11,7 +11,6 @@ export default `/*
 @scope to (devtools-widget > *) {
   .webauthn-pane {
     overflow: auto;
-    min-width: 500px;
   }
 
   .webauthn-toolbar-container {
@@ -77,7 +76,7 @@ export default `/*
   }
 
   .webauthn-pane select {
-    width: 120px;
+    width: var(--sys-size-20);
   }
   /* Active Authenticator Section */
   .authenticator-section {
@@ -92,7 +91,7 @@ export default `/*
   .authenticator-fields {
     border: none;
     flex: 0 0 auto;
-    margin-bottom: 10px;
+    margin-bottom: var(--sys-size-5);
   }
 
   .authenticator-section-header {
@@ -141,8 +140,7 @@ export default `/*
     font: var(--sys-typescale-body5-medium);
     padding-right: var(--sys-size-6);
     text-align: left;
-    min-width: 152px;
-    line-height: 18px;
+    min-width: var(--sys-size-23);
   }
 
   ::part(action-button) {

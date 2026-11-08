@@ -1510,7 +1510,9 @@ var throttlingSettingsTab_css_default = `/*
   gap: var(--sys-size-3);
   padding: var(--sys-size-4);
   flex-shrink: 0;
-  width: 74px;
+  /* 80px (--sys-size-19) minus 6px (--sys-size-4) padding step so all
+   * 7 columns (518px) fit inside the 532px card slot without overflow. */
+  width: calc(var(--sys-size-19) - var(--sys-size-4));
 }
 
 .input {
@@ -1535,10 +1537,6 @@ var throttlingSettingsTab_css_default = `/*
   color: var(--sys-color-on-surface);
   text-align: center;
   position: relative;
-
-  & > input {
-    scroll-margin-left: 5px;
-  }
 }
 
 .conditions-list-text:last-child {
@@ -1565,11 +1563,6 @@ var throttlingSettingsTab_css_default = `/*
   background-color: var(--sys-color-divider);
   height: 30px;
   margin: 0 var(--sys-size-3);
-}
-
-.conditions-list-separator-invisible {
-  visibility: hidden;
-  height: 100% !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .settings-card-container-wrapper {
@@ -1604,19 +1597,19 @@ var throttlingSettingsTab_css_default = `/*
 
 .cpu-preset-calibrate .button-container {
   display: flex;
-  gap: 10px;
+  gap: var(--sys-size-5);
 }
 
 .cpu-preset-calibrate .text-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sys-size-5);
 }
 
 .text-with-icon {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sys-size-3);
 }
 
 .conditions-list-header {
@@ -1847,7 +1840,7 @@ var UIStrings7 = {
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/mobile_throttling/ThrottlingSettingsTab.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-function createComputePressurePromise() {
+function createComputePressurePromise(signal) {
   const result = { state: "" };
   if (typeof PressureObserver === "undefined") {
     return Promise.resolve(result);
@@ -1857,8 +1850,19 @@ function createComputePressurePromise() {
       result.state = records.at(-1).state;
       resolve(result);
     });
-    observer.observe("cpu", {
+    const disconnect = () => {
+      observer.disconnect();
+      resolve(result);
+    };
+    if (signal.aborted) {
+      disconnect();
+      return;
+    }
+    signal.addEventListener("abort", disconnect, { once: true });
+    void observer.observe("cpu", {
       sampleInterval: 1e3
+    }).catch(() => {
+      disconnect();
     });
   });
 }
@@ -1939,6 +1943,7 @@ var CPU_THROTTLING_CARD_DEFAULT_VIEW = (input, _output, target) => {
 var CPUThrottlingCard = class extends UI5.Widget.Widget {
   #setting;
   computePressurePromise;
+  computePressureAbortController;
   controller;
   state = "cta";
   warnings = [];
@@ -1951,12 +1956,17 @@ var CPUThrottlingCard = class extends UI5.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    this.computePressurePromise = createComputePressurePromise();
+    if (!this.computePressureAbortController) {
+      this.computePressureAbortController = new AbortController();
+      this.computePressurePromise = createComputePressurePromise(this.computePressureAbortController.signal);
+    }
     this.state = "cta";
     this.performUpdate();
   }
   willHide() {
     super.willHide();
+    this.computePressureAbortController?.abort();
+    this.computePressureAbortController = void 0;
     this.computePressurePromise = void 0;
     if (this.controller) {
       this.controller.abort();
@@ -2266,6 +2276,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   const customAfter = editingIndex !== null ? input.customConditions.slice(editingIndex + 1) : [];
   render4(
     html4`
+        <style>${throttlingSettingsTab_css_default}</style>
         <div class="settings-card-container-wrapper">
           <div class="settings-card-container throttling-conditions-settings">
             ${widget(CPUThrottlingCard)}
@@ -2347,7 +2358,6 @@ var ThrottlingSettingsTab = class extends UI5.Widget.VBox {
       useShadowDom: true
     });
     this.#view = view;
-    this.registerRequiredCSS(throttlingSettingsTab_css_default);
     this.customUserConditions = SDK7.NetworkManager.customUserNetworkConditionsSetting(settings);
     this.customUserConditions.addChangeListener(this.#conditionsUpdated, this);
     const customConditions = this.customUserConditions.get();

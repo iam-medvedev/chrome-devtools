@@ -8,15 +8,6 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-.report-field-name {
-  flex-basis: 152px;
-}
-
-.manifest-view-header {
-  min-width: 600px;
-  flex-shrink: 0;
-  flex-grow: 0;
-}
 
 :host {
   overflow: auto;
@@ -70,8 +61,8 @@ devtools-report .report-section {
 
 .image-wrapper,
 .image-wrapper img {
-  max-width: 200px;
-  max-height: 200px;
+  max-width: var(--sys-size-25);
+  max-height: var(--sys-size-25);
   display: block;
   object-fit: contain;
 }

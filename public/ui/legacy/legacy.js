@@ -757,6 +757,7 @@ __export(UIUtils_exports, {
   bindToAction: () => bindToAction,
   bindToSetting: () => bindToSetting,
   cloneCustomElement: () => cloneCustomElement,
+  clonedRef: () => clonedRef,
   copyFileNameLabel: () => copyFileNameLabel,
   copyLinkAddressLabel: () => copyLinkAddressLabel,
   copyTextToClipboard: () => copyTextToClipboard,
@@ -1693,6 +1694,11 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   currentDockStateSetting;
   lastDockStateSetting;
   #dockSide = void 0;
+  /**
+   * Incremented for every dock side change, so that responses from the embedder
+   * for superseded changes can be told apart from the response to the latest one.
+   */
+  #dockSideChangeId = 0;
   constructor(canDock) {
     super();
     this.#canDock = canDock;
@@ -1712,13 +1718,13 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
       this.closeButton.setVisible(false);
       return;
     }
-    this.currentDockStateSetting.addChangeListener(this.dockSideChanged, this);
     if (states.indexOf(this.currentDockStateSetting.get()) === -1) {
       this.currentDockStateSetting.set("right" /* RIGHT */);
     }
     if (states.indexOf(this.lastDockStateSetting.get()) === -1) {
-      this.currentDockStateSetting.set("bottom" /* BOTTOM */);
+      this.lastDockStateSetting.set("bottom" /* BOTTOM */);
     }
+    this.currentDockStateSetting.addChangeListener(this.dockSideChanged, this);
   }
   static instance(opts = { forceNew: null, canDock: false }) {
     const { forceNew, canDock } = opts;
@@ -1770,14 +1776,18 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
     console.timeStamp("DockController.setIsDocked");
     this.#dockSide = dockSide;
     this.currentDockStateSetting.set(dockSide);
+    const dockSideChangeId = ++this.#dockSideChangeId;
     Host3.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(
       dockSide !== "undocked" /* UNDOCKED */,
-      this.setIsDockedResponse.bind(this, eventData)
+      this.setIsDockedResponse.bind(this, eventData, dockSideChangeId)
     );
     this.closeButton.setVisible(this.#dockSide !== "undocked" /* UNDOCKED */);
     this.dispatchEventToListeners("DockSideChanged" /* DOCK_SIDE_CHANGED */, eventData);
   }
-  setIsDockedResponse(eventData) {
+  setIsDockedResponse(eventData, dockSideChangeId) {
+    if (dockSideChangeId !== this.#dockSideChangeId) {
+      return;
+    }
     this.dispatchEventToListeners("AfterDockSideChanged" /* AFTER_DOCK_SIDE_CHANGED */, eventData);
     this.announceDockLocation();
   }
@@ -2202,8 +2212,9 @@ var inspectorDrawerTabbedPane_css_default = `/*
  */
 
 .drawer-tabbed-pane.drawer-minimized-vertical {
-  min-width: 27px;
-  width: 27px;
+  /* 28px toolbar width minus 1px SplitWidget splitter border. */
+  min-width: calc(var(--sys-size-12) - var(--sys-size-1));
+  width: calc(var(--sys-size-12) - var(--sys-size-1));
 }
 
 .hide-element {
@@ -2235,7 +2246,7 @@ devtools-toolbar.collapsed-vertical-drawer-toolbar-content {
   align-items: center;
   justify-content: center;
   height: auto !important; /* stylelint-disable-line declaration-no-important */
-  width: 27px;
+  width: 100%;
   padding: 0 !important; /* stylelint-disable-line declaration-no-important */
   gap: 0;
 }
@@ -4726,7 +4737,8 @@ var tabbedPane_css_default = `/*
 
 .tabbed-pane-header {
   display: flex;
-  flex: 0 0 27px;
+  /* 28px standard toolbar height (--sys-size-12) minus 1px bottom border (--sys-size-1). */
+  flex: 0 0 calc(var(--sys-size-12) - var(--sys-size-1));
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   overflow: visible;
   width: 100%;
@@ -4768,12 +4780,13 @@ var tabbedPane_css_default = `/*
   align-content: center;
 
   &:has(.badge) {
-    width: 17px;
+    width: fit-content;
     margin-left: var(--sys-size-2);
   }
 
   &:has(.status-dot) {
-    width: 9px;
+    /* 6px (.status-dot width) + 2px (padding-left) + 1px (.status-dot margin-left) */
+    width: calc(var(--sys-size-4) + var(--sys-size-2) + var(--sys-size-1));
   }
 }
 
@@ -4820,7 +4833,7 @@ var tabbedPane_css_default = `/*
   color: var(--sys-color-on-surface-subtle);
   height: var(--sys-size-12);
   float: left;
-  padding: 0 10px;
+  padding: 0 var(--sys-size-5);
   white-space: nowrap;
   cursor: default;
   display: flex;
@@ -4979,7 +4992,8 @@ var tabbedPane_css_default = `/*
 }
 
 .tabbed-pane-tab-slider {
-  height: 3px;
+  /* 2px indicator above header + 1px border-bottom overlap (3px total). */
+  height: calc(var(--sys-size-2) + var(--sys-size-1));
   position: absolute;
   bottom: calc(-1 * var(--sys-size-1));
   background-color: var(--sys-color-primary);
@@ -6283,7 +6297,7 @@ var TabbedPaneTab = class {
     const suffixElementContainer = document.createElement("span");
     suffixElementContainer.classList.add("tabbed-pane-header-tab-suffix-element");
     if (this.suffixElement instanceof HTMLElement) {
-      const suffixElement = measuring ? this.suffixElement.cloneNode() : this.suffixElement;
+      const suffixElement = measuring ? this.suffixElement.cloneNode(true) : this.suffixElement;
       suffixElementContainer.appendChild(suffixElement);
     } else {
       render(this.suffixElement, suffixElementContainer);
@@ -7251,7 +7265,7 @@ found in the LICENSE file. */
   align-items: center;
   background-color: var(--sys-color-surface2);
   height: var(--sys-size-10);
-  padding: 0 5px;
+  padding: 0 var(--sys-size-3);
   white-space: nowrap;
   overflow: hidden;
   position: relative;
@@ -7264,7 +7278,8 @@ found in the LICENSE file. */
 }
 
 .expandable-view-title devtools-toolbar {
-  margin-top: -3px;
+  /* Center the 26px (--toolbar-height) toolbar in the 22px (--sys-size-10) header: (22px - 26px) / 2 = -2px. */
+  margin-top: calc(-1 * var(--sys-size-2));
 }
 
 .expandable-view-title > devtools-toolbar {
@@ -9783,6 +9798,11 @@ var SoftContextMenu = class _SoftContextMenu {
     }
     this.document = document2;
     this.glassPane = new GlassPane();
+    this.glassPane.setOnHideCallback(() => {
+      if (this.glassPane) {
+        this.discard();
+      }
+    });
     this.glassPane.setPointerEventsBehavior(
       this.parentMenu ? "PierceGlassPane" /* PIERCE_GLASS_PANE */ : "BlockedByGlassPane" /* BLOCKED_BY_GLASS_PANE */
     );
@@ -9858,8 +9878,9 @@ var SoftContextMenu = class _SoftContextMenu {
       this.focusRestorer.restore();
     }
     if (this.glassPane) {
-      this.glassPane.hide();
+      const glassPane = this.glassPane;
       delete this.glassPane;
+      glassPane.hide();
       if (this.hideOnUserMouseDownUnlessInMenu) {
         if (this.document) {
           this.document.body.removeEventListener("mousedown", this.hideOnUserMouseDownUnlessInMenu, false);
@@ -10887,6 +10908,9 @@ var ContextMenu = class _ContextMenu extends SubMenu {
    * Discards (closes) the soft context menu if it's currently shown.
    */
   discard() {
+    if (_ContextMenu.pendingMenu === this) {
+      _ContextMenu.pendingMenu = null;
+    }
     if (this.softMenu) {
       this.softMenu.discard();
     }
@@ -12010,7 +12034,8 @@ var suggestBox_css_default = `/*
   flex: auto;
   background-color: var(--sys-color-cdt-base-container);
   pointer-events: auto;
-  margin-left: -3px;
+  /* Compensate for .suggest-box-content-item border and left padding so suggestion text aligns with the anchor word. */
+  margin-left: calc(-2 * var(--sys-size-1));
   box-shadow: var(--drop-shadow);
   overflow-x: hidden;
 }
@@ -12043,7 +12068,8 @@ var suggestBox_css_default = `/*
   flex: auto;
   text-align: right;
   color: var(--sys-color-token-subtle);
-  margin-right: 3px;
+  /* 4px total right inset (--sys-size-3) minus 1px transparent item border (--sys-size-1). */
+  margin-right: calc(var(--sys-size-3) - var(--sys-size-1));
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -13455,7 +13481,8 @@ var toolbar_css_default = `/*
   align-items: center;
   z-index: 0;
 
-  --toolbar-height: 26px;
+  /* 28px outer toolbar track (--sys-size-12) minus 2px vertical border/inset allowance (--sys-size-2). */
+  --toolbar-height: calc(var(--sys-size-12) - var(--sys-size-2));
 }
 
 :host([floating]) {
@@ -14996,9 +15023,9 @@ input {
 
     &:not(:disabled):focus-visible::before {
       content: '';
-      height: 15px;
-      width: 15px;
-      border-radius: 5px;
+      height: var(--sys-size-7);
+      width: var(--sys-size-7);
+      border-radius: var(--sys-shape-corner-extra-small);
       position: absolute;
       border: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
     }
@@ -15026,7 +15053,7 @@ input::placeholder {
 .harmony-input:not([type]),
 .harmony-input[type='number'],
 .harmony-input[type='text'] {
-  padding: 3px var(--sys-size-4);
+  padding: var(--sys-size-2) var(--sys-size-4);
   height: var(--sys-size-11);
   border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
   border-radius: var(--sys-shape-corner-extra-small);
@@ -15047,12 +15074,12 @@ input::placeholder {
 
 /* Radio inputs */
 input[type='radio'] {
-  height: 17px;
-  width: 17px;
-  min-width: 17px;
+  height: var(--sys-size-8);
+  width: var(--sys-size-8);
+  min-width: var(--sys-size-8);
   border-radius: var(--sys-shape-corner-small);
   vertical-align: sub;
-  margin: 0 5px 5px 0;
+  margin: 0 var(--sys-size-4) var(--sys-size-4) 0;
   accent-color: var(--sys-color-primary-bright);
   color: var(--sys-color-on-primary);
 
@@ -15092,7 +15119,8 @@ input[type='range']::-webkit-slider-thumb,
   border: 0;
   width: var(--sys-size-6);
   height: var(--sys-size-6);
-  margin-top: -5px;
+  /* Center 12px (--sys-size-6) thumb over 2px (--sys-size-2) track: (2px - 12px) / 2 = -5px. */
+  margin-top: calc((var(--sys-size-2) - var(--sys-size-6)) / 2);
   border-radius: var(--sys-shape-corner-full);
   background-color: var(--sys-color-primary);
 }
@@ -15334,7 +15362,7 @@ dt-icon-label {
   background-color: var(--sys-color-tonal-container);
   color: var(--sys-color-on-tonal-container);
   font-weight: var(--ref-typeface-weight-bold);
-  font-size: 9px;
+  font-size: var(--sys-typescale-label-size);
   text-align: center;
 }
 
@@ -15347,13 +15375,13 @@ dt-icon-label {
   background-color: var(--sys-color-cdt-base-container);
   color: var(--sys-color-on-surface);
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 .undisplayable-text,
 .expandable-inline-button {
   border: none;
-  padding: var(--sys-size-1) 3px;
+  padding: var(--sys-size-1) var(--sys-size-3);
   margin: 0 var(--sys-size-2);
   font-size: var(--sys-typescale-body5-size);
   font-family: inherit;
@@ -15400,7 +15428,9 @@ button.link:focus-visible {
 .data-grid-data-grid-node button.link:focus-visible {
   border-radius: var(--sys-shape-corner-extra-small);
   padding: 0;
-  margin-top: 3px;
+  /* 4px focus ring clearance (--sys-size-3: 2px outline + 2px outline-offset)
+     minus 1px data-grid cell top padding (--sys-size-1) = 3px. */
+  margin-top: calc(var(--sys-size-3) - var(--sys-size-1));
 }
 
 @media (forced-colors: active) {
@@ -15420,23 +15450,6 @@ button.link:focus-visible {
   .harmony-input[type='text']:focus {
     border: var(--sys-size-1) solid Highlight;
   }
-}
-/* search input with customized styling */
-input.custom-search-input::-webkit-search-cancel-button {
-  appearance: none;
-  width: var(--sys-size-8);
-  height: 15px;
-  margin-right: 0;
-  opacity: 70%;
-  mask-image: var(--image-file-cross-circle-filled);
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: 99%;
-  background-color: var(--icon-default);
-}
-
-input.custom-search-input::-webkit-search-cancel-button:hover {
-  opacity: 99%;
 }
 /* loading spinner */
 .spinner::before {
@@ -15473,7 +15486,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
 }
 
 .adorner-container devtools-adorner {
-  margin-left: 3px;
+  margin-left: var(--sys-size-2);
 }
 
 :host-context(.theme-with-dark-background) devtools-adorner {
@@ -15680,34 +15693,8 @@ devtools-toolbar {
     opacity: 50%;
   }
 
-  .toolbar-button.copied-to-clipboard::after {
-    content: attr(data-content);
-    position: fixed;
-    margin-top: calc(2 * var(--toolbar-height));
-    padding: 3px 5px;
-    color: var(--sys-color-token-subtle);
-    background: var(--sys-color-cdt-base-container);
-    animation: 2s fade-out;
-    font-weight: normal;
-    border: var(--sys-size-1) solid var(--sys-color-divider);
-    border-radius: 3px;
-  }
-
   .toolbar-button.toolbar-state-on .toolbar-glyph {
     color: var(--icon-toggled);
-  }
-
-  .toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
-    content: '';
-    position: absolute;
-    bottom: var(--sys-size-2);
-    background-color: var(--sys-color-primary-bright);
-    width: 4.5px;
-    height: 4.5px;
-    border: var(--sys-size-2) solid
-      var(--override-toolbar-background-color, --sys-color-cdt-base-container);
-    border-radius: var(--sys-shape-corner-full);
-    right: 0;
   }
 
   .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
@@ -15776,12 +15763,12 @@ devtools-toolbar {
   .toolbar-input {
     box-shadow: inset 0 0 0 var(--sys-size-2) transparent;
     box-sizing: border-box;
-    width: 120px;
+    width: var(--sys-size-20);
     height: var(--sys-size-9);
     padding: 0 var(--sys-size-2) 0 var(--sys-size-5);
-    margin: var(--sys-size-1) 3px;
+    margin: var(--sys-size-1) var(--sys-size-2);
     border-radius: var(--sys-shape-corner-full);
-    min-width: 35px;
+    min-width: var(--sys-size-14);
     position: relative;
 
     &.focused {
@@ -15877,10 +15864,6 @@ devtools-toolbar {
     & > .title {
       color: var(--sys-color-on-tonal-container);
     }
-  }
-
-  devtools-icon.leading-issue-icon {
-    margin: 0 7px;
   }
 
   @media (forced-colors: active) {
@@ -17891,12 +17874,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   }
   static cloneNode(node) {
     const clone = node.cloneNode(false);
-    let cloneSet = _HTMLElementWithLightDOMTemplate.#originalToClones.get(node);
-    if (!cloneSet) {
-      cloneSet = /* @__PURE__ */ new Set();
-      _HTMLElementWithLightDOMTemplate.#originalToClones.set(node, cloneSet);
-    }
-    cloneSet.add(new WeakRef(clone));
+    _HTMLElementWithLightDOMTemplate.registerClone(node, clone);
     for (const child of node.childNodes) {
       clone.appendChild(_HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
@@ -17908,6 +17886,23 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       }
     }
     return clone;
+  }
+  /**
+   * Declares `clone` as a rendered counterpart of `original`. `cloneNode` calls this for each
+   * node it clones. Hosts call it for elements they render by other means, e.g. the tree calls
+   * it for the list item that it creates for a `<li>` config element. Resolves `clonedRef`
+   * directives bound to `original`.
+   */
+  static registerClone(original, clone) {
+    let cloneSet = _HTMLElementWithLightDOMTemplate.#originalToClones.get(original);
+    if (!cloneSet) {
+      cloneSet = /* @__PURE__ */ new Set();
+      _HTMLElementWithLightDOMTemplate.#originalToClones.set(original, cloneSet);
+    }
+    cloneSet.add(new WeakRef(clone));
+    if (original instanceof Element && clone instanceof Element) {
+      ClonedRefDirective.notifyCloned(original, clone);
+    }
   }
   static patchLitTemplate(template) {
     const interceptingWrapper = Lit4.Directive.directive(Lit4.CustomDirectives.InterceptBindingDirective);
@@ -17940,9 +17935,11 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
         return value;
       }
       if (Lit4.isLitDirective(value)) {
-        const directiveValue = value;
-        if (directiveValue["_$litDirective$"] === WidgetDirective) {
-          directiveValue["_$litDirective$"] = UIUtilsWidgetDirective;
+        if (value["_$litDirective$"] === ClonedRefDirective) {
+          return value;
+        }
+        if (value["_$litDirective$"] === WidgetDirective) {
+          value["_$litDirective$"] = UIUtilsWidgetDirective;
         }
         for (let i = 0; i < value.values.length; i++) {
           const subvalue = value.values[i];
@@ -18038,6 +18035,104 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     return targetElement;
   }
 };
+var ClonedRefDirective = class _ClonedRefDirective extends Lit4.AsyncDirective.AsyncDirective {
+  // The template elements that have a connected directive. `registerClone` notifies only those.
+  static #directivesByElement = /* @__PURE__ */ new WeakMap();
+  #templateElement;
+  #ref;
+  #lastElement;
+  constructor(partInfo) {
+    super(partInfo);
+    if (partInfo.type !== Lit4.AsyncDirective.PartType.ELEMENT) {
+      throw new Error("The `clonedRef` directive must be bound to an element.");
+    }
+  }
+  /** Called by `HTMLElementWithLightDOMTemplate.registerClone`. Returns at once if no directive is bound. */
+  static notifyCloned(templateElement, clone) {
+    const directives = _ClonedRefDirective.#directivesByElement.get(templateElement);
+    if (!directives) {
+      return;
+    }
+    for (const directive of directives) {
+      directive.#setElement(clone);
+    }
+  }
+  render(_ref) {
+    return Lit4.nothing;
+  }
+  update(part, [ref]) {
+    if (this.#templateElement !== part.element) {
+      this.#untrackTemplateElement();
+      this.#templateElement = part.element;
+      this.#trackTemplateElement();
+    }
+    if (ref !== this.#ref) {
+      this.#setElement(void 0);
+      this.#ref = ref;
+    }
+    if (this.#lastElement?.deref() === void 0) {
+      this.#setElement(this.#currentClone());
+    }
+    return Lit4.nothing;
+  }
+  /** The newest live clone of the template element, for a directive bound after the clone was made. */
+  #currentClone() {
+    if (!this.#templateElement) {
+      return void 0;
+    }
+    const clones = HTMLElementWithLightDOMTemplate.getClones(this.#templateElement);
+    for (let i = clones.length - 1; i >= 0; --i) {
+      const clone = clones[i];
+      if (clone instanceof Element) {
+        return clone;
+      }
+    }
+    return void 0;
+  }
+  #setElement(element) {
+    const ref = this.#ref;
+    if (!ref) {
+      return;
+    }
+    const previous = this.#lastElement?.deref();
+    this.#lastElement = element ? new WeakRef(element) : void 0;
+    if (typeof ref === "function") {
+      if (previous === element) {
+        return;
+      }
+      if (previous !== void 0) {
+        ref(void 0);
+      }
+      if (element !== void 0) {
+        ref(element);
+      }
+    } else if (ref.value !== element) {
+      const mutableRef = ref;
+      mutableRef.value = element;
+    }
+  }
+  #trackTemplateElement() {
+    if (!this.#templateElement) {
+      return;
+    }
+    const directives = _ClonedRefDirective.#directivesByElement;
+    Platform15.MapUtilities.getWithDefault(directives, this.#templateElement, () => /* @__PURE__ */ new Set()).add(this);
+  }
+  #untrackTemplateElement() {
+    if (this.#templateElement) {
+      _ClonedRefDirective.#directivesByElement.get(this.#templateElement)?.delete(this);
+    }
+  }
+  disconnected() {
+    this.#untrackTemplateElement();
+    this.#setElement(void 0);
+  }
+  reconnected() {
+    this.#trackTemplateElement();
+    this.#setElement(this.#currentClone());
+  }
+};
+var clonedRef = Lit4.AsyncDirective.directive(ClonedRefDirective);
 function copyTextToClipboard(text, alert) {
   Host9.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
   if (alert) {
@@ -18283,9 +18378,6 @@ var GlassPane = class _GlassPane {
       /* overrideHideOnDetach= */
       true
     );
-    if (this.#onHideCallback) {
-      this.#onHideCallback();
-    }
   }
   #onDetach() {
     panes.delete(this);
@@ -18299,6 +18391,9 @@ var GlassPane = class _GlassPane {
       this.onMouseDownBound,
       true
     );
+    if (this.#onHideCallback) {
+      this.#onHideCallback();
+    }
   }
   onMouseDown(event) {
     if (!this.onClickOutsideCallback) {
@@ -19152,7 +19247,7 @@ var dropTarget_css_default = `/*
 
 .drop-target-message {
   flex: auto;
-  font-size: 30px;
+  font-size: var(--sys-typescale-headline1-size);
   color: var(--sys-color-token-subtle);
   display: flex;
   justify-content: center;
@@ -19394,13 +19489,14 @@ var filter_css_default = `/*
   display: inline-block;
   flex: none;
   margin: auto var(--sys-size-2);
-  padding: 3px var(--sys-size-4);
+  /* 16px line-height (--sys-typescale-body5-medium) + 2*2px vertical padding (--sys-size-2)
+   * = 20px (--sys-size-9) pill inside 24px (--sys-size-11) .filter-bitset-filter bar. */
+  padding: var(--sys-size-2) var(--sys-size-4);
   background: transparent;
   border-radius: var(--sys-size-4);
   overflow: hidden;
   cursor: pointer;
-  font-weight: 500;
-  font-size: var(--sys-typescale-body5-size);
+  font: var(--sys-typescale-body5-medium);
 }
 
 .filter-bitset-filter span:focus-visible {
@@ -20283,7 +20379,7 @@ var listWidget_css_default = `/*
 
 .list-item {
   flex: none;
-  min-height: 30px;
+  min-height: var(--sys-size-12);
   display: flex;
   align-items: center;
   position: relative;
@@ -20375,24 +20471,6 @@ var listWidget_css_default = `/*
 
 .editor-content input.error-input {
   background-color: var(--sys-color-cdt-base-container);
-}
-
-.text-prompt-container {
-  padding: 3px var(--sys-size-4);
-  height: var(--sys-size-11);
-  border: none;
-  box-shadow: var(--legacy-focus-ring-inactive-shadow);
-  border-radius: var(--sys-size-2);
-  width: 100%;
-  background-color: var(--sys-color-cdt-base-container);
-
-  &:focus {
-    border: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
-  }
-
-  & .text-prompt {
-    width: 100%;
-  }
 }
 
 @media (forced-colors: active) {
@@ -21205,7 +21283,6 @@ var progressIndicator_css_default = `/*
 .progress-indicator-shadow-stop-button {
   background-color: var(--sys-color-error-bright);
   border: 0;
-  width: 10px;
   height: var(--sys-size-6);
   border-radius: var(--sys-size-2);
 }
@@ -21227,7 +21304,7 @@ var progressIndicator_css_default = `/*
 .progress-indicator-shadow-container progress {
   flex: auto;
   margin: 0 var(--sys-size-2);
-  width: 100px;
+  width: var(--sys-size-19);
 }
 
 /*# sourceURL=${import.meta.resolve("./progressIndicator.css")} */`;
@@ -21462,7 +21539,7 @@ var reportView_css_default = `/*
 
 .report-header devtools-toolbar {
   margin-bottom: calc(-1 * var(--sys-size-5));
-  margin-top: 5px;
+  margin-top: var(--sys-size-3);
   margin-left: calc(-1 * var(--sys-size-5));
 }
 
@@ -21481,7 +21558,10 @@ var reportView_css_default = `/*
 
 .report-section {
   display: flex;
-  padding: var(--sys-size-7) var(--sys-size-9) 11px var(--sys-size-9);
+  /* 12px bottom padding (--sys-size-6) minus 1px border (--sys-size-1) = 11px. */
+  padding:
+    var(--sys-size-7) var(--sys-size-9)
+    calc(var(--sys-size-6) - var(--sys-size-1)) var(--sys-size-9);
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   flex-direction: column;
 }
@@ -21844,7 +21924,8 @@ var searchableView_css_default = `/*
  */
 
 .search-bar {
-  flex: 0 0 33px;
+  /* 32px search toolbar (28px row + 2x2px margin) plus 1px top border. */
+  flex: 0 0 calc(var(--sys-size-13) + var(--sys-size-1));
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
 
   devtools-icon[name="search"] {
@@ -21956,7 +22037,7 @@ var searchableView_css_default = `/*
     grid-auto-rows: var(--sys-size-12);
     flex-grow: 1;
     align-items: center;
-    min-width: 150px;
+    min-width: var(--sys-size-23);
   }
 
   .first-row-buttons {
@@ -23394,7 +23475,8 @@ var treeoutline_css_default = `/*
 .tree-outline li .selection {
   display: none;
   z-index: -1;
-  margin-left: -10000px;
+  /* Extend selection background leftward across any tree nesting depth. */
+  margin-left: -100vw;
 }
 
 .tree-outline:not(.hide-selection-when-blurred, .elements-tree-outline) li.selected {
@@ -23420,10 +23502,10 @@ var treeoutline_css_default = `/*
 
 .tree-outline:not(.hide-selection-when-blurred) li.hovered:not(.selected) .selection {
   display: block;
-  left: 3px;
-  right: 3px;
+  left: var(--sys-size-2);
+  right: var(--sys-size-2);
   background-color: var(--sys-color-state-hover-on-subtle);
-  border-radius: 5px;
+  border-radius: var(--sys-shape-corner-extra-small);
 }
 
 .tree-outline:not(.hide-selection-when-blurred) li.in-clipboard .highlight {
@@ -23530,7 +23612,7 @@ ol.tree-outline:not(.hide-selection-when-blurred, .elements-tree-outline) li.sel
 
 .tree-outline-disclosure:not(.tree-outline-disclosure-hide-overflow) .tree-outline.hide-selection-when-blurred .selected:focus-visible {
   width: fit-content;
-  padding-right: 3px;
+  padding-right: var(--sys-size-3);
 }
 
 /* Navigation tree variant */
@@ -25259,7 +25341,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     if (node === treeNode) {
       treeElement.updateAttributes();
       if (attributeName === "selected" && hasBooleanAttribute(treeNode, "selected")) {
-        treeElement.revealAndSelect(true);
+        treeElement.revealAndSelect(!this.hasFocus());
       }
       return;
     }
@@ -25316,7 +25398,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
           parent.treeElement.updateExpansionFromAttribute();
         }
         if (hasBooleanAttribute(node, "selected")) {
-          treeElement.revealAndSelect(true);
+          treeElement.revealAndSelect(!this.hasFocus());
         }
         if (parent.expanded) {
           parent.treeElement.expand();

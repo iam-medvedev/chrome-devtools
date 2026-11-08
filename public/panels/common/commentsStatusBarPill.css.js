@@ -10,10 +10,27 @@ export default `/*
  */
 
 @scope to (devtools-widget > *) {
-  .pill-container {
-    display: flex;
+  .comments-counter-badge {
+    display: inline-flex;
     align-items: center;
-    gap: var(--sys-size-3);
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--sys-size-7);
+    min-width: var(--sys-size-8);
+    width: fit-content;
+    padding: 0 var(--sys-size-3);
+    border-radius: var(--sys-shape-corner-full);
+    background-color: var(--sys-color-primary);
+    color: var(--sys-color-on-primary);
+    font-size: var(--sys-typescale-body5-size);
+    font-weight: var(--ref-typeface-weight-bold);
+    line-height: var(--sys-size-7);
+  }
+
+  .devtools-pill:disabled .comments-counter-badge,
+  .devtools-pill[aria-disabled="true"] .comments-counter-badge {
+    background-color: var(--sys-color-state-disabled-container);
+    color: var(--sys-color-state-disabled);
   }
 }
 

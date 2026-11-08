@@ -63,7 +63,7 @@ var performanceMonitor_css_default = `/*
 
 .perfmon-chart-suspend-overlay {
   display: flex;
-  font-size: 26px;
+  font-size: var(--sys-typescale-headline1-size);
   align-items: center;
   justify-content: center;
 }
@@ -95,12 +95,8 @@ var performanceMonitor_css_default = `/*
   width: 210px;
 }
 
-.perfmon-indicator span {
-  flex: 0 0 135px;
-}
-
 .perfmon-indicator-value {
-  flex: 0 0 55px;
+  flex: 0 0 var(--sys-size-17);
   text-align: right;
   overflow: visible;
   align-self: center;
@@ -163,6 +159,7 @@ var { classMap, ref } = Directives;
 var DEFAULT_VIEW = (input, output, target) => {
   render(
     html`
+    <style>${performanceMonitor_css_default}</style>
     <devtools-widget ${widget(ControlPane, {
       onMetricChanged: input.onMetricChanged,
       chartsInfo: input.chartsInfo,
@@ -210,7 +207,6 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
   constructor(pollIntervalMs = 500, view = DEFAULT_VIEW) {
     super({ useShadowDom: "pure" });
     this.view = view;
-    this.registerRequiredCSS(performanceMonitor_css_default);
     this.metricsBuffer = [];
     this.pixelsPerMs = 10 / 1e3;
     this.pollIntervalMs = pollIntervalMs;

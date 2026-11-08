@@ -22,8 +22,16 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 156,
+    version: 158,
     header: 'New in DevTools (November 2026)',
+    announcement: {
+        title: 'Modern Web Guidance is now stable!',
+        description: 'Upgrade your coding agents with expert-vetted web development best practices.',
+        link: {
+            url: 'https://goo.gle/mwg-stable',
+            text: 'Read the announcement',
+        },
+    },
     markdownLinks: [
         {
             key: 'mcp',

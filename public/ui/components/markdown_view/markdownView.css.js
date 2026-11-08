@@ -39,7 +39,7 @@ devtools-code-block.animating {
 }
 
 .message {
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   font-size: var(--sys-typescale-body4-size);
   color: var(--sys-color-on-surface);
   user-select: text;
@@ -60,10 +60,6 @@ devtools-code-block.animating {
 .message ul {
   list-style-type: none;
   padding-inline-start: var(--sys-size-8);
-}
-
-.message ul ul {
-  padding-inline-start: 19px;
 }
 
 .message li {
@@ -105,7 +101,7 @@ devtools-code-block.animating {
   /* stylelint-disable-next-line plugin/use_theme_colors */
   background-color: var(--code-background-color, var(--sys-color-surface4));
   border-radius: var(--sys-size-2);
-  padding: var(--sys-size-1) 3px;
+  padding: var(--sys-size-1) var(--sys-size-3);
 }
 
 devtools-code-block {
@@ -120,13 +116,13 @@ devtools-code-block {
   outline-offset: var(--sys-size-2);
   border: none;
   padding: 0;
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   font-family: var(--default-font-family);
 }
 
 h1.insight, h2.insight, h3.insight, h4.insight, h5.insight, h6.insight {
   font: var(--sys-typescale-body4-bold);
-  margin: var(--sys-size-1) 0 10px;
+  margin: var(--sys-size-1) 0 var(--sys-size-5);
 }
 
 .message table {

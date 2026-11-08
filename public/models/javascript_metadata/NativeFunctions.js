@@ -6666,7 +6666,7 @@ export const NativeFunctions = [
     },
     {
         name: "WebTransportError",
-        signatures: [["?init"]]
+        signatures: [["?message", "?options"], ["init", "?legacyIgnored"]]
     },
     {
         name: "CloseEvent",
@@ -8113,12 +8113,32 @@ export const NativeFunctions = [
         signatures: [["items"]]
     },
     {
+        name: "shapeText",
+        signatures: [["text"]]
+    },
+    {
         name: "fillTextCluster",
         signatures: [["textCluster", "x", "y", "?options"]]
     },
     {
         name: "strokeTextCluster",
         signatures: [["textCluster", "x", "y", "?options"]]
+    },
+    {
+        name: "fillGlyphRun",
+        signatures: [["glyphRun", "x", "y"]]
+    },
+    {
+        name: "strokeGlyphRun",
+        signatures: [["glyphRun", "x", "y"]]
+    },
+    {
+        name: "fillGlyphRuns",
+        signatures: [["glyphRuns", "x", "y"]]
+    },
+    {
+        name: "strokeGlyphRuns",
+        signatures: [["glyphRuns", "x", "y"]]
     },
     {
         name: "beginLayer",
@@ -8291,10 +8311,6 @@ export const NativeFunctions = [
     {
         name: "embed",
         signatures: [["input", "?options"]]
-    },
-    {
-        name: "queryFeatureSupport",
-        signatures: [["feature"]]
     },
     {
         name: "setPrivateToken",
@@ -8727,6 +8743,26 @@ export const NativeFunctions = [
     {
         name: "ImageData",
         signatures: [["sw", "sh", "?settings"], ["data", "sw", "?sh", "?settings"]]
+    },
+    {
+        name: "glyphClusters",
+        signatures: [["?start", "?end"]]
+    },
+    {
+        name: "selectionRects",
+        signatures: [["start", "end"]]
+    },
+    {
+        name: "actualBoundingBox",
+        signatures: [["start", "end"]]
+    },
+    {
+        name: "advanceToPosition",
+        signatures: [["advance"]]
+    },
+    {
+        name: "positionToAdvance",
+        signatures: [["position"]]
     },
     {
         name: "getIndexFromOffset",

@@ -32,7 +32,7 @@ export default `/*
 .codeblock .editor-wrapper {
   color: var(--sys-color-on-surface);
   background: var(--code-block-background-color, var(--sys-color-surface2)); /* stylelint-disable-line plugin/use_theme_colors */
-  padding: 10px 5px 0;
+  padding: var(--sys-size-5) var(--sys-size-4) 0;
   border-bottom-left-radius: var(--sys-shape-corner-extra-small);
   border-bottom-right-radius: var(--sys-shape-corner-extra-small);
 }
@@ -48,7 +48,7 @@ export default `/*
 .codeblock .editor-wrapper .code {
   max-height: var(--code-block-max-code-height);
   overflow: auto;
-  padding-bottom: 10px;
+  padding-bottom: var(--sys-size-5);
 }
 
 .codeblock.no-toolbar .editor-wrapper {
@@ -57,8 +57,8 @@ export default `/*
 
 .codeblock.no-toolbar .copy-button-container {
   position: absolute;
-  top: 5px;
-  right: 5px;
+  top: var(--sys-size-4);
+  right: var(--sys-size-4);
   z-index: 1;
 }
 

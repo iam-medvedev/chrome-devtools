@@ -1481,7 +1481,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -2539,7 +2538,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -2593,7 +2591,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -2617,6 +2614,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2921,6 +2919,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -4329,7 +4332,7 @@ devtools-report-value {
 
 .gray-text {
   color: var(--sys-color-token-subtle);
-  margin: 0 0 5px var(--sys-size-17);
+  margin: 0 0 var(--sys-size-3) var(--sys-size-17);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -4349,21 +4352,13 @@ devtools-report-value {
 }
 
 .circled-exclamation-icon {
-  margin-right: 10px;
+  margin-right: var(--sys-size-5);
   flex-shrink: 0;
 }
 
 .status {
   margin-right: 11px;
   flex-shrink: 0;
-}
-
-.report-line {
-  grid-column-start: span 2;
-  display: flex;
-  align-items: center;
-  margin: 0 30px;
-  line-height: 26px;
 }
 
 .report-key {
@@ -4394,10 +4389,6 @@ devtools-report-value:has(devtools-tree-outline) {
 
 .cache-status-section:focus-visible {
  outline: 0;
-}
-
-.tree-outline li .selection {
-  margin-left: -5px;
 }
 
 @media (forced-colors: active) {
@@ -5333,7 +5324,7 @@ var endpointsGrid_css_default = `/*
   }
 
   .endpoints-header {
-    font-size: 15px;
+    font-size: var(--sys-typescale-headline5-size);
     background-color: var(--sys-color-surface2);
     padding: var(--sys-size-1) var(--sys-size-3);
     flex-shrink: 0;
@@ -5473,7 +5464,7 @@ var permissionsPolicySection_css_default = `/*
   }
 
   .feature-name {
-    width: 135px;
+    width: var(--sys-size-22);
   }
 
   .allowed-icon {
@@ -5980,7 +5971,7 @@ var reportsGrid_css_default = `/*
   }
 
   .reporting-header {
-    font-size: 15px;
+    font-size: var(--sys-typescale-headline5-size);
     background-color: var(--sys-color-surface2);
     padding: var(--sys-size-1) var(--sys-size-3);
     flex-shrink: 0;
@@ -6124,14 +6115,14 @@ var serviceWorkerRouterView_css_default = `/*
 :host {
   display: block;
   white-space: normal;
-  max-width: 400px;
+  max-width: var(--sys-size-32);
 }
 
 .router-rules {
   border: var(--sys-size-1) solid var(--sys-color-divider);
   border-spacing: 0;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: var(--sys-size-6);
+  padding-right: var(--sys-size-6);
   line-height: initial;
   margin-top: 0;
   padding-bottom: var(--sys-size-6);
@@ -6151,7 +6142,7 @@ var serviceWorkerRouterView_css_default = `/*
 .item {
   display: flex;
   flex-direction: column;
-  padding-left: 10px;
+  padding-left: var(--sys-size-5);
 }
 
 .condition,
@@ -6574,7 +6565,7 @@ var trustTokensView_css_default = `/*
 }
 
 .heading {
-  font-size: 15px;
+  font-size: var(--sys-typescale-headline5-size);
 }
 
 devtools-data-grid {

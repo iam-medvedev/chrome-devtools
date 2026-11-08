@@ -77,7 +77,7 @@ export default `/*
   left: var(--sys-size-3);
   display: block;
   transform: translateX(-50%);
-  top: 18px;
+  top: var(--sys-size-8);
   height: 100%;
   z-index: 1; /* We want this to be below of \\'.overlay\\' for stopped case */
 }

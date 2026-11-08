@@ -306,6 +306,24 @@ describe('ExtensionScope', () => {
             assert.strictEqual(selector, '.main > * > #header');
         });
     });
+    describe('getSelectorForElement', () => {
+        it('prefers selector from matched styles when present', async () => {
+            const node = createNode();
+            const connection = new MockCDPConnection();
+            const matchedStyles = await getMatchedStyles({
+                node,
+                connection,
+                matchedPayload: [ruleMatch('.matched-rule', MOCK_STYLE)],
+            });
+            assert.strictEqual(AiAssistance.ExtensionScope.ExtensionScope.getSelectorForElement(node, matchedStyles), '.matched-rule');
+        });
+        it('falls back to node selector when matched styles are absent', () => {
+            const node = createNode({
+                getAttribute: attribute => attribute === 'class' ? 'fallback-class' : undefined,
+            });
+            assert.strictEqual(AiAssistance.ExtensionScope.ExtensionScope.getSelectorForElement(node, null), '.fallback-class');
+        });
+    });
     describe('install', () => {
         it('creates an isolated world with CSP', async () => {
             const universe = new TestUniverse();

@@ -507,6 +507,7 @@ export class AISettingsTab extends UI.Widget.VBox {
     }
     #removeAllowedTool(name) {
         this.#alwaysAllowedTools.remove(name);
+        void VisualLogging.logFunctionCall('ai-permission-revoked', Platform.StringUtilities.toKebabCase(name));
     }
     /**
      * Called by `SettingsScreen.Revealer` after this tab is shown via `Common.Revealer.reveal(setting)`.

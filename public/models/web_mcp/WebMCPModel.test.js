@@ -12,6 +12,7 @@ import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as WebMCP from './web_mcp.js';
 function createTool(name, frameId) {
     return {
+        toolId: `${frameId}-${name}`,
         name,
         description: `Description for ${name}`,
         inputSchema: { type: 'object' },
@@ -118,6 +119,7 @@ describe('WebMCPModel', () => {
     });
     it('extracts and sorts annotation flags correctly', () => {
         const protocolTool = {
+            toolId: 'test-tool-id',
             name: 'test-tool',
             description: 'description',
             inputSchema: {},

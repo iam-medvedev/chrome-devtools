@@ -135,7 +135,7 @@ describe('LighthouseContext', function () {
         assert.include(details, 'Audits for Accessibility');
         assert.include(details, 'Low contrast');
         assert.notInclude(details, 'Audits for Performance');
-        assert.notInclude(details, 'First Contentful Paint');
+        assert.notInclude(details, 'Keep FCP fast.');
     });
     it('returns critical error payload when all category scores are null', async () => {
         const context = new AiAssistance.LighthouseContext.LighthouseContext(failedReport);

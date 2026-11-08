@@ -151,7 +151,7 @@ circle.animation-keyframe-point:active {
 
 .animation-timeline-current-time {
   flex: 0 0 auto;
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .animation-grid-header {
@@ -195,7 +195,7 @@ circle.animation-keyframe-point:active {
 .animation-scrubber {
   opacity: 100%;
   position: absolute;
-  left: 10px;
+  left: var(--sys-size-5);
   height: 100%;
   width: 100%;
   top: var(--sys-size-12);
@@ -204,11 +204,13 @@ circle.animation-keyframe-point:active {
 }
 
 .animation-scrubber-line {
-  width: 11px;
+  /* 11px width: 2 * 6px left inset (--sys-size-4) - 1px line (--sys-size-1). */
+  width: calc(2 * var(--sys-size-4) - var(--sys-size-1));
+  /* 6px inset (--sys-size-4) - 1px border (--sys-size-1) aligns the 1px stem. */
   background: linear-gradient(
     to right,
-    transparent 5px,
-    var(--sys-color-error) 5px,
+    transparent calc(var(--sys-size-4) - var(--sys-size-1)),
+    var(--sys-color-error) calc(var(--sys-size-4) - var(--sys-size-1)),
     var(--sys-color-error) var(--sys-size-4),
     transparent var(--sys-size-4)
   );
@@ -216,7 +218,8 @@ circle.animation-keyframe-point:active {
   top: calc(-1 * var(--sys-size-12));
   height: var(--sys-size-12);
   left: calc(-1 * var(--sys-size-4));
-  padding: 0 5px;
+  /* 5px side hit padding: 6px (--sys-size-4) - 1px line width (--sys-size-1). */
+  padding: 0 calc(var(--sys-size-4) - var(--sys-size-1));
   z-index: 3;
 }
 
@@ -233,8 +236,10 @@ circle.animation-keyframe-point:active {
 
 .grid-overflow-wrapper {
   position: absolute;
-  left: calc(var(--timeline-controls-width) - 10px);
-  top: 76px;
+  /* Offset left by the 8px scrubber origin inset (--sys-size-5) so t=0 aligns with --timeline-controls-width without clipping the scrubber head. */
+  left: calc(var(--timeline-controls-width) - var(--sys-size-5));
+  /* Position below the 28px top toolbar (--sys-size-12) + 48px animation group preview buffer (--sys-size-16) = 76px. */
+  top: calc(var(--sys-size-12) + var(--sys-size-16));
   z-index: 1;
   overflow: hidden;
   width: 100%;
@@ -298,7 +303,7 @@ svg.animation-ui path:focus-visible {
 }
 
 text.animation-timeline-grid-label {
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   fill: var(--sys-color-token-subtle);
   text-anchor: middle;
 }
@@ -335,7 +340,7 @@ text.animation-timeline-grid-label {
   align-items: center;
   justify-content: center;
   margin-left: var(--timeline-controls-width);
-  padding: 10px;
+  padding: var(--sys-size-5);
 }
 
 .animation-controls-toolbar {
@@ -389,7 +394,7 @@ text.animation-timeline-grid-label {
 }
 
 .animation-buffer-preview:focus-visible {
-  outline: -webkit-focus-ring-color auto 5px;
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
 }
 
 .animation-buffer-preview.selected .preview-icon {
@@ -453,7 +458,6 @@ text.animation-timeline-grid-label {
 .animation-playback-rate-control {
   margin: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-2);
   display: flex;
-  width: 120px;
 }
 
 .animation-playback-rate-button {
@@ -466,7 +470,7 @@ text.animation-timeline-grid-label {
   margin-right: calc(-1 * var(--sys-size-1));
   padding: var(--sys-size-1) var(--sys-size-3);
   background-color: transparent;
-  flex: 1 0 auto;
+  width: var(--sys-size-14);
   text-align: center;
 }
 

@@ -344,7 +344,7 @@ var cwvMetrics_css_default = `/*
   color: var(--app-color-performance-good);
 }
 
-.metric-score-unclassified {
+.metric-value-unclassified {
   color: var(--sys-color-token-subtle);
 }
 
@@ -1147,7 +1147,6 @@ var Browser;
     PermissionType2["SmartCard"] = "smartCard";
     PermissionType2["SpeakerSelection"] = "speakerSelection";
     PermissionType2["StorageAccess"] = "storageAccess";
-    PermissionType2["TopLevelStorageAccess"] = "topLevelStorageAccess";
     PermissionType2["VideoCapture"] = "videoCapture";
     PermissionType2["Vr"] = "vr";
     PermissionType2["WakeLockScreen"] = "wakeLockScreen";
@@ -2205,7 +2204,6 @@ var Page;
     PermissionsPolicyFeature2["Autofill"] = "autofill";
     PermissionsPolicyFeature2["Autoplay"] = "autoplay";
     PermissionsPolicyFeature2["Bluetooth"] = "bluetooth";
-    PermissionsPolicyFeature2["BrowsingTopics"] = "browsing-topics";
     PermissionsPolicyFeature2["Camera"] = "camera";
     PermissionsPolicyFeature2["CapturedSurfaceControl"] = "captured-surface-control";
     PermissionsPolicyFeature2["ChDpr"] = "ch-dpr";
@@ -2259,7 +2257,6 @@ var Page;
     PermissionsPolicyFeature2["Hid"] = "hid";
     PermissionsPolicyFeature2["IdentityCredentialsGet"] = "identity-credentials-get";
     PermissionsPolicyFeature2["IdleDetection"] = "idle-detection";
-    PermissionsPolicyFeature2["InterestCohort"] = "interest-cohort";
     PermissionsPolicyFeature2["KeyboardMap"] = "keyboard-map";
     PermissionsPolicyFeature2["LanguageDetector"] = "language-detector";
     PermissionsPolicyFeature2["LanguageModel"] = "language-model";
@@ -2283,6 +2280,7 @@ var Page;
     PermissionsPolicyFeature2["PublickeyCredentialsRemoteClientDataJson"] = "publickey-credentials-remote-client-data-json";
     PermissionsPolicyFeature2["Rewriter"] = "rewriter";
     PermissionsPolicyFeature2["ScreenWakeLock"] = "screen-wake-lock";
+    PermissionsPolicyFeature2["SemanticEmbedder"] = "semantic-embedder";
     PermissionsPolicyFeature2["Serial"] = "serial";
     PermissionsPolicyFeature2["SmartCard"] = "smart-card";
     PermissionsPolicyFeature2["SpeakerSelection"] = "speaker-selection";
@@ -2587,6 +2585,11 @@ var Page;
     StartScreencastRequestFormat2["Jpeg"] = "jpeg";
     StartScreencastRequestFormat2["Png"] = "png";
   })(StartScreencastRequestFormat = Page2.StartScreencastRequestFormat || (Page2.StartScreencastRequestFormat = {}));
+  let StartScreenRecordingRequestCaptureArea;
+  ((StartScreenRecordingRequestCaptureArea2) => {
+    StartScreenRecordingRequestCaptureArea2["Target"] = "target";
+    StartScreenRecordingRequestCaptureArea2["BrowserWindow"] = "browserWindow";
+  })(StartScreenRecordingRequestCaptureArea = Page2.StartScreenRecordingRequestCaptureArea || (Page2.StartScreenRecordingRequestCaptureArea = {}));
   let SetWebLifecycleStateRequestState;
   ((SetWebLifecycleStateRequestState2) => {
     SetWebLifecycleStateRequestState2["Frozen"] = "frozen";
@@ -3975,7 +3978,7 @@ function generateInvalidationsList(invalidations) {
   const backendNodeIds = /* @__PURE__ */ new Set();
   for (const invalidation of invalidations) {
     backendNodeIds.add(invalidation.args.data.nodeId);
-    let reason = invalidation.args.data.reason || "unknown";
+    let reason = "reason" in invalidation.args.data && invalidation.args.data.reason ? invalidation.args.data.reason : "unknown";
     if (reason === "unknown" && Trace3.Types.Events.isScheduleStyleInvalidationTracking(invalidation) && invalidation.args.data.invalidatedSelectorId) {
       switch (invalidation.args.data.invalidatedSelectorId) {
         case "attribute":
@@ -4522,7 +4525,7 @@ devtools-link {
 }
 
 .divider {
-  margin: 10px 0;
+  margin: var(--sys-size-5) 0;
   border: none;
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
@@ -4646,6 +4649,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     return;
   }
   Lit4.render(html5`
+    <style>${originMap_css_default}</style>
     <devtools-data-grid striped inline deletable
         @click=${(e) => {
     e.stopPropagation();
@@ -4674,7 +4678,6 @@ var OriginMap = class extends UI4.Widget.VBox {
   constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
     this.#view = view;
-    this.registerRequiredCSS(originMap_css_default);
     CrUXManager3.CrUXManager.instance().getConfigSetting().addChangeListener(this.requestUpdate, this);
     this.requestUpdate();
   }
@@ -6626,7 +6629,7 @@ var metricCard_css_default = `/*
 }
 
 .environment-recs {
-  margin: 9px 0;
+  margin: var(--sys-size-5) 0;
 }
 
 .environment-recs > summary {
@@ -6667,7 +6670,7 @@ details.environment-recs[open] > summary::before {
 
 .bucket-summaries.histogram {
   display: grid;
-  grid-template-columns: minmax(min-content, auto) minmax(var(--sys-size-14), 60px) max-content;
+  grid-template-columns: minmax(min-content, auto) minmax(var(--sys-size-14), var(--sys-size-18)) max-content;
   grid-auto-rows: 1fr;
   column-gap: var(--sys-size-5);
   place-items: center flex-end;
@@ -6697,7 +6700,7 @@ details.environment-recs[open] > summary::before {
 }
 
 .tooltip-contents {
-  width: 350px;
+  width: var(--sys-size-32);
   max-width: max-content;
 }
 
@@ -8673,7 +8676,6 @@ var networkRequestDetails_css_default = `/*
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     width: fit-content;
-    width: 450px;
     gap: 0;
   }
 
@@ -8785,8 +8787,8 @@ var networkRequestTooltip_css_default = `/*
   }
 
   .url {
-    margin-left: 15px;
-    margin-right: 5px;
+    margin-left: var(--sys-size-7);
+    margin-right: var(--sys-size-3);
   }
 
   .url--host {
@@ -8812,8 +8814,8 @@ var networkRequestTooltip_css_default = `/*
   }
 
   devtools-icon.priority {
-    height: 13px;
-    width: 13px;
+    height: var(--sys-size-7);
+    width: var(--sys-size-7);
     color: var(--sys-color-on-surface-subtle);
   }
 
@@ -9713,7 +9715,7 @@ var relatedInsightChips_css_default = `/*
       background: none;
       padding: var(--sys-size-4) var(--sys-size-5);
       width: 100%;
-      max-width: 500px;
+      max-width: var(--sys-size-34);
 
       .insight-label {
         color: var(--sys-color-orange-bright);
@@ -9916,7 +9918,7 @@ var sidebarAnnotationsTab_css_default = `/*
 
   .annotation-identifier {
     padding: var(--sys-size-3) var(--sys-size-5);
-    border-radius: 10px;
+    border-radius: var(--sys-shape-corner-small);
     font-weight: bold;
 
     &.time-range {
@@ -9937,14 +9939,14 @@ var sidebarAnnotationsTab_css_default = `/*
   }
 
   .annotation-tutorial-container {
-    padding: 10px;
+    padding: var(--sys-size-5);
   }
 
   .tutorial-card {
     display: block;
     position: relative;
-    margin: 10px 0;
-    padding: 10px;
+    margin: var(--sys-size-5) 0;
+    padding: var(--sys-size-5);
     border-radius: var(--sys-shape-corner-extra-small);
     overflow: hidden;
     border: var(--sys-size-1) solid var(--sys-color-divider);

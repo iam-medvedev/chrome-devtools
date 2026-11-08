@@ -10,7 +10,7 @@ export default `/*
  */
 
 .container {
-  min-width: 170px;
+  min-width: var(--sys-size-24);
 }
 
 .row {
@@ -46,11 +46,11 @@ export default `/*
 }
 
 .buttons > :first-child {
-  border-radius: 3px 0 0 3px;
+  border-radius: var(--sys-shape-corner-extra-small) 0 0 var(--sys-shape-corner-extra-small);
 }
 
 .buttons > :last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--sys-shape-corner-extra-small) var(--sys-shape-corner-extra-small) 0;
 }
 
 .button {
@@ -66,10 +66,6 @@ export default `/*
   justify-content: center;
   align-items: center;
   cursor: pointer;
-}
-
-.button:focus-visible {
-  outline: auto 5px -webkit-focus-ring-color;
 }
 
 .button devtools-icon {

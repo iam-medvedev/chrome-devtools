@@ -626,8 +626,6 @@ export class FetchDispatcher {
         }
         void this.#multitargetNetworkManager.requestIntercepted(new InterceptedRequest(this.#multitargetNetworkManager, this.#fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders));
     }
-    authRequired({}) {
-    }
 }
 function multicastMembership(event) {
     return event.sourceAddress ? `${event.IPAddress}@${event.sourceAddress}` : event.IPAddress;
@@ -765,7 +763,8 @@ export class NetworkDispatcher {
         return this.#requestsByURL.get(url) || null;
     }
     requestForLoaderId(loaderId) {
-        return this.#requestsByLoaderId.get(loaderId) || null;
+        return this.#requestsByLoaderId.get(loaderId) ||
+            this.#multitargetNetworkManager.inflightMainResourceRequests.get(loaderId) || null;
     }
     resourceChangedPriority({ requestId, newPriority }) {
         const networkRequest = this.#requestsById.get(requestId);
@@ -1471,8 +1470,6 @@ export class NetworkDispatcher {
     }
     deviceBoundSessionEventOccurred(_params) {
         this.#manager.dispatchEventToListeners(Events.DeviceBoundSessionEventOccurred, _params);
-    }
-    policyUpdated() {
     }
     /**
      * @deprecated

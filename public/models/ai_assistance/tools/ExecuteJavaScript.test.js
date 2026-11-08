@@ -11,7 +11,6 @@ import { updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
-import * as Formatter from '../../formatter/formatter.js';
 import * as AiAssistance from '../ai_assistance.js';
 describe('ExecuteJavaScriptTool', () => {
     setupLocaleHooks();
@@ -20,15 +19,7 @@ describe('ExecuteJavaScriptTool', () => {
     let element;
     let target;
     let domModel;
-    let formatStub;
     beforeEach(() => {
-        formatStub = sinon.stub(Formatter.FormatterWorkerPool.FormatterWorkerPool.prototype, 'format')
-            .callsFake(async (_mimeType, content) => {
-            return {
-                content,
-                mapping: { original: [], formatted: [] },
-            };
-        });
         target = sinon.createStubInstance(SDK.Target.Target);
         target.model.returns(null);
         domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
@@ -289,88 +280,121 @@ describe('ExecuteJavaScriptTool', () => {
             resolveMockPromise('done');
         });
     });
-    describe('validateAndFormatCode', () => {
-        const { validateAndFormatCode } = AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool;
-        it('formats valid JS code correctly', async () => {
-            formatStub.resolves({
-                content: 'const a = 1;\nconst b = 2;',
-                mapping: { original: [], formatted: [] },
-            });
-            const result = await validateAndFormatCode('const a=1;const b=2;');
-            assert.strictEqual(result.formattedCode, 'const a = 1;\nconst b = 2;');
-            assert.isUndefined(result.error);
-        });
-        it('returns the original code when the formatter fails', async () => {
-            formatStub.rejects(new Error('Unexpected token'));
-            const result = await validateAndFormatCode('const a = ;');
-            assert.isUndefined(result.error);
-            assert.strictEqual(result.formattedCode, 'const a = ;');
-        });
-        const SIZE_ERROR_HEADER = 'Error: The code was not run because it exceeds size limits after formatting (indented with 2 spaces):';
+    describe('validateCode', () => {
+        const { validateCode } = AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool;
+        const SIZE_ERROR_HEADER = 'Error: The code was not run because it exceeds size limits:';
         const LONG_LINES_ADVICE = '- Lines longer than 120 characters. Break them into shorter lines, ' +
             'for example by splitting long strings or selectors with concatenation, ' +
             'or by putting arguments on separate lines:';
-        it('returns an error with the line count when formatted code exceeds 40 lines', async () => {
+        it('accepts multi-line arrow function expressions and computed style queries', () => {
+            const code = `const banner = Array.from(document.querySelectorAll('*')).find(el =>
+  el.id?.toLowerCase().includes('banner') ||
+  el.className?.toLowerCase().includes('banner') ||
+  el.getAttribute('role') === 'banner'
+);
+
+const data = {
+  bannerFound: !!banner,
+  tagName: banner?.tagName,
+  id: banner?.id,
+  className: banner?.className,
+  innerHTML: banner?.innerHTML,
+  rect: banner?.getBoundingClientRect(),
+  computedStyle: banner ? {
+    display: window.getComputedStyle(banner).display,
+    visibility: window.getComputedStyle(banner).visibility,
+    opacity: window.getComputedStyle(banner).opacity,
+    width: window.getComputedStyle(banner).width,
+    height: window.getComputedStyle(banner).height
+  } : null
+};`;
+            assert.isUndefined(validateCode(code));
+        });
+        it('accepts multi-line filter predicates with logical operators', () => {
+            const codeWithDetailedMap = `const ads = Array.from(document.querySelectorAll('*')).filter(el =>
+  /ad|banner|promo|camp/i.test(el.id + el.className) &&
+  !el.classList.contains('site-header')
+);
+
+const data = ads.map(el => ({
+  tag: el.tagName,
+  id: el.id,
+  class: el.className,
+  visible: el.offsetWidth > 0,
+  text: el.innerText.substring(0, 50)
+}));`;
+            assert.isUndefined(validateCode(codeWithDetailedMap));
+            const codeWithCompactMap = `const ads = Array.from(document.querySelectorAll('*')).filter(el =>
+  /ad|banner|promo|camp/i.test(el.id + el.className) &&
+  !el.classList.contains('site-header')
+);
+const data = ads.map(el => ({tag: el.tagName, id: el.id, class: el.className}));`;
+            assert.isUndefined(validateCode(codeWithCompactMap));
+        });
+        it('accepts multi-line chained array methods and attribute selectors', () => {
+            const code = `const data = Array.from(document.querySelectorAll('[class*="banner"], [id*="banner"], [class*="ad"], [id*="ad"]'))
+  .filter(el => !el.classList.contains('site-header'))
+  .map(el => ({
+    tag: el.tagName,
+    id: el.id,
+    class: el.className,
+    visible: el.offsetParent !== null
+  }));`;
+            assert.isUndefined(validateCode(code));
+        });
+        it('returns an error with the line count when code exceeds 40 lines', () => {
             const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
-            const result = await validateAndFormatCode(longCode);
-            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+            assert.strictEqual(validateCode(longCode), `${SIZE_ERROR_HEADER}\n` +
                 '- The code is 45 lines (max 40). Split the logic into smaller calls and return intermediate results in `data`.');
         });
-        it('returns an error with the line number, length, and preview when a line exceeds 120 characters', async () => {
+        it('returns an error when multiple statements or conditions are crammed onto a single line over 120 characters', () => {
+            const crammedOneLiner = 'const banner = Array.from(document.querySelectorAll(\'*\')).find(el => el.id?.toLowerCase().includes(\'banner\') || el.className?.toLowerCase().includes(\'banner\') || el.getAttribute(\'role\') === \'banner\');';
+            assert.strictEqual(validateCode(crammedOneLiner), `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
+                '  - Line 1 is 200 characters: `const banner = Array.from(document.querySelectorAll(\'*\')).f…`');
+        });
+        it('returns an error with the line number, length, and preview when a line exceeds 120 characters', () => {
             const longLineCode = `if (true) {\n  const longVar = "${'a'.repeat(130)}";\n}`;
-            const result = await validateAndFormatCode(longLineCode);
-            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
+            assert.strictEqual(validateCode(longLineCode), `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
                 `  - Line 2 is 151 characters: \`const longVar = "${'a'.repeat(42)}…\``);
         });
-        it('reports at most 3 long lines and counts the rest', async () => {
+        it('reports at most 3 long lines and counts the rest', () => {
             const longLinesCode = Array.from({ length: 5 }, (_, i) => `const v${i} = "${'b'.repeat(120)}";`).join('\n');
-            const result = await validateAndFormatCode(longLinesCode);
-            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
+            assert.strictEqual(validateCode(longLinesCode), `${SIZE_ERROR_HEADER}\n${LONG_LINES_ADVICE}\n` +
                 `  - Line 1 is 134 characters: \`const v0 = "${'b'.repeat(47)}…\`\n` +
                 `  - Line 2 is 134 characters: \`const v1 = "${'b'.repeat(47)}…\`\n` +
                 `  - Line 3 is 134 characters: \`const v2 = "${'b'.repeat(47)}…\`\n` +
                 '  - 2 more lines not shown.');
         });
-        it('returns an error with the character count when total character count exceeds 2500', async () => {
+        it('returns an error with the character count when total character count exceeds 2500', () => {
             const bulkCode = Array.from({ length: 30 }, (_, i) => `const var${i} = "${'x'.repeat(75)}";`).join('\n');
-            const result = await validateAndFormatCode(bulkCode);
-            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+            assert.strictEqual(validateCode(bulkCode), `${SIZE_ERROR_HEADER}\n` +
                 '- The code is 2779 characters (max 2500). Remove unneeded code or split the logic into smaller calls.');
         });
-        it('reports every exceeded limit in one error', async () => {
+        it('reports every exceeded limit in one error', () => {
             const code = [
                 `const longVar = "${'a'.repeat(130)}";`,
                 ...Array.from({ length: 40 }, (_, i) => `const var${i} = "${'x'.repeat(50)}";`),
             ].join('\n');
-            const result = await validateAndFormatCode(code);
-            assert.strictEqual(result.error, `${SIZE_ERROR_HEADER}\n` +
+            assert.strictEqual(validateCode(code), `${SIZE_ERROR_HEADER}\n` +
                 '- The code is 41 lines (max 40). Split the logic into smaller calls and return intermediate results in `data`.\n' +
                 `${LONG_LINES_ADVICE}\n` +
                 `  - Line 1 is 149 characters: \`const longVar = "${'a'.repeat(42)}…\`\n` +
                 '- The code is 2859 characters (max 2500). Remove unneeded code or split the logic into smaller calls.');
         });
-        it('accepts code that is exactly 40 lines', async () => {
+        it('accepts code that is exactly 40 lines', () => {
             const code = Array.from({ length: 40 }, (_, i) => `const var${i} = ${i};`).join('\n');
-            const result = await validateAndFormatCode(code);
-            assert.isUndefined(result.error);
-            assert.strictEqual(result.formattedCode, code);
+            assert.isUndefined(validateCode(code));
         });
-        it('accepts lines of exactly 120 characters and exactly 2500 characters in total', async () => {
+        it('accepts lines of exactly 120 characters and exactly 2500 characters in total', () => {
             const code = [
                 ...Array.from({ length: 20 }, () => `// ${'x'.repeat(117)}`),
                 `// ${'x'.repeat(77)}`,
             ].join('\n');
-            const result = await validateAndFormatCode(code);
-            assert.isUndefined(result.error);
-            assert.strictEqual(result.formattedCode, code);
+            assert.isUndefined(validateCode(code));
         });
     });
-    it('formats code and executes successfully when V2 architecture is enabled', async () => {
+    it('validates code and executes successfully when V2 architecture is enabled', async () => {
         updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
-        formatStub.resolves({
-            content: 'const a = 1;\nconst b = 2;',
-            mapping: { original: [], formatted: [] },
-        });
         const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
         const mockScope = {
             install: sinon.stub().resolves(),
@@ -389,17 +413,13 @@ describe('ExecuteJavaScriptTool', () => {
         const response = await tool.handler({
             explanation: 'Check element',
             title: 'Title',
-            code: 'const a=1;const b=2;',
+            code: 'const a = 1;\nconst b = 2;',
         }, context);
         assertIsResult(response);
     });
     it('returns error result when V2 architecture is enabled and code violates limits', async () => {
         updateHostConfig({ devToolsAiV2Architecture: { enabled: true } });
         const longCode = Array.from({ length: 45 }, (_, i) => `const var${i} = ${i};`).join('\n');
-        formatStub.resolves({
-            content: longCode,
-            mapping: { original: [], formatted: [] },
-        });
         const tool = new AiAssistance.ExecuteJavaScript.ExecuteJavaScriptTool();
         const mockScope = {
             install: sinon.stub().resolves(),

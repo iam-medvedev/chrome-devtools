@@ -3950,7 +3950,8 @@ var CommentThreadWidget_exports = {};
 __export(CommentThreadWidget_exports, {
   CommentThreadWidget: () => CommentThreadWidget,
   DEFAULT_VIEW: () => DEFAULT_VIEW6,
-  computeCommentTitle: () => computeCommentTitle
+  computeCommentTitle: () => computeCommentTitle,
+  inputDisclaimer: () => inputDisclaimer
 });
 import "../../ui/components/spinners/spinners.js";
 import "../../ui/components/tooltips/tooltips.js";
@@ -4254,13 +4255,16 @@ var UIStrings7 = {
 };
 var UIStringsNotTranslate2 = {
   /**
-   * @description Disclaimer text in the comment thread info tooltip.
+   * @description Disclaimer text in the info tooltips of the comment thread and the comments pane.
    */
-  inputDisclaimer: "Comment strings, DOM hierarchy snippets, tracked CSS and DOM changes, Visual Element (VE) paths and signatures, and tracked presenter changes are sent to the connected third-party agent to assist with debugging and code updates"
+  inputDisclaimer: "Comments and content attached to comments, and DOM/CSS changes recorded in the comment mode are sent to the connected third-party agent to assist with debugging and code updates"
 };
 var str_7 = i18n17.i18n.registerUIStrings("panels/common/CommentThreadWidget.ts", UIStrings7);
 var i18nString7 = i18n17.i18n.getLocalizedString.bind(void 0, str_7);
 var lockedString3 = i18n17.i18n.lockedString;
+function inputDisclaimer() {
+  return lockedString3(UIStringsNotTranslate2.inputDisclaimer);
+}
 var DEFAULT_VIEW6 = (input, _output, target) => {
   const hasComment = input.comments.length > 0;
   const showCommentInput = !hasComment || input.isEditing;
@@ -4371,7 +4375,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
             variant="rich"
           >
             <div class="info-tooltip-container">
-              ${lockedString3(UIStringsNotTranslate2.inputDisclaimer)}
+              ${inputDisclaimer()}
             </div>
           </devtools-tooltip>
           <devtools-button
@@ -4625,9 +4629,15 @@ var commentsOverlay_css_default = `/*
     flex-shrink: 0;
     box-shadow: var(--sys-elevation-level2);
     border-radius: 100px 100px 100px var(--sys-shape-corner-extra-small, 4px);
-    background: var(--sys-color-primary);
+    border: var(--sys-size-2) solid var(--sys-color-primary);
+    background: var(--sys-color-cdt-base-container);
     transition: transform 0.1s ease;
     transform-origin: center center;
+  }
+
+  .comment-cursor.resolved {
+    border: none;
+    background: var(--sys-color-primary);
   }
 
   .comment-anchor-highlight {
@@ -4688,9 +4698,52 @@ var PIN_HEIGHT = 30;
 var POPUP_WIDTH = 288;
 var POPUP_HEIGHT = 220;
 var AUTO_CLOSE_DELAY_MS = 2e3;
+var HOVER_HIDE_DELAY_MS = 150;
 var COMMENTS_VIEW_ID = "comments";
+function getPopupItems(input) {
+  const items = [];
+  const activePosition = input.activePin ?? input.fallbackPosition;
+  if (input.activeThread && activePosition) {
+    items.push({
+      thread: input.activeThread,
+      position: activePosition,
+      anchoredToPin: Boolean(input.activePin),
+      title: input.title,
+      actions: input,
+      isHoverPreview: false
+    });
+  }
+  if (input.hoveredThread && input.hoveredPin) {
+    items.push({
+      thread: input.hoveredThread,
+      position: input.hoveredPin,
+      anchoredToPin: true,
+      title: input.hoveredTitle,
+      actions: input.hoveredActions,
+      isHoverPreview: true
+    });
+  }
+  return items;
+}
+function renderAnchorHighlight(thread, highlight) {
+  if (!thread || !highlight?.visible) {
+    return nothing5;
+  }
+  return html9`
+    <div
+      class=${classMap3({
+    "comment-anchor-highlight": true,
+    resolved: thread.status === "RESOLVED"
+  })}
+      style=${styleMap({
+    transform: `translate3d(${highlight.left}px, ${highlight.top}px, 0)`,
+    width: `${highlight.width}px`,
+    height: `${highlight.height}px`
+  })}>
+    </div>
+  `;
+}
 var DEFAULT_VIEW7 = (input, _output, target) => {
-  const popupPosition = input.activePin ?? input.fallbackPosition;
   render8(html9`
     <style>${commentsOverlay_css_default}</style>
     <div class="comments-overlay-container">
@@ -4704,19 +4757,8 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
   })}>
         </div>
       ` : nothing5}
-      ${input.activeHighlight?.visible && input.activeThread ? html9`
-        <div
-          class=${classMap3({
-    "comment-anchor-highlight": true,
-    resolved: input.activeThread.status === "RESOLVED"
-  })}
-          style=${styleMap({
-    transform: `translate3d(${input.activeHighlight.left}px, ${input.activeHighlight.top}px, 0)`,
-    width: `${input.activeHighlight.width}px`,
-    height: `${input.activeHighlight.height}px`
-  })}>
-        </div>
-      ` : nothing5}
+      ${renderAnchorHighlight(input.activeThread, input.activeHighlight)}
+      ${renderAnchorHighlight(input.hoveredThread, input.hoveredHighlight)}
       ${repeat(
     input.pins.filter((p) => p.visible),
     (p) => p.id,
@@ -4727,44 +4769,57 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
             style=${styleMap({
       transform: `translate3d(${p.left}px, ${p.top}px, 0)`
     })}
-            @click=${() => input.onPinClick(p.id)}>
-            <div class="comment-cursor"></div>
+            @click=${() => input.onPinClick(p.id)}
+            @mouseenter=${() => input.onPinMouseEnter(p.id)}
+            @mouseleave=${input.onPinMouseLeave}>
+            <div
+              class=${classMap3({
+      "comment-cursor": true,
+      resolved: p.resolved
+    })}>
+            </div>
           </div>
         `
   )}
-      ${popupPosition && input.activeThread ? repeat(
-    [{ position: popupPosition, thread: input.activeThread }],
+      ${repeat(
+    getPopupItems(input),
+    // Keyed by thread so that the popup DOM (and focus) is kept when a
+    // hover preview becomes the open thread.
     (item2) => item2.thread.id,
     (item2) => {
       const popupLeft = Math.min(
         Math.max(POPUP_MARGIN, item2.position.left),
         Math.max(POPUP_MARGIN, target.clientWidth - POPUP_WIDTH - POPUP_MARGIN)
       );
-      const topOffset = input.activePin ? item2.position.top + PIN_HEIGHT : item2.position.top - POPUP_MARGIN;
-      const maxTop = target.clientHeight - (input.activePin ? POPUP_HEIGHT : POPUP_MARGIN);
+      const topOffset = item2.anchoredToPin ? item2.position.top + PIN_HEIGHT : item2.position.top - POPUP_MARGIN;
+      const maxTop = target.clientHeight - (item2.anchoredToPin ? POPUP_HEIGHT : POPUP_MARGIN);
       const popupTop = Math.min(Math.max(POPUP_MARGIN, topOffset), Math.max(POPUP_MARGIN, maxTop));
       return html9`
             <div
               class="comment-popup-widget"
               style=${styleMap({
-        transform: `translate3d(${popupLeft}px, ${popupTop}px, 0)${input.activePin ? "" : " translateY(-100%)"}`
-      })}>
+        transform: `translate3d(${popupLeft}px, ${popupTop}px, 0)${item2.anchoredToPin ? "" : " translateY(-100%)"}`
+      })}
+              @mouseenter=${item2.isHoverPreview ? input.onPopupMouseEnter : nothing5}
+              @mouseleave=${item2.isHoverPreview ? input.onPopupMouseLeave : nothing5}
+              @mousedown=${item2.isHoverPreview ? input.onPopupInteract : nothing5}
+              @focusin=${item2.isHoverPreview ? input.onPopupInteract : nothing5}>
               ${UI10.Widget.widget(CommentThreadWidget, {
-        title: input.title,
+        title: item2.title,
         comments: [...item2.thread.comments],
         status: item2.thread.status,
         transmitted: item2.thread.transmitted,
-        onAddComment: input.onAddComment,
-        onDeleteQueuedComment: input.onDeleteQueuedComment,
-        onQueueComment: input.onQueueComment,
-        onSaveEdit: input.onSaveEdit,
-        onStartEdit: input.onStartEdit,
+        onAddComment: item2.actions.onAddComment,
+        onDeleteQueuedComment: item2.actions.onDeleteQueuedComment,
+        onQueueComment: item2.actions.onQueueComment,
+        onSaveEdit: item2.actions.onSaveEdit,
+        onStartEdit: item2.actions.onStartEdit,
         elementRemoved: item2.thread.isOrphaned
       })}
             </div>
           `;
     }
-  ) : nothing5}
+  )}
     </div>
   `, target);
 };
@@ -4779,24 +4834,51 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
   #commentManager;
   #commentOverlayManager;
   #activeThreadId = null;
+  /**
+   * Thread previewed because its pin (or its preview popup) is hovered. Shown
+   * next to the open thread; never equal to `#activeThreadId`.
+   */
+  #hoveredThreadId = null;
+  #hoverHideTimeoutId = null;
   #fallbackPosition = null;
   #closeTimeoutId = null;
-  #cachedTitle = { text: "" };
-  #cachedTitleAnchor = null;
+  #titleCache = /* @__PURE__ */ new WeakMap();
+  #getThread(threadId) {
+    return threadId ? this.#commentManager.getCommentThread(threadId) ?? null : null;
+  }
   #setActiveThreadId(threadId) {
     this.#fallbackPosition = null;
     if (this.#activeThreadId !== threadId) {
       this.#clearCloseTimeout();
+      this.#clearHover();
       this.#activeThreadId = threadId;
-      if (threadId && this.isShowing()) {
-        document.documentElement.addEventListener("keydown", this.#onKeyDown);
-        document.documentElement.addEventListener("click", this.#onClickOutside, { capture: true });
-      } else {
-        document.documentElement.removeEventListener("keydown", this.#onKeyDown);
-        document.documentElement.removeEventListener("click", this.#onClickOutside, { capture: true });
-      }
+      this.#updateDocumentListeners();
       this.#markActiveThreadResponseSeen();
     }
+  }
+  /**
+   * Escape is handled while a thread is open or comment mode is on. The
+   * listener is registered in the capture phase so that, in comment mode, the
+   * first Escape exits the mode before any panel-level Escape handling (or the
+   * drawer toggle) sees it. When neither applies the listener is removed and
+   * Escape keeps its default DevTools behavior.
+   */
+  #updateDocumentListeners() {
+    const isShowing = this.isShowing();
+    if (isShowing && (this.#activeThreadId || this.#commentManager.isCommentMode())) {
+      document.addEventListener("keydown", this.#onKeyDown, { capture: true });
+    } else {
+      document.removeEventListener("keydown", this.#onKeyDown, { capture: true });
+    }
+    if (isShowing && this.#activeThreadId) {
+      document.addEventListener("click", this.#onClickOutside, { capture: true });
+    } else {
+      document.removeEventListener("click", this.#onClickOutside, { capture: true });
+    }
+  }
+  #removeDocumentListeners() {
+    document.removeEventListener("keydown", this.#onKeyDown, { capture: true });
+    document.removeEventListener("click", this.#onClickOutside, { capture: true });
   }
   /**
    * The open thread shows the agent response, so the developer has seen it.
@@ -4846,17 +4928,12 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#onAgentAttachedChanged,
       this
     );
-    if (this.#activeThreadId) {
-      document.documentElement.addEventListener("keydown", this.#onKeyDown);
-      document.documentElement.addEventListener("click", this.#onClickOutside, { capture: true });
-    }
+    this.#updateDocumentListeners();
     this.requestUpdate();
   }
   willHide() {
     this.#clearCloseTimeout();
-    document.documentElement.removeEventListener("keydown", this.#onKeyDown);
-    document.documentElement.removeEventListener("click", this.#onClickOutside, { capture: true });
-    this.#commentOverlayManager.stop();
+    this.#clearHover();
     this.#commentOverlayManager.removeEventListener(
       Comments.CommentOverlayManager.Events.POSITIONS_UPDATED,
       this.#onPositionsUpdated,
@@ -4882,6 +4959,9 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#onAgentAttachedChanged,
       this
     );
+    this.#commentOverlayManager.stop();
+    this.#syncActiveThreadFromManager();
+    this.#removeDocumentListeners();
     super.willHide();
   }
   #clearCloseTimeout() {
@@ -4890,6 +4970,55 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#closeTimeoutId = null;
     }
   }
+  #clearHoverHideTimeout() {
+    if (this.#hoverHideTimeoutId !== null) {
+      window.clearTimeout(this.#hoverHideTimeoutId);
+      this.#hoverHideTimeoutId = null;
+    }
+  }
+  #clearHover() {
+    this.#clearHoverHideTimeout();
+    this.#hoveredThreadId = null;
+  }
+  #handlePinMouseEnter = (threadId) => {
+    this.#clearHoverHideTimeout();
+    if (threadId === this.#activeThreadId) {
+      if (this.#hoveredThreadId) {
+        this.#clearHover();
+        this.requestUpdate();
+      }
+      return;
+    }
+    if (this.#hoveredThreadId === threadId) {
+      return;
+    }
+    this.#hoveredThreadId = threadId;
+    this.requestUpdate();
+  };
+  #scheduleHoverHide = () => {
+    if (!this.#hoveredThreadId) {
+      return;
+    }
+    this.#clearHoverHideTimeout();
+    this.#hoverHideTimeoutId = window.setTimeout(() => {
+      this.#hoverHideTimeoutId = null;
+      this.#hoveredThreadId = null;
+      this.requestUpdate();
+    }, HOVER_HIDE_DELAY_MS);
+  };
+  #handlePopupMouseEnter = () => {
+    this.#clearHoverHideTimeout();
+  };
+  #handlePopupInteract = () => {
+    if (!this.#hoveredThreadId) {
+      return;
+    }
+    if (this.#getThread(this.#activeThreadId)?.status === "DRAFT") {
+      return;
+    }
+    this.#setActiveThreadId(this.#hoveredThreadId);
+    this.requestUpdate();
+  };
   #onAgentAttachedChanged(event) {
     if (!event.data) {
       this.#setActiveThreadId(null);
@@ -4901,6 +5030,7 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     if (!isModeActive) {
       this.#setActiveThreadId(null);
     }
+    this.#updateDocumentListeners();
     const action4 = UI10.ActionRegistry.ActionRegistry.instance().getAction(
       "comments.toggle-comment-mode"
     );
@@ -4913,6 +5043,10 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#setActiveThreadId(draftThread.id);
     } else if (this.#activeThreadId && !this.#commentManager.getCommentThread(this.#activeThreadId)) {
       this.#setActiveThreadId(null);
+    }
+    const hoveredThread = this.#getThread(this.#hoveredThreadId);
+    if (this.#hoveredThreadId && (!hoveredThread || hoveredThread.status === "RESOLVED")) {
+      this.#clearHover();
     }
   }
   #onPositionsUpdated(event) {
@@ -4939,27 +5073,26 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#renderDisconnectedView();
       return true;
     }
-    const activeThread = this.#activeThreadId ? this.#commentManager.getCommentThread(this.#activeThreadId) ?? null : null;
-    const anchor = activeThread?.anchor ?? null;
-    if (anchor === null) {
-      this.#cachedTitleAnchor = null;
-      this.#cachedTitle = { text: "" };
-      this.#renderWithTitle(activeThread, this.#cachedTitle);
-      return true;
+    const activeThread = this.#getThread(this.#activeThreadId);
+    const hoveredThread = this.#getThread(this.#hoveredThreadId);
+    const title = this.#getCachedTitle(activeThread);
+    const hoveredTitle = this.#getCachedTitle(hoveredThread);
+    if (!title || !hoveredTitle) {
+      return false;
     }
-    if (anchor === this.#cachedTitleAnchor) {
-      this.#renderWithTitle(activeThread, this.#cachedTitle);
-      return true;
-    }
-    return false;
+    this.#renderView(activeThread, title, hoveredThread, hoveredTitle);
+    return true;
   }
-  async #getOrComputeTitle(anchor) {
-    if (anchor === this.#cachedTitleAnchor) {
-      return this.#cachedTitle;
+  #getCachedTitle(thread) {
+    return thread ? this.#titleCache.get(thread.anchor) : { text: "" };
+  }
+  async #getOrComputeTitle(thread) {
+    const cached = this.#getCachedTitle(thread);
+    if (cached || !thread) {
+      return cached ?? { text: "" };
     }
-    const title = anchor ? await computeCommentTitle(anchor) : { text: "" };
-    this.#cachedTitleAnchor = anchor;
-    this.#cachedTitle = title;
+    const title = await computeCommentTitle(thread.anchor);
+    this.#titleCache.set(thread.anchor, title);
     return title;
   }
   #handlePinClick = (threadId) => {
@@ -4982,10 +5115,22 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     this.#setActiveThreadId(null);
     this.requestUpdate();
   };
+  /**
+   * Escape priority: an open thread closes first; otherwise, in comment mode,
+   * Escape exits comment mode. Open dialogs keep handling their own Escape.
+   */
   #onKeyDown = (event) => {
-    if (this.#activeThreadId && event.key === "Escape" && !event.isComposing) {
+    if (event.key !== "Escape" || event.isComposing || !UI10.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(event) || UI10.Dialog.Dialog.hasInstance()) {
+      return;
+    }
+    if (this.#activeThreadId) {
       event.consume(true);
       this.#handleCloseCommentThread();
+      return;
+    }
+    if (this.#commentManager.isCommentMode()) {
+      event.consume(true);
+      setCommentModeByUser(this.#commentManager, false);
     }
   };
   #onClickOutside = (event) => {
@@ -4995,6 +5140,18 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
     this.#handleCloseCommentThread();
   };
   #renderDisconnectedView() {
+    const noopActions = {
+      onAddComment: () => {
+      },
+      onDeleteQueuedComment: () => {
+      },
+      onQueueComment: () => {
+      },
+      onSaveEdit: () => {
+      },
+      onStartEdit: () => {
+      }
+    };
     this.#view(
       {
         pins: [],
@@ -5002,65 +5159,83 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
         hoverHighlight: null,
         commentMode: false,
         onPinClick: this.#handlePinClick,
+        onPinMouseEnter: this.#handlePinMouseEnter,
+        onPinMouseLeave: this.#scheduleHoverHide,
+        onPopupMouseEnter: this.#handlePopupMouseEnter,
+        onPopupMouseLeave: this.#scheduleHoverHide,
+        onPopupInteract: this.#handlePopupInteract,
         activeThread: null,
         activePin: null,
         title: { text: "" },
-        onAddComment: () => {
-        },
-        onDeleteQueuedComment: () => {
-        },
-        onQueueComment: () => {
-        },
-        onSaveEdit: () => {
-        },
-        onStartEdit: () => {
-        }
+        hoveredThread: null,
+        hoveredPin: null,
+        hoveredHighlight: null,
+        hoveredTitle: { text: "" },
+        hoveredActions: noopActions,
+        ...noopActions
       },
       void 0,
       this.contentElement
     );
   }
-  #renderWithTitle(activeThread, title) {
-    const pins = this.#commentOverlayManager.getPinPositions();
-    const activePin = this.#activeThreadId ? pins.find((p) => p.id === this.#activeThreadId) ?? null : null;
-    const activeHighlight = this.#activeThreadId ? this.#commentOverlayManager.getHighlight(this.#activeThreadId) ?? null : null;
+  #createThreadActions(thread) {
+    return {
+      onAddComment: (text) => {
+        if (!thread) {
+          return;
+        }
+        thread.sendToAgent(text);
+        this.#scheduleAutoClose(thread.id);
+      },
+      onDeleteQueuedComment: () => {
+        if (!thread) {
+          return;
+        }
+        this.#commentOverlayManager.removeCommentThread(thread.id);
+      },
+      onQueueComment: (text) => {
+        if (!thread) {
+          return;
+        }
+        thread.save(text);
+        this.#scheduleAutoClose(thread.id);
+      },
+      onSaveEdit: (text) => {
+        if (!thread) {
+          return;
+        }
+        thread.editComment(text);
+      },
+      onStartEdit: () => this.#clearCloseTimeout()
+    };
+  }
+  #renderView(activeThread, title, hoveredThread, hoveredTitle) {
+    const pins = this.#commentOverlayManager.getPinPositions().map(
+      (pin) => !pin.visible && pin.id === activeThread?.id ? { ...pin, visible: true } : pin
+    );
+    const findPin = (thread) => thread ? pins.find((p) => p.id === thread.id) ?? null : null;
+    const findHighlight = (thread) => thread ? this.#commentOverlayManager.getHighlight(thread.id) ?? null : null;
     const viewInput = {
       pins,
-      activeHighlight,
+      activeHighlight: findHighlight(activeThread),
       hoverHighlight: this.#commentOverlayManager.getHoverHighlight(),
       commentMode: this.#commentManager.isCommentMode(),
       onPinClick: this.#handlePinClick,
+      onPinMouseEnter: this.#handlePinMouseEnter,
+      onPinMouseLeave: this.#scheduleHoverHide,
+      onPopupMouseEnter: this.#handlePopupMouseEnter,
+      onPopupMouseLeave: this.#scheduleHoverHide,
+      onPopupInteract: this.#handlePopupInteract,
       activeThread,
-      activePin,
+      activePin: findPin(activeThread),
       fallbackPosition: this.#fallbackPosition,
       title,
-      onAddComment: (text) => {
-        if (!activeThread) {
-          return;
-        }
-        activeThread.sendToAgent(text);
-        this.#scheduleAutoClose(activeThread.id);
-      },
-      onDeleteQueuedComment: () => {
-        if (!activeThread) {
-          return;
-        }
-        this.#commentOverlayManager.removeCommentThread(activeThread.id);
-      },
-      onQueueComment: (text) => {
-        if (!activeThread) {
-          return;
-        }
-        activeThread.save(text);
-        this.#scheduleAutoClose(activeThread.id);
-      },
-      onSaveEdit: (text) => {
-        if (!activeThread) {
-          return;
-        }
-        activeThread.editComment(text);
-      },
-      onStartEdit: () => this.#clearCloseTimeout()
+      hoveredThread,
+      hoveredPin: findPin(hoveredThread),
+      hoveredHighlight: findHighlight(hoveredThread),
+      hoveredTitle,
+      hoveredActions: this.#createThreadActions(hoveredThread),
+      ...this.#createThreadActions(activeThread)
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -5079,20 +5254,18 @@ var CommentsOverlayWidget = class extends UI10.Widget.Widget {
       this.#renderDisconnectedView();
       return;
     }
-    const activeThread = this.#activeThreadId ? this.#commentManager.getCommentThread(this.#activeThreadId) ?? null : null;
-    const anchor = activeThread?.anchor ?? null;
-    let title;
-    if (anchor === null) {
-      this.#cachedTitleAnchor = null;
-      this.#cachedTitle = { text: "" };
-      title = this.#cachedTitle;
-    } else if (anchor === this.#cachedTitleAnchor) {
-      title = this.#cachedTitle;
-    } else {
-      title = await this.#getOrComputeTitle(anchor);
+    const activeThread = this.#getThread(this.#activeThreadId);
+    const hoveredThread = this.#getThread(this.#hoveredThreadId);
+    let title = this.#getCachedTitle(activeThread);
+    let hoveredTitle = this.#getCachedTitle(hoveredThread);
+    if (!title || !hoveredTitle) {
+      [title, hoveredTitle] = await Promise.all([
+        this.#getOrComputeTitle(activeThread),
+        this.#getOrComputeTitle(hoveredThread)
+      ]);
       signal?.throwIfAborted();
     }
-    this.#renderWithTitle(activeThread, title);
+    this.#renderView(activeThread, title, hoveredThread, hoveredTitle);
   }
   openThread(threadId, fallbackPosition) {
     this.#clearCloseTimeout();
@@ -5126,7 +5299,7 @@ var ThreadRevealer = class {
   async reveal({ thread, position }) {
     const panelId = Comments.CommentAnchorResolver.extractPanelId(thread.anchor.vePath);
     if (panelId && UI10.InspectorView.InspectorView.instance().hasPanel(panelId)) {
-      await UI10.InspectorView.InspectorView.instance().showPanel(panelId);
+      await UI10.ViewManager.ViewManager.instance().showView(panelId, true, true);
     }
     const element = Comments.CommentAnchorResolver.rematchCommentAnchor(thread);
     thread.setOrphaned(!element);
@@ -5249,17 +5422,53 @@ import * as CommentManager3 from "../../models/comment_manager/comment_manager.j
 import * as UI11 from "../../ui/legacy/legacy.js";
 import * as Lit5 from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/common/commentsStatusBarPill.css.js
+var commentsStatusBarPill_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  .comments-counter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: var(--sys-size-7);
+    min-width: var(--sys-size-8);
+    width: fit-content;
+    padding: 0 var(--sys-size-3);
+    border-radius: var(--sys-shape-corner-full);
+    background-color: var(--sys-color-primary);
+    color: var(--sys-color-on-primary);
+    font-size: var(--sys-typescale-body5-size);
+    font-weight: var(--ref-typeface-weight-bold);
+    line-height: var(--sys-size-7);
+  }
+
+  .devtools-pill:disabled .comments-counter-badge,
+  .devtools-pill[aria-disabled="true"] .comments-counter-badge {
+    background-color: var(--sys-color-state-disabled-container);
+    color: var(--sys-color-state-disabled);
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./commentsStatusBarPill.css")} */`;
+
+// ../../front_end/panels/common/CommentsStatusBarPill.ts
 var UIStrings9 = {
   /**
    * @description Button text for the comments status bar pill. Clicking it opens the Comments panel.
    */
-  showComments: "Show comments",
+  viewComments: "View comments",
   /**
    * @description Button text for the comments status bar pill when the AI agent has responded to some
    * comments and the user has not seen these responses yet. Clicking it opens the Comments panel.
    * @example {2} PH1
    */
-  showCommentsWithCount: "Show comments ({PH1})"
+  viewCommentsWithCount: "View comments ({PH1})"
 };
 var str_9 = i18n21.i18n.registerUIStrings("panels/common/CommentsStatusBarPill.ts", UIStrings9);
 var i18nString9 = i18n21.i18n.getLocalizedString.bind(void 0, str_9);
@@ -5267,14 +5476,19 @@ var { html: html10, render: render9 } = Lit5;
 var DEFAULT_VIEW8 = (input, _output, target) => {
   const tooltip = input.threads.flatMap((thread) => thread.comments.map((comment) => comment.text)).join("\n");
   render9(html10`
+    <style>${commentsStatusBarPill_css_default}</style>
     ${input.threads.length <= 0 ? Lit5.nothing : html10`
       <button
         class="devtools-pill"
         title=${tooltip}
+        aria-label=${input.unseenResponseCount > 0 ? i18nString9(UIStrings9.viewCommentsWithCount, { PH1: input.unseenResponseCount }) : i18nString9(UIStrings9.viewComments)}
         ?disabled=${input.disabled}
         @click=${input.onPillClick}
         jslog=${VisualLogging5.action("comments-status-bar-pill").track({ click: true })}>
-        ${input.unseenResponseCount > 0 ? i18nString9(UIStrings9.showCommentsWithCount, { PH1: input.unseenResponseCount }) : i18nString9(UIStrings9.showComments)}
+        <span>${i18nString9(UIStrings9.viewComments)}</span>
+        ${input.unseenResponseCount > 0 ? html10`
+          <span class="comments-counter-badge">${input.unseenResponseCount}</span>
+        ` : Lit5.nothing}
       </button>
     `}
   `, target);

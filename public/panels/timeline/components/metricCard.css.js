@@ -104,7 +104,7 @@ export default `/*
 }
 
 .environment-recs {
-  margin: 9px 0;
+  margin: var(--sys-size-5) 0;
 }
 
 .environment-recs > summary {
@@ -145,7 +145,7 @@ details.environment-recs[open] > summary::before {
 
 .bucket-summaries.histogram {
   display: grid;
-  grid-template-columns: minmax(min-content, auto) minmax(var(--sys-size-14), 60px) max-content;
+  grid-template-columns: minmax(min-content, auto) minmax(var(--sys-size-14), var(--sys-size-18)) max-content;
   grid-auto-rows: 1fr;
   column-gap: var(--sys-size-5);
   place-items: center flex-end;
@@ -175,7 +175,7 @@ details.environment-recs[open] > summary::before {
 }
 
 .tooltip-contents {
-  width: 350px;
+  width: var(--sys-size-32);
   max-width: max-content;
 }
 

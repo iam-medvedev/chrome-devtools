@@ -18,7 +18,8 @@ export default `/*
   flex: auto;
   background-color: var(--sys-color-cdt-base-container);
   pointer-events: auto;
-  margin-left: -3px;
+  /* Compensate for .suggest-box-content-item border and left padding so suggestion text aligns with the anchor word. */
+  margin-left: calc(-2 * var(--sys-size-1));
   box-shadow: var(--drop-shadow);
   overflow-x: hidden;
 }
@@ -51,7 +52,8 @@ export default `/*
   flex: auto;
   text-align: right;
   color: var(--sys-color-token-subtle);
-  margin-right: 3px;
+  /* 4px total right inset (--sys-size-3) minus 1px transparent item border (--sys-size-1). */
+  margin-right: calc(var(--sys-size-3) - var(--sys-size-1));
   overflow: hidden;
   text-overflow: ellipsis;
 }

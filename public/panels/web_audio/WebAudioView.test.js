@@ -4,6 +4,7 @@
 import { assert } from 'chai';
 import { afterEach, beforeEach, it } from 'mocha';
 import sinon from 'sinon';
+import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -43,11 +44,136 @@ describeWithEnvironment('WebAudioView', () => {
     afterEach(() => {
         UI.ActionRegistration.reset();
     });
+    it('shows a paused status and hides the toolbar until inspection resumes', () => {
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction('components.collect-garbage');
+        action.setEnabled(true);
+        const container = document.createElement('div');
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const input = {
+            suspended: true,
+            contexts: [context1],
+            selectedContextIndex: 0,
+            onContextSelectorSelectionChanged: sinon.spy(),
+            contextRealtimeData: null,
+        };
+        WebAudio.WebAudioView.DEFAULT_VIEW(input, undefined, container);
+        const status = container.querySelector('.web-audio-paused');
+        assert.exists(status);
+        assert.strictEqual(status.textContent, 'Web Audio inspection paused');
+        assert.strictEqual(status.getAttribute('role'), 'status');
+        assert.isNull(container.querySelector('.context-detail-container'));
+        const selector = container.querySelector('select');
+        const button = container.querySelector('devtools-button');
+        assert.exists(selector);
+        assert.exists(button);
+        const toolbar = container.querySelector('[role="toolbar"]');
+        assert.exists(toolbar);
+        assert.isFalse(toolbar.checkVisibility());
+        assert.isFalse(button.checkVisibility());
+        assert.isFalse(selector.checkVisibility());
+        assert.isTrue(status.checkVisibility());
+        WebAudio.WebAudioView.DEFAULT_VIEW(input, undefined, container);
+        assert.isFalse(toolbar.checkVisibility());
+        input.suspended = false;
+        WebAudio.WebAudioView.DEFAULT_VIEW(input, undefined, container);
+        assert.isNull(container.querySelector('.web-audio-paused'));
+        assert.exists(container.querySelector('.context-detail-container'));
+        assert.isFalse(selector.disabled);
+        assert.isFalse(button.disabled);
+        assert.isTrue(toolbar.checkVisibility());
+        assert.isTrue(button.checkVisibility());
+        assert.isTrue(selector.checkVisibility());
+        action.setEnabled(false);
+        input.suspended = true;
+        WebAudio.WebAudioView.DEFAULT_VIEW(input, undefined, container);
+        assert.isFalse(toolbar.checkVisibility());
+        input.suspended = false;
+        WebAudio.WebAudioView.DEFAULT_VIEW(input, undefined, container);
+        assert.isTrue(button.disabled);
+        assert.isTrue(toolbar.checkVisibility());
+        container.remove();
+    });
+    it('reads the current suspension state when opened and reopened', async () => {
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const suspended = sinon.stub(targetManager, 'allTargetsSuspended').returns(true);
+        const view = createViewFunctionStub(WebAudio.WebAudioView.WebAudioView);
+        const widget = new WebAudio.WebAudioView.WebAudioView(undefined, view);
+        renderElementIntoDOM(widget);
+        await view.nextInput;
+        assert.isTrue(view.input.suspended);
+        widget.detach();
+        suspended.returns(false);
+        targetManager.dispatchEventToListeners("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */);
+        renderElementIntoDOM(widget);
+        await view.nextInput;
+        assert.isFalse(view.input.suspended);
+        widget.detach();
+    });
+    it('stops polling during suspension and while hidden, and restarts on resume', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const suspended = sinon.stub(targetManager, 'allTargetsSuspended').returns(false);
+        const target = createTarget();
+        const model = target.model(WebAudio.WebAudioModel.WebAudioModel);
+        assert.exists(model);
+        const requestRealtimeData = sinon.stub(model, 'requestRealtimeData').resolves(null);
+        const view = createViewFunctionStub(WebAudio.WebAudioView.WebAudioView);
+        const widget = new WebAudio.WebAudioView.WebAudioView(undefined, view);
+        renderElementIntoDOM(widget);
+        model.dispatchEventToListeners("ContextCreated" /* WebAudio.WebAudioModel.Events.CONTEXT_CREATED */, context1);
+        await clock.tickAsync(1000);
+        sinon.assert.calledOnce(requestRealtimeData);
+        suspended.returns(true);
+        targetManager.dispatchEventToListeners("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */);
+        model.dispatchEventToListeners("ContextCreated" /* WebAudio.WebAudioModel.Events.CONTEXT_CREATED */, context1);
+        await view.nextInput;
+        await clock.tickAsync(3000);
+        assert.deepEqual(view.input.contexts, [context1]);
+        assert.strictEqual(view.input.selectedContextIndex, 0);
+        sinon.assert.calledOnce(requestRealtimeData);
+        suspended.returns(false);
+        targetManager.dispatchEventToListeners("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */);
+        await clock.tickAsync(1);
+        sinon.assert.calledTwice(requestRealtimeData);
+        widget.detach();
+        await clock.tickAsync(3000);
+        sinon.assert.calledTwice(requestRealtimeData);
+        renderElementIntoDOM(widget);
+        await clock.tickAsync(1);
+        sinon.assert.calledThrice(requestRealtimeData);
+        widget.detach();
+    });
+    it('does not display or keep polling data from a request that finishes during suspension', async () => {
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const suspended = sinon.stub(targetManager, 'allTargetsSuspended').returns(false);
+        const target = createTarget();
+        const model = target.model(WebAudio.WebAudioModel.WebAudioModel);
+        assert.exists(model);
+        const response = Promise.withResolvers();
+        const request = sinon.stub(model, 'requestRealtimeData').returns(response.promise);
+        const view = createViewFunctionStub(WebAudio.WebAudioView.WebAudioView);
+        const widget = new WebAudio.WebAudioView.WebAudioView(undefined, view);
+        renderElementIntoDOM(widget);
+        model.dispatchEventToListeners("ContextCreated" /* WebAudio.WebAudioModel.Events.CONTEXT_CREATED */, context1);
+        await clock.tickAsync(1000);
+        sinon.assert.calledOnce(request);
+        suspended.returns(true);
+        targetManager.dispatchEventToListeners("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */);
+        await view.nextInput;
+        response.resolve({ currentTime: 1, renderCapacity: 0.5, callbackIntervalMean: 0.01, callbackIntervalVariance: 0 });
+        await clock.tickAsync(3000);
+        sinon.assert.calledOnce(request);
+        assert.isTrue(view.input.suspended);
+        assert.isNull(view.input.contextRealtimeData);
+        widget.detach();
+    });
     it('shows placeholder', async () => {
         const viewFunction = WebAudio.WebAudioView.DEFAULT_VIEW;
         const container = document.createElement('div');
         renderElementIntoDOM(container, { includeCommonStyles: true });
         viewFunction({
+            suspended: false,
             contexts: [],
             selectedContextIndex: -1,
             onContextSelectorSelectionChanged: () => { },
@@ -61,6 +187,7 @@ describeWithEnvironment('WebAudioView', () => {
         const container = document.createElement('div');
         renderElementIntoDOM(container, { includeCommonStyles: true });
         viewFunction({
+            suspended: false,
             contexts: [context1, context2],
             selectedContextIndex: 0,
             onContextSelectorSelectionChanged: () => { },
@@ -74,6 +201,7 @@ describeWithEnvironment('WebAudioView', () => {
         const container = document.createElement('div');
         renderElementIntoDOM(container, { includeCommonStyles: true });
         viewFunction({
+            suspended: false,
             contexts: [context1],
             selectedContextIndex: 0,
             onContextSelectorSelectionChanged: () => { },

@@ -705,6 +705,63 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+        it('fetches and renders children of the document element when the document root is expanded manually', async () => {
+            // Models the Console case: the root is a document, it is rendered
+            // (omitRootDOMNode = false) and not expanded by default
+            // (expandRoot = false). Children are fetched lazily.
+            const { domTree, domModel } = setupDOMTreeWidget(target);
+            try {
+                const docNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+                    nodeId: 1,
+                    backendNodeId: 1,
+                    nodeType: Node.DOCUMENT_NODE,
+                    nodeName: '#document',
+                    localName: '',
+                    nodeValue: '',
+                    childNodeCount: 1,
+                });
+                const rootElementNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
+                    nodeId: 2,
+                    backendNodeId: 2,
+                    parentId: 1,
+                    nodeType: Node.ELEMENT_NODE,
+                    nodeName: 'root',
+                    localName: 'root',
+                    nodeValue: '',
+                    childNodeCount: 1,
+                });
+                rootElementNode.parentNode = docNode;
+                sinon.stub(docNode, 'getChildNodes').callsFake(callback => {
+                    docNode.childrenInternal = [rootElementNode];
+                    callback(docNode.childrenInternal);
+                });
+                const getRootElementChildNodes = sinon.stub(rootElementNode, 'getChildNodes').callsFake(callback => {
+                    const childNode = createTestDOMTree(domModel, { nodeId: 3, nodeName: 'child' });
+                    childNode.parentNode = rootElementNode;
+                    rootElementNode.childrenInternal = [childNode];
+                    callback(rootElementNode.childrenInternal);
+                });
+                domTree.rootDOMNode = docNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                domTree.setNodeExpanded(docNode, true);
+                await waitForTreeUpdates();
+                sinon.assert.calledOnce(getRootElementChildNodes);
+                assert.isTrue(domTree.isNodeExpanded(rootElementNode));
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const docTreeElement = internalTree.rootElement().children()[0];
+                assert.lengthOf(docTreeElement.children(), 1);
+                const rootTreeElement = docTreeElement.children()[0];
+                assert.isTrue(rootTreeElement.expanded);
+                // The child element and the closing tag.
+                assert.lengthOf(rootTreeElement.children(), 2);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
         it('renders screenshot', async () => {
             const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
             try {
@@ -2980,6 +3037,50 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 domTree.detach();
             }
         });
+        // Regression test for crbug.com/581467760.
+        it('selects and focuses a target DOM node when adopted style sheets are present', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
+            domTree.omitRootDOMNode = true;
+            domTree.selectEnabled = true;
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: '#document',
+                    adoptedStyleSheets: ['sheet-id'],
+                    children: [
+                        {
+                            nodeId: 2,
+                            nodeName: 'HTML',
+                            children: [
+                                {
+                                    nodeId: 3,
+                                    nodeName: 'BODY',
+                                    children: [{ nodeId: 4, nodeName: 'DIV' }],
+                                },
+                            ],
+                        },
+                    ],
+                });
+                const divNode = rootNode.children()[0].children()[0].children()[0];
+                assert.exists(divNode);
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                domTree.selectDOMNode(divNode, /* focus= */ true);
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.selectedDOMNode(), divNode);
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const selectedTreeElement = tree.getInternalTreeOutlineForTest().selectedTreeElement;
+                assert.exists(selectedTreeElement);
+                const selectedWidget = UI.Widget.Widget.get(selectedTreeElement.listItemElement.querySelector('devtools-widget'));
+                assert.instanceOf(selectedWidget, Elements.DOMTreeElementWidget.DOMTreeElementWidget);
+                assert.strictEqual(selectedWidget.node, divNode);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
         it('selects DOM node without expanding ancestors in selectDOMNodeWithoutReveal', async () => {
             const { domTree, domModel } = setupDOMTreeWidget(target);
             try {
@@ -4822,8 +4923,14 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 await waitForTreeUpdates();
                 const depth1Node = rootNode.children()[0];
                 assert.isNull(findTreeElement(domTree, domModel.nodeForId(3)));
+                // The tree outline dispatches an `expand` event for every node rendered
+                // with the `open` attribute. These events must not trigger a re-render
+                // per node, which is quadratic in the size of the expanded subtree.
+                const performUpdateSpy = sinon.spy(domTree, 'performUpdate');
                 await domTree.expandRecursively(depth1Node);
                 await waitForTreeUpdates();
+                sinon.assert.callCount(performUpdateSpy, 1);
+                performUpdateSpy.restore();
                 let currentNode = depth1Node;
                 let currentTreeElement = requireTreeElement(domTree, depth1Node);
                 for (let i = 1; i < 10; i++) {
@@ -5148,6 +5255,36 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 assert.strictEqual(treeWidgetOf(closedHostTreeElement.children()[0])?.node.nodeNameInCorrectCase(), '#shadow-root (closed)');
                 assert.strictEqual(widgetText(treeWidgetOf(openHostTreeElement.children()[0])).trim(), '#shadow-root (open)');
                 assert.strictEqual(widgetText(treeWidgetOf(closedHostTreeElement.children()[0])).trim(), '#shadow-root (closed)');
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('adds the shadow-root class only to #shadow-root rows for the nesting guide line', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target);
+            try {
+                domTree.omitRootDOMNode = true;
+                const shadowPayload = makeNodePayload(3, '#shadow-root', {
+                    parentId: 2,
+                    nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                    shadowRootType: "open" /* Protocol.DOM.ShadowRootType.Open */,
+                    children: [makeNodePayload(4, 'DIV', { parentId: 3, attributes: ['id', 'shadow-child'] })],
+                });
+                const hostPayload = makeNodePayload(2, 'DIV', { parentId: 1, shadowRoots: [shadowPayload] });
+                const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, makeDocumentPayload(1, [hostPayload]));
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const hostNode = domModel.nodeForId(2);
+                const shadowRootNode = domModel.nodeForId(3);
+                const hostTreeElement = await expandAndFind(domTree, hostNode);
+                const shadowRootTreeElement = await expandAndFind(domTree, shadowRootNode);
+                assert.isFalse(hostTreeElement.listItemElement.classList.contains('shadow-root'));
+                assert.isTrue(shadowRootTreeElement.listItemElement.classList.contains('shadow-root'));
+                const childrenList = shadowRootTreeElement.listItemElement.nextElementSibling;
+                assert.instanceOf(childrenList, HTMLOListElement);
+                assert.isTrue(childrenList.classList.contains('children'));
+                assert.isTrue(childrenList.matches('li.shadow-root + ol.children'));
             }
             finally {
                 domTree.detach();
@@ -5844,6 +5981,34 @@ describeWithEnvironment('DOMTreeWidget', () => {
             assert.isTrue(domTree.isNodeExpanded(rootNode));
             assert.isTrue(domTree.isNodeExpanded(sectionNode));
             assert.isTrue(domTree.isNodeExpanded(spanNode));
+        }
+        finally {
+            domTree.detach();
+        }
+    });
+    it('fires onElementExpanded when expanding nodes recursively', async () => {
+        const { domTree, domModel } = setupDOMTreeWidget(target);
+        try {
+            const rootNode = createTestDOMTree(domModel, {
+                nodeId: 1,
+                nodeName: 'DIV',
+                children: [
+                    {
+                        nodeId: 2,
+                        nodeName: 'SECTION',
+                        children: [
+                            { nodeId: 3, nodeName: 'SPAN' },
+                        ],
+                    },
+                ],
+            });
+            domTree.rootDOMNode = rootNode;
+            domTree.performUpdate();
+            await waitForTreeUpdates();
+            const onElementExpanded = sinon.spy(domTree, 'onElementExpanded');
+            await domTree.expandRecursively(rootNode);
+            await waitForTreeUpdates();
+            sinon.assert.called(onElementExpanded);
         }
         finally {
             domTree.detach();

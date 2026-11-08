@@ -52,8 +52,8 @@ devtools-list.locations-list,
 }
 
 .locations-list-item {
-  padding: 3px var(--sys-size-4);
-  height: 30px;
+  padding: var(--sys-size-2) var(--sys-size-4);
+  height: var(--sys-size-12);
   display: flex;
   align-items: center;
   position: relative;
@@ -84,7 +84,7 @@ devtools-list.locations-list,
 .locations-list-separator {
   flex: 0 0 var(--sys-size-1);
   background-color: var(--sys-color-divider);
-  height: 30px;
+  height: var(--sys-size-13);
   margin: 0 var(--sys-size-3);
 }
 

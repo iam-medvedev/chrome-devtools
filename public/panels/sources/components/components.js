@@ -67,8 +67,8 @@ var HeadersView_css_default = `/*
   cursor: text;
   color: var(--sys-color-on-surface);
   overflow-wrap: break-word;
-  min-height: 18px;
-  line-height: 18px;
+  min-height: var(--sys-size-8);
+  line-height: var(--sys-size-8);
   min-width: 0.5em;
   background: transparent;
   border: none;
@@ -211,6 +211,10 @@ var HeadersView = class extends UI.View.SimpleView {
       uiSourceCode: this.#uiSourceCode,
       parsingError: false
     };
+    this.performUpdate();
+  }
+  wasShown() {
+    super.wasShown();
     this.#uiSourceCode.addEventListener(
       Workspace.UISourceCode.Events.WorkingCopyChanged,
       this.#onWorkingCopyChanged,
@@ -221,8 +225,15 @@ var HeadersView = class extends UI.View.SimpleView {
       this.#onWorkingCopyCommitted,
       this
     );
-    this.performUpdate();
-    void this.#setInitialData();
+    if (this.#uiSourceCode.isDirty()) {
+      this.#setComponentData(this.#uiSourceCode.workingCopy());
+    } else {
+      void this.#setInitialData();
+    }
+  }
+  willHide() {
+    super.willHide();
+    this.dispose();
   }
   performUpdate() {
     const that = this;

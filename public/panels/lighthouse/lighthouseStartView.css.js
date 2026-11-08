@@ -48,8 +48,8 @@ export default `/*
 }
 
 .lighthouse-start-view .lighthouse-logo {
-  width: 45px;
-  height: 45px;
+  width: var(--sys-size-15);
+  height: var(--sys-size-15);
 }
 
 .lighthouse-form-section {
@@ -64,7 +64,7 @@ export default `/*
 }
 
 .lighthouse-form-section-label {
-  margin: 7px 0;
+  margin: var(--sys-size-5) 0;
   font-weight: 500;
 }
 
@@ -133,7 +133,6 @@ export default `/*
   color: #f00; /* stylelint-disable-line plugin/use_theme_colors */
   /* See: crbug.com/1152736 for color variable migration. */
   font-weight: bold;
-  padding-left: 10px;
 }
 
 .lighthouse-warning-text {

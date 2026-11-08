@@ -59,9 +59,6 @@ class ManualPromise {
     }
     resolve() {
         this.#resolveFn();
-        const { resolve, promise } = Promise.withResolvers();
-        this.#waitPromise = promise;
-        this.#resolveFn = resolve;
     }
     wait() {
         return this.#waitPromise;
@@ -276,12 +273,14 @@ describeWithEnvironment('AnimationTimeline', () => {
         });
     });
     describe('Animation group nodes are removed', () => {
-        const waitForPreviewsManualPromise = new ManualPromise();
-        const waitForAnimationGroupSelectedPromise = new ManualPromise();
+        let waitForPreviewsManualPromise;
+        let waitForAnimationGroupSelectedPromise;
         let domModel;
         let animationModel;
         let contentDocument;
         beforeEach(async () => {
+            waitForPreviewsManualPromise = new ManualPromise();
+            waitForAnimationGroupSelectedPromise = new ManualPromise();
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
             renderElementIntoDOM(view);
@@ -411,14 +410,18 @@ describeWithEnvironment('AnimationTimeline', () => {
         });
     });
     describe('time animations', () => {
-        const waitForPreviewsManualPromise = new ManualPromise();
-        const waitForAnimationGroupSelectedPromise = new ManualPromise();
-        const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
-        const waitForScrubberOnFinish = new ManualPromise();
+        let waitForPreviewsManualPromise;
+        let waitForAnimationGroupSelectedPromise;
+        let waitForScheduleRedrawAfterAnimationGroupUpdated;
+        let waitForScrubberOnFinish;
         let domModel;
         let animationModel;
         let contentDocument;
         beforeEach(async () => {
+            waitForPreviewsManualPromise = new ManualPromise();
+            waitForAnimationGroupSelectedPromise = new ManualPromise();
+            waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
+            waitForScrubberOnFinish = new ManualPromise();
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
             renderElementIntoDOM(view);
@@ -499,14 +502,17 @@ describeWithEnvironment('AnimationTimeline', () => {
     });
     describe('scroll driven animations', () => {
         let stubbedAnimationDOMNode;
-        const waitForPreviewsManualPromise = new ManualPromise();
-        const waitForAnimationGroupSelectedPromise = new ManualPromise();
-        const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
+        let waitForPreviewsManualPromise;
+        let waitForAnimationGroupSelectedPromise;
+        let waitForScheduleRedrawAfterAnimationGroupUpdated;
         let toolbarViewStub;
         let domModel;
         let animationModel;
         let contentDocument;
         beforeEach(async () => {
+            waitForPreviewsManualPromise = new ManualPromise();
+            waitForAnimationGroupSelectedPromise = new ManualPromise();
+            waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
             stubbedAnimationDOMNode = stubAnimationDOMNode();
             stubAnimationGroup();
             toolbarViewStub = createViewFunctionStub(Animation.AnimationTimeline.AnimationTimeline);

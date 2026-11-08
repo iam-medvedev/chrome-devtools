@@ -994,6 +994,7 @@ describe('ContextSelectionAgent', function () {
                         },
                     }],
                 canceled: false,
+                autoApproved: false,
             });
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
             assert.isOk(requestToAida.historical_contexts);
@@ -1092,6 +1093,7 @@ describe('ContextSelectionAgent', function () {
                         },
                     }],
                 canceled: false,
+                autoApproved: false,
             });
             const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
             assert.isOk(requestToAida.historical_contexts);

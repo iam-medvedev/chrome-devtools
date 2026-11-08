@@ -7,6 +7,7 @@ var __export = (target, all) => {
 // ../../front_end/entrypoints/inspector_main/RenderingOptions.ts
 var RenderingOptions_exports = {};
 __export(RenderingOptions_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   ReloadActionDelegate: () => ReloadActionDelegate,
   RenderingOptionsView: () => RenderingOptionsView
 });
@@ -17,6 +18,7 @@ import * as Root from "../../core/root/root.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as SettingsUI from "../../ui/legacy/components/settings_ui/settings_ui.js";
 import * as UI from "../../ui/legacy/legacy.js";
+import * as Lit from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/inspector_main/renderingOptions.css.js
@@ -33,6 +35,11 @@ var renderingOptions_css_default = `/*
 devtools-checkbox {
   margin: 0 0 10px;
   flex: none;
+}
+
+.devtools-checkbox-subtitle {
+  color: var(--sys-color-token-subtle);
+  white-space: break-spaces;
 }
 
 .panel-section-separator {
@@ -53,6 +60,9 @@ devtools-checkbox {
 /*# sourceURL=${import.meta.resolve("./renderingOptions.css")} */`;
 
 // ../../front_end/entrypoints/inspector_main/RenderingOptions.ts
+var { html, nothing, render } = Lit;
+var { bindToSetting } = UI.UIUtils;
+var { renderControlForSetting } = SettingsUI.SettingsUI;
 var UIStrings = {
   /**
    * @description The name of a checkbox setting in the Rendering panel. This setting highlights areas
@@ -216,164 +226,183 @@ var supportsPrefersContrast = () => {
 var supportsJpegXl = () => {
   return Boolean(Root.Runtime.hostConfig.devToolsJpegXlImageFormat?.enabled);
 };
-var RenderingOptionsView = class extends UI.Widget.VBox {
-  #jpegXlCheckboxAdded = false;
-  constructor() {
-    super({ useShadowDom: true });
-    this.registerRequiredCSS(renderingOptions_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.panel("rendering").track({ resize: true })}`);
-    this.#appendCheckbox(
+function renderCheckbox(label, subtitle, setting, onChange) {
+  return html`
+    <devtools-checkbox
+      title=${label}
+      ${bindToSetting(setting)}
+      @change=${onChange ?? nothing}>
+      ${label}
+      <div class="devtools-checkbox-subtitle">${subtitle}</div>
+    </devtools-checkbox>
+  `;
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(
+    html`
+        <style>${renderingOptions_css_default}</style>
+        ${renderCheckbox(
       i18nString(UIStrings.paintFlashing),
       i18nString(UIStrings.highlightsAreasOfThePageGreen),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showPaintRectsSettingDescriptor)
-    );
-    this.#appendCheckbox(
+      input.showPaintRectsSetting
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.layoutShiftRegions),
       i18nString(UIStrings.highlightsAreasOfThePageBlueThat),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor)
-    );
-    this.#appendCheckbox(
+      input.showLayoutShiftRegionsSetting
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.layerBorders),
       i18nString(UIStrings.showsLayerBordersOrangeoliveAnd),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showDebugBordersSettingDescriptor)
-    );
-    this.#appendCheckbox(
+      input.showDebugBordersSetting
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.frameRenderingStats),
       i18nString(UIStrings.plotsFrameThroughputDropped),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showFPSCounterSettingDescriptor)
-    );
-    this.#appendCheckbox(
+      input.showFPSCounterSetting
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.scrollingPerformanceIssues),
       i18nString(UIStrings.highlightsElementsTealThatCan),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor)
-    );
-    if (!Root.Runtime.hostConfig.devToolsAdsPanel?.enabled) {
-      this.#appendCheckbox(
-        i18nString(UIStrings.highlightAds),
-        i18nString(UIStrings.highlightsElementsRedDetectedToBe),
-        Common.Settings.Settings.instance().resolve(SDK.SDKSettings.showAdHighlightsSettingDescriptor)
-      );
-    }
-    this.#appendCheckbox(
+      input.showScrollBottleneckRectsSetting
+    )}
+        ${input.showAdHighlightsSetting ? renderCheckbox(
+      i18nString(UIStrings.highlightAds),
+      i18nString(UIStrings.highlightsElementsRedDetectedToBe),
+      input.showAdHighlightsSetting
+    ) : nothing}
+        ${renderCheckbox(
       i18nString(UIStrings.disableLocalFonts),
       i18nString(UIStrings.disablesLocalSourcesInFontface),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.localFontsDisabledSettingDescriptor)
-    );
-    this.#appendCheckbox(
+      input.localFontsDisabledSetting
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.emulateAFocusedPage),
       i18nString(UIStrings.emulatesAFocusedPage),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor),
-      { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab }
-    );
-    const autoDarkModeSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulateAutoDarkModeSettingDescriptor);
-    this.#appendCheckbox(
+      input.emulatePageFocusSetting,
+      input.onEmulatePageFocusChange
+    )}
+        ${renderCheckbox(
       i18nString(UIStrings.emulateAutoDarkMode),
       i18nString(UIStrings.emulatesAutoDarkMode),
-      autoDarkModeSetting
-    );
-    this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(
+      input.emulateAutoDarkModeSetting
+    )}
+        <div class="panel-section-separator"></div>
+        ${renderControlForSetting(
+      input.prefersColorSchemeSetting,
       i18nString(UIStrings.forcesCssPreferscolorschemeMedia),
-      Common.Settings.Settings.instance().resolve(
-        SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor
-      ),
-      autoDarkModeSetting.get()
-    );
-    this.#appendSelect(
-      i18nString(UIStrings.forcesMediaTypeForTestingPrint),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor)
-    );
-    this.#appendSelect(
-      i18nString(UIStrings.forcesCssForcedColors),
-      Common.Settings.Settings.instance().resolve(
-        SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor
-      )
-    );
-    if (supportsPrefersContrast()) {
-      this.#appendSelect(
-        i18nString(UIStrings.forcesCssPreferscontrastMedia),
-        Common.Settings.Settings.instance().resolve(
-          SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor
-        )
-      );
-    }
-    this.#appendSelect(
-      i18nString(UIStrings.forcesCssPrefersreducedmotion),
-      Common.Settings.Settings.instance().resolve(
-        SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor
-      )
-    );
-    if (supportsPrefersReducedData()) {
-      this.#appendSelect(
-        i18nString(UIStrings.forcesCssPrefersreduceddataMedia),
-        Common.Settings.Settings.instance().resolve(
-          SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor
-        )
-      );
-    }
-    if (supportsPrefersReducedTransparency()) {
-      this.#appendSelect(
-        i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia),
-        Common.Settings.Settings.instance().resolve(
-          SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor
-        )
-      );
-    }
-    this.#appendSelect(
-      i18nString(UIStrings.forcesCssColorgamutMediaFeature),
-      Common.Settings.Settings.instance().resolve(
-        SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor
-      )
-    );
-    this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(
-      i18nString(UIStrings.forcesVisionDeficiencyEmulation),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor)
-    );
-    this.contentElement.createChild("div").classList.add("panel-section-separator");
-    this.#appendSelect(
-      i18nString(UIStrings.forcesOsTextScaleEmulation),
-      Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor)
-    );
-    this.contentElement.createChild("div").classList.add("panel-section-separator");
-    const avifFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.avifFormatDisabledSettingDescriptor);
-    const jpegXlFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.jpegXlFormatDisabledSettingDescriptor);
-    const webpFormatDisabledSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.webpFormatDisabledSettingDescriptor);
-    this.#appendCheckbox(
+      input.prefersColorSchemeDisabled
+    )}
+        ${renderControlForSetting(
+      input.emulatedCSSMediaSetting,
+      i18nString(UIStrings.forcesMediaTypeForTestingPrint)
+    )}
+        ${renderControlForSetting(
+      input.forcedColorsSetting,
+      i18nString(UIStrings.forcesCssForcedColors)
+    )}
+        ${input.prefersContrastSetting ? renderControlForSetting(
+      input.prefersContrastSetting,
+      i18nString(UIStrings.forcesCssPreferscontrastMedia)
+    ) : nothing}
+        ${renderControlForSetting(
+      input.prefersReducedMotionSetting,
+      i18nString(UIStrings.forcesCssPrefersreducedmotion)
+    )}
+        ${input.prefersReducedDataSetting ? renderControlForSetting(
+      input.prefersReducedDataSetting,
+      i18nString(UIStrings.forcesCssPrefersreduceddataMedia)
+    ) : nothing}
+        ${input.prefersReducedTransparencySetting ? renderControlForSetting(
+      input.prefersReducedTransparencySetting,
+      i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia)
+    ) : nothing}
+        ${renderControlForSetting(
+      input.colorGamutSetting,
+      i18nString(UIStrings.forcesCssColorgamutMediaFeature)
+    )}
+        <div class="panel-section-separator"></div>
+        ${renderControlForSetting(
+      input.visionDeficiencySetting,
+      i18nString(UIStrings.forcesVisionDeficiencyEmulation)
+    )}
+        <div class="panel-section-separator"></div>
+        ${renderControlForSetting(
+      input.osTextScaleSetting,
+      i18nString(UIStrings.forcesOsTextScaleEmulation)
+    )}
+        <div class="panel-section-separator"></div>
+        ${renderCheckbox(
       i18nString(UIStrings.disableAvifImageFormat),
       i18nString(UIStrings.requiresAPageReloadToApplyAnd),
-      avifFormatDisabledSetting
-    );
-    const webpCheckbox = this.#appendCheckbox(
-      i18nString(UIStrings.disableWebpImageFormat),
-      i18nString(UIStrings.requiresAPageReloadToApplyAnd),
-      webpFormatDisabledSetting
-    );
-    this.#appendJpegXlCheckboxWhenSupported(webpCheckbox, jpegXlFormatDisabledSetting);
-    this.contentElement.createChild("div").classList.add("panel-section-separator");
-  }
-  #appendCheckbox(label, subtitle, setting, metric) {
-    const checkbox = UI.UIUtils.CheckboxLabel.create(label, false, subtitle, setting.name);
-    UI.UIUtils.bindCheckbox(checkbox, setting, metric);
-    this.contentElement.appendChild(checkbox);
-    return checkbox;
-  }
-  #appendJpegXlCheckboxWhenSupported(webpCheckbox, jpegXlFormatDisabledSetting) {
-    if (this.#jpegXlCheckboxAdded || !supportsJpegXl()) {
-      return;
-    }
-    this.#jpegXlCheckboxAdded = true;
-    webpCheckbox.before(this.#appendCheckbox(
+      input.avifFormatDisabledSetting
+    )}
+        ${input.jpegXlFormatDisabledSetting ? renderCheckbox(
       i18nString(UIStrings.disableJpegXlImageFormat),
       i18nString(UIStrings.requiresAPageReloadToApplyAnd),
-      jpegXlFormatDisabledSetting
-    ));
+      input.jpegXlFormatDisabledSetting
+    ) : nothing}
+        ${renderCheckbox(
+      i18nString(UIStrings.disableWebpImageFormat),
+      i18nString(UIStrings.requiresAPageReloadToApplyAnd),
+      input.webpFormatDisabledSetting
+    )}
+        <div class="panel-section-separator"></div>
+      `,
+    target,
+    { container: { attributes: { jslog: `${VisualLogging.panel("rendering").track({ resize: true })}` } } }
+  );
+};
+var RenderingOptionsView = class extends UI.Widget.VBox {
+  #view;
+  #autoDarkModeSetting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.emulateAutoDarkModeSettingDescriptor);
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+    this.requestUpdate();
   }
-  #appendSelect(label, setting, disabled) {
-    const control = SettingsUI.SettingsUI.createControlForSetting(setting, label, disabled);
-    if (control) {
-      this.contentElement.appendChild(control);
-    }
+  wasShown() {
+    super.wasShown();
+    this.#autoDarkModeSetting.addChangeListener(this.requestUpdate, this);
+    this.requestUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#autoDarkModeSetting.removeChangeListener(this.requestUpdate, this);
+  }
+  performUpdate() {
+    const settings = Common.Settings.Settings.instance();
+    const viewInput = {
+      showPaintRectsSetting: settings.resolve(SDK.SDKSettings.showPaintRectsSettingDescriptor),
+      showLayoutShiftRegionsSetting: settings.resolve(SDK.SDKSettings.showLayoutShiftRegionsSettingDescriptor),
+      showDebugBordersSetting: settings.resolve(SDK.SDKSettings.showDebugBordersSettingDescriptor),
+      showFPSCounterSetting: settings.resolve(SDK.SDKSettings.showFPSCounterSettingDescriptor),
+      showScrollBottleneckRectsSetting: settings.resolve(SDK.SDKSettings.showScrollBottleneckRectsSettingDescriptor),
+      // The 'Highlight ads' setting now lives in the Ads panel under Application.
+      // We display this legacy setting only when the Ads panel isn't enabled.
+      showAdHighlightsSetting: Root.Runtime.hostConfig.devToolsAdsPanel?.enabled ? null : settings.resolve(SDK.SDKSettings.showAdHighlightsSettingDescriptor),
+      localFontsDisabledSetting: settings.resolve(SDK.SDKSettings.localFontsDisabledSettingDescriptor),
+      emulatePageFocusSetting: settings.resolve(SDK.SDKSettings.emulatePageFocusSettingDescriptor),
+      onEmulatePageFocusChange: () => {
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab);
+      },
+      emulateAutoDarkModeSetting: this.#autoDarkModeSetting,
+      prefersColorSchemeSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersColorSchemeSettingDescriptor),
+      prefersColorSchemeDisabled: Boolean(this.#autoDarkModeSetting.get()),
+      emulatedCSSMediaSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaSettingDescriptor),
+      forcedColorsSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeatureForcedColorsSettingDescriptor),
+      prefersContrastSetting: supportsPrefersContrast() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor) : null,
+      prefersReducedMotionSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor),
+      prefersReducedDataSetting: supportsPrefersReducedData() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor) : null,
+      prefersReducedTransparencySetting: supportsPrefersReducedTransparency() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor) : null,
+      colorGamutSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor),
+      visionDeficiencySetting: settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor),
+      osTextScaleSetting: settings.resolve(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor),
+      avifFormatDisabledSetting: settings.resolve(SDK.SDKSettings.avifFormatDisabledSettingDescriptor),
+      jpegXlFormatDisabledSetting: supportsJpegXl() ? settings.resolve(SDK.SDKSettings.jpegXlFormatDisabledSettingDescriptor) : null,
+      webpFormatDisabledSetting: settings.resolve(SDK.SDKSettings.webpFormatDisabledSettingDescriptor)
+    };
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
 var ReloadActionDelegate = class {
@@ -397,7 +426,7 @@ var ReloadActionDelegate = class {
 var InspectorMain_exports = {};
 __export(InspectorMain_exports, {
   BackendSettingsSync: () => BackendSettingsSync,
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   FocusDebuggeeActionDelegate: () => FocusDebuggeeActionDelegate,
   InspectorMainImpl: () => InspectorMainImpl,
   NodeIndicator: () => NodeIndicator,
@@ -413,7 +442,7 @@ import * as SDK2 from "../../core/sdk/sdk.js";
 import * as MobileThrottling from "../../panels/mobile_throttling/mobile_throttling.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
-import * as Lit from "../../ui/lit/lit.js";
+import * as Lit2 from "../../ui/lit/lit.js";
 import * as SettingsUI3 from "../../ui/settings/settings.js";
 
 // gen/front_end/entrypoints/inspector_main/nodeIcon.css.js
@@ -446,7 +475,7 @@ var nodeIcon_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./nodeIcon.css")} */`;
 
 // ../../front_end/entrypoints/inspector_main/InspectorMain.ts
-var { html } = Lit;
+var { html: html2 } = Lit2;
 var UIStrings2 = {
   /**
    * @description Text that refers to the main target. The main target is the primary webpage that
@@ -560,11 +589,11 @@ var FocusDebuggeeActionDelegate = class {
 var isNodeProcessRunning = (targetInfos) => {
   return Boolean(targetInfos.find((target) => target.type === "node" && !target.attached));
 };
-var DEFAULT_VIEW = (input, output, target) => {
+var DEFAULT_VIEW2 = (input, output, target) => {
   const {
     nodeProcessRunning
   } = input;
-  Lit.render(html`
+  Lit2.render(html2`
     <style>${nodeIcon_css_default}</style>
     <div
         class="node-icon ${!nodeProcessRunning ? "inactive" : ""}"
@@ -577,7 +606,7 @@ var NodeIndicator = class extends UI2.Widget.Widget {
   #view;
   #targetInfos = [];
   #wasShown = false;
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: true });
     this.#view = view;
     SDK2.TargetManager.TargetManager.instance().addEventListener(

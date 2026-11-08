@@ -10,7 +10,7 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { Printer } from '../../testing/PropertyParser.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
-import { render } from '../../ui/lit/lit.js';
+import { nothing, render } from '../../ui/lit/lit.js';
 import * as Elements from './elements.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('PropertyRenderer', () => {
@@ -215,7 +215,7 @@ describe('TracingContext', () => {
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('prop', 'value', []);
         assert.exists(matchedResult);
         const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
-        const evaluation = () => ({ placeholder: [] });
+        const evaluation = () => ({ template: nothing });
         // Evaluations are applied bottom up
         assert.isTrue(context.nextEvaluation());
         {

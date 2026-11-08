@@ -35,27 +35,6 @@ export default `/*
   flex-direction: column;
 }
 
-.background-service-preview {
-  position: absolute;
-  background-color: var(--sys-color-cdt-base-container);
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-  font-size: var(--sys-typescale-body3-size);
-  color: var(--sys-color-on-surface-subtle);
-}
-
-.background-service-preview > div {
-  max-width: 450px;
-  margin: 10px;
-  text-align: center;
-}
-
-.background-service-preview > div > p {
-  flex: none;
-  white-space: pre-line;
-}
-
 .background-service-shortcut {
   color: var(--sys-color-on-surface-subtle);
 }
@@ -66,8 +45,8 @@ export default `/*
 }
 
 .background-service-metadata-entry {
-  padding-left: 10px;
-  padding-bottom: 5px;
+  padding-left: var(--sys-size-5);
+  padding-bottom: var(--sys-size-3);
 }
 
 .background-service-metadata-name {
