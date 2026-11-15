@@ -19,8 +19,8 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     private lastHoveredProfileNode;
     private textFilterInternal;
     private taskFilter;
-    protected startTimeInternal?: Trace.Types.Timing.Milli;
-    protected endTimeInternal?: Trace.Types.Timing.Milli;
+    protected startTimeInternal?: Trace.Types.Timing.Micro;
+    protected endTimeInternal?: Trace.Types.Timing.Micro;
     splitWidget: UI.SplitWidget.SplitWidget;
     detailsView: UI.Widget.Widget;
     private searchableView;
@@ -31,7 +31,6 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     private caseSensitiveButton;
     private regexButton;
     private matchWholeWord;
-    eventToTreeNode: WeakMap<Trace.Types.Events.Event, Trace.Extras.TraceTree.Node>;
     /**
      * Determines if the first child in the data grid will be selected
      * by default when refreshTree() gets called.
@@ -42,10 +41,10 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     set selectedEvents(selectedEvents: Trace.Types.Events.Event[] | null);
     set parsedTrace(parsedTrace: Trace.TraceModel.ParsedTrace | null);
     get parsedTrace(): Trace.TraceModel.ParsedTrace | null;
-    set startTime(startTime: Trace.Types.Timing.Milli);
-    get startTime(): Trace.Types.Timing.Milli;
-    set endTime(endTime: Trace.Types.Timing.Milli);
-    get endTime(): Trace.Types.Timing.Milli;
+    set startTime(startTime: Trace.Types.Timing.Micro);
+    get startTime(): Trace.Types.Timing.Micro;
+    set endTime(endTime: Trace.Types.Timing.Micro);
+    get endTime(): Trace.Types.Timing.Micro;
     get compactMode(): boolean;
     set compactMode(v: boolean);
     get maxLinkLength(): number | undefined;
@@ -97,8 +96,11 @@ export declare class TimelineTreeView extends TimelineTreeViewBase implements UI
     willHide(): void;
     onGridNodeOpened(): void;
     private onContextMenu;
+    gridNodeForEvent(event: Trace.Types.Events.Event, parentNode?: DataGrid.DataGrid.DataGridNode<GridNode>): GridNode | null;
     dataGridElementForEvent(event: Trace.Types.Events.Event | null): HTMLElement | null;
     dataGridNodeForTreeNode(treeNode: Trace.Extras.TraceTree.Node): GridNode | null;
+    /** Hook for unaggregated views to index grid nodes by their event. */
+    indexTreeNode(_node: Trace.Extras.TraceTree.Node): void;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, _shouldJump: boolean, _jumpBackwards?: boolean): void;
     jumpToNextSearchResult(): void;

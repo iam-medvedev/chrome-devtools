@@ -32,11 +32,11 @@ var menu_css_default = `/*
   width: fit-content;
   display: flex;
   align-items: center;
-  background-color: var(--override-menu-background-color, var(--sys-color-cdt-base-container));
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 :host([has-open-dialog]) {
-  background-color: var(--override-menu-active-background-color, var(--sys-color-neutral-container));
+  background-color: var(--sys-color-neutral-container);
 }
 
 * {
@@ -53,18 +53,6 @@ var menu_css_default = `/*
 
 #container:focus {
   outline: none;
-}
-
-@keyframes slideIn {
-  from {
-    transform: var(--translate-dialog);
-    opacity: 0%;
-  }
-
-  to {
-    transform: none;
-    opacity: 100%;
-  }
 }
 
 /*# sourceURL=${import.meta.resolve("./menu.css")} */`;
@@ -104,10 +92,6 @@ var menuItem_css_default = `/*
 
 .menu-item:focus {
   outline: none;
-}
-
-:host(.no-checkmark) .menu-item {
-  padding-left: 0;
 }
 
 :host(:not(:first-child)) .menu-item {
@@ -174,6 +158,7 @@ var menuItem_css_default = `/*
 var { html, Directives: { ref } } = Lit;
 var selectedItemCheckmark = new URL("../../../Images/checkmark.svg", import.meta.url).toString();
 var Menu = class extends HTMLElement {
+  static observedAttributes = ["origin"];
   #shadow = this.attachShadow({ mode: "open" });
   #dialog = null;
   #itemIsFocused = false;
@@ -191,6 +176,17 @@ var Menu = class extends HTMLElement {
   }
   set origin(origin) {
     this.#props.origin = origin;
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+  }
+  attributeChangedCallback(_name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+    this.#props.origin = newValue ? () => {
+      const root = this.getRootNode();
+      const element = "getElementById" in root ? root.getElementById(newValue) : root.querySelector(`#${CSS.escape(newValue)}`);
+      return element instanceof HTMLElement ? element : new DOMPoint(0, 0);
+    } : null;
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   get open() {

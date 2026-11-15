@@ -70,12 +70,6 @@ export default `/*
     text-overflow: clip;
   }
 
-  &.editing-sub-part {
-    padding: 3px var(--sys-size-4) var(--sys-size-5) 18px;
-    margin: calc(-1 * var(--sys-size-1)) calc(-1 * var(--sys-size-4)) calc(-1 * var(--sys-size-5));
-    text-overflow: clip;
-  }
-
   &.child-editing {
     overflow-wrap: break-word !important; /* stylelint-disable-line declaration-no-important */
     white-space: normal !important; /* stylelint-disable-line declaration-no-important */
@@ -302,13 +296,8 @@ devtools-icon.icon-link {
   vertical-align: bottom;
 }
 
-devtools-css-angle,
-devtools-css-length {
+devtools-css-angle {
   display: inline-block;
-}
-
-devtools-css-length {
-  margin-left: var(--sys-size-1);
 }
 
 devtools-icon.open-in-animations-panel {

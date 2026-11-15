@@ -159,7 +159,7 @@ import * as i18n from "../../../../core/i18n/i18n.js";
 import * as Platform from "../../../../core/platform/platform.js";
 import * as SDK from "../../../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3917,6 +3917,11 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common2.ObjectWrapper
     if (this.#expanded !== val) {
       this.#expanded = val;
       this.dispatchEventToListeners(_ObjectTreeNodeBase.Events.EXPANDED_CHANGED, val);
+      if (val) {
+        for (let ancestor = this.parent; ancestor; ancestor = ancestor.parent) {
+          ancestor.dispatchEventToListeners(_ObjectTreeNodeBase.Events.NODE_EXPANDED, this);
+        }
+      }
     }
   }
   get readOnly() {
@@ -4152,6 +4157,7 @@ var ObjectTreeNodeBase = class _ObjectTreeNodeBase extends Common2.ObjectWrapper
     Events2["CHILDREN_CHANGED"] = "children-changed";
     Events2["FILTER_CHANGED"] = "filter-changed";
     Events2["EXPANDED_CHANGED"] = "expanded-changed";
+    Events2["NODE_EXPANDED"] = "node-expanded";
   })(Events = ObjectTreeNodeBase2.Events || (ObjectTreeNodeBase2.Events = {}));
 })(ObjectTreeNodeBase || (ObjectTreeNodeBase = {}));
 var ObjectTree = class extends ObjectTreeNodeBase {
@@ -4224,7 +4230,16 @@ var ObjectTreeNode = class _ObjectTreeNode extends ObjectTreeNodeBase {
   }
   property;
   #path;
-  showAllChildren = false;
+  #showAllChildren = false;
+  get showAllChildren() {
+    return this.#showAllChildren;
+  }
+  set showAllChildren(value) {
+    if (this.#showAllChildren !== value) {
+      this.#showAllChildren = value;
+      this.dispatchEventToListeners("children-changed" /* CHILDREN_CHANGED */);
+    }
+  }
   get object() {
     return this.property.value;
   }
@@ -4340,6 +4355,31 @@ var ObjectTreeNode = class _ObjectTreeNode extends ObjectTreeNodeBase {
           matchIndexInNode: results.length,
           matchType: "value",
           range: new TextUtils.TextRange.SourceRange(m.index ?? 0, m[0].length)
+        });
+      }
+    }
+    if (results.length === 0 && !this.property.synthetic && this.path !== this.name) {
+      const parentPath = this.parent instanceof _ObjectTreeNode && !this.parent.property.synthetic ? this.parent.path : "";
+      const matchesLeafInPath = (candidatePath, candidateParentPath) => {
+        const leafStart = candidateParentPath.length + 1;
+        for (const m of candidatePath.matchAll(nameGlobalRegex)) {
+          const start = m.index ?? 0;
+          const end = start + m[0].length;
+          if (start < leafStart && end > leafStart) {
+            return true;
+          }
+        }
+        return false;
+      };
+      const normalizedPath = this.path.replace(/\[(\d+)\]/g, ".$1");
+      const normalizedParentPath = parentPath.replace(/\[(\d+)\]/g, ".$1");
+      if (matchesLeafInPath(this.path, parentPath) || normalizedPath !== this.path && matchesLeafInPath(normalizedPath, normalizedParentPath)) {
+        results.push({
+          node: this,
+          isPostOrderMatch: false,
+          matchIndexInNode: 0,
+          matchType: "name",
+          range: new TextUtils.TextRange.SourceRange(0, nameText.length)
         });
       }
     }
@@ -4850,7 +4890,7 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
     super(element);
     this.#view = view;
   }
-  async #populateChildrenIfNeeded(node) {
+  async #populateChildrenIfNeeded(node, activeNodes) {
     const isFirstPopulation = !node.children;
     const children = await node.populateChildrenIfNeeded();
     if (isFirstPopulation) {
@@ -4868,28 +4908,19 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
       }
     }
     for (const child of node.treeNodeChildren()) {
-      child.removeEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
-      child.addEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
-      child.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
-      child.addEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
-      child.addEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
-      this.#observedNodes.add(child);
+      this.#observeNode(child);
+      activeNodes.add(child);
       if (child.expanded) {
-        await this.#populateChildrenIfNeeded(child);
+        await this.#populateChildrenIfNeeded(child, activeNodes);
       }
     }
     if (!children.arrayRanges) {
       return;
     }
     if (children.arrayRanges.length === 1) {
-      await this.#populateChildrenIfNeeded(children.arrayRanges[0]);
+      await this.#populateChildrenIfNeeded(children.arrayRanges[0], activeNodes);
     } else {
-      await Promise.all(
-        children.arrayRanges.filter((child) => child.singular).map((child) => this.#populateChildrenIfNeeded(child))
-      );
+      await Promise.all(children.arrayRanges.filter((child) => child.singular).map((child) => this.#populateChildrenIfNeeded(child, activeNodes)));
     }
   }
   onExpand = (node, expanded, recursively = false) => {
@@ -4951,16 +4982,29 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
     this.#objectTree?.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
     this.requestUpdate();
   }
+  #observeNode(node) {
+    if (this.#observedNodes.has(node)) {
+      return;
+    }
+    node.addEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
+    node.addEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    node.addEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
+    node.addEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+    this.#observedNodes.add(node);
+  }
+  #unobserveNode(node) {
+    node.removeEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
+    node.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
+    node.removeEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
+    node.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+    this.#observedNodes.delete(node);
+  }
   #unobserveAll() {
     this.#objectTree?.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
     this.#objectTree?.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
     for (const child of this.#observedNodes) {
-      child.removeEventListener("filter-changed" /* FILTER_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("expanded-changed" /* EXPANDED_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("value-changed" /* VALUE_CHANGED */, this.requestUpdate, this);
-      child.removeEventListener("children-changed" /* CHILDREN_CHANGED */, this.requestUpdate, this);
+      this.#unobserveNode(child);
     }
-    this.#observedNodes.clear();
   }
   get linkifier() {
     return this.#linkifier;
@@ -5000,8 +5044,14 @@ var ObjectTreeWidget = class extends UI2.Widget.Widget {
       this.#unobserveAll();
       return;
     }
+    const activeNodes = /* @__PURE__ */ new Set();
     if (this.#objectTree?.expanded) {
-      await this.#populateChildrenIfNeeded(this.#objectTree);
+      await this.#populateChildrenIfNeeded(this.#objectTree, activeNodes);
+    }
+    for (const child of this.#observedNodes) {
+      if (!activeNodes.has(child)) {
+        this.#unobserveNode(child);
+      }
     }
     this.#view(this, void 0, this.contentElement);
   }
@@ -5854,10 +5904,6 @@ var objectPopover_css_default = `/*
   overflow: auto;
   width: 100%;
   height: calc(100% - 22px);
-}
-
-.object-popover-container {
-  display: inline-block;
 }
 
 .object-popover-description-box {

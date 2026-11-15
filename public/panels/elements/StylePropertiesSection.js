@@ -160,9 +160,7 @@ export class StylePropertiesSection {
     sectionIdx = 0;
     #customHeaderText;
     #specificityTooltips;
-    static #nextSpecificityTooltipId = 0;
-    static #nextSectionTooltipIdPrefix = 0;
-    sectionTooltipIdPrefix = StylePropertiesSection.#nextSectionTooltipIdPrefix++;
+    sectionTooltipIdFactory = new Tooltips.Tooltip.IdFactory();
     ghostStyleTreeElements = [];
     #activeAiSuggestion;
     #isInactive = false;
@@ -949,7 +947,7 @@ export class StylePropertiesSection {
             jslogContext: 'container-query',
         };
         if (style) {
-            const tooltipPrefix = `container-${this.sectionTooltipIdPrefix}-${this.nestingLevel}`;
+            const tooltipPrefix = this.sectionTooltipIdFactory.subfactory('container', this.nestingLevel);
             void containerQuery.getContainerForNode(this.matchedStyles.node().id).then(container => {
                 if (container) {
                     containerQueryElement.parseStyleQueries(this.matchedStyles, style, container.containerNode, tooltipPrefix);
@@ -1080,6 +1078,7 @@ export class StylePropertiesSection {
             if (lastAncestor && this.#collapseIcon && this.#statusElement) {
                 this.#collapseIcon.slot = 'indent';
                 lastAncestor.append(this.#collapseIcon, this.#statusElement);
+                lastAncestor.classList.add('has-collapse-icon');
             }
             this.#ancestorClosingBracesElement.firstElementChild?.classList.add('sidebar-pane-closing-brace');
         }
@@ -1118,16 +1117,21 @@ export class StylePropertiesSection {
         }
         return (curSection?.editable) ? curSection : null;
     }
-    refreshUpdate(editedTreeElement) {
-        this.stylesContainer.refreshUpdate(this, editedTreeElement);
+    findProperty(propertyOrName) {
+        return this.propertiesTreeOutline.rootElement().children().findLast((child) => child instanceof StylePropertyTreeElement &&
+            (typeof propertyOrName === 'string' ? child.property.name === propertyOrName :
+                child.property === propertyOrName));
     }
-    updateVarFunctions(editedTreeElement) {
-        if (!editedTreeElement.property.name.startsWith('--')) {
+    refreshUpdate(editedProperty) {
+        this.stylesContainer.refreshUpdate(this, editedProperty);
+    }
+    updateVarFunctions(editedProperty) {
+        if (!editedProperty.property.name.startsWith('--')) {
             return;
         }
         let child = this.propertiesTreeOutline.firstChild();
         while (child) {
-            if (child !== editedTreeElement && child instanceof StylePropertyTreeElement) {
+            if (child instanceof StylePropertyTreeElement && child !== editedProperty) {
                 child.refreshIfComputedValueChanged();
             }
             child = child.traverseNextTreeElement(false /* skipUnrevealed */, null /* stayWithin */, true /* dontPopulate */);
@@ -1322,9 +1326,6 @@ export class StylePropertiesSection {
         this.renderSelectors(rule.selectors, matchingSelectors, this.elementToSelectorIndex);
         this.markSelectorHighlights();
     }
-    static getNextSpecificityTooltipId() {
-        return `specificity-tooltip-${this.#nextSpecificityTooltipId++}`;
-    }
     renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
         this.selectorElement.removeChildren();
         this.#specificityTooltips.removeChildren();
@@ -1335,7 +1336,7 @@ export class StylePropertiesSection {
             if (i > 0) {
                 targetElement.append(', ');
             }
-            const specificityTooltipId = selector.specificity ? StylePropertiesSection.getNextSpecificityTooltipId() : null;
+            const specificityTooltipId = selector.specificity ? this.sectionTooltipIdFactory.keyed('specificity-tooltip') : null;
             const span = targetElement.createChild('span', 'simple-selector');
             span.classList.toggle('selector-matches', matchingSelectors[i]);
             elementToSelectorIndex.set(span, i);

@@ -1189,8 +1189,10 @@ export class TimelinePanel extends TimelinePanelBase {
         if (!parsedTrace) {
             return;
         }
-        // Grab the script mapping to be able to filter out by url.
-        const mappedScriptsWithData = Trace.Handlers.ModelHandlers.Scripts.data().scripts;
+        // Map scripts by ID so extension script content can be removed. Read them
+        // from the saved trace's `parsedTrace.data`, because the global `Scripts`
+        // handler state is reset after every parse.
+        const mappedScriptsWithData = parsedTrace.data.Scripts.scripts;
         const scriptByIdMap = new Map();
         for (const mapScript of mappedScriptsWithData) {
             scriptByIdMap.set(`${mapScript.isolate}.${mapScript.scriptId}`, mapScript);

@@ -26,7 +26,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
       <div class="icon ${shape}"></div>
       <div class="label">${label}</div>
     </button>
-  `, target, { container: { attributes: { classes: 'flex-none' } } });
+  `, target, { container: { classes: ['flex-none'] } });
     // clang-format on
 };
 export class ControlButton extends UI.Widget.Widget {

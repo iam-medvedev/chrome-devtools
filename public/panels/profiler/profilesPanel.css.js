@@ -129,25 +129,6 @@ export default `/*
   flex: 0 0 var(--sys-size-19) !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.profile-text-view {
-  padding: 10px;
-  overflow: auto;
-  margin: 0;
-  user-select: text;
-  cursor: text;
-}
-
-.empty-landing-page {
-  position: absolute;
-  background-color: var(--sys-color-cdt-base-container);
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-  font-size: var(--sys-typescale-body1-size);
-  color: var(--sys-color-token-subtle);
-  padding: 50px;
-}
-
 @media (forced-colors: active) {
   .profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
     background: Highlight;

@@ -1763,7 +1763,7 @@ import { assertNotNullOrUndefined } from "../../core/platform/platform.js";
 import * as SDK7 from "../../core/sdk/sdk.js";
 import * as TextUtils5 from "../../core/text_utils/text_utils.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -5952,7 +5952,7 @@ var ResourceScriptMapping = class {
     }
     const startPosition = scopeTreeAndText.text.positionFromOffset(result.start);
     const endPosition = scopeTreeAndText.text.positionFromOffset(result.end);
-    const name = "";
+    const name = result.name ?? "";
     const range = new TextUtils6.TextRange.TextRange(
       startPosition.lineNumber,
       startPosition.columnNumber,
@@ -7792,7 +7792,7 @@ var ResourceMapping = class {
     if (endPosition.lineNumber === script.lineOffset) {
       endPosition.columnNumber += script.columnOffset;
     }
-    const name = "";
+    const name = result.name ?? "";
     const range = new TextUtils9.TextRange.TextRange(
       startPosition.lineNumber,
       startPosition.columnNumber,

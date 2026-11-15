@@ -1456,13 +1456,6 @@ export class TrackingHeapSnapshotProfileType extends TrackingHeapSnapshotProfile
     }
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static TypeId = 'HEAP-RECORD';
-    // TODO(crbug.com/1228674): Remove event strings once they are no longer used in web tests.
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static HeapStatsUpdate = 'HeapStatsUpdate';
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static TrackingStarted = 'TrackingStarted';
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static TrackingStopped = 'TrackingStopped';
 }
 export var TrackingHeapSnapshotProfileTypeEvents;
 (function (TrackingHeapSnapshotProfileTypeEvents) {

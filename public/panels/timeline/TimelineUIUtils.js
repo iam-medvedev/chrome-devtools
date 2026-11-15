@@ -1085,7 +1085,9 @@ export class TimelineUIUtils {
             }
             case Trace.Types.Events.Name.CACHE_MODULE: {
                 url = unsafeEventData && unsafeEventData['url'];
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                if (typeof unsafeEventData?.['producedCacheSize'] === 'number') {
+                    contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                }
                 break;
             }
             case Trace.Types.Events.Name.CACHE_SCRIPT: {
@@ -1099,7 +1101,9 @@ export class TimelineUIUtils {
                     }
                     entityAppended = true;
                 }
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                if (typeof unsafeEventData?.['producedCacheSize'] === 'number') {
+                    contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), i18n.ByteUtilities.bytesToString(unsafeEventData['producedCacheSize']));
+                }
                 break;
             }
             case Trace.Types.Events.Name.EVALUATE_SCRIPT: {
@@ -1708,11 +1712,6 @@ export class TimelineUIUtils {
     }
     static visibleEventsFilter() {
         return new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes());
-    }
-    // Included only for layout tests.
-    // TODO(crbug.com/1386091): Fix/port layout tests and remove.
-    static categories() {
-        return Trace.Styles.getCategoryStyles();
     }
     static generatePieChart(aggregatedStats, selfCategory, selfTime) {
         let total = 0;

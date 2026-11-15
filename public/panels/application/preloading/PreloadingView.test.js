@@ -1579,6 +1579,71 @@ describeWithEnvironment('PreloadingSummaryView', () => {
         await usedPreloadingComponent.updateComplete;
         assert.include(usedPreloadingComponent.contentElement.textContent, 'This page was successfully prerendered');
     });
+    it('shows success when a re-triggered prefetch succeeds after an earlier pipeline failed', async () => {
+        const emulator = new NavigationEmulator();
+        await emulator.openDevTools();
+        const view = createSummaryView(emulator.primaryTarget);
+        await emulator.navigateAndDispatchEvents('');
+        const basePrefetchUpdate = {
+            key: {
+                loaderId: 'loaderId:1',
+                action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
+                url: 'https://example.com/prefetched.html',
+            },
+            initiatingFrameId: 'frameId',
+            prefetchUrl: 'https://example.com/prefetched.html',
+        };
+        dispatchEvent(emulator.primaryTarget, 'Preload.prefetchStatusUpdated', {
+            ...basePrefetchUpdate,
+            pipelineId: 'pipelineId:prefetch1',
+            status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
+            prefetchStatus: "PrefetchFailedNetError" /* Protocol.Preload.PrefetchStatus.PrefetchFailedNetError */,
+            requestId: 'requestId:1',
+        });
+        dispatchEvent(emulator.primaryTarget, 'Preload.prefetchStatusUpdated', {
+            ...basePrefetchUpdate,
+            pipelineId: 'pipelineId:prefetch2',
+            status: "Success" /* Protocol.Preload.PreloadingStatus.Success */,
+            prefetchStatus: "PrefetchResponseUsed" /* Protocol.Preload.PrefetchStatus.PrefetchResponseUsed */,
+            requestId: 'requestId:2',
+        });
+        await emulator.navigateAndDispatchEvents('prefetched.html');
+        await view.updateComplete;
+        const usedPreloadingComponent = getChildWidget(view, PreloadingComponents.UsedPreloadingView.UsedPreloadingView);
+        await usedPreloadingComponent.updateComplete;
+        assert.include(usedPreloadingComponent.contentElement.textContent, 'This page was successfully prefetched');
+    });
+    it('shows success when a re-triggered prerender succeeds after an earlier pipeline failed', async () => {
+        const emulator = new NavigationEmulator();
+        await emulator.openDevTools();
+        const view = createSummaryView(emulator.primaryTarget);
+        await emulator.navigateAndDispatchEvents('');
+        dispatchEvent(emulator.primaryTarget, 'Preload.prerenderStatusUpdated', {
+            key: {
+                loaderId: 'loaderId:2',
+                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                url: 'https://example.com/prerendered.html',
+            },
+            pipelineId: 'pipelineId:prerender1',
+            status: "Failure" /* Protocol.Preload.PreloadingStatus.Failure */,
+            prerenderStatus: "TriggerDestroyed" /* Protocol.Preload.PrerenderFinalStatus.TriggerDestroyed */,
+        });
+        await emulator.addSpecRules(`
+{
+  "prerender":[
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"]
+    }
+  ]
+}
+`);
+        await emulator.activateAndDispatchEvents('prerendered.html');
+        await view.updateComplete;
+        const usedPreloadingComponent = getChildWidget(view, PreloadingComponents.UsedPreloadingView.UsedPreloadingView);
+        await usedPreloadingComponent.updateComplete;
+        assert.include(usedPreloadingComponent.contentElement.textContent, 'This page was successfully prerendered');
+    });
 });
 describeWithEnvironment('applyFilterText', () => {
     const createRow = (id, action, url, status) => {

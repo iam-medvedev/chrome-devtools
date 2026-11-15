@@ -27,8 +27,8 @@ export default `/*
   font-family: var(--monospace-font-family);
   font-size: var(--monospace-font-size);
   align-items: center;
-  line-height: 18px;
-  margin-top: 3px;
+  line-height: var(--sys-typescale-body4-line-height);
+  margin-top: var(--sys-size-3);
 }
 
 .row devtools-button {
@@ -50,8 +50,8 @@ export default `/*
 }
 
 .inline-button {
-  width: 18px;
-  height: 18px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
   opacity: 0%;
   visibility: hidden;
   transition: opacity 200ms;

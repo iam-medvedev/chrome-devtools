@@ -80,14 +80,7 @@ export default `/*
   }
 
   .timeline-details-warning {
-    --override-details-warning-background-color: rgb(250 209 209 / 48%);
-
-    background-color: var(--override-details-warning-background-color);
-  }
-
-  .theme-with-dark-background .timeline-details-warning,
-  :host-context(.theme-with-dark-background) .timeline-details-warning {
-    --override-details-warning-background-color: rgb(87 10 10 / 48%);
+    background-color: var(--sys-color-surface-error);
   }
 
   .timeline-details-warning .timeline-details-view-row-title {
@@ -109,10 +102,6 @@ export default `/*
 
   .timeline-details-view-pie-chart-wrapper {
     margin: var(--sys-size-3) 0;
-  }
-
-  .timeline-details-view-pie-chart {
-    margin-top: 5px;
   }
 }
 

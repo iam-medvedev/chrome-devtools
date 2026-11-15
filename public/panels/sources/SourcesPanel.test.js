@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -273,6 +273,31 @@ describeWithEnvironment('SourcesPanel', () => {
         view.input.onTerminateExecution();
         sinon.assert.calledOnce(runtimeModel.terminateExecution);
         sinon.assert.calledTwice(debuggerModel.resume);
+    });
+    describe('recurring pause escape actions', () => {
+        afterEach(() => {
+            UI.Context.Context.instance().setFlavor(SDK.Target.Target, null);
+            UI.Context.Context.instance().setFlavor(SDK.DebuggerModel.DebuggerPausedDetails, null);
+        });
+        it('re-renders debuggerPausedMessage when breakpointsActive changes while paused', () => {
+            setUpEnvironment();
+            const view = createViewFunctionStub(Sources.SourcesPanel.SourcesPanel);
+            new Sources.SourcesPanel.SourcesPanel(view);
+            const renderStub = sinon.stub(view.input.debuggerPausedMessage, 'render').resolves();
+            const target = sinon.createStubInstance(SDK.Target.Target);
+            const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+            const pausedDetails = sinon.createStubInstance(SDK.DebuggerModel.DebuggerPausedDetails);
+            pausedDetails.debuggerModel = debuggerModel;
+            debuggerModel.target.returns(target);
+            debuggerModel.isPaused.returns(true);
+            debuggerModel.debuggerPausedDetails.returns(pausedDetails);
+            target.model.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel);
+            UI.Context.Context.instance().setFlavor(SDK.Target.Target, target);
+            renderStub.resetHistory();
+            Common.Settings.Settings.instance().resolve(SDK.SDKSettings.breakpointsActiveSettingDescriptor).set(false);
+            sinon.assert.calledOnce(renderStub);
+            assert.strictEqual(renderStub.firstCall.args[0], pausedDetails);
+        });
     });
     describe('QuickSourceView', () => {
         it('passes sourcesView to view when shown in wrapper and clears it when hidden', () => {

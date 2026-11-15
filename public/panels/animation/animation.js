@@ -45,7 +45,7 @@ import * as i18n from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as SDK from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -2902,7 +2902,7 @@ var animationTimeline_css_default = `/*
 :host {
   overflow: hidden;
 
-  --timeline-controls-width: 150px;
+  --timeline-controls-width: var(--sys-size-22);
 }
 
 :host(.suspended) :is(
@@ -3085,7 +3085,7 @@ circle.animation-keyframe-point:active {
 .animation-scrubber {
   opacity: 100%;
   position: absolute;
-  left: var(--sys-size-5);
+  left: var(--sys-size-6);
   height: 100%;
   width: 100%;
   top: var(--sys-size-12);
@@ -3114,8 +3114,9 @@ circle.animation-keyframe-point:active {
 }
 
 .animation-scrubber-head {
-  width: 7px;
-  height: 7px;
+  /* 7px square: 11px .animation-scrubber-line width (2 * --sys-size-4 - --sys-size-1) minus 2 * 2px left/right inset (--sys-size-2) so the 45deg diamond stays centered on the 1px scrubber stem. */
+  width: calc(2 * var(--sys-size-4) - var(--sys-size-1) - 2 * var(--sys-size-2));
+  height: calc(2 * var(--sys-size-4) - var(--sys-size-1) - 2 * var(--sys-size-2));
   transform: rotate(45deg);
   background: var(--sys-color-error);
   position: absolute;
@@ -3126,8 +3127,9 @@ circle.animation-keyframe-point:active {
 
 .grid-overflow-wrapper {
   position: absolute;
-  /* Offset left by the 8px scrubber origin inset (--sys-size-5) so t=0 aligns with --timeline-controls-width without clipping the scrubber head. */
-  left: calc(var(--timeline-controls-width) - var(--sys-size-5));
+  /* Offset left by the 12px scrubber/grid origin (--sys-size-6)
+   * so t=0 aligns with --timeline-controls-width without clipping. */
+  left: calc(var(--timeline-controls-width) - var(--sys-size-6));
   /* Position below the 28px top toolbar (--sys-size-12) + 48px animation group preview buffer (--sys-size-16) = 76px. */
   top: calc(var(--sys-size-12) + var(--sys-size-16));
   z-index: 1;
@@ -3253,7 +3255,7 @@ text.animation-timeline-grid-label {
   border-radius: var(--sys-size-2);
   flex: 1 1;
   padding: var(--sys-size-3);
-  max-width: 100px;
+  max-width: var(--sys-size-20);
   animation: newGroupAnim 200ms;
   position: relative;
 }
@@ -3314,7 +3316,7 @@ text.animation-timeline-grid-label {
 .animation-paused::after {
   content: '';
   background: var(--sys-color-cdt-base-container);
-  width: 7px;
+  width: var(--sys-size-4);
   height: var(--sys-size-9);
   border-radius: var(--sys-size-2);
   margin: var(--sys-size-2);
@@ -3402,8 +3404,8 @@ text.animation-timeline-grid-label {
 
 .animation-remove-button {
   position: absolute;
-  top: -3px;
-  right: -3px;
+  top: calc(-1 * var(--sys-size-2));
+  right: calc(-1 * var(--sys-size-2));
   background: var(--sys-color-token-subtle);
   border-radius: var(--sys-shape-corner-medium-small);
   border: 0;
@@ -3437,7 +3439,9 @@ text.animation-timeline-grid-label {
   width: var(--sys-size-4);
   height: 100%;
   left: var(--timeline-controls-width);
-  top: 104px;
+  /* Position below the 28px top toolbar (--sys-size-12), 48px preview
+  buffer (--sys-size-16), and 28px timeline header (--sys-size-12). */
+  top: calc(2 * var(--sys-size-12) + var(--sys-size-16));
   z-index: 3;
   /* We put this a bit to the left of the line to allow dragging
   the delay point of the keyframes */
@@ -3547,8 +3551,10 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { render, html, Directives: { classMap } } = Lit;
 var nodeUIsByNode = /* @__PURE__ */ new WeakMap();
 var MIN_TIMELINE_CONTROLS_WIDTH = 120;
-var DEFAULT_TIMELINE_CONTROLS_WIDTH = 150;
+var DEFAULT_TIMELINE_CONTROLS_WIDTH = 144;
 var MAX_TIMELINE_CONTROLS_WIDTH = 720;
+var GRID_OFFSET_LEFT = 12;
+var GRID_LABEL_OFFSET_LEFT = GRID_OFFSET_LEFT + 2;
 var ANIMATION_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/css/animations";
 var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
   const renderPlaybackRateControl = () => {
@@ -4339,7 +4345,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     let lastDraw = void 0;
     for (let time = 0; time < this.duration(); time += gridSize) {
       const line = UI.UIUtils.createSVGChild(this.#grid, "rect", "animation-timeline-grid-line");
-      line.setAttribute("x", (time * this.pixelTimeRatio() + 8).toString());
+      line.setAttribute("x", (time * this.pixelTimeRatio() + GRID_OFFSET_LEFT).toString());
       line.setAttribute("y", "23");
       line.setAttribute("height", "100%");
       line.setAttribute("width", "1");
@@ -4350,7 +4356,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
         lastDraw = gridWidth;
         const label = UI.UIUtils.createSVGChild(this.#grid, "text", "animation-timeline-grid-label");
         label.textContent = isScrollDriven ? `${time.toFixed(0)}px` : i18n.TimeUtilities.millisToString(time);
-        label.setAttribute("x", (gridWidth + 10).toString());
+        label.setAttribute("x", (gridWidth + GRID_LABEL_OFFSET_LEFT).toString());
         label.setAttribute("y", "16");
       }
     }
@@ -4433,7 +4439,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
       return false;
     }
     if (!this.#gridOffsetLeft) {
-      this.#gridOffsetLeft = this.#grid.getBoundingClientRect().left + 8;
+      this.#gridOffsetLeft = this.#grid.getBoundingClientRect().left + GRID_OFFSET_LEFT;
     }
     const { x } = event;
     const seekTime = Math.max(0, x - this.#gridOffsetLeft) / this.pixelTimeRatio();
@@ -5040,6 +5046,7 @@ var Colors = /* @__PURE__ */ new Map([
 
 // ../../front_end/panels/animation/AnimationGroupPreviewUI.ts
 var { render: render2, html: html2, svg, Directives: { classMap: classMap2, ref } } = Lit2;
+var VIEW_BOX_WIDTH = 112;
 var VIEW_BOX_HEIGHT = 32;
 var MAX_ANIMATION_LINES_TO_SHOW = 10;
 var MIN_ANIMATION_GROUP_DURATION = 750;
@@ -5066,8 +5073,8 @@ var DEFAULT_VIEW = (input, output, target) => {
     }
   };
   const renderAnimationLines = () => {
-    const timeToPixelRatio = 100 / Math.max(input.animationGroupDuration, MIN_ANIMATION_GROUP_DURATION);
-    const viewBox = `0 0 100 ${VIEW_BOX_HEIGHT}`;
+    const timeToPixelRatio = VIEW_BOX_WIDTH / Math.max(input.animationGroupDuration, MIN_ANIMATION_GROUP_DURATION);
+    const viewBox = `0 0 ${VIEW_BOX_WIDTH} ${VIEW_BOX_HEIGHT}`;
     const lines = input.animations.map((animation, index) => {
       const xStartPoint = animation.delayOrStartTime();
       const xEndPoint = xStartPoint + animation.iterationDuration();

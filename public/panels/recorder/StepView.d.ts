@@ -34,6 +34,11 @@ export interface ViewInput {
     sectionIndex: number;
     isFirstSection: boolean;
     isLastSection: boolean;
+    /**
+     * Whether the step or section rendered right before this one is in the
+     * error state.
+     */
+    isAfterError: boolean;
     isRecording: boolean;
     isPlaying: boolean;
     isVisible: boolean;
@@ -70,12 +75,14 @@ export declare class StepView extends UI.Widget.Widget<ShadowRoot> {
     set section(section: Models.Section.Section | undefined);
     set state(state: State);
     set error(error: Error | undefined);
+    set showDetails(showDetails: boolean);
     set isEndOfGroup(isEndOfGroup: boolean);
     set isStartOfGroup(isStartOfGroup: boolean);
     set stepIndex(stepIndex: number);
     set sectionIndex(sectionIndex: number);
     set isFirstSection(isFirstSection: boolean);
     set isLastSection(isLastSection: boolean);
+    set isAfterError(isAfterError: boolean);
     set isRecording(isRecording: boolean);
     set isPlaying(isPlaying: boolean);
     set hasBreakpoint(hasBreakpoint: boolean);

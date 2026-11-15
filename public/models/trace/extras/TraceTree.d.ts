@@ -2,10 +2,8 @@ import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
 import type { TraceFilter } from './TraceFilter.js';
 export declare class Node {
-    /** ms */
-    totalTime: number;
-    /** ms */
-    selfTime: number;
+    totalTime: Types.Timing.Micro;
+    selfTime: Types.Timing.Micro;
     transferSize: number;
     id: string | symbol;
     /** The first trace event encountered that necessitated the creation of this tree node. */
@@ -43,18 +41,17 @@ export declare class TopDownNode extends Node {
 }
 export declare class TopDownRootNode extends TopDownNode {
     readonly filter: (e: Types.Events.Event) => boolean;
-    readonly startTime: Types.Timing.Milli;
-    readonly endTime: Types.Timing.Milli;
+    readonly startTime: Types.Timing.Micro;
+    readonly endTime: Types.Timing.Micro;
     eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null | undefined;
     /** Default behavior is to aggregate similar trace events into one Node based on generateEventID(), eventGroupIdCallback(), etc. Set true to keep nodes 1:1 with events. */
     readonly doNotAggregate: boolean | undefined;
     readonly includeInstantEvents?: boolean;
-    totalTime: number;
-    selfTime: number;
+    readonly eventId: (event: Types.Events.Event) => string;
     constructor(events: Types.Events.Event[], { filters, startTime, endTime, doNotAggregate, eventGroupIdCallback, includeInstantEvents }: {
         filters: TraceFilter[];
-        startTime: Types.Timing.Milli;
-        endTime: Types.Timing.Milli;
+        startTime: Types.Timing.Micro;
+        endTime: Types.Timing.Micro;
         doNotAggregate?: boolean;
         eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
         includeInstantEvents?: boolean;
@@ -67,17 +64,17 @@ export declare class BottomUpRootNode extends Node {
     private childrenInternal;
     private textFilter;
     readonly filter: (e: Types.Events.Event) => boolean;
-    readonly startTime: Types.Timing.Milli;
-    readonly endTime: Types.Timing.Milli;
-    totalTime: number;
+    readonly startTime: Types.Timing.Micro;
+    readonly endTime: Types.Timing.Micro;
     eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null | undefined;
     private calculateTransferSize?;
     private forceGroupIdCallback?;
+    readonly eventId: (event: Types.Events.Event) => string;
     constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, forceGroupIdCallback, }: {
         textFilter: TraceFilter;
         filters: readonly TraceFilter[];
-        startTime: Types.Timing.Milli;
-        endTime: Types.Timing.Milli;
+        startTime: Types.Timing.Micro;
+        endTime: Types.Timing.Micro;
         eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
         calculateTransferSize?: boolean;
         /**
@@ -103,7 +100,7 @@ export declare class GroupNode extends Node {
     isGroupNodeInternal: boolean;
     events: Types.Events.Event[];
     constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, events: Types.Events.Event[]);
-    addChild(child: BottomUpNode, selfTime: number, totalTime: number, transferSize: number): void;
+    addChild(child: Node, selfTime: Types.Timing.Micro, totalTime: Types.Timing.Micro, transferSize: number): void;
     hasChildren(): boolean;
     children(): ChildrenCache;
 }

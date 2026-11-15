@@ -208,12 +208,11 @@ devtools-icon.leading-issue-icon {
 }
 
 .link-wrapper {
-  margin-top: 15px;
+  margin-top: var(--sys-size-8);
   user-select: text;
 }
 
-.affected-resources-label,
-.resolutions-label {
+.affected-resources-label {
   margin-top: var(--sys-size-3);
   font-size: var(--sys-typescale-body5-size);
   font-weight: 500;
@@ -229,11 +228,6 @@ devtools-icon.leading-issue-icon {
   padding-inline-start: 0;
 }
 
-.resolutions-list {
-  list-style-type: none;
-  list-style-position: inside;
-  padding-inline-start: 0;
-}
 
 /* We inherit all the styles from treeoutline, but these are simple text <li>, so we override some styles */
 .link-list li::before {
@@ -241,33 +235,9 @@ devtools-icon.leading-issue-icon {
   mask-image: none;
 }
 
-.resolutions-list li::before {
-  content: "→";
-  mask-image: none;
-  padding-right: 5px;
-  position: relative;
-  top: calc(-1 * var(--sys-size-1));
-}
-
-.resolutions-list li {
-  display: list-item;
-}
-
-ul > li.plain-enum {
-  display: list-item;
-}
-
-/* This is a hack because the tree view's CSS overrides list styling in a non-compositional way. This
-   can be removed once we've moved to proper components. */
-ul > li.plain-enum::before {
-  content: "";
-  padding: 0;
-  margin: 0;
-  max-width: 0;
-}
 
 .affected-resources-label + .affected-resources {
-  padding: 3px 0 0;
+  padding: var(--sys-size-3) 0 0;
   position: relative;
   user-select: text;
 }
@@ -294,7 +264,7 @@ ul > li.plain-enum::before {
 
 .affected-resource-row {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   border: 0;
   border-collapse: collapse;
   vertical-align: top;
@@ -314,14 +284,14 @@ ul > li.plain-enum::before {
 
 .affected-resource-request {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-source {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   color: var(--sys-color-primary);
   border: 0;
   border-collapse: collapse;
@@ -372,12 +342,6 @@ ul > li.plain-enum::before {
   padding: var(--sys-size-2);
 }
 
-.affected-resource-heavy-ad-info-frame {
-  display: flex;
-  align-items: center;
-  color: var(--sys-color-token-subtle);
-  padding: var(--sys-size-2);
-}
 
 .affected-resource-cell {
   color: var(--sys-color-token-subtle);
@@ -395,7 +359,7 @@ ul > li.plain-enum::before {
 
 .affected-resources > .parent {
   margin-top: 0;
-  padding: var(--sys-size-2) 5px 0;
+  padding: var(--sys-size-2) var(--sys-size-3) 0;
 }
 
 .affected-resources > .parent.expanded {
@@ -418,7 +382,7 @@ ul > li.plain-enum::before {
 
 .affected-resource-directive {
   font-size: var(--sys-typescale-body4-size);
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   border: 0;
   border-collapse: collapse;
 }
@@ -441,8 +405,14 @@ devtools-icon.link-icon {
 devtools-icon.elements-panel,
 devtools-icon.network-panel {
   margin-right: 0.5ex;
-  vertical-align: baseline;
   height: var(--sys-size-7);
+}
+
+devtools-button.elements-panel {
+  margin-right: var(--sys-size-3);
+  vertical-align: sub;
+
+  --override-button-icon-color: var(--icon-link);
 }
 
 @media (forced-colors: active) {

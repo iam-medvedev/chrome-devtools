@@ -35,7 +35,7 @@ devtools-list.locations-list,
 .locations-list-text {
   white-space: nowrap;
   text-overflow: ellipsis;
-  flex-basis: 170px;
+  flex-basis: var(--sys-size-24);
   user-select: none;
   color: var(--sys-color-on-surface);
   position: relative;
@@ -58,26 +58,6 @@ devtools-list.locations-list,
   background-color: var(--sys-color-divider);
   height: var(--sys-size-13);
   margin: 0 var(--sys-size-3);
-}
-
-.locations-list-separator-invisible {
-  visibility: hidden;
-  height: 100% !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.locations-edit-row {
-  display: flex;
-  flex-direction: row;
-  margin: var(--sys-size-4) 5px;
-}
-
-.locations-edit-row input {
-  width: 100%;
-  text-align: inherit;
-}
-
-.locations-input-container {
-  padding: var(--sys-size-1);
 }
 
 .settings-card-container-wrapper {

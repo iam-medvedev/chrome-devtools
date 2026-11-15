@@ -15,6 +15,7 @@ import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js'
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
+import { createContentProviderUISourceCodes } from '../../../testing/UISourceCodeHelpers.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
@@ -35,6 +36,24 @@ describe('ContextSelectionAgent', function () {
         });
     }
     let universe;
+    function createSourceMapProject(originUrl, urls) {
+        const projectOrigin = SDK.SecurityOrigin.SecurityOrigin.create(originUrl);
+        const { project, uiSourceCodes } = createContentProviderUISourceCodes({
+            items: urls.map(url => ({
+                url,
+                mimeType: 'text/typescript',
+                resourceType: Common.ResourceType.resourceTypes.SourceMapScript,
+            })),
+            projectId: `jsSourceMaps::target:${originUrl}`,
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        sinon.stub(project, 'securityOrigin').returns(projectOrigin);
+        uiSourceCodes.forEach((file, index) => {
+            ContextSelectionAgent.ContextSelectionAgent.uiSourceCodeId.set(file, index + 1);
+        });
+        return { projectOrigin, uiSourceCodes };
+    }
     beforeEach(() => {
         universe = new TestUniverse();
         const { targetManager, workspace, settings, networkLog, ignoreListManager, debuggerWorkspaceBinding } = universe;
@@ -951,6 +970,33 @@ describe('ContextSelectionAgent', function () {
                 },
             });
         });
+        it('rejects selecting a cross-origin fetchable source-mapped file in a same-origin project', async () => {
+            const { projectOrigin, uiSourceCodes } = createSourceMapProject('https://attacker.com', [urlString `https://victim.example/api/account`]);
+            const requestContentDataSpy = sinon.spy(uiSourceCodes[0], 'requestContentData');
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'selectSourceFile',
+                                    args: { id: 1 },
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: projectOrigin }),
+            });
+            const responses = await Array.fromAsync(agent.run('test', { selected: null }));
+            assert.isUndefined(responses.find(r => r.type === "context-change" /* AiAgent.ResponseType.CONTEXT_CHANGE */));
+            sinon.assert.notCalled(requestContentDataSpy);
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert.isOk(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                error: 'Unable to find file.',
+                widgets: undefined,
+            });
+        });
     });
     describe('listSourceFiles', () => {
         it('lists source files', async () => {
@@ -1111,6 +1157,43 @@ describe('ContextSelectionAgent', function () {
                         widgets: undefined,
                     },
                 },
+            });
+        });
+        it('excludes cross-origin fetchable source-mapped files in a same-origin project while keeping non-fetchable ones', async () => {
+            const { projectOrigin } = createSourceMapProject('https://attacker.com', [
+                urlString `https://victim.example/api/account`,
+                urlString `webpack:///./src/app.ts`,
+                urlString `https://attacker.com/src/util.ts`,
+            ]);
+            const agent = new ContextSelectionAgent.ContextSelectionAgent({
+                aidaClient: mockAidaClient([
+                    [{
+                            functionCalls: [{
+                                    name: 'listSourceFiles',
+                                    args: {},
+                                }],
+                            explanation: '',
+                        }],
+                    [{ explanation: 'Done' }],
+                ]),
+                allowedOrigin: () => ({ origin: projectOrigin }),
+            });
+            await Array.fromAsync(agent.run('test', { selected: null }));
+            const requestToAida = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER);
+            const part = requestToAida.historical_contexts?.[2].parts[0];
+            assert.isOk(part && 'functionResponse' in part);
+            assert.deepEqual(part.functionResponse.response, {
+                result: [
+                    {
+                        file: 'webpack:///./src/app.ts',
+                        id: 2,
+                    },
+                    {
+                        file: 'attacker.com/src/util.ts',
+                        id: 3,
+                    },
+                ],
+                widgets: undefined,
             });
         });
         it('delegates to StorageAgent via analyzeStorage', async () => {

@@ -23,10 +23,6 @@ export default `/*
 
 :host {
   overflow-x: auto;
-}
-
-:host,
-devtools-create-recording-view {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -66,7 +62,6 @@ select {
   max-width: var(--sys-size-22);
   min-width: var(--sys-size-22);
   padding: 0 var(--sys-size-6) 0 var(--sys-size-5);
-  position: relative;
   color: var(--sys-color-on-surface);
   background-color: transparent;
   text-overflow: ellipsis;
@@ -116,10 +111,6 @@ devtools-menu {
   width: 0;
   height: 0;
   position: absolute;
-}
-
-devtools-recording-list-view {
-  overflow: auto;
 }
 
 .error {

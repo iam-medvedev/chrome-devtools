@@ -3,32 +3,33 @@ import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     mainOrigin: string | null;
-    origins: Map<Platform.DevToolsPath.UrlString, Protocol.Security.SecurityState>;
+    origins: ReadonlyMap<Platform.DevToolsPath.UrlString, Protocol.Security.SecurityState>;
     originsHidden: boolean;
     showOriginsUnconditionally: boolean;
     overviewSecurityState: Protocol.Security.SecurityState;
     selectedElementId: string;
-}
-export interface ViewOutput {
     onElementSelected: (id: string) => void;
     onShowOrigin: (origin: Platform.DevToolsPath.UrlString | null) => void;
 }
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class SecurityPanelSidebar extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
-    set onShowOrigin(callback: (origin: Platform.DevToolsPath.UrlString | null) => void);
+    set onShowOrigin(callback: ((origin: Platform.DevToolsPath.UrlString | null) => void) | undefined);
+    get onShowOrigin(): ((origin: Platform.DevToolsPath.UrlString | null) => void) | undefined;
     wasShown(): void;
-    showOverview(): void;
-    toggleOriginsList(hidden: boolean): void;
-    addOrigin(origin: Platform.DevToolsPath.UrlString, securityState: Protocol.Security.SecurityState): void;
-    setMainOrigin(origin: string): void;
+    set mainOrigin(origin: string | null);
     get mainOrigin(): string | null;
-    updateOrigin(origin: Platform.DevToolsPath.UrlString, securityState: Protocol.Security.SecurityState): void;
-    updateOverviewSecurityState(securityState: Protocol.Security.SecurityState): void;
-    clearOrigins(): void;
-    set selectedOrigin(origin: Platform.DevToolsPath.UrlString | null);
-    get selectedOrigin(): string;
+    set origins(origins: ReadonlyMap<Platform.DevToolsPath.UrlString, Protocol.Security.SecurityState>);
+    get origins(): ReadonlyMap<Platform.DevToolsPath.UrlString, Protocol.Security.SecurityState>;
+    set originsHidden(originsHidden: boolean);
+    get originsHidden(): boolean;
+    set showOriginsUnconditionally(showOriginsUnconditionally: boolean);
+    get showOriginsUnconditionally(): boolean;
+    set overviewSecurityState(overviewSecurityState: Protocol.Security.SecurityState);
+    get overviewSecurityState(): Protocol.Security.SecurityState;
+    set activeOrigin(origin: Platform.DevToolsPath.UrlString | null);
+    get activeOrigin(): Platform.DevToolsPath.UrlString | null;
     performUpdate(): void;
 }

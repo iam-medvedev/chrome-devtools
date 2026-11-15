@@ -121,6 +121,12 @@ function summarizeSteps(viewInput) {
     return lastMessage.parts.filter(part => part.type === 'step')
         .map(part => ({ title: part.step.title, output: part.step.output, state: part.step.state.type }));
 }
+function assertIsStep(part) {
+    assert.strictEqual(part?.type, 'step');
+}
+function assertIsAnswer(part) {
+    assert.strictEqual(part?.type, 'answer');
+}
 /**
  * Creates a stubbed element node belonging to a document at `documentUrl`.
  *
@@ -138,6 +144,7 @@ function createStubbedElementNodeInDocument(documentUrl) {
 describeWithEnvironment('AI Assistance Panel', () => {
     setupSettingsHooks();
     let viewManagerIsViewVisibleStub;
+    let viewManagerLocationNameStub;
     async function enableAllFeatureAndSetting() {
         viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
         Common.Settings.Settings.instance().moduleSetting('ai-assistance-enabled').set(true);
@@ -171,6 +178,9 @@ describeWithEnvironment('AI Assistance Panel', () => {
     beforeEach(() => {
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance');
         viewManagerIsViewVisibleStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'isViewVisible');
+        viewManagerLocationNameStub = sinon
+            .stub(UI.ViewManager.ViewManager.instance(), 'locationNameForViewId')
+            .returns('drawer-view');
         registerNoopActions([
             'elements.toggle-element-search',
             'timeline.record-reload',
@@ -1042,6 +1052,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
         let recordFunctionCallStub;
         let expectedQuerySubmitted;
         let expectedLearnSkill;
+        let expectedAutoLearnSkill;
         let expectedToolCall;
         let expectedPermissionPromptShown;
         let expectedPermissionAllowedOnce;
@@ -1073,6 +1084,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             recordFunctionCallStub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordFunctionCall');
             expectedQuerySubmitted = await getVeHash('ai-v2-query-submitted');
             expectedLearnSkill = await getVeHash('ai-v2-learn-skill');
+            expectedAutoLearnSkill = await getVeHash('ai-v2-auto-learn-skill');
             expectedToolCall = await getVeHash('ai-v2-tool-call');
             expectedPermissionPromptShown = await getVeHash('ai-permission-prompt-shown');
             expectedPermissionAllowedOnce = await getVeHash('ai-permission-allowed-once');
@@ -1434,6 +1446,17 @@ describeWithEnvironment('AI Assistance Panel', () => {
                         toolName: 'getCookieValues',
                     },
                     {
+                        type: "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */,
+                        details: [{ title: 'DOM', text: 'details' }],
+                        autoLearnedSkills: ['styling'],
+                    },
+                    {
+                        type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
+                        canceled: false,
+                        toolName: 'learnSkills',
+                        loadedSkills: ['styling'],
+                    },
+                    {
                         type: "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */,
                         action: 'getStyles()',
                         output: 'color: blue;',
@@ -1461,6 +1484,7 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedPermissionPromptShown }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedPermissionAutoAllowed }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedAutoLearnSkill }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedLearnSkill }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedError }));
         });
@@ -1493,6 +1517,43 @@ describeWithEnvironment('AI Assistance Panel', () => {
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedLearnSkill }));
             sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedError }));
+        });
+        it('auto-learned skill logs VE event without adding a walkthrough step', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: 'Answer',
+                    }],
+            ]);
+            const node = createStubbedElementNodeInDocument('https://example.com');
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+            sinon.stub(AiAssistanceModel.DOMNodeContext.DOMNodeContext.prototype, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(AiAssistanceModel.DOMNodeContext.DOMNodeContext.prototype, 'getUserFacingDetails').resolves([
+                { title: 'DOM', text: 'details' },
+            ]);
+            const { view, panel } = await createAiAssistancePanel({ aidaClient });
+            void panel.handleAction('freestyler.elements-floating-button');
+            const turnInput = await view.nextInput;
+            assert(turnInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            recordFunctionCallStub.resetHistory();
+            turnInput.props.onTextSubmit('question');
+            const doneInput = await waitForLoadingToFinish(view);
+            assert(doneInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+            assert.deepEqual(recordFunctionCallStub.withArgs(sinon.match({ name: expectedAutoLearnSkill })).args, [
+                [{ name: expectedAutoLearnSkill, context: expectedStylingSkill }],
+            ]);
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedLearnSkill }));
+            sinon.assert.neverCalledWith(recordFunctionCallStub, sinon.match({ name: expectedToolCall }));
+            // Auto-loaded skills must not produce a separate walkthrough step.
+            const lastMessage = doneInput.props.messages.at(-1);
+            assert.isDefined(lastMessage);
+            assert(lastMessage.entity === "model" /* AiAssistancePanel.ChatMessage.ChatMessageEntity.MODEL */);
+            assert.lengthOf(lastMessage.parts, 2);
+            const [contextPart, answerPart] = lastMessage.parts;
+            assertIsStep(contextPart);
+            assert.strictEqual(contextPart.step.title, 'Analyzing data');
+            assert.isDefined(contextPart.step.contextDetails);
+            assertIsAnswer(answerPart);
+            assert.strictEqual(answerPart.text, 'Answer');
         });
     });
     describe('opt-in change dialog', () => {
@@ -2848,21 +2909,6 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.strictEqual(nextInput.props.inputPlaceholder, 'Ask AI Assistance');
             });
-            it('shows the Gemini placeholder when devToolsAiV2Architecture and Gemini rebranding are enabled', async () => {
-                updateHostConfig({
-                    devToolsAiV2Architecture: {
-                        enabled: true,
-                    },
-                    devToolsGeminiRebranding: {
-                        enabled: true,
-                    },
-                });
-                const { panel, view } = await createAiAssistancePanel();
-                void panel.handleAction('freestyler.elements-floating-button');
-                const nextInput = await view.nextInput;
-                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
-                assert.strictEqual(nextInput.props.inputPlaceholder, 'Ask Gemini');
-            });
             it('uses the contextless placeholder even when an element context is attached', async () => {
                 updateHostConfig({
                     devToolsAiV2Architecture: {
@@ -2999,6 +3045,77 @@ describeWithEnvironment('AI Assistance Panel', () => {
                 assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
                 assert.isTrue(nextInput.props.isContextSelected);
                 assert.strictEqual(nextInput.props.context?.getItem(), node);
+            });
+            it('keeps the DOM context of an empty chat when moved to the main tab bar', async () => {
+                updateHostConfig({
+                    devToolsAiV2Architecture: {
+                        enabled: true,
+                    },
+                });
+                const node = createStubbedElementNodeInDocument('https://example.com');
+                UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+                const { panel, view } = await createAiAssistancePanel({
+                    aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+                });
+                await panel.handleAction('freestyler.element-panel-context');
+                let nextInput = await view.nextInput;
+                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.isTrue(nextInput.props.isContextSelected);
+                assert.strictEqual(nextInput.props.context?.getItem(), node);
+                panel.willHide();
+                viewManagerIsViewVisibleStub.returns(false);
+                viewManagerLocationNameStub.returns('panel');
+                panel.wasShown();
+                nextInput = await view.nextInput;
+                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.isTrue(nextInput.props.isContextSelected);
+                assert.strictEqual(nextInput.props.context?.getItem(), node);
+            });
+            it('attaches the DOM node on "Start a chat" while already in the main tab bar', async () => {
+                updateHostConfig({
+                    devToolsAiV2Architecture: {
+                        enabled: true,
+                    },
+                });
+                const node = createStubbedElementNodeInDocument('https://example.com');
+                UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+                viewManagerIsViewVisibleStub.returns(false);
+                viewManagerLocationNameStub.returns('panel');
+                const { panel, view } = await createAiAssistancePanel({
+                    aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+                });
+                await panel.handleAction('freestyler.element-panel-context');
+                const nextInput = await view.nextInput;
+                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.isTrue(nextInput.props.isContextSelected);
+                assert.strictEqual(nextInput.props.context?.getItem(), node);
+            });
+            it('still applies explicit context removal in the main tab bar', async () => {
+                updateHostConfig({
+                    devToolsAiV2Architecture: {
+                        enabled: true,
+                    },
+                });
+                const node = createStubbedElementNodeInDocument('https://example.com');
+                UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
+                const { panel, view } = await createAiAssistancePanel({
+                    aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+                });
+                await panel.handleAction('freestyler.element-panel-context');
+                let nextInput = await view.nextInput;
+                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.isTrue(nextInput.props.isContextSelected);
+                assert.strictEqual(nextInput.props.context?.getItem(), node);
+                assert.isNotNull(nextInput.props.onContextRemoved);
+                nextInput.props.onContextRemoved();
+                panel.willHide();
+                viewManagerIsViewVisibleStub.returns(false);
+                viewManagerLocationNameStub.returns('panel');
+                panel.wasShown();
+                nextInput = await view.nextInput;
+                assert(nextInput.state === "chat-view" /* AiAssistancePanel.ViewState.CHAT_VIEW */);
+                assert.isFalse(nextInput.props.isContextSelected);
+                assert.isNull(nextInput.props.context);
             });
         });
     });

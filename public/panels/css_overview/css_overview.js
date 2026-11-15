@@ -663,28 +663,6 @@ var cssOverviewCompletedView_css_default = `/**
     font-weight: bold;
   }
 
-  .unused-rules-grid .header-container,
-  .unused-rules-grid .data-container,
-  .unused-rules-grid table.data {
-    position: relative;
-  }
-
-  .unused-rules-grid .data-container {
-    top: 0;
-    max-height: 350px;
-  }
-
-  .unused-rules-grid {
-    border-left: none;
-    border-right: none;
-  }
-  /** Ensure links are rendered at the correct height */
-
-  .unused-rules-grid .monospace {
-    display: block;
-    height: 18px;
-  }
-
   .element-grid {
     flex: 1;
     border-left: none;
@@ -2084,56 +2062,13 @@ var cssOverviewStartView_css_default = `/**
     width: fit-content;
   }
 
-  .preview-feature {
-    padding: var(--sys-size-6) var(--sys-size-8);
-    border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-    color: var(--sys-color-on-surface);
-    font-size: var(--sys-typescale-body3-size);
-    line-height: var(--sys-typescale-body3-line-height);
-    border-radius: var(--sys-shape-corner-medium-small);
-    margin: 42px 0;
-    letter-spacing: 0.01em;
-  }
-
-  .preview-header {
-    color: var(--sys-color-primary);
-    font-size: var(--sys-typescale-body3-size);
-    line-height: var(--sys-typescale-body3-line-height);
-    letter-spacing: 0.01em;
-    margin: 9px 0 var(--sys-size-7);
-  }
-
   .preview-icon {
     vertical-align: middle;
-  }
-
-  .feedback-prompt {
-    margin-bottom: var(--sys-size-11);
-  }
-
-  .feedback-prompt .devtools-link {
-    color: -webkit-link;
-    cursor: pointer;
-    text-decoration: underline;
   }
 
   .resources {
     display: flex;
     flex-direction: row;
-  }
-
-  .thumbnail-wrapper {
-    width: var(--sys-size-22);
-    height: 92px;
-    margin-right: var(--sys-size-9);
-  }
-
-  .video-doc-header {
-    font-size: var(--sys-typescale-body3-size);
-    line-height: var(--sys-typescale-body3-line-height);
-    letter-spacing: 0.04em;
-    color: var(--sys-color-on-surface);
-    margin-bottom: var(--sys-size-2);
   }
 
   devtools-feedback-button {

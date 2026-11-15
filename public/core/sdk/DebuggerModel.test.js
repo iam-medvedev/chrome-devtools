@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { FRAME, MAIN_FRAME_ID } from '../../testing/ResourceHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Platform from '../platform/platform.js';
@@ -21,6 +22,9 @@ describe('DebuggerModel', () => {
         // Eagerly initialize DebuggerWorkspaceBinding to register its observer on TargetManager.
         // This sets up the before-paused callback needed for auto-stepping checks.
         void universe.debuggerWorkspaceBinding;
+    });
+    afterEach(() => {
+        universe.dispose();
     });
     describe('breakpoint activation', () => {
         it('deactivates breakpoints on construction with inactive breakpoints', async () => {
@@ -602,6 +606,197 @@ describe('DebuggerModel', () => {
             assert.exists(await sourceMapPromise);
             sinon.assert.notCalled(sourceMapAttached);
             assert.isUndefined(sourceMapManager.sourceMapForClient(script));
+        });
+    });
+    describe('modelForDebuggerId', () => {
+        setupLocaleHooks();
+        function dispatchFrameNavigated(connection, sessionId) {
+            connection.dispatchEvent('Page.frameNavigated', {
+                frame: { ...FRAME, id: MAIN_FRAME_ID },
+                type: "Navigation" /* Protocol.Page.NavigationType.Navigation */,
+            }, sessionId);
+        }
+        it('only resyncs debuggerId for targets whose frame navigated', async () => {
+            const connection = new MockCDPConnection();
+            let frameDebuggerId = 'frame-debugger-1';
+            let frameEnableCalls = 0;
+            let workerEnableCalls = 0;
+            connection.setSuccessHandler('Debugger.enable', (_request, sessionId) => {
+                if (sessionId === 'worker') {
+                    workerEnableCalls++;
+                    return { debuggerId: 'worker-debugger-1' };
+                }
+                frameEnableCalls++;
+                return { debuggerId: frameDebuggerId };
+            });
+            const frameTarget = universe.createTarget({
+                id: 'main',
+                name: 'main',
+                type: SDK.Target.Type.FRAME,
+                connection,
+            });
+            const workerTarget = universe.createTarget({
+                id: 'worker',
+                name: 'worker',
+                type: SDK.Target.Type.Worker,
+                parentTarget: frameTarget,
+            });
+            const frameDebuggerModel = frameTarget.model(SDK.DebuggerModel.DebuggerModel);
+            const workerDebuggerModel = workerTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(frameDebuggerModel);
+            assert.exists(workerDebuggerModel);
+            await frameDebuggerModel.syncDebuggerId();
+            await workerDebuggerModel.syncDebuggerId();
+            frameEnableCalls = 0;
+            workerEnableCalls = 0;
+            frameDebuggerId = 'frame-debugger-2';
+            dispatchFrameNavigated(connection, frameTarget.sessionId);
+            const resolvedModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(frameDebuggerId);
+            assert.strictEqual(resolvedModel, frameDebuggerModel);
+            assert.strictEqual(frameEnableCalls, 1);
+            assert.strictEqual(workerEnableCalls, 0);
+            assert.isNull(await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId('frame-debugger-1'));
+        });
+        it('awaits in-flight debuggerId resync across concurrent modelForDebuggerId calls', async () => {
+            const connection = new MockCDPConnection();
+            let enableCalls = 0;
+            let pendingEnable = null;
+            connection.setSuccessHandler('Debugger.enable', () => {
+                enableCalls++;
+                return pendingEnable ?? { debuggerId: 'frame-debugger-initial' };
+            });
+            const frameTarget = universe.createTarget({
+                id: 'main',
+                name: 'main',
+                type: SDK.Target.Type.FRAME,
+                connection,
+            });
+            const frameDebuggerModel = frameTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(frameDebuggerModel);
+            await frameDebuggerModel.syncDebuggerId();
+            enableCalls = 0;
+            const { promise: enablePromise, resolve: resolveEnable } = Promise.withResolvers();
+            pendingEnable = enablePromise;
+            const newDebuggerId = 'frame-debugger-concurrent';
+            let firstLookup;
+            let secondLookup;
+            try {
+                dispatchFrameNavigated(connection, frameTarget.sessionId);
+                firstLookup = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(newDebuggerId);
+                secondLookup = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(newDebuggerId);
+                assert.strictEqual(enableCalls, 1);
+                resolveEnable({ debuggerId: newDebuggerId });
+                const [firstModel, secondModel] = await Promise.all([firstLookup, secondLookup]);
+                assert.strictEqual(firstModel, frameDebuggerModel);
+                assert.strictEqual(secondModel, frameDebuggerModel);
+                assert.strictEqual(enableCalls, 1);
+            }
+            finally {
+                resolveEnable({ debuggerId: newDebuggerId });
+                await Promise.allSettled([firstLookup, secondLookup]);
+            }
+        });
+        it('returns already-registered debuggerIds without waiting for pending resyncs', async () => {
+            const connection = new MockCDPConnection();
+            let pendingEnable = null;
+            connection.setSuccessHandler('Debugger.enable', (_request, sessionId) => {
+                if (sessionId === 'worker') {
+                    return { debuggerId: 'worker-debugger-fast-path' };
+                }
+                return pendingEnable ?? { debuggerId: 'frame-debugger-fast-path-init' };
+            });
+            const frameTarget = universe.createTarget({
+                id: 'main',
+                name: 'main',
+                type: SDK.Target.Type.FRAME,
+                connection,
+            });
+            const workerTarget = universe.createTarget({
+                id: 'worker',
+                name: 'worker',
+                type: SDK.Target.Type.Worker,
+                parentTarget: frameTarget,
+            });
+            const frameDebuggerModel = frameTarget.model(SDK.DebuggerModel.DebuggerModel);
+            const workerDebuggerModel = workerTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(frameDebuggerModel);
+            assert.exists(workerDebuggerModel);
+            await frameDebuggerModel.syncDebuggerId();
+            await workerDebuggerModel.syncDebuggerId();
+            const { promise: enablePromise, resolve: resolveEnable } = Promise.withResolvers();
+            pendingEnable = enablePromise;
+            const newDebuggerId = 'frame-debugger-fast-path-next';
+            let pendingLookup;
+            try {
+                dispatchFrameNavigated(connection, frameTarget.sessionId);
+                pendingLookup = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(newDebuggerId);
+                const fastPathModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId('worker-debugger-fast-path');
+                assert.strictEqual(fastPathModel, workerDebuggerModel);
+            }
+            finally {
+                resolveEnable({ debuggerId: newDebuggerId });
+                await Promise.allSettled([pendingLookup]);
+            }
+        });
+        it('re-runs debuggerId resync when FrameNavigated fires during an in-flight resync', async () => {
+            const connection = new MockCDPConnection();
+            let enableCalls = 0;
+            let nextResponse = {
+                debuggerId: 'frame-debugger-initial-loop',
+            };
+            connection.setSuccessHandler('Debugger.enable', () => {
+                enableCalls++;
+                return nextResponse;
+            });
+            const frameTarget = universe.createTarget({
+                id: 'main',
+                name: 'main',
+                type: SDK.Target.Type.FRAME,
+                connection,
+            });
+            const frameDebuggerModel = frameTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(frameDebuggerModel);
+            await frameDebuggerModel.syncDebuggerId();
+            enableCalls = 0;
+            const firstResync = Promise.withResolvers();
+            const secondDebuggerId = 'frame-debugger-after-second-nav';
+            nextResponse = firstResync.promise;
+            let lookupPromise;
+            try {
+                dispatchFrameNavigated(connection, frameTarget.sessionId);
+                lookupPromise = SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(secondDebuggerId);
+                assert.strictEqual(enableCalls, 1);
+                // Fire a second navigation while the first syncDebuggerId() is still in flight.
+                dispatchFrameNavigated(connection, frameTarget.sessionId);
+                nextResponse = { debuggerId: secondDebuggerId };
+                firstResync.resolve({ debuggerId: 'frame-debugger-after-first-nav' });
+                const resolvedModel = await lookupPromise;
+                assert.strictEqual(resolvedModel, frameDebuggerModel);
+                assert.strictEqual(enableCalls, 2);
+            }
+            finally {
+                firstResync.resolve({ debuggerId: secondDebuggerId });
+                await Promise.allSettled([lookupPromise]);
+            }
+        });
+        it('removes disposed targets from pending debuggerId resyncs', async () => {
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Debugger.enable', () => ({ debuggerId: 'frame-debugger-disposed' }));
+            const frameTarget = universe.createTarget({
+                id: 'main',
+                name: 'main',
+                type: SDK.Target.Type.FRAME,
+                connection,
+            });
+            const frameDebuggerModel = frameTarget.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(frameDebuggerModel);
+            await frameDebuggerModel.syncDebuggerId();
+            const syncSpy = sinon.spy(frameDebuggerModel, 'syncDebuggerId');
+            dispatchFrameNavigated(connection, frameTarget.sessionId);
+            frameTarget.dispose('test');
+            const resolvedModel = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId('unknown-debugger-id');
+            assert.isNull(resolvedModel);
+            sinon.assert.notCalled(syncSpy);
         });
     });
 });

@@ -630,10 +630,6 @@ var chatMessage_css_default = `/*
       }
     }
 
-    .ai-css-change {
-      margin: var(--sys-size-6) 0;
-    }
-
     .answer-body-wrapper {
       @container(min-width: 700px) {
         /* Indent the content to align with the walkthrough CTA
@@ -644,18 +640,6 @@ var chatMessage_css_default = `/*
 
     &.is-last-message {
       border-bottom: 0;
-    }
-
-    .message-info {
-      display: flex;
-      align-items: center;
-      height: var(--sys-size-11);
-      gap: var(--sys-size-4);
-      font: var(--sys-typescale-body4-bold);
-
-      h2 {
-        font: var(--sys-typescale-body4-bold);
-      }
     }
 
     .actions {
@@ -740,7 +724,7 @@ var chatMessage_css_default = `/*
 
   .js-code-output {
     devtools-code-block {
-      --code-block-max-code-height: 50px;
+      --code-block-max-code-height: var(--sys-size-17);
     }
   }
 
@@ -847,11 +831,6 @@ var chatMessage_css_default = `/*
         --code-block-background-color: var(--sys-color-surface1);
       }
     }
-  }
-
-
-  .error-step {
-    color: var(--sys-color-error);
   }
 
   .side-effect-confirmation {
@@ -1183,7 +1162,7 @@ var walkthroughView_css_default = `/*
     justify-content: space-between;
     align-items: center;
     padding: 0 var(--sys-size-5);
-    height: 35px;
+    height: var(--sys-size-13);
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
     flex-shrink: 0;
   }
@@ -1230,25 +1209,12 @@ var walkthroughView_css_default = `/*
     width: 100%;
   }
 
-  .step-container {
-    display: flex;
-    gap: var(--sys-size-5);
-    align-items: flex-start;
-  }
-
   .step-icon {
     color: var(--sys-color-on-surface-subtle);
     width: var(--sys-size-8);
     height: var(--sys-size-8);
     flex-shrink: 0;
     margin-top: var(--sys-size-2);
-  }
-
-  .step-content {
-    flex: 1;
-    font-size: var(--sys-typescale-body5-size);
-    color: var(--sys-color-on-surface);
-    line-height: 1.4;
   }
 
   .empty-state {
@@ -2627,15 +2593,13 @@ async function makeBottomUpTimelineTreeWidget(widgetData) {
     return null;
   }
   const events = bottomUpRootNode.events;
-  const startTime = Trace2.Helpers.Timing.microToMilli(widgetData.data.bounds.min);
-  const endTime = Trace2.Helpers.Timing.microToMilli(widgetData.data.bounds.max);
   const renderedWidget = html5`<devtools-widget
       class="bottom-up-timeline-tree-widget"
       ${widget(Timeline.TimelineTreeView.BottomUpTimelineTreeView, {
     selectedEvents: events,
     parsedTrace: widgetData.data.parsedTrace,
-    startTime,
-    endTime,
+    startTime: widgetData.data.bounds.min,
+    endTime: widgetData.data.bounds.max,
     compactMode: true,
     maxLinkLength: 15,
     maxRows: 10
@@ -3611,7 +3575,7 @@ __export(ChatInput_exports, {
 import * as i18n7 from "../../core/i18n/i18n.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -7675,12 +7639,6 @@ var chatView_css_default = `/*
   container-name: --chat-ui-container;
 }
 
-.chat-cancel-context-button {
-  padding-bottom: 3px;
-  padding-right: var(--sys-size-3);
-}
-
-
 .messages-container {
   flex-grow: 1;
   width: 100%;
@@ -7694,10 +7652,6 @@ var chatView_css_default = `/*
     margin-left: var(--half-scrollbar-width);
     margin-right: calc(-1 * var(--half-scrollbar-width));
   }
-}
-
-.select-an-element-text {
-  margin-left: var(--sys-size-2);
 }
 
 main {
@@ -7776,208 +7730,6 @@ main {
     align-items: center;
     justify-content: center;
     align-self: start;
-  }
-}
-
-.gemini {
-  .empty-state-container {
-    padding: var(--sys-size-8);
-  }
-
-  .empty-state-container .icon {
-    display: none;
-  }
-
-  .empty-state-container .header {
-    align-items: flex-start;
-    line-height: var(--sys-size-4);
-  }
-
-  .empty-state-content {
-    align-items: flex-start
-  }
-
-  .empty-state-container .greeting {
-    font-size: var(--sys-size-10);
-    color: var(--sys-color-primary);
-  }
-
-  .empty-state-container .cta {
-    font-size: var(--sys-size-10);
-  }
-
-  main {
-    align-items: flex-start;
-  }
-}
-
-.change-summary {
-  background-color: var(--sys-color-surface3);
-  border-radius: var(--sys-shape-corner-medium-small);
-  position: relative;
-  margin: 0 var(--sys-size-5) var(--sys-size-7) var(--sys-size-5);
-  padding: 0 var(--sys-size-5);
-
-  &.saved-to-disk {
-    pointer-events: none;
-  }
-
-  & .header-container {
-    display: flex;
-    align-items: center;
-    gap: var(--sys-size-3);
-    height: var(--sys-size-14);
-    padding-left: var(--sys-size-3);
-
-    devtools-spinner {
-      width: var(--sys-size-6);
-      height: var(--sys-size-6);
-      margin-left: var(--sys-size-3);
-      margin-right: var(--sys-size-3);
-    }
-
-    & devtools-icon.summary-badge {
-      width: var(--sys-size-8);
-      height: var(--sys-size-8);
-    }
-
-    & .green-bright-icon {
-      color: var(--sys-color-green-bright);
-    }
-
-    & .on-tonal-icon {
-      color: var(--sys-color-on-tonal-container);
-    }
-
-    & .header-text {
-      font: var(--sys-typescale-body4);
-      color: var(--sys-color-on-surface);
-      white-space: nowrap;
-      overflow-x: hidden;
-      text-overflow: ellipsis;
-    }
-
-    & .arrow {
-      margin-left: auto;
-    }
-
-    &::marker {
-      content: '';
-    }
-  }
-
-  &:not(.saved-to-disk, &[open]):hover::after {
-    content: '';
-    height: 100%;
-    width: 100%;
-    border-radius: inherit;
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    background-color: var(--sys-color-state-hover-on-subtle);
-  }
-
-  &[open]:not(.saved-to-disk) {
-    &::details-content {
-      height: fit-content;
-      padding: var(--sys-size-2) 0;
-      border-radius: inherit;
-    }
-
-    summary .arrow {
-      transform: rotate(180deg);
-    }
-  }
-
-  devtools-code-block {
-    margin-bottom: var(--sys-size-5);
-
-    --code-block-background-color: var(--sys-color-surface1);
-  }
-
-  .error-container {
-    display: flex;
-    align-items: center;
-    gap: var(--sys-size-3);
-    color: var(--sys-color-error);
-  }
-
-  .footer {
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    margin: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-2);
-    gap: var(--sys-size-6) var(--sys-size-5);
-
-    .disclaimer-link {
-      align-self: center;
-    }
-
-    .left-side {
-      flex-grow: 1;
-      display: flex;
-      align-self: center;
-      gap: var(--sys-size-3);
-    }
-
-    .save-or-discard-buttons {
-      flex-grow: 1;
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--sys-size-3);
-    }
-
-    .change-workspace {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: var(--sys-size-3);
-      min-width: var(--sys-size-22);
-      flex: 1 1 40%;
-
-      .folder-name {
-        white-space: nowrap;
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-
-    .loading-text-container {
-      margin-right: var(--sys-size-3);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: var(--sys-size-3);
-    }
-
-    .apply-to-workspace-container {
-      display: flex;
-      align-items: center;
-      gap: var(--sys-size-3);
-      min-width: fit-content;
-      justify-content: flex-end;
-      flex-grow: 1;
-      flex-shrink: 1;
-
-      devtools-icon {
-        /* var(--sys-size-8) is too small and var(--sys-size-9) is too big. */
-        width: 18px;
-        height: 18px;
-        margin-left: var(--sys-size-2);
-      }
-    }
-  }
-}
-
-@keyframes reveal {
-  0%,
-  99% {
-    opacity: 100%;
-  }
-
-  100% {
-    opacity: 0%;
   }
 }
 
@@ -8538,11 +8290,7 @@ var UIStringsNotTranslate5 = {
   /**
    * @description Text for the empty state of the AI assistance panel.
    */
-  emptyStateText: "How can I help you?",
-  /**
-   * @description Text for the empty state of the Gemini panel.
-   */
-  emptyStateTextGemini: "Where should we start?"
+  emptyStateText: "How can I help you?"
 };
 var lockedString6 = i18n13.i18n.lockedString;
 var SCROLL_ROUNDING_OFFSET2 = 1;
@@ -8554,10 +8302,6 @@ function findStepAwaitingApproval(messages) {
   return lastMessage.parts.findLast((p) => p.type === "step" && p.step.state.type === "needs_approval")?.step;
 }
 var DEFAULT_VIEW5 = (input, output, target) => {
-  const chatUiClasses = classMap({
-    "chat-ui": true,
-    gemini: AiAssistanceModel7.AiUtils.isGeminiBranding()
-  });
   const awaitingApprovalStep = findStepAwaitingApproval(input.messages);
   const inputWidgetClasses = classMap({
     "chat-input-widget": true,
@@ -8567,7 +8311,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
   render5(html10`
       <style>${chatView_css_default}</style>
       <style>${permissionPrompt_css_default}</style>
-      <div class=${chatUiClasses}>
+      <div class="chat-ui">
         <main @scroll=${input.handleScroll} ${ref5((element) => {
     output.mainElement = element;
   })}>
@@ -8603,10 +8347,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
                     name="smart-assistant"
                   ></devtools-icon>
                 </div>
-                ${AiAssistanceModel7.AiUtils.isGeminiBranding() ? html10`
-                    <h1 class='greeting'>Hello</h1>
-                    <p class='cta'>${lockedString6(UIStringsNotTranslate5.emptyStateTextGemini)}</p>
-                  ` : html10`<h1>${lockedString6(UIStringsNotTranslate5.emptyStateText)}</h1>`}
+                <h1>${lockedString6(UIStringsNotTranslate5.emptyStateText)}</h1>
               </div>
               <div class="empty-state-content">
                 ${input.emptyStateSuggestions.map(({ title, jslogContext }) => {
@@ -9084,7 +8825,7 @@ var exploreWidget_css_default = `/*
     .feature-card {
       display: flex;
       padding: var(--sys-size-4) var(--sys-size-6);
-      gap: 10px;
+      gap: var(--sys-size-6);
       background-color: var(--sys-color-surface2);
       border-radius: var(--sys-shape-corner-medium-small);
       width: 100%;
@@ -9115,24 +8856,6 @@ var exploreWidget_css_default = `/*
           line-height: var(--sys-typescale-body4-line-height);
         }
       }
-    }
-  }
-
-  .ai-assistance-explore-footer {
-    flex-shrink: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding-block: var(--sys-size-3);
-    font: var(--sys-typescale-body5-regular);
-    border-top: var(--sys-size-1) solid var(--sys-color-divider);
-    text-wrap: balance;
-    text-align: center;
-
-    p {
-      margin: 0;
-      padding: 0;
     }
   }
 }
@@ -9378,7 +9101,7 @@ var optInChangeDialog_css_default = `/*
       }
 
       .text {
-        font: var(--sys-typescale-body4);
+        font: var(--sys-typescale-body4-regular);
         color: var(--sys-color-on-surface);
       }
     }
@@ -9737,10 +9460,6 @@ var UIStringsNotTranslate7 = {
    *@description Placeholder text for the chat UI input.
    */
   inputPlaceholderForNoContext: "Ask AI Assistance",
-  /**
-   * @description Placeholder text for the chat UI input with branding Gemini (do not translate)
-   */
-  inputPlaceholderForNoContextBranded: "Ask Gemini",
   /**
    * @description Placeholder text for the chat UI input.
    */
@@ -10308,6 +10027,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
       }
     );
   }
+  /**
+   * Returns true when `defaultType` is NONE only because AI Assistance is in the
+   * main tab bar. The main tab bar shows one tab at a time, so while AI
+   * Assistance is selected there, no domain panel (Elements, Network, ...) can be
+   * visible. In that case NONE does not mean that the user moved away, and
+   * callers must keep the current conversation and its context.
+   */
+  #isDomainPanelHiddenByMainTabBar(defaultType) {
+    return AiAssistanceModel8.AiUtils.isContextSelectionEnabled() && defaultType === AiAssistanceModel8.AiHistoryStorage.ConversationType.NONE && UI10.ViewManager.ViewManager.instance().locationNameForViewId(_AiAssistancePanel.panelName) === "panel";
+  }
   #getDefaultConversationType() {
     const { hostConfig } = Root4.Runtime;
     const viewManager = UI10.ViewManager.ViewManager.instance();
@@ -10348,6 +10077,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
       return;
     }
     const targetConversationType = this.#getDefaultConversationType();
+    if (this.#conversation && this.#isDomainPanelHiddenByMainTabBar(targetConversationType)) {
+      this.requestUpdate();
+      return;
+    }
     if (this.#conversation?.type === targetConversationType) {
       this.requestUpdate();
       return;
@@ -10394,8 +10127,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     }
     if (this.#conversation) {
       if (this.#conversation.isEmpty && AiAssistanceModel8.AiUtils.isContextSelectionEnabled()) {
-        const context = this.#getConversationContext(this.#getDefaultConversationType());
-        this.#conversation.setContext(context);
+        const defaultType = this.#getDefaultConversationType();
+        const lookupType = this.#isDomainPanelHiddenByMainTabBar(defaultType) ? this.#conversation.type : defaultType;
+        this.#conversation.setContext(this.#getConversationContext(lookupType));
       } else {
         const previousContext = this.#conversation.selectedContext;
         const previousItem = previousContext?.getItem();
@@ -10678,7 +10412,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
     return true;
   }
   #getContextlessPlaceholder() {
-    return AiAssistanceModel8.AiUtils.isGeminiBranding() ? lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContextBranded) : lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
+    return lockedString8(UIStringsNotTranslate7.inputPlaceholderForNoContext);
   }
   #getChatInputPlaceholder() {
     if (!this.#conversation) {
@@ -11151,6 +10885,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
             step.widgets = data.widgets;
             step.state = { type: "completed" };
             commitStep();
+            if (!this.#conversation?.isReadOnly && AiAssistanceModel8.AiUtils.isAiV2Enabled() && data.autoLearnedSkills) {
+              for (const skill of data.autoLearnedSkills) {
+                void VisualLogging9.logFunctionCall("ai-v2-auto-learn-skill", skill);
+              }
+            }
             break;
           }
           case AiAssistanceModel8.AiAgent.ResponseType.TITLE: {

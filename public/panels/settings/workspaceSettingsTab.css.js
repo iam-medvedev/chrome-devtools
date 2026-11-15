@@ -10,11 +10,6 @@ export default `/*
  */
 
 @scope to (devtools-widget > *) {
-  .mappings-info,
-  .folder-exclude-pattern {
-    height: var(--settings-single-item-height);
-  }
-
   .mapping-view-container {
     padding-left: 0;
     padding-right: 0;

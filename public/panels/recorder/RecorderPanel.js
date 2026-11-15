@@ -1216,7 +1216,7 @@ export class RecorderPanel extends UI.Widget.VBox {
                 throw new Error('No current recording found');
             }
             this.#setCurrentRecording(await this.#storage.upsertRecording(data, this.currentRecording.storageName));
-            this.#recordingView?.scrollToBottom();
+            void this.#recordingView?.scrollToBottom();
             await takeScreenshot(this.currentRecording);
         });
         this.currentRecordingSession.addEventListener("recordingstopped" /* Models.RecordingSession.Events.RECORDING_STOPPED */, async ({ data }) => {

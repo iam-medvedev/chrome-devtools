@@ -48,7 +48,7 @@ devtools-report-value {
 }
 
 .status {
-  margin-right: 11px;
+  margin-right: var(--sys-size-5);
   flex-shrink: 0;
 }
 
@@ -57,13 +57,6 @@ devtools-report-value {
   min-width: auto;
   overflow-wrap: break-word;
   align-self: start;
-}
-
-.report-value {
-  padding: 0 var(--sys-size-4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .link,

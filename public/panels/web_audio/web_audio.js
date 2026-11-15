@@ -210,7 +210,6 @@ var webAudio_css_default = `/*
 .context-detail-row {
   grid-template-columns: min-content 1fr;
   display: grid;
-  line-height: 18px;
   margin: var(--sys-size-3) var(--sys-size-9) var(--sys-size-3) var(--sys-size-9);
   gap:  var(--sys-size-6);
 }
@@ -218,7 +217,7 @@ var webAudio_css_default = `/*
 .context-detail-row-entry:not(:empty) {
   color: var(--sys-color-on-surface-subtle);
   overflow: hidden;
-  min-width: 130px;
+  min-width: var(--sys-size-21);
   font: var(--sys-typescale-body5-medium);
 }
 

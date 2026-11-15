@@ -454,6 +454,23 @@ describeWithEnvironment('NetworkLogView', () => {
         const iconImage = iconElement.getAttribute('name');
         assert.strictEqual('warning-filled', iconImage);
     });
+    it('styles a network request error as an error row with a cross-circle-filled icon', async () => {
+        const request = createNetworkRequest({
+            url: 'https://www.example.com',
+            statusCode: 404,
+            failed: true,
+        });
+        const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+        const el = document.createElement('div');
+        networkRequestNode.createCells(el);
+        const cell = el.appendChild(document.createElement('div'));
+        networkRequestNode.renderCell(cell, 'name');
+        assert.isTrue(el.classList.contains('network-error-row'));
+        assert.isFalse(el.classList.contains('network-warning-row'));
+        const iconElement = el.querySelector('devtools-icon.icon');
+        assert.exists(iconElement);
+        assert.strictEqual(iconElement.getAttribute('name'), 'cross-circle-filled');
+    });
     describe('OverrideTypesComparator', () => {
         it('should sort correctly based on override types', () => {
             const createRequest = (hasContent, hasHeaders, id) => {

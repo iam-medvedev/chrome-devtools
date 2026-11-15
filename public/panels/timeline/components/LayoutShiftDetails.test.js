@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { it } from 'mocha';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineComponents from './components.js';
@@ -56,6 +56,18 @@ describeWithEnvironment('LayoutShiftDetails', function () {
         assert.include(shiftRow?.textContent, 'Layout shift @ ');
         const lastRow = details.contentElement.querySelector('.total-row');
         assert.include(lastRow?.textContent, 'Total');
+    });
+    it('renders cluster details screenshot', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
+        const cluster = parsedTrace.data.LayoutShifts.clusters[0];
+        assert.isOk(cluster);
+        const details = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
+        details.event = cluster;
+        details.parsedTrace = parsedTrace;
+        details.isFreshRecording = false;
+        renderElementIntoDOM(details, { includeCommonStyles: true });
+        await details.updateComplete;
+        await assertScreenshot('timeline/layout_shift_details.png');
     });
 });
 //# sourceMappingURL=LayoutShiftDetails.test.js.map

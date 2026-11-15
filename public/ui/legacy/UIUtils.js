@@ -57,6 +57,7 @@ import { Tooltip } from './Tooltip.js';
 import * as WidgetUtils from './Widget.js';
 import { Widget } from './Widget.js';
 const Directives = Lit.Directives;
+const html = Lit.html;
 const render = Lit.render;
 const UIStrings = {
     /**
@@ -1210,7 +1211,7 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
         }
     }
     function onKeyDown(event) {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && !event.isComposing) {
             const valid = validate(input.value);
             if (valid) {
                 apply(input.value);
@@ -1589,26 +1590,17 @@ export class PromotionManager {
     }
 }
 /**
- * Creates a `<div>` element with the localized text NEW.
+ * Creates a Lit template for a `<div>` element with the localized text NEW
+ * when the promotion should be shown.
  *
- * The element is automatically styled correctly, as long as the core styles (in particular
- * `inspectorCommon.css` is injected into the current document / shadow root). The lit
- * equivalent of calling this method is:
- *
- * ```js
- * const jslog = VisualLogging.badge('new-badge');
- * html`<div class='new-badge' jsog=${jslog}>i18nString(UIStrings.new)</div>`
- *
- * @returns the newly created `HTMLDivElement` for the new badge.
+ * The element is automatically styled correctly, as long as the core styles (in
+ * particular `inspectorCommon.css`) are injected into the current document or
+ * shadow root.
  */
 export function maybeCreateNewBadge(promotionId) {
     const promotionManager = PromotionManager.instance();
     if (promotionManager.maybeShowPromotion(promotionId)) {
-        const badge = document.createElement('div');
-        badge.className = 'new-badge';
-        badge.textContent = i18nString(UIStrings.new);
-        badge.setAttribute('jslog', `${VisualLogging.badge('new-badge')}`);
-        return badge;
+        return html `<div class="new-badge" jslog=${VisualLogging.badge('new-badge')}>${i18nString(UIStrings.new)}</div>`;
     }
     return undefined;
 }
@@ -1875,7 +1867,6 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
     }
     static cloneNode(node) {
         const clone = node.cloneNode(false);
-        HTMLElementWithLightDOMTemplate.registerClone(node, clone);
         for (const child of node.childNodes) {
             clone.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
         }
@@ -1886,6 +1877,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
                 WidgetUtils.registerWidgetConfig(clone, currentConfig);
             }
         }
+        HTMLElementWithLightDOMTemplate.registerClone(node, clone);
         return clone;
     }
     /**

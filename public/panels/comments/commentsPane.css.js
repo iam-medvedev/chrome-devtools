@@ -123,7 +123,7 @@ export default `/*
     list-style: none;
   }
 
-  /* Extra space between the Send to Agent footer and the sent comments separator. */
+  /* Extra space between the Send to agent footer and the sent comments separator. */
   .comments-sent-section {
     margin-top: var(--sys-size-11);
     /*

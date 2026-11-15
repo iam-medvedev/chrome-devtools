@@ -43,18 +43,14 @@ export default `/*
   unicode-bidi: isolate;
 }
 
-.indexed-db-container {
-  overflow: auto;
-}
-
 .source-code.indexed-db-key-path {
   font-size: unset !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .object-store-summary-bar {
-  flex: 0 0 27px;
-  line-height: 27px;
-  padding-left: 5px;
+  flex: 0 0 var(--sys-size-11);
+  line-height: var(--sys-size-11);
+  padding-left: var(--sys-size-3);
   background-color: var(--sys-color-cdt-base-container);
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
   white-space: nowrap;
@@ -78,8 +74,6 @@ export default `/*
 }
 
 .stale-data-warning .warning-icon {
-  --icon-color: var(--icon-warning);
-
   width: var(--sys-size-9);
   height: var(--sys-size-9);
 }

@@ -203,9 +203,6 @@ export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapsho
     resetProfiles(event: Common.EventTarget.EventTargetEvent<SDK.HeapProfilerModel.HeapProfilerModel>): void;
     profileBeingRecordedRemoved(): void;
     static readonly TypeId = "HEAP-RECORD";
-    static readonly HeapStatsUpdate = "HeapStatsUpdate";
-    static readonly TrackingStarted = "TrackingStarted";
-    static readonly TrackingStopped = "TrackingStopped";
 }
 export declare const enum TrackingHeapSnapshotProfileTypeEvents {
     HEAP_STATS_UPDATE = "HeapStatsUpdate",

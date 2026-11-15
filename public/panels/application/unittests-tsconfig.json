@@ -48,6 +48,7 @@
   "files": [
     "../../../../../../front_end/panels/application/AppManifestView.test.ts",
     "../../../../../../front_end/panels/application/ApplicationPanelSidebar.test.ts",
+    "../../../../../../front_end/panels/application/ApplicationPanelTreeElement.test.ts",
     "../../../../../../front_end/panels/application/BackgroundServiceView.test.ts",
     "../../../../../../front_end/panels/application/CookieItemsView.test.ts",
     "../../../../../../front_end/panels/application/CrashReportContextView.test.ts",
@@ -74,6 +75,7 @@
     "../../../../../../front_end/panels/application/StorageBucketsTreeElement.test.ts",
     "../../../../../../front_end/panels/application/StorageView.test.ts",
     "../../../../../../front_end/panels/application/SubAppsView.test.ts",
+    "../../../../../../front_end/panels/application/WebMCPTreeElement.test.ts",
     "../../../../../../front_end/panels/application/WebMCPView.test.ts",
     "../../../../../../front_end/panels/application/preloading/PreloadingView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

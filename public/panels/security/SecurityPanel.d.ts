@@ -1,58 +1,39 @@
-import type * as Platform from '../../core/platform/platform.js';
+import '../../ui/kit/kit.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
-import { type Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TemplateResult } from '../../ui/lit/lit.js';
 import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
-import { SecurityPanelSidebar } from './SecurityPanelSidebar.js';
-export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): Icon;
-export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string): Icon;
+export declare function getSecurityStateIconForDetailedView(securityState: Protocol.Security.SecurityState, className: string): TemplateResult;
+export declare function getSecurityStateIconForOverview(securityState: Protocol.Security.SecurityState, className: string, title?: string): TemplateResult;
 export declare function renderHighlightedUrl(url: Platform.DevToolsPath.UrlString, securityState: string): TemplateResult;
 export declare function renderCertificateViewerButton(text: string, jslogContext: string, onClick: () => void): TemplateResult;
 export interface ViewInput {
-    panel: SecurityPanel;
+    mainOrigin: string | null;
+    sidebarOrigins: ReadonlyMap<Platform.DevToolsPath.UrlString, Protocol.Security.SecurityState>;
+    originsHidden: boolean;
+    showOriginsUnconditionally: boolean;
+    overviewSecurityState: Protocol.Security.SecurityState;
+    activeOrigin: Platform.DevToolsPath.UrlString | null;
+    activeOriginState: OriginState | null;
+    visibleSecurityState: PageVisibleSecurityState | null;
+    filterRequestCounts: ReadonlyMap<string, number>;
+    onShowOrigin: (origin: Platform.DevToolsPath.UrlString | null) => void;
 }
-export interface ViewOutput {
-    setVisibleView: (view: UI.Widget.VBox) => void;
-    splitWidget: UI.SplitWidget.SplitWidget;
-    mainView: SecurityMainView;
-    visibleView: UI.Widget.VBox | null;
-    sidebar: SecurityPanelSidebar;
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class SecurityPanel extends UI.Panel.Panel implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
-    readonly mainView: SecurityMainView;
-    readonly sidebar: SecurityPanelSidebar;
-    private readonly lastResponseReceivedForLoaderId;
-    private readonly origins;
-    private readonly filterRequestCounts;
-    visibleView: UI.Widget.VBox | null;
-    private eventListeners;
-    private securityModel;
-    readonly splitWidget: UI.SplitWidget.SplitWidget;
-    private view;
-    constructor(view?: View | undefined);
+    #private;
+    constructor(view?: View);
     static instance(opts?: {
         forceNew: boolean | null;
     }): SecurityPanel;
-    static createCertificateViewerButtonForCert(text: string, names: string[]): Element;
-    update(): void;
-    private updateVisibleSecurityState;
-    private onVisibleSecurityStateChanged;
-    showOrigin(origin: Platform.DevToolsPath.UrlString): void;
     wasShown(): void;
-    focus(): void;
-    setVisibleView(view: UI.Widget.VBox): void;
-    private onResponseReceived;
-    private processRequest;
-    private onRequestFinished;
-    private updateFilterRequestCounts;
+    performUpdate(): void;
+    showOrigin(origin: Platform.DevToolsPath.UrlString | null): void;
     modelAdded(securityModel: SecurityModel): void;
     modelRemoved(securityModel: SecurityModel): void;
-    private onPrimaryPageChanged;
-    private onInterstitialShown;
-    private onInterstitialHidden;
 }
 export declare enum OriginGroup {
     MainOrigin = "MainOrigin",
@@ -60,12 +41,37 @@ export declare enum OriginGroup {
     Secure = "Secure",
     Unknown = "Unknown"
 }
+export interface SecurityMainViewExplanation {
+    securityState: Protocol.Security.SecurityState;
+    title?: string;
+    summary: string;
+    description: string;
+    certificate: string[];
+    recommendations?: string[];
+    mixedContent?: {
+        filterKey: string;
+        count: number;
+    };
+}
+export interface SecurityMainViewInput {
+    securityState: Protocol.Security.SecurityState | null;
+    summaryText: string;
+    mainExplanations: SecurityMainViewExplanation[];
+    extraExplanations: SecurityMainViewExplanation[];
+    onShowCertificateViewer: (certificate: string[]) => void;
+    onShowNetworkFilter: (filterKey: string) => void;
+}
+export type SecurityMainViewFunction = (input: SecurityMainViewInput, _output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_SECURITY_MAIN_VIEW: SecurityMainViewFunction;
 export declare class SecurityMainView extends UI.Widget.VBox {
     #private;
-    constructor(element?: HTMLElement);
-    setFilterRequestCounts(filterRequestCounts: ReadonlyMap<string, number>): void;
-    updateVisibleSecurityState(visibleSecurityState: PageVisibleSecurityState): void;
-    refreshExplanations(): void;
+    constructor(element?: HTMLElement, view?: SecurityMainViewFunction);
+    wasShown(): void;
+    performUpdate(): void;
+    set filterRequestCounts(filterRequestCounts: ReadonlyMap<string, number>);
+    get filterRequestCounts(): ReadonlyMap<string, number>;
+    set visibleSecurityState(visibleSecurityState: PageVisibleSecurityState | null);
+    get visibleSecurityState(): PageVisibleSecurityState | null;
 }
 export interface SecurityOriginViewInput {
     origin: Platform.DevToolsPath.UrlString;
@@ -83,13 +89,21 @@ export type SecurityOriginViewFunction = (input: SecurityOriginViewInput, output
 export declare const DEFAULT_SECURITY_ORIGIN_VIEW: SecurityOriginViewFunction;
 export declare class SecurityOriginView extends UI.Widget.VBox {
     #private;
-    constructor(origin: Platform.DevToolsPath.UrlString, originState: OriginState, view?: SecurityOriginViewFunction);
-    setSecurityState(newSecurityState: Protocol.Security.SecurityState, securityDetails: Protocol.Network.SecurityDetails | null): void;
+    constructor(element?: HTMLElement, view?: SecurityOriginViewFunction);
+    wasShown(): void;
+    set origin(origin: Platform.DevToolsPath.UrlString);
+    get origin(): Platform.DevToolsPath.UrlString;
+    set securityState(securityState: Protocol.Security.SecurityState);
+    get securityState(): Protocol.Security.SecurityState;
+    set securityDetails(securityDetails: Protocol.Network.SecurityDetails | null);
+    get securityDetails(): Protocol.Network.SecurityDetails | null;
+    set loadedFromCache(loadedFromCache: boolean);
+    get loadedFromCache(): boolean;
+    performUpdate(): void;
 }
 export interface OriginState {
     securityState: Protocol.Security.SecurityState;
     securityDetails: Protocol.Network.SecurityDetails | null;
     loadedFromCache: boolean;
-    originView?: SecurityOriginView | null;
 }
 export type Origin = Platform.DevToolsPath.UrlString;

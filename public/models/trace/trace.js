@@ -135,7 +135,6 @@ __export(EventsSerializer_exports, {
 import * as Helpers3 from "./helpers/helpers.js";
 import * as Types from "./types/types.js";
 var EventsSerializer = class _EventsSerializer {
-  #modifiedProfileCallByKey = /* @__PURE__ */ new Map();
   keyForEvent(event) {
     if (Types.Events.isProfileCall(event)) {
       return `${Types.File.EventKeyType.PROFILE_CALL}-${event.pid}-${event.tid}-${Types.Events.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
@@ -222,10 +221,6 @@ var EventsSerializer = class _EventsSerializer {
     return key.type === Types.File.EventKeyType.SYNTHETIC_EVENT;
   }
   #getModifiedProfileCallByKeyValues(key, parsedTrace) {
-    const cacheResult = this.#modifiedProfileCallByKey.get(key);
-    if (cacheResult) {
-      return cacheResult;
-    }
     const profileCallsInThread = parsedTrace.data.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
     if (!profileCallsInThread) {
       throw new Error(`Unknown profile call serializable key: ${key}`);
@@ -236,7 +231,6 @@ var EventsSerializer = class _EventsSerializer {
     if (!match) {
       throw new Error(`Unknown profile call serializable key: ${JSON.stringify(key)}`);
     }
-    this.#modifiedProfileCallByKey.set(key, match);
     return match;
   }
 };
@@ -256,7 +250,7 @@ __export(LanternComputationData_exports, {
   createProcessedNavigation: () => createProcessedNavigation
 });
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3544,13 +3538,16 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     if (this.#status === "PARSING" /* PARSING */) {
       throw new Error("Trace processor can't reset while parsing.");
     }
-    const handlers = Object.values(this.#traceHandlers);
-    for (const handler of handlers) {
-      handler.reset();
-    }
+    this.#resetHandlers();
+    Lantern2.Simulation.Simulator.allNodeTimings.clear();
     this.#data = null;
     this.#insights = null;
     this.#status = "IDLE" /* IDLE */;
+  }
+  #resetHandlers() {
+    for (const handler of Object.values(this.#traceHandlers)) {
+      handler.reset();
+    }
   }
   async parse(traceEvents, options) {
     if (this.#status !== "IDLE" /* IDLE */) {
@@ -3575,6 +3572,8 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       this.#status = "ERRORED_WHILE_PARSING" /* ERRORED_WHILE_PARSING */;
       throw e;
     } finally {
+      this.#resetHandlers();
+      Lantern2.Simulation.Simulator.allNodeTimings.clear();
       options.logger?.end("total");
     }
   }
@@ -3584,9 +3583,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
   async #computeParsedTrace(traceEvents, options) {
     const eventsPerChunk = 5e4;
     const sortedHandlers = [...sortHandlers(this.#traceHandlers).entries()];
-    for (const [, handler] of sortedHandlers) {
-      handler.reset();
-    }
+    this.#resetHandlers();
     options.logger?.start("parse:handleEvent");
     const handleEventFns = sortedHandlers.map(([, handler]) => handler.handleEvent);
     for (let i = 0; i < traceEvents.length; ++i) {

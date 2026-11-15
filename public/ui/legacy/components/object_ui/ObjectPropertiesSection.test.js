@@ -751,6 +751,36 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
         assert.isFalse(hasWidgetListener(secondObjectTree));
         assert.isFalse(hasWidgetListener(secondChild));
     });
+    it('removes stale child node listeners when children are re-populated', async () => {
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({ b: 1, a: 2 });
+        const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(object, {
+            readOnly: true,
+            propertiesMode: 1 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED */,
+        });
+        objectTree.expanded = true;
+        const treeWidget = new ObjectUI.ObjectPropertiesSection.ObjectTreeWidget();
+        treeWidget.objectTree = objectTree;
+        renderElementIntoDOM(treeWidget);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await raf();
+        const firstChild = objectTree.children?.properties?.[0];
+        assert.exists(firstChild);
+        const hasWidgetListener = (node) => Boolean(node.listeners?.get("expanded-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED */)) &&
+            Array
+                .from(node.listeners?.get("expanded-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED */) ??
+                [])
+                .some(tuple => tuple.thisObject === treeWidget);
+        assert.isTrue(hasWidgetListener(firstChild));
+        treeWidget.sortPropertiesAlphabetically(objectTree);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await raf();
+        const replacementChild = objectTree.children?.properties?.[0];
+        assert.exists(replacementChild);
+        assert.notStrictEqual(replacementChild, firstChild);
+        assert.isTrue(hasWidgetListener(replacementChild));
+        assert.isFalse(hasWidgetListener(firstChild), 'Expected orphaned child node listeners to be removed when children are re-populated');
+        treeWidget.detach();
+    });
     it('does not edit readonly values', async () => {
         const property = new SDK.RemoteObject.RemoteObjectProperty('name', SDK.RemoteObject.RemoteObject.fromLocalObject(42), true, true);
         const container = document.createElement('div');

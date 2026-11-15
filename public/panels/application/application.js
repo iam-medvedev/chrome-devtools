@@ -28,12 +28,12 @@ __export(ApplicationPanelSidebar_exports, {
 });
 import * as Common19 from "../../core/common/common.js";
 import * as Host4 from "../../core/host/host.js";
-import * as i18n61 from "../../core/i18n/i18n.js";
+import * as i18n63 from "../../core/i18n/i18n.js";
 import * as Platform12 from "../../core/platform/platform.js";
 import * as Root2 from "../../core/root/root.js";
 import * as SDK25 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -2979,6 +2979,7 @@ var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeEl
   emptyCategoryHeadline;
   categoryDescription;
   settingsKey;
+  wasDescendantSelected = false;
   constructor(resourcesPanel, categoryName, emptyCategoryHeadline, categoryDescription, settingsKey, settingsDefault = false) {
     super(resourcesPanel, categoryName, false, settingsKey);
     this.settingsKey = settingsKey;
@@ -3014,12 +3015,73 @@ var ExpandableApplicationPanelTreeElement = class extends ApplicationPanelTreeEl
   setLink(link2) {
     this.categoryLink = link2;
   }
+  select(omitFocus, selectedByUser) {
+    if (this.selected && selectedByUser && !this.expanded && this.childCount() > 0) {
+      this.expand();
+      const childToSelect = this.findChildToAutoSelect();
+      if (childToSelect) {
+        childToSelect.select(omitFocus, true);
+      }
+      return false;
+    }
+    const previousSelected = this.treeOutline?.selectedTreeElement ?? null;
+    this.wasDescendantSelected = Boolean(previousSelected?.hasAncestor(this));
+    try {
+      return super.select(omitFocus, selectedByUser);
+    } finally {
+      this.wasDescendantSelected = false;
+    }
+  }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
+    if (selectedByUser && !this.wasDescendantSelected && this.childCount() > 0) {
+      if (!this.expanded) {
+        this.expand();
+      }
+      const childToSelect = this.findChildToAutoSelect();
+      if (childToSelect) {
+        childToSelect.select(
+          /* omitFocus= */
+          false,
+          /* selectedByUser= */
+          true
+        );
+        return false;
+      }
+    }
     this.updateCategoryView();
     const item4 = this.createGenericStorageAiContext();
     UI.Context.Context.instance().setFlavor(AiAssistance.StorageItem.StorageItem, item4);
     return false;
+  }
+  isOriginStorageCategory() {
+    return this.settingsKey === "cookies" || this.settingsKey === "local-storage" || this.settingsKey === "session-storage";
+  }
+  getMainPageOrigin() {
+    const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return "";
+    }
+    const mainFrame = target.model(SDK.ResourceTreeModel.ResourceTreeModel)?.mainFrame;
+    const url = mainFrame?.unreachableUrl() || mainFrame?.url || target.inspectedURL();
+    return url ? Common.ParsedURL.ParsedURL.extractOrigin(url) : "";
+  }
+  findChildToAutoSelect() {
+    if (!this.isOriginStorageCategory()) {
+      return null;
+    }
+    const selectableChildren = this.children().filter((child) => child.selectable && !child.isExpandable());
+    if (selectableChildren.length === 0) {
+      return null;
+    }
+    const mainPageOrigin = this.getMainPageOrigin();
+    if (mainPageOrigin) {
+      const matchingChild = selectableChildren.find((child) => child.titleAsText() === mainPageOrigin);
+      if (matchingChild) {
+        return matchingChild;
+      }
+    }
+    return selectableChildren.length === 1 ? selectableChildren[0] : null;
   }
   updateCategoryView() {
     const headline = this.childCount() === 0 ? this.emptyCategoryHeadline : this.categoryName;
@@ -4725,8 +4787,8 @@ var backgroundServiceView_css_default = `/*
 }
 
 .background-service-metadata {
-  padding-left: 5px;
-  padding-top: 10px;
+  padding-left: var(--sys-size-3);
+  padding-top: var(--sys-size-5);
 }
 
 .background-service-metadata-entry {
@@ -6143,13 +6205,6 @@ devtools-button.help-button {
 
 .bold {
   font-weight: bold;
-}
-
-.inline-icon {
-  margin-bottom: -5px;
-  width: 18px;
-  height: 18px;
-  vertical-align: baseline;
 }
 
 @media (forced-colors: active) {
@@ -7868,18 +7923,14 @@ var indexedDBViews_css_default = `/*
   unicode-bidi: isolate;
 }
 
-.indexed-db-container {
-  overflow: auto;
-}
-
 .source-code.indexed-db-key-path {
   font-size: unset !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .object-store-summary-bar {
-  flex: 0 0 27px;
-  line-height: 27px;
-  padding-left: 5px;
+  flex: 0 0 var(--sys-size-11);
+  line-height: var(--sys-size-11);
+  padding-left: var(--sys-size-3);
   background-color: var(--sys-color-cdt-base-container);
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
   white-space: nowrap;
@@ -7903,8 +7954,6 @@ var indexedDBViews_css_default = `/*
 }
 
 .stale-data-warning .warning-icon {
-  --icon-color: var(--icon-warning);
-
   width: var(--sys-size-9);
   height: var(--sys-size-9);
 }
@@ -10001,11 +10050,13 @@ __export(PrivateVerificationTokensView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW5,
   PrivateVerificationTokensView: () => PrivateVerificationTokensView
 });
+import "../../ui/kit/kit.js";
 import "../../ui/legacy/components/data_grid/data_grid.js";
 import * as Common9 from "../../core/common/common.js";
 import * as i18n23 from "../../core/i18n/i18n.js";
 import * as Platform5 from "../../core/platform/platform.js";
 import * as SDK12 from "../../core/sdk/sdk.js";
+import * as Buttons6 from "../../ui/components/buttons/buttons.js";
 import * as UI12 from "../../ui/legacy/legacy.js";
 import { Directives as Directives5, html as html9, render as render9 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
@@ -10030,6 +10081,12 @@ var privateVerificationTokensView_css_default = `/*
   flex-direction: column;
   flex: auto;
   overflow: hidden;
+}
+
+.pvt-toolbar {
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  background-color: var(--sys-color-cdt-base-container);
+  flex: none;
 }
 
 .table-container {
@@ -10066,6 +10123,14 @@ var UIStrings12 = {
    */
   noPrivateVerificationTokens: "No private verification tokens for this origin",
   /**
+   * @description Text to clear everything.
+   */
+  clearAll: "Clear all",
+  /**
+   * @description Tooltip text that appears when hovering over the delete button in the toolbar.
+   */
+  deleteSelected: "Delete selected",
+  /**
    * @description Column header for Token ID.
    */
   tokenId: "Token ID",
@@ -10096,9 +10161,27 @@ function renderView(input) {
   const hasTokens = input.tokens.length > 0;
   return html9`
     <div class="pvt-view" jslog=${VisualLogging6.pane("private-verification-tokens")}>
+      <devtools-toolbar class="pvt-toolbar" jslog=${VisualLogging6.toolbar()}>
+        <devtools-button class="clear-all-button"
+                         .disabled=${!hasTokens}
+                         .iconName=${"clear"}
+                         .jslogContext=${"clear-all"}
+                         .title=${i18nString12(UIStrings12.clearAll)}
+                         .variant=${Buttons6.Button.Variant.TOOLBAR}
+                         @click=${input.onDeleteAll}></devtools-button>
+        <devtools-button class="delete-selected-button"
+                         .disabled=${!input.selectedTokenId}
+                         .iconName=${"bin"}
+                         .jslogContext=${"delete-selected"}
+                         .title=${i18nString12(UIStrings12.deleteSelected)}
+                         .variant=${Buttons6.Button.Variant.TOOLBAR}
+                         @click=${() => input.selectedTokenId && input.onDeleteToken(input.selectedTokenId)}>
+        </devtools-button>
+      </devtools-toolbar>
       <div class="table-container">
         ${hasTokens ? html9`
-          <devtools-data-grid striped inline>
+          <devtools-data-grid striped inline deletable
+                              @deselect=${input.onDeselect}>
             <table>
               <tr>
                 <th id="issuer" weight="6" sortable>${i18nString12(UIStrings12.issuer)}</th>
@@ -10112,7 +10195,9 @@ function renderView(input) {
                 <th id="token" weight="2">${i18nString12(UIStrings12.tokenPayload)}</th>
               </tr>
               ${repeat2(input.tokens, (token) => token.id, (token) => html9`
-                <tr>
+                <tr ?selected=${input.selectedTokenId === token.id}
+                    @select=${() => input.onSelect(token.id)}
+                    @delete=${() => input.onDeleteToken(token.id)}>
                   <td>${token.issuerOrigin}</td>
                   <td>${token.isIssuer}</td>
                   <td>${token.isRedeemer}</td>
@@ -10142,6 +10227,9 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
 };
 var PrivateVerificationTokensView = class extends UI12.Widget.VBox {
   #model = null;
+  #tokens = [];
+  #fetchGeneration = 0;
+  #selectedTokenId = null;
   #view;
   constructor(element, view = DEFAULT_VIEW5) {
     super(element, { useShadowDom: true });
@@ -10155,25 +10243,27 @@ var PrivateVerificationTokensView = class extends UI12.Widget.VBox {
       this,
       { scoped: true }
     );
-    targetManager.addEventListener(SDK12.TargetManager.Events.INSPECTED_URL_CHANGED, this.requestUpdate, this);
+    targetManager.addEventListener(SDK12.TargetManager.Events.INSPECTED_URL_CHANGED, this.#onTokensChanged, this);
     targetManager.addModelListener(
       SDK12.SecurityOriginManager.SecurityOriginManager,
       SDK12.SecurityOriginManager.Events.MainSecurityOriginChanged,
-      this.requestUpdate,
+      this.#onTokensChanged,
       this,
       { scoped: true }
     );
-    this.requestUpdate();
+    if (!this.#model) {
+      this.#onTokensChanged();
+    }
   }
   willHide() {
     super.willHide();
     const targetManager = SDK12.TargetManager.TargetManager.instance();
     targetManager.unobserveModels(SDK12.PrivateVerificationTokensModel.PrivateVerificationTokensModel, this);
-    targetManager.removeEventListener(SDK12.TargetManager.Events.INSPECTED_URL_CHANGED, this.requestUpdate, this);
+    targetManager.removeEventListener(SDK12.TargetManager.Events.INSPECTED_URL_CHANGED, this.#onTokensChanged, this);
     targetManager.removeModelListener(
       SDK12.SecurityOriginManager.SecurityOriginManager,
       SDK12.SecurityOriginManager.Events.MainSecurityOriginChanged,
-      this.requestUpdate,
+      this.#onTokensChanged,
       this
     );
     if (this.#model) {
@@ -10189,34 +10279,82 @@ var PrivateVerificationTokensView = class extends UI12.Widget.VBox {
     }
     this.#model = model;
     model.setTracking(true);
-    model.addEventListener(SDK12.PrivateVerificationTokensModel.Events.TOKENS_UPDATED, this.requestUpdate, this);
-    this.requestUpdate();
+    model.addEventListener(SDK12.PrivateVerificationTokensModel.Events.TOKENS_UPDATED, this.#onTokensChanged, this);
+    this.#onTokensChanged();
   }
   modelRemoved(model) {
     if (model !== this.#model) {
       return;
     }
     model.setTracking(false);
-    model.removeEventListener(SDK12.PrivateVerificationTokensModel.Events.TOKENS_UPDATED, this.requestUpdate, this);
+    model.removeEventListener(SDK12.PrivateVerificationTokensModel.Events.TOKENS_UPDATED, this.#onTokensChanged, this);
     this.#model = null;
+    this.#onTokensChanged();
   }
-  async performUpdate(signal) {
-    const model = this.#model;
-    let tokens = [];
-    if (model) {
-      const currentOrigin = getInspectedOrigin(model.target());
-      if (currentOrigin) {
-        const [rawTokens, configs] = await Promise.all([model.getTokens(), model.getIssuerConfigs()]);
-        if (signal?.aborted || this.#model !== model) {
-          return;
-        }
-        tokens = toTokenRows(rawTokens, configs, currentOrigin);
-      }
-    }
-    if (signal?.aborted) {
+  #onTokensChanged() {
+    void this.#refreshTokens();
+  }
+  /**
+   * Fetches tokens from the backend and caches them, so that local view state
+   * changes (such as selection) re-render without additional CDP round-trips.
+   * Responses from superseded fetches are discarded.
+   */
+  async #refreshTokens() {
+    const generation = ++this.#fetchGeneration;
+    const tokens = await this.#fetchTokens();
+    if (generation !== this.#fetchGeneration) {
       return;
     }
-    this.#view({ tokens }, void 0, this.contentElement);
+    this.#tokens = tokens;
+    if (this.#selectedTokenId && !tokens.some((token) => token.id === this.#selectedTokenId)) {
+      this.#selectedTokenId = null;
+    }
+    this.requestUpdate();
+  }
+  async #fetchTokens() {
+    const model = this.#model;
+    if (!model) {
+      return [];
+    }
+    const currentOrigin = getInspectedOrigin(model.target());
+    if (!currentOrigin) {
+      return [];
+    }
+    const [rawTokens, configs] = await Promise.all([model.getTokens(), model.getIssuerConfigs()]);
+    return toTokenRows(rawTokens, configs, currentOrigin);
+  }
+  performUpdate() {
+    this.#view(
+      {
+        tokens: this.#tokens,
+        selectedTokenId: this.#selectedTokenId,
+        onSelect: (tokenId) => {
+          this.#selectedTokenId = tokenId;
+          this.requestUpdate();
+        },
+        onDeselect: () => {
+          this.#selectedTokenId = null;
+          this.requestUpdate();
+        },
+        onDeleteAll: () => void this.#clearAllTokensHandler(),
+        onDeleteToken: (tokenId) => void this.#deleteTokenHandler(tokenId)
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  async #clearAllTokensHandler() {
+    const model = this.#model;
+    if (!model) {
+      return;
+    }
+    const issuers = new Set(this.#tokens.map((token) => token.issuerOrigin));
+    await Promise.all([...issuers].map((issuerOrigin) => model.clearTokens(issuerOrigin)));
+    await this.#refreshTokens();
+  }
+  async #deleteTokenHandler(tokenId) {
+    await this.#model?.deleteToken(tokenId);
+    await this.#refreshTokens();
   }
 };
 function toTokenRows(rawTokens, configs, currentOrigin) {
@@ -10272,7 +10410,7 @@ import "../../ui/legacy/legacy.js";
 import * as i18n25 from "../../core/i18n/i18n.js";
 import * as Platform6 from "../../core/platform/platform.js";
 import * as SDK13 from "../../core/sdk/sdk.js";
-import * as Buttons6 from "../../ui/components/buttons/buttons.js";
+import * as Buttons7 from "../../ui/components/buttons/buttons.js";
 import * as UI13 from "../../ui/legacy/legacy.js";
 import { html as html10, render as render10 } from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
@@ -10345,7 +10483,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
         <devtools-button title=${i18nString13(UIStrings13.refresh)}
                          @click=${input.onRefresh}
                          .iconName=${"refresh"}
-                         .variant=${Buttons6.Button.Variant.TOOLBAR}
+                         .variant=${Buttons7.Button.Variant.TOOLBAR}
                          jslog=${VisualLogging7.action("refresh").track({
       click: true
     })}>
@@ -10500,7 +10638,6 @@ var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilit
 var DEFAULT_VIEW7 = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
     render11(html11`
-      <style>${UI14.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging8.pane("reporting-api")}>
         ${input.hasReports ? html11`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
@@ -10803,7 +10940,7 @@ import * as i18n31 from "../../core/i18n/i18n.js";
 import * as Platform7 from "../../core/platform/platform.js";
 import * as SDK15 from "../../core/sdk/sdk.js";
 import * as TextUtils3 from "../../core/text_utils/text_utils.js";
-import * as Buttons7 from "../../ui/components/buttons/buttons.js";
+import * as Buttons8 from "../../ui/components/buttons/buttons.js";
 import * as Geometry from "../../ui/geometry/geometry.js";
 import * as UI16 from "../../ui/legacy/legacy.js";
 import { html as html12, nothing as nothing6, render as render12 } from "../../ui/lit/lit.js";
@@ -10953,7 +11090,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
         aria-label=${i18nString16(UIStrings16.refresh)}
         .iconName=${"refresh"}
         .disabled=${!input.refreshEnabled}
-        .variant=${Buttons7.Button.Variant.TOOLBAR}
+        .variant=${Buttons8.Button.Variant.TOOLBAR}
         .jslogContext=${"cache-storage.refresh"}
         @click=${input.onRefresh}>
       </devtools-button>
@@ -10961,7 +11098,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
         title=${i18nString16(UIStrings16.deleteSelected)}
         aria-label=${i18nString16(UIStrings16.deleteSelected)}
         .iconName=${"cross"}
-        .variant=${Buttons7.Button.Variant.TOOLBAR}
+        .variant=${Buttons8.Button.Variant.TOOLBAR}
         .jslogContext=${"cache-storage.delete-selected"}
         @click=${input.onDeleteSelected}>
       </devtools-button>
@@ -11521,7 +11658,7 @@ import * as Host2 from "../../core/host/host.js";
 import * as i18n37 from "../../core/i18n/i18n.js";
 import * as SDK18 from "../../core/sdk/sdk.js";
 import * as NetworkForward2 from "../network/forward/forward.js";
-import * as Buttons8 from "../../ui/components/buttons/buttons.js";
+import * as Buttons9 from "../../ui/components/buttons/buttons.js";
 import * as Components3 from "../../ui/legacy/components/utils/utils.js";
 import * as UI19 from "../../ui/legacy/legacy.js";
 import { Directives as Directives6, html as html14, nothing as nothing8, render as render14 } from "../../ui/lit/lit.js";
@@ -11539,7 +11676,7 @@ var serviceWorkersView_css_default = `/*
 .service-worker-version {
   display: flex;
   /* The status string can be long, allow this line of the report to wrap. */
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
 
   devtools-button {
@@ -11577,13 +11714,14 @@ var serviceWorkersView_css_default = `/*
 .service-worker-installing-circle {
   position: relative;
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  /* Center the --sys-size-1 stack bar (left: var(--sys-size-3)) under the circle. */
+  width: calc(2 * var(--sys-size-3) + var(--sys-size-1));
+  height: calc(2 * var(--sys-size-3) + var(--sys-size-1));
   z-index: 10;
   margin-right: var(--sys-size-4);
   border-radius: var(--sys-shape-corner-full);
   border: var(--sys-size-1) solid var(--sys-color-token-subtle);
-  align-self: center;
+  align-self: baseline;
   /* The circle should not shrink, to avoid risking becoming invisible. */
   flex-shrink: 0;
 }
@@ -11624,13 +11762,13 @@ var serviceWorkersView_css_default = `/*
   display: flex;
   flex: auto;
   margin-right: var(--sys-size-3);
-  max-width: 400px;
+  max-width: var(--sys-size-32);
   min-width: var(--sys-size-19);
 }
 
 .report-field-value-filename,
 .service-worker-client-string {
-  max-width: 400px;
+  max-width: var(--sys-size-32);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -11754,18 +11892,11 @@ var serviceWorkerUpdateCycleView_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
-  .resource-service-worker-update-view {
-    display: block;
-    margin: var(--sys-size-4);
-    color: var(--sys-color-on-surface-subtle);
-    overflow: auto;
-  }
-
   .service-worker-update-timing-table {
     border: var(--sys-size-1) solid var(--sys-color-divider);
     border-spacing: 0;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: var(--sys-size-6);
+    padding-right: var(--sys-size-6);
     line-height: initial;
     table-layout: auto;
     overflow: hidden;
@@ -11849,7 +11980,7 @@ var serviceWorkerUpdateCycleView_css_default = `/*
   }
 
   table.service-worker-update-timing-table > tbody > tr.service-worker-update-timing-table-header > td {
-    border-top: 5px solid transparent;
+    border-top: var(--sys-size-3) solid transparent;
     color: var(--sys-color-token-subtle);
   }
 
@@ -12570,7 +12701,7 @@ var ServiceWorkersView = class extends UI19.Widget.VBox {
 function renderHeaderButtons(input) {
   return html14`
     <devtools-button .data=${{
-    variant: Buttons8.Button.Variant.TEXT,
+    variant: Buttons9.Button.Variant.TEXT,
     title: i18nString19(UIStrings19.networkRequests),
     jslogContext: "show-network-requests"
   }}
@@ -12579,7 +12710,7 @@ function renderHeaderButtons(input) {
       ${i18nString19(UIStrings19.networkRequests)}
     </devtools-button>
     <devtools-button .data=${{
-    variant: Buttons8.Button.Variant.TEXT,
+    variant: Buttons9.Button.Variant.TEXT,
     title: i18nString19(UIStrings19.update),
     jslogContext: "update"
   }}
@@ -12588,7 +12719,7 @@ function renderHeaderButtons(input) {
       ${i18nString19(UIStrings19.update)}
     </devtools-button>
     <devtools-button .data=${{
-    variant: Buttons8.Button.Variant.TEXT,
+    variant: Buttons9.Button.Variant.TEXT,
     title: i18nString19(UIStrings19.unregisterServiceWorker),
     jslogContext: "unregister"
   }}
@@ -12616,7 +12747,7 @@ function renderSyncNotificationField(label, initialValue, placeholder, callback,
         >
         <devtools-button .data=${{
     type: "submit",
-    variant: Buttons8.Button.Variant.OUTLINED,
+    variant: Buttons9.Button.Variant.OUTLINED,
     jslogContext
   }}>
           ${label}
@@ -12701,11 +12832,11 @@ function renderStatusField(input, active, waiting, installing, redundant) {
       PH2: SDK18.ServiceWorkerManager.ServiceWorkerVersion.RunningStatus[active.currentState.runningStatus]()
     }),
     active.isRunning() || active.isStarting() ? html14`
-              <devtools-button .data=${{ jslogContext: "stop", variant: Buttons8.Button.Variant.OUTLINED }}
+              <devtools-button .data=${{ jslogContext: "stop", variant: Buttons9.Button.Variant.OUTLINED }}
                               @click=${() => input.onStop(active.id)}>
                   ${i18nString19(UIStrings19.stopString)}
               </devtools-button>` : active.isStartable() ? html14`
-              <devtools-button .data=${{ jslogContext: "start", variant: Buttons8.Button.Variant.OUTLINED }}
+              <devtools-button .data=${{ jslogContext: "start", variant: Buttons9.Button.Variant.OUTLINED }}
                               @click=${input.onStart}>
                   ${i18nString19(UIStrings19.startString)}
               </devtools-button>` : nothing8
@@ -12720,7 +12851,7 @@ function renderStatusField(input, active, waiting, installing, redundant) {
               <devtools-button .data=${{
       jslogContext: "skip-waiting",
       title: i18n37.i18n.lockedString("skipWaiting"),
-      variant: Buttons8.Button.Variant.OUTLINED
+      variant: Buttons9.Button.Variant.OUTLINED
     }}
                   @click=${input.onSkipWaiting}>
                 ${i18n37.i18n.lockedString("skipWaiting")}
@@ -12945,8 +13076,8 @@ var Section = class extends UI19.Widget.VBox {
       <devtools-button
         .data=${{
       iconName: "select-element",
-      variant: Buttons8.Button.Variant.ICON,
-      size: Buttons8.Button.Size.SMALL,
+      variant: Buttons9.Button.Variant.ICON,
+      size: Buttons9.Button.Size.SMALL,
       title: i18nString19(UIStrings19.focus),
       jslogContext: "client-focus"
     }}
@@ -13156,7 +13287,7 @@ import * as Common17 from "../../core/common/common.js";
 import * as i18n53 from "../../core/i18n/i18n.js";
 import * as Platform10 from "../../core/platform/platform.js";
 import * as SDK23 from "../../core/sdk/sdk.js";
-import * as Buttons10 from "../../ui/components/buttons/buttons.js";
+import * as Buttons11 from "../../ui/components/buttons/buttons.js";
 import * as uiI18n from "../../ui/i18n/i18n.js";
 import * as UI27 from "../../ui/legacy/legacy.js";
 import { Directives as Directives8, html as html19, nothing as nothing12, render as render20 } from "../../ui/lit/lit.js";
@@ -13216,7 +13347,6 @@ var cookieItemsView_css_default = `/*
     user-select: none;
     white-space: nowrap;
     margin-bottom: var(--sys-size-3);
-    flex: 0 0 18px;
     display: flex;
     align-items: center;
   }
@@ -13230,12 +13360,6 @@ var cookieItemsView_css_default = `/*
     word-break: break-all;
     flex: 1;
     overflow: auto;
-  }
-
-  .cookie-preview-widget-toggle {
-    margin-left: var(--sys-size-6);
-    font-weight: normal;
-    flex-shrink: 1;
   }
 }
 
@@ -13251,7 +13375,7 @@ import "../../ui/legacy/legacy.js";
 import * as Common12 from "../../core/common/common.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
 import * as Platform8 from "../../core/platform/platform.js";
-import * as Buttons9 from "../../ui/components/buttons/buttons.js";
+import * as Buttons10 from "../../ui/components/buttons/buttons.js";
 import * as UI20 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
 import * as VisualLogging12 from "../../ui/visual_logging/visual_logging.js";
@@ -13289,7 +13413,7 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
     })}
                          @click=${input.onRefresh}
                          .iconName=${"refresh"}
-                         .variant=${Buttons9.Button.Variant.TOOLBAR}></devtools-button>
+                         .variant=${Buttons10.Button.Variant.TOOLBAR}></devtools-button>
         <devtools-toolbar-input type="filter"
                                 ?disabled=${!input.filterItemEnabled}
                                 @change=${input.onFilterChanged}
@@ -13303,7 +13427,7 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
       click: true
     })}
                          .iconName=${input.deleteAllButtonIconName}
-                         .variant=${Buttons9.Button.Variant.TOOLBAR}></devtools-button>
+                         .variant=${Buttons10.Button.Variant.TOOLBAR}></devtools-button>
         <devtools-button title=${i18nString21(UIStrings21.deleteSelected)}
                          @click=${input.onDeleteSelected}
                          ?disabled=${!input.deleteSelectedButtonDisabled}
@@ -13311,7 +13435,7 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
       click: true
     })}
                          .iconName=${"cross"}
-                         .variant=${Buttons9.Button.Variant.TOOLBAR}></devtools-button>
+                         .variant=${Buttons10.Button.Variant.TOOLBAR}></devtools-button>
         ${input.mainToolbarItems.map((item4) => item4.element)}
       </devtools-toolbar>
       ${UI20.Widget.widget(UI20.Widget.WrapperWidget, { widget: input.metadataView })}`,
@@ -13536,8 +13660,8 @@ var DEFAULT_VIEW12 = (input, output, target) => {
         @Refresh=${input.onRefreshItems}
         @DeleteAll=${input.onDeleteAllItems}
         @DeleteSelected=${input.onDeleteSelectedItems}
-        ${UI21.Widget.widgetRef(StorageItemsToolbar, (toolbar8) => {
-      output.toolbar = toolbar8;
+        ${UI21.Widget.widgetRef(StorageItemsToolbar, (toolbar9) => {
+      output.toolbar = toolbar9;
     })}
       ></devtools-widget>
       <devtools-split-view sidebar-position="second" name="cookie-items-split-view-state">
@@ -13611,11 +13735,11 @@ var CookieItemsView = class extends UI21.Widget.VBox {
   performUpdate() {
     const that = this;
     const output = {
-      set toolbar(toolbar8) {
-        if (that.#toolbar === toolbar8) {
+      set toolbar(toolbar9) {
+        if (that.#toolbar === toolbar9) {
           return;
         }
-        that.#toolbar = toolbar8;
+        that.#toolbar = toolbar9;
         that.#toolbar.appendToolbarItem(that.onlyIssuesFilterUI);
         that.updateWithCookies(that.allCookies);
       }
@@ -15075,8 +15199,8 @@ var KeyValueStorageItemsView = class extends UI23.Widget.VBox {
   performUpdate() {
     const that = this;
     const viewOutput = {
-      set toolbar(toolbar8) {
-        that.#toolbar = toolbar8;
+      set toolbar(toolbar9) {
+        that.#toolbar = toolbar9;
       }
     };
     const viewInput = {
@@ -15681,54 +15805,6 @@ var resourcesPanel_css_default = `/*
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
-.database-query-group-messages {
-  overflow-y: auto;
-}
-
-.database-query-prompt-container {
-  position: relative;
-  padding: var(--sys-size-1) var(--sys-size-10) var(--sys-size-1) var(--sys-size-11);
-  min-height: var(--sys-size-8);
-}
-
-.database-query-prompt {
-  white-space: pre-wrap;
-}
-
-.database-query-prompt-container .prompt-icon {
-  top: var(--sys-size-4);
-}
-
-.database-user-query {
-  position: relative;
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding: var(--sys-size-1) var(--sys-size-10) var(--sys-size-1) var(--sys-size-11);
-  min-height: var(--sys-size-8);
-  flex-shrink: 0;
-}
-
-.database-user-query:focus-visible {
-  background-color: var(--sys-color-state-focus-highlight);
-}
-
-.database-query-text {
-  color: var(--sys-color-primary-bright);
-  user-select: text;
-}
-
-.database-query-result {
-  position: relative;
-  padding: var(--sys-size-1) var(--sys-size-10);
-  min-height: var(--sys-size-8);
-  margin-left: calc(-1 * var(--sys-size-10));
-  padding-right: 0;
-}
-
-.database-query-result.error {
-  color: var(--sys-color-token-property-special);
-  user-select: text;
-}
-
 .resources-sidebar {
   padding: 0;
   overflow-x: auto;
@@ -15989,11 +16065,6 @@ devtools-report-section:has(.quota-override-error:empty) {
   margin-top: var(--sys-size-7);
 }
 
-.quota-override-editor-with-button {
-  align-items: baseline;
-  display: flex;
-}
-
 .quota-override-notification-editor {
   border: solid var(--sys-size-1) var(--sys-color-neutral-outline);
   border-radius: var(--sys-shape-corner-extra-small);
@@ -16227,7 +16298,7 @@ var DEFAULT_VIEW14 = (input, output, target) => {
         </devtools-report-section>
         <devtools-report-section class="clear-selected-button-row">
           <devtools-button id="storage-view-clear-button"
-              .variant=${Buttons10.Button.Variant.OUTLINED}
+              .variant=${Buttons11.Button.Variant.OUTLINED}
               .disabled=${input.clearing}
               .jslogContext=${"storage.clear-site-data"}
               @click=${input.onClear}
@@ -16888,7 +16959,6 @@ var DEFAULT_VIEW15 = (input, output, target) => {
   const headingText = input.isSiblingSubApps ? i18nString28(UIStrings28.siblingSubApps) : i18nString28(UIStrings28.subApps);
   Lit3.render(html20`
     <style>${subAppsView_css_default}</style>
-    <style>${UI28.inspectorCommonStyles}</style>
     <div jslog=${VisualLogging20.pane("sub-apps")}>
       <span class="heading">${headingText}</span>
       <devtools-data-grid striped inline role="grid" aria-label=${headingText}>
@@ -16997,9 +17067,9 @@ var WebMCPTreeElement_exports = {};
 __export(WebMCPTreeElement_exports, {
   WebMCPTreeElement: () => WebMCPTreeElement
 });
+import * as i18n61 from "../../core/i18n/i18n.js";
 import { createIcon as createIcon9 } from "../../ui/kit/kit.js";
 import * as UI31 from "../../ui/legacy/legacy.js";
-import { html as html22, render as render23 } from "../../ui/lit/lit.js";
 
 // ../../front_end/panels/application/WebMCPView.ts
 var WebMCPView_exports = {};
@@ -17027,7 +17097,7 @@ import * as i18n59 from "../../core/i18n/i18n.js";
 import * as Platform11 from "../../core/platform/platform.js";
 import * as SDK24 from "../../core/sdk/sdk.js";
 import * as WebMCP2 from "../../models/web_mcp/web_mcp.js";
-import * as Buttons11 from "../../ui/components/buttons/buttons.js";
+import * as Buttons12 from "../../ui/components/buttons/buttons.js";
 import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components4 from "../../ui/legacy/components/utils/utils.js";
 import * as UI30 from "../../ui/legacy/legacy.js";
@@ -17254,6 +17324,17 @@ var webMCPView_css_default = `/*
         margin-left: calc(-1 * var(--sys-size-3));
       }
 
+      &.schema {
+        padding: 0;
+        min-width: 0;
+        overflow: hidden;
+
+        > devtools-widget {
+          display: block;
+          max-width: 100%;
+        }
+      }
+
       &.tool-origin-container {
         display: flex;
         align-items: center;
@@ -17407,6 +17488,12 @@ var webMCPView_css_default = `/*
     align-self: flex-end;
     margin: var(--sys-size-6) var(--sys-size-8);
   }
+}
+
+/* The schema tree is a child of a nested devtools-widget, which the @scope above excludes. */
+.tool-details-grid .value.schema > devtools-widget > devtools-tree {
+  display: block;
+  max-width: 100%;
 }
 
 /*# sourceURL=${import.meta.resolve("./webMCPView.css")} */`;
@@ -17580,7 +17667,11 @@ var UIStrings30 = {
   /**
    * @description Label for the tool origin in the tool details section of the WebMCP view in the Application panel.
    */
-  origin: "Origin"
+  origin: "Origin",
+  /**
+   * @description Label for the tool output schema, which describes the structure of the tool's return value, in the tool details section of the WebMCP view in the Application panel.
+   */
+  outputSchema: "Output schema"
 };
 var str_30 = i18n59.i18n.registerUIStrings("panels/application/WebMCPView.ts", UIStrings30);
 var i18nString30 = i18n59.i18n.getLocalizedString.bind(void 0, str_30);
@@ -17848,7 +17939,7 @@ var DEFAULT_VIEW16 = (input, output, target) => {
           <devtools-toolbar class="webmcp-toolbar" role="presentation" wrappable>
             <devtools-button title=${i18nString30(UIStrings30.clearLog)}
                              .iconName=${"clear"}
-                             .variant=${Buttons11.Button.Variant.TOOLBAR}
+                             .variant=${Buttons12.Button.Variant.TOOLBAR}
                              .jslogContext=${"clear"}
                              @click=${input.onClearLogClick}></devtools-button>
             <div class="toolbar-divider"></div>
@@ -17874,7 +17965,7 @@ var DEFAULT_VIEW16 = (input, output, target) => {
             <div class="toolbar-spacer"></div>
             <devtools-button title=${i18nString30(UIStrings30.clearFilters)}
                              .iconName=${"filter-clear"}
-                             .variant=${Buttons11.Button.Variant.TOOLBAR}
+                             .variant=${Buttons12.Button.Variant.TOOLBAR}
                              .jslogContext=${"clear-filter"}
                              @click=${() => input.onFilterChange({ text: "" })}
                              ?hidden=${!isFilterActive}></devtools-button>
@@ -17978,8 +18069,8 @@ var DEFAULT_VIEW16 = (input, output, target) => {
                 <devtools-button
                   slot="left"
                   .iconName=${"cross"}
-                  .size=${Buttons11.Button.Size.SMALL}
-                  .variant=${Buttons11.Button.Variant.ICON}
+                  .size=${Buttons12.Button.Size.SMALL}
+                  .variant=${Buttons12.Button.Variant.ICON}
                   .jslogContext=${"close"}
                   title=${i18nString30(UIStrings30.close)}
                   @click=${() => input.onCallSelect(null)}
@@ -18078,8 +18169,8 @@ var DEFAULT_VIEW16 = (input, output, target) => {
           <div class="section-title">
             <devtools-button
               .iconName=${"cross"}
-              .size=${Buttons11.Button.Size.SMALL}
-              .variant=${Buttons11.Button.Variant.ICON}
+              .size=${Buttons12.Button.Size.SMALL}
+              .variant=${Buttons12.Button.Variant.ICON}
               .jslogContext=${"close"}
               title=${i18nString30(UIStrings30.close)}
               @click=${() => input.onToolSelect(null)}
@@ -18095,8 +18186,8 @@ var DEFAULT_VIEW16 = (input, output, target) => {
               <div style="flex: auto;"></div>
               <devtools-button
                 .iconName=${"import"}
-                .size=${Buttons11.Button.Size.SMALL}
-                .variant=${Buttons11.Button.Variant.TEXT}
+                .size=${Buttons12.Button.Size.SMALL}
+                .variant=${Buttons12.Button.Variant.TEXT}
                 .jslogContext=${"paste"}
                 title=${i18nString30(UIStrings30.pasteTooltip)}
                 @click=${input.onPaste}
@@ -18121,8 +18212,8 @@ var DEFAULT_VIEW16 = (input, output, target) => {
             ></devtools-widget>
             <devtools-button
               class="webmcp-run-tool-button"
-              .variant=${Buttons11.Button.Variant.OUTLINED}
-              .size=${Buttons11.Button.Size.SMALL}
+              .variant=${Buttons12.Button.Variant.OUTLINED}
+              .size=${Buttons12.Button.Size.SMALL}
               .jslogContext=${"run-tool"}
               @click=${() => {
     if (editorWidget && input.selectedTool) {
@@ -18272,6 +18363,19 @@ var WebMCPView = class extends UI30.Widget.VBox {
     this.#selectedTab = void 0;
   }
 };
+var schemaObjectTreeCache = /* @__PURE__ */ new WeakMap();
+function getSchemaObjectTree(schema) {
+  let objectTree = schemaObjectTreeCache.get(schema);
+  if (!objectTree) {
+    objectTree = new ObjectUI2.ObjectPropertiesSection.ObjectTree(new SDK24.RemoteObject.LocalJSONObject(schema), {
+      readOnly: true,
+      propertiesMode: ObjectUI2.ObjectPropertiesSection.ObjectPropertiesMode.OWN_AND_INTERNAL_AND_INHERITED
+    });
+    objectTree.expanded = true;
+    schemaObjectTreeCache.set(schema, objectTree);
+  }
+  return objectTree;
+}
 var PAYLOAD_DEFAULT_VIEW = (input, output, target) => {
   if (input.valueObject === void 0 && input.valueString === void 0 && !input.errorText && !input.symbolizedError) {
     render22(nothing13, target);
@@ -18396,6 +18500,7 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
   const tool = input.tool;
   const origin = input.origin;
   const flags = tool.flags;
+  const outputSchema = tool.outputSchema;
   const formatter = new Intl.ListFormat(i18n59.DevToolsLocale.DevToolsLocale.instance().locale, {
     style: "short",
     type: "unit"
@@ -18411,6 +18516,16 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
       ${flags.length > 0 ? html21`
       <div class="label">${i18nString30(UIStrings30.flags)}</div>
       <div class="value">${formattedFlags}</div>
+      ` : nothing13}
+      ${outputSchema ? html21`
+      <div class="label">${i18nString30(UIStrings30.outputSchema)}</div>
+      <div class="value schema">
+        ${widget12(ObjectUI2.ObjectPropertiesSection.ObjectPropertiesSectionWidget, {
+    objectTree: getSchemaObjectTree(outputSchema),
+    skipProto: true,
+    showOverflow: false
+  })}
+      </div>
       ` : nothing13}
       ${tool.frame ? html21`
       <div class="label">${i18nString30(UIStrings30.frame)}</div>
@@ -18436,8 +18551,8 @@ var TOOL_DETAILS_VIEW = (input, output, target) => {
            aria-label=${i18nString30(UIStrings30.viewInElementsPanel)}
            .iconName=${"select-element"}
            .jslogContext=${"elements.select-element"}
-           .size=${Buttons11.Button.Size.SMALL}
-           .variant=${Buttons11.Button.Variant.ICON}
+           .size=${Buttons12.Button.Size.SMALL}
+           .variant=${Buttons12.Button.Variant.ICON}
            @click=${() => input.revealNode(origin)}
            ></devtools-button>
       </div>` : origin ? html21`
@@ -18735,14 +18850,12 @@ function parseToolSchema(schema) {
 var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
   #view;
   constructor(storagePanel) {
-    super(storagePanel, "WebMCP", false, "web-mcp");
+    super(storagePanel, i18n61.i18n.lockedString("WebMCP"), false, "web-mcp");
     const icon = createIcon9("document");
     this.setLeadingIcons([icon]);
     const newBadge = UI31.UIUtils.maybeCreateNewBadge("web-mcp");
     if (newBadge) {
-      const fragment = document.createDocumentFragment();
-      render23(html22`<div class="trailing-icons icons-container">${newBadge}</div>`, fragment);
-      this.listItemElement.appendChild(fragment);
+      this.setTrailingIcons([newBadge]);
     }
   }
   get itemURL() {
@@ -18976,8 +19089,8 @@ var UIStrings31 = {
    */
   privateVerificationTokens: "Private verification tokens"
 };
-var str_31 = i18n61.i18n.registerUIStrings("panels/application/ApplicationPanelSidebar.ts", UIStrings31);
-var i18nString31 = i18n61.i18n.getLocalizedString.bind(void 0, str_31);
+var str_31 = i18n63.i18n.registerUIStrings("panels/application/ApplicationPanelSidebar.ts", UIStrings31);
+var i18nString31 = i18n63.i18n.getLocalizedString.bind(void 0, str_31);
 function assertNotMainTarget(targetId) {
   if (targetId === "main") {
     throw new Error("Unexpected main target id");
@@ -19676,7 +19789,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
 var ServiceWorkersTreeElement = class extends ApplicationPanelTreeElement {
   view;
   constructor(storagePanel) {
-    super(storagePanel, i18n61.i18n.lockedString("Service workers"), false, "service-workers");
+    super(storagePanel, i18n63.i18n.lockedString("Service workers"), false, "service-workers");
     const icon = createIcon10("gears");
     this.setLeadingIcons([icon]);
   }
@@ -19845,7 +19958,7 @@ var StorageTreeElement = class extends ApplicationPanelTreeElement {
   }
 };
 var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
-  idbDatabaseTreeElements;
+  idbDatabaseTreeElements = /* @__PURE__ */ new Set();
   storageBucket;
   constructor(storagePanel, storageBucket) {
     super(
@@ -19857,7 +19970,6 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
     );
     const icon = createIcon10("database");
     this.setLeadingIcons([icon]);
-    this.idbDatabaseTreeElements = [];
     this.storageBucket = storageBucket;
     this.initialize();
   }
@@ -19890,7 +20002,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
       this,
       { scoped: true }
     );
-    this.idbDatabaseTreeElements = [];
+    this.idbDatabaseTreeElements.clear();
     for (const indexedDBModel of SDK25.TargetManager.TargetManager.instance().models(IndexedDBModel, { scoped: true })) {
       const databases = indexedDBModel.databases();
       for (let j = 0; j < databases.length; ++j) {
@@ -19904,9 +20016,10 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
     }
   }
   removeIndexedDBForModel(model) {
-    const idbDatabaseTreeElements = this.idbDatabaseTreeElements.filter((element) => element.model === model);
-    for (const idbDatabaseTreeElement of idbDatabaseTreeElements) {
-      this.removeIDBDatabaseTreeElement(idbDatabaseTreeElement);
+    for (const idbDatabaseTreeElement of this.idbDatabaseTreeElements) {
+      if (idbDatabaseTreeElement.model === model) {
+        this.removeIDBDatabaseTreeElement(idbDatabaseTreeElement);
+      }
     }
   }
   onattach() {
@@ -19943,7 +20056,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
       return;
     }
     const idbDatabaseTreeElement = new IDBDatabaseTreeElement(this.resourcesPanel, model, databaseId);
-    this.idbDatabaseTreeElements.push(idbDatabaseTreeElement);
+    this.idbDatabaseTreeElements.add(idbDatabaseTreeElement);
     this.appendChild(idbDatabaseTreeElement);
     model.refreshDatabase(databaseId);
   }
@@ -19959,7 +20072,7 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
   removeIDBDatabaseTreeElement(idbDatabaseTreeElement) {
     idbDatabaseTreeElement.clear();
     this.removeChild(idbDatabaseTreeElement);
-    Platform12.ArrayUtilities.removeElement(this.idbDatabaseTreeElements, idbDatabaseTreeElement);
+    this.idbDatabaseTreeElements.delete(idbDatabaseTreeElement);
     this.setExpandable(this.childCount() > 0);
   }
   indexedDBLoaded({ data: { database, model, entriesUpdated } }) {
@@ -19982,7 +20095,12 @@ var IndexedDBTreeElement = class extends ExpandableApplicationPanelTreeElement {
     idbDatabaseTreeElement.indexedDBContentUpdated(objectStoreName);
   }
   idbDatabaseTreeElement(model, databaseId) {
-    return this.idbDatabaseTreeElements.find((x) => x.databaseId.equals(databaseId) && x.model === model) || null;
+    for (const element of this.idbDatabaseTreeElements) {
+      if (element.databaseId.equals(databaseId) && element.model === model) {
+        return element;
+      }
+    }
+    return null;
   }
 };
 var IDBDatabaseTreeElement = class extends ApplicationPanelTreeElement {
@@ -20188,7 +20306,7 @@ var IDBObjectStoreTreeElement = class extends ApplicationPanelTreeElement {
     const keyPathString = this.objectStore.keyPathString;
     let tooltipString = keyPathString !== null ? i18nString31(UIStrings31.keyPathS, { PH1: keyPathString }) : "";
     if (this.objectStore.autoIncrement) {
-      tooltipString += "\n" + i18n61.i18n.lockedString("autoIncrement");
+      tooltipString += "\n" + i18n63.i18n.lockedString("autoIncrement");
     }
     this.tooltip = tooltipString;
   }
@@ -20259,10 +20377,10 @@ var IDBIndexTreeElement = class extends ApplicationPanelTreeElement {
     const keyPathString = this.index.keyPathString;
     tooltipLines.push(i18nString31(UIStrings31.keyPathS, { PH1: keyPathString }));
     if (this.index.unique) {
-      tooltipLines.push(i18n61.i18n.lockedString("unique"));
+      tooltipLines.push(i18n63.i18n.lockedString("unique"));
     }
     if (this.index.multiEntry) {
-      tooltipLines.push(i18n61.i18n.lockedString("multiEntry"));
+      tooltipLines.push(i18n63.i18n.lockedString("multiEntry"));
     }
     this.tooltip = tooltipLines.join("\n");
   }
@@ -20854,7 +20972,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
   }
   workerCreated(targetInfo) {
     const categoryKey = targetInfo.type === "service_worker" ? "service-workers" : "web-workers";
-    const categoryName = targetInfo.type === "service_worker" ? i18n61.i18n.lockedString("Service workers") : i18nString31(UIStrings31.webWorkers);
+    const categoryName = targetInfo.type === "service_worker" ? i18n63.i18n.lockedString("Service workers") : i18nString31(UIStrings31.webWorkers);
     let categoryElement = this.categoryElements.get(categoryKey);
     if (!categoryElement) {
       categoryElement = new ExpandableApplicationPanelTreeElement(

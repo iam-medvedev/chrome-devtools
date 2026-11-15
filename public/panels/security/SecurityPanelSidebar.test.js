@@ -31,14 +31,20 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const secureOrigin = urlString `https://secure.example.com`;
         const insecureOrigin = urlString `http://insecure.example.com`;
         const unknownOrigin = urlString `https://unknown.example.com`;
-        sidebar.addOrigin(secureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
-        sidebar.addOrigin(insecureOrigin, "insecure" /* Protocol.Security.SecurityState.Insecure */);
-        sidebar.addOrigin(unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
+        sidebar.origins = new Map([
+            [secureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */],
+            [insecureOrigin, "insecure" /* Protocol.Security.SecurityState.Insecure */],
+            [unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */],
+        ]);
         await doubleRaf();
         const originItems = sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-tree-item');
         assert.lengthOf(originItems, 3);
         // Update insecure origin to secure
-        sidebar.updateOrigin(insecureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.origins = new Map([
+            [secureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */],
+            [insecureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */],
+            [unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */],
+        ]);
         await doubleRaf();
         assert.lengthOf(sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-tree-item'), 3);
     });
@@ -46,15 +52,15 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
         renderElementIntoDOM(sidebar);
         const origin = urlString `https://example.com`;
-        sidebar.setMainOrigin(origin);
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.mainOrigin = origin;
+        sidebar.origins = new Map([[origin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await sidebar.updateComplete;
         const template = sidebar.contentElement.querySelector('devtools-tree')?.querySelector('template');
         assert.exists(template);
         const highlightedUrl = template.content.querySelector('.highlighted-url');
         assert.exists(highlightedUrl);
         assert.exists(highlightedUrl.querySelector('.url-scheme-secure'));
-        sidebar.updateOrigin(origin, "insecure" /* Protocol.Security.SecurityState.Insecure */);
+        sidebar.origins = new Map([[origin, "insecure" /* Protocol.Security.SecurityState.Insecure */]]);
         await sidebar.updateComplete;
         const newHighlightedUrl = template.content.querySelector('.highlighted-url');
         assert.strictEqual(newHighlightedUrl, highlightedUrl);
@@ -64,9 +70,9 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
         renderElementIntoDOM(sidebar);
         const mainOrigin = urlString `https://main.example.com`;
-        sidebar.setMainOrigin(mainOrigin);
+        sidebar.mainOrigin = mainOrigin;
         assert.strictEqual(sidebar.mainOrigin, mainOrigin);
-        sidebar.addOrigin(mainOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.origins = new Map([[mainOrigin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
         const items = sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-tree-item');
         const originElement = Array.from(items).find(item => item.textContent?.includes(mainOrigin));
@@ -77,8 +83,8 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         renderElementIntoDOM(sidebar);
         // Initial navigation to example.com
         const initialOrigin = urlString `https://example.com`;
-        sidebar.setMainOrigin(initialOrigin);
-        sidebar.addOrigin(initialOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.mainOrigin = initialOrigin;
+        sidebar.origins = new Map([[initialOrigin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
         const shadow = sidebar.contentElement.querySelector('devtools-tree').shadowRoot;
         let items = shadow.querySelectorAll('.security-sidebar-tree-item');
@@ -91,10 +97,10 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const initialLockIcon = items[0].querySelector('.security-property-secure');
         assert.exists(initialLockIcon);
         // Navigate to example.net (cross-origin navigation clears origins and sets new main origin)
-        sidebar.clearOrigins();
+        sidebar.origins = new Map();
         const newOrigin = urlString `https://example.net`;
-        sidebar.setMainOrigin(newOrigin);
-        sidebar.addOrigin(newOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.mainOrigin = newOrigin;
+        sidebar.origins = new Map([[newOrigin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
         items = shadow.querySelectorAll('.security-sidebar-tree-item');
         assert.lengthOf(items, 1);
@@ -110,10 +116,10 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
         renderElementIntoDOM(sidebar);
         const origin = urlString `https://secure.example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.origins = new Map([[origin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
         assert.lengthOf(sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-tree-item'), 1);
-        sidebar.clearOrigins();
+        sidebar.origins = new Map();
         await doubleRaf();
         assert.lengthOf(sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-tree-item'), 0);
         const reloadMsg = sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelector('.security-main-view-reload-message');
@@ -123,15 +129,17 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
         renderElementIntoDOM(sidebar);
         const origin = urlString `https://secure.example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.origins = new Map([[origin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
-        sidebar.toggleOriginsList(true);
+        sidebar.originsHidden = true;
+        sidebar.showOriginsUnconditionally = false;
         await doubleRaf();
         let groups = sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-origins');
         for (const group of groups) {
             assert.isTrue(group.classList.contains('hidden'));
         }
-        sidebar.toggleOriginsList(false);
+        sidebar.originsHidden = false;
+        sidebar.showOriginsUnconditionally = true;
         await doubleRaf();
         groups = sidebar.contentElement.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-origins');
         for (const group of groups) {
@@ -143,7 +151,7 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         renderElementIntoDOM(sidebar);
         await doubleRaf();
         const origin = urlString `https://secure.example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
+        sidebar.origins = new Map([[origin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
         await doubleRaf();
         const callback = sinon.stub();
         sidebar.onShowOrigin = callback;
@@ -153,33 +161,6 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
         originItem.click();
         sinon.assert.calledOnce(callback);
         assert.strictEqual(callback.firstCall.args[0], origin);
-    });
-    it('updates selection and triggers onShowOrigin when selectedOrigin is set', async () => {
-        const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
-        renderElementIntoDOM(sidebar);
-        const origin = urlString `https://example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
-        await doubleRaf();
-        const callback = sinon.spy();
-        sidebar.onShowOrigin = callback;
-        sidebar.selectedOrigin = origin;
-        assert.strictEqual(sidebar.selectedOrigin, origin);
-        sinon.assert.calledOnce(callback);
-        assert.strictEqual(callback.firstCall.args[0], origin);
-    });
-    it('resets selection to overview and triggers onShowOrigin(null) when showOverview is called', async () => {
-        const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
-        renderElementIntoDOM(sidebar);
-        const origin = urlString `https://example.com`;
-        sidebar.addOrigin(origin, "secure" /* Protocol.Security.SecurityState.Secure */);
-        sidebar.selectedOrigin = origin;
-        assert.strictEqual(sidebar.selectedOrigin, origin);
-        const callback = sinon.spy();
-        sidebar.onShowOrigin = callback;
-        sidebar.showOverview();
-        assert.strictEqual(sidebar.selectedOrigin, 'overview');
-        sinon.assert.calledOnce(callback);
-        assert.isNull(callback.firstCall.args[0]);
     });
     describe('visual screenshots', () => {
         it('renders initial sidebar state', async () => {
@@ -195,20 +176,99 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
             const secureOrigin = urlString `https://secure.example.com`;
             const insecureOrigin = urlString `http://insecure.example.com`;
             const unknownOrigin = urlString `https://unknown.example.com`;
-            sidebar.setMainOrigin(mainOrigin);
-            sidebar.addOrigin(mainOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
-            sidebar.addOrigin(secureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */);
-            sidebar.addOrigin(insecureOrigin, "insecure" /* Protocol.Security.SecurityState.Insecure */);
-            sidebar.addOrigin(unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */);
+            sidebar.mainOrigin = mainOrigin;
+            sidebar.origins = new Map([
+                [mainOrigin, "secure" /* Protocol.Security.SecurityState.Secure */],
+                [secureOrigin, "secure" /* Protocol.Security.SecurityState.Secure */],
+                [insecureOrigin, "insecure" /* Protocol.Security.SecurityState.Insecure */],
+                [unknownOrigin, "unknown" /* Protocol.Security.SecurityState.Unknown */],
+            ]);
             await doubleRaf();
             await assertScreenshot('security/security_sidebar_populated.png');
         });
     });
+    describe('declarative setters', () => {
+        it('updates mainOrigin and triggers requestUpdate only when value changes', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            sidebar.mainOrigin = 'https://example.com';
+            assert.strictEqual(sidebar.mainOrigin, 'https://example.com');
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.mainOrigin = 'https://example.com';
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.mainOrigin = 'https://other.com';
+            assert.strictEqual(sidebar.mainOrigin, 'https://other.com');
+            sinon.assert.callCount(requestUpdateSpy, 2);
+        });
+        it('updates origins and triggers requestUpdate only when reference changes', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            const originsMap = new Map([[urlString `https://example.com`, "secure" /* Protocol.Security.SecurityState.Secure */]]);
+            sidebar.origins = originsMap;
+            assert.strictEqual(sidebar.origins, originsMap);
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.origins = originsMap;
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.origins = new Map();
+            sinon.assert.callCount(requestUpdateSpy, 2);
+        });
+        it('updates originsHidden and triggers requestUpdate only when value changes', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            assert.isFalse(sidebar.originsHidden);
+            sidebar.originsHidden = false;
+            sinon.assert.notCalled(requestUpdateSpy);
+            sidebar.originsHidden = true;
+            assert.isTrue(sidebar.originsHidden);
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.originsHidden = true;
+            sinon.assert.calledOnce(requestUpdateSpy);
+        });
+        it('updates showOriginsUnconditionally and triggers requestUpdate only when value changes', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            assert.isFalse(sidebar.showOriginsUnconditionally);
+            sidebar.showOriginsUnconditionally = false;
+            sinon.assert.notCalled(requestUpdateSpy);
+            sidebar.showOriginsUnconditionally = true;
+            assert.isTrue(sidebar.showOriginsUnconditionally);
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.showOriginsUnconditionally = true;
+            sinon.assert.calledOnce(requestUpdateSpy);
+        });
+        it('updates overviewSecurityState and triggers requestUpdate only when value changes', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            assert.strictEqual(sidebar.overviewSecurityState, "unknown" /* Protocol.Security.SecurityState.Unknown */);
+            sidebar.overviewSecurityState = "unknown" /* Protocol.Security.SecurityState.Unknown */;
+            sinon.assert.notCalled(requestUpdateSpy);
+            sidebar.overviewSecurityState = "secure" /* Protocol.Security.SecurityState.Secure */;
+            assert.strictEqual(sidebar.overviewSecurityState, "secure" /* Protocol.Security.SecurityState.Secure */);
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sidebar.overviewSecurityState = "secure" /* Protocol.Security.SecurityState.Secure */;
+            sinon.assert.calledOnce(requestUpdateSpy);
+        });
+        it('updates activeOrigin and selection without invoking onShowOrigin', () => {
+            const sidebar = new Security.SecurityPanelSidebar.SecurityPanelSidebar();
+            const onShowOriginSpy = sinon.spy();
+            sidebar.onShowOrigin = onShowOriginSpy;
+            const requestUpdateSpy = sinon.spy(sidebar, 'requestUpdate');
+            const origin = urlString `https://example.com`;
+            sidebar.activeOrigin = origin;
+            assert.strictEqual(sidebar.activeOrigin, origin);
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sinon.assert.notCalled(onShowOriginSpy);
+            sidebar.activeOrigin = origin;
+            sinon.assert.calledOnce(requestUpdateSpy);
+            sinon.assert.notCalled(onShowOriginSpy);
+            sidebar.activeOrigin = null;
+            assert.isNull(sidebar.activeOrigin);
+            sinon.assert.callCount(requestUpdateSpy, 2);
+            sinon.assert.notCalled(onShowOriginSpy);
+        });
+    });
     describe('DEFAULT_VIEW', () => {
-        function renderView(input = {}, output = {
-            onElementSelected: sinon.stub(),
-            onShowOrigin: sinon.stub(),
-        }) {
+        function renderView(input = {}) {
             const container = document.createElement('div');
             renderElementIntoDOM(container);
             const fullInput = {
@@ -218,10 +278,12 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
                 showOriginsUnconditionally: false,
                 overviewSecurityState: "unknown" /* Protocol.Security.SecurityState.Unknown */,
                 selectedElementId: 'overview',
+                onElementSelected: sinon.stub(),
+                onShowOrigin: sinon.stub(),
                 ...input,
             };
-            Security.SecurityPanelSidebar.DEFAULT_VIEW(fullInput, output, container);
-            return { container, output };
+            Security.SecurityPanelSidebar.DEFAULT_VIEW(fullInput, undefined, container);
+            return { container, input: fullInput };
         }
         it('renders overview element and origin groups with defaults', async () => {
             const { container } = renderView();
@@ -286,7 +348,7 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
             await doubleRaf();
             const groups = container.querySelector('devtools-tree').shadowRoot.querySelectorAll('.security-sidebar-origins');
             for (const group of groups) {
-                assert.isTrue(group.hasAttribute('hidden') || group.classList.contains('hidden'));
+                assert.isTrue(group.classList.contains('hidden'));
             }
         });
         it('invokes callbacks when overview and origins are clicked', async () => {
@@ -294,7 +356,7 @@ describeWithEnvironment('SecurityPanelSidebar', () => {
             const origins = new Map([[mainOrigin, "secure" /* Protocol.Security.SecurityState.Secure */]]);
             const onElementSelected = sinon.stub();
             const onShowOrigin = sinon.stub();
-            const { container } = renderView({ mainOrigin, origins }, { onElementSelected, onShowOrigin });
+            const { container } = renderView({ mainOrigin, origins, onElementSelected, onShowOrigin });
             await doubleRaf();
             const shadow = container.querySelector('devtools-tree').shadowRoot;
             // Click overview

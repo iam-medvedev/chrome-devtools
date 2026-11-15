@@ -113,8 +113,8 @@ export default `/*
     cursor: default;
     display: inline-block;
     flex: none;
-    height: 10px;
-    width: 10px;
+    height: var(--sys-size-6);
+    width: var(--sys-size-6);
     position: relative;
 
     &:focus-within {
@@ -140,7 +140,6 @@ export default `/*
   .node-text-container {
     line-height: var(--sys-typescale-body4-line-height);
     padding: 0 0.5ex;
-    border-radius: 5px;
   }
 
 }

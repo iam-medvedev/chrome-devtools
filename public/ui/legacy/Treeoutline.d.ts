@@ -267,6 +267,11 @@ export declare namespace TreeSearch {
  * - `aria-*`: All aria attributes defined on the config element are cloned over.
  * - `open`: On the <li>, declares whether the subtree should be rendererd as expanded or collapsed.
  *
+ * ## Refs ##
+ *
+ * `UIUtils.clonedRef` on a `<li role="treeitem">` resolves to the rendered list item element in the tree's shadow DOM,
+ * e.g. to scroll it into view: `<li role="treeitem" ${isHighlighted ? clonedRef(onRendered) : nothing}>`.
+ *
  * ## Event Handling ##
  *
  * This section is only relevant if NOT using the `template`.
@@ -325,15 +330,6 @@ export declare namespace TreeViewElement {
     class EnterEvent extends CustomEvent<void> {
         constructor();
     }
-    /**
-     * @deprecated
-     */
-    class TreeElementExpandEvent extends CustomEvent<{
-        treeElement: TreeElement;
-        expanded: boolean;
-    }> {
-        constructor(treeElement: TreeElement, expanded: boolean);
-    }
 }
 declare class IfExpandedDirective extends Lit.Directive.Directive {
     #private;
@@ -341,15 +337,9 @@ declare class IfExpandedDirective extends Lit.Directive.Directive {
     render(content: Lit.LitTemplate | Iterable<Lit.LitTemplate> | (() => Lit.LitTemplate | Iterable<Lit.LitTemplate>)): Lit.LitTemplate | Iterable<Lit.LitTemplate>;
 }
 export declare const ifExpanded: (content: Lit.LitTemplate | Iterable<Lit.LitTemplate> | (() => Lit.LitTemplate | Iterable<Lit.LitTemplate>)) => Lit.DirectiveResult<typeof IfExpandedDirective>;
-export declare class TreeElementWrapper extends HTMLElement {
-    #private;
-    set treeElement(treeElement: TreeElement);
-    get treeElement(): TreeElement | undefined;
-}
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-tree': TreeViewElement;
-        'devtools-tree-wrapper': TreeElementWrapper;
     }
 }
 export {};

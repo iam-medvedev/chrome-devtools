@@ -22,8 +22,8 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 158,
-    header: 'New in DevTools (November 2026)',
+    version: 159,
+    header: 'New in DevTools (December 2026)',
     announcement: {
         title: 'Modern Web Guidance is now stable!',
         description: 'Upgrade your coding agents with expert-vetted web development best practices.',
@@ -35,18 +35,18 @@ let releaseNote = {
     markdownLinks: [
         {
             key: 'mcp',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-november-2026/#mcp',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-december-2026/#mcp',
         },
         {
             key: 'sources',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-november-2026/#sources',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-december-2026/#sources',
         },
         {
-            key: 'web-install-manifest-diagnosti',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-november-2026/#web-install-manifest-diagnosti',
+            key: 'performance',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-december-2026/#performance',
         },
     ],
     videoLinks: [],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-november-2026/',
+    link: 'https://developer.chrome.com/blog/new-in-devtools-december-2026/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

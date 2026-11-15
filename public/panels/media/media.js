@@ -1486,7 +1486,7 @@ var playerPropertiesView_css_default = `/*
 .media-property-renderer {
   line-height: var(--sys-size-9);
   min-height: var(--sys-size-12);
-  padding: var(--sys-size-3) 10px;
+  padding: var(--sys-size-3) var(--sys-size-5);
   display: block;
   overflow: hidden;
 
@@ -1514,7 +1514,7 @@ var playerPropertiesView_css_default = `/*
 .media-property-renderer-title {
   font-size: var(--sys-typescale-body4-size);
   float: left;
-  width: 150px;
+  width: var(--sys-size-23);
 }
 
 .media-property-renderer-title::first-letter {
@@ -2145,23 +2145,6 @@ var playerListView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.tree-outline {
-  padding-left: 0;
-  color: var(--sys-color-token-subtle);
-}
-
-li.storage-group-list-item {
-  padding: 10px var(--sys-size-5) var(--sys-size-4);
-}
-
-li.storage-group-list-item:not(:first-child) {
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-}
-
-li.storage-group-list-item::before {
-  display: none;
-}
-
 .player-entry-row {
   /* 28px icon-column/toolbar base (--sys-size-12) minus 2px compact
    * row offset (--sys-size-2) = 26px, matching the 26px child cells
@@ -2202,7 +2185,6 @@ li.storage-group-list-item::before {
 .player-entry-status-icon {
   width: var(--sys-size-12);
   min-width: var(--sys-size-12);
-  height: 26px;
   border-right: var(--sys-size-1) solid var(--sys-color-divider);
   overflow: hidden;
 }
@@ -2217,8 +2199,7 @@ li.storage-group-list-item::before {
 }
 
 .player-entry-player-title {
-  height: 26px;
-  padding-left: 10px;
+  padding-left: var(--sys-size-5);
   overflow: hidden;
 }
 

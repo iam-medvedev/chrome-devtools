@@ -84,8 +84,8 @@ button {
   &.toolbar,
   &.icon,
   &.only-icon {
-    --button-height: 26px;
-    --button-width: 26px;
+    --button-height: var(--sys-size-11);
+    --button-width: var(--sys-size-11);
     --icon-size: var(--sys-size-9);
 
     padding: 0;
@@ -293,20 +293,6 @@ button {
     top: 0;
     left: 0;
     background-color: var(--hover-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
-
-    &.primary {
-      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
-    }
-
-    &.tonal {
-      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-hover-on-subtle));
-    }
-
-    &.toobar {
-      devtools-icon {
-        color: var(--icon-default-hover);
-      }
-    }
   }
 
   &:active::before,
@@ -319,20 +305,6 @@ button {
     top: 0;
     left: 0;
     background-color: var(--active-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
-
-    &.primary {
-      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-ripple-primary) 32%);
-    }
-
-    &.tonal {
-      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-ripple-primary) 50%);
-    }
-
-    &.toolbar {
-      devtools-icon {
-        color: var(--icon-toggled);
-      }
-    }
   }
 }
 

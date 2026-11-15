@@ -922,9 +922,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
         return i18nString(UIStrings.samplingProfiles);
     }
     get description() {
-        // TODO(l10n): Do not concatenate localized strings.
-        const formattedDescription = [i18nString(UIStrings.recordMemoryAllocations)];
-        return formattedDescription.join('\n');
+        return i18nString(UIStrings.recordMemoryAllocations);
     }
     hasTemporaryView() {
         return this.#recordTimelineSetting.get();

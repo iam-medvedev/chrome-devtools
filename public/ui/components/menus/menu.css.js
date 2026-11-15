@@ -14,11 +14,11 @@ export default `/*
   width: fit-content;
   display: flex;
   align-items: center;
-  background-color: var(--override-menu-background-color, var(--sys-color-cdt-base-container));
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 :host([has-open-dialog]) {
-  background-color: var(--override-menu-active-background-color, var(--sys-color-neutral-container));
+  background-color: var(--sys-color-neutral-container);
 }
 
 * {
@@ -35,18 +35,6 @@ export default `/*
 
 #container:focus {
   outline: none;
-}
-
-@keyframes slideIn {
-  from {
-    transform: var(--translate-dialog);
-    opacity: 0%;
-  }
-
-  to {
-    transform: none;
-    opacity: 100%;
-  }
 }
 
 /*# sourceURL=${import.meta.resolve('./menu.css')} */`;

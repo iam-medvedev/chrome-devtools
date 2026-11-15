@@ -15,16 +15,27 @@ export default `/*
   font-size: inherit;
 }
 
+:host {
+  /* Space reserved in front of the title for the expand/collapse chevron. */
+  --chevron-column-width: calc(var(--sys-size-7) + var(--sys-size-2));
+}
+
 .title-container {
-  /* Vertically center items with min-width: 0; */
   min-width: 0;
   font-size: var(--sys-size-7);
+  line-height: var(--sys-size-8);
   display: flex;
   flex-direction: row;
   gap: var(--sys-size-2);
   outline-offset: var(--sys-size-2);
   flex-grow: 1;
-  align-items: center;
+  align-items: flex-start;
+  /* Keeps the title aligned with the title of expandable steps. */
+  padding-inline-start: var(--chevron-column-width);
+}
+
+.title-container.action {
+  padding-inline-start: 0;
 }
 
 .title-container:focus-visible {
@@ -33,7 +44,7 @@ export default `/*
 
 .action {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .title {
@@ -55,16 +66,29 @@ export default `/*
   opacity: 0%;
   fill: var(--sys-color-primary);
   stroke: #1a73e8; /* stylelint-disable-line plugin/use_theme_colors */
-  transform: translate(-1.92px, -3px);
+  /* Shift 24x24 path (left stroke 2px, y-center 12px) by (-2px, -4px)
+   * to align with the 8px (--sys-size-5) .circle-icon center, .chevron, and first line of the title. */
+  transform: translate(
+    calc(-1 * var(--sys-size-2)),
+    calc(-1 * var(--sys-size-3))
+  );
 }
 
 .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-cdt-base-container);
   stroke-width: var(--sys-size-3);
-  r: 5px;
+  r: var(--sys-size-4);
   cx: var(--sys-size-5);
   cy: var(--sys-size-5);
+}
+
+.is-start-of-group:not(.is-first-section) .circle-icon {
+  /* 7px radius: the outer edge of the 2px (--sys-size-2) stroke touches the 16px icon box. */
+  r: calc(var(--sys-size-5) - var(--sys-size-1));
+  fill: var(--sys-color-cdt-base-container);
+  stroke: var(--sys-color-primary);
+  stroke-width: var(--sys-size-2);
 }
 
 .step.is-success .circle-icon {
@@ -81,20 +105,22 @@ export default `/*
 }
 
 .error {
-  margin: var(--sys-size-8) 0 0;
+  margin-block-start: var(--sys-size-8);
+  margin-inline-start: var(--chevron-column-width);
   padding: var(--sys-size-5);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
-  position: relative;
 }
 
 @keyframes rotate {
   0% {
-    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0)
+      translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 
   100% {
-    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg)
+      translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 }
 
@@ -141,12 +167,13 @@ export default `/*
 }
 
 .chevron {
+  flex-shrink: 0;
+  /* Aligns the 14px (--sys-size-7) chevron with the 16px (--sys-size-8) first line and 8px (--sys-size-5) .circle-icon center. */
+  align-self: flex-start;
+  margin-block-start: var(--sys-size-1);
   width: var(--sys-size-7);
   height: var(--sys-size-7);
   transition: 200ms;
-  position: absolute;
-  top: var(--sys-size-7);
-  left: var(--sys-size-11);
   transform: rotate(-90deg);
   color: var(--sys-color-on-surface);
 }
@@ -158,15 +185,11 @@ export default `/*
 .details {
   display: none;
   margin-top: var(--sys-size-5);
-  position: relative;
+  margin-inline-start: var(--chevron-column-width);
 }
 
 .expanded .details {
   display: block;
-}
-
-.step-details {
-  overflow: auto;
 }
 
 .summary {
@@ -190,15 +213,18 @@ export default `/*
   text-overflow: ellipsis;
 }
 
+.icon {
+  /* The 16px (--sys-size-8) circle icon is drawn in the top 16px of the 24x24 SVG. */
+  margin-block-end: calc(-1 * var(--sys-size-5));
+}
+
 .step-actions {
   border: none;
   border-radius: 0;
   flex-shrink: 0;
   height: var(--sys-size-11);
-
-  --override-select-menu-show-button-border-radius: 0;
-  --override-select-menu-show-button-outline: none;
-  --override-select-menu-show-button-padding: 0;
+  /* Centers the 24px (--sys-size-11) button on the 16px (--sys-size-8) first line. */
+  margin-block: calc(-1 * var(--sys-size-3));
 }
 
 .step.has-breakpoint .circle-icon {

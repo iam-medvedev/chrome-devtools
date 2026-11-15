@@ -17,7 +17,7 @@ import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -2947,7 +2947,7 @@ var webauthnPane_css_default = `/*
 
   .divider {
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-    margin: 10px calc(var(--sys-size-9) * -1) 0;
+    margin: var(--sys-size-6) calc(var(--sys-size-9) * -1) 0;
   }
 
   .authenticator-fields {
@@ -2976,15 +2976,9 @@ var webauthnPane_css_default = `/*
     font: var(--sys-typescale-headline5);
   }
 
-  .authenticator-section-title.editing-name .authenticator-name-field {
-    border-bottom: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-    font-weight: normal;
-    animation: none;
-  }
-
   .authenticator-field-value {
     font: var(--sys-typescale-monospace-regular);
-    line-height: 18px;
+    line-height: var(--sys-typescale-body5-line-height);
   }
 
   .authenticator-field {

@@ -48,18 +48,13 @@ details > summary {
 }
 
 .content {
-  max-width: 360px;
+  max-width: var(--sys-size-32);
   box-sizing: border-box;
 }
 
 .open-button-section {
   display: flex;
   flex-direction: row;
-}
-
-.origin-mapping-grid {
-  border: var(--sys-size-1) solid var(--sys-color-divider);
-  margin-top: var(--sys-size-5);
 }
 
 .origin-mapping-description {

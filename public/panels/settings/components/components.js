@@ -42,7 +42,6 @@ var syncSection_css_default = `/*
 
   fieldset {
     border: 0;
-    padding: 0;
     padding: var(--sys-size-3) 0 0;
   }
 

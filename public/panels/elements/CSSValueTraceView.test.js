@@ -11,6 +11,7 @@ import { createTarget, describeWithEnvironment } from '../../testing/Environment
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStylesWithBlankRule } from '../../testing/StyleHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { render } from '../../ui/lit/lit.js';
 import * as Elements from './elements.js';
@@ -33,7 +34,7 @@ async function getTreeElement(matchedStyles, stylesPane, name, value, variables)
     const property = new SDK.CSSProperty.CSSProperty(matchedStyles.nodeStyles()[0], matchedStyles.nodeStyles()[0].pastLastSourcePropertyIndex(), name, value, true, false, true, false, '', undefined, []);
     const treeElement = new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
         stylesContainer: stylesPane,
-        section: sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection),
+        section: Object.assign(sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection), { sectionTooltipIdFactory: new Tooltips.Tooltip.IdFactory() }),
         matchedStyles,
         property,
         isShorthand: false,

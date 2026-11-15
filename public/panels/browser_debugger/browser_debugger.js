@@ -443,7 +443,7 @@ import * as Common from "../../core/common/common.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3799,23 +3799,18 @@ import * as UI3 from "../../ui/legacy/legacy.js";
 import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "../event_listeners/event_listeners.js";
+var { bindToAction } = UI3.UIUtils;
 var { html: html3 } = Lit3;
-var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends UI3.Widget.VBox {
+var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane extends EventListeners.EventListenersView.EventListenersView {
+  jslog = `${VisualLogging5.section("sources.global-listeners")}`;
   #lastRequestedContext;
-  // TODO(bmeurer): This is only public for web tests.
-  eventListenersView;
-  constructor() {
-    super();
-    this.contentElement.setAttribute("jslog", `${VisualLogging5.section("sources.global-listeners")}`);
-    this.eventListenersView = new EventListeners.EventListenersView.EventListenersView();
-    this.eventListenersView.show(this.element);
-    this.setDefaultFocusedChild(this.eventListenersView);
-    this.requestUpdate();
-  }
   toolbarItems() {
-    const refreshButton = UI3.Toolbar.Toolbar.createActionButton("browser-debugger.refresh-global-event-listeners");
-    refreshButton.setSize(Buttons.Button.Size.SMALL);
-    return html3`${refreshButton.element}`;
+    return html3`
+      <devtools-button
+        ${bindToAction("browser-debugger.refresh-global-event-listeners")}
+        .size=${Buttons.Button.Size.SMALL}
+      ></devtools-button>
+    `;
   }
   async performUpdate() {
     if (this.#lastRequestedContext) {
@@ -3844,13 +3839,14 @@ var ObjectEventListenersSidebarPane = class _ObjectEventListenersSidebarPane ext
         windowObjects.push(result.object);
       }
     }
-    this.eventListenersView.objects = windowObjects;
-    await this.eventListenersView.updateComplete;
+    this.setObjects(windowObjects);
+    await super.performUpdate();
   }
   wasShown() {
     super.wasShown();
     UI3.Context.Context.instance().addFlavorChangeListener(SDK5.RuntimeModel.ExecutionContext, this.requestUpdate, this);
     UI3.Context.Context.instance().setFlavor(_ObjectEventListenersSidebarPane, this);
+    this.requestUpdate();
   }
   willHide() {
     UI3.Context.Context.instance().setFlavor(_ObjectEventListenersSidebarPane, null);

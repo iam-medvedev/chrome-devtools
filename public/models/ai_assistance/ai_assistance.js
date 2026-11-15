@@ -12,7 +12,7 @@ __export(AccessibilityAgent_exports, {
 import * as Host29 from "../../core/host/host.js";
 import * as i18n47 from "../../core/i18n/i18n.js";
 import * as Root6 from "../../core/root/root.js";
-import * as SDK24 from "../../core/sdk/sdk.js";
+import * as SDK25 from "../../core/sdk/sdk.js";
 import * as AiUtils5 from "../ai-utils/ai-utils.js";
 
 // ../../front_end/models/ai_assistance/ChangeManager.ts
@@ -765,7 +765,7 @@ __export(ExtensionScope_exports, {
 import * as Common2 from "../../core/common/common.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -4043,7 +4043,7 @@ async function executeJsCode(functionDeclaration, options) {
     { throwOnSideEffect: !!throwOnSideEffect }
   );
 }
-var MAX_OBSERVATION_BYTE_LENGTH = 25e3;
+var MAX_OBSERVATION_BYTE_LENGTH = 8e3;
 var OBSERVATION_TIMEOUT = 5e3;
 var JavascriptExecutor = class {
   #options;
@@ -4142,7 +4142,9 @@ var JavascriptExecutor = class {
       const byteCount = Platform3.StringUtilities.countWtf8Bytes(result);
       Host.userMetrics.freestylerEvalResponseSize(byteCount);
       if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
-        throw new Error("Output exceeded the maximum allowed length.");
+        throw new Error(
+          `Output of ${byteCount} bytes exceeded the maximum allowed (${MAX_OBSERVATION_BYTE_LENGTH} bytes).`
+        );
       }
       return {
         observation: result,
@@ -4517,7 +4519,7 @@ import * as Platform4 from "../../core/platform/platform.js";
 import * as Root2 from "../../core/root/root.js";
 var lockedString2 = i18n3.i18n.lockedString;
 var MAX_LINES = 40;
-var MAX_LINE_LENGTH = 120;
+var MAX_LINE_LENGTH = 160;
 var MAX_TOTAL_CHARACTERS = 2500;
 var MAX_LONG_LINES_REPORTED = 3;
 var LONG_LINE_PREVIEW_LENGTH = 60;
@@ -4576,13 +4578,15 @@ var ExecuteJavaScriptTool = class _ExecuteJavaScriptTool {
     description: "",
     nullable: false,
     properties: {
+      // The `description` below purposefully states `max 120 characters per line`
+      // as a soft target, while `MAX_LINE_LENGTH` enforces 160 as the hard stop.
       code: {
         type: Host2.AidaClient.ParametersTypes.STRING,
         description: `JavaScript code snippet to run on the inspected page. Make sure the code is formatted for readability.
 
 # Instructions
 
-* To return data, define a top-level \`data\` variable and populate it with data you want to get. Only JSON-serializable objects can be assigned to \`data\`.
+* To return data, define a top-level \`data\` variable and populate it with data you want to get. Only JSON-serializable objects can be assigned to \`data\`, and serialized output must not exceed ${MAX_OBSERVATION_BYTE_LENGTH} bytes (return targeted properties or slices rather than full DOM subtrees).
 * $0 refers to the currently selected DOM node (or document body if none selected).
 * **CRITICAL** Do not call \`console\` methods (e.g., \`console.log\`, \`console.warn\`, \`console.error\`) by default when returning data via \`data\`.
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
@@ -4937,8 +4941,8 @@ var AICallTree = class _AICallTree {
     const compileCodeFilter = new ExcludeCompileCodeFilter();
     const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
       filters: [minDurationFilter, compileCodeFilter, visibleEventsFilter],
-      startTime: Trace.Helpers.Timing.microToMilli(bounds.min),
-      endTime: Trace.Helpers.Timing.microToMilli(bounds.max),
+      startTime: bounds.min,
+      endTime: bounds.max,
       doNotAggregate: true,
       includeInstantEvents: true
     });
@@ -4971,11 +4975,7 @@ var AICallTree = class _AICallTree {
       return null;
     }
     const showAllEvents = parsedTrace.data.Meta.config.showAllEvents;
-    const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(
-      Trace.Helpers.Timing.milliToMicro(startTime),
-      Trace.Helpers.Timing.milliToMicro(endTime)
-    );
+    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromEvent(selectedEvent);
     let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
     if (!threadEvents) {
       threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
@@ -4991,8 +4991,8 @@ var AICallTree = class _AICallTree {
     }
     const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
       filters,
-      startTime,
-      endTime,
+      startTime: selectedEventBounds.min,
+      endTime: selectedEventBounds.max,
       includeInstantEvents: true
     });
     let selectedNode = null;
@@ -5120,8 +5120,8 @@ ${nodesStr}`;
       }
       return String(Math.round(num * 10) / 10);
     };
-    const durationStr = roundToTenths(node.totalTime);
-    const selfTimeStr = roundToTenths(node.selfTime);
+    const durationStr = roundToTenths(Trace.Helpers.Timing.microToMilli(node.totalTime));
+    const selfTimeStr = roundToTenths(Trace.Helpers.Timing.microToMilli(node.selfTime));
     const location = SourceMapsResolver.SourceMapsResolver.codeLocationForEntry(parsedTrace, event, this.workspace);
     const url = location?.url;
     let urlIndexStr = "";
@@ -5474,13 +5474,11 @@ var AIQueries = class {
     const filter = new Trace3.Extras.TraceFilter.VisibleEventsFilter(
       visibleEvents.concat([Trace3.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST])
     );
-    const startTime = Trace3.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace3.Helpers.Timing.microToMilli(bounds.max);
     return new Trace3.Extras.TraceTree.BottomUpRootNode(events, {
       textFilter: new Trace3.Extras.TraceFilter.ExclusiveNameFilter([]),
       filters: [filter],
-      startTime,
-      endTime
+      startTime: bounds.min,
+      endTime: bounds.max
     });
   }
   /**
@@ -5515,13 +5513,11 @@ var AIQueries = class {
     const filter = new Trace3.Extras.TraceFilter.VisibleEventsFilter(
       visibleEvents.concat([Trace3.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST])
     );
-    const startTime = Trace3.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace3.Helpers.Timing.microToMilli(bounds.max);
     return new Trace3.Extras.TraceTree.BottomUpRootNode(events, {
       textFilter: new Trace3.Extras.TraceFilter.ExclusiveNameFilter([]),
       filters: [filter],
-      startTime,
-      endTime
+      startTime: bounds.min,
+      endTime: bounds.max
     });
   }
   /**
@@ -6215,14 +6211,14 @@ var PerformanceTraceFormatter = class {
     });
   }
   async #serializeBottomUpRootNode(rootNode, limit) {
-    const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= 1).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
+    const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= Trace4.Types.Timing.Micro(1e3)).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
     const callFrames = [];
     function nodeToText(node) {
       const event = node.event;
       let frame;
       if (Trace4.Types.Events.isProfileCall(event)) {
         frame = event.callFrame;
-        if (node.selfTime >= 100 && callFrames.length < 3) {
+        if (node.selfTime >= Trace4.Types.Timing.Micro(1e5) && callFrames.length < 3) {
           callFrames.push(frame);
         }
       } else {
@@ -6239,7 +6235,7 @@ var PerformanceTraceFormatter = class {
         }
         source += ")";
       }
-      return `- self: ${millis(node.selfTime)}, total: ${millis(node.totalTime)}, source: ${source}`;
+      return `- self: ${millis(Trace4.Helpers.Timing.microToMilli(node.selfTime))}, total: ${millis(Trace4.Helpers.Timing.microToMilli(node.totalTime))}, source: ${source}`;
     }
     return topNodes.map((node) => nodeToText.call(this, node)).join("\n") + await this.#serializeRelevantFunctions(callFrames);
   }
@@ -6301,7 +6297,7 @@ var PerformanceTraceFormatter = class {
           return null;
         }
         return longestTaskTrees.map((tree) => {
-          const time = millis(tree.rootNode.totalTime);
+          const time = millis(Trace4.Helpers.Timing.microToMilli(tree.rootNode.totalTime));
           return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
         }).join("\n");
       }
@@ -8212,7 +8208,7 @@ __export(FileFormatter_exports, {
 });
 import * as Bindings from "../bindings/bindings.js";
 import * as Logs4 from "../logs/logs.js";
-var MAX_FILE_SIZE = 1e4;
+var MAX_FILE_SIZE = 5e3;
 var FileFormatter = class _FileFormatter {
   static formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
     const mappedFileUrls = [];
@@ -8332,7 +8328,7 @@ var ListSourcesTool = class _ListSourcesTool {
         if (uiSourceCode.isIgnoreListed()) {
           continue;
         }
-        if (!projectOrigin && !isOriginAllowedByLock(originLock, uiSourceCode.securityOrigin())) {
+        if (!isOriginAllowedByLock(originLock, uiSourceCode.securityOrigin())) {
           continue;
         }
         const url = uiSourceCode.url();
@@ -8378,16 +8374,33 @@ var ListSourcesTool = class _ListSourcesTool {
       return originResult;
     }
     const files = _ListSourcesTool.getUISourceCodes(originLock);
+    if (files.length === 0) {
+      return {
+        result: "No source files found for the current origin."
+      };
+    }
+    const establishedOrigin = originResult.origin;
+    const rows = files.map((file) => {
+      const id = _ListSourcesTool.uiSourceCodeId.get(file) ?? 0;
+      const name = formatSourceName(file, establishedOrigin);
+      return `${id};${name}`;
+    });
     return {
-      result: {
-        files: files.map((file) => ({
-          id: _ListSourcesTool.uiSourceCodeId.get(file) ?? 0,
-          name: file.fullDisplayName()
-        }))
-      }
+      result: ["id;name", ...rows].join("\n")
     };
   }
 };
+function formatSourceName(file, establishedOrigin) {
+  const fullName = file.fullDisplayName().replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+  const siteId = establishedOrigin.siteId();
+  if (/^https?:\/\//.test(siteId) && file.origin().toLowerCase() === siteId) {
+    const hostPrefix = siteId.replace(/^https?:\/\//, "");
+    if (fullName.slice(0, hostPrefix.length).toLowerCase() === hostPrefix && fullName[hostPrefix.length] === "/") {
+      return fullName.slice(hostPrefix.length);
+    }
+  }
+  return fullName;
+}
 
 // ../../front_end/models/ai_assistance/tools/GetSourceContent.ts
 var UIStringsNotTranslate4 = {
@@ -9240,17 +9253,67 @@ var ListNetworkRequests_exports = {};
 __export(ListNetworkRequests_exports, {
   ListNetworkRequestsTool: () => ListNetworkRequestsTool
 });
+import * as Common4 from "../../core/common/common.js";
 import * as Host20 from "../../core/host/host.js";
 import * as i18n35 from "../../core/i18n/i18n.js";
+import * as Platform6 from "../../core/platform/platform.js";
+import * as SDK16 from "../../core/sdk/sdk.js";
 import * as Logs5 from "../logs/logs.js";
 var UIStringsNotTranslate10 = {
   listingNetworkRequests: "Listing network requests"
 };
 var lockedString17 = i18n35.i18n.lockedString;
+function resolveBaseOrigin(establishedOrigin, requestsToShow) {
+  if (establishedOrigin.isFile()) {
+    return "";
+  }
+  for (const prefix of SDK16.SecurityOrigin.IMPORTED_ORIGIN_PREFIXES) {
+    if (establishedOrigin.siteId().startsWith(prefix)) {
+      return Common4.ParsedURL.ParsedURL.extractOrigin(requestsToShow[0].documentURL).toLowerCase();
+    }
+  }
+  return establishedOrigin.siteId();
+}
+function formatRequestUrl(rawUrl, baseOrigin) {
+  let cleanUrl = rawUrl.replace(/[\r\n]+/g, "");
+  if (/^data:/i.test(cleanUrl)) {
+    if (cleanUrl.length <= 80) {
+      return cleanUrl;
+    }
+    const commaIndex = cleanUrl.indexOf(",");
+    let truncated;
+    if (commaIndex !== -1 && commaIndex < 60) {
+      truncated = cleanUrl.slice(0, commaIndex + 1);
+    } else {
+      truncated = Platform6.StringUtilities.truncateToCodeUnitLength(cleanUrl, 60);
+    }
+    return truncated + "...<truncated>";
+  }
+  if (baseOrigin !== "" && cleanUrl.slice(0, baseOrigin.length).toLowerCase() === baseOrigin) {
+    const nextChar = cleanUrl[baseOrigin.length];
+    if (nextChar === void 0) {
+      cleanUrl = "/";
+    } else if (nextChar === "/") {
+      cleanUrl = cleanUrl.slice(baseOrigin.length);
+    } else if (nextChar === "?" || nextChar === "#") {
+      cleanUrl = "/" + cleanUrl.slice(baseOrigin.length);
+    }
+  }
+  const queryOrFragmentIndex = cleanUrl.search(/[?#]/);
+  const pathPart = queryOrFragmentIndex === -1 ? cleanUrl : cleanUrl.slice(0, queryOrFragmentIndex);
+  const suffixPart = queryOrFragmentIndex === -1 ? "" : cleanUrl.slice(queryOrFragmentIndex);
+  if (pathPart.length > 300) {
+    return Platform6.StringUtilities.truncateToCodeUnitLength(pathPart, 300) + "...<truncated>";
+  }
+  if (suffixPart.length > 100) {
+    return pathPart + Platform6.StringUtilities.truncateToCodeUnitLength(suffixPart, 100) + "...<truncated>";
+  }
+  return cleanUrl;
+}
 var ListNetworkRequestsTool = class {
   name = "listNetworkRequests" /* LIST_NETWORK_REQUESTS */;
   permissionPrompt = "never" /* NEVER */;
-  description = "Lists recorded network requests for the active origin, including request ID, URL, HTTP status code, duration, and transfer size.";
+  description = "Returns a compact semicolon-delimited table of requests initiated by the conversation's established origin, including request ID, URL, HTTP status code, duration, and transfer size.";
   #networkLog;
   constructor(networkLog) {
     this.#networkLog = networkLog;
@@ -9270,10 +9333,9 @@ var ListNetworkRequestsTool = class {
   }
   /**
    * Handles the request to list network requests.
-   * Returns requests matching the conversation's established origin, if set.
+   * Returns a compact semicolon-delimited table of requests initiated by the conversation's established origin.
    */
   async handler(_params, context) {
-    const requests = [];
     const originLock = context.getOriginLock();
     const originResult = resolveOriginFromLock(originLock);
     if ("error" in originResult) {
@@ -9288,16 +9350,9 @@ var ListNetworkRequestsTool = class {
         hasCrossOriginRequest = true;
         continue;
       }
-      requests.push({
-        id: request.requestId(),
-        url: request.url(),
-        statusCode: request.statusCode,
-        duration: seconds(request.duration),
-        transferSize: formatBytesToKb(request.transferSize)
-      });
       requestsToShow.push(request);
     }
-    if (requests.length === 0) {
+    if (requestsToShow.length === 0) {
       if (hasCrossOriginRequest) {
         return {
           error: `No requests showing with origin ${establishedOrigin.siteId()}. Tell the user to start a new chat`
@@ -9307,8 +9362,18 @@ var ListNetworkRequestsTool = class {
         error: "No network requests have been recorded. DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). Ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
       };
     }
+    const baseOrigin = resolveBaseOrigin(establishedOrigin, requestsToShow);
+    const HEADER = "id;url;status;duration;size";
+    const lines = baseOrigin ? [`origin: ${baseOrigin} (omitted from same-origin /... URLs)`, HEADER] : [HEADER];
+    for (const request of requestsToShow) {
+      const id = request.requestId().replace(/[\r\n]+/g, "");
+      const url = formatRequestUrl(request.url(), baseOrigin);
+      lines.push(
+        `${id};${url};${request.statusCode};${seconds(request.duration)};${formatBytesToKb(request.transferSize)}`
+      );
+    }
     return {
-      result: JSON.stringify(requests),
+      result: lines.join("\n"),
       widgets: [{
         name: "NETWORK_REQUESTS_LIST",
         data: {
@@ -9326,7 +9391,7 @@ __export(ListPageOrigins_exports, {
 });
 import * as Host21 from "../../core/host/host.js";
 import * as i18n37 from "../../core/i18n/i18n.js";
-import * as SDK16 from "../../core/sdk/sdk.js";
+import * as SDK17 from "../../core/sdk/sdk.js";
 var lockedString18 = i18n37.i18n.lockedString;
 var ListPageOriginsTool = class {
   name = "listPageOrigins" /* LIST_PAGE_ORIGINS */;
@@ -9355,19 +9420,19 @@ var ListPageOriginsTool = class {
    *    so we check `frame.securityOrigin` directly instead of the frame's target origin.
    */
   async handler(_args, context) {
-    const targetManager = SDK16.TargetManager.TargetManager.instance();
+    const targetManager = SDK17.TargetManager.TargetManager.instance();
     const primaryPageTarget = targetManager.primaryPageTarget();
     const originLock = context.getOriginLock();
     const originResult = resolveOriginFromLock(originLock);
     if ("error" in originResult) {
       return originResult;
     }
-    const pageOrigin = primaryPageTarget ? SDK16.SecurityOrigin.SecurityOrigin.create(primaryPageTarget.inspectedURL()) : null;
+    const pageOrigin = primaryPageTarget ? SDK17.SecurityOrigin.SecurityOrigin.create(primaryPageTarget.inspectedURL()) : null;
     if (!pageOrigin || !isOriginAllowedByLock(originLock, pageOrigin)) {
       return { error: "No origin available or not allowed." };
     }
     const origins = [];
-    for (const frame of SDK16.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+    for (const frame of SDK17.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
       if (frame.resourceTreeModel().target().outermostTarget() !== primaryPageTarget) {
         continue;
       }
@@ -9390,8 +9455,8 @@ __export(ListStorageKeys_exports, {
 });
 import * as Host22 from "../../core/host/host.js";
 import * as i18n39 from "../../core/i18n/i18n.js";
-import * as Platform6 from "../../core/platform/platform.js";
-import * as SDK17 from "../../core/sdk/sdk.js";
+import * as Platform7 from "../../core/platform/platform.js";
+import * as SDK18 from "../../core/sdk/sdk.js";
 var lockedString19 = i18n39.i18n.lockedString;
 var ListStorageKeysTool = class {
   name = "listStorageKeys" /* LIST_STORAGE_KEYS */;
@@ -9432,7 +9497,7 @@ var ListStorageKeysTool = class {
         title = lockedString19("Reading session storage keys");
         break;
       default:
-        Platform6.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+        Platform7.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
     }
     return {
       title,
@@ -9441,7 +9506,7 @@ var ListStorageKeysTool = class {
   }
   async handler(args, context) {
     context.disableLogging();
-    const targetManager = SDK17.TargetManager.TargetManager.instance();
+    const targetManager = SDK18.TargetManager.TargetManager.instance();
     const targetOriginsResult = resolveAllowedTargetOrigins(args.origins, context, targetManager);
     if ("error" in targetOriginsResult) {
       return { error: targetOriginsResult.error };
@@ -9484,7 +9549,7 @@ var PerformanceTraceContext_exports = {};
 __export(PerformanceTraceContext_exports, {
   PerformanceTraceContext: () => PerformanceTraceContext
 });
-import * as SDK19 from "../../core/sdk/sdk.js";
+import * as SDK20 from "../../core/sdk/sdk.js";
 import * as Tracing2 from "../../services/tracing/tracing.js";
 import * as Bindings2 from "../bindings/bindings.js";
 import * as SourceMapScopes from "../source_map_scopes/source_map_scopes.js";
@@ -9505,9 +9570,9 @@ __export(AiAgent_exports, {
   sanitizeSuggestionsList: () => sanitizeSuggestionsList
 });
 import * as Host23 from "../../core/host/host.js";
-import * as Platform7 from "../../core/platform/platform.js";
+import * as Platform8 from "../../core/platform/platform.js";
 import * as Root4 from "../../core/root/root.js";
-import * as SDK18 from "../../core/sdk/sdk.js";
+import * as SDK19 from "../../core/sdk/sdk.js";
 import * as AiUtils4 from "../ai-utils/ai-utils.js";
 var { debugLog: debugLog2, isDebugMode } = AiUtils4.Debug;
 var MAX_SUGGESTION_LENGTH = 200;
@@ -9640,16 +9705,12 @@ var AiAgent = class {
   #facts = /* @__PURE__ */ new Set();
   constructor(opts) {
     this.#aidaClient = opts.aidaClient;
-    let serverSideLoggingAllowed = opts.serverSideLoggingAllowed ?? false;
-    if (Root4.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      serverSideLoggingAllowed = false;
-    }
-    this.#serverSideLoggingActive = serverSideLoggingAllowed;
+    this.#serverSideLoggingActive = opts.serverSideLoggingAllowed ?? false;
     this.#sessionId = opts.sessionId ?? crypto.randomUUID();
     this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
     this.#history = opts.history ?? [];
     this.#allowedOrigin = opts.allowedOrigin;
-    this.#targetManager = opts.targetManager ?? SDK18.TargetManager.TargetManager.instance();
+    this.#targetManager = opts.targetManager ?? SDK19.TargetManager.TargetManager.instance();
     this.#alwaysAllowedTools = opts.alwaysAllowedTools;
   }
   async enhanceQuery(query) {
@@ -9718,7 +9779,7 @@ var AiAgent = class {
     for (const [name, definition] of this.#functionDeclarations.entries()) {
       declarations.push({
         name,
-        description: typeof definition.description === "function" ? definition.description() : definition.description,
+        description: definition.description,
         parameters: definition.parameters
       });
     }
@@ -10263,19 +10324,11 @@ var AiAgent = class {
     let rpcId;
     const requestTimestamp = Math.floor(Date.now() * 1e3);
     for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
-      if (aidaResponse.functionCalls?.length) {
-        yield {
-          rpcId,
-          functionCalls: aidaResponse.functionCalls,
-          completed: true,
-          text: aidaResponse.explanation
-        };
-        break;
-      }
       rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
       yield {
         rpcId,
         text: aidaResponse.explanation,
+        functionCalls: aidaResponse.functionCalls,
         completed: aidaResponse.completed
       };
     }
@@ -10288,7 +10341,7 @@ var AiAgent = class {
         responseTimestamp
       });
       try {
-        Platform7.HostRuntime.HOST_RUNTIME.getLocalStorage()?.setItem(
+        Platform8.HostRuntime.HOST_RUNTIME.getLocalStorage()?.setItem(
           "aiAssistanceStructuredLog",
           JSON.stringify(this.#structuredLog)
         );
@@ -10484,7 +10537,7 @@ function getPerformanceAgentFocusFromModel(model) {
 
 // ../../front_end/models/ai_assistance/contexts/PerformanceTraceContext.ts
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
-  static fromParsedTrace(parsedTrace, targetManager = SDK19.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromParsedTrace(parsedTrace, targetManager = SDK20.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
@@ -10495,7 +10548,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       debuggerWorkspaceBinding
     );
   }
-  static fromInsight(parsedTrace, insight, targetManager = SDK19.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromInsight(parsedTrace, insight, targetManager = SDK20.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
@@ -10506,7 +10559,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       debuggerWorkspaceBinding
     );
   }
-  static fromCallTree(callTree, targetManager = SDK19.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  static fromCallTree(callTree, targetManager = SDK20.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
@@ -10523,7 +10576,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
   #freshRecordingTracker;
   #debuggerWorkspaceBinding;
   #origin;
-  constructor(focus, targetManager = SDK19.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
+  constructor(focus, targetManager = SDK20.TargetManager.TargetManager.instance(), freshRecordingTracker = Tracing2.FreshRecording.Tracker.instance(), debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
   )) {
@@ -10578,7 +10631,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
    */
   canAccessResource(url) {
     const traceOrigin = this.getOrigin();
-    const targetOrigin = SDK19.SecurityOrigin.SecurityOrigin.create(url);
+    const targetOrigin = SDK20.SecurityOrigin.SecurityOrigin.create(url);
     if (traceOrigin.isFile() || targetOrigin.isFile()) {
       return false;
     }
@@ -10602,11 +10655,11 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
   getOrigin() {
     if (!this.#origin) {
       if (this.isImported()) {
-        this.#origin = SDK19.SecurityOrigin.SecurityOrigin.createForImportedTrace(
+        this.#origin = SDK20.SecurityOrigin.SecurityOrigin.createForImportedTrace(
           this.#focus.parsedTrace.data.Meta.mainFrameURL
         );
       } else {
-        this.#origin = SDK19.SecurityOrigin.SecurityOrigin.create(
+        this.#origin = SDK20.SecurityOrigin.SecurityOrigin.create(
           this.#focus.parsedTrace.data.Meta.mainFrameURL
         );
       }
@@ -10968,7 +11021,7 @@ __export(ResolveDevtoolsNodePath_exports, {
 });
 import * as Host25 from "../../core/host/host.js";
 import * as i18n43 from "../../core/i18n/i18n.js";
-import * as SDK20 from "../../core/sdk/sdk.js";
+import * as SDK21 from "../../core/sdk/sdk.js";
 var ResolveDevtoolsNodePathTool = class {
   name = "resolveDevtoolsNodePath" /* RESOLVE_DEVTOOLS_NODE_PATH */;
   permissionPrompt = "never" /* NEVER */;
@@ -11013,7 +11066,7 @@ var ResolveDevtoolsNodePathTool = class {
    */
   async handler(params, context) {
     const target = context.getTarget();
-    const domModel = target?.model(SDK20.DOMModel.DOMModel);
+    const domModel = target?.model(SDK21.DOMModel.DOMModel);
     if (!domModel) {
       return { error: "Error: Inspected target not found." };
     }
@@ -11061,7 +11114,7 @@ __export(LighthouseContext_exports, {
   LighthouseContext: () => LighthouseContext
 });
 import * as Root5 from "../../core/root/root.js";
-import * as SDK21 from "../../core/sdk/sdk.js";
+import * as SDK22 from "../../core/sdk/sdk.js";
 var LighthouseContext = class extends ConversationContext {
   // This context was previously named AccessibilityContext. The VE context
   // keeps its original value so that logged metrics stay comparable.
@@ -11084,7 +11137,7 @@ var LighthouseContext = class extends ConversationContext {
    * @returns The security origin of the audited page.
    */
   getOrigin() {
-    return SDK21.SecurityOrigin.SecurityOrigin.create(this.#url());
+    return SDK22.SecurityOrigin.SecurityOrigin.create(this.#url());
   }
   getItem() {
     return this.#lh;
@@ -11221,10 +11274,10 @@ var SelectTraceEventByKey_exports = {};
 __export(SelectTraceEventByKey_exports, {
   SelectTraceEventByKeyTool: () => SelectTraceEventByKeyTool
 });
-import * as Common4 from "../../core/common/common.js";
+import * as Common5 from "../../core/common/common.js";
 import * as Host27 from "../../core/host/host.js";
 import * as i18n45 from "../../core/i18n/i18n.js";
-import * as SDK22 from "../../core/sdk/sdk.js";
+import * as SDK23 from "../../core/sdk/sdk.js";
 var UIStringsNotTranslate12 = {
   selectingTraceEvent: "Selecting trace event"
 };
@@ -11262,9 +11315,9 @@ var SelectTraceEventByKeyTool = class {
     if (!event) {
       return { error: `Could not find event with key "${params.eventKey}".` };
     }
-    const revealable = new SDK22.TraceObject.RevealableEvent(event);
+    const revealable = new SDK23.TraceObject.RevealableEvent(event);
     try {
-      await Common4.Revealer.reveal(revealable);
+      await Common5.Revealer.reveal(revealable);
     } catch {
     }
     return {
@@ -11286,8 +11339,8 @@ __export(SetElementStyles_exports, {
   SetElementStylesTool: () => SetElementStylesTool
 });
 import * as Host28 from "../../core/host/host.js";
-import * as Platform8 from "../../core/platform/platform.js";
-import * as SDK23 from "../../core/sdk/sdk.js";
+import * as Platform9 from "../../core/platform/platform.js";
+import * as SDK24 from "../../core/sdk/sdk.js";
 var SetElementStylesTool = class {
   name = "setElementStyles" /* SET_ELEMENT_STYLES */;
   permissionPrompt = "never" /* NEVER */;
@@ -11362,12 +11415,12 @@ var SetElementStylesTool = class {
     if (!params.styleProperties?.length) {
       return { error: "Error: No style properties provided." };
     }
-    const styles = Platform8.StringUtilities.toKebabCaseKeys(
+    const styles = Platform9.StringUtilities.toKebabCaseKeys(
       Object.fromEntries(params.styleProperties.map((p) => [p.name, p.value]))
     );
     const maybeResolvedNodes = await Promise.all(
       params.elements.map(
-        (uid) => new SDK23.DOMModel.DeferredDOMNode(target, uid).resolvePromise()
+        (uid) => new SDK24.DOMModel.DeferredDOMNode(target, uid).resolvePromise()
       )
     );
     const resolvedNodes = [];
@@ -11417,7 +11470,7 @@ var SetElementStylesTool = class {
   async #applyStyleChangesToNode(resolvedNode, styles, changeManager) {
     const domModel = resolvedNode.domModel();
     const cssModel = domModel.cssModel();
-    const frameId = resolvedNode.frameId() ?? domModel.target().model(SDK23.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.id;
+    const frameId = resolvedNode.frameId() ?? domModel.target().model(SDK24.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.id;
     if (!frameId) {
       return { error: "Error: Main frame is not found for applying styles." };
     }
@@ -11583,7 +11636,7 @@ var AccessibilityAgent = class extends AiAgent {
   }
   async preRun() {
     const target = this.targetManager.primaryPageTarget();
-    const domModel = target?.model(SDK24.DOMModel.DOMModel);
+    const domModel = target?.model(SDK25.DOMModel.DOMModel);
     if (domModel && !domModel.existingDocument()) {
       try {
         await domModel.requestDocument();
@@ -11598,7 +11651,7 @@ var AccessibilityAgent = class extends AiAgent {
    * so that the AI has a valid $0 to start with.
    */
   #getDocumentBodyNode() {
-    const document = this.targetManager.primaryPageTarget()?.model(SDK24.DOMModel.DOMModel)?.existingDocument();
+    const document = this.targetManager.primaryPageTarget()?.model(SDK25.DOMModel.DOMModel)?.existingDocument();
     return document?.body ?? document ?? null;
   }
   async *handleContextDetails(lhr) {
@@ -11622,7 +11675,7 @@ var AccessibilityAgent = class extends AiAgent {
     if (!target) {
       return null;
     }
-    const domModel = target.model(SDK24.DOMModel.DOMModel);
+    const domModel = target.model(SDK25.DOMModel.DOMModel);
     if (!domModel) {
       return null;
     }
@@ -11872,7 +11925,7 @@ var AccessibilityAgent = class extends AiAgent {
         if (!node) {
           return { error: `Could not find the element with path: ${params.path}` };
         }
-        const accessibilityModel = node.domModel().target().model(SDK24.AccessibilityModel.AccessibilityModel);
+        const accessibilityModel = node.domModel().target().model(SDK25.AccessibilityModel.AccessibilityModel);
         if (!accessibilityModel) {
           return { error: "Accessibility model not found." };
         }
@@ -11950,7 +12003,7 @@ __export(DOMNodeContext_exports, {
   DOMNodeContext: () => DOMNodeContext
 });
 import * as i18n49 from "../../core/i18n/i18n.js";
-import * as SDK25 from "../../core/sdk/sdk.js";
+import * as SDK26 from "../../core/sdk/sdk.js";
 var UIStringsNotTranslate13 = {
   /**
    * @description Heading text for context details of DevTools AI Agent.
@@ -11978,7 +12031,7 @@ var DOMNodeContext = class extends ConversationContext {
     const origin = this.#node.securityOrigin();
     if (!origin) {
       if (!this.#opaqueOrigin) {
-        this.#opaqueOrigin = SDK25.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
+        this.#opaqueOrigin = SDK26.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
       }
       return this.#opaqueOrigin;
     }
@@ -12051,8 +12104,8 @@ ${await this.describe()}`;
 * Its selector is \`${element.simpleSelector()}\``;
     const childNodes = await element.getChildNodesPromise();
     if (childNodes) {
-      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK25.DOMModel.NodeType.TEXT_NODE);
-      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK25.DOMModel.NodeType.ELEMENT_NODE);
+      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK26.DOMModel.NodeType.TEXT_NODE);
+      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE);
       const formattedChildren = elementChildNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ");
       switch (elementChildNodes.length) {
         case 0:
@@ -12079,12 +12132,12 @@ ${await this.describe()}`;
       }
     }
     if (element.nextSibling) {
-      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === SDK25.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
+      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
     }
     if (element.previousSibling) {
-      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === SDK25.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
+      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
     }
@@ -12096,14 +12149,14 @@ ${await this.describe()}`;
       const parentChildrenNodes = await parentNode.getChildNodesPromise();
       output += `
 * Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
-      const elementOrNodeElementNodeText = parentNode.nodeType() === SDK25.DOMModel.NodeType.ELEMENT_NODE ? "an element" : "a non element";
+      const elementOrNodeElementNodeText = parentNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? "an element" : "a non element";
       output += `
 * Its parent is ${elementOrNodeElementNodeText} node`;
       if (parentNode.isShadowRoot()) {
         output += "\n* Its parent is a shadow root.";
       }
       if (parentChildrenNodes) {
-        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK25.DOMModel.NodeType.ELEMENT_NODE);
+        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE);
         switch (childElementNodes.length) {
           case 0:
             break;
@@ -12115,7 +12168,7 @@ ${await this.describe()}`;
 * Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
             break;
         }
-        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK25.DOMModel.NodeType.TEXT_NODE);
+        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK26.DOMModel.NodeType.TEXT_NODE);
         switch (siblingTextNodes.length) {
           case 0:
             break;
@@ -12148,8 +12201,7 @@ var FileContext = class extends ConversationContext {
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
   }
   /**
-   * Returns the security origin of the project containing the file, falling
-   * back to the origin derived from the file URL.
+   * Returns the security origin of the workspace file.
    */
   getOrigin() {
     return this.#file.securityOrigin();
@@ -12264,7 +12316,7 @@ var StorageContext_exports = {};
 __export(StorageContext_exports, {
   StorageContext: () => StorageContext
 });
-import * as SDK26 from "../../core/sdk/sdk.js";
+import * as SDK27 from "../../core/sdk/sdk.js";
 
 // ../../front_end/models/ai_assistance/StorageItem.ts
 var StorageItem_exports = {};
@@ -12333,7 +12385,7 @@ var StorageContext = class extends ConversationContext {
    * @returns The security origin of the primary page target.
    */
   getOrigin() {
-    return SDK26.SecurityOrigin.SecurityOrigin.create(this.#item.primaryTargetOrigin);
+    return SDK27.SecurityOrigin.SecurityOrigin.create(this.#item.primaryTargetOrigin);
   }
   getItem() {
     return this.#item;
@@ -13107,11 +13159,11 @@ var PerformanceAgent_exports = {};
 __export(PerformanceAgent_exports, {
   PerformanceAgent: () => PerformanceAgent
 });
-import * as Common5 from "../../core/common/common.js";
+import * as Common6 from "../../core/common/common.js";
 import * as Host33 from "../../core/host/host.js";
 import * as i18n55 from "../../core/i18n/i18n.js";
 import * as Root10 from "../../core/root/root.js";
-import * as SDK27 from "../../core/sdk/sdk.js";
+import * as SDK28 from "../../core/sdk/sdk.js";
 import * as TextUtils5 from "../../core/text_utils/text_utils.js";
 import * as Tracing3 from "../../services/tracing/tracing.js";
 import * as AiUtils7 from "../ai-utils/ai-utils.js";
@@ -13675,7 +13727,7 @@ ${result}`,
             const nodeId = lcpEvent.args.data?.nodeId;
             if (nodeId) {
               const target = this.targetManager.primaryPageTarget();
-              const domModel = target?.model(SDK27.DOMModel.DOMModel);
+              const domModel = target?.model(SDK28.DOMModel.DOMModel);
               if (domModel) {
                 const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
                 const node = nodeMap?.get(nodeId);
@@ -14018,7 +14070,7 @@ ${result}`,
         if (script?.content !== void 0) {
           content = script.content;
         } else if (isFresh || isTraceApp) {
-          const resource = SDK27.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
+          const resource = SDK28.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
           if (!resource) {
             return { error: "Resource not found" };
           }
@@ -14071,8 +14123,8 @@ ${result}`,
         if (!event) {
           return { error: "Invalid eventKey" };
         }
-        const revealable = new SDK27.TraceObject.RevealableEvent(event);
-        await Common5.Revealer.reveal(revealable);
+        const revealable = new SDK28.TraceObject.RevealableEvent(event);
+        await Common6.Revealer.reveal(revealable);
         return {
           result: { success: true },
           widgets: [{
@@ -14088,7 +14140,7 @@ ${result}`,
   }
   async #getNetworkRequestImageData(lcpRequest) {
     const target = this.targetManager.primaryPageTarget();
-    const networkManager = target?.model(SDK27.NetworkManager.NetworkManager);
+    const networkManager = target?.model(SDK28.NetworkManager.NetworkManager);
     if (!target || !networkManager) {
       return void 0;
     }
@@ -14114,11 +14166,11 @@ __export(StorageAgent_exports, {
   isSamePageOrigin: () => isSamePageOrigin,
   resolveDOMStorages: () => resolveDOMStorages2
 });
-import * as Common6 from "../../core/common/common.js";
+import * as Common7 from "../../core/common/common.js";
 import * as Host34 from "../../core/host/host.js";
 import * as i18n57 from "../../core/i18n/i18n.js";
 import * as Root11 from "../../core/root/root.js";
-import * as SDK28 from "../../core/sdk/sdk.js";
+import * as SDK29 from "../../core/sdk/sdk.js";
 var lockedString26 = i18n57.i18n.lockedString;
 var preamble6 = `You are a Senior Software Engineer specializing in state audit and storage analysis within Chrome DevTools. Your mission is to help developers debug storage-related issues faster by analyzing the evidence in LocalStorage, SessionStorage, and Cookies.
 
@@ -14170,7 +14222,7 @@ function isSamePageOrigin(target, context) {
   if (!inspectedURL) {
     return false;
   }
-  const pageOrigin = SDK28.SecurityOrigin.SecurityOrigin.create(inspectedURL);
+  const pageOrigin = SDK29.SecurityOrigin.SecurityOrigin.create(inspectedURL);
   return !pageOrigin.isOpaque() && context.isOriginAllowed(pageOrigin);
 }
 var MAX_TARGET_ORIGINS2 = 100;
@@ -14218,7 +14270,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           return { error: "No origin available or not allowed." };
         }
         const origins = [];
-        for (const frame of SDK28.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
+        for (const frame of SDK29.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
           if (!isSamePageOrigin(frame.resourceTreeModel().target().outermostTarget(), this.context)) {
             continue;
           }
@@ -14534,7 +14586,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
         if (response.getError()) {
           return { error: response.getError() || "Unknown CDP error" };
         }
-        const mainStorageKey = target.model(SDK28.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
+        const mainStorageKey = target.model(SDK29.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
         const localStorages = resolveDOMStorages2(this.context, "localStorage", origin, this.targetManager, mainStorageKey);
         const localStorageBytes = await calculateDOMStoragesUsage2(localStorages);
         const sessionStorages = resolveDOMStorages2(this.context, "sessionStorage", origin, this.targetManager, mainStorageKey);
@@ -14584,7 +14636,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
   static #formatContext(item) {
     const primaryTargetOrigin = `Primary target: ${item.primaryTargetOrigin}`;
     if (item instanceof CookieItem) {
-      const parsedURL = Common6.ParsedURL.ParsedURL.fromString(item.origin);
+      const parsedURL = Common7.ParsedURL.ParsedURL.fromString(item.origin);
       const domain = parsedURL ? parsedURL.host : item.origin;
       return `${primaryTargetOrigin}
 User-selected Context: Cookies${item.isGenericContext ? "" : `
@@ -14634,7 +14686,7 @@ ${query}`;
   }
 };
 async function getCookiesForDomain(target, origin) {
-  const cookieModel = target.model(SDK28.CookieModel.CookieModel);
+  const cookieModel = target.model(SDK29.CookieModel.CookieModel);
   if (!cookieModel) {
     return null;
   }
@@ -14645,8 +14697,8 @@ async function getCookiesForDomain(target, origin) {
   return allCookies.filter((cookie) => !cookie.httpOnly());
 }
 function findFrameForOrigin(context, origin, targetManager) {
-  const parsedOrigin = SDK28.SecurityOrigin.SecurityOrigin.create(origin);
-  for (const frame of SDK28.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+  const parsedOrigin = SDK29.SecurityOrigin.SecurityOrigin.create(origin);
+  for (const frame of SDK29.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
     if (frame.securityOrigin().isSameOriginWith(parsedOrigin)) {
       const target = frame.resourceTreeModel().target();
       if (isSamePageOrigin(target.outermostTarget(), context)) {
@@ -14671,7 +14723,7 @@ async function calculateDOMStoragesUsage2(storages) {
 function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
   const resolvedStorages = [];
   const isLocalStorage = type === "localStorage";
-  const domStorageModels = targetManager.models(SDK28.DOMStorageModel.DOMStorageModel);
+  const domStorageModels = targetManager.models(SDK29.DOMStorageModel.DOMStorageModel);
   for (const domStorageModel of domStorageModels) {
     if (!isSamePageOrigin(domStorageModel.target().outermostTarget(), context)) {
       continue;
@@ -14686,14 +14738,14 @@ function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
       }
       if (storageKey) {
         if (storageKey === currentStorageKey) {
-          const parsedKey2 = SDK28.StorageKeyManager.parseStorageKey(currentStorageKey);
+          const parsedKey2 = SDK29.StorageKeyManager.parseStorageKey(currentStorageKey);
           if (parsedKey2.origin === origin) {
             resolvedStorages.push(storage);
           }
         }
         continue;
       }
-      const parsedKey = SDK28.StorageKeyManager.parseStorageKey(currentStorageKey);
+      const parsedKey = SDK29.StorageKeyManager.parseStorageKey(currentStorageKey);
       if (parsedKey.origin === origin) {
         resolvedStorages.push(storage);
       }
@@ -14880,7 +14932,7 @@ __export(AiAgent2_exports, {
 });
 import * as Host36 from "../../core/host/host.js";
 import * as Root13 from "../../core/root/root.js";
-import * as SDK29 from "../../core/sdk/sdk.js";
+import * as SDK30 from "../../core/sdk/sdk.js";
 import * as AiUtils8 from "../ai-utils/ai-utils.js";
 
 // ../../front_end/models/ai_assistance/skills/SkillRegistry.ts
@@ -14901,7 +14953,7 @@ var skill = {
     "getElementAccessibilityDetails",
     "executeJavaScript"
   ],
-  "instructions": "You are an expert web quality, Lighthouse audit, and accessibility debugging assistant integrated into Chrome DevTools.\nYour role is to evaluate websites using Lighthouse audits across performance, accessibility, best practices, and SEO, and to inspect live DOM elements for accessibility and styling fixes.\n\n# Tools & Workflow\n\n1. **Lighthouse Audits (`runLighthouse` & `getLighthouseAudits`)**:\n   - The Lighthouse report context contains only category scores and failing audit titles. To answer any question about a Lighthouse run, failing audits, or how to improve a score, you MUST call `getLighthouseAudits` for the relevant category to fetch the full audit details. Never reply using only the initial summary.\n   - If an active Lighthouse report context already exists and no fresh audit is requested:\n     - To inspect the entire report, multiple categories, or general opportunities to improve the score, call `getLighthouseAudits` with `categoryId: 'all'`.\n     - For a specific category, call `getLighthouseAudits` with the corresponding category ID (e.g. `'performance'`, `'accessibility'`, `'best-practices'`, `'seo'`).\n   - If no active report exists or a fresh audit is requested, call `runLighthouse`:\n     - If the user asks for a general report or multiple categories, use `categoryId: 'all'`.\n     - For a single category, pass that category ID (e.g. `'accessibility'`).\n     - Only pass `categoryId: 'agentic-browsing'` when the user explicitly asks for an agentic browsing audit, such as how ready the page is for AI agents to navigate and use it, or WebMCP checks. `'all'` does not include it, so never pick it for general audits, and never substitute another category (such as `'seo'`) when the user asks for it. Use `\"navigation\"` mode for `'agentic-browsing'` unless the user explicitly asks for another mode, because its WebMCP audits only run in `\"navigation\"` mode.\n     - Execution mode:\n       - Use `\"navigation\"` mode for full page-load audits (default for full site reviews).\n       - Use `\"snapshot\"` mode (and recommend Snapshot mode rather than \"Analyze page load\" if instructing the user) to re-evaluate live in-page DOM/CSS modifications, because `\"navigation\"` mode reloads the page and wipes out temporary live changes.\n       - Use `\"timespan\"` mode for user interaction flows.\n       - Always honor explicit mode requests from the user.\n     - **CRITICAL**: `runLighthouse` only records the report and returns `\"Lighthouse audit completed\"` without audit details. Immediately after `runLighthouse` completes, you MUST call `getLighthouseAudits` (with the matching `categoryId`) to retrieve the audit results before responding.\n\n2. **Resolving & Inspecting Failing Audit Elements (`resolveDevtoolsNodePath`, `getStyles`, `getElementAccessibilityDetails`)**:\n   - `getLighthouseAudits` only returns static HTML snippets and DevTools `node path` strings (e.g. `\"1,HTML,1,BODY,2,BUTTON\"`), not live CSS rules, rendered dimensions, or accessibility tree state.\n   - Whenever failing audits reference specific page elements by `node path` (excluding document-level `\"1,HTML\"` landmark checks) and those elements have not yet been resolved and inspected in the conversation:\n     1. Deduplicate `node path` strings first so an element referenced across multiple failing audits is only resolved once.\n     2. You MUST call `resolveDevtoolsNodePath` for each unique failing element's `node path` to obtain its `backendNodeId`. Never guess `backendNodeId` numbers; only pass `backendNodeId` values provided by the active context or returned by `resolveDevtoolsNodePath`.\n     3. You MUST then inspect those `backendNodeId`s using dedicated tools before answering:\n        - Call `getStyles` on the `backendNodeId` for sizing/layout audits (such as `unsized-images` to find the actual rendered CSS `width` and `height`), color contrast, or link styling (`link-in-text-block`).\n        - Call `getElementAccessibilityDetails` on the `backendNodeId` for accessibility, ARIA, role, or accessible name audits (such as `button-name`).\n   - Never guess CSS dimensions, styles, or ARIA properties from the static HTML snippet alone, and never use `executeJavaScript` (`document.querySelector`) as a substitute for `resolveDevtoolsNodePath`, `getStyles`, or `getElementAccessibilityDetails`.\n\n3. **Direct Element Accessibility Inspection (`getElementAccessibilityDetails` & `getStyles`)**:\n   - When inspecting a selected DOM element for accessibility, ALWAYS call `getElementAccessibilityDetails` on its `backendNodeId` to retrieve the computed role, accessible name, name source, ARIA attributes, ignored state, and accessibility properties directly from the accessibility tree.\n   - Call `getStyles` on the `backendNodeId` to inspect layout, color contrast, or font properties when relevant.\n\n4. **Supplementary DOM & Dynamic Interaction Checks (`executeJavaScript`)**:\n   - Only after calling `resolveDevtoolsNodePath`, `getStyles`, and `getElementAccessibilityDetails` on failing elements with a `node path`, you may use `executeJavaScript` if you need supplementary DOM state not available from single-node tools (such as `<head>` `<meta>` tags, `document.body.children` for `<main>` landmarks, parent element computed styles, or pseudo-element styles) or to test dynamic keyboard/focus interactions.\n\n# Considerations\n\n- Base all analysis on empirical Lighthouse audit data and live element inspection. Never fabricate audit scores or results.\n- For performance-only questions (e.g. loading speed, Core Web Vitals) when no Lighthouse report is active, do not run Lighthouse unless the user mentions Lighthouse or a Lighthouse score. Record a performance trace with the performance skill instead.\n- When summarizing a full Lighthouse run, highlight overall category scores first, then detail failing audits (score < 90)."
+  "instructions": "You are an expert web quality, Lighthouse audit, and accessibility debugging assistant integrated into Chrome DevTools.\nYour role is to evaluate websites using Lighthouse audits across performance, accessibility, best practices, and SEO, and to inspect live DOM elements for accessibility and styling fixes.\n\n# Tools & Workflow\n\n1. **Lighthouse Audits (`runLighthouse` & `getLighthouseAudits`)**:\n   - The Lighthouse report context contains only category scores and failing audit titles. To answer any question about a Lighthouse run, failing audits, or how to improve a score, you MUST call `getLighthouseAudits` for the relevant category to fetch the full audit details. Never reply using only the initial summary.\n   - If an active Lighthouse report context already exists and no fresh audit is requested:\n     - To inspect the entire report, multiple categories, or general opportunities to improve the score, call `getLighthouseAudits` with `categoryId: 'all'`.\n     - For a specific category, call `getLighthouseAudits` with the corresponding category ID (e.g. `'performance'`, `'accessibility'`, `'best-practices'`, `'seo'`).\n   - If no active report exists or a fresh audit is requested, call `runLighthouse`:\n     - If the user asks for a general report or multiple categories, use `categoryId: 'all'`.\n     - For a single category, pass that category ID (e.g. `'accessibility'`).\n     - Only pass `categoryId: 'agentic-browsing'` when the user explicitly asks for an agentic browsing audit, such as how ready the page is for AI agents to navigate and use it, or WebMCP checks. `'all'` does not include it, so never pick it for general audits, and never substitute another category (such as `'seo'`) when the user asks for it. Use `\"navigation\"` mode for `'agentic-browsing'` unless the user explicitly asks for another mode, because its WebMCP audits only run in `\"navigation\"` mode.\n     - Execution mode:\n       - Use `\"navigation\"` mode for full page-load audits (default for full site reviews).\n       - Use `\"snapshot\"` mode (and recommend Snapshot mode rather than \"Analyze page load\" if instructing the user) to re-evaluate live in-page DOM/CSS modifications, because `\"navigation\"` mode reloads the page and wipes out temporary live changes.\n       - Use `\"timespan\"` mode for user interaction flows.\n       - Always honor explicit mode requests from the user.\n     - **CRITICAL**: `runLighthouse` only records the report and returns `\"Lighthouse audit completed\"` without audit details. Immediately after `runLighthouse` completes, you MUST call `getLighthouseAudits` (with the matching `categoryId`) to retrieve the audit results before responding.\n\n2. **Resolving & Inspecting Failing Audit Elements (`resolveDevtoolsNodePath`, `getStyles`, `getElementAccessibilityDetails`)**:\n   - `getLighthouseAudits` only returns static HTML snippets and DevTools `node path` strings (e.g. `\"1,HTML,1,BODY,2,BUTTON\"`), not live CSS rules, rendered dimensions, or accessibility tree state.\n   - Whenever failing audits reference specific page elements by `node path` (excluding document-level `\"1,HTML\"` landmark checks) and those elements have not yet been resolved and inspected in the conversation:\n     1. Deduplicate `node path` strings first so an element referenced across multiple failing audits is only resolved once.\n     2. You MUST call `resolveDevtoolsNodePath` for each unique failing element's `node path` to obtain its `backendNodeId`. Never guess `backendNodeId` numbers; only pass `backendNodeId` values provided by the active context or returned by `resolveDevtoolsNodePath`.\n     3. You MUST then inspect those `backendNodeId`s using dedicated tools before answering:\n        - Call `getStyles` on the `backendNodeId` for sizing/layout audits (such as `unsized-images` to find the actual rendered CSS `width` and `height`), color contrast, or link styling (`link-in-text-block`).\n        - Call `getElementAccessibilityDetails` on the `backendNodeId` for accessibility, ARIA, role, or accessible name audits (such as `button-name`).\n   - Never guess CSS dimensions, styles, or ARIA properties from the static HTML snippet alone, and never use `executeJavaScript` (`document.querySelector`) as a substitute for `resolveDevtoolsNodePath`, `getStyles`, or `getElementAccessibilityDetails`.\n\n3. **Direct Element Accessibility Inspection (`getElementAccessibilityDetails` & `getStyles`)**:\n   - When inspecting a selected DOM element for accessibility, ALWAYS call `getElementAccessibilityDetails` on its `backendNodeId` to retrieve the computed role, accessible name, name source, ARIA attributes, ignored state, and accessibility properties directly from the accessibility tree.\n   - Call `getStyles` on the `backendNodeId` to inspect layout, color contrast, or font properties when relevant.\n\n4. **Supplementary DOM & Dynamic Interaction Checks (`executeJavaScript`)**:\n   - Only after calling `resolveDevtoolsNodePath`, `getStyles`, and `getElementAccessibilityDetails` on failing elements with a `node path`, you may use `executeJavaScript` if you need supplementary DOM state not available from single-node tools (such as `<head>` `<meta>` tags, `document.body.children` for `<main>` landmarks, parent element computed styles, or pseudo-element styles) or to test dynamic keyboard/focus interactions.\n   - Never use executeJavaScript to modify element CSS styles or as a substitute for dedicated skills (such as styling for setElementStyles, storage, network, or sources); call learnSkills to load the relevant skill instead.\n\n# Considerations\n\n- Base all analysis on empirical Lighthouse audit data and live element inspection. Never fabricate audit scores or results.\n- For performance-only questions (e.g. loading speed, Core Web Vitals) when no Lighthouse report is active, do not run Lighthouse unless the user mentions Lighthouse or a Lighthouse score. Record a performance trace with the performance skill instead.\n- When summarizing a full Lighthouse run, highlight overall category scores first, then detail failing audits (score < 90)."
 };
 
 // gen/front_end/models/ai_assistance/skills/network.skill.js
@@ -14912,7 +14964,7 @@ var skill2 = {
     "listNetworkRequests",
     "getNetworkRequestDetails"
   ],
-  "instructions": "You are an expert network request debugging assistant.\n\n# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to discover recorded network requests matching the active origin.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain full headers, timing phases (DNS, initial connection, SSL, TTFB, content download), status text, and response body.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Origin Lock**: Only requests belonging to the conversation's established origin can be inspected.\n* **Recording**: DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). If `listNetworkRequests` reports that no requests have been recorded, ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
+  "instructions": "# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to list recorded requests initiated by the active origin as `id;url;status;duration;size` rows, where same-origin URLs omit the `origin` prefix and long query or `data:` URLs end with `...<truncated>`.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain the full untruncated URL, full headers, timing phases (DNS, initial connection, SSL, TTFB, content download), status text, and response body.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Origin Lock**: Only requests initiated by the conversation's established origin can be inspected.\n* **Recording**: DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). If `listNetworkRequests` reports that no requests have been recorded, ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
 };
 
 // gen/front_end/models/ai_assistance/skills/performance.skill.js
@@ -14941,7 +14993,7 @@ var skill4 = {
     "listSources",
     "getSourceContent"
   ],
-  "instructions": 'You are an expert source code analysis and debugging assistant.\n\n# Tools & Workflow\n\n1. **Discover Files (`listSources`)**:\n   - Call `listSources` to retrieve all deployed and authored source files (including source-mapped files) in the workspace matching the active origin.\n   - Inspect the returned list for file names and unique numeric `id` values.\n\n2. **Inspect File Content (`getSourceContent`)**:\n   - Call `getSourceContent` with the numeric `id` to retrieve the source code.\n   - Long files are returned in parts. If the result ends with a "Content truncated" notice, call `getSourceContent` again with the same `id` and the `offset` from the notice. Do not repeat a call with the same `id` and `offset`; it returns the same content.\n   - Parts are split by character count, so a part can end or start partway through a line or token. Do not treat text cut at a part boundary as a syntax error; read the next part instead.\n\n# Considerations\n\n* Provide clean code snippets with direct line references where helpful.\n* Redact sensitive personal data, secrets, or API keys found in source files.'
+  "instructions": '# Tools & Workflow\n\n1. **Discover Files (`listSources`)**:\n   - Call `listSources` to retrieve all deployed and authored source files (including source-mapped files) in the workspace matching the active origin.\n   - The output is formatted as `id;name` lines. Same-origin `http(s)` files omit the locked origin scheme and host (e.g. `/assets/app.js`, `/(index)`), while virtual source-map files retain their scheme (e.g. `webpack:///./src/index.ts`).\n\n2. **Inspect File Content (`getSourceContent`)**:\n   - Call `getSourceContent` with the numeric `id` to retrieve the source code.\n   - Long files are returned in parts. If the result ends with a "Content truncated" notice, call `getSourceContent` again with the same `id` and the `offset` from the notice. Do not repeat a call with the same `id` and `offset`; it returns the same content.\n   - Parts are split by character count, so a part can end or start partway through a line or token. Do not treat text cut at a part boundary as a syntax error; read the next part instead.\n\n# Considerations\n\n* Provide clean code snippets with direct line references where helpful.\n* Redact sensitive personal data, secrets, or API keys found in source files.'
 };
 
 // gen/front_end/models/ai_assistance/skills/storage.skill.js
@@ -14962,20 +15014,32 @@ var skill5 = {
 // gen/front_end/models/ai_assistance/skills/styling.skill.js
 var skill6 = {
   "name": "styling",
-  "description": "CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.",
+  "description": "Inspecting or modifying live CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.",
   "allowedTools": [
     "executeJavaScript",
     "getStyles",
     "setElementStyles"
   ],
-  "instructions": "You are an expert CSS, styling, and layout debugging assistant.\nThe user selected a DOM element in DevTools and asks a query about the element or page styles.\n\n# Tools & Workflow\n\n1. **Inspect CSS Properties (`getStyles`)**:\n   - Use `getStyles` to query computed and authored CSS properties for one or more element backend node IDs.\n   - You MUST provide a specific list of CSS property names (e.g. `['display', 'position', 'flex-direction', 'z-index']`). Do not use generic values like \"all\" or \"*\".\n   - Always consider the CSS cascade, inheritance, and stacking contexts.\n\n2. **Modify Element Styles (`setElementStyles`)**:\n   - ALWAYS use the `setElementStyles` tool (and NEVER `executeJavaScript`) when modifying or fixing CSS styles on elements.\n   - `setElementStyles` takes `elements` (an array of numeric element `uid`s / backend node IDs, such as the selected element's `uid` or `uid`s discovered earlier) and `styleProperties` (an array of `{name, value}` CSS declaration objects in kebab-case, e.g. `[{name: 'display', value: 'flex'}, {name: 'justify-content', value: 'center'}]`).\n   - `setElementStyles` is an internal tool name; do not mention `setElementStyles` directly to the user.\n\n3. **Inspect Geometry or Traverse DOM (`executeJavaScript`)**:\n   - Use `executeJavaScript` ONLY when inspecting computed geometry (`getBoundingClientRect()`), traversing related DOM nodes (`$0.parentElement`, `$0.children`) to inspect their structure/attributes, or reading page state that `getStyles` cannot provide.\n   - Geometry & layout inspection example:\n     ```javascript\n     const rect = $0.getBoundingClientRect();\n     const style = window.getComputedStyle($0);\n     const parentStyle = $0.parentElement ? window.getComputedStyle($0.parentElement) : null;\n     const data = {\n       rect: {width: rect.width, height: rect.height, top: rect.top, left: rect.left},\n       computedDisplay: style.display,\n       parentDisplay: parentStyle?.display ?? null,\n     };\n     ```\n\n# Considerations\n\n* Meticulously investigate all potential causes for the observed behavior before concluding. Inspect parents, siblings, children, and overlapping elements where relevant.\n* After applying a style fix, ask the user to verify if the visual change resolved their issue.\n* If the target element is in a cross-origin iframe, stop and ask the user to select it in the Elements panel and start a new chat with that context."
+  "instructions": "# Tools & Workflow\n\n1. **Inspect CSS Properties (`getStyles`)**:\n   - Use `getStyles` to query computed and authored CSS properties for one or more element backend node IDs.\n   - You MUST provide a specific list of CSS property names (e.g. `['display', 'position', 'flex-direction', 'z-index']`). Do not use generic values like \"all\" or \"*\".\n   - Always consider the CSS cascade, inheritance, and stacking contexts.\n\n2. **Modify Element Styles (`setElementStyles`)**:\n   - ALWAYS use the `setElementStyles` tool (and NEVER `executeJavaScript`) when modifying or fixing CSS styles on elements.\n   - `setElementStyles` takes `elements` (an array of numeric element `uid`s / backend node IDs, such as the selected element's `uid` or `uid`s discovered earlier) and `styleProperties` (an array of `{name, value}` CSS declaration objects in kebab-case, e.g. `[{name: 'display', value: 'flex'}, {name: 'justify-content', value: 'center'}]`).\n   - `setElementStyles` is an internal tool name; do not mention `setElementStyles` directly to the user.\n\n3. **Inspect Geometry or Traverse DOM (`executeJavaScript`)**:\n   - Use `executeJavaScript` ONLY when inspecting computed geometry (`getBoundingClientRect()`), traversing related DOM nodes (`$0.parentElement`, `$0.children`) to inspect their structure/attributes, or reading DOM/layout state that getStyles cannot provide.\n   - Never use executeJavaScript as a substitute for dedicated skills (such as browser storage/cookies, network requests, workspace source files, or accessibility tree inspection); call learnSkills to load the relevant skill instead.\n   - Geometry & layout inspection example:\n     ```javascript\n     const rect = $0.getBoundingClientRect();\n     const style = window.getComputedStyle($0);\n     const parentStyle = $0.parentElement ? window.getComputedStyle($0.parentElement) : null;\n     const data = {\n       rect: {width: rect.width, height: rect.height, top: rect.top, left: rect.left},\n       computedDisplay: style.display,\n       parentDisplay: parentStyle?.display ?? null,\n     };\n     ```\n\n# Considerations\n\n* Meticulously investigate all potential causes for the observed behavior before concluding. Inspect parents, siblings, children, and overlapping elements where relevant.\n* After applying a style fix, ask the user to verify if the visual change resolved their issue.\n* If the target element is in a cross-origin iframe, stop and ask the user to select it in the Elements panel and start a new chat with that context."
 };
 
 // ../../front_end/models/ai_assistance/skills/SkillRegistry.ts
 var SKILLS = {
   styling: skill6,
   network: skill2,
-  performance: skill3,
+  // Append compressed format descriptions here to keep a single source of truth
+  // alongside PerformanceTraceFormatter without inflating performanceSkill.description
+  // in the unloaded skills manifest.
+  performance: {
+    ...skill3,
+    instructions: `${skill3.instructions}
+
+# Data Formats
+
+${PerformanceTraceFormatter.networkDataFormatDescription.trim()}
+
+${PerformanceTraceFormatter.callFrameDataFormatDescription.trim()}`
+  },
   storage: skill5,
   sources: skill4,
   lighthouse: skill
@@ -14983,6 +15047,7 @@ var SKILLS = {
 
 // ../../front_end/models/ai_assistance/AiAgent2.ts
 var { debugLog: debugLog6 } = AiUtils8.Debug;
+var UNCHANGED_CONTEXT_PROMPT_NOTICE = "The selected context is unchanged since it was last provided earlier in this conversation.";
 var SKILL_DISPLAY_NAMES = {
   styling: "CSS and styling",
   network: "Network requests",
@@ -15064,6 +15129,15 @@ function hideStreamingSuggestions(text) {
   return match ? removeDirectiveFromLastLine(lines, match[1]) : text;
 }
 var AiAgent2 = class extends AiAgent {
+  /**
+   * Tracks the last context details sent to the LLM to prevent resending identical
+   * large context blocks on subsequent turns in the same conversation.
+   */
+  #lastSentPromptDetails = null;
+  clearCache() {
+    super.clearCache();
+    this.#lastSentPromptDetails = null;
+  }
   // TODO: The static preamble is a placeholder and will eventually live server-side.
   preamble = preamble8;
   clientFeature = Host36.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT;
@@ -15079,13 +15153,14 @@ var AiAgent2 = class extends AiAgent {
     return {};
   }
   async preRun() {
+    await super.preRun();
     if (this.context && !this.context.isLoggingEnabled()) {
       this.disableServerSideLogging();
     }
     const target = this.targetManager.primaryPageTarget();
     const originLock = this.#originLock();
     const isTargetAllowed = target && isOriginAllowedByLock(originLock, target.inspectedSecurityOrigin());
-    const domModel = isTargetAllowed ? target.model(SDK29.DOMModel.DOMModel) : null;
+    const domModel = isTargetAllowed ? target.model(SDK30.DOMModel.DOMModel) : null;
     if (domModel) {
       if (!domModel.existingDocument()) {
         try {
@@ -15105,6 +15180,10 @@ var AiAgent2 = class extends AiAgent {
   }
   #activeSkills = /* @__PURE__ */ new Set();
   #declaredTools = /* @__PURE__ */ new Set();
+  /**
+   * Tracks skills auto-loaded during enhanceQuery() so handleContextDetails() can attach them to ContextResponse for telemetry without rendering a walkthrough step.
+   */
+  #pendingAutoLearnedSkills = [];
   constructor(opts) {
     super({
       ...opts,
@@ -15125,11 +15204,14 @@ var AiAgent2 = class extends AiAgent {
     this.#execJs = opts.execJs ?? executeJsCode;
     this.#originLock = opts.originLock;
     this.#declaredTools.add("learnSkills");
+    const skillsManifest = Object.entries(SKILLS).map(([name, skill7]) => `- ${name}: ${skill7.description}`).join("\n");
     this.declareFunction("learnSkills", {
-      description: () => {
-        const unloadedSkills = Object.keys(this.getSkills()).filter((name) => !this.#activeSkills.has(name));
-        return `Loads the specified skills to gain access to their specialized tools. Call this ONLY for skills listed under Available skills that are not yet loaded. Do not call this for skills that are already loaded. Available skills that are not yet loaded: ${unloadedSkills.join(", ")}.`;
-      },
+      description: `Loads the specified skills to gain access to their specialized tools and instructions.
+If the user's request requires a skill that has not been loaded yet in this conversation, you MUST call \`learnSkills\` to load that skill first before using its tools, instead of attempting to solve the query using tools from other skills.
+Do NOT call \`learnSkills\` for skills that were already loaded earlier in this conversation.
+
+Available skills:
+${skillsManifest}`,
       parameters: {
         type: Host36.AidaClient.ParametersTypes.OBJECT,
         description: "Parameters for learning skills",
@@ -15140,7 +15222,7 @@ var AiAgent2 = class extends AiAgent {
               type: Host36.AidaClient.ParametersTypes.STRING,
               description: "Skill name"
             },
-            description: "List of unloaded skill names to load"
+            description: "List of skill names to load (only include skills not yet loaded in this conversation)"
           }
         },
         required: ["skills"]
@@ -15186,31 +15268,52 @@ var AiAgent2 = class extends AiAgent {
       handler: async () => ({ result: "Suggestions recorded." })
     });
   }
+  /**
+   * Maps selected contexts (DOMNodeContext, RequestContext, FileContext) to their domain skill to skip a redundant step-1 learnSkills round trip.
+   */
+  #skillForContext(selected) {
+    if (selected instanceof DOMNodeContext) {
+      return "styling";
+    }
+    if (selected instanceof RequestContext) {
+      return "network";
+    }
+    if (selected instanceof FileContext) {
+      return "sources";
+    }
+    return null;
+  }
   async enhanceQuery(query, selected = null, _multimodalInputType) {
+    this.#pendingAutoLearnedSkills = [];
+    const promptDetails = selected ? await selected.getPromptDetails() : null;
     let enhancedQuery = query;
-    if (selected) {
-      const promptDetails = await selected.getPromptDetails();
-      if (promptDetails) {
-        enhancedQuery = `${promptDetails}
+    if (!promptDetails) {
+      this.#lastSentPromptDetails = null;
+    } else {
+      let contextDetails;
+      if (promptDetails === this.#lastSentPromptDetails) {
+        contextDetails = UNCHANGED_CONTEXT_PROMPT_NOTICE;
+      } else {
+        contextDetails = promptDetails;
+        this.#lastSentPromptDetails = promptDetails;
+      }
+      enhancedQuery = `${contextDetails}
 
 # User request
 
 QUERY: ${query}`;
+    }
+    const mappedSkill = this.#skillForContext(selected);
+    if (mappedSkill && SKILLS[mappedSkill] && !this.#activeSkills.has(mappedSkill)) {
+      const autoLoadedBlock = await this.learnSkill([mappedSkill]);
+      this.#pendingAutoLearnedSkills.push(mappedSkill);
+      if (autoLoadedBlock) {
+        return `${autoLoadedBlock}
+
+${enhancedQuery}`;
       }
     }
-    const unloadedSkills = Object.entries(this.getSkills()).filter(([name]) => !this.#activeSkills.has(name));
-    if (unloadedSkills.length === 0) {
-      return enhancedQuery;
-    }
-    const skillsManifest = unloadedSkills.map(([name, skill7]) => `- ${name}: ${skill7.description}`).join("\n");
-    return `Available skills that are not yet loaded:
-${skillsManifest}
-
-You must call \`learnSkills\` to load a skill before you can use its tools.
-If the user's request requires a skill that is not currently loaded, you MUST call \`learnSkills\` to load that skill first, instead of attempting to solve the query using tools from other skills.
-Do NOT call \`learnSkills\` for skills that are already loaded.
-
-User query: ${enhancedQuery}`;
+    return enhancedQuery;
   }
   /**
    * Parses a completed response. Only the last line can be the follow-up
@@ -15227,26 +15330,26 @@ User query: ${enhancedQuery}`;
     return { answer: hideStreamingSuggestions(response.trim()) };
   }
   async *handleContextDetails(selected) {
-    if (selected) {
-      const [details, widgets] = await Promise.all([
-        selected.getUserFacingDetails(),
-        selected.getWidgets()
-      ]);
-      if (details) {
-        yield {
-          type: "context" /* CONTEXT */,
-          details,
-          ...widgets.length > 0 ? { widgets } : {}
-        };
-      }
+    const autoLearned = this.#pendingAutoLearnedSkills;
+    this.#pendingAutoLearnedSkills = [];
+    if (!selected) {
+      return;
     }
-  }
-  getSkills() {
-    return SKILLS;
+    const [details, widgets] = await Promise.all([
+      selected.getUserFacingDetails(),
+      selected.getWidgets()
+    ]);
+    if (details) {
+      yield {
+        type: "context" /* CONTEXT */,
+        details,
+        ...widgets.length > 0 ? { widgets } : {},
+        ...autoLearned.length > 0 ? { autoLearnedSkills: autoLearned } : {}
+      };
+    }
   }
   async learnSkill(names) {
     let response = "";
-    const skills = this.getSkills();
     for (const name of names) {
       if (this.#activeSkills.has(name)) {
         debugLog6(`[AiAgent2] Skill '${name}' is already loaded`);
@@ -15254,7 +15357,7 @@ User query: ${enhancedQuery}`;
 `;
         continue;
       }
-      const skillObj = skills[name];
+      const skillObj = SKILLS[name];
       if (skillObj) {
         this.#activeSkills.add(name);
         debugLog6(`[AiAgent2] Loaded skill '${name}' with tools: [${skillObj.allowedTools.join(", ")}]`);
@@ -15269,7 +15372,7 @@ ${skillObj.instructions}
         }
       } else {
         debugLog6(`[AiAgent2] Failed to load skill '${name}'`);
-        response += `Failed to load skill ${name}. Valid skills are: ${Object.keys(skills).join(", ")}.
+        response += `Failed to load skill ${name}. Valid skills are: ${Object.keys(SKILLS).join(", ")}.
 `;
       }
     }
@@ -15340,7 +15443,7 @@ ${skillObj.instructions}
    */
   #getDocumentBodyNode() {
     const target = this.#getTarget();
-    const document = target?.model(SDK29.DOMModel.DOMModel)?.existingDocument();
+    const document = target?.model(SDK30.DOMModel.DOMModel)?.existingDocument();
     if (!document) {
       return null;
     }
@@ -15365,16 +15468,16 @@ __export(AiConversation_exports, {
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
 import * as Host37 from "../../core/host/host.js";
-import * as Platform9 from "../../core/platform/platform.js";
+import * as Platform10 from "../../core/platform/platform.js";
 import * as Root14 from "../../core/root/root.js";
-import * as SDK30 from "../../core/sdk/sdk.js";
+import * as SDK31 from "../../core/sdk/sdk.js";
 import * as AiUtils9 from "../ai-utils/ai-utils.js";
 var NOT_FOUND_IMAGE_DATA = "";
 var CONTEXT_TITLE = "Analyzing data";
 var MAX_TITLE_LENGTH = 80;
 var ALLOWED_PAGE_NAVIGATIONS = [
-  Platform9.DevToolsPath.urlString`about:blank`,
-  Platform9.DevToolsPath.urlString`chrome://terms`
+  Platform10.DevToolsPath.urlString`about:blank`,
+  Platform10.DevToolsPath.urlString`chrome://terms`
 ];
 function generateContextDetailsMarkdown(details) {
   const detailsMarkdown = [];
@@ -15440,7 +15543,7 @@ var AiConversation = class _AiConversation {
       lighthouseRecording,
       aiHistoryStorage = AiUtils9.AiHistoryStorage.AiHistoryStorage.instance(),
       // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-      targetManager = SDK30.TargetManager.TargetManager.instance(),
+      targetManager = SDK31.TargetManager.TargetManager.instance(),
       alwaysAllowedTools
     } = options;
     this.#changeManager = changeManager;
@@ -15627,7 +15730,7 @@ ${item.text.trim()}`);
             return { ...item, confirm: void 0 };
           }
           case "context" /* CONTEXT */: {
-            return { ...item, widgets: void 0 };
+            return { ...item, widgets: void 0, autoLearnedSkills: void 0 };
           }
           case "action" /* ACTION */: {
             const tool = item.toolName ? ToolRegistry.get(item.toolName) : void 0;
@@ -15704,7 +15807,7 @@ ${item.text.trim()}`);
       case AiUtils9.AiHistoryStorage.ConversationType.NONE:
         return new ContextSelectionAgent(options);
       default:
-        Platform9.assertNever(type, "Unknown conversation type");
+        Platform10.assertNever(type, "Unknown conversation type");
     }
   }
   async *run(initialQuery, options = {}) {
@@ -15725,8 +15828,8 @@ ${item.text.trim()}`);
     };
     const targetManager = this.#targetManager;
     targetManager.addModelListener(
-      SDK30.ResourceTreeModel.ResourceTreeModel,
-      SDK30.ResourceTreeModel.Events.PrimaryPageChanged,
+      SDK31.ResourceTreeModel.ResourceTreeModel,
+      SDK31.ResourceTreeModel.Events.PrimaryPageChanged,
       listener,
       this
     );
@@ -15737,8 +15840,8 @@ ${item.text.trim()}`);
       yield* this.#runAgent(initialQuery, options, { isInitialCall: true });
     } finally {
       targetManager.removeModelListener(
-        SDK30.ResourceTreeModel.ResourceTreeModel,
-        SDK30.ResourceTreeModel.Events.PrimaryPageChanged,
+        SDK31.ResourceTreeModel.ResourceTreeModel,
+        SDK31.ResourceTreeModel.Events.PrimaryPageChanged,
         listener,
         this
       );
@@ -15853,12 +15956,12 @@ function isAiAssistanceServerSideLoggingAllowed() {
 }
 function getPrimaryPageSecurityOrigin(targetManager) {
   const target = targetManager.primaryPageTarget();
-  const frameOrigin = target?.model(SDK30.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.securityOrigin();
+  const frameOrigin = target?.model(SDK31.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.securityOrigin();
   if (frameOrigin) {
     return frameOrigin;
   }
   const inspectedURL = target?.inspectedURL();
-  return inspectedURL ? SDK30.SecurityOrigin.SecurityOrigin.create(inspectedURL) : void 0;
+  return inspectedURL ? SDK31.SecurityOrigin.SecurityOrigin.create(inspectedURL) : void 0;
 }
 
 // ../../front_end/models/ai_assistance/AlwaysAllowedTools.ts
@@ -15868,18 +15971,18 @@ __export(AlwaysAllowedTools_exports, {
   Events: () => Events,
   alwaysAllowedToolsSettingDescriptor: () => alwaysAllowedToolsSettingDescriptor
 });
-import * as Common7 from "../../core/common/common.js";
+import * as Common8 from "../../core/common/common.js";
 import * as AiUtils11 from "../ai-utils/ai-utils.js";
 var alwaysAllowedToolsSettingDescriptor = {
   name: "ai-assistance-always-allowed-tools",
-  type: Common7.Settings.SettingType.ARRAY,
+  type: Common8.Settings.SettingType.ARRAY,
   defaultValue: []
 };
 var Events = /* @__PURE__ */ ((Events2) => {
   Events2["TOOLS_CHANGED"] = "ToolsChanged";
   return Events2;
 })(Events || {});
-var AlwaysAllowedTools = class extends Common7.ObjectWrapper.ObjectWrapper {
+var AlwaysAllowedTools = class extends Common8.ObjectWrapper.ObjectWrapper {
   #impl;
   constructor(settings) {
     super();

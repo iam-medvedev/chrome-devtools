@@ -85,7 +85,7 @@ export default `/*
 
   .divider {
     border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-    margin: 10px calc(var(--sys-size-9) * -1) 0;
+    margin: var(--sys-size-6) calc(var(--sys-size-9) * -1) 0;
   }
 
   .authenticator-fields {
@@ -114,15 +114,9 @@ export default `/*
     font: var(--sys-typescale-headline5);
   }
 
-  .authenticator-section-title.editing-name .authenticator-name-field {
-    border-bottom: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-    font-weight: normal;
-    animation: none;
-  }
-
   .authenticator-field-value {
     font: var(--sys-typescale-monospace-regular);
-    line-height: 18px;
+    line-height: var(--sys-typescale-body5-line-height);
   }
 
   .authenticator-field {

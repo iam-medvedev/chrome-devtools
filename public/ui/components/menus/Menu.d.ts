@@ -40,8 +40,10 @@ export interface MenuData {
 }
 export declare class Menu extends HTMLElement {
     #private;
+    static readonly observedAttributes: string[];
     get origin(): Dialogs.Dialog.DialogOrigin;
     set origin(origin: Dialogs.Dialog.DialogOrigin);
+    attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null): void;
     get open(): boolean;
     set open(open: boolean);
     get position(): Dialogs.Dialog.DialogVerticalPosition;

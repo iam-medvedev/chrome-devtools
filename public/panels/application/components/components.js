@@ -816,7 +816,7 @@ import * as Common2 from "../../../core/common/common.js";
 import * as i18n5 from "../../../core/i18n/i18n.js";
 import * as SDK2 from "../../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -4357,7 +4357,7 @@ devtools-report-value {
 }
 
 .status {
-  margin-right: 11px;
+  margin-right: var(--sys-size-5);
   flex-shrink: 0;
 }
 
@@ -4366,13 +4366,6 @@ devtools-report-value {
   min-width: auto;
   overflow-wrap: break-word;
   align-self: start;
-}
-
-.report-value {
-  padding: 0 var(--sys-size-4);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .link,
@@ -5450,17 +5443,13 @@ var permissionsPolicySection_css_default = `/*
     font-size: inherit;
   }
 
-  .policies-list {
-    padding-top: 3px;
-  }
-
   .permissions-row {
     display: flex;
     line-height: 22px;
   }
 
   .permissions-row div {
-    padding-right: 5px;
+    padding-right: var(--sys-size-4);
   }
 
   .feature-name {
@@ -5472,7 +5461,7 @@ var permissionsPolicySection_css_default = `/*
   }
 
   .block-reason {
-    width: 215px;
+    width: var(--sys-size-26);
   }
 
   .disabled-features-button {
@@ -5724,55 +5713,62 @@ var protocolHandlersView_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
-  display: flex;
-  flex-direction: column;
-}
-
-.devtools-link {
-  color: var(--sys-color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-  outline-offset: var(--sys-size-2);
-}
-
-.devtools-link:focus-visible {
-  outline-width: unset;
-}
-
-input.devtools-text-input[type="text"] {
-  padding: 3px var(--sys-size-4);
-  margin-left: var(--sys-size-3);
-  margin-right: var(--sys-size-3);
-  width: 250px;
-  height: 25px;
-}
-
-input.devtools-text-input[type="text"]::placeholder {
-  color: var(--sys-color-token-subtle);
-}
-
-.protocol-handlers-row {
-  margin: var(--sys-size-3) 0;
-}
-
-.inline-icon {
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-
-  &[name="check-circle"] {
-    color: var(--icon-checkmark-green);
+@scope to (devtools-widget > *) {
+  :scope {
+    display: flex;
+    flex-direction: column;
   }
-}
 
-@media (forced-colors: active) {
-  .devtools-link:not(.devtools-link-prevent-click) {
-    color: linktext;
+  .devtools-link {
+    color: var(--sys-color-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    outline-offset: var(--sys-size-2);
   }
 
   .devtools-link:focus-visible {
-    background: Highlight;
-    color: HighlightText;
+    outline-width: unset;
+  }
+
+  input.devtools-text-input[type="text"] {
+    padding: var(--sys-size-2) var(--sys-size-4);
+    margin-left: var(--sys-size-3);
+    margin-right: var(--sys-size-3);
+    width: var(--sys-size-29);
+    height: var(--sys-size-11);
+  }
+
+  input.devtools-text-input[type="text"]::placeholder {
+    color: var(--sys-color-token-subtle);
+  }
+
+  .protocol-handlers-row {
+    margin: var(--sys-size-3) 0;
+
+    &:has(.protocol-select) {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .inline-icon {
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+
+    &[name="check-circle"] {
+      color: var(--icon-checkmark-green);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .devtools-link:not(.devtools-link-prevent-click) {
+      color: linktext;
+    }
+
+    .devtools-link:focus-visible {
+      background: Highlight;
+      color: HighlightText;
+    }
   }
 }
 
@@ -6022,7 +6018,6 @@ var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilit
 var DEFAULT_VIEW8 = (input, output, target) => {
   render8(html8`
     <style>${reportsGrid_css_default}</style>
-    <style>${UI8.inspectorCommonStyles}</style>
     <div class="reporting-container" jslog=${VisualLogging7.section("reports")}>
       <div class="reporting-header">${i18n17.i18n.lockedString("Reports")}</div>
       ${input.reports.length > 0 ? html8`
@@ -6580,10 +6575,6 @@ devtools-data-grid {
 devtools-icon {
   width: var(--sys-size-7);
   height: var(--sys-size-7);
-}
-
-.no-tt-message {
-  margin-top: var(--sys-size-9);
 }
 
 /*# sourceURL=${import.meta.resolve("./trustTokensView.css")} */`;

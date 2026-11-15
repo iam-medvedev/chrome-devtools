@@ -5,6 +5,11 @@ export interface TimelineSectionData {
     isStartOfGroup: boolean;
     isEndOfGroup: boolean;
     isSelected: boolean;
+    /**
+     * Whether the section right before this one is in the error state. The part
+     * of the timeline that connects the two sections is then drawn as an error.
+     */
+    isAfterError: boolean;
 }
 export type ViewInput = TimelineSectionData;
 export type ViewOutput = unknown;
@@ -17,5 +22,6 @@ export declare class TimelineSection extends UI.Widget.Widget {
     set isFirstSection(value: boolean);
     set isLastSection(value: boolean);
     set isSelected(value: boolean);
+    set isAfterError(value: boolean);
     performUpdate(): void;
 }

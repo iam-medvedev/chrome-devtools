@@ -16,10 +16,10 @@ export default `/*
 
 .network-config-group {
   display: flex;
-  padding-bottom: 10px;
+  padding-bottom: var(--sys-size-5);
   flex-wrap: wrap;
   flex: 0 0 auto;
-  min-height: 30px;
+  min-height: var(--sys-size-12);
 }
 
 .network-config-title {
@@ -28,7 +28,7 @@ export default `/*
 }
 
 .network-config-fields {
-  flex: 2 0 200px;
+  flex: 2 0 var(--sys-size-25);
 }
 
 .network-config-fields > span:first-of-type {
@@ -113,11 +113,10 @@ export default `/*
 .user-agent-client-hints-form {
   display: block;
   margin-top: var(--sys-size-7);
-  width: min(100%, 400px);
+  width: min(100%, var(--sys-size-32));
 }
 
 .status-text {
-  padding: 10px;
   color: var(--sys-color-tertiary);
 }
 

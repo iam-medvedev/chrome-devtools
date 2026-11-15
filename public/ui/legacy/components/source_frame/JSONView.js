@@ -85,6 +85,7 @@ export class JSONView extends UI.Widget.VBox {
         }
         this.#parsedJSON = parsedJSON;
         this.objectTree = null;
+        this.#autoExpandCanceled = false;
         this.onSearchCanceled();
         this.requestUpdate();
     }
@@ -158,9 +159,70 @@ export class JSONView extends UI.Widget.VBox {
         });
         if (!this.startCollapsed) {
             this.objectTree.expanded = true;
+            void this.#autoExpandInitial(this.objectTree);
         }
         this.objectTree.addEventListener("children-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.#onChildrenChanged, this);
         this.objectTree.addEventListener("expanded-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.#onChildrenChanged, this);
+    }
+    static #AUTO_EXPAND_ROW_BUDGET = 30;
+    static #AUTO_EXPAND_MAX_DEPTH = 4;
+    #autoExpandCanceled = false;
+    async #autoExpandInitial(tree) {
+        await tree.populateChildrenIfNeeded();
+        if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+            return;
+        }
+        const rootChildren = Array.from(tree.treeNodeChildren());
+        let visibleRows = Math.max(rootChildren.length, tree.arrayLength);
+        let frontier = rootChildren.filter(n => n.hasChildren && n.canExpandRecursively);
+        for (let depth = 1; depth < JSONView.#AUTO_EXPAND_MAX_DEPTH && frontier.length > 0; depth++) {
+            // Rule 1: always unwrap a single-child wrapper chain (e.g. {data: {user: ...}}).
+            if (frontier.length === 1 && visibleRows <= JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+                const only = frontier[0];
+                await only.populateChildrenIfNeeded();
+                if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+                    return;
+                }
+                const onlyChildren = Array.from(only.treeNodeChildren());
+                const added = Math.max(onlyChildren.length, only.arrayLength);
+                if (added > 1 && visibleRows + added > JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+                    break;
+                }
+                only.expanded = true;
+                visibleRows += added;
+                frontier = onlyChildren.filter(n => n.hasChildren && n.canExpandRecursively);
+                continue;
+            }
+            // Rule 2: level-atomic expansion — expand every node at this depth or none.
+            let addedRows = 0;
+            for (const node of frontier) {
+                await node.populateChildrenIfNeeded();
+                if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+                    return;
+                }
+                const nodeChildren = Array.from(node.treeNodeChildren());
+                addedRows += Math.max(nodeChildren.length, node.arrayLength);
+                if (visibleRows + addedRows > JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+                    break;
+                }
+            }
+            if (visibleRows + addedRows > JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+                break;
+            }
+            const nextFrontier = [];
+            for (const node of frontier) {
+                node.expanded = true;
+                for (const child of node.treeNodeChildren()) {
+                    if (child.hasChildren && child.canExpandRecursively) {
+                        nextFrontier.push(child);
+                    }
+                }
+            }
+            visibleRows += addedRows;
+            frontier = nextFrontier;
+        }
+        tree.dispatchEventToListeners("children-changed" /* ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED */);
+        this.requestUpdate();
     }
     #onChildrenChanged() {
         this.requestUpdate();
@@ -172,6 +234,24 @@ export class JSONView extends UI.Widget.VBox {
         }
         this.view({ objectTree: this.objectTree, parsedJSON: this.#parsedJSON }, undefined, this.contentElement);
     }
+    static #MAX_SEARCH_NODES = 10000;
+    async #populateForSearch(root) {
+        const queue = [root];
+        let visited = 0;
+        while (queue.length > 0 && visited < JSONView.#MAX_SEARCH_NODES) {
+            const node = queue.shift();
+            if (!node || !node.canExpandRecursively) {
+                continue;
+            }
+            visited++;
+            await node.populateChildrenIfNeeded();
+            for (const child of node.treeNodeChildren()) {
+                if (child.hasChildren) {
+                    queue.push(child);
+                }
+            }
+        }
+    }
     jumpToMatch() {
         if (this.searchableView) {
             this.search.updateSearchableView(this.searchableView);
@@ -180,9 +260,13 @@ export class JSONView extends UI.Widget.VBox {
         if (currentMatch) {
             let current = currentMatch.node.parent;
             while (current) {
+                if (current instanceof ObjectUI.ObjectPropertiesSection.ObjectTreeNode) {
+                    current.showAllChildren = true;
+                }
                 current.expanded = true;
                 current = current.parent;
             }
+            this.requestUpdate();
         }
     }
     onSearchCanceled() {
@@ -193,12 +277,13 @@ export class JSONView extends UI.Widget.VBox {
     }
     async performSearch(searchConfig, shouldJump, jumpBackwards) {
         this.initialize();
+        this.#autoExpandCanceled = true;
         this.onSearchCanceled();
         const searchRegex = searchConfig.toSearchRegex(true).regex;
         if (!this.objectTree) {
             return;
         }
-        await this.objectTree.populateChildrenIfNeeded();
+        await this.#populateForSearch(this.objectTree);
         this.search.search(this.objectTree, jumpBackwards ?? false, (node, closeTag) => {
             if (closeTag || !searchRegex) {
                 return [];

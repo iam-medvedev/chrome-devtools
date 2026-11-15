@@ -2,13 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
+import * as Workspace from '../../models/workspace/workspace.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
+import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('DebuggerPausedMessage', () => {
     let universe;
     let debuggerWorkspaceBinding;
@@ -24,8 +34,7 @@ describeWithEnvironment('DebuggerPausedMessage', () => {
             debuggerWorkspaceBinding,
             settings: universe.settings,
         });
-        pausedMessage =
-            new Sources.DebuggerPausedMessage.DebuggerPausedMessage(undefined, [universe.eventBreakpointsManager]);
+        pausedMessage = new Sources.DebuggerPausedMessage.DebuggerPausedMessage(undefined, [universe.eventBreakpointsManager, debuggerWorkspaceBinding, breakpointManager, universe.settings]);
     });
     function getPausedMessageFromDOM() {
         const mainElement = pausedMessage.element.shadowRoot?.querySelector('.status-main') ?? null;
@@ -122,6 +131,182 @@ describeWithEnvironment('DebuggerPausedMessage', () => {
                 assert.strictEqual(sub, expectedSub);
             });
         }
+    });
+});
+describe('DebuggerPausedMessage recurring pause actions', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    let universe;
+    beforeEach(() => {
+        universe = new TestUniverse();
+    });
+    afterEach(() => {
+        universe.dispose();
+    });
+    function createPausedDetails(debuggerModel) {
+        return new SDK.DebuggerModel.DebuggerPausedDetails(debuggerModel, [{
+                callFrameId: 'frame-1',
+                functionName: 'tick',
+                location: { scriptId: '1', lineNumber: 4, columnNumber: 2 },
+                url: 'https://example.com/app.js',
+                scopeChain: [],
+                this: { type: "object" /* Protocol.Runtime.RemoteObjectType.Object */ },
+            }], "other" /* Protocol.Debugger.PausedEventReason.Other */, undefined, []);
+    }
+    it('forwards recurring pause actions from RecurringPauseDetector to ViewInput', async () => {
+        const target = sinon.createStubInstance(SDK.Target.Target);
+        target.id.returns('main');
+        const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+        debuggerModel.target.returns(target);
+        debuggerModel.runtimeModel.returns(sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel));
+        debuggerModel.scriptForId.returns(sinon.createStubInstance(SDK.Script.Script));
+        const { uiSourceCode } = createContentProviderUISourceCode({
+            url: urlString `https://example.com/app.js`,
+            mimeType: 'text/javascript',
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        sinon.stub(universe.debuggerWorkspaceBinding, 'rawLocationToUILocation')
+            .callsFake(async (loc) => uiSourceCode.uiLocation(loc.lineNumber, loc.columnNumber));
+        const view = createViewFunctionStub(Sources.DebuggerPausedMessage.DebuggerPausedMessage);
+        const pausedMessage = new Sources.DebuggerPausedMessage.DebuggerPausedMessage(undefined, [
+            universe.eventBreakpointsManager,
+            universe.debuggerWorkspaceBinding,
+            universe.breakpointManager,
+            universe.settings,
+        ], view);
+        await pausedMessage.render(createPausedDetails(debuggerModel), universe.debuggerWorkspaceBinding, universe.breakpointManager);
+        await pausedMessage.updateComplete;
+        assert.isUndefined(view.input?.onNeverPauseHere);
+        assert.isUndefined(view.input?.onDeactivateBreakpointsAndResume);
+        await pausedMessage.render(null, universe.debuggerWorkspaceBinding, universe.breakpointManager);
+        await pausedMessage.render(createPausedDetails(debuggerModel), universe.debuggerWorkspaceBinding, universe.breakpointManager);
+        await pausedMessage.updateComplete;
+        assert.isFunction(view.input?.onNeverPauseHere);
+        assert.isFunction(view.input?.onDeactivateBreakpointsAndResume);
+    });
+    it('ignores stale async renders superseded by a newer render call', async () => {
+        const debuggerModel = sinon.createStubInstance(SDK.DebuggerModel.DebuggerModel);
+        debuggerModel.runtimeModel.returns(sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel));
+        debuggerModel.scriptForId.returns(sinon.createStubInstance(SDK.Script.Script));
+        const { promise, resolve } = Promise.withResolvers();
+        sinon.stub(universe.debuggerWorkspaceBinding, 'rawLocationToUILocation').returns(promise);
+        const view = createViewFunctionStub(Sources.DebuggerPausedMessage.DebuggerPausedMessage);
+        const pausedMessage = new Sources.DebuggerPausedMessage.DebuggerPausedMessage(undefined, [
+            universe.eventBreakpointsManager,
+            universe.debuggerWorkspaceBinding,
+            universe.breakpointManager,
+            universe.settings,
+        ], view);
+        const pendingRender = pausedMessage.render(createPausedDetails(debuggerModel), universe.debuggerWorkspaceBinding, universe.breakpointManager);
+        await pausedMessage.render(null, universe.debuggerWorkspaceBinding, universe.breakpointManager);
+        resolve(null);
+        await pendingRender;
+        await pausedMessage.updateComplete;
+        assert.isNull(view.input);
+    });
+});
+describe('DebuggerPausedMessage.DEFAULT_VIEW', () => {
+    setupLocaleHooks();
+    function renderPausedMessageView(input) {
+        const host = document.createElement('div');
+        renderElementIntoDOM(host, { includeCommonStyles: true });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(host);
+        Sources.DebuggerPausedMessage.DEFAULT_VIEW(input, undefined, shadowRoot);
+        return shadowRoot;
+    }
+    it('renders no status-actions container when escape callbacks are absent', () => {
+        const shadowRoot = renderPausedMessageView({ mainText: 'Debugger paused', errorLike: false });
+        assert.strictEqual(shadowRoot.querySelector('.status-main')?.textContent?.trim(), 'Debugger paused');
+        assert.isNull(shadowRoot.querySelector('.status-actions'));
+    });
+    it('renders disable-breakpoint and deactivate-all buttons with visual logging contexts', () => {
+        const shadowRoot = renderPausedMessageView({
+            mainText: 'Paused on breakpoint',
+            errorLike: false,
+            onDisableBreakpoint: () => { },
+            onDeactivateBreakpointsAndResume: () => { },
+        });
+        assert.strictEqual(shadowRoot.querySelector('.status-main')?.textContent?.trim(), 'Paused on breakpoint');
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 2);
+        assert.strictEqual(buttons[0].textContent?.trim(), 'Disable breakpoint');
+        assert.strictEqual(buttons[0].jslogContext, 'disable-breakpoint');
+        assert.strictEqual(buttons[1].textContent?.trim(), 'Deactivate all');
+        assert.strictEqual(buttons[1].jslogContext, 'debugger.toggle-breakpoints-active');
+    });
+    it('renders never-pause-here as the primary button when onNeverPauseHere is provided', () => {
+        const shadowRoot = renderPausedMessageView({
+            mainText: 'Paused on exception',
+            subText: 'Error: loop failure',
+            errorLike: true,
+            onNeverPauseHere: () => { },
+            onDeactivateBreakpointsAndResume: () => { },
+        });
+        assert.strictEqual(shadowRoot.querySelector('.status-main')?.textContent?.trim(), 'Paused on exception');
+        assert.strictEqual(shadowRoot.querySelector('.status-sub')?.textContent?.trim(), 'Error: loop failure');
+        const buttons = shadowRoot.querySelectorAll('devtools-button');
+        assert.lengthOf(buttons, 2);
+        assert.strictEqual(buttons[0].textContent?.trim(), 'Never pause here');
+        assert.strictEqual(buttons[0].jslogContext, 'never-pause-here');
+        assert.strictEqual(buttons[1].textContent?.trim(), 'Deactivate all');
+    });
+    it('invokes onDisableBreakpoint when clicking "Disable breakpoint"', () => {
+        const onDisableBreakpoint = sinon.spy();
+        const shadowRoot = renderPausedMessageView({
+            mainText: 'Paused on breakpoint',
+            errorLike: false,
+            onDisableBreakpoint,
+        });
+        shadowRoot.querySelector('devtools-button')?.click();
+        sinon.assert.calledOnce(onDisableBreakpoint);
+    });
+    it('invokes onNeverPauseHere when clicking "Never pause here"', () => {
+        const onNeverPauseHere = sinon.spy();
+        const shadowRoot = renderPausedMessageView({
+            mainText: 'Debugger paused',
+            errorLike: false,
+            onNeverPauseHere,
+        });
+        shadowRoot.querySelector('devtools-button')?.click();
+        sinon.assert.calledOnce(onNeverPauseHere);
+    });
+    it('invokes onDeactivateBreakpointsAndResume when clicking "Deactivate all"', () => {
+        const onDeactivateBreakpointsAndResume = sinon.spy();
+        const shadowRoot = renderPausedMessageView({
+            mainText: 'Paused on breakpoint',
+            errorLike: false,
+            onDeactivateBreakpointsAndResume,
+        });
+        shadowRoot.querySelector('devtools-button')?.click();
+        sinon.assert.calledOnce(onDeactivateBreakpointsAndResume);
+    });
+    it('renders single pause banner screenshot', async () => {
+        renderPausedMessageView({
+            mainText: 'Paused on breakpoint',
+            errorLike: false,
+        });
+        await assertScreenshot('sources/debugger-paused-message.png');
+    });
+    it('renders recurring pause banner with escape actions screenshot', async () => {
+        renderPausedMessageView({
+            mainText: 'Paused on breakpoint',
+            errorLike: false,
+            onDisableBreakpoint: () => { },
+            onDeactivateBreakpointsAndResume: () => { },
+        });
+        await assertScreenshot('sources/debugger-paused-message-recurring.png');
+    });
+    it('renders recurring error pause banner with escape actions screenshot', async () => {
+        renderPausedMessageView({
+            mainText: 'Paused on exception',
+            subText: 'Error: loop failure',
+            errorLike: true,
+            onNeverPauseHere: () => { },
+            onDeactivateBreakpointsAndResume: () => { },
+        });
+        await assertScreenshot('sources/debugger-paused-message-recurring-error.png');
     });
 });
 //# sourceMappingURL=DebuggerPausedMessage.test.js.map

@@ -1,4 +1,4 @@
-// Copyright 2026 The Chromium Authors
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export const generatedProperties = [
@@ -313,6 +313,11 @@ export const generatedProperties = [
     },
     {
         "inherited": true,
+        "keywords": [
+            "horizontal-tb",
+            "vertical-rl",
+            "vertical-lr"
+        ],
         "name": "-webkit-writing-mode"
     },
     {
@@ -421,6 +426,7 @@ export const generatedProperties = [
             "animation-fill-mode",
             "animation-iteration-count",
             "animation-name",
+            "animation-navigation-behavior",
             "animation-play-state",
             "animation-range-end",
             "animation-range-start",
@@ -978,6 +984,15 @@ export const generatedProperties = [
     },
     {
         "keywords": [
+            "abrupt",
+            "continuous"
+        ],
+        "name": "animation-navigation-behavior",
+        "runtime_flag": "CSSAnimationNavigationBehavior",
+        "runtime_flag_status": "experimental"
+    },
+    {
+        "keywords": [
             "running",
             "paused"
         ],
@@ -1032,6 +1047,11 @@ export const generatedProperties = [
             "none",
             "move",
             "no-drag"
+        ],
+        "keywords": [
+            "drag",
+            "no-drag",
+            "none"
         ],
         "name": "app-region"
     },
@@ -2326,7 +2346,7 @@ export const generatedProperties = [
         ],
         "name": "corner",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2337,7 +2357,7 @@ export const generatedProperties = [
         ],
         "name": "corner-block-end",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2355,7 +2375,7 @@ export const generatedProperties = [
         ],
         "name": "corner-block-start",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2373,7 +2393,7 @@ export const generatedProperties = [
         ],
         "name": "corner-bottom",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2382,7 +2402,7 @@ export const generatedProperties = [
         ],
         "name": "corner-bottom-left",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "keywords": [
@@ -2402,7 +2422,7 @@ export const generatedProperties = [
         ],
         "name": "corner-bottom-right",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "keywords": [
@@ -2429,7 +2449,7 @@ export const generatedProperties = [
         ],
         "name": "corner-end-end",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "name": "corner-end-end-shape"
@@ -2441,7 +2461,7 @@ export const generatedProperties = [
         ],
         "name": "corner-end-start",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "name": "corner-end-start-shape"
@@ -2455,7 +2475,7 @@ export const generatedProperties = [
         ],
         "name": "corner-inline-end",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2473,7 +2493,7 @@ export const generatedProperties = [
         ],
         "name": "corner-inline-start",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2491,7 +2511,7 @@ export const generatedProperties = [
         ],
         "name": "corner-left",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2509,7 +2529,7 @@ export const generatedProperties = [
         ],
         "name": "corner-right",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2534,7 +2554,7 @@ export const generatedProperties = [
         ],
         "name": "corner-start-end",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "name": "corner-start-end-shape"
@@ -2546,7 +2566,7 @@ export const generatedProperties = [
         ],
         "name": "corner-start-start",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "name": "corner-start-start-shape"
@@ -2560,7 +2580,7 @@ export const generatedProperties = [
         ],
         "name": "corner-top",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "longhands": [
@@ -2569,7 +2589,7 @@ export const generatedProperties = [
         ],
         "name": "corner-top-left",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "keywords": [
@@ -2589,7 +2609,7 @@ export const generatedProperties = [
         ],
         "name": "corner-top-right",
         "runtime_flag": "CSSCornersShorthand",
-        "runtime_flag_status": "experimental"
+        "runtime_flag_status": "stable"
     },
     {
         "keywords": [
@@ -2751,9 +2771,7 @@ export const generatedProperties = [
             "flow",
             "math",
             "ruby",
-            "ruby-text",
-            "grid-lanes",
-            "inline-grid-lanes"
+            "ruby-text"
         ],
         "name": "display"
     },
@@ -3029,9 +3047,7 @@ export const generatedProperties = [
             "ic-height",
             "from-font"
         ],
-        "name": "font-size-adjust",
-        "runtime_flag": "CSSFontSizeAdjust",
-        "runtime_flag_status": "stable"
+        "name": "font-size-adjust"
     },
     {
         "inherited": true,
@@ -4412,6 +4428,11 @@ export const generatedProperties = [
     },
     {
         "is_descriptor": true,
+        "keywords": [
+            "upright",
+            "rotate-left",
+            "rotate-right"
+        ],
         "name": "page-orientation"
     },
     {
@@ -4662,9 +4683,6 @@ export const generatedProperties = [
             "grid-rows",
             "grid-columns",
             "grid-order",
-            "grid-lanes-flow",
-            "grid-lanes-track",
-            "grid-lanes-order",
             "source-order"
         ],
         "name": "reading-flow"
@@ -4846,9 +4864,7 @@ export const generatedProperties = [
             "none",
             "spaces"
         ],
-        "name": "ruby-overhang",
-        "runtime_flag": "CSSRubyOverhang",
-        "runtime_flag_status": "stable"
+        "name": "ruby-overhang"
     },
     {
         "inherited": true,
@@ -5144,8 +5160,7 @@ export const generatedProperties = [
     {
         "keywords": [
             "normal",
-            "always",
-            "before"
+            "always"
         ],
         "name": "scroll-snap-stop"
     },
@@ -5392,8 +5407,7 @@ export const generatedProperties = [
             "-webkit-right",
             "-webkit-center",
             "start",
-            "end",
-            "match-parent"
+            "end"
         ],
         "name": "text-align"
     },
@@ -5415,8 +5429,7 @@ export const generatedProperties = [
             "left",
             "right",
             "center",
-            "justify",
-            "match-parent"
+            "justify"
         ],
         "name": "text-align-last"
     },
@@ -5511,8 +5524,7 @@ export const generatedProperties = [
         "inherited": true,
         "keywords": [
             "none",
-            "auto",
-            "all"
+            "auto"
         ],
         "name": "text-decoration-skip-ink"
     },
@@ -5946,8 +5958,7 @@ export const generatedProperties = [
             "auto",
             "none",
             "text",
-            "all",
-            "contain"
+            "all"
         ],
         "name": "user-select"
     },
@@ -6296,6 +6307,13 @@ export const generatedPropertyValues = {
             "read-write-plaintext-only"
         ]
     },
+    "-webkit-writing-mode": {
+        "values": [
+            "horizontal-tb",
+            "vertical-rl",
+            "vertical-lr"
+        ]
+    },
     "accent-color": {
         "values": [
             "auto",
@@ -6383,6 +6401,12 @@ export const generatedPropertyValues = {
     "animation-name": {
         "values": [
             "none"
+        ]
+    },
+    "animation-navigation-behavior": {
+        "values": [
+            "abrupt",
+            "continuous"
         ]
     },
     "animation-play-state": {
@@ -8284,6 +8308,13 @@ export const generatedPropertyValues = {
             "add"
         ]
     },
+    "page-orientation": {
+        "values": [
+            "upright",
+            "rotate-left",
+            "rotate-right"
+        ]
+    },
     "paint-order": {
         "values": [
             "normal",
@@ -8435,9 +8466,6 @@ export const generatedPropertyValues = {
             "grid-rows",
             "grid-columns",
             "grid-order",
-            "grid-lanes-flow",
-            "grid-lanes-track",
-            "grid-lanes-order",
             "source-order"
         ]
     },
@@ -8645,8 +8673,7 @@ export const generatedPropertyValues = {
     "scroll-snap-stop": {
         "values": [
             "normal",
-            "always",
-            "before"
+            "always"
         ]
     },
     "scroll-snap-type": {
@@ -8841,8 +8868,7 @@ export const generatedPropertyValues = {
     "text-decoration-skip-ink": {
         "values": [
             "none",
-            "auto",
-            "all"
+            "auto"
         ]
     },
     "text-decoration-skip-spaces": {

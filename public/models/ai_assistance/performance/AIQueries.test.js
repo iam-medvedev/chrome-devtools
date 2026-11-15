@@ -6,6 +6,7 @@ import { describe, it } from 'mocha';
 import { getFirstOrError, getInsightSetOrError } from '../../../testing/InsightHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as Trace from '../../trace/trace.js';
 import { AIQueries } from '../ai_assistance.js';
 describe('AIQueries', () => {
     setupLocaleHooks();
@@ -17,7 +18,7 @@ describe('AIQueries', () => {
         const tasks = AIQueries.AIQueries.longestTasks(firstNav.args.data?.navigationId, insightSet.bounds, parsedTrace);
         assert.isOk(tasks);
         const expected = [39, 33, 21];
-        assert.deepEqual(tasks.map(task => Math.round(task.rootNode.totalTime)), expected);
+        assert.deepEqual(tasks.map(task => Math.round(Trace.Helpers.Timing.microToMilli(task.rootNode.totalTime))), expected);
     });
 });
 //# sourceMappingURL=AIQueries.test.js.map

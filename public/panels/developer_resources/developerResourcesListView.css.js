@@ -19,10 +19,6 @@ export default `/*
     justify-content: flex-start;
   }
 
-  ::part(filter-highlight) {
-    font-weight: bold;
-  }
-
   ::part(url-prefix) {
     overflow-x: hidden;
     text-overflow: ellipsis;

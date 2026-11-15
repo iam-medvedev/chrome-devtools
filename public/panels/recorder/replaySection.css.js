@@ -11,6 +11,8 @@ export default `/*
 
 .select-button {
   display: flex;
+  /* Lets the button go below the select in narrow panels instead of overflowing. */
+  flex-wrap: wrap;
   gap: var(--sys-size-6);
 }
 

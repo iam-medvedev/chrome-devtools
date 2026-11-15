@@ -45,7 +45,7 @@ export default `/*
 }
 
 .timeline-minimap #timeline-overview-filmstrip {
-  flex-basis: 30px;
+  flex-basis: var(--sys-size-12);
 }
 
 .timeline-minimap #timeline-overview-memory {
@@ -72,9 +72,6 @@ export default `/*
   margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.timeline-minimap #timeline-overview-input {
-  flex-basis: var(--sys-size-4);
-}
 
 .timeline-minimap #timeline-overview-pane {
   flex: auto;

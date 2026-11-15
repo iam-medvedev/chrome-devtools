@@ -111,7 +111,10 @@ export declare class RecordingView extends UI.Widget.Widget {
     performUpdate(): void;
     wasShown(): void;
     willHide(): void;
-    scrollToBottom(): void;
+    /**
+     * Scrolls to the last step once all pending updates are rendered.
+     */
+    scrollToBottom(): Promise<void>;
     showCodeToggle: () => void;
 }
 export {};

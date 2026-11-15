@@ -7,16 +7,23 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
+import { MockAidaAbortError, mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
+import * as Workspace from '../workspace/workspace.js';
 import * as AiAssistance from './ai_assistance.js';
 const SKILLS = AiAssistance.SkillRegistry.SKILLS;
+const PerformanceTraceFormatter = AiAssistance.PerformanceTraceFormatter.PerformanceTraceFormatter;
 function assertIsFunctionResponse(part) {
     assert.isTrue('functionResponse' in part);
+}
+function assertIsTextPart(part) {
+    assert.isDefined(part);
+    assert.isTrue('text' in part);
 }
 function getFunctionDeclarations(aidaClient, callIndex) {
     sinon.assert.callCount(aidaClient.doConversation, callIndex + 1);
@@ -27,16 +34,6 @@ function getContextChangeResponse(responses) {
     const contextChange = responses.find((r) => r.type === "context-change" /* AiAssistance.AiAgent.ResponseType.CONTEXT_CHANGE */);
     assert.exists(contextChange, 'Expected a CONTEXT_CHANGE response');
     return contextChange;
-}
-/**
- * Helper to mock the skills registry for an agent.
- * Since the agent expects a full `Record<SkillName, Skill>`, but individual tests only
- * need to mock a subset of skills, we use this helper to cast a partial set of skills
- * to the full record type and assign it to the agent. This prevents tests from
- * breaking when new skills are added to the global registry.
- */
-function mockSkills(agent, skills) {
-    agent.getSkills = () => skills;
 }
 describe('AiAgent2', () => {
     setupLocaleHooks();
@@ -120,6 +117,27 @@ describe('AiAgent2', () => {
         assert.isTrue(result.includes(SKILLS.styling.instructions));
         assert.isTrue(agent.activeSkills.has('styling'));
     });
+    it('appends compressed data formats to performance skill instructions when learned, but not in the unloaded manifest', async () => {
+        const aidaClient = mockAidaClient([[{ explanation: 'Done' }]]);
+        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+        await Array.fromAsync(agent.run('question', { selected: null }));
+        const learnSkillsDeclaration = getFunctionDeclarations(aidaClient, 0).find(d => d.name === 'learnSkills');
+        assert.exists(learnSkillsDeclaration);
+        assert.include(learnSkillsDeclaration.description, SKILLS.performance.description);
+        assert.notInclude(learnSkillsDeclaration.description, '# Data Formats');
+        assert.notInclude(learnSkillsDeclaration.description, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+        assert.notInclude(learnSkillsDeclaration.description, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
+        const learnResult = await agent.learnSkill(['performance']);
+        assert.include(learnResult, '# Investigation Workflow');
+        assert.include(learnResult, '# Data Formats');
+        assert.include(learnResult, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+        assert.include(learnResult, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
+        const secondLearnResult = await agent.learnSkill(['performance']);
+        assert.strictEqual(secondLearnResult, 'Error: Skill \'performance\' is already loaded. Call its tools directly instead of invoking learnSkills for \'performance\' again.');
+        assert.notInclude(secondLearnResult, '# Data Formats');
+        assert.notInclude(secondLearnResult, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+        assert.notInclude(secondLearnResult, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
+    });
     it('prevents duplicate loading', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
@@ -130,12 +148,9 @@ describe('AiAgent2', () => {
     it('handles invalid skill names gracefully', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-        mockSkills(agent, {
-            styling: SKILLS.styling,
-        });
         // @ts-expect-error
         const result = await agent.learnSkill(['non-existent-skill']);
-        assert.strictEqual(result, 'Failed to load skill non-existent-skill. Valid skills are: styling.');
+        assert.strictEqual(result, `Failed to load skill non-existent-skill. Valid skills are: ${Object.keys(SKILLS).join(', ')}.`);
     });
     it('can run a conversation flow', async () => {
         const aidaClient = mockAidaClient([[{
@@ -214,32 +229,14 @@ describe('AiAgent2', () => {
         assert.isDefined(actionResponse);
         assert.deepEqual(actionResponse.loadedSkills, ['network']);
     });
-    it('injects skills manifest containing only unloaded skills', async () => {
+    it('does not inject skills manifest into enhanceQuery without selected context', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-        mockSkills(agent, {
-            styling: SKILLS.styling,
-            network: SKILLS.network,
-        });
-        // Initially, styling and network are not loaded
         const firstQuery = await agent.enhanceQuery('test query');
-        assert.isTrue(firstQuery.includes('Available skills that are not yet loaded:'));
-        assert.isTrue(firstQuery.includes('styling: CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.'));
-        assert.isTrue(firstQuery.includes('network: Analyzing network traffic, network requests, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.'));
-        assert.isTrue(firstQuery.includes('User query: test query'));
-        // Load 'styling' skill
+        assert.strictEqual(firstQuery, 'test query');
         await agent.learnSkill(['styling']);
-        // Now, only 'network' skill is unloaded and should be injected
         const secondQuery = await agent.enhanceQuery('second query');
-        assert.isTrue(secondQuery.includes('Available skills that are not yet loaded:'));
-        assert.isFalse(secondQuery.includes('styling:'));
-        assert.isTrue(secondQuery.includes('network: Analyzing network traffic, network requests, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.'));
-        assert.isTrue(secondQuery.includes('User query: second query'));
-        // Load 'network' skill
-        await agent.learnSkill(['network']);
-        // Now all skills are loaded, manifest should NOT be injected
-        const thirdQuery = await agent.enhanceQuery('third query');
-        assert.strictEqual(thirdQuery, 'third query');
+        assert.strictEqual(secondQuery, 'second query');
     });
     it('registers allowed tools of a skill dynamically upon learning', async () => {
         const aidaClient = mockAidaClient([
@@ -281,27 +278,17 @@ describe('AiAgent2', () => {
         const [args] = handlerStub.getCall(0).args;
         assert.deepEqual(args, { elements: [1], styleProperties: ['color'], explanation: 'testing' });
         // Verify AIDA response included tool output
-        const hasTitle = responses.some(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */ && r.title === 'Reading computed and source styles');
+        const hasTitle = responses.some(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */ &&
+            r.title === 'Reading computed and source styles');
         assert.isTrue(hasTitle);
     });
     it('prevents duplicate tool declarations if multiple learned skills share the same tool', async () => {
         const aidaClient = mockAidaClient();
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-        // Override getSkills to include the dummy skill for testing
-        const dummySkill = {
-            name: 'dummy',
-            description: 'A dummy skill for testing',
-            allowedTools: ['getStyles'],
-            instructions: 'Dummy instructions.',
-        };
-        mockSkills(agent, {
-            styling: SKILLS.styling,
-            [dummySkill.name]: dummySkill,
-        });
         // Learn both skills. It should not throw a duplicate function declaration error.
-        await agent.learnSkill(['styling', 'dummy']);
+        await agent.learnSkill(['styling', 'lighthouse']);
         assert.isTrue(agent.activeSkills.has('styling'));
-        assert.isTrue(agent.activeSkills.has('dummy'));
+        assert.isTrue(agent.activeSkills.has('lighthouse'));
     });
     it('enhances the query with the selected element description', async () => {
         const aidaClient = mockAidaClient([[{
@@ -312,7 +299,8 @@ describe('AiAgent2', () => {
         const nodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(element);
         sinon.stub(nodeContext, 'getPromptDetails').resolves('# Inspected element\n\nelement-description');
         const enhancedQuery = await agent.enhanceQuery('my query', nodeContext);
-        assert.isTrue(enhancedQuery.includes('# Inspected element\n\nelement-description\n\n# User request\n\nQUERY: my query'));
+        assert.strictEqual(enhancedQuery, `Skill styling loaded. Instructions:\n${SKILLS.styling
+            .instructions}\n\n# Inspected element\n\nelement-description\n\n# User request\n\nQUERY: my query`);
     });
     it('yields the selected element description in handleContextDetails', async () => {
         const aidaClient = mockAidaClient();
@@ -357,44 +345,6 @@ describe('AiAgent2', () => {
                 text: 'element-description',
             }]);
         assert.deepEqual(contextResponse?.widgets, [fakeWidget]);
-    });
-    it('handles invalid skill names with overridden skills gracefully', async () => {
-        const aidaClient = mockAidaClient();
-        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-        const dummySkill = {
-            name: 'dummy',
-            description: 'A dummy skill for testing',
-            allowedTools: ['getStyles'],
-            instructions: 'Dummy instructions.',
-        };
-        mockSkills(agent, {
-            styling: SKILLS.styling,
-            network: SKILLS.network,
-            [dummySkill.name]: dummySkill,
-        });
-        // @ts-expect-error
-        const result = await agent.learnSkill(['non-existent-skill']);
-        assert.isTrue(result.includes('Failed to load skill non-existent-skill'));
-        assert.isTrue(result.includes('Valid skills are: styling, network, dummy'));
-    });
-    it('injects overridden skills manifest into the query', async () => {
-        const aidaClient = mockAidaClient();
-        const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-        const dummySkill = {
-            name: 'dummy',
-            description: 'A dummy skill for testing',
-            allowedTools: ['getStyles'],
-            instructions: 'Dummy instructions.',
-        };
-        mockSkills(agent, {
-            styling: SKILLS.styling,
-            [dummySkill.name]: dummySkill,
-        });
-        const firstQuery = await agent.enhanceQuery('test query');
-        assert.isTrue(firstQuery.includes('Available skills that are not yet loaded:'));
-        assert.isTrue(firstQuery.includes('styling: CSS, styling, layouts, positioning, computed styles, DOM tree structure, and page styles.'));
-        assert.isTrue(firstQuery.includes('dummy: A dummy skill for testing'));
-        assert.isTrue(firstQuery.includes('User query: test query'));
     });
     it('supports tools with side-effect approval flow (e.g. executeJavaScript)', async () => {
         const aidaClient = mockAidaClient([
@@ -451,7 +401,7 @@ describe('AiAgent2', () => {
         assert.propertyVal(actionResponses[2], 'action', '$0.style.color = "red"');
         assert.propertyVal(actionResponses[2], 'output', 'success');
     });
-    it('updates the learnSkills description dynamically to list only unloaded skills', async () => {
+    it('maintains a static learnSkills description across multi-step skill loading', async () => {
         const aidaClient = mockAidaClient([
             [{
                     explanation: '',
@@ -468,25 +418,20 @@ describe('AiAgent2', () => {
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
         await Array.fromAsync(agent.run('question', { selected: null }));
         sinon.assert.callCount(aidaClient.doConversation, 3);
-        // Verify first call declarations: both styling and network are unloaded
+        const assertLearnSkillsDescription = (callIndex) => {
+            const declarations = aidaClient.doConversation.getCall(callIndex).args[0].function_declarations ?? [];
+            const learnSkills = declarations.find(d => d.name === 'learnSkills');
+            assert.exists(learnSkills);
+            assert.isTrue(learnSkills?.description.includes(`- styling: ${SKILLS.styling.description}`));
+            assert.isTrue(learnSkills?.description.includes(`- network: ${SKILLS.network.description}`));
+            assert.isTrue(learnSkills?.description.includes('MUST call `learnSkills`'));
+            assert.isTrue(learnSkills?.description.includes('Do NOT call `learnSkills` for skills that were already loaded'));
+        };
+        assertLearnSkillsDescription(0);
         const firstCallDeclarations = aidaClient.doConversation.getCall(0).args[0].function_declarations ?? [];
-        const firstLearnSkills = firstCallDeclarations.find(d => d.name === 'learnSkills');
-        assert.exists(firstLearnSkills);
-        assert.isTrue(firstLearnSkills?.description.includes('styling'));
-        assert.isTrue(firstLearnSkills?.description.includes('network'));
         assert.exists(firstCallDeclarations.find(d => d.name === AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME));
-        // Verify second call declarations: styling is loaded, only network is unloaded
-        const secondCallDeclarations = aidaClient.doConversation.getCall(1).args[0].function_declarations ?? [];
-        const secondLearnSkills = secondCallDeclarations.find(d => d.name === 'learnSkills');
-        assert.exists(secondLearnSkills);
-        assert.isFalse(secondLearnSkills?.description.includes('styling'));
-        assert.isTrue(secondLearnSkills?.description.includes('network'));
-        // Verify third call declarations: both styling and network are loaded, none should be in description
-        const thirdCallDeclarations = aidaClient.doConversation.getCall(2).args[0].function_declarations ?? [];
-        const thirdLearnSkills = thirdCallDeclarations.find(d => d.name === 'learnSkills');
-        assert.exists(thirdLearnSkills);
-        assert.isFalse(thirdLearnSkills?.description.includes('styling'));
-        assert.isFalse(thirdLearnSkills?.description.includes('network'));
+        assertLearnSkillsDescription(1);
+        assertLearnSkillsDescription(2);
     });
     it('falls back to document body for getExecutionContextNode when context is not DOMNodeContext', async () => {
         const target = universe.createTarget({ url: 'https://example.com' });
@@ -1774,6 +1719,214 @@ describe('AiAgent2', () => {
             assert.exists(answer);
             assert.strictEqual(answer.text, 'Final answer');
             assert.deepEqual(answer.suggestions, ['Final suggestion']);
+        });
+    });
+    describe('Auto-learn skills', () => {
+        it('first-run DOMNodeContext auto-loads styling', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: 'Answer',
+                        functionCalls: [{ name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME, args: { suggestions: ['s'] } }],
+                    }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(domNodeContext, 'getUserFacingDetails').resolves([{ title: 'DOM', text: 'details' }]);
+            const responses = await Array.fromAsync(agent.run('question', { selected: domNodeContext }));
+            const declarations = getFunctionDeclarations(aidaClient, 0).map(d => d.name);
+            assert.includeMembers(declarations, ['getStyles', 'setElementStyles', 'executeJavaScript']);
+            const part0 = aidaClient.doConversation.getCall(0).args[0].current_message.parts[0];
+            assertIsTextPart(part0);
+            assert.notInclude(part0.text, '- styling:');
+            assert.include(part0.text, 'Skill styling loaded. Instructions:');
+            assert.include(part0.text, SKILLS.styling.instructions);
+            const instructionsIndex = part0.text.indexOf(SKILLS.styling.instructions);
+            const promptIndex = part0.text.indexOf('DOM prompt');
+            assert.isTrue(instructionsIndex !== -1 && promptIndex !== -1 && instructionsIndex < promptIndex);
+            const contextEvents = responses.filter(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+            assert.lengthOf(contextEvents, 1);
+            assert.deepEqual(contextEvents[0].autoLearnedSkills, ['styling']);
+            const titleEvents = responses.filter(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
+            assert.lengthOf(titleEvents, 0);
+            const actionEvents = responses.filter(r => r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actionEvents, 0);
+        });
+        it('first-run RequestContext auto-loads network', async () => {
+            const aidaClient = mockAidaClient([
+                [{ explanation: 'Answer' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const requestContext = new AiAssistance.RequestContext.RequestContext(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest), new NetworkTimeCalculator.NetworkTransferTimeCalculator());
+            sinon.stub(requestContext, 'getPromptDetails').resolves('Network prompt');
+            sinon.stub(requestContext, 'getUserFacingDetails').resolves([{ title: 'Network', text: 'details' }]);
+            const responses = await Array.fromAsync(agent.run('question', { selected: requestContext }));
+            const declarations = getFunctionDeclarations(aidaClient, 0).map(d => d.name);
+            assert.includeMembers(declarations, ['listNetworkRequests', 'getNetworkRequestDetails']);
+            const contextEvents = responses.filter(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+            assert.lengthOf(contextEvents, 1);
+            assert.deepEqual(contextEvents[0].autoLearnedSkills, ['network']);
+            const titleEvents = responses.filter(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
+            assert.lengthOf(titleEvents, 0);
+            const actionEvents = responses.filter(r => r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actionEvents, 0);
+        });
+        it('first-run FileContext auto-loads sources', async () => {
+            const aidaClient = mockAidaClient([
+                [{ explanation: 'Answer' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const fileContext = new AiAssistance.FileContext.FileContext(sinon.createStubInstance(Workspace.UISourceCode.UISourceCode));
+            sinon.stub(fileContext, 'getPromptDetails').resolves('File prompt');
+            sinon.stub(fileContext, 'getUserFacingDetails').resolves([{ title: 'File', text: 'details' }]);
+            const responses = await Array.fromAsync(agent.run('question', { selected: fileContext }));
+            const declarations = getFunctionDeclarations(aidaClient, 0).map(d => d.name);
+            assert.includeMembers(declarations, ['listSources', 'getSourceContent']);
+            const contextEvents = responses.filter(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+            assert.lengthOf(contextEvents, 1);
+            assert.deepEqual(contextEvents[0].autoLearnedSkills, ['sources']);
+            const titleEvents = responses.filter(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */);
+            assert.lengthOf(titleEvents, 0);
+            const actionEvents = responses.filter(r => r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */);
+            assert.lengthOf(actionEvents, 0);
+        });
+        it('unmapped or null contexts do not auto-load', async () => {
+            const aidaClient = mockAidaClient([
+                [{ explanation: 'Answer' }],
+                [{ explanation: 'Answer' }],
+                [{ explanation: 'Answer' }],
+                [{ explanation: 'Answer' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const responses1 = await Array.fromAsync(agent.run('question', { selected: null }));
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const perfContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext);
+            perfContext.getPromptDetails.resolves('perf prompt');
+            perfContext.getUserFacingDetails.resolves([{ title: 'perf', text: 'details' }]);
+            perfContext.getWidgets.resolves([]);
+            const responses2 = await Array.fromAsync(agent.run('question', { selected: perfContext }));
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const lhContext = sinon.createStubInstance(AiAssistance.LighthouseContext.LighthouseContext);
+            lhContext.getPromptDetails.resolves('lh prompt');
+            lhContext.getUserFacingDetails.resolves([{ title: 'lh', text: 'details' }]);
+            lhContext.getWidgets.resolves([]);
+            const responses3 = await Array.fromAsync(agent.run('question', { selected: lhContext }));
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const storageContext = sinon.createStubInstance(AiAssistance.StorageContext.StorageContext);
+            storageContext.getPromptDetails.resolves('storage prompt');
+            storageContext.getUserFacingDetails.resolves([{ title: 'storage', text: 'details' }]);
+            storageContext.getWidgets.resolves([]);
+            const responses4 = await Array.fromAsync(agent.run('question', { selected: storageContext }));
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const declarations = getFunctionDeclarations(aidaClient, 3).map(d => d.name);
+            assert.deepEqual(declarations, ['learnSkills', 'suggestFollowUps']);
+            const contextEventsWithAutoLearn = [...responses1, ...responses2, ...responses3, ...responses4].filter((r) => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */ && r.autoLearnedSkills !== undefined);
+            assert.lengthOf(contextEventsWithAutoLearn, 0);
+        });
+        it('follow-up turn with already-active skill', async () => {
+            const aidaClient = mockAidaClient([
+                [{ explanation: 'Answer' }],
+                [{ explanation: 'Answer 2' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(domNodeContext, 'getUserFacingDetails').resolves([{ title: 'DOM', text: 'details' }]);
+            await Array.fromAsync(agent.run('question 1', { selected: domNodeContext }));
+            const responses = await Array.fromAsync(agent.run('question 2', { selected: domNodeContext }));
+            const part0 = aidaClient.doConversation.getCall(1).args[0].current_message.parts[0];
+            assertIsTextPart(part0);
+            assert.notInclude(part0.text, SKILLS.styling.instructions);
+            const contextEvents = responses.filter(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+            assert.lengthOf(contextEvents, 1);
+            assert.isUndefined(contextEvents[0].autoLearnedSkills);
+        });
+    });
+    describe('context deduplication', () => {
+        const stylingAutoLoadPrefix = `Skill styling loaded. Instructions:\n${SKILLS.styling.instructions}\n\n`;
+        let contextA;
+        let contextB;
+        let promptDetailsStubA;
+        function createAgent(aidaClient = mockAidaClient()) {
+            return new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+        }
+        function getSentPromptText(aidaClient, callIndex) {
+            const part = aidaClient.doConversation.getCall(callIndex).args[0].current_message.parts[0];
+            assertIsTextPart(part);
+            return part.text;
+        }
+        beforeEach(() => {
+            contextA = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            promptDetailsStubA = sinon.stub(contextA, 'getPromptDetails').resolves('# Inspected element\n\nelement-A');
+            sinon.stub(contextA, 'getUserFacingDetails').resolves([{ title: 'Data used', text: 'element-A' }]);
+            contextB = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(contextB, 'getPromptDetails').resolves('# Inspected element\n\nelement-B');
+            sinon.stub(contextB, 'getUserFacingDetails').resolves([{ title: 'Data used', text: 'element-B' }]);
+        });
+        it('replaces unchanged context details with a short notice on follow-up turns', async () => {
+            const aidaClient = mockAidaClient([[{ explanation: 'answer 1' }], [{ explanation: 'answer 2' }]]);
+            const agent = createAgent(aidaClient);
+            const responses1 = await Array.fromAsync(agent.run('question 1', { selected: contextA }));
+            const responses2 = await Array.fromAsync(agent.run('question 2', { selected: contextA }));
+            assert.exists(responses1.find(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */));
+            assert.exists(responses2.find(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */));
+            assert.strictEqual(getSentPromptText(aidaClient, 0), `${stylingAutoLoadPrefix}# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: question 1`);
+            assert.strictEqual(getSentPromptText(aidaClient, 1), 'The selected context is unchanged since it was last provided earlier in this conversation.\n\n# User request\n\nQUERY: question 2');
+            const historicalPart = aidaClient.doConversation.getCall(1).args[0].historical_contexts?.[0]?.parts[0];
+            assert.exists(historicalPart);
+            assertIsTextPart(historicalPart);
+            assert.strictEqual(historicalPart.text, `${stylingAutoLoadPrefix}# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: question 1`);
+        });
+        it('resends full context details after switching to another context and back', async () => {
+            const agent = createAgent();
+            assert.strictEqual(await agent.enhanceQuery('q1', contextA), `${stylingAutoLoadPrefix}# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: q1`);
+            assert.strictEqual(await agent.enhanceQuery('q2', contextB), '# Inspected element\n\nelement-B\n\n# User request\n\nQUERY: q2');
+            assert.strictEqual(await agent.enhanceQuery('q3', contextA), '# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: q3');
+        });
+        it('resends full context details when the selected context mutates between turns', async () => {
+            const agent = createAgent();
+            await agent.enhanceQuery('q1', contextA);
+            promptDetailsStubA.resolves('# Inspected element\n\nelement-A-mutated');
+            assert.strictEqual(await agent.enhanceQuery('q2', contextA), '# Inspected element\n\nelement-A-mutated\n\n# User request\n\nQUERY: q2');
+        });
+        it('resends full context details after a turn with no selected context', async () => {
+            const agent = createAgent();
+            await agent.enhanceQuery('q1', contextA);
+            assert.strictEqual(await agent.enhanceQuery('q2', null), 'q2');
+            assert.strictEqual(await agent.enhanceQuery('q3', contextA), '# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: q3');
+        });
+        it('resends full context details after a turn with a context that has no prompt details', async () => {
+            const agent = createAgent();
+            const storageContext = new AiAssistance.StorageContext.StorageContext(AiAssistance.StorageItem.StorageItem.createGenericContext('https://example.com'));
+            await agent.enhanceQuery('q1', contextA);
+            assert.strictEqual(await agent.enhanceQuery('q2', storageContext), 'q2');
+            assert.strictEqual(await agent.enhanceQuery('q3', contextA), '# Inspected element\n\nelement-A\n\n# User request\n\nQUERY: q3');
+        });
+        it('resends full context details after a failed run clears the cache', async () => {
+            const aidaClient = mockAidaClient([[MockAidaAbortError], [{ explanation: 'answer 2' }]]);
+            const agent = createAgent(aidaClient);
+            const responses1 = await Array.fromAsync(agent.run('q1', { selected: contextB }));
+            await Array.fromAsync(agent.run('q2', { selected: contextB }));
+            assert.exists(responses1.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
+                r.error === "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */));
+            assert.strictEqual(getSentPromptText(aidaClient, 1), '# Inspected element\n\nelement-B\n\n# User request\n\nQUERY: q2');
+        });
+        it('keeps deduplicating context details after a run reaches MAX_STEPS', async () => {
+            const mockData = [];
+            for (let i = 0; i < AiAssistance.AiAgent.MAX_STEPS; i++) {
+                mockData.push([{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['styling'] } }],
+                    }]);
+            }
+            mockData.push([{ explanation: 'follow-up answer' }]);
+            const aidaClient = mockAidaClient(mockData);
+            const agent = createAgent(aidaClient);
+            const responses1 = await Array.fromAsync(agent.run('q1', { selected: contextA }));
+            await Array.fromAsync(agent.run('q2', { selected: contextA }));
+            assert.exists(responses1.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
+                r.error === "max-steps" /* AiAssistance.AiAgent.ErrorType.MAX_STEPS */));
+            assert.strictEqual(getSentPromptText(aidaClient, AiAssistance.AiAgent.MAX_STEPS), 'The selected context is unchanged since it was last provided earlier in this conversation.\n\n# User request\n\nQUERY: q2');
         });
     });
 });
