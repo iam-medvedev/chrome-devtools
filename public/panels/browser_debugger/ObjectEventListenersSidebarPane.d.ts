@@ -1,10 +1,9 @@
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
-export declare class ObjectEventListenersSidebarPane extends UI.Widget.VBox implements UI.Toolbar.ItemsProvider {
+export declare class ObjectEventListenersSidebarPane extends EventListeners.EventListenersView.EventListenersView implements UI.Toolbar.ItemsProvider {
     #private;
-    readonly eventListenersView: EventListeners.EventListenersView.EventListenersView;
-    constructor();
+    protected readonly jslog: string;
     toolbarItems(): Lit.TemplateResult;
     performUpdate(): Promise<void>;
     wasShown(): void;

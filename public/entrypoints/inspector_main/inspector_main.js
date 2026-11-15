@@ -717,13 +717,18 @@ SDK2.ChildTargetManager.ChildTargetManager.install();
 // ../../front_end/entrypoints/inspector_main/OutermostTargetSelector.ts
 var OutermostTargetSelector_exports = {};
 __export(OutermostTargetSelector_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   OutermostTargetSelector: () => OutermostTargetSelector
 });
+import "../../ui/components/menus/menus.js";
+import "../../ui/kit/kit.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
 import * as Platform from "../../core/platform/platform.js";
 import * as SDK3 from "../../core/sdk/sdk.js";
 import * as Bindings from "../../models/bindings/bindings.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
+import { html as html3, render as render3 } from "../../ui/lit/lit.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/inspector_main/outermostTargetSelector.css.js
 var outermostTargetSelector_css_default = `/*
@@ -732,34 +737,86 @@ var outermostTargetSelector_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
-  padding: var(--sys-size-2) var(--sys-size-1) var(--sys-size-2) var(--sys-size-2);
-  white-space: nowrap;
-  display: flex;
-  flex-direction: column;
-  height: 36px;
-  justify-content: center;
-  overflow-y: auto;
-}
+@scope to (devtools-widget > *) {
+  button.soft-dropdown {
+    height: var(--sys-size-11);
+    text-align: left;
+    position: relative;
+    border: none;
+    background: none;
+    padding: 0 var(--sys-size-3) 0 var(--sys-size-4);
+    font: inherit;
+    color: var(--sys-color-on-surface-subtle);
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--sys-shape-corner-extra-small);
 
-.title {
-  overflow: hidden;
-  padding-left: var(--sys-size-5);
-  text-overflow: ellipsis;
-  flex-grow: 0;
-}
+    &:hover:not(:disabled) {
+      background-color: var(--sys-color-state-hover-on-subtle);
+    }
 
-.subtitle {
-  color: var(--sys-color-token-subtle);
-  margin-right: 3px;
-  overflow: hidden;
-  padding-left: var(--sys-size-5);
-  text-overflow: ellipsis;
-  flex-grow: 0;
-}
+    &:active:not(:disabled) {
+      background-color: var(--sys-color-state-ripple-neutral-on-subtle);
+    }
 
-:host(.highlighted) .subtitle {
-  color: inherit;
+    &:focus-visible {
+      outline: 2px solid var(--sys-color-state-focus-ring);
+      outline-offset: -2px;
+      border-radius: var(--sys-shape-corner-extra-small);
+    }
+
+    & > .title {
+      padding-right: var(--sys-size-2);
+      width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & > devtools-icon {
+      width: var(--sys-size-7);
+      height: var(--sys-size-7);
+    }
+
+    &[disabled] {
+      pointer-events: none;
+      color: var(--sys-color-state-disabled);
+
+      & > devtools-icon {
+        color: var(--sys-color-state-disabled);
+      }
+    }
+  }
+
+  .outermost-target-selector-item {
+    padding: var(--sys-size-2) var(--sys-size-1) var(--sys-size-2) var(--sys-size-2);
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    height: 36px;
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  .outermost-target-selector-item .title {
+    overflow: hidden;
+    padding-left: var(--sys-size-5);
+    text-overflow: ellipsis;
+    flex-grow: 0;
+  }
+
+  .outermost-target-selector-item .subtitle {
+    color: var(--sys-color-token-subtle);
+    margin-right: 3px;
+    overflow: hidden;
+    padding-left: var(--sys-size-5);
+    text-overflow: ellipsis;
+    flex-grow: 0;
+  }
+
+  devtools-menu-item[aria-selected="true"] .outermost-target-selector-item .subtitle {
+    color: inherit;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./outermostTargetSelector.css")} */`;
@@ -778,20 +835,71 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("entrypoints/inspector_main/OutermostTargetSelector.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var OutermostTargetSelector = class {
-  listItems = new UI3.ListModel.ListModel();
-  #dropDown;
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  const selectedItem = input.selectedIndex >= 0 && input.selectedIndex < input.items.length ? input.items[input.selectedIndex] : void 0;
+  const buttonTitle = selectedItem ? i18nString3(UIStrings3.targetS, { PH1: selectedItem.title }) : i18nString3(UIStrings3.targetNotSelected);
+  render3(
+    html3`
+    <style>${outermostTargetSelector_css_default}</style>
+    <button
+      id="outermost-target-selector-button"
+      class="soft-dropdown toolbar-has-dropdown"
+      type="button"
+      jslog=${VisualLogging2.dropDown("outermost-target-selector").track({ click: true })}
+      title=${buttonTitle}
+      aria-label=${buttonTitle}
+      aria-haspopup="true"
+      aria-expanded=${input.open}
+      ?disabled=${input.items.length === 0}
+      @click=${input.onToggleMenu}
+      @keydown=${(event) => {
+      if (!input.open && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+        event.consume(true);
+        input.onToggleMenu();
+      }
+    }}
+    >
+      <span class="title">${selectedItem?.title ?? ""}</span>
+      <devtools-icon name="triangle-down"></devtools-icon>
+    </button>
+    <devtools-menu
+      origin="outermost-target-selector-button"
+      .showDivider=${false}
+      .showSelectedItem=${true}
+      .open=${input.open}
+      @menucloserequest=${input.onCloseMenu}
+      @menuitemselected=${(event) => {
+      input.onSelect(Number(event.itemValue));
+    }}
+    >
+      ${input.items.map((item2, index) => html3`
+        <devtools-menu-item
+          .value=${index}
+          .selected=${index === input.selectedIndex}
+          jslog=${VisualLogging2.item().track({ click: true, resize: true })}
+        >
+          <div class="outermost-target-selector-item">
+            <div class="title">${Platform.StringUtilities.trimEndWithMaxLength(item2.title, 100)}</div>
+            <div class="subtitle">${item2.subtitle}</div>
+          </div>
+        </devtools-menu-item>
+      `)}
+    </devtools-menu>`,
+    target
+  );
+};
+var OutermostTargetSelector = class extends UI3.Widget.Widget {
+  #targets = [];
   #toolbarItem;
-  constructor() {
-    this.#dropDown = new UI3.SoftDropDown.SoftDropDown(this.listItems, this);
-    this.#dropDown.setRowHeight(36);
-    this.#toolbarItem = new UI3.Toolbar.ToolbarItem(this.#dropDown.element);
-    this.#toolbarItem.setTitle(i18nString3(UIStrings3.targetNotSelected));
-    this.listItems.addEventListener(
-      UI3.ListModel.Events.ITEMS_REPLACED,
-      () => this.#toolbarItem.setEnabled(Boolean(this.listItems.length))
-    );
-    this.#toolbarItem.element.classList.add("toolbar-has-dropdown");
+  #view;
+  #selectedTarget = null;
+  #open = false;
+  constructor(element, view = DEFAULT_VIEW3) {
+    super(element);
+    this.#view = view;
+    this.#toolbarItem = new UI3.Toolbar.ToolbarItem(this.element);
+    this.#toolbarItem.setEnabled(false);
+    this.#toolbarItem.setVisible(false);
     const targetManager = SDK3.TargetManager.TargetManager.instance();
     targetManager.addModelListener(
       SDK3.ChildTargetManager.ChildTargetManager,
@@ -802,39 +910,86 @@ var OutermostTargetSelector = class {
     targetManager.addEventListener(SDK3.TargetManager.Events.NAME_CHANGED, this.#onInspectedURLChanged, this);
     targetManager.observeTargets(this);
     UI3.Context.Context.instance().addFlavorChangeListener(SDK3.Target.Target, this.#targetChanged, this);
+    this.requestUpdate();
+  }
+  show(parentElement, insertBefore, suppressOrphanWidgetError) {
+    super.show(parentElement, insertBefore, suppressOrphanWidgetError);
+    this.#toolbarItem.setVisible(this.#targets.length > 1);
+  }
+  wasShown() {
+    super.wasShown();
+    this.#toolbarItem.setVisible(this.#targets.length > 1);
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const items = this.#targets.map((target) => ({
+      title: target.name(),
+      subtitle: this.#subtitleFor(target)
+    }));
+    const selectedIndex = this.#selectedTarget ? this.#targets.indexOf(this.#selectedTarget) : -1;
+    this.#view(
+      {
+        items,
+        selectedIndex,
+        open: this.#open,
+        onToggleMenu: () => {
+          if (this.#targets.length === 0) {
+            return;
+          }
+          this.#open = !this.#open;
+          this.requestUpdate();
+        },
+        onCloseMenu: () => {
+          if (!this.#open) {
+            return;
+          }
+          this.#open = false;
+          this.requestUpdate();
+        },
+        onSelect: (index) => {
+          this.#open = false;
+          const target = this.#targets[index] ?? null;
+          this.#selectTarget(target);
+        }
+      },
+      void 0,
+      this.contentElement
+    );
   }
   item() {
     return this.#toolbarItem;
-  }
-  highlightedItemChanged(_from, _to, fromElement, toElement) {
-    if (fromElement) {
-      fromElement.classList.remove("highlighted");
-    }
-    if (toElement) {
-      toElement.classList.add("highlighted");
-    }
-  }
-  titleFor(target) {
-    return target.name();
   }
   targetAdded(target) {
     if (target.outermostTarget() !== target) {
       return;
     }
-    this.listItems.insertWithComparator(target, this.#targetComparator());
-    this.#toolbarItem.setVisible(this.listItems.length > 1);
+    const insertIndex = Platform.ArrayUtilities.upperBound(this.#targets, target, this.#targetComparator(), 0, this.#targets.length);
+    this.#targets.splice(insertIndex, 0, target);
+    this.#toolbarItem.setEnabled(this.#targets.length > 0);
+    this.#toolbarItem.setVisible(this.#targets.length > 1);
     const primaryTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (target === primaryTarget || target === UI3.Context.Context.instance().flavor(SDK3.Target.Target)) {
-      this.#dropDown.selectItem(target);
+      this.#selectTarget(target);
+    } else {
+      this.requestUpdate();
     }
   }
   targetRemoved(target) {
-    const index = this.listItems.indexOf(target);
+    const index = this.#targets.indexOf(target);
     if (index === -1) {
       return;
     }
-    this.listItems.remove(index);
-    this.#toolbarItem.setVisible(this.listItems.length > 1);
+    this.#targets.splice(index, 1);
+    this.#toolbarItem.setEnabled(this.#targets.length > 0);
+    this.#toolbarItem.setVisible(this.#targets.length > 1);
+    if (this.#targets.length <= 1) {
+      this.#open = false;
+    }
+    if (this.#selectedTarget === target) {
+      this.#selectTarget(null);
+    } else {
+      this.requestUpdate();
+    }
   }
   #targetComparator() {
     return (a, b) => {
@@ -872,17 +1027,7 @@ var OutermostTargetSelector = class {
   #targetChanged({
     data: target
   }) {
-    this.#dropDown.selectItem(target?.outermostTarget() || null);
-  }
-  createElementForItem(item) {
-    const element = document.createElement("div");
-    element.classList.add("target");
-    const shadowRoot = UI3.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: outermostTargetSelector_css_default });
-    const title = shadowRoot.createChild("div", "title");
-    UI3.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(item), 100));
-    const subTitle = shadowRoot.createChild("div", "subtitle");
-    UI3.UIUtils.createTextChild(subTitle, this.#subtitleFor(item));
-    return element;
+    this.#selectTarget(target?.outermostTarget() || null);
   }
   #subtitleFor(target) {
     const targetInfo = target.targetInfo();
@@ -891,15 +1036,12 @@ var OutermostTargetSelector = class {
     }
     return target.targetInfo()?.subtype || "";
   }
-  isItemSelectable(_item) {
-    return true;
-  }
-  itemSelected(item) {
-    const title = item ? i18nString3(UIStrings3.targetS, { PH1: this.titleFor(item) }) : i18nString3(UIStrings3.targetNotSelected);
-    this.#toolbarItem.setTitle(title);
-    if (item && item !== UI3.Context.Context.instance().flavor(SDK3.Target.Target)?.outermostTarget()) {
-      UI3.Context.Context.instance().setFlavor(SDK3.Target.Target, item);
+  #selectTarget(item2) {
+    this.#selectedTarget = item2;
+    if (item2 && item2 !== UI3.Context.Context.instance().flavor(SDK3.Target.Target)?.outermostTarget()) {
+      UI3.Context.Context.instance().setFlavor(SDK3.Target.Target, item2);
     }
+    this.requestUpdate();
   }
 };
 export {

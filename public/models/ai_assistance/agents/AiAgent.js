@@ -240,14 +240,7 @@ export class AiAgent {
     #facts = new Set();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
-        let serverSideLoggingAllowed = opts.serverSideLoggingAllowed ?? false;
-        // Disable logging for now.
-        // For context, see b/454563259#comment35.
-        // We should be able to remove this ~end of April.
-        if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-            serverSideLoggingAllowed = false;
-        }
-        this.#serverSideLoggingActive = serverSideLoggingAllowed;
+        this.#serverSideLoggingActive = opts.serverSideLoggingAllowed ?? false;
         this.#sessionId = opts.sessionId ?? crypto.randomUUID();
         this.confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
         this.#history = opts.history ?? [];
@@ -322,7 +315,7 @@ export class AiAgent {
         for (const [name, definition] of this.#functionDeclarations.entries()) {
             declarations.push({
                 name,
-                description: typeof definition.description === 'function' ? definition.description() : definition.description,
+                description: definition.description,
                 parameters: definition.parameters,
             });
         }
@@ -900,19 +893,11 @@ export class AiAgent {
         let rpcId;
         const requestTimestamp = Math.floor(Date.now() * 1000);
         for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
-            if (aidaResponse.functionCalls?.length) {
-                yield {
-                    rpcId,
-                    functionCalls: aidaResponse.functionCalls,
-                    completed: true,
-                    text: aidaResponse.explanation,
-                };
-                break;
-            }
             rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
             yield {
                 rpcId,
                 text: aidaResponse.explanation,
+                functionCalls: aidaResponse.functionCalls,
                 completed: aidaResponse.completed,
             };
         }

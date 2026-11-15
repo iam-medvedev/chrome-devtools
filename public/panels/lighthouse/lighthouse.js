@@ -235,7 +235,7 @@ import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3841,21 +3841,12 @@ var lighthousePanel_css_default = `/*
  */
 
 .lh-root {
-  --report-menu-width: 0;
-
   user-select: text;
 }
 /* for View Trace button */
 
 .lh-audit-group {
   position: relative;
-}
-
-/** \\'window.opener\\' is null for windows opened from DevTools. This breaks
-    the LH viewer app, so disable this feature. */
-
-.lh-tools--viewer {
-  display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
 .lighthouse-settings-pane {
@@ -4535,8 +4526,7 @@ var Item = class {
     this.report = lighthouseResult;
     this.renderReport = renderReport2;
     this.showLandingCallback = showLandingCallback;
-    const finalDisplayedUrl = lighthouseResult.finalDisplayedUrl || lighthouseResult.finalUrl || "";
-    const url = new Common4.ParsedURL.ParsedURL(finalDisplayedUrl);
+    const url = new Common4.ParsedURL.ParsedURL(lighthouseResult.finalDisplayedUrl);
     const timestamp = lighthouseResult.fetchTime;
     this.element = document.createElement("option");
     this.element.textContent = `${new Date(timestamp).toLocaleTimeString()} - ${url.domain()}`;
@@ -4576,13 +4566,11 @@ var lighthouseStartView_css_default = `/*
 /* <3 */
 
 .lighthouse-start-view {
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   padding: var(--sys-size-11);
   overflow: auto;
   height: 100%;
-  /* for buttons */
-  --legacy-accent-color: #0535c1;
-  --legacy-accent-color-hover: #17b;
+
   --font-size: var(--sys-typescale-body2-size);
   --report-font-family: roboto, helvetica, arial, sans-serif;
 }
@@ -4603,18 +4591,13 @@ var lighthouseStartView_css_default = `/*
 }
 
 .lighthouse-logo {
-  width: 75px;
-  height: 75px;
+  width: var(--sys-size-15);
+  height: var(--sys-size-15);
   flex-shrink: 0;
   background-repeat: no-repeat;
   background-size: contain;
   /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-lighthouse_logo);
-}
-
-.lighthouse-start-view .lighthouse-logo {
-  width: var(--sys-size-15);
-  height: var(--sys-size-15);
 }
 
 .lighthouse-form-section {
@@ -4636,10 +4619,6 @@ var lighthouseStartView_css_default = `/*
 .lighthouse-form-section-label i span {
   position: relative;
   top: calc(-1 * var(--sys-size-2));
-}
-
-.lighthouse-form-section-label span.largeicon-checkmark {
-  top: calc(-1 * var(--sys-size-3));
 }
 
 .lighthouse-form-section-label .lighthouse-learn-more {
@@ -4706,7 +4685,7 @@ var lighthouseStartView_css_default = `/*
   /* See: crbug.com/1152736 for color variable migration. */
   font-weight: bold;
   padding-left: var(--sys-size-5);
-  padding-top: 10px;
+  padding-top: var(--sys-size-5);
 }
 
 .lighthouse-warning-text::before {

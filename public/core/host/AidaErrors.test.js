@@ -141,7 +141,7 @@ describe('AidaErrors', () => {
         });
         it('classifies pre-HTTP validation errors', () => {
             assert.strictEqual(classifyRequestError(new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, { error: 'Request validation failed' })), AiClientRequestResult.VALIDATION_FAILED);
-            assert.strictEqual(classifyRequestError(new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, { error: 'Disallowed path or method' })), AiClientRequestResult.VALIDATION_FAILED);
+            assert.strictEqual(classifyRequestError(new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, { error: 'Disallowed path, method, or header' })), AiClientRequestResult.VALIDATION_FAILED);
             assert.strictEqual(classifyRequestError(new DispatchHttpRequestError(ErrorType.HTTP_RESPONSE_UNAVAILABLE, { error: 'Service not found' })), AiClientRequestResult.VALIDATION_FAILED);
             assert.strictEqual(classifyRequestError('AIDA request was blocked'), AiClientRequestResult.VALIDATION_FAILED);
             assert.strictEqual(classifyRequestError(new Error('Unsupported client feature for GCA conversation: 0')), AiClientRequestResult.VALIDATION_FAILED);

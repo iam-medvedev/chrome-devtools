@@ -2406,7 +2406,7 @@ var UserMetrics = class {
     }
   }
 };
-function createDynamicEnumProxy(enumName, fallbackEnum) {
+function createDynamicEnumProxy(enumName2, fallbackEnum) {
   return new Proxy(fallbackEnum, {
     get(_target, prop) {
       if (typeof prop === "symbol") {
@@ -2416,7 +2416,7 @@ function createDynamicEnumProxy(enumName, fallbackEnum) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         globalThis.DevToolsMetrics
       );
-      const enumObj = metrics && metrics[enumName];
+      const enumObj = metrics && metrics[enumName2];
       if (enumObj && prop in enumObj) {
         return enumObj[prop];
       }
@@ -2435,7 +2435,7 @@ function createDynamicEnumProxy(enumName, fallbackEnum) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         globalThis.DevToolsMetrics
       );
-      const enumObj = metrics && metrics[enumName];
+      const enumObj = metrics && metrics[enumName2];
       if (enumObj && prop in enumObj) {
         return true;
       }
@@ -2449,7 +2449,7 @@ function createDynamicEnumProxy(enumName, fallbackEnum) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         globalThis.DevToolsMetrics
       );
-      const enumObj = metrics && metrics[enumName];
+      const enumObj = metrics && metrics[enumName2];
       return enumObj ? Reflect.ownKeys(enumObj) : Reflect.ownKeys(fallbackEnum);
     },
     getOwnPropertyDescriptor(_target, prop) {
@@ -2457,7 +2457,7 @@ function createDynamicEnumProxy(enumName, fallbackEnum) {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         globalThis.DevToolsMetrics
       );
-      const enumObj = metrics && metrics[enumName];
+      const enumObj = metrics && metrics[enumName2];
       if (!enumObj) {
         return Reflect.getOwnPropertyDescriptor(fallbackEnum, prop);
       }
@@ -2649,7 +2649,7 @@ function mapError(err, detail) {
 }
 var VALIDATION_ERROR_MESSAGES = /* @__PURE__ */ new Set([
   "AIDA request was blocked",
-  "Disallowed path or method",
+  "Disallowed path, method, or header",
   "Request validation failed",
   "Service not found"
 ]);
@@ -3057,6 +3057,9 @@ function mapCommonAidaRequestFields(aidaRequest, gcaRequest) {
       temperature: aidaRequest.options.temperature
     };
   }
+  if (aidaRequest.metadata?.string_session_id) {
+    gcaRequest.sessionId = aidaRequest.metadata.string_session_id;
+  }
 }
 function gcaResponseToAidaDoConversationResponse(response) {
   const functionCalls = [];
@@ -3087,7 +3090,7 @@ function extractTextFromGcaParts(parts) {
   if (!parts) {
     return "";
   }
-  return parts.map((p) => p.text || "").join("");
+  return parts.map((p) => p.thought ? "" : p.text || "").join("");
 }
 function aidaEventToGcaTelemetryRequest(clientEvent) {
   try {
@@ -3413,6 +3416,26 @@ function convertAidaParamToGcaSchema(param) {
   }
   return schema;
 }
+var BLOCKING_FINISH_REASONS = /* @__PURE__ */ new Set([
+  "SAFETY",
+  "RECITATION",
+  "BLOCKLIST",
+  "PROHIBITED_CONTENT",
+  "SPII",
+  "IMAGE_SAFETY",
+  "IMAGE_PROHIBITED_CONTENT",
+  "IMAGE_RECITATION"
+]);
+function enumName(value, names) {
+  return typeof value === "number" ? names[value] : value;
+}
+function blockedChunk(metadata, blockMessage) {
+  const citations = metadata.attributionMetadata?.citations ?? [];
+  return {
+    metadata: { ...metadata, attributionMetadata: { attributionAction: "BLOCK" /* BLOCK */, citations } },
+    blockMessage
+  };
+}
 function gcaChunkResponseToAidaChunkResponse(response) {
   try {
     if (response.error) {
@@ -3443,11 +3466,19 @@ function gcaChunkResponseToAidaChunkResponse(response) {
         }))
       };
     }
-    const chunks = parts.map((part) => {
+    const blockReason = enumName(response.promptFeedback?.blockReason, BlockReason);
+    if (blockReason && blockReason !== "BLOCKED_REASON_UNSPECIFIED") {
+      return [blockedChunk(metadata, `GCA prompt blocked: ${blockReason}`)];
+    }
+    const finishReason = enumName(candidate?.finishReason, FinishReason);
+    if (finishReason && BLOCKING_FINISH_REASONS.has(finishReason)) {
+      return [blockedChunk(metadata, `GCA response blocked: ${finishReason}`)];
+    }
+    const chunks = parts.length === 0 ? [{ metadata }] : parts.map((part) => {
       const aidaChunkResponse = { metadata };
-      if (part.text !== void 0) {
+      if (part.text && !part.thought) {
         aidaChunkResponse.textChunk = {
-          text: extractTextFromGcaParts(parts)
+          text: part.text
         };
       }
       if (part.functionCall) {
@@ -3484,6 +3515,9 @@ __export(GcaClient_exports, {
 });
 import * as Root2 from "../root/root.js";
 var SERVICE_NAME = "gcaService";
+var OPT_OUT_DATA_COLLECTION_HEADER = {
+  "User-Agent": "Chrome (aidev_client; datacollection_opt_in=false)"
+};
 var ENDPOINTS = {
   CONTENT: "/v1beta:generateContent",
   SEND_TELEMETRY: "/v1beta:sendTelemetry",
@@ -3492,6 +3526,9 @@ var ENDPOINTS = {
 var GcaClient = class {
   enabled() {
     return Root2.Runtime.hostConfig.devToolsUseGcaApi?.enabled;
+  }
+  #getHeaders(disableUserContentLogging) {
+    return disableUserContentLogging ? OPT_OUT_DATA_COLLECTION_HEADER : void 0;
   }
   async conversationRequest(request, streamId, options) {
     try {
@@ -3502,6 +3539,7 @@ var GcaClient = class {
           path: ENDPOINTS.STREAM_CONTENT,
           method: "POST",
           body: JSON.stringify(gcaRequest),
+          headers: this.#getHeaders(request.metadata.disable_user_content_logging),
           streamId
         },
         options
@@ -3518,7 +3556,8 @@ var GcaClient = class {
       service: SERVICE_NAME,
       path: ENDPOINTS.SEND_TELEMETRY,
       method: "POST",
-      body: JSON.stringify(gcaEvent)
+      body: JSON.stringify(gcaEvent),
+      headers: this.#getHeaders(clientEvent.disable_user_content_logging)
     });
     return response.then(
       (result) => {
@@ -3533,22 +3572,27 @@ var GcaClient = class {
   }
   async completeCode(request) {
     const gcaRequest = aidaCompletionRequestToGcaRequest(request);
-    const result = await this.#requestContent(gcaRequest);
+    const result = await this.#requestContent(gcaRequest, this.#getHeaders(request.metadata.disable_user_content_logging));
     return gcaResponseToAidaCompletionResponse(result);
   }
   async generateCode(request, options) {
     const gcaRequest = aidaGenerateCodeRequestToGcaRequest(request);
-    const result = await this.#requestContent(gcaRequest, options);
+    const result = await this.#requestContent(
+      gcaRequest,
+      this.#getHeaders(request.metadata.disable_user_content_logging),
+      options
+    );
     return gcaResponseToAidaGenerateCodeResponse(result);
   }
-  async #requestContent(request, options) {
+  async #requestContent(request, headers, options) {
     try {
       const response = await makeHttpRequest(
         {
           service: SERVICE_NAME,
           path: ENDPOINTS.CONTENT,
           method: "POST",
-          body: JSON.stringify(request)
+          body: JSON.stringify(request),
+          headers
         },
         options
       );
@@ -3661,15 +3705,12 @@ var AidaClient = class {
     if (!InspectorFrontendHostInstance.dispatchHttpRequest) {
       throw new Error("dispatchHttpRequest is not available");
     }
-    const recordOutcome = createOutcomeRecorder(conversationSurfaceHistogram(request.client_feature));
+    let outcome = AiClientRequestResult2.ABORTED;
     let abortListener;
     let streamId;
     try {
       if (options?.signal?.aborted) {
         throw new AidaAbortError();
-      }
-      if (Root3.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-        request.metadata.disable_user_content_logging = true;
       }
       const stream = (() => {
         let { promise, resolve, reject } = Promise.withResolvers();
@@ -3720,13 +3761,17 @@ var AidaClient = class {
           stream.fail(mapError(err));
         }
       );
-      yield* this.#handleResponseStream(stream);
-      recordOutcome(AiClientRequestResult2.SUCCESS);
+      for await (const chunk of this.#handleResponseStream(stream)) {
+        if (chunk.completed) {
+          outcome = AiClientRequestResult2.SUCCESS;
+        }
+        yield chunk;
+      }
     } catch (err) {
-      recordOutcome(classifyRequestError(err));
+      outcome = classifyRequestError(err);
       throw err;
     } finally {
-      recordOutcome(AiClientRequestResult2.ABORTED);
+      userMetrics.aiClientRequestResult(outcome, conversationSurfaceHistogram(request.client_feature));
       if (options?.signal && abortListener) {
         options.signal.removeEventListener("abort", abortListener);
       }
@@ -3752,7 +3797,7 @@ var AidaClient = class {
             ...result.metadata
           };
           if (metadata?.attributionMetadata?.attributionAction === "BLOCK" /* BLOCK */) {
-            throw new AidaBlockError();
+            throw new AidaBlockError(result.blockMessage);
           }
         }
         if (result.textChunk) {
@@ -3778,7 +3823,7 @@ var AidaClient = class {
           });
         } else if ("error" in result) {
           throw mapError(result.error);
-        } else {
+        } else if (!result.metadata) {
           throw new Error(`Unknown chunk result ${JSON.stringify(result)}`);
         }
       }
@@ -3825,9 +3870,6 @@ var AidaClient = class {
     }
   }
   registerClientEvent(clientEvent) {
-    if (Root3.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      clientEvent.disable_user_content_logging = true;
-    }
     if (this.#gcaClient.enabled()) {
       return this.#gcaClient.registerClientEvent(clientEvent);
     }
@@ -3845,9 +3887,6 @@ var AidaClient = class {
   async completeCode(request) {
     if (!InspectorFrontendHostInstance.aidaCodeComplete) {
       throw new Error("aidaCodeComplete is not available");
-    }
-    if (Root3.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      request.metadata.disable_user_content_logging = true;
     }
     const recordOutcome = createOutcomeRecorder("DevTools.AiClient.RequestResult.CodeComplete" /* AiClientRequestResultCodeComplete */);
     try {
@@ -3909,9 +3948,6 @@ var AidaClient = class {
     }
   }
   async generateCode(request, options) {
-    if (Root3.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      request.metadata.disable_user_content_logging = true;
-    }
     const surfaceHistogram = "DevTools.AiClient.RequestResult.CodeGenerate" /* AiClientRequestResultCodeGenerate */;
     try {
       const response = this.#gcaClient.enabled() ? await this.#gcaClient.generateCode(request, options) : await makeHttpRequest(

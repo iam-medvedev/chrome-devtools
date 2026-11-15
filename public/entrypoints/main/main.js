@@ -296,11 +296,7 @@ var UIStrings = {
   /**
    * @description Tooltip for the AI assistance button in the main DevTools toolbar.
    */
-  openAiAssistance: "Open AI assistance panel",
-  /**
-   * @description Tooltip for the Gemini button in the main DevTools toolbar.
-   */
-  openGemini: "Open `Gemini` panel"
+  openAiAssistance: "Open AI assistance panel"
 };
 var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -324,14 +320,13 @@ var DEFAULT_VIEW = (input, output, target) => {
     "global-ai-button": true,
     expanded: inPromotionState
   });
-  const strings = AIAssistance.AiUtils.isGeminiBranding() ? { title: i18nString(UIStrings.openGemini), label: i18n.i18n.lockedString("Gemini") } : { title: i18nString(UIStrings.openAiAssistance), label: i18nString(UIStrings.aiAssistance) };
   const icon = AIAssistance.AiUtils.getIconName();
   render(html`
     <style>${globalAiButton_css_default}</style>
     <div class="global-ai-button-container">
-      <button class=${classes} @click=${input.onClick} title=${strings.title} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
+      <button class=${classes} @click=${input.onClick} title=${i18nString(UIStrings.openAiAssistance)} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
         <devtools-icon name=${icon}></devtools-icon>
-        <span class="button-text">${` ${strings.label}`}</span>
+        <span class="button-text">${` ${i18nString(UIStrings.aiAssistance)}`}</span>
       </button>
     </div>
   `, target);
@@ -563,10 +558,11 @@ var WINDOW_LOCAL_STORAGE = {
 };
 var MainImpl = class _MainImpl {
   #readyForTestPromise = Promise.withResolvers();
-  #veStartPromise;
+  #veStartPromise = Promise.resolve();
   #toolbarsPromise;
   #universe;
   #supportsEmulation = false;
+  #veLogsTestMode = false;
   constructor(opts) {
     _MainImpl.instanceForTest = this;
     this.#supportsEmulation = opts?.supportsEmulation ?? false;
@@ -627,24 +623,33 @@ var MainImpl = class _MainImpl {
       Common2.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor).get()
     );
     const veLogging = config.devToolsVeLogging;
-    const veLogsTestMode = Common2.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
+    this.#veLogsTestMode = Common2.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
     if (veLogging?.enabled) {
-      if (veLogging?.testing || veLogsTestMode) {
+      VisualLogging2.enableLogging();
+      if (veLogging.testing || this.#veLogsTestMode) {
         VisualLogging2.setVeDebugLoggingEnabled(true, VisualLogging2.DebugLoggingFormat.TEST);
-        const options = {
-          processingThrottler: new Common2.Throttler.Throttler(0),
-          keyboardLogThrottler: new Common2.Throttler.Throttler(10),
-          hoverLogThrottler: new Common2.Throttler.Throttler(50),
-          dragLogThrottler: new Common2.Throttler.Throttler(50),
-          clickLogThrottler: new Common2.Throttler.Throttler(10),
-          resizeLogThrottler: new Common2.Throttler.Throttler(10)
-        };
-        this.#veStartPromise = VisualLogging2.startLogging(options);
-      } else {
-        this.#veStartPromise = VisualLogging2.startLogging();
       }
     }
     void this.#createAppUI();
+  }
+  async #startVeLogging() {
+    const veLogging = Root2.Runtime.hostConfig.devToolsVeLogging;
+    if (!veLogging?.enabled) {
+      return;
+    }
+    if (veLogging.testing || this.#veLogsTestMode) {
+      const options = {
+        processingThrottler: new Common2.Throttler.Throttler(0),
+        keyboardLogThrottler: new Common2.Throttler.Throttler(10),
+        hoverLogThrottler: new Common2.Throttler.Throttler(50),
+        dragLogThrottler: new Common2.Throttler.Throttler(50),
+        clickLogThrottler: new Common2.Throttler.Throttler(10),
+        resizeLogThrottler: new Common2.Throttler.Throttler(10)
+      };
+      await VisualLogging2.startLogging(options);
+    } else {
+      await VisualLogging2.startLogging();
+    }
   }
   #initializeGlobalsForLayoutTests() {
     self.Extensions ||= {};
@@ -840,9 +845,6 @@ var MainImpl = class _MainImpl {
         void badgeNotification.present(badge, reason);
       });
     }
-    if (Root2.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-      await PanelCommon.GeminiRebrandPromoDialog.maybeShow();
-    }
     _MainImpl.timeEnd("Main._createAppUI");
     const appProvider = UI2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
@@ -879,6 +881,7 @@ var MainImpl = class _MainImpl {
       }
     );
     this.#toolbarsPromise = inspectorView.createToolbars();
+    this.#veStartPromise = this.#toolbarsPromise.then(() => this.#startVeLogging());
     inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
     this.#universe.commentManager.addEventListener(
       CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED,
@@ -942,7 +945,12 @@ var MainImpl = class _MainImpl {
   }
   async #lateInitialization() {
     _MainImpl.time("Main._lateInitialization");
-    PanelCommon.ExtensionServer.ExtensionServer.instance().initializeExtensions();
+    const extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance();
+    if (!extensionServer.framesWidget().isShowing()) {
+      extensionServer.framesWidget().markAsRoot();
+      extensionServer.framesWidget().show(document.body);
+    }
+    extensionServer.initializeExtensions();
     void Promise.all(Common2.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
       const runnable = await lateInitializationLoader();
       return await runnable.run();

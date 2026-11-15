@@ -11,13 +11,11 @@ export default `/*
 /* <3 */
 
 .lighthouse-start-view {
-  line-height: 18px;
+  line-height: var(--sys-typescale-body4-line-height);
   padding: var(--sys-size-11);
   overflow: auto;
   height: 100%;
-  /* for buttons */
-  --legacy-accent-color: #0535c1;
-  --legacy-accent-color-hover: #17b;
+
   --font-size: var(--sys-typescale-body2-size);
   --report-font-family: roboto, helvetica, arial, sans-serif;
 }
@@ -38,18 +36,13 @@ export default `/*
 }
 
 .lighthouse-logo {
-  width: 75px;
-  height: 75px;
+  width: var(--sys-size-15);
+  height: var(--sys-size-15);
   flex-shrink: 0;
   background-repeat: no-repeat;
   background-size: contain;
   /* stylelint-disable-next-line custom-property-pattern */
   background-image: var(--image-file-lighthouse_logo);
-}
-
-.lighthouse-start-view .lighthouse-logo {
-  width: var(--sys-size-15);
-  height: var(--sys-size-15);
 }
 
 .lighthouse-form-section {
@@ -71,10 +64,6 @@ export default `/*
 .lighthouse-form-section-label i span {
   position: relative;
   top: calc(-1 * var(--sys-size-2));
-}
-
-.lighthouse-form-section-label span.largeicon-checkmark {
-  top: calc(-1 * var(--sys-size-3));
 }
 
 .lighthouse-form-section-label .lighthouse-learn-more {
@@ -141,7 +130,7 @@ export default `/*
   /* See: crbug.com/1152736 for color variable migration. */
   font-weight: bold;
   padding-left: var(--sys-size-5);
-  padding-top: 10px;
+  padding-top: var(--sys-size-5);
 }
 
 .lighthouse-warning-text::before {

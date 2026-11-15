@@ -157,10 +157,6 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForNoContext: 'Ask AI Assistance',
     /**
-     * @description Placeholder text for the chat UI input with branding Gemini (do not translate)
-     */
-    inputPlaceholderForNoContextBranded: 'Ask Gemini',
-    /**
      * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForAccessibility: 'Ask a question about the selected Lighthouse report',
@@ -746,6 +742,18 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             signal: this.#runAbortController.signal,
         });
     }
+    /**
+     * Returns true when `defaultType` is NONE only because AI Assistance is in the
+     * main tab bar. The main tab bar shows one tab at a time, so while AI
+     * Assistance is selected there, no domain panel (Elements, Network, ...) can be
+     * visible. In that case NONE does not mean that the user moved away, and
+     * callers must keep the current conversation and its context.
+     */
+    #isDomainPanelHiddenByMainTabBar(defaultType) {
+        return AiAssistanceModel.AiUtils.isContextSelectionEnabled() &&
+            defaultType === "none" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NONE */ &&
+            UI.ViewManager.ViewManager.instance().locationNameForViewId(AiAssistancePanel.panelName) === 'panel';
+    }
     #getDefaultConversationType() {
         const { hostConfig } = Root.Runtime;
         const viewManager = UI.ViewManager.ViewManager.instance();
@@ -794,6 +802,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         const targetConversationType = this.#getDefaultConversationType();
+        if (this.#conversation && this.#isDomainPanelHiddenByMainTabBar(targetConversationType)) {
+            // Keep the existing empty conversation instead of replacing it with a NONE conversation.
+            this.requestUpdate();
+            return;
+        }
         if (this.#conversation?.type === targetConversationType) {
             this.requestUpdate();
             // The above if makes sure even if we have an active agent it's empty
@@ -844,8 +857,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         if (this.#conversation) {
             if (this.#conversation.isEmpty && AiAssistanceModel.AiUtils.isContextSelectionEnabled()) {
-                const context = this.#getConversationContext(this.#getDefaultConversationType());
-                this.#conversation.setContext(context);
+                const defaultType = this.#getDefaultConversationType();
+                const lookupType = this.#isDomainPanelHiddenByMainTabBar(defaultType) ? this.#conversation.type : defaultType;
+                this.#conversation.setContext(this.#getConversationContext(lookupType));
             }
             else {
                 const previousContext = this.#conversation.selectedContext;
@@ -1045,9 +1059,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         return true;
     }
     #getContextlessPlaceholder() {
-        return AiAssistanceModel.AiUtils.isGeminiBranding() ?
-            lockedString(UIStringsNotTranslate.inputPlaceholderForNoContextBranded) :
-            lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
+        return lockedString(UIStringsNotTranslate.inputPlaceholderForNoContext);
     }
     #getChatInputPlaceholder() {
         if (!this.#conversation) {
@@ -1567,6 +1579,15 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.widgets = data.widgets;
                         step.state = { type: 'completed' };
                         commitStep();
+                        // Auto-loaded skills are logged for telemetry on the CONTEXT event without
+                        // creating a user-facing walkthrough step, because the selected context may
+                        // not be relevant to the user's question.
+                        if (!this.#conversation?.isReadOnly && AiAssistanceModel.AiUtils.isAiV2Enabled() &&
+                            data.autoLearnedSkills) {
+                            for (const skill of data.autoLearnedSkills) {
+                                void VisualLogging.logFunctionCall('ai-v2-auto-learn-skill', skill);
+                            }
+                        }
                         break;
                     }
                     case "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */: {
@@ -1688,7 +1709,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                             });
                         }
                         // When there is an answer without any thinking steps, we don't want to show the thinking step.
-                        // TODO(crbug.com/463323934): Remove specially handling this case.
                         if (systemMessage.parts.length > 1) {
                             const firstPart = systemMessage.parts[0];
                             if (firstPart.type === 'step' && firstPart.step.state.type === 'in_progress' && !firstPart.step.thought &&

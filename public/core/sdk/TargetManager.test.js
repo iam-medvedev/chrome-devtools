@@ -265,5 +265,25 @@ describe('TargetManager', () => {
         sinon.assert.calledOnce(target2DisposeSpy);
         assert.lengthOf(targetManager.targets(), 0);
     });
+    it('times out when a target hangs during suspendAllTargets', async () => {
+        const clock = sinon.useFakeTimers();
+        const { promise, resolve } = Promise.withResolvers();
+        try {
+            const target = createTarget({ targetManager });
+            sinon.stub(target, 'suspend').returns(promise);
+            let resolved = false;
+            void targetManager.suspendAllTargets().then(() => {
+                resolved = true;
+            });
+            await clock.tickAsync(1999);
+            assert.isFalse(resolved);
+            await clock.tickAsync(1);
+            assert.isTrue(resolved);
+        }
+        finally {
+            resolve();
+            clock.restore();
+        }
+    });
 });
 //# sourceMappingURL=TargetManager.test.js.map

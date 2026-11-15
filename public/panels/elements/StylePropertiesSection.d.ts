@@ -2,11 +2,12 @@ import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
 import * as ElementsComponents from './components/components.js';
-import { type Context, StylePropertyTreeElement } from './StylePropertyTreeElement.js';
+import { type Context, type StylePropertyData, StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 import type { StylesContainer } from './StylesContainer.js';
 export interface ActiveAiSuggestionProperty {
     name: string;
@@ -47,7 +48,7 @@ export declare class StylePropertiesSection {
     nestingLevel: number;
     nextEditorTriggerButtonIdx: number;
     private sectionIdx;
-    readonly sectionTooltipIdPrefix: number;
+    readonly sectionTooltipIdFactory: Tooltips.Tooltip.IdFactory;
     private ghostStyleTreeElements;
     constructor(stylesContainer: StylesContainer, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null, computedStyleExtraFields: Protocol.CSS.ComputedStyleExtraFields | null, customHeaderText?: string);
     setComputedStyles(computedStyles: Map<string, string> | null): void;
@@ -114,8 +115,9 @@ export declare class StylePropertiesSection {
     isPropertyInherited(propertyName: string): boolean;
     nextEditableSibling(): StylePropertiesSection | null;
     previousEditableSibling(): StylePropertiesSection | null;
-    refreshUpdate(editedTreeElement: StylePropertyTreeElement): void;
-    updateVarFunctions(editedTreeElement: StylePropertyTreeElement): void;
+    findProperty(propertyOrName: SDK.CSSProperty.CSSProperty | string): StylePropertyData | undefined;
+    refreshUpdate(editedProperty: StylePropertyData): void;
+    updateVarFunctions(editedProperty: StylePropertyData): void;
     update(full: boolean): void;
     showAllItems(event?: Event): void;
     onpopulate(): void;
@@ -131,7 +133,6 @@ export declare class StylePropertiesSection {
     expand(): void;
     isCollapsed(): boolean;
     markSelectorMatches(): void;
-    static getNextSpecificityTooltipId(): string;
     renderSelectors(selectors: Array<{
         text: string;
         specificity?: Protocol.CSS.Specificity;

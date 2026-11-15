@@ -53,7 +53,6 @@ export default `/*
   --network-grid-focus-selected-color-has-error: var(--sys-color-surface-error);
   --network-grid-focus-selected-color-has-warning: var(--sys-color-surface-yellow);
   --network-grid-from-frame-color: var(--ref-palette-cyan95);
-  --network-grid-is-product-color: var(--ref-palette-yellow95);
   --network-frame-divider-color: var(--ref-palette-yellow60);
 }
 
@@ -62,7 +61,6 @@ export default `/*
   --network-grid-initiator-path-color: var(--ref-palette-green40);
   --network-grid-initiated-path-color: var(--ref-palette-error20);
   --network-grid-from-frame-color: var(--ref-palette-neutral50);
-  --network-grid-is-product-color: var(--ref-palette-neutral70);
 }
 
 .network-details-view {
@@ -76,11 +74,6 @@ export default `/*
 .network-item-view {
   display: flex;
   background: var(--sys-color-cdt-base-container);
-}
-
-.network-item-preview-toolbar {
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  background-color: var(--sys-color-surface1);
 }
 
 .resource-timing-view {
@@ -123,7 +116,7 @@ export default `/*
 }
 
 .network .network-overview {
-  flex: 0 0 60px;
+  flex: 0 0 var(--sys-size-18);
 }
 
 .network-overview .resources-dividers-label-bar .resources-divider {
@@ -177,10 +170,6 @@ export default `/*
   .panel.network devtools-toolbar {
     background-color: canvas;
   }
-}
-
-devtools-request-headers {
-  min-width: 360px;
 }
 
 /*# sourceURL=${import.meta.resolve('./networkPanel.css')} */`;

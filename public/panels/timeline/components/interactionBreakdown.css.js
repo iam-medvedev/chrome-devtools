@@ -10,7 +10,7 @@ export default `/*
  */
 
 @scope to (devtools-widget > *) {
-  :host {
+  :scope {
     display: block;
   }
 

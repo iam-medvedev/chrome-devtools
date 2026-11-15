@@ -47,16 +47,14 @@ var controlButton_css_default = `/*
 }
 
 .icon {
-  display: flex;
+  display: grid;
+  place-items: center;
   width: var(--sys-size-14);
   height: var(--sys-size-14);
   border-radius: var(--sys-shape-corner-full);
   background: var(--sys-color-error-bright);
   margin-bottom: var(--sys-size-5);
-  position: relative;
   transition: background 200ms;
-  place-content: center center;
-  align-items: center;
 }
 
 .icon::before {
@@ -64,14 +62,9 @@ var controlButton_css_default = `/*
 
   box-sizing: border-box;
   content: "";
-  display: block;
   width: var(--sys-size-7);
   height: var(--sys-size-7);
   border: var(--sys-size-1) solid var(--override-white);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background-color: var(--override-white);
 }
 
@@ -126,7 +119,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
       <div class="icon ${shape}"></div>
       <div class="label">${label}</div>
     </button>
-  `, target, { container: { attributes: { classes: "flex-none" } } });
+  `, target, { container: { classes: ["flex-none"] } });
 };
 var ControlButton = class extends UI.Widget.Widget {
   #label = "";
@@ -269,7 +262,7 @@ h1 {
 .checkbox-container {
   display: flex;
   flex-flow: row wrap;
-  gap: 10px;
+  gap: var(--sys-size-5);
 }
 
 input[type="checkbox"]:focus-visible {
@@ -701,10 +694,6 @@ var recorderPanel_css_default = `/*
 
 :host {
   overflow-x: auto;
-}
-
-:host,
-devtools-create-recording-view {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -744,7 +733,6 @@ select {
   max-width: var(--sys-size-22);
   min-width: var(--sys-size-22);
   padding: 0 var(--sys-size-6) 0 var(--sys-size-5);
-  position: relative;
   color: var(--sys-color-on-surface);
   background-color: transparent;
   text-overflow: ellipsis;
@@ -794,10 +782,6 @@ devtools-menu {
   width: 0;
   height: 0;
   position: absolute;
-}
-
-devtools-recording-list-view {
-  overflow: auto;
 }
 
 .error {
@@ -910,12 +894,12 @@ var recordingListView_css_default = `/*
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--sys-size-6);
   }
 
   h1 {
     font-size: var(--sys-typescale-body1-size);
-    line-height: 19px;
+    line-height: var(--sys-typescale-body1-line-height);
     color: var(--sys-color-on-surface);
     font-weight: normal;
   }
@@ -928,13 +912,13 @@ var recordingListView_css_default = `/*
   }
 
   .table {
-    margin-top: 35px;
+    margin-top: var(--sys-size-13);
   }
 
   .title {
     font-size: var(--sys-typescale-body3-size);
     color: var(--sys-color-on-surface);
-    margin-left: 10px;
+    margin-left: var(--sys-size-5);
     flex: 1;
     overflow-x: hidden;
     white-space: nowrap;
@@ -1364,40 +1348,48 @@ var recordingView_css_default = `/*
   .sections {
     min-height: 0;
     background-color: var(--sys-color-cdt-base-container);
-    z-index: 0;
-    position: relative;
+    /* Keeps the stacking of the screenshots local to the sections. */
+    isolation: isolate;
     container: sections / inline-size;
   }
 
   .section {
-    display: flex;
-    padding: 0 var(--sys-size-8);
-    gap: var(--sys-size-5);
-    position: relative;
+    /*
+     * The steps span the full width of the section so that their highlight
+     * covers the whole row. Their content is inset to leave room for the
+     * screenshot, which is placed on top of the steps.
+     */
+    --timeline-section-inset-inline-start: calc(var(--sys-size-8) + var(--sys-size-19) + var(--sys-size-5));
+    --timeline-section-inset-inline-end: var(--sys-size-8);
+
+    display: grid;
+    grid-template-areas: 'section';
+    grid-template-columns: minmax(0, 1fr);
+    /* Divider between the sections. */
+    box-shadow: inset 0 calc(-1 * var(--sys-size-1)) var(--sys-color-divider);
   }
 
-  .section::after {
-    content: '';
-    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-  }
-
-  .section:last-child::after {
-    content: none;
+  .section:last-child {
+    box-shadow: none;
   }
 
   .screenshot-wrapper {
-    flex: 0 0 var(--sys-size-19);
+    grid-area: section;
+    align-self: start;
+    width: var(--sys-size-19);
+    margin-inline-start: var(--sys-size-8);
     padding-top: var(--sys-size-13);
-    /* We want this to be on top of \\'.step-overlay\\' */
-    z-index: 2;
+    /* Draw the screenshot on top of the step highlights. */
+    z-index: 1;
+    /* Only the screenshot itself should cover the steps below it. */
+    pointer-events: none;
   }
 
   @container sections (max-width: 400px) {
+    .section {
+      --timeline-section-inset-inline-start: var(--sys-size-8);
+    }
+
     .screenshot-wrapper {
       display: none;
     }
@@ -1411,30 +1403,18 @@ var recordingView_css_default = `/*
     height: auto;
     border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: 1px;
+    pointer-events: auto;
   }
 
   .content {
-    flex: 1;
+    grid-area: section;
+    align-self: start;
     min-width: 0;
   }
 
-  .steps {
-    flex: 1;
-    position: relative;
-    align-self: flex-start;
-    overflow: visible;
-  }
-
   .step {
-    position: relative;
-    padding-left: var(--sys-size-14);
     margin: var(--sys-size-8) 0;
-  }
-
-  .step .action {
-    font-size: var(--sys-typescale-body3-size);
-    line-height: var(--sys-typescale-body4-line-height);
-    letter-spacing: 0.03em;
+    margin-inline-start: calc(var(--timeline-section-inset-inline-start) + var(--sys-size-14));
   }
 
   .recording {
@@ -1565,10 +1545,19 @@ var recordingView_css_default = `/*
     outline-offset: var(--sys-size-2);
   }
 
+  /*
+   * The settings and the actions are separated by column rules, which are only
+   * drawn between items on the same line, so that no separator is left
+   * dangling at the end of a line when they wrap.
+   * This relies on CSS gap decorations (column-rule on flex containers);
+   * browsers without them show no separators.
+   */
   .settings {
     margin-top: var(--sys-size-3);
     display: flex;
     flex-wrap: wrap;
+    column-gap: calc(2 * 5px + var(--sys-size-1));
+    column-rule: var(--sys-size-1) solid var(--sys-color-divider);
     font-size: var(--sys-typescale-body4-size);
     line-height: var(--sys-typescale-body2-line-height);
     letter-spacing: 0.03em;
@@ -1577,26 +1566,15 @@ var recordingView_css_default = `/*
 
   .settings.expanded {
     gap: 10px;
-  }
-
-  .settings .separator {
-    width: var(--sys-size-1);
-    height: var(--sys-size-9);
-    background-color: var(--sys-color-divider);
-    margin: 0 5px;
+    column-rule: none;
   }
 
   .actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--sys-size-6);
-  }
-
-  .actions .separator {
-    width: var(--sys-size-1);
-    height: var(--sys-size-11);
-    background-color: var(--sys-color-divider);
+    gap: var(--sys-size-6) calc(2 * var(--sys-size-6) + var(--sys-size-1));
+    column-rule: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .is-recording .header-title::before {
@@ -1609,14 +1587,12 @@ var recordingView_css_default = `/*
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
     padding: var(--sys-size-6);
     background: var(--sys-color-cdt-base-container);
-    z-index: 1;
   }
 
   .controls {
     align-items: center;
     display: flex;
     justify-content: center;
-    position: relative;
     width: 100%;
   }
 
@@ -1732,6 +1708,8 @@ var replaySection_css_default = `/*
 
 .select-button {
   display: flex;
+  /* Lets the button go below the select in narrow panels instead of overflowing. */
+  flex-wrap: wrap;
   gap: var(--sys-size-6);
 }
 
@@ -2344,8 +2322,8 @@ var stepEditor_css_default = `/*
   font-family: var(--monospace-font-family);
   font-size: var(--monospace-font-size);
   align-items: center;
-  line-height: 18px;
-  margin-top: 3px;
+  line-height: var(--sys-typescale-body4-line-height);
+  margin-top: var(--sys-size-3);
 }
 
 .row devtools-button {
@@ -2367,8 +2345,8 @@ var stepEditor_css_default = `/*
 }
 
 .inline-button {
-  width: 18px;
-  height: 18px;
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
   opacity: 0%;
   visibility: hidden;
   transition: opacity 200ms;
@@ -3392,16 +3370,27 @@ var stepView_css_default = `/*
   font-size: inherit;
 }
 
+:host {
+  /* Space reserved in front of the title for the expand/collapse chevron. */
+  --chevron-column-width: calc(var(--sys-size-7) + var(--sys-size-2));
+}
+
 .title-container {
-  /* Vertically center items with min-width: 0; */
   min-width: 0;
   font-size: var(--sys-size-7);
+  line-height: var(--sys-size-8);
   display: flex;
   flex-direction: row;
   gap: var(--sys-size-2);
   outline-offset: var(--sys-size-2);
   flex-grow: 1;
-  align-items: center;
+  align-items: flex-start;
+  /* Keeps the title aligned with the title of expandable steps. */
+  padding-inline-start: var(--chevron-column-width);
+}
+
+.title-container.action {
+  padding-inline-start: 0;
 }
 
 .title-container:focus-visible {
@@ -3410,7 +3399,7 @@ var stepView_css_default = `/*
 
 .action {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .title {
@@ -3432,16 +3421,29 @@ var stepView_css_default = `/*
   opacity: 0%;
   fill: var(--sys-color-primary);
   stroke: #1a73e8; /* stylelint-disable-line plugin/use_theme_colors */
-  transform: translate(-1.92px, -3px);
+  /* Shift 24x24 path (left stroke 2px, y-center 12px) by (-2px, -4px)
+   * to align with the 8px (--sys-size-5) .circle-icon center, .chevron, and first line of the title. */
+  transform: translate(
+    calc(-1 * var(--sys-size-2)),
+    calc(-1 * var(--sys-size-3))
+  );
 }
 
 .circle-icon {
   fill: var(--sys-color-primary);
   stroke: var(--sys-color-cdt-base-container);
   stroke-width: var(--sys-size-3);
-  r: 5px;
+  r: var(--sys-size-4);
   cx: var(--sys-size-5);
   cy: var(--sys-size-5);
+}
+
+.is-start-of-group:not(.is-first-section) .circle-icon {
+  /* 7px radius: the outer edge of the 2px (--sys-size-2) stroke touches the 16px icon box. */
+  r: calc(var(--sys-size-5) - var(--sys-size-1));
+  fill: var(--sys-color-cdt-base-container);
+  stroke: var(--sys-color-primary);
+  stroke-width: var(--sys-size-2);
 }
 
 .step.is-success .circle-icon {
@@ -3458,20 +3460,22 @@ var stepView_css_default = `/*
 }
 
 .error {
-  margin: var(--sys-size-8) 0 0;
+  margin-block-start: var(--sys-size-8);
+  margin-inline-start: var(--chevron-column-width);
   padding: var(--sys-size-5);
   background: var(--sys-color-error-container);
   color: var(--sys-color-error);
-  position: relative;
 }
 
 @keyframes rotate {
   0% {
-    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(0)
+      translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 
   100% {
-    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg) translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
+    transform: translate(var(--sys-size-5), var(--sys-size-5)) rotate(360deg)
+      translate(calc(-1 * var(--sys-size-5)), calc(-1 * var(--sys-size-5)));
   }
 }
 
@@ -3518,12 +3522,13 @@ var stepView_css_default = `/*
 }
 
 .chevron {
+  flex-shrink: 0;
+  /* Aligns the 14px (--sys-size-7) chevron with the 16px (--sys-size-8) first line and 8px (--sys-size-5) .circle-icon center. */
+  align-self: flex-start;
+  margin-block-start: var(--sys-size-1);
   width: var(--sys-size-7);
   height: var(--sys-size-7);
   transition: 200ms;
-  position: absolute;
-  top: var(--sys-size-7);
-  left: var(--sys-size-11);
   transform: rotate(-90deg);
   color: var(--sys-color-on-surface);
 }
@@ -3535,15 +3540,11 @@ var stepView_css_default = `/*
 .details {
   display: none;
   margin-top: var(--sys-size-5);
-  position: relative;
+  margin-inline-start: var(--chevron-column-width);
 }
 
 .expanded .details {
   display: block;
-}
-
-.step-details {
-  overflow: auto;
 }
 
 .summary {
@@ -3567,15 +3568,18 @@ var stepView_css_default = `/*
   text-overflow: ellipsis;
 }
 
+.icon {
+  /* The 16px (--sys-size-8) circle icon is drawn in the top 16px of the 24x24 SVG. */
+  margin-block-end: calc(-1 * var(--sys-size-5));
+}
+
 .step-actions {
   border: none;
   border-radius: 0;
   flex-shrink: 0;
   height: var(--sys-size-11);
-
-  --override-select-menu-show-button-border-radius: 0;
-  --override-select-menu-show-button-outline: none;
-  --override-select-menu-show-button-padding: 0;
+  /* Centers the 24px (--sys-size-11) button on the 16px (--sys-size-8) first line. */
+  margin-block: calc(-1 * var(--sys-size-3));
 }
 
 .step.has-breakpoint .circle-icon {
@@ -3627,130 +3631,110 @@ var timelineSection_css_default = `/*
   font-size: inherit;
 }
 
+/*
+ * A row of the timeline. The row, and with it the hover and selection
+ * highlight, spans the full width of its container. Embedders can inset the
+ * content of the row with the following custom properties:
+ *   --timeline-section-inset-inline-start
+ *   --timeline-section-inset-inline-end
+ */
 .timeline-section {
-  position: relative;
-  padding: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-14);
-  margin-left: var(--sys-size-5);
-
   --override-color-recording-successful-text: #36a854;
-  --override-color-recording-successful-background: #e6f4ea;
+  --timeline-section-padding-block-start: var(--sys-size-5);
+  --timeline-section-padding-block-end: var(--sys-size-5);
+  /*
+   * Offset from the top of the row to the center of the icon. The icon is
+   * drawn centered 8px below the top edge of the slotted icon element.
+   */
+  --timeline-section-icon-center: calc(var(--timeline-section-padding-block-start) + var(--sys-size-5));
+
+  display: grid;
+  grid-template-columns: [timeline] var(--sys-size-8) [content] minmax(0, 1fr);
+  column-gap: var(--sys-size-8);
+  padding-inline: var(--timeline-section-inset-inline-start, 0) var(--timeline-section-inset-inline-end, 0);
 }
 
-.overlay {
-  position: absolute;
-  width: 100vw;
-  height: 100%;
-  /* Offset of 32px for spacing and 80px for screenshot */
-  left: calc(-1 * var(--sys-size-13) - var(--sys-size-19));
-  top: 0;
-  z-index: -1;
-  pointer-events: none;
+.timeline-section.is-start-of-group:not(.is-first-section) {
+  --timeline-section-padding-block-start: var(--sys-size-8);
 }
 
-@container (max-width: 400px) {
-  .overlay {
-    /* Offset of 32px for spacing */
-    left: calc(-1 * var(--sys-size-13));
-  }
+.timeline-section.is-end-of-group {
+  --timeline-section-padding-block-end: var(--sys-size-8);
 }
 
-:hover .overlay {
-  background: var(--sys-color-state-hover-on-subtle);
+.timeline-section:hover {
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.is-selected .overlay {
-  background: var(--sys-color-tonal-container);
+.timeline-section.is-selected {
+  background-color: var(--sys-color-tonal-container);
 }
 
-:host-context(.is-stopped) .overlay {
-  background: var(--sys-color-state-ripple-primary);
+:host-context(.is-stopped) .timeline-section {
+  background-color: var(--sys-color-state-ripple-primary);
   outline: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
-  z-index: 4;
 }
 
-.is-start-of-group:not(:first-of-type) {
-  padding-top: var(--sys-size-8);
+.timeline {
+  grid-column: timeline;
+  display: grid;
+  /* All parts of the timeline are stacked on top of each other. */
+  grid-template-areas: 'timeline';
 }
 
-.is-end-of-group {
-  padding-bottom: var(--sys-size-8);
+.timeline > * {
+  grid-area: timeline;
+}
+
+.line {
+  justify-self: center;
+  width: var(--sys-size-2);
+  background-color: var(--sys-color-primary);
+}
+
+/* Connects the icon to the icon of the previous row. */
+.line-before {
+  align-self: start;
+  height: var(--timeline-section-icon-center);
+}
+
+/* Connects the icon to the icon of the next row. */
+.line-after {
+  margin-block-start: var(--timeline-section-icon-center);
+}
+
+.is-first-section .line-before,
+.is-last-section .line-after {
+  visibility: hidden;
 }
 
 .icon {
-  position: absolute;
-  left: var(--sys-size-3);
-  transform: translateX(-50%);
-  z-index: 2;
+  display: flex;
+  place-self: start start;
+  margin-block-start: var(--timeline-section-padding-block-start);
 }
 
-.bar {
-  position: absolute;
-  left: var(--sys-size-3);
-  display: block;
-  transform: translateX(-50%);
-  top: var(--sys-size-8);
-  height: 100%;
-  z-index: 1; /* We want this to be below of \\'.overlay\\' for stopped case */
+.content {
+  grid-column: content;
+  padding-block: var(--timeline-section-padding-block-start) var(--timeline-section-padding-block-end);
 }
 
-.bar .background {
-  fill: var(--sys-color-state-hover-on-subtle);
+:host-context(.is-error) .line-after,
+.is-after-error .line-before {
+  background-color: var(--sys-color-error);
 }
 
-.bar .line {
-  fill: var(--sys-color-primary);
-}
-
-.is-first-section .bar {
-  height: 100%;
-  display: none;
-}
-
-.is-first-section:not(.is-last-section) .bar {
-  display: block;
-}
-
-.is-last-section .bar .line {
-  display: none;
-}
-
-.is-last-section .bar .background {
-  display: none;
-}
-
-:host-context(.is-error) .bar .line {
-  fill: var(--sys-color-error);
-}
-
-:host-context(.is-error) .bar .background {
-  fill: var(--sys-color-error-container);
-}
-
-:host-context(.was-successful) .bar .background {
-  animation: flash-background 2s;
-}
-
-:host-context(.was-successful) .bar .line {
+:host-context(.was-successful) .line {
   animation: flash-line 2s;
-}
-
-@keyframes flash-background {
-  25% {
-    fill: var(--override-color-recording-successful-background);
-  }
-
-  75% {
-    fill: var(--override-color-recording-successful-background);
-  }
 }
 
 @keyframes flash-line {
   25% {
-    fill: var(--override-color-recording-successful-text);
+    background-color: var(--override-color-recording-successful-text);
   }
 
   75% {
-    fill: var(--override-color-recording-successful-text);
+    background-color: var(--override-color-recording-successful-text);
   }
 }
 
@@ -3765,18 +3749,19 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
     "is-start-of-group": input.isStartOfGroup,
     "is-first-section": input.isFirstSection,
     "is-last-section": input.isLastSection,
-    "is-selected": input.isSelected
+    "is-selected": input.isSelected,
+    "is-after-error": input.isAfterError
   };
   Lit8.render(
     html8`
     <style>${timelineSection_css_default}</style>
     <div class=${Lit8.Directives.classMap(classes)}>
-      <div class="overlay"></div>
-      <div class="icon"><slot name="icon"></slot></div>
-      <svg width="24" height="100%" class="bar" aria-hidden="true">
-        <rect class="line" x="7" y="0" width="2" height="100%" />
-      </svg>
-      <slot></slot>
+      <div class="timeline">
+        <div class="line line-before"></div>
+        <div class="line line-after"></div>
+        <div class="icon"><slot name="icon"></slot></div>
+      </div>
+      <div class="content"><slot></slot></div>
     </div>
   `,
     target
@@ -3788,6 +3773,7 @@ var TimelineSection = class extends UI8.Widget.Widget {
   #isFirstSection = false;
   #isLastSection = false;
   #isSelected = false;
+  #isAfterError = false;
   #view;
   constructor(element, view = DEFAULT_VIEW8) {
     super(element, { useShadowDom: true });
@@ -3813,6 +3799,13 @@ var TimelineSection = class extends UI8.Widget.Widget {
     this.#isSelected = value2;
     this.requestUpdate();
   }
+  set isAfterError(value2) {
+    if (this.#isAfterError === value2) {
+      return;
+    }
+    this.#isAfterError = value2;
+    this.requestUpdate();
+  }
   performUpdate() {
     this.#view(
       {
@@ -3820,7 +3813,8 @@ var TimelineSection = class extends UI8.Widget.Widget {
         isStartOfGroup: this.#isStartOfGroup,
         isFirstSection: this.#isFirstSection,
         isLastSection: this.#isLastSection,
-        isSelected: this.#isSelected
+        isSelected: this.#isSelected,
+        isAfterError: this.#isAfterError
       },
       void 0,
       this.contentElement
@@ -3830,7 +3824,7 @@ var TimelineSection = class extends UI8.Widget.Widget {
 
 // ../../front_end/panels/recorder/StepView.ts
 var { html: html9 } = Lit9;
-var { ifDefined: ifDefined2 } = Lit9.Directives;
+var { classMap, ifDefined: ifDefined2 } = Lit9.Directives;
 var { widget: widget3 } = UI9.Widget;
 var UIStrings7 = {
   /**
@@ -4088,7 +4082,8 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       isLastSection: input.isLastSection,
       isStartOfGroup: input.isStartOfGroup,
       isEndOfGroup: input.isEndOfGroup,
-      isSelected: input.isSelected
+      isSelected: input.isSelected,
+      isAfterError: input.isAfterError
     })}
         @contextmenu=${(e) => {
       const menu = new UI9.ContextMenu.ContextMenu(e);
@@ -4110,7 +4105,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         input.onStepHover(stepOrSection);
       }
     }}
-        class=${Lit9.Directives.classMap(stepClasses)}>
+        class=${classMap(stepClasses)}>
         <svg slot="icon" width="24" height="24" class="icon"
           role=${input.step ? "button" : "presentation"}
           aria-label=${ifDefined2(input.step ? breakpointTitle : void 0)}
@@ -4160,15 +4155,15 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       onStepEdited: input.stepEdited,
       onAttributeRequested: input.onAttributeRequested
     })}
-            class=${input.isSelected ? "is-selected" : ""}></devtools-widget>`}
+            class=${classMap({ "step-editor": true, "is-selected": input.isSelected })}></devtools-widget>`}
           ${input.section?.causingStep && html9`<devtools-widget ${widget3(StepEditor, {
       step: input.section.causingStep,
       isTypeEditable: false,
       disabled: input.isPlaying,
       onStepEdited: input.stepEdited,
       onAttributeRequested: input.onAttributeRequested
-    })}></devtools-widget>`}
-          }
+    })}
+            class="step-editor"></devtools-widget>`}
         </div>
         ${input.error && html9`
           <div class="error" role="alert">
@@ -4202,6 +4197,7 @@ var StepView = class extends UI9.Widget.Widget {
     sectionIndex: 0,
     isFirstSection: false,
     isLastSection: false,
+    isAfterError: false,
     isRecording: false,
     isPlaying: false,
     isVisible: false,
@@ -4248,6 +4244,13 @@ var StepView = class extends UI9.Widget.Widget {
     this.#viewInput.error = error;
     this.requestUpdate();
   }
+  set showDetails(showDetails) {
+    if (this.#viewInput.showDetails === showDetails) {
+      return;
+    }
+    this.#viewInput.showDetails = showDetails;
+    this.requestUpdate();
+  }
   set isEndOfGroup(isEndOfGroup) {
     this.#viewInput.isEndOfGroup = isEndOfGroup;
     this.requestUpdate();
@@ -4269,7 +4272,17 @@ var StepView = class extends UI9.Widget.Widget {
     this.requestUpdate();
   }
   set isLastSection(isLastSection) {
+    if (this.#viewInput.isLastSection === isLastSection) {
+      return;
+    }
     this.#viewInput.isLastSection = isLastSection;
+    this.requestUpdate();
+  }
+  set isAfterError(isAfterError) {
+    if (this.#viewInput.isAfterError === isAfterError) {
+      return;
+    }
+    this.#viewInput.isAfterError = isAfterError;
     this.requestUpdate();
   }
   set isRecording(isRecording) {
@@ -4681,7 +4694,6 @@ function renderSettings({
     environmentFragments.push(
       html10`<div>${settings.viewportSettings.isMobile ? i18nString8(UIStrings8.mobile) : i18nString8(UIStrings8.desktop)}</div>`
     );
-    environmentFragments.push(html10`<div class="separator"></div>`);
     environmentFragments.push(
       html10`<div>${settings.viewportSettings.width}×${settings.viewportSettings.height} px</div>`
     );
@@ -4715,7 +4727,6 @@ function renderSettings({
         html10`<div>${SDK2.NetworkManager.NoThrottlingConditions.title instanceof Function ? SDK2.NetworkManager.NoThrottlingConditions.title() : SDK2.NetworkManager.NoThrottlingConditions.title}</div>`
       );
     }
-    replaySettingsFragments.push(html10`<div class="separator"></div>`);
     replaySettingsFragments.push(
       html10`<div>${i18nString8(UIStrings8.timeout, {
         value: settings.timeout || Models7.RecordingPlayer.defaultTimeout
@@ -4816,7 +4827,7 @@ function renderTimelineArea(input, output) {
           sidebar-initial-size="300"
           show=${input.showCodeView ? "both" : "main"}
         >
-          <div slot="main" role="region" aria-labelledby="recording-steps-heading">
+          <div slot="main" class="steps-pane" role="region" aria-labelledby="recording-steps-heading">
             ${renderSections(input)}
           </div>
           <div id="recording-code-pane" slot="sidebar" role="region" aria-labelledby="recording-code-heading"
@@ -4920,6 +4931,21 @@ function renderReplayOrAbortButton(input) {
 }
 function renderSections(input) {
   const codeToggleTitle = input.showCodeView ? i18nString8(UIStrings8.hideCode) : i18nString8(UIStrings8.showCode);
+  const getPreviousState = (sectionIndex, stepIndex) => {
+    const section5 = input.sections[sectionIndex];
+    if (stepIndex > 0) {
+      return input.getStepState(section5.steps[stepIndex - 1]);
+    }
+    if (stepIndex === 0) {
+      return input.getSectionState(section5);
+    }
+    const previousSection = input.sections[sectionIndex - 1];
+    if (!previousSection) {
+      return void 0;
+    }
+    const lastStep = previousSection.steps.at(-1);
+    return lastStep ? input.getStepState(lastStep) : input.getSectionState(previousSection);
+  };
   return html10`
       <div class="sections">
         <div class="section-toolbar">
@@ -4955,7 +4981,8 @@ function renderSections(input) {
       isEndOfGroup: section5.steps.length === 0,
       isFirstSection: i === 0,
       isLastSection: i === input.sections.length - 1 && section5.steps.length === 0,
-      isSelected: input.selectedStep === (section5.causingStep || null),
+      isAfterError: getPreviousState(i, -1) === "error" /* ERROR */,
+      isSelected: section5.causingStep !== void 0 && input.selectedStep === section5.causingStep,
       sectionIndex: i,
       isRecording: input.isRecording,
       isPlaying: input.replayState.isPlaying,
@@ -4972,7 +4999,7 @@ function renderSections(input) {
       onAttributeRequested: input.onAttributeRequested,
       onCopyStep: input.onCopyStep
     })}
-                  ${section5.steps.map((step) => {
+                  ${section5.steps.map((step, j) => {
       const stepIndex = input.recording.steps.indexOf(step);
       return html10`
                       <devtools-widget
@@ -4982,6 +5009,7 @@ function renderSections(input) {
         error: input.currentStep === step ? input.currentError ?? void 0 : void 0,
         isFirstSection: false,
         isLastSection: i === input.sections.length - 1 && input.recording.steps[input.recording.steps.length - 1] === step,
+        isAfterError: getPreviousState(i, j) === "error" /* ERROR */,
         isStartOfGroup: false,
         isEndOfGroup: section5.steps[section5.steps.length - 1] === step,
         stepIndex,
@@ -5080,7 +5108,6 @@ function renderHeader(input) {
               >
                 ${i18nString8(UIStrings8.performancePanel)}
               </devtools-button>
-              <div class="separator"></div>
               ${renderReplayOrAbortButton(input)}
             </div>` : Lit10.nothing}
     </div>`;
@@ -5281,12 +5308,16 @@ var RecordingView = class extends UI10.Widget.Widget {
     super.willHide();
     document.removeEventListener("copy", this.#onCopyBound);
   }
-  scrollToBottom() {
-    const wrapper = this.contentElement?.querySelector(".sections");
-    if (!wrapper) {
+  /**
+   * Scrolls to the last step once all pending updates are rendered.
+   */
+  async scrollToBottom() {
+    await UI10.Widget.Widget.allUpdatesComplete;
+    const stepsPane = this.contentElement.querySelector(".steps-pane");
+    if (!stepsPane) {
       return;
     }
-    wrapper.scrollTop = wrapper.scrollHeight;
+    stepsPane.scrollTop = stepsPane.scrollHeight;
   }
   #getStepState(step) {
     if (!this.currentStep) {
@@ -6756,7 +6787,7 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
           data2,
           this.currentRecording.storageName
         ));
-        this.#recordingView?.scrollToBottom();
+        void this.#recordingView?.scrollToBottom();
         await takeScreenshot(this.currentRecording);
       }
     );

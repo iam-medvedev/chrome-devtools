@@ -197,7 +197,7 @@ describeWithEnvironment('ReportingApiView', () => {
                 return original.call(this, 'en-US', { timeZone: 'UTC' });
             });
             const container = document.createElement('div');
-            renderElementIntoDOM(container);
+            renderElementIntoDOM(container, { includeCommonStyles: true });
             const widget = new UI.Widget.Widget();
             widget.markAsRoot();
             widget.show(container);

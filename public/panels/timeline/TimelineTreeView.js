@@ -210,7 +210,6 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     #parsedTrace = null;
     #entityMapper = null;
     #lastHighlightedEvent = null;
-    eventToTreeNode = new WeakMap();
     // Compact mode is used to render the tree view in a more compact UI,
     // suitable for AI assistance widgets. It removes sidebars and toolbars.
     #compactMode = false;
@@ -265,7 +264,7 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.refreshTree();
     }
     get startTime() {
-        return this.startTimeInternal ?? Trace.Types.Timing.Milli(0);
+        return this.startTimeInternal ?? Trace.Types.Timing.Micro(0);
     }
     set endTime(endTime) {
         if (this.endTimeInternal === endTime) {
@@ -275,7 +274,7 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.refreshTree();
     }
     get endTime() {
-        return this.endTimeInternal ?? Trace.Types.Timing.Milli(Infinity);
+        return this.endTimeInternal ?? Trace.Types.Timing.Micro(Infinity);
     }
     get compactMode() {
         return this.#compactMode;
@@ -405,17 +404,23 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     set activeSelection(selection) {
         const timings = rangeForSelection(selection);
-        const timingMilli = Trace.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(timings);
-        this.setRange(timingMilli.min, timingMilli.max);
+        if (this.startTimeInternal === timings.min && this.endTimeInternal === timings.max) {
+            return;
+        }
+        this.startTimeInternal = timings.min;
+        this.endTimeInternal = timings.max;
+        this.refreshTree();
     }
     setRange(startTime, endTime) {
-        if (this.startTimeInternal === startTime && this.endTimeInternal === endTime) {
+        const startTimeMicro = Trace.Types.Timing.Micro(Math.round(startTime * 1000));
+        const endTimeMicro = Trace.Types.Timing.Micro(Math.round(endTime * 1000));
+        if (this.startTimeInternal === startTimeMicro && this.endTimeInternal === endTimeMicro) {
             return;
         }
         // Update internal fields directly to prevent the startTime and endTime setters from
         // triggering individual refreshTree() calls.
-        this.startTimeInternal = startTime;
-        this.endTimeInternal = endTime;
+        this.startTimeInternal = startTimeMicro;
+        this.endTimeInternal = endTimeMicro;
         this.refreshTree();
     }
     highlightEventInTree(event) {
@@ -528,9 +533,6 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         const gridNodes = [];
         for (const child of children.values()) {
             const gridNode = new TreeGridNode(child, totalUsedTime, maxSelfTime, maxTotalTime, this);
-            for (const e of child.events) {
-                this.eventToTreeNode.set(e, child);
-            }
             gridNodes.push(gridNode);
         }
         const columnId = this.dataGrid.sortColumnId() || 'self';
@@ -766,15 +768,32 @@ export class TimelineTreeView extends TimelineTreeViewBase {
             this.appendContextMenuItems(contextMenu, profileNode);
         }
     }
+    gridNodeForEvent(event, parentNode = this.dataGrid.rootNode()) {
+        for (const child of parentNode.children) {
+            // Search populated descendants first so expanded child rows win over parents.
+            if (child.children.length) {
+                const descendant = this.gridNodeForEvent(event, child);
+                if (descendant) {
+                    return descendant;
+                }
+            }
+            if (child instanceof GridNode && child.profileNode.events.includes(event)) {
+                return child;
+            }
+        }
+        return null;
+    }
     dataGridElementForEvent(event) {
         if (!event) {
             return null;
         }
-        const treeNode = this.eventToTreeNode.get(event);
-        return (treeNode && this.dataGridNodeForTreeNode(treeNode)?.element()) ?? null;
+        return this.gridNodeForEvent(event)?.element() ?? null;
     }
     dataGridNodeForTreeNode(treeNode) {
         return treeNodeToGridNode.get(treeNode) || null;
+    }
+    /** Hook for unaggregated views to index grid nodes by their event. */
+    indexTreeNode(_node) {
     }
     // UI.SearchableView.Searchable implementation
     onSearchCanceled() {
@@ -911,57 +930,44 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         if (columnId !== 'self' && columnId !== 'total' && columnId !== 'start-time' && columnId !== 'transfer-size') {
             return null;
         }
+        const cell = this.createTD(columnId);
+        cell.className = 'numeric-column';
+        if (columnId === 'transfer-size') {
+            const formattedSize = i18n.ByteUtilities.formatBytesToKb(this.profileNode.transferSize);
+            cell.setAttribute('title', formattedSize);
+            cell.createChild('div').createChild('span').textContent = formattedSize;
+            return cell;
+        }
         let showPercents = false;
         let value;
         let maxTime;
-        let event;
-        let isSize = false;
         let showBottomUpButton = false;
-        const thirdPartyView = this.treeView;
         switch (columnId) {
-            case 'start-time':
-                {
-                    event = this.profileNode.event;
-                    const parsedTrace = this.treeView.parsedTrace;
-                    if (!parsedTrace) {
-                        throw new Error('Unable to load trace data for tree view');
-                    }
-                    const timings = event && Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
-                    const startTime = timings?.startTime ?? 0;
-                    value = startTime - Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.min);
+            case 'start-time': {
+                const parsedTrace = this.treeView.parsedTrace;
+                if (!parsedTrace) {
+                    throw new Error('Unable to load trace data for tree view');
                 }
+                const startTime = this.profileNode.event?.ts ?? Trace.Types.Timing.Micro(0);
+                value = Trace.Types.Timing.Micro(startTime - parsedTrace.data.Meta.traceBounds.min);
                 break;
+            }
             case 'self':
                 value = this.profileNode.selfTime;
                 maxTime = this.maxSelfTime;
                 showPercents = true;
-                showBottomUpButton = thirdPartyView.isThirdPartyTreeView();
+                showBottomUpButton = this.treeView.isThirdPartyTreeView();
                 break;
             case 'total':
                 value = this.profileNode.totalTime;
                 maxTime = this.maxTotalTime;
                 showPercents = true;
                 break;
-            case 'transfer-size':
-                value = this.profileNode.transferSize;
-                isSize = true;
-                break;
-            default:
-                return null;
         }
-        const cell = this.createTD(columnId);
-        cell.className = 'numeric-column';
-        let textDiv;
-        if (!isSize) {
-            cell.setAttribute('title', i18n.TimeUtilities.preciseMillisToString(value, 4));
-            textDiv = cell.createChild('div');
-            textDiv.createChild('span').textContent = i18n.TimeUtilities.preciseMillisToString(value, 1);
-        }
-        else {
-            cell.setAttribute('title', i18n.ByteUtilities.formatBytesToKb(value));
-            textDiv = cell.createChild('div');
-            textDiv.createChild('span').textContent = i18n.ByteUtilities.formatBytesToKb(value);
-        }
+        const valueMs = Trace.Helpers.Timing.microToMilli(value);
+        cell.setAttribute('title', i18n.TimeUtilities.preciseMillisToString(valueMs, 4));
+        const textDiv = cell.createChild('div');
+        textDiv.createChild('span').textContent = i18n.TimeUtilities.preciseMillisToString(valueMs, 1);
         if (showPercents && this.treeView.exposePercentages()) {
             textDiv.createChild('span', 'percent-column').textContent =
                 i18nString(UIStrings.percentPlaceholder, { PH1: (value / this.grandTotalTime * 100).toFixed(1) });
@@ -1008,6 +1014,7 @@ export class TreeGridNode extends GridNode {
         super(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView);
         this.setHasChildren(this.profileNode.hasChildren());
         treeNodeToGridNode.set(profileNode, this);
+        treeView.indexTreeNode(profileNode);
     }
     populate() {
         if (this.populated) {
@@ -1019,9 +1026,6 @@ export class TreeGridNode extends GridNode {
         }
         for (const node of this.profileNode.children().values()) {
             const gridNode = new TreeGridNode(node, this.grandTotalTime, this.maxSelfTime, this.maxTotalTime, this.treeView);
-            for (const e of node.events) {
-                this.treeView.eventToTreeNode.set(e, node);
-            }
             this.insertChildOrdered(gridNode);
         }
     }

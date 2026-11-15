@@ -29,7 +29,7 @@ export interface LocationDialogInput {
     onCancel: () => void;
     onValidateErrors: (errors: LocationValidationErrors) => void;
 }
-export declare function renderEditorView(controls: EditorInputControls, errors?: LocationDialogInput['errors'], isDialog?: boolean): LitTemplate;
+export declare function renderEditorView(controls: EditorInputControls, errors?: LocationDialogInput['errors']): LitTemplate;
 export declare function renderLocationDialog(input: LocationDialogInput): LitTemplate;
 interface LocationsViewInput {
     locations: LocationDescription[];

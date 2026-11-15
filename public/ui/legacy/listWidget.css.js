@@ -41,7 +41,7 @@ export default `/*
 
 .list-widget-input-validation-error {
   color: var(--sys-color-error);
-  margin: 0 5px;
+  margin: 0 var(--sys-size-3);
 }
 
 .controls-container {
@@ -53,7 +53,7 @@ export default `/*
 }
 
 .controls-gradient {
-  flex: 0 1 50px;
+  flex: 0 1 var(--sys-size-16);
 
   .list-item:hover & {
     background-image: linear-gradient(90deg, transparent, var(--sys-color-cdt-base-container));
@@ -105,17 +105,12 @@ export default `/*
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 5px;
+  padding: var(--sys-size-3);
   gap: var(--sys-size-6);
 }
 
-.editor-buttons > button {
-  flex: none;
-  margin-right: 10px;
-}
-
 .editor-content input {
-  margin-right: 10px;
+  margin-right: var(--sys-size-5);
 }
 
 .editor-content input.error-input {

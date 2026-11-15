@@ -465,6 +465,11 @@ export class ObjectTreeNodeBase extends Common.ObjectWrapper.ObjectWrapper {
         if (this.#expanded !== val) {
             this.#expanded = val;
             this.dispatchEventToListeners("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, val);
+            if (val) {
+                for (let ancestor = this.parent; ancestor; ancestor = ancestor.parent) {
+                    ancestor.dispatchEventToListeners("node-expanded" /* ObjectTreeNodeBase.Events.NODE_EXPANDED */, this);
+                }
+            }
         }
     }
     get readOnly() {
@@ -678,6 +683,7 @@ export class ObjectTreeNodeBase extends Common.ObjectWrapper.ObjectWrapper {
         Events["CHILDREN_CHANGED"] = "children-changed";
         Events["FILTER_CHANGED"] = "filter-changed";
         Events["EXPANDED_CHANGED"] = "expanded-changed";
+        Events["NODE_EXPANDED"] = "node-expanded";
     })(Events = ObjectTreeNodeBase.Events || (ObjectTreeNodeBase.Events = {}));
 })(ObjectTreeNodeBase || (ObjectTreeNodeBase = {}));
 export class ObjectTree extends ObjectTreeNodeBase {
@@ -740,10 +746,19 @@ class ArrayGroupTreeNode extends ObjectTreeNodeBase {
 export class ObjectTreeNode extends ObjectTreeNodeBase {
     property;
     #path;
-    showAllChildren = false;
+    #showAllChildren = false;
     constructor(property, parent, options) {
         super(parent, options);
         this.property = property;
+    }
+    get showAllChildren() {
+        return this.#showAllChildren;
+    }
+    set showAllChildren(value) {
+        if (this.#showAllChildren !== value) {
+            this.#showAllChildren = value;
+            this.dispatchEventToListeners("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */);
+        }
     }
     get object() {
         return this.property.value;
@@ -872,6 +887,34 @@ export class ObjectTreeNode extends ObjectTreeNodeBase {
                     matchIndexInNode: results.length,
                     matchType: 'value',
                     range: new TextUtils.TextRange.SourceRange(m.index ?? 0, m[0].length),
+                });
+            }
+        }
+        // 3. Fall back to matching the property path (e.g. items[1].id) if name and value did not match
+        if (results.length === 0 && !this.property.synthetic && this.path !== this.name) {
+            const parentPath = (this.parent instanceof ObjectTreeNode && !this.parent.property.synthetic) ? this.parent.path : '';
+            const matchesLeafInPath = (candidatePath, candidateParentPath) => {
+                const leafStart = candidateParentPath.length + 1;
+                for (const m of candidatePath.matchAll(nameGlobalRegex)) {
+                    const start = m.index ?? 0;
+                    const end = start + m[0].length;
+                    if (start < leafStart && end > leafStart) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+            // Also support dot-notation array indexing by translating e.g. items[1].id into items.1.id.
+            const normalizedPath = this.path.replace(/\[(\d+)\]/g, '.$1');
+            const normalizedParentPath = parentPath.replace(/\[(\d+)\]/g, '.$1');
+            if (matchesLeafInPath(this.path, parentPath) ||
+                (normalizedPath !== this.path && matchesLeafInPath(normalizedPath, normalizedParentPath))) {
+                results.push({
+                    node: this,
+                    isPostOrderMatch: false,
+                    matchIndexInNode: 0,
+                    matchType: 'name',
+                    range: new TextUtils.TextRange.SourceRange(0, nameText.length),
                 });
             }
         }
@@ -1367,7 +1410,7 @@ export class ObjectTreeWidget extends UI.Widget.Widget {
         super(element);
         this.#view = view;
     }
-    async #populateChildrenIfNeeded(node) {
+    async #populateChildrenIfNeeded(node, activeNodes) {
         const isFirstPopulation = !node.children;
         const children = await node.populateChildrenIfNeeded();
         if (isFirstPopulation) {
@@ -1385,27 +1428,21 @@ export class ObjectTreeWidget extends UI.Widget.Widget {
             }
         }
         for (const child of node.treeNodeChildren()) {
-            child.removeEventListener("filter-changed" /* ObjectTreeNodeBase.Events.FILTER_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("value-changed" /* ObjectTreeNodeBase.Events.VALUE_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
-            child.addEventListener("filter-changed" /* ObjectTreeNodeBase.Events.FILTER_CHANGED */, this.requestUpdate, this);
-            child.addEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
-            child.addEventListener("value-changed" /* ObjectTreeNodeBase.Events.VALUE_CHANGED */, this.requestUpdate, this);
-            child.addEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
-            this.#observedNodes.add(child);
+            this.#observeNode(child);
+            activeNodes.add(child);
             if (child.expanded) {
-                await this.#populateChildrenIfNeeded(child);
+                await this.#populateChildrenIfNeeded(child, activeNodes);
             }
         }
         if (!children.arrayRanges) {
             return;
         }
         if (children.arrayRanges.length === 1) {
-            await this.#populateChildrenIfNeeded(children.arrayRanges[0]);
+            await this.#populateChildrenIfNeeded(children.arrayRanges[0], activeNodes);
         }
         else {
-            await Promise.all(children.arrayRanges.filter(child => child.singular).map(child => this.#populateChildrenIfNeeded(child)));
+            await Promise.all(children.arrayRanges.filter(child => child.singular)
+                .map(child => this.#populateChildrenIfNeeded(child, activeNodes)));
         }
     }
     onExpand = (node, expanded, recursively = false) => {
@@ -1467,16 +1504,29 @@ export class ObjectTreeWidget extends UI.Widget.Widget {
         this.#objectTree?.addEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
         this.requestUpdate();
     }
+    #observeNode(node) {
+        if (this.#observedNodes.has(node)) {
+            return;
+        }
+        node.addEventListener("filter-changed" /* ObjectTreeNodeBase.Events.FILTER_CHANGED */, this.requestUpdate, this);
+        node.addEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
+        node.addEventListener("value-changed" /* ObjectTreeNodeBase.Events.VALUE_CHANGED */, this.requestUpdate, this);
+        node.addEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
+        this.#observedNodes.add(node);
+    }
+    #unobserveNode(node) {
+        node.removeEventListener("filter-changed" /* ObjectTreeNodeBase.Events.FILTER_CHANGED */, this.requestUpdate, this);
+        node.removeEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
+        node.removeEventListener("value-changed" /* ObjectTreeNodeBase.Events.VALUE_CHANGED */, this.requestUpdate, this);
+        node.removeEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
+        this.#observedNodes.delete(node);
+    }
     #unobserveAll() {
         this.#objectTree?.removeEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
         this.#objectTree?.removeEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
         for (const child of this.#observedNodes) {
-            child.removeEventListener("filter-changed" /* ObjectTreeNodeBase.Events.FILTER_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("expanded-changed" /* ObjectTreeNodeBase.Events.EXPANDED_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("value-changed" /* ObjectTreeNodeBase.Events.VALUE_CHANGED */, this.requestUpdate, this);
-            child.removeEventListener("children-changed" /* ObjectTreeNodeBase.Events.CHILDREN_CHANGED */, this.requestUpdate, this);
+            this.#unobserveNode(child);
         }
-        this.#observedNodes.clear();
     }
     get linkifier() {
         return this.#linkifier;
@@ -1517,8 +1567,14 @@ export class ObjectTreeWidget extends UI.Widget.Widget {
             this.#unobserveAll();
             return;
         }
+        const activeNodes = new Set();
         if (this.#objectTree?.expanded) {
-            await this.#populateChildrenIfNeeded(this.#objectTree);
+            await this.#populateChildrenIfNeeded(this.#objectTree, activeNodes);
+        }
+        for (const child of this.#observedNodes) {
+            if (!activeNodes.has(child)) {
+                this.#unobserveNode(child);
+            }
         }
         this.#view(this, undefined, this.contentElement);
     }

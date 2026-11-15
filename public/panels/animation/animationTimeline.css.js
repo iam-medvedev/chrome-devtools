@@ -12,7 +12,7 @@ export default `/*
 :host {
   overflow: hidden;
 
-  --timeline-controls-width: 150px;
+  --timeline-controls-width: var(--sys-size-22);
 }
 
 :host(.suspended) :is(
@@ -195,7 +195,7 @@ circle.animation-keyframe-point:active {
 .animation-scrubber {
   opacity: 100%;
   position: absolute;
-  left: var(--sys-size-5);
+  left: var(--sys-size-6);
   height: 100%;
   width: 100%;
   top: var(--sys-size-12);
@@ -224,8 +224,9 @@ circle.animation-keyframe-point:active {
 }
 
 .animation-scrubber-head {
-  width: 7px;
-  height: 7px;
+  /* 7px square: 11px .animation-scrubber-line width (2 * --sys-size-4 - --sys-size-1) minus 2 * 2px left/right inset (--sys-size-2) so the 45deg diamond stays centered on the 1px scrubber stem. */
+  width: calc(2 * var(--sys-size-4) - var(--sys-size-1) - 2 * var(--sys-size-2));
+  height: calc(2 * var(--sys-size-4) - var(--sys-size-1) - 2 * var(--sys-size-2));
   transform: rotate(45deg);
   background: var(--sys-color-error);
   position: absolute;
@@ -236,8 +237,9 @@ circle.animation-keyframe-point:active {
 
 .grid-overflow-wrapper {
   position: absolute;
-  /* Offset left by the 8px scrubber origin inset (--sys-size-5) so t=0 aligns with --timeline-controls-width without clipping the scrubber head. */
-  left: calc(var(--timeline-controls-width) - var(--sys-size-5));
+  /* Offset left by the 12px scrubber/grid origin (--sys-size-6)
+   * so t=0 aligns with --timeline-controls-width without clipping. */
+  left: calc(var(--timeline-controls-width) - var(--sys-size-6));
   /* Position below the 28px top toolbar (--sys-size-12) + 48px animation group preview buffer (--sys-size-16) = 76px. */
   top: calc(var(--sys-size-12) + var(--sys-size-16));
   z-index: 1;
@@ -363,7 +365,7 @@ text.animation-timeline-grid-label {
   border-radius: var(--sys-size-2);
   flex: 1 1;
   padding: var(--sys-size-3);
-  max-width: 100px;
+  max-width: var(--sys-size-20);
   animation: newGroupAnim 200ms;
   position: relative;
 }
@@ -424,7 +426,7 @@ text.animation-timeline-grid-label {
 .animation-paused::after {
   content: '';
   background: var(--sys-color-cdt-base-container);
-  width: 7px;
+  width: var(--sys-size-4);
   height: var(--sys-size-9);
   border-radius: var(--sys-size-2);
   margin: var(--sys-size-2);
@@ -512,8 +514,8 @@ text.animation-timeline-grid-label {
 
 .animation-remove-button {
   position: absolute;
-  top: -3px;
-  right: -3px;
+  top: calc(-1 * var(--sys-size-2));
+  right: calc(-1 * var(--sys-size-2));
   background: var(--sys-color-token-subtle);
   border-radius: var(--sys-shape-corner-medium-small);
   border: 0;
@@ -547,7 +549,9 @@ text.animation-timeline-grid-label {
   width: var(--sys-size-4);
   height: 100%;
   left: var(--timeline-controls-width);
-  top: 104px;
+  /* Position below the 28px top toolbar (--sys-size-12), 48px preview
+  buffer (--sys-size-16), and 28px timeline header (--sys-size-12). */
+  top: calc(2 * var(--sys-size-12) + var(--sys-size-16));
   z-index: 3;
   /* We put this a bit to the left of the line to allow dragging
   the delay point of the keyframes */

@@ -8,6 +8,7 @@ export interface TrendInfo {
 }
 export interface IsolateItemInfo {
     id: string;
+    optionId: string;
     heapText: string;
     trend: TrendInfo;
     titles: string[];
@@ -18,9 +19,12 @@ export interface ViewInput {
     trendIntervalMinutes: number;
     totalText: string;
     trend: TrendInfo;
-    onSelect: (index: number) => void;
+    onSelect: (index: number, scrollIntoView?: boolean) => void;
 }
-export type View = (input: ViewInput, _output: undefined, target: HTMLElement) => void;
+export interface ViewOutput {
+    scrollSelectedIntoView?: () => void;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class IsolateSelector extends UI.Widget.VBox implements SDK.IsolateManager.Observer {
     #private;

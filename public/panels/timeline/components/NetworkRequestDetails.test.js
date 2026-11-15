@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 import * as Trace from '../../../models/trace/trace.js';
-import { cleanTextContent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, cleanTextContent, renderElementIntoDOM, setColorScheme } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Timeline from '../timeline.js';
 import * as TimelineComponents from './components.js';
 describeWithEnvironment('NetworkRequestDetails', () => {
-    async function makeDetailsComponent(parsedTrace, request, entityMapper) {
+    async function makeDetailsComponent(parsedTrace, request, entityMapper, options) {
         const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails();
         details.parsedTrace = parsedTrace;
         details.request = request;
         details.target = Timeline.TargetForEvent.targetForEvent(parsedTrace, request);
         details.entityMapper = entityMapper;
         details.linkifier = new Components.Linkifier.Linkifier();
-        renderElementIntoDOM(details);
+        renderElementIntoDOM(details, options);
         await details.updateComplete;
         return details;
     }
@@ -120,6 +120,35 @@ describeWithEnvironment('NetworkRequestDetails', () => {
                 'http://localhost:10200/online-only.html?delay=1000&redirect_count=2&redirect=%2Fredirects-final.html\n' +
                 'http://localhost:10200/online-only.html?delay=1000&redirect_count=1&redirect=%2Fredirects-final.html',
         ]);
+    });
+    describe('styling and layout', () => {
+        afterEach(() => {
+            setColorScheme('light');
+        });
+        async function createDetails() {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+            const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+            const networkRequests = parsedTrace.data.NetworkRequests.byTime;
+            const cssRequest = networkRequests.find(request => {
+                return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
+            });
+            assert.isOk(cssRequest);
+            return await makeDetailsComponent(parsedTrace, cssRequest, entityMapper, { includeCommonStyles: true });
+        }
+        it('applies display: contents to the content element via :scope', async function () {
+            const details = await createDetails.call(this);
+            assert.strictEqual(getComputedStyle(details.contentElement).display, 'contents');
+        });
+        it('renders in light theme', async function () {
+            await createDetails.call(this);
+            setColorScheme('light');
+            await assertScreenshot('timeline/network_request_details_light.png');
+        });
+        it('renders in dark theme', async function () {
+            await createDetails.call(this);
+            setColorScheme('dark');
+            await assertScreenshot('timeline/network_request_details_dark.png');
+        });
     });
 });
 function getRowDataForDetailsElement(details) {

@@ -1,44 +1,58 @@
+import * as Common from '../../core/common/common.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type TemplateResult } from '../../ui/lit/lit.js';
+import type { LocationDescription } from './LocationsSettingsTab.js';
+interface LocationViewInput {
+    location: SDK.EmulationModel.Location;
+    locationOverrideEnabled: boolean;
+    customLocations: LocationDescription[];
+    selectedLocationIndex: number;
+    timezoneError: string;
+    localeError: string;
+    onManageLocations: () => void;
+    onLocationSelectChange: (event: Event) => void;
+    onLocationChange: (event: Event) => void;
+    onLocationKeyDown: (event: KeyboardEvent) => void;
+}
+interface OrientationViewInput {
+    orientation: SDK.EmulationModel.DeviceOrientation;
+    orientationOverrideEnabled: boolean;
+    selectedOrientation: string;
+    animateOrientation: boolean;
+}
+interface ViewInput extends LocationViewInput, OrientationViewInput {
+    locationSection: TemplateResult;
+    orientationSection: TemplateResult;
+    touchSetting: Common.Settings.Setting<unknown>;
+    idleDetectionSetting: Common.Settings.Setting<unknown>;
+    hardwareConcurrencyCheckbox: HTMLElement;
+    hardwareConcurrencyDetails: HTMLElement[];
+    cpuPressureSetting: Common.Settings.Setting<unknown>;
+    cpuPerformanceSetting: Common.Settings.Setting<unknown>;
+    cpuPerformanceNoOverrideLabel: string;
+}
+declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLElement) => void;
+type View = typeof DEFAULT_VIEW;
 export declare class SensorsView extends UI.Widget.VBox {
     #private;
-    private fieldsetElement;
-    private timezoneError;
-    private locationSelectElement;
     private latitudeInput;
-    private longitudeInput;
-    private timezoneInput;
-    private localeInput;
-    private accuracyInput;
-    private localeError;
-    private accuracyError;
     private readonly deviceOrientationSetting;
     private deviceOrientation;
     private deviceOrientationOverrideEnabled;
-    private deviceOrientationFieldset;
     private stageElement;
-    private orientationSelectElement;
     private alphaElement;
-    private betaElement;
-    private gammaElement;
-    private orientationLayer;
     private boxMatrix?;
     private mouseDownVector?;
     private originalBoxMatrix?;
-    constructor();
-    private createPanelSeparator;
-    private renderLocationSection;
+    constructor(element?: HTMLElement, view?: View);
+    performUpdate(): void;
     private applyLocationUserInput;
     private applyLocation;
-    private clearFieldsetElementInputs;
-    private createDeviceOrientationSection;
-    private createPressureSection;
-    private createCPUPerformanceSection;
     wasShown(): void;
     willHide(): void;
-    private enableOrientationFields;
     private orientationSelectChanged;
     private applyDeviceOrientation;
-    private setSelectElementLabel;
     private applyDeviceOrientationUserInput;
     private resetDeviceOrientation;
     private setDeviceOrientation;
@@ -46,9 +60,6 @@ export declare class SensorsView extends UI.Widget.VBox {
     private onBoxDrag;
     private onBoxDragStart;
     private calculateRadiusVector;
-    private appendTouchControl;
-    private appendIdleEmulator;
-    private createHardwareConcurrencySection;
 }
 export declare const enum DeviceOrientationModificationSource {
     USER_INPUT = "userInput",
@@ -56,19 +67,10 @@ export declare const enum DeviceOrientationModificationSource {
     RESET_BUTTON = "resetButton",
     SELECT_PRESET = "selectPreset"
 }
-export declare const PressureOptions: {
-    NoOverride: string;
-    Nominal: string;
-    Fair: string;
-    Serious: string;
-    Critical: string;
-};
 export declare const NonPresetOptions: {
     NoOverride: string;
     Custom: string;
     Unavailable: string;
 };
-export declare class ShowActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(_context: UI.Context.Context, _actionId: string): boolean;
-}
 export declare const ShiftDragOrientationSpeed = 16;
+export {};

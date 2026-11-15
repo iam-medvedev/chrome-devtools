@@ -1,87 +1,42 @@
-// Copyright 2020 The Chromium Authors
+// Copyright 2026 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describe, it } from 'mocha';
+import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
-import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
-const DISPLAY_SELECTOR = 'devtools-linear-memory-inspector-interpreter-display';
-const SETTINGS_SELECTOR = 'devtools-linear-memory-inspector-interpreter-settings';
-const TOOLBAR_SELECTOR = '.settings-toolbar';
-export const ENDIANNESS_SELECTOR = '[data-endianness]';
-function assertSettingsRenders(component) {
-    const settings = getElementWithinComponent(component, SETTINGS_SELECTOR, LinearMemoryInspectorComponents.ValueInterpreterSettings.ValueInterpreterSettings);
-    assert.isNotNull(settings);
-}
-function assertDisplayRenders(component) {
-    const display = getElementWithinComponent(component, DISPLAY_SELECTOR, LinearMemoryInspectorComponents.ValueInterpreterDisplay.ValueInterpreterDisplay);
-    assert.isNotNull(display);
-}
-function clickSettingsButton(component) {
-    const settingsButton = getElementWithinComponent(component, '[data-settings]', Buttons.Button.Button);
-    settingsButton.click();
-}
-describe('LinearMemoryValueInterpreter', () => {
+describe('LinearMemoryValueInterpreter Screenshots', () => {
     setupLocaleHooks();
-    function setUpComponent() {
-        const buffer = new Uint8Array([34, 234, 12, 3]).buffer;
+    it('renders the value interpreter with representative data', async () => {
         const component = new LinearMemoryInspectorComponents.LinearMemoryValueInterpreter.LinearMemoryValueInterpreter();
-        component.data = {
-            value: buffer,
-            endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            valueTypes: new Set(["Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */]),
-            memoryLength: buffer.byteLength,
-        };
-        renderElementIntoDOM(component);
-        return component;
-    }
-    it('renders the settings toolbar', () => {
-        const component = setUpComponent();
-        const settingsToolbar = getElementWithinComponent(component, TOOLBAR_SELECTOR, HTMLDivElement);
-        assert.isNotNull(settingsToolbar);
-    });
-    it('renders value display as default', () => {
-        const component = setUpComponent();
-        assertDisplayRenders(component);
-    });
-    it('switches between value display and value settings', () => {
-        const component = setUpComponent();
-        assertDisplayRenders(component);
-        clickSettingsButton(component);
-        assertSettingsRenders(component);
-    });
-    it('listens on TypeToggleEvents', async () => {
-        const component = setUpComponent();
-        clickSettingsButton(component);
-        const settings = getElementWithinComponent(component, SETTINGS_SELECTOR, LinearMemoryInspectorComponents.ValueInterpreterSettings.ValueInterpreterSettings);
-        const eventPromise = getEventPromise(component, 'valuetypetoggled');
-        const expectedType = "Float 64-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT64 */;
-        const expectedChecked = true;
-        const typeToggleEvent = new LinearMemoryInspectorComponents.ValueInterpreterSettings.TypeToggleEvent(expectedType, expectedChecked);
-        settings.dispatchEvent(typeToggleEvent);
-        const event = await eventPromise;
-        assert.strictEqual(event.data.type, expectedType);
-        assert.strictEqual(event.data.checked, expectedChecked);
-    });
-    it('renders the endianness options', () => {
-        const component = setUpComponent();
-        const input = getElementWithinComponent(component, ENDIANNESS_SELECTOR, HTMLSelectElement);
-        assert.deepEqual(input.value, "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */);
-        const options = input.querySelectorAll('option');
-        const endiannessSettings = Array.from(options).map(option => option.value);
-        assert.deepEqual(endiannessSettings, [
-            "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */,
-            "Big Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.BIG */,
+        renderElementIntoDOM(component, { includeCommonStyles: true });
+        const array = [0xC8, 0xC9, 0xCA, 0xCB];
+        component.buffer = new Uint8Array(array).buffer;
+        component.endianness = "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */;
+        component.valueTypes = new Set([
+            "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+            "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+            "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+            "Float 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.FLOAT32 */,
+            "Pointer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.POINTER32 */,
         ]);
-    });
-    it('triggers an event on changing endianness', async () => {
-        const component = setUpComponent();
-        const input = getElementWithinComponent(component, ENDIANNESS_SELECTOR, HTMLSelectElement);
-        const eventPromise = getEventPromise(component, 'endiannesschanged');
-        const changeEvent = new Event('change');
-        input.dispatchEvent(changeEvent);
-        const event = await eventPromise;
-        assert.deepEqual(event.data, "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.LITTLE */);
+        component.valueTypeModes = new Map([
+            [
+                "Integer 8-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT8 */,
+                "oct" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.OCTAL */,
+            ],
+            [
+                "Integer 16-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT16 */,
+                "hex" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.HEXADECIMAL */,
+            ],
+            [
+                "Integer 32-bit" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueType.INT32 */,
+                "dec" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.ValueTypeMode.DECIMAL */,
+            ],
+        ]);
+        component.memoryLength = array.length;
+        await component.updateComplete;
+        await assertScreenshot('linear_memory_inspector/linear-memory-value-interpreter.png');
     });
 });
 //# sourceMappingURL=LinearMemoryValueInterpreter.test.js.map

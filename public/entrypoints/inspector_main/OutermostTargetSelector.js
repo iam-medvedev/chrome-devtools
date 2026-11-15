@@ -1,12 +1,15 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/components/menus/menus.js';
+import '../../ui/kit/kit.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import outermostTargetSelectorStyles from './outermostTargetSelector.css.js';
 const UIStrings = {
     /**
@@ -21,55 +24,155 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/OutermostTargetSelector.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class OutermostTargetSelector {
-    listItems = new UI.ListModel.ListModel();
-    #dropDown;
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const selectedItem = input.selectedIndex >= 0 && input.selectedIndex < input.items.length ?
+        input.items[input.selectedIndex] :
+        undefined;
+    const buttonTitle = selectedItem ? i18nString(UIStrings.targetS, { PH1: selectedItem.title }) : i18nString(UIStrings.targetNotSelected);
+    // clang-format off
+    render(html `
+    <style>${outermostTargetSelectorStyles}</style>
+    <button
+      id="outermost-target-selector-button"
+      class="soft-dropdown toolbar-has-dropdown"
+      type="button"
+      jslog=${VisualLogging.dropDown('outermost-target-selector').track({ click: true })}
+      title=${buttonTitle}
+      aria-label=${buttonTitle}
+      aria-haspopup="true"
+      aria-expanded=${input.open}
+      ?disabled=${input.items.length === 0}
+      @click=${input.onToggleMenu}
+      @keydown=${(event) => {
+        if (!input.open && (event.key === 'ArrowDown' || event.key === 'ArrowUp')) {
+            event.consume(true);
+            input.onToggleMenu();
+        }
+    }}
+    >
+      <span class="title">${selectedItem?.title ?? ''}</span>
+      <devtools-icon name="triangle-down"></devtools-icon>
+    </button>
+    <devtools-menu
+      origin="outermost-target-selector-button"
+      .showDivider=${false}
+      .showSelectedItem=${true}
+      .open=${input.open}
+      @menucloserequest=${input.onCloseMenu}
+      @menuitemselected=${(event) => {
+        input.onSelect(Number(event.itemValue));
+    }}
+    >
+      ${input.items.map((item, index) => html `
+        <devtools-menu-item
+          .value=${index}
+          .selected=${index === input.selectedIndex}
+          jslog=${VisualLogging.item().track({ click: true, resize: true })}
+        >
+          <div class="outermost-target-selector-item">
+            <div class="title">${Platform.StringUtilities.trimEndWithMaxLength(item.title, 100)}</div>
+            <div class="subtitle">${item.subtitle}</div>
+          </div>
+        </devtools-menu-item>
+      `)}
+    </devtools-menu>`, target);
+    // clang-format on
+};
+export class OutermostTargetSelector extends UI.Widget.Widget {
+    #targets = [];
     #toolbarItem;
-    constructor() {
-        this.#dropDown = new UI.SoftDropDown.SoftDropDown(this.listItems, this);
-        this.#dropDown.setRowHeight(36);
-        this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.#dropDown.element);
-        this.#toolbarItem.setTitle(i18nString(UIStrings.targetNotSelected));
-        this.listItems.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, () => this.#toolbarItem.setEnabled(Boolean(this.listItems.length)));
-        this.#toolbarItem.element.classList.add('toolbar-has-dropdown');
+    #view;
+    #selectedTarget = null;
+    #open = false;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
+        this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.element);
+        this.#toolbarItem.setEnabled(false);
+        this.#toolbarItem.setVisible(false);
         const targetManager = SDK.TargetManager.TargetManager.instance();
         targetManager.addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged" /* SDK.ChildTargetManager.Events.TARGET_INFO_CHANGED */, this.#onTargetInfoChanged, this);
         targetManager.addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, this.#onInspectedURLChanged, this);
         targetManager.observeTargets(this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.#targetChanged, this);
+        this.requestUpdate();
+    }
+    show(parentElement, insertBefore, suppressOrphanWidgetError) {
+        super.show(parentElement, insertBefore, suppressOrphanWidgetError);
+        this.#toolbarItem.setVisible(this.#targets.length > 1);
+    }
+    wasShown() {
+        super.wasShown();
+        this.#toolbarItem.setVisible(this.#targets.length > 1);
+        this.requestUpdate();
+    }
+    performUpdate() {
+        const items = this.#targets.map(target => ({
+            title: target.name(),
+            subtitle: this.#subtitleFor(target),
+        }));
+        const selectedIndex = this.#selectedTarget ? this.#targets.indexOf(this.#selectedTarget) : -1;
+        this.#view({
+            items,
+            selectedIndex,
+            open: this.#open,
+            onToggleMenu: () => {
+                if (this.#targets.length === 0) {
+                    return;
+                }
+                this.#open = !this.#open;
+                this.requestUpdate();
+            },
+            onCloseMenu: () => {
+                if (!this.#open) {
+                    return;
+                }
+                this.#open = false;
+                this.requestUpdate();
+            },
+            onSelect: (index) => {
+                this.#open = false;
+                const target = this.#targets[index] ?? null;
+                this.#selectTarget(target);
+            },
+        }, undefined, this.contentElement);
     }
     item() {
         return this.#toolbarItem;
-    }
-    highlightedItemChanged(_from, _to, fromElement, toElement) {
-        if (fromElement) {
-            fromElement.classList.remove('highlighted');
-        }
-        if (toElement) {
-            toElement.classList.add('highlighted');
-        }
-    }
-    titleFor(target) {
-        return target.name();
     }
     targetAdded(target) {
         if (target.outermostTarget() !== target) {
             return;
         }
-        this.listItems.insertWithComparator(target, this.#targetComparator());
-        this.#toolbarItem.setVisible(this.listItems.length > 1);
+        const insertIndex = Platform.ArrayUtilities.upperBound(this.#targets, target, this.#targetComparator(), 0, this.#targets.length);
+        this.#targets.splice(insertIndex, 0, target);
+        this.#toolbarItem.setEnabled(this.#targets.length > 0);
+        this.#toolbarItem.setVisible(this.#targets.length > 1);
         const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (target === primaryTarget || target === UI.Context.Context.instance().flavor(SDK.Target.Target)) {
-            this.#dropDown.selectItem(target);
+            this.#selectTarget(target);
+        }
+        else {
+            this.requestUpdate();
         }
     }
     targetRemoved(target) {
-        const index = this.listItems.indexOf(target);
+        const index = this.#targets.indexOf(target);
         if (index === -1) {
             return;
         }
-        this.listItems.remove(index);
-        this.#toolbarItem.setVisible(this.listItems.length > 1);
+        this.#targets.splice(index, 1);
+        this.#toolbarItem.setEnabled(this.#targets.length > 0);
+        this.#toolbarItem.setVisible(this.#targets.length > 1);
+        if (this.#targets.length <= 1) {
+            this.#open = false;
+        }
+        if (this.#selectedTarget === target) {
+            this.#selectTarget(null);
+        }
+        else {
+            this.requestUpdate();
+        }
     }
     #targetComparator() {
         return (a, b) => {
@@ -105,17 +208,7 @@ export class OutermostTargetSelector {
         this.targetAdded(target);
     }
     #targetChanged({ data: target, }) {
-        this.#dropDown.selectItem(target?.outermostTarget() || null);
-    }
-    createElementForItem(item) {
-        const element = document.createElement('div');
-        element.classList.add('target');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: outermostTargetSelectorStyles });
-        const title = shadowRoot.createChild('div', 'title');
-        UI.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(item), 100));
-        const subTitle = shadowRoot.createChild('div', 'subtitle');
-        UI.UIUtils.createTextChild(subTitle, this.#subtitleFor(item));
-        return element;
+        this.#selectTarget(target?.outermostTarget() || null);
     }
     #subtitleFor(target) {
         const targetInfo = target.targetInfo();
@@ -124,15 +217,12 @@ export class OutermostTargetSelector {
         }
         return target.targetInfo()?.subtype || '';
     }
-    isItemSelectable(_item) {
-        return true;
-    }
-    itemSelected(item) {
-        const title = item ? i18nString(UIStrings.targetS, { PH1: this.titleFor(item) }) : i18nString(UIStrings.targetNotSelected);
-        this.#toolbarItem.setTitle(title);
+    #selectTarget(item) {
+        this.#selectedTarget = item;
         if (item && item !== UI.Context.Context.instance().flavor(SDK.Target.Target)?.outermostTarget()) {
             UI.Context.Context.instance().setFlavor(SDK.Target.Target, item);
         }
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=OutermostTargetSelector.js.map

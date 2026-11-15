@@ -75,14 +75,23 @@ function describeCommonRequestFields(aidaRequestFactory, translateFn) {
         it('maps common options and metadata', () => {
             const aidaRequest = aidaRequestFactory({
                 options: { temperature: 0.5, model_id: 'test-model' },
-                metadata: { string_session_id: 'session-123' },
+                metadata: { string_session_id: 'Session-123!' },
             });
             const result = translateFn(aidaRequest);
             assert.strictEqual(result.model, 'test-model');
-            assert.strictEqual(result.labels?.['session_id'], 'session-123');
+            assert.strictEqual(result.sessionId, 'Session-123!');
+            assert.strictEqual(result.labels?.['session_id'], 'session-123_');
             assert.strictEqual(result.labels?.['client_version'], '1_2_3_4');
             assert.strictEqual(result.labels?.['disable_user_content_logging'], 'false');
             assert.strictEqual(result.generationConfig?.temperature, 0.5);
+        });
+        it('omits sessionId when string_session_id is empty', () => {
+            const aidaRequest = aidaRequestFactory({
+                metadata: { string_session_id: '' },
+            });
+            const result = translateFn(aidaRequest);
+            assert.notProperty(result, 'sessionId');
+            assert.isUndefined(result.labels?.['session_id']);
         });
         it('maps client and feature labels', () => {
             const aidaRequest = aidaRequestFactory({
@@ -302,6 +311,32 @@ describe('AidaGcaTranslation', () => {
                 completed: true,
             });
         });
+        it('excludes thought parts from explanation in doConversation response', () => {
+            const gcaResponse = createGcaResponse({
+                candidates: [{
+                        index: 0,
+                        content: {
+                            role: 'model',
+                            parts: [
+                                { text: 'Thinking step 1', thought: true },
+                                { text: 'Here is the answer.' },
+                                { text: 'Thinking step 2', thought: true },
+                            ],
+                        },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: { citations: [] },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            assert.deepEqual(AidaGcaTranslation.gcaResponseToAidaDoConversationResponse(gcaResponse), {
+                explanation: 'Here is the answer.',
+                metadata: { rpcGlobalId: 'response-123' },
+                functionCalls: undefined,
+                completed: true,
+            });
+        });
     });
     describe('convert Aida parts to GCA parts', () => {
         it('translates function response part', () => {
@@ -474,6 +509,7 @@ describe('AidaGcaTranslation', () => {
             });
             const expectedGcaRequest = createGcaRequest('complete_code', {
                 contents: [],
+                sessionId: 'session-456',
                 model: 'code-model',
                 generationConfig: { stopSequences: ['\n'], temperature: 0 },
                 labels: {
@@ -569,6 +605,7 @@ describe('AidaGcaTranslation', () => {
             const expectedGcaRequest = createGcaRequest('generate_code', {
                 contents: [{ role: 'user', parts: [{ text: 'fix the bug' }] }],
                 systemInstruction: { role: 'user', parts: [{ text: 'Help me with this' }] },
+                sessionId: 'session-789',
                 model: 'gen-model',
                 generationConfig: { temperature: 0.7 },
                 labels: {
@@ -664,47 +701,229 @@ describe('AidaGcaTranslation', () => {
                     error: { code: 429, message: 'Quota exceeded', status: 'RESOURCE_EXHAUSTED' },
                 }]);
         });
-    });
-    it('translates a functionCallChunk with thoughtSignature', () => {
-        const gcaResponse = createGcaResponse({
-            modelVersion: 'gen-model',
-            responseId: 'response-789',
-            candidates: [{
-                    index: 0,
-                    content: {
-                        role: 'model',
-                        parts: [{ functionCall: { name: 'getStyles', args: { uid: 1 } }, thoughtSignature: 'thought-sig-abc' }],
+        it('translates a functionCallChunk with thoughtSignature', () => {
+            const gcaResponse = createGcaResponse({
+                modelVersion: 'gen-model',
+                responseId: 'response-789',
+                candidates: [{
+                        index: 0,
+                        content: {
+                            role: 'model',
+                            parts: [{ functionCall: { name: 'getStyles', args: { uid: 1 } }, thoughtSignature: 'thought-sig-abc' }],
+                        },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: { citations: [] },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [
+                {
+                    functionCallChunk: {
+                        functionCall: {
+                            name: 'getStyles',
+                            args: { uid: 1 },
+                            thoughtSignature: 'thought-sig-abc',
+                        },
                     },
-                    finishReason: GcaTypes.FinishReason.STOP,
-                    safetyRatings: [],
-                    citationMetadata: { citations: [] },
-                    groundingMetadata: {},
-                    aicodeOutput: { contents: [] },
-                }],
+                    metadata: {
+                        rpcGlobalId: 'response-789',
+                        inferenceOptionMetadata: { modelId: 'gen-model' },
+                        attributionMetadata: { attributionAction: AidaClient.RecitationAction.CITE, citations: [] },
+                        usageMetadata: {
+                            promptTokenCount: 0,
+                            candidatesTokenCount: 0,
+                            totalTokenCount: 0,
+                            thoughtsTokenCount: 0,
+                            cachedContentTokenCount: 0,
+                        },
+                    },
+                },
+            ]);
         });
-        assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [
-            {
-                functionCallChunk: {
-                    functionCall: {
-                        name: 'getStyles',
-                        args: { uid: 1 },
-                        thoughtSignature: 'thought-sig-abc',
+        it('translates multi-part text chunks preserving individual part text', () => {
+            const gcaResponse = createGcaResponse({
+                modelVersion: 'gen-model',
+                responseId: 'response-789',
+                candidates: [{
+                        index: 0,
+                        content: {
+                            role: 'model',
+                            parts: [
+                                { text: 'Hello ' },
+                                { text: 'world!' },
+                            ],
+                        },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: { citations: [] },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            const defaultUsageMetadata = {
+                promptTokenCount: 0,
+                candidatesTokenCount: 0,
+                totalTokenCount: 0,
+                thoughtsTokenCount: 0,
+                cachedContentTokenCount: 0,
+            };
+            assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [
+                {
+                    textChunk: {
+                        text: 'Hello ',
+                    },
+                    metadata: {
+                        rpcGlobalId: 'response-789',
+                        attributionMetadata: {
+                            attributionAction: AidaClient.RecitationAction.CITE,
+                            citations: [],
+                        },
+                        inferenceOptionMetadata: { modelId: 'gen-model' },
+                        usageMetadata: defaultUsageMetadata,
                     },
                 },
-                metadata: {
-                    rpcGlobalId: 'response-789',
-                    inferenceOptionMetadata: { modelId: 'gen-model' },
-                    attributionMetadata: { attributionAction: AidaClient.RecitationAction.CITE, citations: [] },
-                    usageMetadata: {
-                        promptTokenCount: 0,
-                        candidatesTokenCount: 0,
-                        totalTokenCount: 0,
-                        thoughtsTokenCount: 0,
-                        cachedContentTokenCount: 0,
+                {
+                    textChunk: {
+                        text: 'world!',
+                    },
+                    metadata: {
+                        rpcGlobalId: 'response-789',
+                        attributionMetadata: {
+                            attributionAction: AidaClient.RecitationAction.CITE,
+                            citations: [],
+                        },
+                        inferenceOptionMetadata: { modelId: 'gen-model' },
+                        usageMetadata: defaultUsageMetadata,
                     },
                 },
-            },
-        ]);
+            ]);
+        });
+        it('omits textChunk for thought parts and signature-only parts', () => {
+            const gcaResponse = createGcaResponse({
+                modelVersion: 'gen-model',
+                responseId: 'response-789',
+                candidates: [{
+                        index: 0,
+                        content: {
+                            role: 'model',
+                            parts: [
+                                { text: 'internal reasoning', thought: true },
+                                { text: '', thoughtSignature: 'sig-1' },
+                                { thoughtSignature: 'sig-2' },
+                            ],
+                        },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: { citations: [] },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            const expectedMetadata = {
+                rpcGlobalId: 'response-789',
+                inferenceOptionMetadata: { modelId: 'gen-model' },
+                attributionMetadata: { attributionAction: AidaClient.RecitationAction.CITE, citations: [] },
+                usageMetadata: {
+                    promptTokenCount: 0,
+                    candidatesTokenCount: 0,
+                    totalTokenCount: 0,
+                    thoughtsTokenCount: 0,
+                    cachedContentTokenCount: 0,
+                },
+            };
+            assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [
+                { metadata: expectedMetadata },
+                { metadata: expectedMetadata },
+                { metadata: expectedMetadata },
+            ]);
+        });
+        it('returns a metadata-only chunk when parts are empty', () => {
+            const gcaResponse = createGcaResponse({
+                modelVersion: 'gen-model',
+                responseId: 'response-789',
+                candidates: [{
+                        index: 0,
+                        content: {
+                            role: 'model',
+                            parts: [],
+                        },
+                        finishReason: GcaTypes.FinishReason.STOP,
+                        safetyRatings: [],
+                        citationMetadata: {
+                            citations: [{
+                                    startIndex: 0,
+                                    endIndex: 10,
+                                    uri: 'https://example.com',
+                                    license: 'MIT',
+                                }],
+                        },
+                        groundingMetadata: {},
+                        aicodeOutput: { contents: [] },
+                    }],
+            });
+            assert.deepEqual(AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(gcaResponse), [{
+                    metadata: {
+                        rpcGlobalId: 'response-789',
+                        inferenceOptionMetadata: { modelId: 'gen-model' },
+                        attributionMetadata: {
+                            attributionAction: AidaClient.RecitationAction.CITE,
+                            citations: [{ startIndex: 0, endIndex: 10, uri: 'https://example.com' }],
+                        },
+                        usageMetadata: {
+                            promptTokenCount: 0,
+                            candidatesTokenCount: 0,
+                            totalTokenCount: 0,
+                            thoughtsTokenCount: 0,
+                            cachedContentTokenCount: 0,
+                        },
+                    },
+                }]);
+        });
+        describe('finishReason and promptFeedback.blockReason', () => {
+            function translateFinishReason(finishReason) {
+                const response = createGcaResponse();
+                return AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse({ ...response, candidates: [{ ...response.candidates[0], finishReason }] });
+            }
+            for (const finishReason of ['SAFETY', 'RECITATION', 'BLOCKLIST', 'PROHIBITED_CONTENT', 'SPII', 'IMAGE_SAFETY',
+                'IMAGE_PROHIBITED_CONTENT', 'IMAGE_RECITATION']) {
+                it(`returns only a BLOCK chunk for finishReason ${finishReason}`, () => {
+                    const chunks = translateFinishReason(finishReason);
+                    assert.lengthOf(chunks, 1);
+                    assert.notProperty(chunks[0], 'textChunk');
+                    assert.strictEqual(chunks[0].metadata?.attributionMetadata?.attributionAction, AidaClient.RecitationAction.BLOCK);
+                    assert.strictEqual(chunks[0].blockMessage, `GCA response blocked: ${finishReason}`);
+                });
+            }
+            it('accepts a numeric finishReason', () => {
+                assert.strictEqual(translateFinishReason(GcaTypes.FinishReason.RECITATION)[0].blockMessage, 'GCA response blocked: RECITATION');
+            });
+            for (const [blockReason, name] of [['SAFETY', 'SAFETY'],
+                ['FUTURE_REASON', 'FUTURE_REASON'],
+                [GcaTypes.BlockReason.OTHER, 'OTHER'],
+            ]) {
+                it(`returns only a BLOCK chunk for promptFeedback.blockReason ${name} (${typeof blockReason})`, () => {
+                    const response = createGcaResponse({
+                        candidates: [],
+                        promptFeedback: {
+                            blockReason: blockReason,
+                            safetyRatings: [],
+                            blockReasonMessage: '',
+                        },
+                    });
+                    const chunks = AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse(response);
+                    assert.lengthOf(chunks, 1);
+                    assert.strictEqual(chunks[0].metadata?.attributionMetadata?.attributionAction, AidaClient.RecitationAction.BLOCK);
+                    assert.strictEqual(chunks[0].blockMessage, `GCA prompt blocked: ${name}`);
+                });
+            }
+            it('does not block for promptFeedback.blockReason BLOCKED_REASON_UNSPECIFIED as a string', () => {
+                const response = createGcaResponse();
+                const chunks = AidaGcaTranslation.gcaChunkResponseToAidaChunkResponse({ ...response, promptFeedback: { ...response.promptFeedback, blockReason: 'BLOCKED_REASON_UNSPECIFIED' } });
+                assert.deepEqual(chunks.map(chunk => chunk.textChunk?.text), ['Hello there!']);
+            });
+        });
     });
 });
 //# sourceMappingURL=AidaGcaTranslation.test.js.map

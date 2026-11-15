@@ -139,10 +139,11 @@ const WINDOW_LOCAL_STORAGE = {
 };
 export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
-    #veStartPromise;
+    #veStartPromise = Promise.resolve();
     #toolbarsPromise;
     #universe;
     #supportsEmulation = false;
+    #veLogsTestMode = false;
     constructor(opts) {
         _a.instanceForTest = this;
         this.#supportsEmulation = opts?.supportsEmulation ?? false;
@@ -202,28 +203,37 @@ export class MainImpl {
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor).get());
         const veLogging = config.devToolsVeLogging;
         // Used by e2e to put VE Logs into "test mode".
-        const veLogsTestMode = Common.Settings.Settings.instance().createSetting('veLogsTestMode', false).get();
+        this.#veLogsTestMode = Common.Settings.Settings.instance().createSetting('veLogsTestMode', false).get();
         if (veLogging?.enabled) {
+            VisualLogging.enableLogging();
             // Note: as of https://crrev.com/c/6734500 landing, veLogging.testing is hard-coded to false.
             // But the e2e tests (test/conductor/frontend_tab.ts) use this to enable this flag for e2e tests.
             // TODO(crbug.com/432411398): remove the host config for VE logs + find a better way to set this up in e2e tests.
-            if (veLogging?.testing || veLogsTestMode) {
+            if (veLogging.testing || this.#veLogsTestMode) {
                 VisualLogging.setVeDebugLoggingEnabled(true, "Test" /* VisualLogging.DebugLoggingFormat.TEST */);
-                const options = {
-                    processingThrottler: new Common.Throttler.Throttler(0),
-                    keyboardLogThrottler: new Common.Throttler.Throttler(10),
-                    hoverLogThrottler: new Common.Throttler.Throttler(50),
-                    dragLogThrottler: new Common.Throttler.Throttler(50),
-                    clickLogThrottler: new Common.Throttler.Throttler(10),
-                    resizeLogThrottler: new Common.Throttler.Throttler(10),
-                };
-                this.#veStartPromise = VisualLogging.startLogging(options);
-            }
-            else {
-                this.#veStartPromise = VisualLogging.startLogging();
             }
         }
         void this.#createAppUI();
+    }
+    async #startVeLogging() {
+        const veLogging = Root.Runtime.hostConfig.devToolsVeLogging;
+        if (!veLogging?.enabled) {
+            return;
+        }
+        if (veLogging.testing || this.#veLogsTestMode) {
+            const options = {
+                processingThrottler: new Common.Throttler.Throttler(0),
+                keyboardLogThrottler: new Common.Throttler.Throttler(10),
+                hoverLogThrottler: new Common.Throttler.Throttler(50),
+                dragLogThrottler: new Common.Throttler.Throttler(50),
+                clickLogThrottler: new Common.Throttler.Throttler(10),
+                resizeLogThrottler: new Common.Throttler.Throttler(10),
+            };
+            await VisualLogging.startLogging(options);
+        }
+        else {
+            await VisualLogging.startLogging();
+        }
     }
     #initializeGlobalsForLayoutTests() {
         // @ts-expect-error e2e test global
@@ -431,9 +441,6 @@ export class MainImpl {
                 void badgeNotification.present(badge, reason);
             });
         }
-        if (Root.Runtime.hostConfig.devToolsGeminiRebranding?.enabled) {
-            await PanelCommon.GeminiRebrandPromoDialog.maybeShow();
-        }
         _a.timeEnd('Main._createAppUI');
         const appProvider = UI.AppProvider.getRegisteredAppProviders()[0];
         if (!appProvider) {
@@ -461,6 +468,7 @@ export class MainImpl {
             inspectorView.displaySelectOverrideFolderInfobar(event.data);
         });
         this.#toolbarsPromise = inspectorView.createToolbars();
+        this.#veStartPromise = this.#toolbarsPromise.then(() => this.#startVeLogging());
         inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
         this.#universe.commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
             inspectorView.renderStatusBar(event.data);
@@ -525,7 +533,12 @@ export class MainImpl {
     }
     async #lateInitialization() {
         _a.time('Main._lateInitialization');
-        PanelCommon.ExtensionServer.ExtensionServer.instance().initializeExtensions();
+        const extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance();
+        if (!extensionServer.framesWidget().isShowing()) {
+            extensionServer.framesWidget().markAsRoot();
+            extensionServer.framesWidget().show(document.body);
+        }
+        extensionServer.initializeExtensions();
         void Promise.all(Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
             const runnable = await lateInitializationLoader();
             return await runnable.run();

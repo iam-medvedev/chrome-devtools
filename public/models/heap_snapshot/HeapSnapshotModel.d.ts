@@ -291,8 +291,8 @@ export interface ScriptWithoutScopes {
     contextCount: number;
 }
 export interface HeapQueryOptions {
-    className?: string;
-    propertyName?: string;
+    className?: string | RegExp;
+    propertyName?: string | RegExp;
     nodeType?: string;
     minRetainedSize?: number;
     maxRetainedSize?: number;

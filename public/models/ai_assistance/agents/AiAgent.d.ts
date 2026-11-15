@@ -159,6 +159,13 @@ export interface ContextResponse {
     type: ResponseType.CONTEXT;
     details: [ContextDetail, ...ContextDetail[]];
     widgets?: AiWidget[];
+    /**
+     * Skills pre-loaded automatically from the selected context during `enhanceQuery()`.
+     * Attached to `ContextResponse` for `'ai-v2-auto-learn-skill'` telemetry rather than
+     * emitted as a separate walkthrough step, because `selectedContext` is attached
+     * before the model evaluates whether the user's question requires that skill.
+     */
+    autoLearnedSkills?: string[];
 }
 /**
  * Identifies the tool call that an event belongs to. `AiAgent#callFunction()`
@@ -544,7 +551,7 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
      * Description of function, this is send to the LLM
      * to explain what will the function do.
      */
-    description: string | (() => string);
+    description: string;
     /**
      * JSON schema like representation of the parameters
      * the function needs to be called with.

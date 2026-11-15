@@ -482,7 +482,7 @@ __export(Utils_exports, {
 import * as i18n3 from "../../../core/i18n/i18n.js";
 import * as Platform from "../../../core/platform/platform.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3944,20 +3944,13 @@ function buildWarningElementsForEvent(event, parsedTrace) {
 function buildRowsForWebSocketEvent(event, parsedTrace) {
   const rows = [];
   const initiator = parsedTrace.data.Initiators.eventToInitiator.get(event);
-  if (initiator && Trace3.Types.Events.isWebSocketCreate(initiator)) {
-    rows.push({ key: i18n7.i18n.lockedString("URL"), value: initiator.args.data.url });
-    if (initiator.args.data.webSocketProtocol) {
+  const webSocketCreateEvent = initiator && Trace3.Types.Events.isWebSocketCreate(initiator) ? initiator : Trace3.Types.Events.isWebSocketCreate(event) ? event : null;
+  if (webSocketCreateEvent) {
+    rows.push({ key: i18n7.i18n.lockedString("URL"), value: webSocketCreateEvent.args.data.url });
+    if (webSocketCreateEvent.args.data.webSocketProtocol) {
       rows.push({
         key: i18nString4(UIStrings4.websocketProtocol),
-        value: initiator.args.data.webSocketProtocol
-      });
-    }
-  } else if (Trace3.Types.Events.isWebSocketCreate(event)) {
-    rows.push({ key: i18n7.i18n.lockedString("URL"), value: event.args.data.url });
-    if (event.args.data.webSocketProtocol) {
-      rows.push({
-        key: i18nString4(UIStrings4.websocketProtocol),
-        value: event.args.data.webSocketProtocol
+        value: webSocketCreateEvent.args.data.webSocketProtocol
       });
     }
   }
@@ -4458,18 +4451,13 @@ details > summary {
 }
 
 .content {
-  max-width: 360px;
+  max-width: var(--sys-size-32);
   box-sizing: border-box;
 }
 
 .open-button-section {
   display: flex;
   flex-direction: row;
-}
-
-.origin-mapping-grid {
-  border: var(--sys-size-1) solid var(--sys-color-divider);
-  margin-top: var(--sys-size-5);
 }
 
 .origin-mapping-description {
@@ -5490,7 +5478,7 @@ var interactionBreakdown_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
-  :host {
+  :scope {
     display: block;
   }
 
@@ -5585,7 +5573,6 @@ import * as i18n19 from "../../../core/i18n/i18n.js";
 import * as SDK2 from "../../../core/sdk/sdk.js";
 import * as Helpers5 from "../../../models/trace/helpers/helpers.js";
 import * as Trace5 from "../../../models/trace/trace.js";
-import * as Buttons5 from "../../../ui/components/buttons/buttons.js";
 import * as LegacyComponents from "../../../ui/legacy/components/utils/utils.js";
 import * as UI8 from "../../../ui/legacy/legacy.js";
 import * as Lit8 from "../../../ui/lit/lit.js";
@@ -5599,14 +5586,12 @@ var layoutShiftDetails_css_default = `/*
  * found in the LICENSE file.
  */
 @scope to (devtools-widget > *) {
-  .layout-shift-details-title,
-  .cluster-details-title {
+  .layout-shift-details-title {
     padding-bottom: var(--sys-size-5);
     display: flex;
     align-items: center;
 
-    .layout-shift-event-title,
-    .cluster-event-title {
+    .layout-shift-event-title {
       background-color: var(--app-color-rendering);
       width: var(--sys-size-6);
       height: var(--sys-size-6);
@@ -5664,11 +5649,6 @@ var layoutShiftDetails_css_default = `/*
 
   .timeline-link.invalid-link {
     color: var(--sys-color-state-disabled);
-  }
-
-  .details-row {
-    display: flex;
-    min-height: var(--sys-size-9);
   }
 
   .title {
@@ -5845,7 +5825,6 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
   const title = Trace5.Name.forEntry(input.event);
   render9(html9`
         <style>${layoutShiftDetails_css_default}</style>
-        <style>${Buttons5.textButtonStyles}</style>
 
       <div class="layout-shift-summary-details">
         <div
@@ -6079,7 +6058,7 @@ import * as CrUXManager9 from "../../../models/crux-manager/crux-manager.js";
 import * as EmulationModel from "../../../models/emulation/emulation.js";
 import * as LiveMetrics from "../../../models/live-metrics/live-metrics.js";
 import * as Trace6 from "../../../models/trace/trace.js";
-import * as Buttons7 from "../../../ui/components/buttons/buttons.js";
+import * as Buttons6 from "../../../ui/components/buttons/buttons.js";
 import * as uiI18n3 from "../../../ui/i18n/i18n.js";
 import * as UI10 from "../../../ui/legacy/legacy.js";
 import * as Lit9 from "../../../ui/lit/lit.js";
@@ -6105,8 +6084,6 @@ var liveMetricsView_css_default = `/*
 }
 
 .live-metrics-view {
-  --min-main-area-size: 60%;
-
   background-color: var(--sys-color-cdt-base-container);
   display: flex;
   flex-direction: row;
@@ -6201,10 +6178,6 @@ var liveMetricsView_css_default = `/*
   max-width: max-content;
 }
 
-.throttling-recommendation-value {
-  font-weight: var(--ref-typeface-weight-medium);
-}
-
 .related-info {
   text-wrap: nowrap;
   margin-top: var(--sys-size-5);
@@ -6238,16 +6211,6 @@ var liveMetricsView_css_default = `/*
   max-height: max-content;
 
   --app-color-toolbar-background: transparent;
-}
-
-.logs-section-header {
-  display: flex;
-  align-items: center;
-}
-
-.interactions-clear {
-  margin-left: var(--sys-size-3);
-  vertical-align: sub;
 }
 
 .log {
@@ -6521,7 +6484,7 @@ import "../../../ui/components/tooltips/tooltips.js";
 import * as i18n23 from "../../../core/i18n/i18n.js";
 import * as Platform5 from "../../../core/platform/platform.js";
 import * as CrUXManager7 from "../../../models/crux-manager/crux-manager.js";
-import * as Buttons6 from "../../../ui/components/buttons/buttons.js";
+import * as Buttons5 from "../../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "../../../ui/helpers/helpers.js";
 import * as UI9 from "../../../ui/legacy/legacy.js";
 import { html as html10, nothing as nothing8, render as render10 } from "../../../ui/lit/lit.js";
@@ -6573,7 +6536,7 @@ var metricCard_css_default = `/*
 
 .metric-source-value {
   font-size: var(--sys-size-13);
-  line-height: 36px;
+  line-height: var(--sys-typescale-headline1-line-height);
   font-weight: var(--ref-typeface-weight-regular);
 }
 
@@ -6621,10 +6584,6 @@ var metricCard_css_default = `/*
 }
 
 .compare-text {
-  margin-top: var(--sys-size-5);
-}
-
-.environment-recs-intro {
   margin-top: var(--sys-size-5);
 }
 
@@ -7352,7 +7311,7 @@ var DEFAULT_VIEW6 = (input, output, target) => {
             class="title-help"
             title=${getHelpTooltip(metric)}
             .iconName=${"help"}
-            .variant=${Buttons6.Button.Variant.ICON}
+            .variant=${Buttons5.Button.Variant.ICON}
             @click=${() => UIHelpers.openInNewTab(helpLink)}
           ></devtools-button>
         </h3>
@@ -7960,8 +7919,8 @@ function renderRecordAction(action4) {
   return html11`
     <div class="record-action">
       <devtools-button @click=${onClick} .data=${{
-    variant: Buttons7.Button.Variant.TEXT,
-    size: Buttons7.Button.Size.REGULAR,
+    variant: Buttons6.Button.Variant.TEXT,
+    size: Buttons6.Button.Size.REGULAR,
     iconName: action4.icon(),
     title: action4.title(),
     jslogContext: action4.id()
@@ -8555,7 +8514,7 @@ var LIVE_METRICS_LOGS_VIEW = (input, output, target) => {
     </style>
     <devtools-tabbed-pane @select=${(event) => input.onTabSelected(event.detail.tabId)}>
       <devtools-toolbar slot="right">
-        <devtools-button .iconName=${"clear"} .variant=${Buttons7.Button.Variant.TOOLBAR}
+        <devtools-button .iconName=${"clear"} .variant=${Buttons6.Button.Variant.TOOLBAR}
                          title=${i18nString12(UIStrings13.clearCurrentLog)} @click=${input.onClear}
                          .jslogContext=${"timeline.landing.clear-log"}>
         </devtools-button>
@@ -8660,12 +8619,12 @@ var networkRequestDetails_css_default = `/*
     width: fit-content;
   }
 
-  :host {
+  :scope {
     display: contents; /* needed to avoid a floating border when scrolling */
   }
 
   .network-request-details-col {
-    max-width: 300px;
+    max-width: var(--sys-size-30);
   }
 
   .column-divider {
@@ -8680,7 +8639,7 @@ var networkRequestDetails_css_default = `/*
   }
 
   .network-request-details-item, .network-request-details-col {
-    padding: 5px 10px;
+    padding: var(--sys-size-3) var(--sys-size-5);
   }
 
   .server-timing-column-header {
@@ -8696,7 +8655,7 @@ var networkRequestDetails_css_default = `/*
   .title {
     color: var(--sys-color-token-subtle);
     overflow: hidden;
-    padding-right: 10px;
+    padding-right: var(--sys-size-5);
     display: inline-block;
     vertical-align: top;
   }
@@ -8806,8 +8765,8 @@ var networkRequestTooltip_css_default = `/*
 
   .network-category-chip {
     box-sizing: border-box;
-    width: 10px;
-    height: 10px;
+    width: var(--sys-size-5);
+    height: var(--sys-size-5);
     border: var(--sys-size-1) solid var(--sys-color-divider);
     display: inline-block;
     margin-right: var(--sys-size-3);
@@ -8857,7 +8816,8 @@ var networkRequestTooltip_css_default = `/*
   .whisker-left {
     align-self: center;
     display: inline-flex;
-    width: 11px;
+    /* .indicator width (--sys-size-6) minus 1px border (--sys-size-1) on the open right side. */
+    width: calc(var(--sys-size-6) - var(--sys-size-1));
     height: var(--sys-size-4);
     margin-right: 5px;
     border-left: var(--sys-size-1) solid var(--sys-color-on-surface-subtle);
@@ -8867,7 +8827,8 @@ var networkRequestTooltip_css_default = `/*
   .whisker-right {
     align-self: center;
     display: inline-flex;
-    width: 11px;
+    /* .indicator width (--sys-size-6) minus 1px border (--sys-size-1) on the open left side. */
+    width: calc(var(--sys-size-6) - var(--sys-size-1));
     height: var(--sys-size-4);
     margin-right: 5px;
     border-right: var(--sys-size-1) solid var(--sys-color-on-surface-subtle);
@@ -9545,7 +9506,7 @@ var networkTrackWidget_css_default = `/* Copyright 2026 The Chromium Authors
   .container {
     display: flex;
     width: 100%;
-    height: 150px;
+    height: var(--sys-size-23);
     background-color: var(--sys-color-cdt-base-container);
     border-radius: var(--sys-shape-corner-small);
     border: var(--sys-size-1) solid var(--sys-color-divider);
@@ -9580,7 +9541,11 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
         class="container"
         ${widget4(
       (element) => new PerfUI2.FlameChart.FlameChart(input.dataProvider, input.delegate, void 0, element),
-      { windowTimes: input.windowTimes }
+      {
+        dataProvider: input.dataProvider,
+        delegate: input.delegate,
+        windowTimes: input.windowTimes
+      }
     )}
       ></devtools-widget>
     `,
@@ -9965,7 +9930,7 @@ var sidebarAnnotationsTab_css_default = `/*
 
   .tutorial-title,
   .tutorial-description {
-    margin: 5px 0;
+    margin: var(--sys-size-4) 0;
   }
 }
 
@@ -10339,7 +10304,7 @@ __export(SidebarInsightsTab_exports, {
   SidebarInsightsTab: () => SidebarInsightsTab
 });
 import * as Trace12 from "../../../models/trace/trace.js";
-import * as Buttons8 from "../../../ui/components/buttons/buttons.js";
+import * as Buttons7 from "../../../ui/components/buttons/buttons.js";
 import * as UI17 from "../../../ui/legacy/legacy.js";
 import * as Lit16 from "../../../ui/lit/lit.js";
 import * as Utils from "../utils/utils.js";
@@ -10353,7 +10318,7 @@ var sidebarInsightsTab_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
-  :host {
+  :scope {
     display: flex;
     flex-flow: column nowrap;
     flex-grow: 1;
@@ -10715,9 +10680,9 @@ function renderZoomButton(insightSetToggled) {
   return html18`
   <div class=${classes}>
       <devtools-button .data=${{
-    variant: Buttons8.Button.Variant.ICON,
+    variant: Buttons7.Button.Variant.ICON,
     iconName: "center-focus-weak",
-    size: Buttons8.Button.Size.SMALL
+    size: Buttons7.Button.Size.SMALL
   }}
     ></devtools-button></div>`;
 }
@@ -10729,9 +10694,9 @@ function renderDropdownIcon(insightSetToggled) {
   return html18`
     <div class=${containerClasses}>
       <devtools-button .data=${{
-    variant: Buttons8.Button.Variant.ICON,
+    variant: Buttons7.Button.Variant.ICON,
     iconName: "chevron-right",
-    size: Buttons8.Button.Size.SMALL
+    size: Buttons7.Button.Size.SMALL
   }}
     ></devtools-button></div>
   `;
@@ -11136,7 +11101,7 @@ __export(TimelineSummary_exports, {
 });
 import * as i18n39 from "../../../core/i18n/i18n.js";
 import * as Platform9 from "../../../core/platform/platform.js";
-import * as Buttons9 from "../../../ui/components/buttons/buttons.js";
+import * as Buttons8 from "../../../ui/components/buttons/buttons.js";
 import * as UI19 from "../../../ui/legacy/legacy.js";
 import * as Lit17 from "../../../ui/lit/lit.js";
 import * as VisualLogging10 from "../../../ui/visual_logging/visual_logging.js";
@@ -11245,7 +11210,7 @@ var CATEGORY_SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
   render20(html20`
         <style>${timelineSummary_css_default}</style>
         <style>@scope to (devtools-widget > *) { ${UI19.inspectorCommonStyles} }</style>
-        <style>@scope to (devtools-widget > *) { ${Buttons9.textButtonStyles} }</style>
+        <style>@scope to (devtools-widget > *) { ${Buttons8.textButtonStyles} }</style>
         <div class=${summaryClasses} jslog=${VisualLogging10.section("timeline-summary")}>
             <div class="summary-range">${i18nString19(UIStrings20.rangeSS, { PH1: i18n39.TimeUtilities.millisToString(input.rangeStart), PH2: i18n39.TimeUtilities.millisToString(input.rangeEnd) })}</div>
             <div class="category-summary">

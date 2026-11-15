@@ -134,5 +134,40 @@ describe('WebMCPModel', () => {
         const tool = [...webMCPModel.tools][0];
         assert.deepEqual(tool.flags, ['readOnly', 'untrustedContent']);
     });
+    it('exposes the output schema when provided', () => {
+        const outputSchema = { type: 'object', properties: { result: { type: 'string' } }, required: ['result'] };
+        webMCPModel.toolsAdded({
+            tools: [{
+                    toolId: 'test-tool-id',
+                    name: 'test-tool',
+                    description: 'description',
+                    outputSchema,
+                    frameId: 'frame-1',
+                }],
+        });
+        const tool = [...webMCPModel.tools][0];
+        assert.deepEqual(tool.outputSchema, outputSchema);
+        assert.deepEqual(tool.inputSchema, {});
+    });
+    it('returns undefined output schema when omitted', () => {
+        webMCPModel.toolsAdded({ tools: [createTool('test-tool', 'frame-1')] });
+        const tool = [...webMCPModel.tools][0];
+        assert.isUndefined(tool.outputSchema);
+    });
+    it('returns a stable output schema reference when provided as a JSON string', () => {
+        const outputSchema = { type: 'object', properties: { result: { type: 'string' } } };
+        webMCPModel.toolsAdded({
+            tools: [{
+                    toolId: 'test-tool-id',
+                    name: 'test-tool',
+                    description: 'description',
+                    outputSchema: JSON.stringify(outputSchema),
+                    frameId: 'frame-1',
+                }],
+        });
+        const tool = [...webMCPModel.tools][0];
+        assert.deepEqual(tool.outputSchema, outputSchema);
+        assert.strictEqual(tool.outputSchema, tool.outputSchema);
+    });
 });
 //# sourceMappingURL=WebMCPModel.test.js.map

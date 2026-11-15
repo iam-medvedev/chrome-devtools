@@ -119,11 +119,6 @@ devtools-text-prompt {
   flex-shrink: 0;
 }
 
-.filtered-list-widget-item .deprecated-tag {
-  font-size: var(--sys-typescale-body5-size);
-  color: var(--sys-color-token-subtle);
-}
-
 .not-found-text {
   display: flex;
   align-items: center;
@@ -134,22 +129,13 @@ devtools-text-prompt {
   background: var(--sys-color-state-disabled-container);
 }
 
-.quickpick-description {
-  flex: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--sys-color-state-disabled);
-  padding-left: 15px;
-}
-
 @media (forced-colors: active) {
   .filtered-list-widget {
     forced-color-adjust: none;
     border-color: ButtonText;
   }
 
-  .filtered-list-widget-item,
-  .quickpick-description {
+  .filtered-list-widget-item {
     color: ButtonText;
   }
 

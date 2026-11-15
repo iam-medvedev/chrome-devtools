@@ -24,10 +24,6 @@ li {
   border: 0;
 }
 
-.tree-item:hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 .tree-node-key {
   white-space: var(--override-key-whitespace-wrapping);
   /* Override the default |min-width: auto| to avoid overflows of flex items */
@@ -41,7 +37,7 @@ li {
   mask-image: var(--image-file-arrow-collapse);
   background-color: var(--icon-default);
   margin-top: calc(-1 * var(--sys-size-2));
-  margin-right: 3px;
+  margin-right: var(--sys-size-3);
   content: "";
   text-shadow: none;
   height: var(--sys-size-7);
@@ -78,25 +74,6 @@ li.is-top-level {
 
 li.is-top-level:last-child {
   border-bottom: var(--override-top-node-border);
-}
-
-:host([animated]) li:not(.is-top-level) {
-  animation-name: slideIn;
-  animation-duration: 150ms;
-  animation-timing-function: cubic-bezier(0, 0, 0.3, 1);
-  animation-fill-mode: forwards;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-5px);
-    opacity: 0%;
-  }
-
-  to {
-    transform: none;
-    opacity: 100%;
-  }
 }
 
 .arrow-and-key-wrapper {

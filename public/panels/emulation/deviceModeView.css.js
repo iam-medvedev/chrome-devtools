@@ -38,7 +38,6 @@ export default `/*
    * step-buttons.
    */
   width: calc(4ch + 2ch + var(--sys-size-2));
-  max-height: 18px;
   border: var(--sys-color-neutral-outline);
   border-radius: var(--sys-shape-corner-extra-small);
   margin: 0 var(--sys-size-2);
@@ -348,7 +347,7 @@ devtools-toolbar.device-mode-toolbar-options {
 
 .device-mode-ruler-left .device-mode-ruler-marker {
   height: 0;
-  width: 5px;
+  width: var(--sys-size-3);
   right: 0;
   border-bottom: var(--sys-size-1) solid var(--sys-color-token-subtle);
   margin-bottom: calc(-1 * var(--sys-size-1));

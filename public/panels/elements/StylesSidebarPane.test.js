@@ -18,6 +18,7 @@ import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { createStubbedDomNodeWithModels, getMatchedStyles, ruleMatch } from '../../testing/StyleHelpers.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -986,6 +987,46 @@ describe('StylesSidebarPane', () => {
                 assert.isFalse(overloadedSection.element.classList.contains('collapsed'), 'Section should not have collapsed class after expand()');
                 // Still marked collapsible so the icon remains visible.
                 assert.isTrue(overloadedSection.element.classList.contains('collapsible'), 'Section should retain collapsible class after manual expand');
+            });
+            it('shows closing brace when a nested rule in an at-rule is collapsed', async () => {
+                enableCollapse();
+                const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                const matchedStyles = await getMatchedStyles({
+                    connection,
+                    cssModel: stylesSidebarPane.cssModel(),
+                    node,
+                    matchedPayload: [
+                        {
+                            rule: {
+                                selectorList: { selectors: [], text: '' },
+                                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                                style: {
+                                    cssProperties: [],
+                                    shorthandEntries: [],
+                                },
+                                media: [{
+                                        text: '(min-width: 1px)',
+                                        source: "mediaRule" /* Protocol.CSS.CSSMediaSource.MediaRule */,
+                                    }],
+                                ruleTypes: ["MediaRule" /* Protocol.CSS.CSSRuleType.MediaRule */, "StyleRule" /* Protocol.CSS.CSSRuleType.StyleRule */],
+                            },
+                            matchingSelectors: [],
+                        },
+                    ],
+                });
+                const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
+                assert.lengthOf(sectionBlocks, 1);
+                const section = sectionBlocks[0].sections[0];
+                assert.exists(section);
+                assert.isTrue(section.element.classList.contains('collapsed'), 'Section should be collapsed');
+                renderElementIntoDOM(section.element);
+                const cssQuery = section.element.querySelector('.css-query');
+                assert.exists(cssQuery);
+                assert.isTrue(cssQuery.classList.contains('has-collapse-icon'));
+                section.expand();
+                assert.isFalse(section.element.classList.contains('collapsed'), 'Section should be expanded');
             });
             it('reacts to toggling the collapse-non-contributing-css-rules setting at runtime', async () => {
                 enableCollapse();
@@ -4074,7 +4115,7 @@ describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyfr
         function createTreeElement(name, value) {
             const style = matchedStyles.nodeStyles()[0];
             const property = new SDK.CSSProperty.CSSProperty(style, style.pastLastSourcePropertyIndex(), name, value, true, false, true, false, '', undefined, []);
-            const section = sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection);
+            const section = Object.assign(sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection), { sectionTooltipIdFactory: new Tooltips.Tooltip.IdFactory() });
             return new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
                 stylesContainer: stylesSidebarPane,
                 section,

@@ -1007,6 +1007,64 @@ describe('AidaClient', () => {
                 assert.instanceOf(err, Host.AidaClient.AidaQuotaError);
             }
         });
+        it('doConversation handles streamed GCA response with thought parts, multiple text parts, and trailing metadata-only chunk', async () => {
+            sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
+                .callsFake(async (request, callback) => {
+                assert.isDefined(request.streamId);
+                const streamId = request.streamId;
+                await new Promise(resolve => setTimeout(resolve, 0));
+                Host.ResourceLoader.streamWrite(streamId, JSON.stringify([{
+                        responseId: 'chunk-1',
+                        modelVersion: 'test-model',
+                        candidates: [{
+                                index: 0,
+                                content: {
+                                    role: 'model',
+                                    parts: [
+                                        { text: 'Thinking step 1', thought: true },
+                                        { text: 'Hello ' },
+                                        { text: 'world!' },
+                                    ],
+                                },
+                            }],
+                    }]));
+                await new Promise(resolve => setTimeout(resolve, 0));
+                Host.ResourceLoader.streamWrite(streamId, JSON.stringify([{
+                        responseId: 'chunk-final',
+                        modelVersion: 'test-model-final',
+                        candidates: [{
+                                index: 0,
+                                content: {
+                                    role: 'model',
+                                    parts: [
+                                        { thoughtSignature: 'sig-123' },
+                                    ],
+                                },
+                            }],
+                    }]));
+                callback({ statusCode: 200, response: '' });
+            });
+            const results = await getAllResults(provider);
+            assert.deepEqual(results, [
+                {
+                    explanation: 'Hello world!',
+                    metadata: {
+                        rpcGlobalId: 'chunk-1',
+                        inferenceOptionMetadata: { modelId: 'test-model' },
+                    },
+                    completed: false,
+                },
+                {
+                    explanation: 'Hello world!',
+                    metadata: {
+                        rpcGlobalId: 'chunk-final',
+                        inferenceOptionMetadata: { modelId: 'test-model-final' },
+                    },
+                    functionCalls: undefined,
+                    completed: true,
+                },
+            ]);
+        });
     });
     describe('debugLog', () => {
         it('logs to console only when devToolsAiDebug has gca enabled', () => {
@@ -1210,6 +1268,31 @@ describe('AidaClient', () => {
                 ],
             ]);
         });
+        it('records SUCCESS once when a caller breaks on the final completed functionCalls chunk', async () => {
+            const histogramSpy = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordEnumeratedHistogram');
+            stubSingleChunkConversation(JSON.stringify([{
+                    functionCallChunk: {
+                        functionCall: {
+                            name: 'executeJavaScript',
+                            args: { code: '1 + 1' },
+                        },
+                    },
+                }]));
+            const provider = new Host.AidaClient.AidaClient();
+            for await (const chunk of provider.doConversation(buildConversationRequest(Host.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT))) {
+                if (chunk.functionCalls?.length) {
+                    break;
+                }
+            }
+            assert.deepEqual(recordedCalls(histogramSpy), [
+                ["DevTools.AiClient.RequestResult" /* EnumeratedHistogram.AiClientRequestResult */, AiClientRequestResult.SUCCESS, AiClientRequestResult.MAX_VALUE],
+                [
+                    "DevTools.AiClient.RequestResult.AiAssistance" /* EnumeratedHistogram.AiClientRequestResultAiAssistance */,
+                    AiClientRequestResult.SUCCESS,
+                    AiClientRequestResult.MAX_VALUE,
+                ],
+            ]);
+        });
         it('records ABORTED once when a caller exits the doConversation generator early', async () => {
             const histogramSpy = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordEnumeratedHistogram');
             sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest').callsFake(httpReq => {
@@ -1291,6 +1374,43 @@ describe('AidaClient', () => {
                 ],
             ]);
         });
+        // Streams the GCA responses in one chunk. Returns the thrown error and the recorded outcome.
+        async function runGcaConversation(responses) {
+            updateHostConfig({ devToolsUseGcaApi: { enabled: true } });
+            const histogramSpy = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordEnumeratedHistogram');
+            stubSingleChunkConversation(JSON.stringify(responses));
+            let error;
+            try {
+                for await (const result of new Host.AidaClient.AidaClient().doConversation(buildConversationRequest(Host.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT))) {
+                    void result;
+                }
+            }
+            catch (err) {
+                error = err;
+            }
+            return { error, outcome: histogramSpy.firstCall.args[1] };
+        }
+        for (const { name, responses, message } of [{
+                name: 'GCA blocks the response after partial text',
+                responses: [
+                    { candidates: [{ content: { role: 'model', parts: [{ text: 'Partial answer' }] } }] },
+                    { candidates: [{ content: { role: 'model', parts: [] }, finishReason: 'SAFETY' }] },
+                ],
+                message: 'GCA response blocked: SAFETY',
+            },
+            {
+                name: 'GCA blocks the prompt',
+                responses: [{ promptFeedback: { blockReason: 'PROHIBITED_CONTENT' } }],
+                message: 'GCA prompt blocked: PROHIBITED_CONTENT',
+            },
+        ]) {
+            it(`records BLOCKED_BY_SAFETY_OR_RECITATION when ${name}`, async () => {
+                const { error, outcome } = await runGcaConversation(responses);
+                assert.instanceOf(error, Host.AidaClient.AidaBlockError);
+                assert.strictEqual(error.message, message);
+                assert.strictEqual(outcome, AiClientRequestResult.BLOCKED_BY_SAFETY_OR_RECITATION);
+            });
+        }
         it('records HTTP_5XX_SERVER_ERROR when doConversation fails with HTTP 500', async () => {
             const histogramSpy = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordEnumeratedHistogram');
             sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')

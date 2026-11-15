@@ -149,53 +149,7 @@ function renderItemView(location) {
     </div>`;
     // clang-format on
 }
-export function renderEditorView(controls, errors, isDialog = false) {
-    if (!isDialog) {
-        // clang-format off
-        return html `
-      <div class="locations-edit-row">
-        <div class="locations-list-text locations-list-title">${i18nString(UIStrings.locationName)}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text">${i18nString(UIStrings.lat)}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text">${i18nString(UIStrings.long)}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text">${i18nString(UIStrings.timezoneId)}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text">${i18nString(UIStrings.locale)}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text">${i18nString(UIStrings.accuracy)}</div>
-      </div>
-      <div class="locations-edit-row">
-        <div class="locations-list-text locations-list-title locations-input-container">${controls.titleInput}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text locations-input-container">${controls.latInput}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text locations-list-text-longitude locations-input-container">${controls.longInput}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text locations-input-container">${controls.timezoneIdInput}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text locations-input-container">${controls.localeInput}</div>
-        <div class="locations-list-separator locations-list-separator-invisible"></div>
-        <div class="locations-list-text locations-input-container">${controls.accuracyInput}</div>
-      </div>
-      ${errors ? html `
-        <div class="locations-edit-row locations-error-row" role="alert">
-          <div class="locations-list-text locations-list-title locations-error-cell">${errors.title ?? nothing}</div>
-          <div class="locations-list-separator locations-list-separator-invisible"></div>
-          <div class="locations-list-text locations-error-cell">${errors.lat ?? nothing}</div>
-          <div class="locations-list-separator locations-list-separator-invisible"></div>
-          <div class="locations-list-text locations-list-text-longitude locations-error-cell">${errors.long ?? nothing}</div>
-          <div class="locations-list-separator locations-list-separator-invisible"></div>
-          <div class="locations-list-text locations-error-cell">${errors.timezoneId ?? nothing}</div>
-          <div class="locations-list-separator locations-list-separator-invisible"></div>
-          <div class="locations-list-text locations-error-cell">${errors.locale ?? nothing}</div>
-          <div class="locations-list-separator locations-list-separator-invisible"></div>
-          <div class="locations-list-text locations-error-cell">${errors.accuracy ?? nothing}</div>
-        </div>
-      ` : nothing}`;
-        // clang-format on
-    }
+export function renderEditorView(controls, errors) {
     // clang-format off
     return html `
     <div class="editor-grid">
@@ -297,7 +251,7 @@ export function renderLocationDialog(input) {
           aria-label=${i18nString(UIStrings.close)}>
         </devtools-button>
       </div>
-        ${renderEditorView(editorControls, input.errors, true)}
+        ${renderEditorView(editorControls, input.errors)}
         <div class="dialog-buttons">
           <devtools-button
             class="save-button"

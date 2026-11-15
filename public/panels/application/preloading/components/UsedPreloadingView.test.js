@@ -709,5 +709,42 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.strictEqual(badges[0]?.textContent?.trim(), 'No speculative loads');
         assert.include(sections[2]?.textContent, 'Learn more: speculative loading on developer.chrome.com');
     });
+    it('prioritizes the latest attempt when multiple attempts exist for the page', async () => {
+        const baseAttempt = {
+            action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+            key: {
+                loaderId: 'loaderId:1',
+                action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                url: urlString `https://example.com/prerendered.html`,
+            },
+            disallowedMojoInterface: null,
+            mismatchedHeaders: null,
+            ruleSetIds: ['ruleSetId:1'],
+            nodeIds: [1],
+        };
+        const data = {
+            pageURL: urlString `https://example.com/prerendered.html`,
+            previousAttempts: [
+                {
+                    ...baseAttempt,
+                    pipelineId: 'pipelineId:1',
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
+                    prerenderStatus: "TriggerDestroyed" /* Protocol.Preload.PrerenderFinalStatus.TriggerDestroyed */,
+                },
+                {
+                    ...baseAttempt,
+                    pipelineId: 'pipelineId:2',
+                    status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+                    prerenderStatus: null,
+                },
+            ],
+            currentAttempts: [],
+        };
+        const component = await renderUsedPreloadingView(data);
+        assert.isNotNull(component.shadowRoot);
+        const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
+        assert.strictEqual(sections[0]?.querySelector('.status-badge span')?.textContent?.trim(), 'Success');
+        assert.include(sections[0]?.textContent, 'This page was successfully prerendered');
+    });
 });
 //# sourceMappingURL=UsedPreloadingView.test.js.map

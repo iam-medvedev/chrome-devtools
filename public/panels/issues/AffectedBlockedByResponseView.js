@@ -1,75 +1,96 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/components/request_link_icon/request_link_icon.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import { AffectedResourcesView } from './AffectedResourcesView.js';
+import { html, render } from '../../ui/lit/lit.js';
+import { AffectedResourcesView, renderFrameCell } from './AffectedResourcesView.js';
 const UIStrings = {
     /**
-     * @description Label in the Issues panel for the number of affected network requests.
+     * @description Label in the Issues panel for the number of affected network
+     * requests.
      */
     nRequests: '{n, plural, =1 {# request} other {# requests}}',
     /**
-     * @description Column header in the Issues panel for network requests in the blocked-by-response affected resources table.
+     * @description Column header in the Issues panel for network requests in the
+     * blocked-by-response affected resources table.
      */
     requestC: 'Request',
     /**
-     * @description Column header in the Issues panel for parent frames in the blocked-by-response affected resources table.
+     * @description Column header in the Issues panel for parent frames in the
+     * blocked-by-response affected resources table.
      */
     parentFrame: 'Parent frame',
     /**
-     * @description Column header in the Issues panel for blocked resources in the blocked-by-response affected resources table.
+     * @description Column header in the Issues panel for blocked resources in the
+     * blocked-by-response affected resources table.
      */
     blockedResource: 'Blocked resource',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedBlockedByResponseView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <tr>
+      <td class="affected-resource-header">${i18nString(UIStrings.requestC)}</td>
+      <td class="affected-resource-header">${i18nString(UIStrings.parentFrame)}</td>
+      <td class="affected-resource-header">${i18nString(UIStrings.blockedResource)}</td>
+    </tr>
+    ${input.rows.map(row => html `
+      <tr class="affected-resource-row">
+        <td class="affected-resource-cell">
+          <devtools-request-link-icon .data=${{
+        affectedRequest: row.request,
+        requestResolver: input.requestResolver,
+        displayURL: true,
+        additionalOnClickAction: input.onRequestClick,
+    }}></devtools-request-link-icon>
+        </td>
+        ${renderFrameCell(row.parentFrame)}
+        ${renderFrameCell(row.blockedFrame)}
+      </tr>
+    `)}
+  `, target);
+    // clang-format on
+};
 export class AffectedBlockedByResponseView extends AffectedResourcesView {
+    #view;
+    constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
+        super(parent, issue, jslogContext);
+        this.#view = view;
+    }
     #appendDetails(details) {
-        const header = document.createElement('tr');
-        this.appendColumnTitle(header, i18nString(UIStrings.requestC));
-        this.appendColumnTitle(header, i18nString(UIStrings.parentFrame));
-        this.appendColumnTitle(header, i18nString(UIStrings.blockedResource));
-        this.affectedResources.appendChild(header);
-        let count = 0;
+        const rows = [];
         for (const detail of details) {
-            this.#appendDetail(detail);
-            count++;
+            rows.push(this.#createDetailRow(detail));
         }
-        this.updateAffectedResourceCount(count);
+        this.#view({
+            rows,
+            requestResolver: this.requestResolver,
+            onRequestClick: () => {
+                Host.userMetrics.issuesPanelResourceOpened("CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */, "Request" /* AffectedItem.REQUEST */);
+            },
+        }, undefined, this.affectedResources);
+        this.updateAffectedResourceCount(rows.length);
     }
     getResourceNameWithCount(count) {
         return i18nString(UIStrings.nRequests, { n: count });
     }
-    #appendDetail(details) {
-        const element = document.createElement('tr');
-        element.classList.add('affected-resource-row');
-        const requestCell = this.createRequestCell(details.request, {
-            additionalOnClickAction() {
-                Host.userMetrics.issuesPanelResourceOpened("CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */, "Request" /* AffectedItem.REQUEST */);
-            },
-        });
-        element.appendChild(requestCell);
-        if (details.parentFrame) {
-            const frameUrl = this.createFrameCell(details.parentFrame.frameId, this.issue.getCategory());
-            element.appendChild(frameUrl);
-        }
-        else {
-            element.appendChild(document.createElement('td'));
-        }
-        if (details.blockedFrame) {
-            const frameUrl = this.createFrameCell(details.blockedFrame.frameId, this.issue.getCategory());
-            element.appendChild(frameUrl);
-        }
-        else {
-            element.appendChild(document.createElement('td'));
-        }
-        this.affectedResources.appendChild(element);
+    #createDetailRow(details) {
+        const issueCategory = this.issue.getCategory();
+        return {
+            request: details.request,
+            parentFrame: details.parentFrame ? this.createFrameCellData(details.parentFrame.frameId, issueCategory) :
+                undefined,
+            blockedFrame: details.blockedFrame ? this.createFrameCellData(details.blockedFrame.frameId, issueCategory) :
+                undefined,
+        };
     }
     update() {
-        this.clear();
+        this.requestResolver.clear();
         this.#appendDetails(this.issue.getBlockedByResponseDetails());
     }
 }

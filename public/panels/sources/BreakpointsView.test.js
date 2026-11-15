@@ -12,7 +12,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { assertElements, dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { assertElements, assertScreenshot, dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM, setColorScheme, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
@@ -115,12 +115,12 @@ class MockRevealer {
     async reveal(_revealable, _omitFocus) {
     }
 }
-async function createAndInitializeBreakpointsView() {
+async function createAndInitializeBreakpointsView(options) {
     // Force creation of a new BreakpointsView singleton so that it gets correctly re-wired with
     // the current controller singleton (to pick up the latest breakpoint state).
     const component = Sources.BreakpointsView.BreakpointsView.instance({ forceNew: true });
     await RenderCoordinator.done(); // Wait until the initial rendering finishes.
-    renderElementIntoDOM(component);
+    renderElementIntoDOM(component, options);
     await component.updateComplete;
     return component;
 }
@@ -1553,6 +1553,81 @@ describe('BreakpointsView', () => {
                 assert.instanceOf(lastBreakpointItem, HTMLDivElement);
                 assert.strictEqual(selected, lastBreakpointItem);
             });
+        });
+    });
+    describe('theme-aware styling', () => {
+        afterEach(() => {
+            setColorScheme('light');
+        });
+        async function createPopulatedBreakpointsView() {
+            const component = await createAndInitializeBreakpointsView({ includeCommonStyles: true });
+            const data = {
+                breakpointsActive: true,
+                pauseOnUncaughtExceptions: false,
+                pauseOnCaughtExceptions: false,
+                groups: [
+                    {
+                        name: 'test.js',
+                        url: urlString `https://google.com/test.js`,
+                        editable: true,
+                        expanded: true,
+                        breakpointItems: [
+                            {
+                                id: '1',
+                                type: "REGULAR_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.REGULAR_BREAKPOINT */,
+                                location: '1',
+                                codeSnippet: 'const a = 1;',
+                                isHit: false,
+                                status: "ENABLED" /* Sources.BreakpointsView.BreakpointStatus.ENABLED */,
+                            },
+                            {
+                                id: '2',
+                                type: "CONDITIONAL_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.CONDITIONAL_BREAKPOINT */,
+                                location: '2',
+                                codeSnippet: 'if (x > 0)',
+                                isHit: false,
+                                status: "ENABLED" /* Sources.BreakpointsView.BreakpointStatus.ENABLED */,
+                                hoverText: 'x > 0',
+                            },
+                            {
+                                id: '3',
+                                type: "LOGPOINT" /* SDK.DebuggerModel.BreakpointType.LOGPOINT */,
+                                location: '3',
+                                codeSnippet: 'console.log(x);',
+                                isHit: false,
+                                status: "ENABLED" /* Sources.BreakpointsView.BreakpointStatus.ENABLED */,
+                                hoverText: 'x',
+                            },
+                        ],
+                    },
+                ],
+            };
+            component.data = data;
+            await RenderCoordinator.done();
+            await component.updateComplete;
+            return component;
+        }
+        it('renders type-indicator colors in light theme', async () => {
+            const component = await createPopulatedBreakpointsView();
+            const conditionalIndicator = component.contentElement.querySelector('.breakpoint-item.conditional-breakpoint > label > .type-indicator');
+            const logpointIndicator = component.contentElement.querySelector('.breakpoint-item.logpoint > label > .type-indicator');
+            assert.exists(conditionalIndicator);
+            assert.exists(logpointIndicator);
+            setColorScheme('light');
+            assert.strictEqual(getComputedStyle(conditionalIndicator).borderRightColor, 'rgb(233, 103, 37)');
+            assert.strictEqual(getComputedStyle(logpointIndicator).borderRightColor, 'rgb(255, 72, 150)');
+            await assertScreenshot('sources/breakpoints_view_light.png');
+        });
+        it('renders type-indicator colors in dark theme', async () => {
+            const component = await createPopulatedBreakpointsView();
+            const conditionalIndicator = component.contentElement.querySelector('.breakpoint-item.conditional-breakpoint > label > .type-indicator');
+            const logpointIndicator = component.contentElement.querySelector('.breakpoint-item.logpoint > label > .type-indicator');
+            assert.exists(conditionalIndicator);
+            assert.exists(logpointIndicator);
+            setColorScheme('dark');
+            assert.strictEqual(getComputedStyle(conditionalIndicator).borderRightColor, 'rgb(254, 141, 89)');
+            assert.strictEqual(getComputedStyle(logpointIndicator).borderRightColor, 'rgb(255, 132, 175)');
+            await assertScreenshot('sources/breakpoints_view_dark.png');
         });
     });
 });

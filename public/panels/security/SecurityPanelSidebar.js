@@ -39,8 +39,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/security/SecurityPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export const DEFAULT_VIEW = (input, output, target) => {
-    const renderIcon = (icon) => html `${icon}`;
+export const DEFAULT_VIEW = (input, _output, target) => {
     const renderOrigin = (origin, state) => {
         const icon = getSecurityStateIconForDetailedView(state, `security-property security-property-${state}`);
         const selected = input.selectedElementId === origin;
@@ -51,10 +50,10 @@ export const DEFAULT_VIEW = (input, output, target) => {
               title=${origin}
               ?selected=${selected}
               @click=${() => {
-            output.onElementSelected(origin);
-            output.onShowOrigin(origin);
+            input.onElementSelected(origin);
+            input.onShowOrigin(origin);
         }}>
-            ${renderIcon(icon)}
+            ${icon}
             ${renderHighlightedUrl(origin, state)}
           </li>
         `;
@@ -121,7 +120,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         // clang-format off
         return html `
       <li role="treeitem" class="security-sidebar-origins" open ?hidden=${isHidden}>
-        ${icon ? renderIcon(icon) : nothing}
+        ${icon ?? nothing}
         <span class="security-sidebar-origins-title">${title}</span>
         <ul role="group" aria-label=${title}>
           ${showReloadMessage ? html `
@@ -137,7 +136,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     };
     // clang-format off
     render(html `
-    <devtools-tree class="security-sidebar" navigation-variant .template=${html `
+    <devtools-tree class="security-sidebar" autofocus navigation-variant .template=${html `
       <style>${sidebarStyles}</style>
       <style>${lockIconStyles}</style>
       <ul role="tree">
@@ -149,10 +148,10 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 title=${i18nString(UIStrings.overview)}
                 ?selected=${input.selectedElementId === 'overview'}
                 @click=${() => {
-        output.onElementSelected('overview');
-        output.onShowOrigin(null);
+        input.onElementSelected('overview');
+        input.onShowOrigin(null);
     }}>
-              ${renderIcon(overviewIcon)}
+              ${overviewIcon}
               <span title=${i18nString(UIStrings.overview)}>${i18nString(UIStrings.overview)}</span>
             </li>
             ${Object.values(OriginGroup).map(group => renderGroup(group))}
@@ -175,54 +174,78 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
+        this.setMinimumSize(100, 25);
     }
     set onShowOrigin(callback) {
         this.#onShowOrigin = callback;
+    }
+    get onShowOrigin() {
+        return this.#onShowOrigin;
     }
     wasShown() {
         super.wasShown();
         this.requestUpdate();
     }
-    showOverview() {
-        this.#selectedElementId = 'overview';
-        this.requestUpdate();
-        this.#onShowOrigin?.(null);
-    }
-    toggleOriginsList(hidden) {
-        this.#originsHidden = hidden;
-        this.#showOriginsUnconditionally = !hidden;
-        this.requestUpdate();
-    }
-    addOrigin(origin, securityState) {
-        this.#origins.set(origin, securityState);
-        this.requestUpdate();
-    }
-    setMainOrigin(origin) {
+    set mainOrigin(origin) {
+        if (this.#mainOrigin === origin) {
+            return;
+        }
         this.#mainOrigin = origin;
         this.requestUpdate();
     }
     get mainOrigin() {
         return this.#mainOrigin;
     }
-    updateOrigin(origin, securityState) {
-        this.#origins.set(origin, securityState);
+    set origins(origins) {
+        if (this.#origins === origins) {
+            return;
+        }
+        this.#origins = origins;
         this.requestUpdate();
     }
-    updateOverviewSecurityState(securityState) {
-        this.#overviewSecurityState = securityState;
+    get origins() {
+        return this.#origins;
+    }
+    set originsHidden(originsHidden) {
+        if (this.#originsHidden === originsHidden) {
+            return;
+        }
+        this.#originsHidden = originsHidden;
         this.requestUpdate();
     }
-    clearOrigins() {
-        this.#origins.clear();
+    get originsHidden() {
+        return this.#originsHidden;
+    }
+    set showOriginsUnconditionally(showOriginsUnconditionally) {
+        if (this.#showOriginsUnconditionally === showOriginsUnconditionally) {
+            return;
+        }
+        this.#showOriginsUnconditionally = showOriginsUnconditionally;
         this.requestUpdate();
     }
-    set selectedOrigin(origin) {
-        this.#selectedElementId = origin ?? 'overview';
-        this.requestUpdate();
-        this.#onShowOrigin?.(origin);
+    get showOriginsUnconditionally() {
+        return this.#showOriginsUnconditionally;
     }
-    get selectedOrigin() {
-        return this.#selectedElementId;
+    set overviewSecurityState(overviewSecurityState) {
+        if (this.#overviewSecurityState === overviewSecurityState) {
+            return;
+        }
+        this.#overviewSecurityState = overviewSecurityState;
+        this.requestUpdate();
+    }
+    get overviewSecurityState() {
+        return this.#overviewSecurityState;
+    }
+    set activeOrigin(origin) {
+        const elementId = origin ?? 'overview';
+        if (this.#selectedElementId === elementId) {
+            return;
+        }
+        this.#selectedElementId = elementId;
+        this.requestUpdate();
+    }
+    get activeOrigin() {
+        return this.#selectedElementId === 'overview' ? null : this.#selectedElementId;
     }
     performUpdate() {
         const input = {
@@ -232,8 +255,6 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
             showOriginsUnconditionally: this.#showOriginsUnconditionally,
             overviewSecurityState: this.#overviewSecurityState,
             selectedElementId: this.#selectedElementId,
-        };
-        const output = {
             onElementSelected: (id) => {
                 this.#selectedElementId = id;
                 this.requestUpdate();
@@ -242,7 +263,7 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
                 this.#onShowOrigin?.(origin);
             },
         };
-        this.#view(input, output, this.contentElement);
+        this.#view(input, undefined, this.contentElement);
     }
 }
 //# sourceMappingURL=SecurityPanelSidebar.js.map

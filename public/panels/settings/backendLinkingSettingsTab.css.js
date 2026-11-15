@@ -21,8 +21,8 @@ export default `/*
 
   .description-text {
     color: var(--sys-color-on-surface-subtle);
-    font-size: var(--sys-typescale-body-medium-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
     margin: 0 0 var(--sys-size-5);
   }
 
@@ -31,8 +31,8 @@ export default `/*
     grid-template-columns: max-content 1fr;
     gap: var(--sys-size-2) var(--sys-size-6);
     align-items: baseline;
-    font-size: var(--sys-typescale-body-small-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-typescale-body4-line-height);
     margin: 0;
 
     dd {
@@ -40,7 +40,7 @@ export default `/*
     }
 
     .column-header {
-      font-size: var(--sys-typescale-label-small-size);
+      font-size: var(--sys-typescale-body5-size);
       font-weight: var(--ref-typeface-weight-medium);
       border-bottom: 1px solid var(--sys-color-neutral-outline);
       padding-bottom: var(--sys-size-2);
@@ -77,8 +77,8 @@ export default `/*
     align-items: center;
     gap: var(--sys-size-3);
     color: var(--sys-color-on-surface-subtle);
-    font-size: var(--sys-typescale-body-small-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-typescale-body4-line-height);
   }
 }
 

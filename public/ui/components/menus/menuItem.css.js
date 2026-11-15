@@ -22,10 +22,6 @@ export default `/*
   outline: none;
 }
 
-:host(.no-checkmark) .menu-item {
-  padding-left: 0;
-}
-
 :host(:not(:first-child)) .menu-item {
   border-top: var(--override-divider-line);
 }

@@ -30,12 +30,12 @@ export default `/*
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: var(--sys-size-6);
   }
 
   h1 {
     font-size: var(--sys-typescale-body1-size);
-    line-height: 19px;
+    line-height: var(--sys-typescale-body1-line-height);
     color: var(--sys-color-on-surface);
     font-weight: normal;
   }
@@ -48,13 +48,13 @@ export default `/*
   }
 
   .table {
-    margin-top: 35px;
+    margin-top: var(--sys-size-13);
   }
 
   .title {
     font-size: var(--sys-typescale-body3-size);
     color: var(--sys-color-on-surface);
-    margin-left: 10px;
+    margin-left: var(--sys-size-5);
     flex: 1;
     overflow-x: hidden;
     white-space: nowrap;

@@ -13,7 +13,7 @@ import { StepEditor } from './StepEditor.js';
 import stepViewStyles from './stepView.css.js';
 import { TimelineSection } from './TimelineSection.js';
 const { html } = Lit;
-const { ifDefined } = Lit.Directives;
+const { classMap, ifDefined } = Lit.Directives;
 const { widget } = UI.Widget;
 const UIStrings = {
     /**
@@ -272,6 +272,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         isStartOfGroup: input.isStartOfGroup,
         isEndOfGroup: input.isEndOfGroup,
         isSelected: input.isSelected,
+        isAfterError: input.isAfterError,
     })}
         @contextmenu=${(e) => {
         const menu = new UI.ContextMenu.ContextMenu(e);
@@ -293,7 +294,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             input.onStepHover(stepOrSection);
         }
     }}
-        class=${Lit.Directives.classMap(stepClasses)}>
+        class=${classMap(stepClasses)}>
         <svg slot="icon" width="24" height="24" class="icon"
           role=${input.step ? 'button' : 'presentation'}
           aria-label=${ifDefined(input.step ? breakpointTitle : undefined)}
@@ -346,7 +347,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             onStepEdited: input.stepEdited,
             onAttributeRequested: input.onAttributeRequested,
         })}
-            class=${input.isSelected ? 'is-selected' : ''}></devtools-widget>`}
+            class=${classMap({ 'step-editor': true, 'is-selected': input.isSelected })}></devtools-widget>`}
           ${input.section?.causingStep &&
         html `<devtools-widget ${widget(StepEditor, {
             step: input.section.causingStep,
@@ -354,8 +355,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             disabled: input.isPlaying,
             onStepEdited: input.stepEdited,
             onAttributeRequested: input.onAttributeRequested,
-        })}></devtools-widget>`}
-          }
+        })}
+            class="step-editor"></devtools-widget>`}
         </div>
         ${input.error &&
         html `
@@ -388,6 +389,7 @@ export class StepView extends UI.Widget.Widget {
         sectionIndex: 0,
         isFirstSection: false,
         isLastSection: false,
+        isAfterError: false,
         isRecording: false,
         isPlaying: false,
         isVisible: false,
@@ -432,6 +434,13 @@ export class StepView extends UI.Widget.Widget {
         this.#viewInput.error = error;
         this.requestUpdate();
     }
+    set showDetails(showDetails) {
+        if (this.#viewInput.showDetails === showDetails) {
+            return;
+        }
+        this.#viewInput.showDetails = showDetails;
+        this.requestUpdate();
+    }
     set isEndOfGroup(isEndOfGroup) {
         this.#viewInput.isEndOfGroup = isEndOfGroup;
         this.requestUpdate();
@@ -453,7 +462,17 @@ export class StepView extends UI.Widget.Widget {
         this.requestUpdate();
     }
     set isLastSection(isLastSection) {
+        if (this.#viewInput.isLastSection === isLastSection) {
+            return;
+        }
         this.#viewInput.isLastSection = isLastSection;
+        this.requestUpdate();
+    }
+    set isAfterError(isAfterError) {
+        if (this.#viewInput.isAfterError === isAfterError) {
+            return;
+        }
+        this.#viewInput.isAfterError = isAfterError;
         this.requestUpdate();
     }
     set isRecording(isRecording) {

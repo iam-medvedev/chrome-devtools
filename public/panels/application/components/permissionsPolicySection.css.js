@@ -35,17 +35,13 @@ export default `/*
     font-size: inherit;
   }
 
-  .policies-list {
-    padding-top: 3px;
-  }
-
   .permissions-row {
     display: flex;
     line-height: 22px;
   }
 
   .permissions-row div {
-    padding-right: 5px;
+    padding-right: var(--sys-size-4);
   }
 
   .feature-name {
@@ -57,7 +53,7 @@ export default `/*
   }
 
   .block-reason {
-    width: 215px;
+    width: var(--sys-size-26);
   }
 
   .disabled-features-button {

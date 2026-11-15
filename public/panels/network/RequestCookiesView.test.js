@@ -18,7 +18,7 @@ describeWithEnvironment('RequestCookiesView', () => {
     };
     it('renders correctly with no cookies', async () => {
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         RequestCookiesView.DEFAULT_VIEW({
             requestCookies: { cookies: [], cookieToBlockedReasons: new Map(), cookieToExemptionReason: new Map() },
             responseCookies: { cookies: [], cookieToBlockedReasons: new Map(), cookieToExemptionReason: new Map() },
@@ -33,7 +33,7 @@ describeWithEnvironment('RequestCookiesView', () => {
     });
     it('renders correctly with request and response cookies', async () => {
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         RequestCookiesView.DEFAULT_VIEW({
             requestCookies: {
                 cookies: [mockCookie('request-cookie', 'val1')],
@@ -56,7 +56,7 @@ describeWithEnvironment('RequestCookiesView', () => {
     });
     it('renders correctly with malformed response cookies', async () => {
         const container = document.createElement('div');
-        renderElementIntoDOM(container);
+        renderElementIntoDOM(container, { includeCommonStyles: true });
         RequestCookiesView.DEFAULT_VIEW({
             requestCookies: { cookies: [], cookieToBlockedReasons: new Map(), cookieToExemptionReason: new Map() },
             responseCookies: { cookies: [], cookieToBlockedReasons: new Map(), cookieToExemptionReason: new Map() },

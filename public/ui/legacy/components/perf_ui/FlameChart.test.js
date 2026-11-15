@@ -72,9 +72,18 @@ describeWithEnvironment('FlameChart', () => {
         const delegate = new MockFlameChartDelegate();
         chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate, { canvasVELogContext: 'testing-flamechart' });
         renderChart(chartInstance);
-        const expected = VisualLogging.canvas('testing-flamechart').track({ hover: true }).toString();
+        const expected = VisualLogging.canvas('testing-flamechart').track({ click: true, drag: true, hover: true }).toString();
         const canvas = chartInstance.contentElement.querySelector('canvas');
         assert.strictEqual(canvas?.getAttribute('jslog'), expected);
+        assert.strictEqual(canvas?.getAttribute('jslog'), 'Canvas; context: testing-flamechart; track: click, drag, hover');
+    });
+    it('does not add JSLog attribute to the canvas element when canvasVELogContext is omitted', () => {
+        const provider = new FakeProvider();
+        const delegate = new MockFlameChartDelegate();
+        chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+        renderChart(chartInstance);
+        const canvas = chartInstance.contentElement.querySelector('canvas');
+        assert.isNull(canvas?.getAttribute('jslog'));
     });
     it('notifies the delegate when the window has changed', async () => {
         const provider = new FakeProvider();
@@ -1984,6 +1993,70 @@ describeWithEnvironment('FlameChart', () => {
         const assignedColors = calls.map(c => c.args[0]);
         assert.isTrue(assignedColors.includes('#ff0000'));
         assert.isFalse(assignedColors.includes(''));
+    });
+    it('only invokes drawOverride for entries inside the visible viewport', () => {
+        const drawOverrideSpies = [
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 0: off-screen left
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 1: visible
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 2: off-screen right
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 3: off-screen below vertically
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 4: inside collapsed group
+            sinon.spy((_ctx, x, _y, width) => ({ x, width })), // 5: inside hidden group
+        ];
+        class DrawOverrideViewportProvider extends FakeFlameChartProvider {
+            #timelineData = PerfUI.FlameChart.FlameChartTimelineData.create({
+                // 30 levels in group 0 (each 17px -> level 29 is > 400px tall), 1 in collapsed group 1, 1 in hidden group 2.
+                entryLevels: [0, 0, 0, 29, 30, 31],
+                entryStartTimes: [0, 120, 300, 120, 120, 120],
+                entryTotalTimes: [20, 40, 20, 40, 40, 40],
+                groups: [
+                    {
+                        name: 'Expanded Group',
+                        startLevel: 0,
+                        style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ },
+                        expanded: true,
+                    },
+                    {
+                        name: 'Collapsed Group',
+                        startLevel: 30,
+                        style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ },
+                        expanded: false,
+                    },
+                    {
+                        name: 'Hidden Group',
+                        startLevel: 31,
+                        style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ },
+                        expanded: true,
+                        hidden: true,
+                    },
+                ],
+            });
+            maxStackDepth() {
+                return 32;
+            }
+            getDrawOverride(entryIndex) {
+                return drawOverrideSpies[entryIndex];
+            }
+            timelineData() {
+                return this.#timelineData;
+            }
+        }
+        const provider = new DrawOverrideViewportProvider();
+        chartInstance = new PerfUI.FlameChart.FlameChart(provider, new MockFlameChartDelegate());
+        renderWidgetInVbox(chartInstance, { width: 1000, height: 150 });
+        chartInstance.setWindowTimes(100, 200);
+        chartInstance.update();
+        sinon.assert.callCount(drawOverrideSpies[0], 0);
+        sinon.assert.callCount(drawOverrideSpies[1], 1);
+        sinon.assert.callCount(drawOverrideSpies[2], 0);
+        sinon.assert.callCount(drawOverrideSpies[3], 0);
+        sinon.assert.callCount(drawOverrideSpies[4], 0);
+        sinon.assert.callCount(drawOverrideSpies[5], 0);
+        // Panning to include entry 0 invokes its drawOverride and skips entry 1.
+        chartInstance.setWindowTimes(0, 100);
+        chartInstance.update();
+        sinon.assert.callCount(drawOverrideSpies[0], 1);
+        sinon.assert.callCount(drawOverrideSpies[1], 1);
     });
 });
 //# sourceMappingURL=FlameChart.test.js.map

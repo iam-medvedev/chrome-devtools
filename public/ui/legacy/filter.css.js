@@ -88,7 +88,7 @@ export default `/*
 
 .filter-checkbox-filter {
   padding-left: var(--sys-size-1);
-  padding-right: 7px;
+  padding-right: var(--sys-size-4);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -110,7 +110,7 @@ export default `/*
 .filter-divider {
   background-color: var(--sys-color-divider);
   width: var(--sys-size-1);
-  margin: 5px var(--sys-size-3);
+  margin: var(--sys-size-3);
   height: var(--sys-size-8);
 }
 
@@ -123,14 +123,18 @@ export default `/*
 }
 
 .toolbar-button .active-filters-count {
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 
   --override-adorner-background-color: var(--sys-color-tonal-container);
   --override-adorner-border-color: var(--sys-color-tonal-container);
   --override-adorner-text-color: var(--sys-color-primary);
-  --override-adorner-font-size: 10px;
+  --override-adorner-font-size: var(--sys-typescale-body5-size);
 
   font-weight: 700;
+
+  span {
+    line-height: 1;
+  }
 }
 
 .toolbar-text {

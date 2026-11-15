@@ -218,6 +218,7 @@ models/bindings/SourceMapStepping.test.js
 models/bindings/StylesSourceMapping.test.js
 models/bindings/SymbolizedError.test.js
 models/breakpoints/BreakpointManager.test.js
+models/breakpoints/RecurringPauseDetector.test.js
 models/change_tracker/ChangeTracker.test.js
 models/comment_manager/CD4ABridge.test.js
 models/comment_manager/CommentManager.test.js
@@ -413,6 +414,7 @@ panels/ai_assistance/components/WalkthroughView.test.js
 panels/animation/AnimationTimeline.test.js
 panels/application/AppManifestView.test.js
 panels/application/ApplicationPanelSidebar.test.js
+panels/application/ApplicationPanelTreeElement.test.js
 panels/application/BackgroundServiceView.test.js
 panels/application/CookieItemsView.test.js
 panels/application/CrashReportContextView.test.js
@@ -439,6 +441,7 @@ panels/application/ServiceWorkersView.test.js
 panels/application/StorageBucketsTreeElement.test.js
 panels/application/StorageView.test.js
 panels/application/SubAppsView.test.js
+panels/application/WebMCPTreeElement.test.js
 panels/application/WebMCPView.test.js
 panels/application/preloading/PreloadingView.test.js
 panels/application/components/AdsView.test.js
@@ -480,6 +483,7 @@ panels/common/GdpSignUpDialog.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsoleInsightTeaser.test.js
+panels/console/ConsolePanel.test.js
 panels/console/ConsolePinPane.test.js
 panels/console/ConsolePrompt.test.js
 panels/console/ConsoleSidebar.test.js
@@ -527,6 +531,19 @@ panels/elements/StylePropertyUtils.test.js
 panels/elements/StylesAiCodeCompletionProvider.test.js
 panels/elements/StylesSidebarPane.test.js
 panels/elements/WebCustomData.test.js
+panels/elements/components/AccessibilityTreeNode.test.js
+panels/elements/components/AdornerManager.test.js
+panels/elements/components/CSSHintDetailsView.test.js
+panels/elements/components/CSSPropertyDocsView.test.js
+panels/elements/components/CSSPropertyIconResolver.test.js
+panels/elements/components/CSSQuery.test.js
+panels/elements/components/CSSVariableValueView.test.js
+panels/elements/components/ComputedStyleProperty.test.js
+panels/elements/components/ComputedStyleTrace.test.js
+panels/elements/components/ElementsBreadcrumbs.test.js
+panels/elements/components/ElementsTreeExpandButton.test.js
+panels/elements/components/QueryContainer.test.js
+panels/elements/components/StylePropertyEditor.test.js
 panels/emulation/AdvancedApp.test.js
 panels/emulation/DeviceModeToolbar.test.js
 panels/emulation/DeviceModeView.test.js
@@ -537,6 +554,7 @@ panels/issues/AffectedDescendantsWithinSelectElementView.test.js
 panels/issues/AffectedLazyLoadImagesView.test.js
 panels/issues/AffectedMetadataAllowedSitesView.test.js
 panels/issues/AffectedSelectivePermissionsInterventionView.test.js
+panels/issues/GenericIssueDetailsView.test.js
 panels/issues/IssueView.test.js
 panels/issues/IssuesPane.test.js
 panels/layer_viewer/LayerTreeOutline.test.js
@@ -555,6 +573,7 @@ panels/linear_memory_inspector/LinearMemoryInspectorPane.test.js
 panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.test.js
 panels/linear_memory_inspector/components/LinearMemoryInspector.test.js
 panels/linear_memory_inspector/components/LinearMemoryNavigator.test.js
+panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.test.js
 panels/linear_memory_inspector/components/LinearMemoryViewer.test.js
 panels/linear_memory_inspector/components/ValueInterpreterDisplay.test.js
 panels/linear_memory_inspector/components/ValueInterpreterSettings.test.js
@@ -594,6 +613,7 @@ panels/network/RequestTimingView.test.js
 panels/network/ResourceDirectSocketChunkView.test.js
 panels/network/ResourceWebSocketFrameView.test.js
 panels/network/ShowMoreDetailsWidget.test.js
+panels/network/SignedExchangeInfoView.test.js
 panels/network/components/DirectSocketConnectionView.test.js
 panels/network/components/EditableSpan.test.js
 panels/network/components/HeaderSectionRow.test.js
@@ -606,6 +626,7 @@ panels/profiler/HeapProfileView.test.js
 panels/profiler/HeapSnapshotDataGrids.test.js
 panels/profiler/HeapSnapshotView.test.js
 panels/profiler/HeapTimelineOverview.test.js
+panels/profiler/IsolateSelector.test.js
 panels/profiler/ProfileFlameChartDataProvider.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
@@ -695,6 +716,7 @@ panels/timeline/TimelineFlameChartDataProvider.test.js
 panels/timeline/TimelineFlameChartNetworkDataProvider.test.js
 panels/timeline/TimelineFlameChartView.test.js
 panels/timeline/TimelineHistoryManager.test.js
+panels/timeline/TimelineInvariants.test.js
 panels/timeline/TimelineLoader.test.js
 panels/timeline/TimelineMiniMap.test.js
 panels/timeline/TimelinePanel.test.js

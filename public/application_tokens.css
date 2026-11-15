@@ -58,33 +58,21 @@
   --color-grid-focus-selected: var(--sys-color-tonal-container);
   --color-grid-selected: var(--sys-color-surface-variant);
   --color-grid-hovered: var(--sys-color-state-hover-on-subtle);
-  --color-primary-old: rgb(26 115 232);
-  --color-primary-variant: rgb(66 133 244);
   --color-background: rgb(255 255 255);
-  --color-background-inverted: rgb(0 0 0);
   --color-background-inverted-opacity-0: rgb(0 0 0 / 0%);
   --color-background-inverted-opacity-2: rgb(0 0 0 / 2%);
-  --color-background-inverted-opacity-30: rgb(0 0 0 / 30%);
   --color-background-inverted-opacity-50: rgb(0 0 0 / 50%);
-  --color-background-opacity-50: rgb(255 255 255 / 50%);
   --color-background-opacity-80: rgb(255 255 255 / 80%);
-  --color-background-elevation-1: rgb(241 243 244);
   --color-background-elevation-2: rgb(222 225 230);
-  /** Used when the elevation is visible only on dark theme */
-  --color-background-elevation-dark-only: var(--color-background);
   /** To draw grid lines behind elements */
   --divider-line: rgb(0 0 0 / 10%);
   --color-text-primary: rgb(32 33 36);
-  --color-text-secondary: rgb(95 99 104);
   --color-text-disabled: rgb(128 134 139);
   --color-red: rgb(238 68 47);
   --drop-shadow:
     0 0 0 1px rgb(0 0 0 / 5%),
     0 2px 4px rgb(0 0 0 / 20%),
     0 2px 6px rgb(0 0 0 / 10%);
-  --drop-shadow-depth-1:
-    0 1px 2px rgb(60 64 67 / 30%),
-    0 1px 3px 1px rgb(60 64 67 / 15%);
   --drop-shadow-depth-3:
     0 4px 8px 3px rgb(60 64 67 / 15%),
     0 1px 3px rgb(60 64 67 / 30%);
@@ -102,9 +90,6 @@
   /** Used to indicate an input box */
   --input-outline: rgb(202 205 209);
 
-  /** These colors are used to show errors */
-  --color-error-text: #f00;
-
   /* Colors used by the code editor */
   --color-continue-to-location: var(--ref-palette-blue90);
   --color-continue-to-location-hover: var(--ref-palette-blue80);
@@ -115,13 +100,8 @@
   --color-evaluated-expression: var(--ref-palette-yellow95);
   --color-evaluated-expression-border: var(--ref-palette-yellow70);
   --color-variable-values: var(--ref-palette-orange90);
-
-  /* Color tokens for icons */
-  --color-primary: rgb(11 87 208);
-  --legacy-accent-color: #1a73e8;
   --legacy-focus-ring-inactive-shadow-color: #e0e0e0;
   --legacy-input-validation-error: #db1600;
-  --legacy-selection-bg-color: var(--legacy-accent-color);
   --legacy-focus-ring-inactive-shadow: 0 0 0 1px var(--legacy-focus-ring-inactive-shadow-color);
   --legacy-focus-ring-active-shadow: 0 0 0 1px var(--sys-color-state-focus-ring);
 
@@ -137,24 +117,14 @@
   /* Colors for timeline in Performance Panel */
 
   --app-color-loading: var(--ref-palette-blue70);
-  --app-color-loading-children: var(--ref-palette-blue80);
   --app-color-scripting: var(--ref-palette-yellow70);
-  --app-color-scripting-children: var(--ref-palette-yellow80);
   --app-color-rendering: var(--ref-palette-purple70);
   --app-color-rendering-children: var(--ref-palette-purple80);
   --app-color-painting: var(--ref-palette-green70);
-  --app-color-painting-children: var(--ref-palette-green80);
   --app-color-messaging: var(--ref-palette-cyan70);
-  --app-color-messaging-children: var(--ref-palette-cyan80);
-  --app-color-task: var(--ref-palette-neutral80);
-  --app-color-task-children: var(--ref-palette-neutral90);
   --app-color-system: var(--ref-palette-neutral80);
-  --app-color-system-children: var(--ref-palette-neutral90);
   --app-color-idle: var(--ref-palette-neutral90);
-  --app-color-idle-children: var(--ref-palette-neutral100);
   --app-color-async: var(--ref-palette-error60);
-  --app-color-async-children: var(--ref-palette-error70);
-  --app-color-other: var(--ref-palette-neutral87);
   --app-color-doc: var(--ref-palette-blue60);
   --app-color-css: var(--ref-palette-purple60);
   --app-color-image: var(--ref-palette-green80);
@@ -224,11 +194,6 @@
   --app-color-element-sidebar-subtitle: var(--ref-palette-neutral50);
 
   /**
-   * Color for input driver for AI assistance chat
-   */
-  --app-color-ai-assistance-input-divider: rgb(0 0 0 / 10%);
-
-  /**
   * Gradient colors for Google AI, used in the Global AI button in promotion enabled state
   */
   --app-color-google-ai-blue: #4285f4;
@@ -260,30 +225,19 @@
   --comment-cursor: var(--image-file-comment-mode-cursor) 10 28, auto;
 
   &.theme-with-dark-background {
-    --color-primary-old: rgb(138 180 248);
-    --color-primary-variant: rgb(102 157 246);
     --color-background: rgb(32 33 36);
-    --color-background-inverted: rgb(255 255 255);
     --color-background-inverted-opacity-2: rgb(255 255 255 / 2%);
-    --color-background-inverted-opacity-30: rgb(255 255 255 / 30%);
     --color-background-inverted-opacity-50: rgb(255 255 255 / 50%);
-    --color-background-opacity-50: rgb(32 33 36 / 50%);
     --color-background-opacity-80: rgb(32 33 36 / 80%);
-    --color-background-elevation-1: rgb(41 42 45);
     --color-background-elevation-2: rgb(53 54 58);
-    --color-background-elevation-dark-only: var(--color-background-elevation-1);
     --divider-line: rgb(255 255 255 / 10%);
     --color-text-primary: rgb(232 234 237);
-    --color-text-secondary: rgb(154 160 166);
     --color-text-disabled: rgb(128 134 139);
     --color-red: rgb(237 78 76);
     --drop-shadow:
       0 0 0 1px rgb(255 255 255 / 20%),
       0 2px 4px 2px rgb(0 0 0 / 20%),
       0 2px 6px 2px rgb(0 0 0 / 10%);
-    --drop-shadow-depth-1:
-      0 1px 2px rgb(0 0 0 / 30%),
-      0 1px 3px 1px rgb(0 0 0 / 15%);
     --drop-shadow-depth-3:
       0 4px 8px 3px rgb(0 0 0 / 15%),
       0 1px 3px rgb(0 0 0 / 30%);
@@ -292,7 +246,6 @@
     --color-scrollbar-mac-hover: rgb(75 76 79);
     --color-scrollbar-other: rgb(51 51 51);
     --color-scrollbar-other-hover: rgb(75 76 79);
-    --color-error-text: hsl(0deg 100% 75%);
 
     /* Colors used by the code editor */
     --color-continue-to-location: var(--ref-palette-yellow30);
@@ -305,16 +258,12 @@
     --color-evaluated-expression-border: var(--ref-palette-yellow40);
     --color-variable-values: var(--sys-color-surface-error);
 
-    /* Color tokens for icons */
-    --color-primary: rgb(168 199 250);
-
     /**
     * Inherit the native form control colors when using a dark theme.
     * Override them using CSS variables if needed.
     */
     color-scheme: dark;
 
-    --legacy-accent-color: #0e639c;
     --legacy-focus-ring-inactive-shadow-color: #5a5a5a;
     --legacy-focus-ring-inactive-shadow: 0 0 0 1px var(--legacy-focus-ring-inactive-shadow-color);
 
@@ -330,22 +279,13 @@
     /* Colors for timeline in Performance Panel */
 
     --app-color-loading: var(--ref-palette-blue60);
-    --app-color-loading-children: var(--ref-palette-blue50);
     --app-color-scripting: var(--ref-palette-yellow70);
-    --app-color-scripting-children: var(--ref-palette-yellow60);
     --app-color-rendering: var(--ref-palette-purple60);
     --app-color-rendering-children: var(--ref-palette-purple50);
     --app-color-painting: var(--ref-palette-green70);
-    --app-color-painting-children: var(--ref-palette-green60);
-    --app-color-task: var(--ref-palette-neutral80);
-    --app-color-task-children: var(--ref-palette-neutral70);
     --app-color-system: var(--ref-palette-neutral50);
-    --app-color-system-children: var(--ref-palette-neutral40);
     --app-color-idle: var(--ref-palette-neutral30);
-    --app-color-idle-children: var(--ref-palette-neutral20);
     --app-color-async: var(--ref-palette-error60);
-    --app-color-async-children: var(--ref-palette-error50);
-    --app-color-other: var(--ref-palette-neutral60);
     --app-color-doc: var(--ref-palette-blue60);
     --app-color-css: var(--ref-palette-purple60);
     --app-color-image: var(--ref-palette-green80);
@@ -402,11 +342,6 @@
      * Colors for element panel sidebar subtitle
      */
     --app-color-element-sidebar-subtitle: var(--sys-color-token-subtle);
-
-    /**
-     * Color for input driver for AI assistance chat
-     */
-    --app-color-ai-assistance-input-divider: rgb(255 255 255 / 15%);
 
     /**
     * Combobox image.

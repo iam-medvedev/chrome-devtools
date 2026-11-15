@@ -13,7 +13,7 @@ import * as Extensions from '../../models/extensions/extensions.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
 import { getExtensionOrigin, setupDevtoolsExtensionHooks, } from '../../testing/ExtensionHelpers.js';
 import { createNetworkRequest } from '../../testing/NetworkRequestHelpers.js';
@@ -1755,6 +1755,87 @@ describe('ExtensionServer', () => {
         for (const url of blockedUrls) {
             assert.isFalse(PanelCommon.ExtensionServer.ExtensionServer.canInspectURL(url), url);
         }
+    });
+});
+describe('ExtensionFramesWidget', () => {
+    describe('view', () => {
+        it('renders hidden extension iframes and preserves existing iframe elements across updates', () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            PanelCommon.ExtensionServer.DEFAULT_VIEW({
+                frames: [{
+                        key: 0,
+                        startPage: 'about:blank#ext-1',
+                        name: 'First Extension',
+                    }],
+            }, undefined, target);
+            assert.strictEqual(target.getAttribute('style'), 'display: contents');
+            const initialFrames = target.querySelectorAll('iframe');
+            assert.lengthOf(initialFrames, 1);
+            const [firstFrame] = initialFrames;
+            assert.strictEqual(firstFrame.getAttribute('src'), 'about:blank#ext-1');
+            assert.strictEqual(firstFrame.dataset.devtoolsExtension, 'First Extension');
+            assert.strictEqual(firstFrame.style.display, 'none');
+            PanelCommon.ExtensionServer.DEFAULT_VIEW({
+                frames: [
+                    {
+                        key: 0,
+                        startPage: 'about:blank#ext-1',
+                        name: 'First Extension',
+                    },
+                    {
+                        key: 1,
+                        startPage: 'about:blank#ext-2',
+                        name: 'Second Extension',
+                    },
+                ],
+            }, undefined, target);
+            const updatedFrames = target.querySelectorAll('iframe');
+            assert.lengthOf(updatedFrames, 2);
+            assert.strictEqual(updatedFrames[0], firstFrame);
+            assert.strictEqual(updatedFrames[1].getAttribute('src'), 'about:blank#ext-2');
+            assert.strictEqual(updatedFrames[1].dataset.devtoolsExtension, 'Second Extension');
+            assert.strictEqual(updatedFrames[1].style.display, 'none');
+        });
+    });
+    describeWithEnvironment('ExtensionServer.addExtensionFrame', () => {
+        let server;
+        afterEach(() => {
+            server?.dispose();
+            server = undefined;
+        });
+        it('mounts ExtensionFramesWidget in document.body and detaches it on dispose', async () => {
+            const view = sinon.stub();
+            const framesWidget = new PanelCommon.ExtensionServer.ExtensionFramesWidget(undefined, view);
+            server = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true, framesWidget });
+            sinon.assert.notCalled(view);
+            server.addExtensionFrame({
+                startPage: 'chrome-extension://ext-1/devtools.html',
+                name: 'Ext 1',
+                exposeExperimentalAPIs: false,
+            });
+            await framesWidget.updateComplete;
+            assert.isTrue(framesWidget.isShowing());
+            assert.isTrue(document.body.contains(framesWidget.element));
+            assert.deepEqual(view.lastCall.args[0], {
+                frames: [{ key: 0, startPage: 'chrome-extension://ext-1/devtools.html', name: 'Ext 1' }],
+            });
+            server.addExtensionFrame({
+                startPage: 'chrome-extension://ext-2/devtools.html',
+                name: 'Ext 2',
+                exposeExperimentalAPIs: false,
+            });
+            await framesWidget.updateComplete;
+            assert.deepEqual(view.lastCall.args[0], {
+                frames: [
+                    { key: 0, startPage: 'chrome-extension://ext-1/devtools.html', name: 'Ext 1' },
+                    { key: 1, startPage: 'chrome-extension://ext-2/devtools.html', name: 'Ext 2' },
+                ],
+            });
+            server.dispose();
+            assert.isFalse(framesWidget.isShowing());
+            assert.isFalse(framesWidget.element.isConnected);
+        });
     });
 });
 function assertIsStatus(value) {

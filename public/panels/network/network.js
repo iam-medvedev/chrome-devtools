@@ -333,10 +333,6 @@ var requestConditionsDrawer_css_default = `/*
   overflow: hidden auto;
 }
 
-.no-blocked-urls > span {
-  white-space: pre;
-}
-
 .blocked-url {
   display: flex;
   flex-direction: row;
@@ -997,7 +993,7 @@ import "../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -2170,28 +2166,28 @@ var Memory;
 })(Memory || (Memory = {}));
 var Network;
 ((Network2) => {
-  let ResourceType10;
-  ((ResourceType11) => {
-    ResourceType11["Document"] = "Document";
-    ResourceType11["Stylesheet"] = "Stylesheet";
-    ResourceType11["Image"] = "Image";
-    ResourceType11["Media"] = "Media";
-    ResourceType11["Font"] = "Font";
-    ResourceType11["Script"] = "Script";
-    ResourceType11["TextTrack"] = "TextTrack";
-    ResourceType11["XHR"] = "XHR";
-    ResourceType11["Fetch"] = "Fetch";
-    ResourceType11["Prefetch"] = "Prefetch";
-    ResourceType11["EventSource"] = "EventSource";
-    ResourceType11["WebSocket"] = "WebSocket";
-    ResourceType11["Manifest"] = "Manifest";
-    ResourceType11["SignedExchange"] = "SignedExchange";
-    ResourceType11["Ping"] = "Ping";
-    ResourceType11["CSPViolationReport"] = "CSPViolationReport";
-    ResourceType11["Preflight"] = "Preflight";
-    ResourceType11["FedCM"] = "FedCM";
-    ResourceType11["Other"] = "Other";
-  })(ResourceType10 = Network2.ResourceType || (Network2.ResourceType = {}));
+  let ResourceType11;
+  ((ResourceType12) => {
+    ResourceType12["Document"] = "Document";
+    ResourceType12["Stylesheet"] = "Stylesheet";
+    ResourceType12["Image"] = "Image";
+    ResourceType12["Media"] = "Media";
+    ResourceType12["Font"] = "Font";
+    ResourceType12["Script"] = "Script";
+    ResourceType12["TextTrack"] = "TextTrack";
+    ResourceType12["XHR"] = "XHR";
+    ResourceType12["Fetch"] = "Fetch";
+    ResourceType12["Prefetch"] = "Prefetch";
+    ResourceType12["EventSource"] = "EventSource";
+    ResourceType12["WebSocket"] = "WebSocket";
+    ResourceType12["Manifest"] = "Manifest";
+    ResourceType12["SignedExchange"] = "SignedExchange";
+    ResourceType12["Ping"] = "Ping";
+    ResourceType12["CSPViolationReport"] = "CSPViolationReport";
+    ResourceType12["Preflight"] = "Preflight";
+    ResourceType12["FedCM"] = "FedCM";
+    ResourceType12["Other"] = "Other";
+  })(ResourceType11 = Network2.ResourceType || (Network2.ResourceType = {}));
   let ErrorReason;
   ((ErrorReason2) => {
     ErrorReason2["Failed"] = "Failed";
@@ -4233,10 +4229,10 @@ var networkConfigView_css_default = `/*
 
 .network-config-group {
   display: flex;
-  padding-bottom: 10px;
+  padding-bottom: var(--sys-size-5);
   flex-wrap: wrap;
   flex: 0 0 auto;
-  min-height: 30px;
+  min-height: var(--sys-size-12);
 }
 
 .network-config-title {
@@ -4245,7 +4241,7 @@ var networkConfigView_css_default = `/*
 }
 
 .network-config-fields {
-  flex: 2 0 200px;
+  flex: 2 0 var(--sys-size-25);
 }
 
 .network-config-fields > span:first-of-type {
@@ -4330,11 +4326,10 @@ var networkConfigView_css_default = `/*
 .user-agent-client-hints-form {
   display: block;
   margin-top: var(--sys-size-7);
-  width: min(100%, 400px);
+  width: min(100%, var(--sys-size-32));
 }
 
 .status-text {
-  padding: 10px;
   color: var(--sys-color-tertiary);
 }
 
@@ -6760,12 +6755,12 @@ var NetworkItemView_exports = {};
 __export(NetworkItemView_exports, {
   NetworkItemView: () => NetworkItemView
 });
-import * as Common20 from "../../core/common/common.js";
+import * as Common22 from "../../core/common/common.js";
 import * as i18n49 from "../../core/i18n/i18n.js";
 import * as Platform14 from "../../core/platform/platform.js";
 import * as SDK17 from "../../core/sdk/sdk.js";
 import * as NetworkForward6 from "./forward/forward.js";
-import { Icon as Icon3 } from "../../ui/kit/kit.js";
+import { Icon as Icon2 } from "../../ui/kit/kit.js";
 import * as UI24 from "../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "../../ui/visual_logging/visual_logging.js";
 import * as NetworkComponents2 from "./components/components.js";
@@ -6803,8 +6798,14 @@ var requestCookiesView_css_default = `/*
   .request-cookies-view .request-cookies-title {
     font-size: var(--sys-typescale-body4-size);
     font-weight: bold;
-    margin-right: 30px;
+    margin-right: var(--sys-size-12);
     color: var(--sys-color-on-surface);
+    vertical-align: middle;
+  }
+
+  .request-cookies-view devtools-checkbox {
+    font-size: var(--sys-typescale-body4-size);
+    vertical-align: middle;
   }
 
   .request-cookies-view .cookie-line {
@@ -6881,7 +6882,6 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
   render7(
     html6`
     <style>${requestCookiesView_css_default}</style>
-    <style>${UI7.inspectorCommonStyles}</style>
     <div class="request-cookies-view">
       ${input.gotCookies ? Lit.nothing : widget3(UI7.EmptyWidget.EmptyWidget, {
       header: i18nString7(UIStrings7.thisRequestHasNoCookies)
@@ -7546,201 +7546,445 @@ var networkLogView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.network-log-grid.data-grid {
-  border: none !important; /* stylelint-disable-line declaration-no-important */
-  flex: auto;
-}
+@scope to (devtools-widget > *) {
+  .network-log-grid.data-grid {
+    border: none !important; /* stylelint-disable-line declaration-no-important */
+    flex: auto;
+  }
 
-.network-log-grid.data-grid.no-selection:focus-visible {
-  border: none !important; /* stylelint-disable-line declaration-no-important */
-}
+  .network-log-grid.data-grid.no-selection:focus-visible {
+    border: none !important; /* stylelint-disable-line declaration-no-important */
+  }
 
-#network-container {
-  overflow: hidden;
-}
+  :scope {
+    overflow: hidden;
+  }
 
-#network-container.grid-focused.no-node-selected:focus-within {
-  border: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
-}
+  :scope.grid-focused.no-node-selected:focus-within {
+    border: var(--sys-size-1) solid var(--sys-color-state-focus-ring);
+  }
 
-.network-summary-bar {
-  flex: 0 0 calc(var(--sys-size-12) - var(--sys-size-1)); /* 28px toolbar minus 1px top border */
-  align-items: center;
-  padding-left: var(--sys-size-4);
-  background-color: var(--sys-color-cdt-base-container);
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  user-select: text;
-}
+  .network-summary-bar {
+    flex: 0 0 calc(var(--sys-size-12) - var(--sys-size-1)); /* 28px toolbar minus 1px top border */
+    align-items: center;
+    padding-left: var(--sys-size-4);
+    background-color: var(--sys-color-cdt-base-container);
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    user-select: text;
+  }
 
-.panel.network devtools-toolbar.network-summary-bar {
-  border-bottom: 0;
-}
+  devtools-toolbar.network-summary-bar {
+    border-bottom: 0;
+  }
 
-.network-summary-bar dt-icon-label {
-  margin-right: var(--sys-size-4);
-}
+  .network-summary-bar dt-icon-label {
+    margin-right: var(--sys-size-4);
+  }
 
-.network-summary-bar > * {
-  flex: none;
-}
+  .network-summary-bar > * {
+    flex: none;
+  }
 
-.network-log-grid.data-grid tbody {
-  background: transparent;
-}
+  .network-log-grid.data-grid tbody {
+    background: transparent;
+  }
 
-.network-log-grid.data-grid td {
-  height: 41px;
-  border-left: var(--sys-size-1) solid var(--sys-color-divider);
-  vertical-align: middle;
-}
+  .network-log-grid.data-grid td {
+    /* 2 * 20px (--sys-size-9) two-line base row + 1px (--sys-size-1) .icon top margin. */
+    height: calc(2 * var(--sys-size-9) + var(--sys-size-1));
+    border-left: var(--sys-size-1) solid var(--sys-color-divider);
+    vertical-align: middle;
+  }
 
-.network-log-grid.data-grid .corner {
-  display: none;
-}
+  /* Scoped rules outrank the equally specific \\'.data-grid td:first-child\\'
+     rule in dataGrid.css, so repeat it here to keep the first column flush. */
+  .network-log-grid.data-grid td:first-child {
+    border-left-width: 0;
+  }
 
-.network-log-grid.data-grid.small td {
-  height: 21px;
-}
+  .network-log-grid.data-grid .corner {
+    display: none;
+  }
 
-.network-log-grid.data-grid th {
-  border-bottom: none;
-}
+  .network-log-grid.data-grid.small td {
+    /* 20px (--sys-size-9) base row + 1px (--sys-size-1) .icon top margin. */
+    height: calc(var(--sys-size-9) + var(--sys-size-1));
+  }
 
-.network-waterfall-header,
-.network-log-grid.data-grid thead th {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  border-left: var(--sys-size-1) solid var(--sys-color-divider);
-}
+  .network-log-grid.data-grid th {
+    border-bottom: none;
+  }
 
-.network-waterfall-header,
-.network-log-grid.data-grid thead {
-  /* 32px (--sys-size-13) header height minus 1px (--sys-size-1) bottom border offset. */
-  height: calc(var(--sys-size-13) - var(--sys-size-1));
-  background-color: var(--sys-color-surface1);
-}
+  .network-waterfall-header,
+  .network-log-grid.data-grid thead th {
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    border-left: var(--sys-size-1) solid var(--sys-color-divider);
+  }
 
-.network-waterfall-header.small,
-.network-log-grid.data-grid.small thead {
-  height: 27px;
-}
+  .network-waterfall-header,
+  .network-log-grid.data-grid thead {
+    /* 32px (--sys-size-13) header height minus 1px (--sys-size-1) bottom border offset. */
+    height: calc(var(--sys-size-13) - var(--sys-size-1));
+    background-color: var(--sys-color-surface1);
+  }
 
-.network-log-grid.data-grid select {
-  appearance: none;
-  border: none;
-  width: 100%;
-  color: inherit;
-}
+  .network-waterfall-header.small,
+  .network-log-grid.data-grid.small thead {
+    height: var(--sys-size-11);
+  }
 
-.network-log-grid.data-grid .waterfall-column {
-  padding: var(--sys-size-1) 0;
-}
+  .network-log-grid.data-grid select {
+    appearance: none;
+    border: none;
+    width: 100%;
+    color: inherit;
+  }
 
-.network-log-grid.data-grid .waterfall-column .sort-order-icon-container {
-  right: var(--sys-size-7);
-  pointer-events: none;
-}
+  .network-log-grid.data-grid .waterfall-column {
+    padding: var(--sys-size-1) 0;
+  }
 
-.network-log-grid.data-grid th.sortable:active {
-  background-image: none !important; /* stylelint-disable-line declaration-no-important */
-}
+  .network-log-grid.data-grid .waterfall-column .sort-order-icon-container {
+    right: var(--sys-size-7);
+    pointer-events: none;
+  }
 
-.network-cell-subtitle {
-  font-weight: normal;
-  color: var(--sys-color-token-subtle);
-}
+  .network-log-grid.data-grid th.sortable:active {
+    background-image: none !important; /* stylelint-disable-line declaration-no-important */
+  }
 
-.network-badge {
-  margin-right: var(--sys-size-3);
-}
+  .network-cell-subtitle {
+    font-weight: normal;
+    color: var(--sys-color-token-subtle);
+  }
 
-.status-column .devtools-link {
-  color: inherit;
-}
+  .status-column .devtools-link {
+    color: inherit;
+  }
 
-.initiator-column .text-button.devtools-link,
-.initiator-column .text-button.devtools-link:focus-visible {
-  color: inherit;
-  background-color: transparent;
-  outline-offset: 0;
-  max-height: var(--sys-size-8);
-}
+  .initiator-column .text-button.devtools-link,
+  .initiator-column .text-button.devtools-link:focus-visible {
+    color: inherit;
+    background-color: transparent;
+    outline-offset: 0;
+    max-height: var(--sys-size-8);
+  }
 
-.network-error-row,
-.network-error-row .network-cell-subtitle {
-  /* stylelint-disable-next-line declaration-no-important */
-  color: var(--sys-color-error) !important;
-}
+  .network-error-row,
+  .network-error-row .network-cell-subtitle {
+    /* stylelint-disable-next-line declaration-no-important */
+    color: var(--sys-color-error) !important;
+  }
 
-.network-throttled-row,
-.network-warning-row,
-.network-warning-row .network-cell-subtitle {
-  color: var(--sys-color-yellow);
-}
+  .network-throttled-row,
+  .network-warning-row,
+  .network-warning-row .network-cell-subtitle {
+    color: var(--sys-color-yellow);
+  }
 
-.network-log-grid.data-grid tr.selected.network-error-row,
-.network-log-grid.data-grid tr.selected.network-error-row .network-cell-subtitle,
-.network-log-grid.data-grid tr.selected.network-error-row .network-dim-cell {
-  color: var(--sys-color-error);
-}
+  .network-log-grid.data-grid tr.selected.network-error-row,
+  .network-log-grid.data-grid tr.selected.network-error-row .network-cell-subtitle,
+  .network-log-grid.data-grid tr.selected.network-error-row .network-dim-cell {
+    color: var(--sys-color-error);
+  }
 
-.network-log-grid.data-grid tr.selected.network-warning-row,
-.network-log-grid.data-grid tr.selected.network-warning-row .network-cell-subtitle,
-.network-log-grid.data-grid tr.selected.network-warning-row .network-dim-cell {
-  color: var(--sys-color-yellow);
-}
+  .network-log-grid.data-grid tr.selected.network-warning-row,
+  .network-log-grid.data-grid tr.selected.network-warning-row .network-cell-subtitle,
+  .network-log-grid.data-grid tr.selected.network-warning-row .network-dim-cell {
+    color: var(--sys-color-yellow);
+  }
 
-.network-log-grid.data-grid:focus-within tr.selected.network-error-row,
-.network-log-grid.data-grid:focus-within tr.selected.network-error-row .devtools-link,
-.network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-cell-subtitle,
-.network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-dim-cell {
-  color: var(--sys-color-error);
-}
+  .network-log-grid.data-grid:focus-within tr.selected.network-error-row,
+  .network-log-grid.data-grid:focus-within tr.selected.network-error-row .devtools-link,
+  .network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-cell-subtitle,
+  .network-log-grid.data-grid:focus-within tr.selected.network-error-row .network-dim-cell {
+    color: var(--sys-color-error);
+  }
 
-.network-log-grid.data-grid:focus-within tr.selected.network-warning-row,
-.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .devtools-link,
-.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-cell-subtitle,
-.network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-dim-cell {
-  color: var(--sys-color-yellow);
-}
+  .network-log-grid.data-grid:focus-within tr.selected.network-warning-row,
+  .network-log-grid.data-grid:focus-within tr.selected.network-warning-row .devtools-link,
+  .network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-cell-subtitle,
+  .network-log-grid.data-grid:focus-within tr.selected.network-warning-row .network-dim-cell {
+    color: var(--sys-color-yellow);
+  }
 
-.network-log-grid.data-grid tr.selected,
-.network-log-grid.data-grid tr.selected .network-cell-subtitle,
-.network-log-grid.data-grid tr.selected .network-dim-cell {
-  color: inherit;
-}
+  .network-log-grid.data-grid tr.selected,
+  .network-log-grid.data-grid tr.selected .network-cell-subtitle,
+  .network-log-grid.data-grid tr.selected .network-dim-cell {
+    color: inherit;
+  }
 
-.network-log-grid.data-grid:focus tr.selected,
-.network-log-grid.data-grid:focus tr.selected .network-cell-subtitle,
-.network-log-grid.data-grid:focus tr.selected .network-dim-cell {
-  color: var(--sys-color-on-tonal-container);
-}
+  .network-log-grid.data-grid:focus tr.selected,
+  .network-log-grid.data-grid:focus tr.selected .network-cell-subtitle,
+  .network-log-grid.data-grid:focus tr.selected .network-dim-cell {
+    color: var(--sys-color-on-tonal-container);
+  }
 
-.network-log-grid.data-grid tr.selected.network-throttled-row,
-.network-log-grid.data-grid tr.selected.network-throttled-row .devtools-link,
-.network-log-grid.data-grid tr.selected.network-throttled-row .network-cell-subtitle,
-.network-log-grid.data-grid tr.selected.network-throttled-row .network-dim-cell {
-  color: var(--sys-color-yellow);
-}
+  .network-log-grid.data-grid tr.selected.network-throttled-row,
+  .network-log-grid.data-grid tr.selected.network-throttled-row .devtools-link,
+  .network-log-grid.data-grid tr.selected.network-throttled-row .network-cell-subtitle,
+  .network-log-grid.data-grid tr.selected.network-throttled-row .network-dim-cell {
+    color: var(--sys-color-yellow);
+  }
 
-.network-header-subtitle {
-  color: var(--sys-color-token-subtle);
-}
+  .network-header-subtitle {
+    color: var(--sys-color-token-subtle);
+  }
 
-.network-log-grid.data-grid.small .network-cell-subtitle,
-.network-log-grid.data-grid.small .network-header-subtitle {
-  display: none;
-}
+  .network-log-grid.data-grid.small .network-cell-subtitle,
+  .network-log-grid.data-grid.small .network-header-subtitle {
+    display: none;
+  }
 
-.network-log-grid.data-grid.small .network-cell-subtitle.always-visible {
-  display: inline;
-  margin-left: var(--sys-size-3);
-}
+  .network-log-grid.data-grid.small .network-cell-subtitle.always-visible {
+    display: inline;
+    margin-left: var(--sys-size-3);
+  }
 
-.network-log-grid tr.highlighted-row {
-  animation: network-row-highlight-fadeout 2s 0s;
+  .network-log-grid tr.highlighted-row {
+    animation: network-row-highlight-fadeout 2s 0s;
+  }
+
+  /* Resource preview icons */
+  /* These rules are grouped by type */
+  .network-log-grid.data-grid .icon.image {
+    position: relative;
+  }
+
+  .network-log-grid.data-grid .icon {
+    float: left;
+    width: var(--sys-size-13);
+    height: var(--sys-size-13);
+    margin-top: var(--sys-size-1);
+    margin-right: var(--sys-size-3);
+  }
+
+  .network-throttled-row {
+    devtools-icon {
+      color: var(--sys-color-yellow);
+      vertical-align: middle;
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+    }
+
+    .image.icon::before,
+    devtools-icon.icon::before {
+      background-color: var(--sys-color-yellow);
+      content: var(--image-file-empty);
+      width: 35%;
+      height: 35%;
+      border-radius: var(--sys-shape-corner-full);
+      outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
+      top: 60%;
+      left: 55%;
+      position: absolute;
+      z-index: 1;
+    }
+  }
+
+  td.time-column {
+    vertical-align: middle;
+  }
+
+  .data-grid-data-grid-node devtools-icon[name="arrow-up-down-circle"],
+  .data-grid-data-grid-node devtools-icon.network-console-icon,
+  .network-log-grid.data-grid.small .icon {
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    vertical-align: sub;
+  }
+
+  .data-grid-data-grid-node devtools-icon.network-console-icon {
+    margin-right: var(--sys-size-3);
+  }
+
+  .image-network-icon-preview {
+    inset: 0;
+    margin: auto;
+    overflow: hidden;
+  }
+
+  .network-log-grid.data-grid .image-network-icon-preview {
+    position: absolute;
+    max-width: var(--sys-size-8);
+    max-height: var(--sys-size-9);
+    min-width: var(--sys-size-1);
+    min-height: var(--sys-size-1);
+  }
+
+  .network-log-grid.data-grid.small .image-network-icon-preview {
+    left: var(--sys-size-2);
+    right: var(--sys-size-2);
+    max-width: var(--sys-size-6);
+    max-height: var(--sys-size-6);
+  }
+
+  .network-log-grid.data-grid .trailing-link-icon {
+    padding-left: 0.5ex;
+  }
+
+  /* This is part of the large color block declared above, but should not be
+     extracted out. */
+  .network-dim-cell {
+    color: var(--sys-color-token-subtle);
+  }
+
+  .network-frame-divider {
+    width: var(--sys-size-2);
+    background-color: var(--network-frame-divider-color); /* stylelint-disable-line plugin/use_theme_colors */
+    z-index: 10;
+    visibility: hidden;
+  }
+
+  :scope.has-waterfall .data-container {
+    overflow: hidden;
+  }
+
+  .network-log-grid.data-grid .resources-dividers {
+    z-index: 0;
+  }
+
+  .network-status-pane {
+    position: absolute;
+    inset: 0;
+    background-color: var(--sys-color-cdt-base-container);
+    z-index: 500;
+    overflow: auto;
+  }
+
+  .network-waterfall-header {
+    position: absolute;
+    border-left: 0;
+    width: 100%;
+    display: table;
+    z-index: 200;
+
+    & > div.hover-layer {
+      display: none;
+      background-color: var(--sys-color-state-hover-on-subtle);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover > div.hover-layer {
+      display: block;
+    }
+  }
+
+  .network-waterfall-header div {
+    display: table-cell;
+    line-height: var(--sys-size-7);
+    margin: auto 0;
+    vertical-align: middle;
+    text-align: left;
+    font-weight: normal;
+    padding: 0 var(--sys-size-3);
+  }
+
+  /* All network-waterfall-header rules are defined here instead of above */
+  .network-waterfall-header .sort-order-icon-container {
+    position: absolute;
+    top: var(--sys-size-1);
+    right: 0;
+    bottom: var(--sys-size-1);
+    display: flex;
+    align-items: center;
+  }
+
+  .network-waterfall-header .sort-order-icon {
+    align-items: center;
+    margin-right: var(--sys-size-3);
+    margin-bottom: calc(-1 * var(--sys-size-2));
+  }
+
+  .network-frame-group-icon {
+    display: inline-block;
+    margin: calc(-1 * var(--sys-size-4)) var(--sys-size-1);
+    vertical-align: baseline;
+  }
+
+  .network-override-marker {
+    position: relative;
+    float: left;
+  }
+
+  .network-override-marker::before {
+    background-color: var(--sys-color-purple-bright);
+    content: var(--image-file-empty);
+    width: var(--sys-size-4);
+    height: var(--sys-size-4);
+    border-radius: var(--sys-shape-corner-full);
+    outline: var(--sys-size-1) solid var(--icon-gap-toolbar);
+    left: var(--sys-size-5);
+    position: absolute;
+    /* 16px (.network-log-grid.data-grid.small .icon height) minus 6px (dot height). */
+    top: calc(var(--sys-size-8) - var(--sys-size-4));
+    z-index: 1;
+  }
+
+  .empty-widget-container devtools-button {
+    margin-top: var(--sys-size-7);
+  }
+
+  @media (forced-colors: active) {
+    .initiator-column .devtools-link {
+      color: linktext;
+    }
+
+    .network-log-grid.data-grid tbody tr.revealed.selected,
+    .network-log-grid.data-grid:focus-within tbody tr.revealed.selected,
+    .network-log-grid.data-grid:focus-within tr.selected .network-dim-cell,
+    .network-log-grid.data-grid tr.selected .network-dim-cell,
+    .network-log-grid.data-grid:focus-within tr.selected .initiator-column .devtools-link,
+    .network-log-grid.data-grid tr.selected .initiator-column .devtools-link,
+    .network-waterfall-header:hover * {
+      color: HighlightText;
+    }
+
+    .network-log-grid {
+      --color-grid-default: canvas;
+      --color-grid-stripe: canvas;
+      --color-grid-hovered: Highlight;
+      --color-grid-selected: ButtonText;
+      --color-grid-focus-selected: Highlight;
+    }
+
+    :scope.no-node-selected:focus-within
+    {
+      forced-color-adjust: none;
+      border-color: Highlight;
+      background-color: canvas !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .network-waterfall-header:hover {
+      forced-color-adjust: none;
+      background-color: Highlight !important; /* stylelint-disable-line declaration-no-important */
+
+      & > div.hover-layer {
+        display: none;
+      }
+    }
+
+    .network-waterfall-header.small,
+    .network-log-grid.data-grid.small thead .network-waterfall-header,
+    .network-log-grid.data-grid thead {
+      background-color: canvas;
+    }
+
+    .network-waterfall-header .sort-order-icon-container devtools-icon {
+      background-color: inherit;
+    }
+
+    .network-waterfall-header:hover .sort-order-icon-container devtools-icon {
+      color: HighlightText;
+    }
+  }
 }
 
 @keyframes network-row-highlight-fadeout {
@@ -7750,263 +7994,6 @@ var networkLogView_css_default = `/*
 
   to {
     background-color: transparent;
-  }
-}
-
-/* Resource preview icons */
-/* These rules are grouped by type */
-.network-log-grid.data-grid .icon.image {
-  position: relative;
-}
-
-.network-log-grid.data-grid .icon {
-  float: left;
-  width: var(--sys-size-13);
-  height: var(--sys-size-13);
-  margin-top: var(--sys-size-1);
-  margin-right: var(--sys-size-3);
-}
-
-.network-log-grid.data-grid:focus-within .network-error-row.selected div.icon:not(.image) {
-  filter: none;
-}
-
-.network-log-grid.data-grid .network-error-row.data-grid-data-grid-node img.icon,
-.network-log-grid.data-grid .network-error-row.data-grid-data-grid-node.selected img.icon {
-  /* This is generated with https://codepen.io/sosuke/pen/Pjoqqp to target var(--color-red) */
-  filter: brightness(0) saturate(100%) invert(35%) sepia(76%) saturate(1413%) hue-rotate(338deg) brightness(92%) contrast(103%);
-}
-
-.network-throttled-row {
-  devtools-icon {
-    color: var(--sys-color-yellow);
-    vertical-align: middle;
-    width: var(--sys-size-8);
-    height: var(--sys-size-8);
-  }
-
-  .image.icon::before,
-  devtools-icon.icon::before {
-    background-color: var(--sys-color-yellow);
-    content: var(--image-file-empty);
-    width: 35%;
-    height: 35%;
-    border-radius: var(--sys-shape-corner-full);
-    outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
-    top: 60%;
-    left: 55%;
-    position: absolute;
-    z-index: 1;
-  }
-}
-
-td.time-column {
-  vertical-align: middle;
-}
-
-.data-grid-data-grid-node devtools-icon[name="arrow-up-down-circle"],
-.data-grid-data-grid-node devtools-icon.network-console-icon,
-.network-log-grid.data-grid.small .icon {
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-  vertical-align: sub;
-}
-
-.data-grid-data-grid-node devtools-icon.network-console-icon {
-  margin-right: 3px;
-}
-
-.image-network-icon-preview {
-  inset: 0;
-  margin: auto;
-  overflow: hidden;
-}
-
-.network-log-grid.data-grid .image-network-icon-preview {
-  position: absolute;
-  max-width: 18px;
-  max-height: 21px;
-  min-width: var(--sys-size-1);
-  min-height: var(--sys-size-1);
-}
-
-.network-log-grid.data-grid.small .image-network-icon-preview {
-  left: var(--sys-size-2);
-  right: var(--sys-size-2);
-  max-width: 10px;
-  max-height: var(--sys-size-6);
-}
-
-.network-log-grid.data-grid .trailing-link-icon {
-  padding-left: 0.5ex;
-}
-
-/* This is part of the large color block declared above, but should not be
-   extracted out. */
-.network-dim-cell {
-  color: var(--sys-color-token-subtle);
-}
-
-.network-frame-divider {
-  width: var(--sys-size-2);
-  background-color: var(--network-frame-divider-color); /* stylelint-disable-line plugin/use_theme_colors */
-  z-index: 10;
-  visibility: hidden;
-}
-
-#network-container.has-waterfall .data-container {
-  overflow: hidden;
-}
-
-.network-log-grid.data-grid .resources-dividers {
-  z-index: 0;
-}
-
-.network-log-grid.data-grid span.separator-in-cell {
-  user-select: none;
-  min-width: 1ex;
-  display: inline-block;
-}
-
-.network-status-pane {
-  position: absolute;
-  inset: 0;
-  background-color: var(--sys-color-cdt-base-container);
-  z-index: 500;
-  overflow: auto;
-}
-
-.network-waterfall-header {
-  position: absolute;
-  border-left: 0;
-  width: 100%;
-  display: table;
-  z-index: 200;
-
-  & > div.hover-layer {
-    display: none;
-    background-color: var(--sys-color-state-hover-on-subtle);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &:hover > div.hover-layer {
-    display: block;
-  }
-}
-
-.network-waterfall-header div {
-  display: table-cell;
-  line-height: var(--sys-size-7);
-  margin: auto 0;
-  vertical-align: middle;
-  text-align: left;
-  font-weight: normal;
-  padding: 0 var(--sys-size-3);
-}
-
-/* All network-waterfall-header rules are defined here instead of above */
-.network-waterfall-header .sort-order-icon-container {
-  position: absolute;
-  top: var(--sys-size-1);
-  right: 0;
-  bottom: var(--sys-size-1);
-  display: flex;
-  align-items: center;
-}
-
-.network-waterfall-header .sort-order-icon {
-  align-items: center;
-  margin-right: var(--sys-size-3);
-  margin-bottom: calc(-1 * var(--sys-size-2));
-}
-
-.network-frame-group-icon {
-  display: inline-block;
-  margin: -7px var(--sys-size-1);
-  vertical-align: baseline;
-}
-
-.network-frame-group-badge {
-  margin-right: var(--sys-size-3);
-}
-
-.network-override-marker {
-  position: relative;
-  float: left;
-}
-
-.network-override-marker::before {
-  background-color: var(--sys-color-purple-bright);
-  content: var(--image-file-empty);
-  width: var(--sys-size-4);
-  height: var(--sys-size-4);
-  border-radius: var(--sys-shape-corner-full);
-  outline: var(--sys-size-1) solid var(--icon-gap-toolbar);
-  left: var(--sys-size-5);
-  position: absolute;
-  top: 10px;
-  z-index: 1;
-}
-
-.empty-widget-container devtools-button {
-  margin-top: var(--sys-size-7);
-}
-
-@media (forced-colors: active) {
-  .initiator-column .devtools-link {
-    color: linktext;
-  }
-
-  .network-log-grid.data-grid tbody tr.revealed.selected,
-  .network-log-grid.data-grid:focus-within tbody tr.revealed.selected,
-  .network-log-grid.data-grid:focus-within tr.selected .network-dim-cell,
-  .network-log-grid.data-grid tr.selected .network-dim-cell,
-  .network-log-grid.data-grid:focus-within tr.selected .initiator-column .devtools-link,
-  .network-log-grid.data-grid tr.selected .initiator-column .devtools-link,
-  .network-waterfall-header:hover * {
-    color: HighlightText;
-  }
-
-  .network-log-grid {
-    --color-grid-default: canvas;
-    --color-grid-stripe: canvas;
-    --color-grid-hovered: Highlight;
-    --color-grid-selected: ButtonText;
-    --color-grid-focus-selected: Highlight;
-  }
-
-  #network-container.no-node-selected:focus-within
-  {
-    forced-color-adjust: none;
-    border-color: Highlight;
-    background-color: canvas !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .network-waterfall-header:hover {
-    forced-color-adjust: none;
-    background-color: Highlight !important; /* stylelint-disable-line declaration-no-important */
-
-    & > div.hover-layer {
-      display: none;
-    }
-  }
-
-  .network-waterfall-header.small,
-  .network-log-grid.data-grid.small thead .network-waterfall-header,
-  .network-log-grid.data-grid thead {
-    background-color: canvas;
-  }
-
-  .network-waterfall-header .sort-order-icon-container devtools-icon {
-    background-color: inherit;
-  }
-
-  .network-waterfall-header:hover .sort-order-icon-container devtools-icon {
-    color: HighlightText;
   }
 }
 
@@ -8672,7 +8659,7 @@ var networkWaterfallColumn_css_default = `/*
 }
 
 .network-waterfall-v-scroll.small {
-  margin-top: 27px;
+  margin-top: var(--sys-size-11);
 }
 
 .network-waterfall-v-scroll-content {
@@ -8727,7 +8714,7 @@ var networkTimingTable_css_default = `/*
 
 .network-timing-table-header td,
 .network-timing-footer td {
-  border-top: 10px solid transparent;
+  border-top: var(--sys-size-5) solid transparent;
 }
 
 .network-timing-table-header td {
@@ -8752,7 +8739,7 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 }
 
 .network-timing-table col.labels {
-  width: 156px;
+  width: var(--sys-size-23);
 }
 
 .network-timing-table col.duration {
@@ -8793,18 +8780,15 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
   border: var(--sys-size-1) solid var(--sys-color-token-subtle);
 }
 
-.network-timing-bar.blocking,
-.-theme-preserve {
+.network-timing-bar.blocking {
   background-color: var(--network-waterfall-blocking); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-.network-timing-bar.proxy,
-.-theme-preserve {
+.network-timing-bar.proxy {
   background-color: var(--override-network-overview-proxy);
 }
 
-.network-timing-bar.dns,
-.-theme-preserve {
+.network-timing-bar.dns {
   background-color: var(--sys-color-cyan);
 }
 
@@ -8812,18 +8796,15 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
 .network-timing-bar.serviceworker,
 .network-timing-bar.serviceworker-preparation,
 .network-timing-bar.serviceworker-routerevaluation,
-.network-timing-bar.serviceworker-cachelookup,
-.-theme-preserve {
+.network-timing-bar.serviceworker-cachelookup {
   background-color: var(--network-overview-service-worker); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-.network-timing-bar.ssl,
-.-theme-preserve {
+.network-timing-bar.ssl {
   background-color: var(--network-overview-ssl); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-.network-timing-bar.serviceworker-respondwith,
-.-theme-preserve {
+.network-timing-bar.serviceworker-respondwith {
   background-color: var(--network-overview-service-worker-respond-with); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
@@ -8867,10 +8848,6 @@ tr:has([aria-expanded="true"].network-fetch-timing-bar-clickable) ~ .network-fet
   display: none;
 }
 
-.network-fetch-timing-bar-details-expanded {
-  display: block;
-}
-
 .network-fetch-timing-bar-details,
 .router-evaluation-timing-bar-details {
   padding-left: var(--sys-size-5);
@@ -8881,13 +8858,11 @@ tr:has([aria-expanded="true"].network-fetch-timing-bar-clickable) ~ .network-fet
   width: max-content;
 }
 
-.network-timing-bar.sending,
-.-theme-preserve {
+.network-timing-bar.sending {
   background-color: var(--override-network-overview-sending);
 }
 
-.network-timing-bar.waiting,
-.-theme-preserve {
+.network-timing-bar.waiting {
   background-color: var(--network-overview-waiting); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
@@ -8904,13 +8879,11 @@ td.throttled {
 }
 
 .network-timing-bar.receiving,
-.network-timing-bar.receiving-push,
-.-theme-preserve {
+.network-timing-bar.receiving-push {
   background-color: var(--network-overview-receiving); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-.network-timing-bar.push,
-.-theme-preserve {
+.network-timing-bar.push {
   background-color: var(--network-overview-push); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
@@ -8955,8 +8928,7 @@ tr.synthetic {
   .network-timing-bar.receiving,
   .network-timing-bar.receiving-push,
   .network-timing-bar.push,
-  .network-timing-bar.server-timing,
-  .-theme-preserve {
+  .network-timing-bar.server-timing {
     forced-color-adjust: none;
   }
 
@@ -9544,6 +9516,13 @@ var RequestTimingView = class _RequestTimingView extends UI10.Widget.VBox {
     this.#view(input, void 0, this.contentElement);
   }
   set request(request) {
+    if (this.#request === request) {
+      return;
+    }
+    if (this.isShowing()) {
+      this.#request?.removeEventListener(SDK9.NetworkRequest.Events.TIMING_CHANGED, this.requestUpdate, this);
+      this.#request?.removeEventListener(SDK9.NetworkRequest.Events.FINISHED_LOADING, this.requestUpdate, this);
+    }
     this.#request = request;
     if (this.isShowing()) {
       this.#request.addEventListener(SDK9.NetworkRequest.Events.TIMING_CHANGED, this.requestUpdate, this);
@@ -9552,6 +9531,16 @@ var RequestTimingView = class _RequestTimingView extends UI10.Widget.VBox {
     }
   }
   set calculator(calculator) {
+    if (this.#calculator === calculator) {
+      return;
+    }
+    if (this.isShowing()) {
+      this.#calculator?.removeEventListener(
+        NetworkTimeCalculator2.Events.BOUNDARIES_CHANGED,
+        this.#boundaryChanged,
+        this
+      );
+    }
     this.#calculator = calculator;
     if (this.isShowing()) {
       this.#calculator.addEventListener(NetworkTimeCalculator2.Events.BOUNDARIES_CHANGED, this.#boundaryChanged, this);
@@ -9572,8 +9561,8 @@ var RequestTimingView = class _RequestTimingView extends UI10.Widget.VBox {
     this.#calculator?.removeEventListener(NetworkTimeCalculator2.Events.BOUNDARIES_CHANGED, this.#boundaryChanged, this);
   }
   #boundaryChanged() {
-    const minimumBoundary = this.calculator.minimumBoundary();
-    if (minimumBoundary !== this.#lastMinimumBoundary) {
+    const minimumBoundary = this.#calculator?.minimumBoundary();
+    if (minimumBoundary !== void 0 && minimumBoundary !== this.#lastMinimumBoundary) {
       this.#lastMinimumBoundary = minimumBoundary;
       this.requestUpdate();
     }
@@ -9581,13 +9570,19 @@ var RequestTimingView = class _RequestTimingView extends UI10.Widget.VBox {
 };
 
 // ../../front_end/panels/network/NetworkWaterfallColumn.ts
-var { ref: ref3 } = Directives7;
+var { ref: ref3, styleMap } = Directives7;
 var BAR_SPACING = 1;
 var DEFAULT_VIEW9 = (input, output, target) => {
+  const width = Math.max(0, input.width);
+  const height = Math.max(0, input.height);
+  const pixelRatio = Math.max(0, input.pixelRatio);
   render10(html9`
     <style>${networkWaterfallColumn_css_default}</style>
     <canvas
       tabindex="-1"
+      width=${Math.round(width * pixelRatio)}
+      height=${Math.round(height * pixelRatio)}
+      style=${styleMap({ width: `${width}px`, height: `${height}px` })}
       @mousemove=${(event) => input.onMouseMove(event.offsetY, event.shiftKey)}
       @mouseleave=${input.onMouseLeave}
       @click=${(event) => {
@@ -9666,6 +9661,9 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
   performUpdate() {
     this.#view(
       {
+        width: this.offsetWidth,
+        height: this.offsetHeight,
+        pixelRatio: window.devicePixelRatio,
         onMouseMove: (offsetY, shiftKey) => this.setHoveredNode(this.getNodeFromPoint(offsetY), shiftKey),
         onMouseLeave: () => this.setHoveredNode(null, false),
         onClick: (offsetY) => this.setSelectedNode(this.getNodeFromPoint(offsetY))
@@ -9679,55 +9677,55 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
     }
   }
   static buildRequestTimeRangeStyle() {
-    const styleMap = /* @__PURE__ */ new Map();
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.CONNECTING, {
+    const styleMap2 = /* @__PURE__ */ new Map();
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.CONNECTING, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.CONNECTING]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SSL, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SSL, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SSL]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.DNS, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.DNS, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.DNS]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.PROXY, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.PROXY, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.PROXY]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.BLOCKING, { fillStyle: "--network-waterfall-blocking" });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.PUSH, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.BLOCKING, { fillStyle: "--network-waterfall-blocking" });
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.PUSH, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.PUSH]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.QUEUEING, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.QUEUEING, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.QUEUEING],
       lineWidth: 2,
       borderColor: "lightgrey"
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING],
       lineWidth: 2,
       borderColor: "#03A9F4"
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.WAITING, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.WAITING, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.WAITING]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING_PUSH, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING_PUSH, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.RECEIVING_PUSH]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_ROUTER_EVALUATION]
     });
-    styleMap.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP, {
+    styleMap2.set(NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP, {
       fillStyle: RequestTimeRangeNameToColor[NetworkTimeCalculator3.RequestTimeRangeNames.SERVICE_WORKER_CACHE_LOOKUP]
     });
-    return styleMap;
+    return styleMap2;
   }
   static buildResourceTypeStyle() {
     const baseResourceTypeColors = /* @__PURE__ */ new Map([
@@ -9902,17 +9900,10 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
     }
     this.startTime = this.calculator.minimumBoundary();
     this.endTime = this.calculator.maximumBoundary();
-    this.resetCanvas();
+    this.performUpdate();
     this.resetPaths();
     this.textLayers = [];
     this.draw();
-  }
-  resetCanvas() {
-    const ratio = window.devicePixelRatio;
-    this.canvas.width = this.offsetWidth * ratio;
-    this.canvas.height = this.offsetHeight * ratio;
-    this.canvas.style.width = this.offsetWidth + "px";
-    this.canvas.style.height = this.offsetHeight + "px";
   }
   onResize() {
     super.onResize();
@@ -9939,6 +9930,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI11.Widget.V
     if (!context) {
       return;
     }
+    context.reset();
     context.save();
     context.scale(window.devicePixelRatio, window.devicePixelRatio);
     context.translate(0, this.headerHeight);
@@ -10694,9 +10686,9 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.activeWaterfallSortId = "startTime" /* StartTime */;
     this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid2.DataGrid.Order.Ascending);
     this.splitWidget = new UI13.SplitWidget.SplitWidget(true, true, "network-panel-split-view-waterfall", 200);
-    const widget8 = this.#dataGrid.asWidget();
-    widget8.setMinimumSize(150, 0);
-    this.splitWidget.setMainWidget(widget8);
+    const widget9 = this.#dataGrid.asWidget();
+    widget9.setMinimumSize(150, 0);
+    this.splitWidget.setMainWidget(widget9);
   }
   setupWaterfall() {
     this.waterfallColumn = new NetworkWaterfallColumn(this.networkLogView.calculator());
@@ -12036,46 +12028,54 @@ var NetworkLogViewBase = Common12.ObjectWrapper.eventMixin(
   UI14.Widget.VBox
 );
 var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
-  networkInvertFilterSetting;
-  networkHideDataURLSetting;
-  networkHideChromeExtensions;
-  networkShowBlockedCookiesOnlySetting;
-  networkOnlyBlockedRequestsSetting;
-  networkOnlyThirdPartySetting;
-  networkResourceTypeFiltersSetting;
-  networkShowOptionsToGenerateHarWithSensitiveData;
-  progressBarContainer;
-  networkLogLargeRowsSetting;
-  rowHeightInternal;
-  timeCalculatorInternal;
-  durationCalculator;
-  calculatorInternal;
-  columnsInternal;
+  #networkInvertFilterSetting;
+  #networkHideDataURLSetting;
+  #networkHideChromeExtensions;
+  #networkShowBlockedCookiesOnlySetting;
+  #networkOnlyBlockedRequestsSetting;
+  #networkOnlyThirdPartySetting;
+  #networkResourceTypeFiltersSetting;
+  #networkShowOptionsToGenerateHarWithSensitiveData;
+  #progressBarContainer;
+  #networkLogLargeRowsSetting;
+  #rowHeight;
+  #timeCalculator;
+  #durationCalculator;
+  #calculator;
+  #columns;
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   staleRequests;
-  mainRequestLoadTime;
-  mainRequestDOMContentLoadedTime;
-  filters;
-  timeFilter;
-  hoveredNodeInternal;
-  recordingHint;
-  highlightedNode;
-  linkifierInternal;
+  #mainRequestLoadTime;
+  #mainRequestDOMContentLoadedTime;
+  #filters;
+  #timeFilter;
+  #hoveredNode;
+  #recordingHint;
+  #highlightedNode;
+  #linkifier;
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   recording;
-  needsRefresh;
-  headerHeightInternal;
-  groupLookups;
-  activeGroupLookup;
-  textFilterUI;
-  invertFilterUI;
-  moreFiltersDropDownUI;
+  #needsRefresh;
+  #headerHeight;
+  #groupLookups;
+  #activeGroupLookup;
+  #textFilterUI;
+  #invertFilterUI;
+  #moreFiltersDropDownUI;
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   resourceCategoryFilterUI;
-  filterParser;
-  suggestionBuilder;
+  #filterParser;
+  #suggestionBuilder;
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   dataGrid;
-  summaryToolbarInternal;
-  filterBar;
-  textFilterSetting;
-  networkRequestToNode;
+  #summaryToolbar;
+  #filterBar;
+  #textFilterSetting;
+  #networkRequestToNode;
   constructor(filterBar, progressBarContainer, networkLogLargeRowsSetting) {
     super();
     this.registerRequiredCSS(networkLogView_css_default);
@@ -12083,66 +12083,61 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     this.setMinimumSize(50, 64);
     this.element.id = "network-container";
     this.element.classList.add("no-node-selected");
-    this.networkRequestToNode = /* @__PURE__ */ new WeakMap();
-    this.networkInvertFilterSetting = Common12.Settings.Settings.instance().createSetting("network-invert-filter", false);
-    this.networkHideDataURLSetting = Common12.Settings.Settings.instance().createSetting("network-hide-data-url", false);
-    this.networkHideChromeExtensions = Common12.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
-    this.networkShowBlockedCookiesOnlySetting = Common12.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
-    this.networkOnlyBlockedRequestsSetting = Common12.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
-    this.networkOnlyThirdPartySetting = Common12.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
-    this.networkResourceTypeFiltersSetting = Common12.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
-    this.networkShowOptionsToGenerateHarWithSensitiveData = Common12.Settings.Settings.instance().resolve(
+    this.#networkRequestToNode = /* @__PURE__ */ new WeakMap();
+    this.#networkInvertFilterSetting = Common12.Settings.Settings.instance().createSetting("network-invert-filter", false);
+    this.#networkHideDataURLSetting = Common12.Settings.Settings.instance().createSetting("network-hide-data-url", false);
+    this.#networkHideChromeExtensions = Common12.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
+    this.#networkShowBlockedCookiesOnlySetting = Common12.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
+    this.#networkOnlyBlockedRequestsSetting = Common12.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
+    this.#networkOnlyThirdPartySetting = Common12.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.#networkResourceTypeFiltersSetting = Common12.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
+    this.#networkShowOptionsToGenerateHarWithSensitiveData = Common12.Settings.Settings.instance().resolve(
       Settings10.NetworkSettings.showOptionsToGenerateHarWithSensitiveDataSettingDescriptor
     );
-    this.progressBarContainer = progressBarContainer;
-    this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
-    this.networkLogLargeRowsSetting.addChangeListener(updateRowHeight.bind(this), this);
+    this.#progressBarContainer = progressBarContainer;
+    this.#networkLogLargeRowsSetting = networkLogLargeRowsSetting;
+    this.#networkLogLargeRowsSetting.addChangeListener(updateRowHeight.bind(this), this);
     function updateRowHeight() {
-      this.rowHeightInternal = Boolean(this.networkLogLargeRowsSetting.get()) ? 41 : 21;
+      this.#rowHeight = Boolean(this.#networkLogLargeRowsSetting.get()) ? 41 : 21;
     }
-    this.rowHeightInternal = 0;
+    this.#rowHeight = 0;
     updateRowHeight.call(this);
-    this.timeCalculatorInternal = new NetworkTimeCalculator4.NetworkTransferTimeCalculator();
-    this.durationCalculator = new NetworkTimeCalculator4.NetworkTransferDurationCalculator();
-    this.calculatorInternal = this.timeCalculatorInternal;
-    this.columnsInternal = new NetworkLogViewColumns(
-      this,
-      this.timeCalculatorInternal,
-      this.durationCalculator,
-      networkLogLargeRowsSetting
-    );
-    this.columnsInternal.show(this.element);
+    this.#timeCalculator = new NetworkTimeCalculator4.NetworkTransferTimeCalculator();
+    this.#durationCalculator = new NetworkTimeCalculator4.NetworkTransferDurationCalculator();
+    this.#calculator = this.#timeCalculator;
+    this.#columns = new NetworkLogViewColumns(this, this.#timeCalculator, this.#durationCalculator, networkLogLargeRowsSetting);
+    this.#columns.show(this.element);
     this.staleRequests = /* @__PURE__ */ new Set();
-    this.mainRequestLoadTime = -1;
-    this.mainRequestDOMContentLoadedTime = -1;
-    this.filters = [];
-    this.timeFilter = null;
-    this.hoveredNodeInternal = null;
-    this.recordingHint = null;
-    this.highlightedNode = null;
-    this.linkifierInternal = new Components4.Linkifier.Linkifier();
+    this.#mainRequestLoadTime = -1;
+    this.#mainRequestDOMContentLoadedTime = -1;
+    this.#filters = [];
+    this.#timeFilter = null;
+    this.#hoveredNode = null;
+    this.#recordingHint = null;
+    this.#highlightedNode = null;
+    this.#linkifier = new Components4.Linkifier.Linkifier();
     this.recording = false;
-    this.needsRefresh = false;
-    this.headerHeightInternal = 0;
-    this.groupLookups = /* @__PURE__ */ new Map();
-    this.groupLookups.set("Frame", new NetworkFrameGrouper(this));
-    this.activeGroupLookup = null;
-    this.textFilterUI = new UI14.FilterBar.TextFilterUI();
-    this.textFilterUI.addEventListener(UI14.FilterBar.FilterUIEvents.FILTER_CHANGED, this.filterChanged, this);
-    filterBar.addFilter(this.textFilterUI);
-    this.invertFilterUI = new UI14.FilterBar.CheckboxFilterUI(
+    this.#needsRefresh = false;
+    this.#headerHeight = 0;
+    this.#groupLookups = /* @__PURE__ */ new Map();
+    this.#groupLookups.set("Frame", new NetworkFrameGrouper(this));
+    this.#activeGroupLookup = null;
+    this.#textFilterUI = new UI14.FilterBar.TextFilterUI();
+    this.#textFilterUI.addEventListener(UI14.FilterBar.FilterUIEvents.FILTER_CHANGED, this.#filterChanged, this);
+    filterBar.addFilter(this.#textFilterUI);
+    this.#invertFilterUI = new UI14.FilterBar.CheckboxFilterUI(
       i18nString12(UIStrings13.invertFilter),
       true,
-      this.networkInvertFilterSetting,
+      this.#networkInvertFilterSetting,
       "invert-filter"
     );
-    this.invertFilterUI.addEventListener(
+    this.#invertFilterUI.addEventListener(
       UI14.FilterBar.FilterUIEvents.FILTER_CHANGED,
-      this.filterChanged.bind(this),
+      this.#filterChanged.bind(this),
       this
     );
-    UI14.Tooltip.Tooltip.install(this.invertFilterUI.element(), i18nString12(UIStrings13.invertsFilter));
-    filterBar.addFilter(this.invertFilterUI);
+    UI14.Tooltip.Tooltip.install(this.#invertFilterUI.element(), i18nString12(UIStrings13.invertsFilter));
+    filterBar.addFilter(this.#invertFilterUI);
     filterBar.addDivider();
     const filterItems = Object.entries(Common12.ResourceType.resourceCategories).map(([key, category]) => ({
       name: category.name,
@@ -12150,23 +12145,23 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       title: category.title(),
       jslogContext: Platform6.StringUtilities.toKebabCase(key)
     }));
-    this.moreFiltersDropDownUI = new MoreFiltersDropDownUI();
-    this.moreFiltersDropDownUI.addEventListener(UI14.FilterBar.FilterUIEvents.FILTER_CHANGED, this.filterChanged, this);
-    filterBar.addFilter(this.moreFiltersDropDownUI);
-    this.resourceCategoryFilterUI = new UI14.FilterBar.NamedBitSetFilterUI(filterItems, this.networkResourceTypeFiltersSetting);
+    this.#moreFiltersDropDownUI = new MoreFiltersDropDownUI();
+    this.#moreFiltersDropDownUI.addEventListener(UI14.FilterBar.FilterUIEvents.FILTER_CHANGED, this.#filterChanged, this);
+    filterBar.addFilter(this.#moreFiltersDropDownUI);
+    this.resourceCategoryFilterUI = new UI14.FilterBar.NamedBitSetFilterUI(filterItems, this.#networkResourceTypeFiltersSetting);
     UI14.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString12(UIStrings13.requestTypesToInclude));
     this.resourceCategoryFilterUI.addEventListener(
       UI14.FilterBar.FilterUIEvents.FILTER_CHANGED,
-      this.filterChanged.bind(this),
+      this.#filterChanged.bind(this),
       this
     );
     filterBar.addFilter(this.resourceCategoryFilterUI);
-    this.filterParser = new TextUtils.TextUtils.FilterParser(searchKeys);
-    this.suggestionBuilder = new UI14.FilterSuggestionBuilder.FilterSuggestionBuilder(searchKeys, _NetworkLogView.sortSearchValues);
-    this.resetSuggestionBuilder();
-    this.dataGrid = this.columnsInternal.dataGrid();
-    this.setupDataGrid();
-    this.columnsInternal.sortByCurrentColumn();
+    this.#filterParser = new TextUtils.TextUtils.FilterParser(searchKeys);
+    this.#suggestionBuilder = new UI14.FilterSuggestionBuilder.FilterSuggestionBuilder(searchKeys, _NetworkLogView.#sortSearchValues);
+    this.#resetSuggestionBuilder();
+    this.dataGrid = this.#columns.dataGrid();
+    this.#setupDataGrid();
+    this.#columns.sortByCurrentColumn();
     filterBar.filterButton().addEventListener(
       UI14.Toolbar.ToolbarButton.Events.CLICK,
       this.dataGrid.scheduleUpdate.bind(
@@ -12175,45 +12170,45 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
         /* isFromUser */
       )
     );
-    this.summaryToolbarInternal = this.element.createChild("devtools-toolbar", "network-summary-bar");
-    this.summaryToolbarInternal.setAttribute("role", "status");
+    this.#summaryToolbar = this.element.createChild("devtools-toolbar", "network-summary-bar");
+    this.#summaryToolbar.setAttribute("role", "status");
     new UI14.DropTarget.DropTarget(
       this.element,
       [UI14.DropTarget.Type.File],
       i18nString12(UIStrings13.dropHarFilesHere),
-      this.handleDrop.bind(this)
+      this.#handleDrop.bind(this)
     );
-    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.colorCodeResourceTypesSettingDescriptor).addChangeListener(this.invalidateAllItems.bind(this, false), this);
+    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.colorCodeResourceTypesSettingDescriptor).addChangeListener(this.#invalidateAllItems.bind(this, false), this);
     SDK11.TargetManager.TargetManager.instance().observeModels(SDK11.NetworkManager.NetworkManager, this, { scoped: true });
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(
       Logs5.NetworkLog.Events.RequestAdded,
-      this.onRequestUpdated,
+      this.#onRequestUpdated,
       this
     );
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(
       Logs5.NetworkLog.Events.RequestUpdated,
-      this.onRequestUpdated,
+      this.#onRequestUpdated,
       this
     );
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(
       Logs5.NetworkLog.Events.RequestRemoved,
-      this.onRequestRemoved,
+      this.#onRequestRemoved,
       this
     );
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.Reset, this.reset, this);
-    this.updateGroupByFrame();
-    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.groupByFrameSettingDescriptor).addChangeListener(() => this.updateGroupByFrame());
-    this.filterBar = filterBar;
-    this.textFilterSetting = Common12.Settings.Settings.instance().createSetting("network-text-filter", "");
-    if (this.textFilterSetting.get()) {
-      this.textFilterUI.setValue(this.textFilterSetting.get());
+    this.#updateGroupByFrame();
+    Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.groupByFrameSettingDescriptor).addChangeListener(() => this.#updateGroupByFrame());
+    this.#filterBar = filterBar;
+    this.#textFilterSetting = Common12.Settings.Settings.instance().createSetting("network-text-filter", "");
+    if (this.#textFilterSetting.get()) {
+      this.#textFilterUI.setValue(this.#textFilterSetting.get());
     }
   }
-  updateGroupByFrame() {
+  #updateGroupByFrame() {
     const value = Common12.Settings.Settings.instance().resolve(Settings10.NetworkSettings.groupByFrameSettingDescriptor).get();
-    this.setGrouping(value ? "Frame" : null);
+    this.#setGrouping(value ? "Frame" : null);
   }
-  static sortSearchValues(key, values) {
+  static #sortSearchValues(key, values) {
     if (key === NetworkForward2.UIFilter.FilterType.Priority) {
       values.sort((a, b) => {
         const aPriority = PerfUI4.NetworkPriorities.uiLabelToNetworkPriority(a);
@@ -12224,15 +12219,17 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       values.sort();
     }
   }
-  static negativeFilter(filter, request) {
+  static #negativeFilter(filter, request) {
     return !filter(request);
   }
-  static requestHostAndPathFilter(regex, request) {
+  static #requestHostAndPathFilter(regex, request) {
     if (!regex) {
       return false;
     }
     return regex.test(request.parsedURL.urlWithoutScheme());
   }
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   static subdomains(domain) {
     const result = [domain];
     let indexOfPeriod = domain.indexOf(".");
@@ -12242,47 +12239,49 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return result;
   }
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   static createRequestDomainFilter(value) {
     const escapedPattern = value.split("*").map(Platform6.StringUtilities.escapeForRegExp).join(".*");
-    return _NetworkLogView.requestDomainFilter.bind(null, new RegExp("^" + escapedPattern + "$", "i"));
+    return _NetworkLogView.#requestDomainFilter.bind(null, new RegExp("^" + escapedPattern + "$", "i"));
   }
-  static requestDomainFilter(regex, request) {
+  static #requestDomainFilter(regex, request) {
     return regex.test(request.domain);
   }
-  static runningRequestFilter(request) {
+  static #runningRequestFilter(request) {
     return !request.finished;
   }
-  static fromCacheRequestFilter(request) {
+  static #fromCacheRequestFilter(request) {
     return request.cached();
   }
-  static interceptedByServiceWorkerFilter(request) {
+  static #interceptedByServiceWorkerFilter(request) {
     return request.fetchedViaServiceWorker;
   }
-  static initiatedByServiceWorkerFilter(request) {
+  static #initiatedByServiceWorkerFilter(request) {
     return request.initiatedByServiceWorker();
   }
-  static linkPreloadRequestFilter(request) {
+  static #linkPreloadRequestFilter(request) {
     return request.isLinkPreload();
   }
-  static requestResponseHeaderFilter(value, request) {
+  static #requestResponseHeaderFilter(value, request) {
     return request.responseHeaderValue(value) !== void 0;
   }
-  static requestRequestHeaderFilter(headerName, request) {
+  static #requestRequestHeaderFilter(headerName, request) {
     return request.requestHeaders().some((header) => header.name.toLowerCase() === headerName.toLowerCase());
   }
-  static requestResponseHeaderSetCookieFilter(value, request) {
+  static #requestResponseHeaderSetCookieFilter(value, request) {
     return Boolean(request.responseHeaderValue("Set-Cookie")?.includes(value));
   }
-  static requestMethodFilter(value, request) {
+  static #requestMethodFilter(value, request) {
     return request.requestMethod === value;
   }
-  static requestPriorityFilter(value, request) {
+  static #requestPriorityFilter(value, request) {
     return request.priority() === value;
   }
-  static requestMimeTypeFilter(value, request) {
+  static #requestMimeTypeFilter(value, request) {
     return request.mimeType === value;
   }
-  static requestMixedContentFilter(value, request) {
+  static #requestMixedContentFilter(value, request) {
     if (value === NetworkForward2.UIFilter.MixedContentFilterValues.DISPLAYED) {
       return request.mixedContentType === Security.MixedContentType.OptionallyBlockable;
     }
@@ -12297,37 +12296,37 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return false;
   }
-  static requestSchemeFilter(value, request) {
+  static #requestSchemeFilter(value, request) {
     return request.scheme === value;
   }
-  static requestCookieDomainFilter(value, request) {
+  static #requestCookieDomainFilter(value, request) {
     return request.allCookiesIncludingBlockedOnes().some((cookie) => cookie.domain() === value);
   }
-  static requestCookieNameFilter(value, request) {
+  static #requestCookieNameFilter(value, request) {
     return request.allCookiesIncludingBlockedOnes().some((cookie) => cookie.name() === value);
   }
-  static requestCookiePathFilter(value, request) {
+  static #requestCookiePathFilter(value, request) {
     return request.allCookiesIncludingBlockedOnes().some((cookie) => cookie.path() === value);
   }
-  static requestCookieValueFilter(value, request) {
+  static #requestCookieValueFilter(value, request) {
     return request.allCookiesIncludingBlockedOnes().some((cookie) => cookie.value() === value);
   }
-  static requestSetCookieDomainFilter(value, request) {
+  static #requestSetCookieDomainFilter(value, request) {
     return request.responseCookies.some((cookie) => cookie.domain() === value);
   }
-  static requestSetCookieNameFilter(value, request) {
+  static #requestSetCookieNameFilter(value, request) {
     return request.responseCookies.some((cookie) => cookie.name() === value);
   }
-  static requestSetCookieValueFilter(value, request) {
+  static #requestSetCookieValueFilter(value, request) {
     return request.responseCookies.some((cookie) => cookie.value() === value);
   }
-  static requestSizeLargerThanFilter(value, request) {
+  static #requestSizeLargerThanFilter(value, request) {
     return request.transferSize >= value;
   }
-  static statusCodeFilter(value, request) {
+  static #statusCodeFilter(value, request) {
     return String(request.statusCode) === value;
   }
-  static hasOverridesFilter(value, request) {
+  static #hasOverridesFilter(value, request) {
     if (!value) {
       return false;
     }
@@ -12348,14 +12347,14 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
   static getHTTPRequestsFilter(request) {
     return request.parsedURL.isValid && request.scheme in HTTPSchemas;
   }
-  static resourceTypeFilter(value, request) {
+  static #resourceTypeFilter(value, request) {
     return request.resourceType().name() === value;
   }
-  static requestUrlFilter(value, request) {
+  static #requestUrlFilter(value, request) {
     const regex = new RegExp(Platform6.StringUtilities.escapeForRegExp(value), "i");
     return regex.test(request.url());
   }
-  static requestTimeFilter(windowStart, windowEnd, request) {
+  static #requestTimeFilter(windowStart, windowEnd, request) {
     if (request.issueTime() > windowEnd) {
       return false;
     }
@@ -12364,13 +12363,13 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return true;
   }
-  static copyRequestHeaders(request) {
+  static #copyRequestHeaders(request) {
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(request.requestHeadersText());
   }
-  static copyResponseHeaders(request) {
+  static #copyResponseHeaders(request) {
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(request.responseHeadersText);
   }
-  static async copyResponse(request) {
+  static async #copyResponse(request) {
     const contentData = await request.requestContentData();
     let content;
     if (TextUtils.ContentData.ContentData.isError(contentData)) {
@@ -12382,7 +12381,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content);
   }
-  handleDrop(dataTransfer) {
+  #handleDrop(dataTransfer) {
     const items = dataTransfer.items;
     if (!items.length) {
       return;
@@ -12403,7 +12402,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     if (!success) {
       const error = reader.error();
       if (error) {
-        this.harLoadFailed(error.message);
+        this.#harLoadFailed(error.message);
       }
       return;
     }
@@ -12411,37 +12410,37 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     try {
       harRoot = new HAR.HARFormat.HARRoot(JSON.parse(outputStream.data()));
     } catch (e) {
-      this.harLoadFailed(e);
+      this.#harLoadFailed(e);
       return;
     }
     Logs5.NetworkLog.NetworkLog.instance().importRequests(HAR.Importer.Importer.requestsFromHARLog(harRoot.log));
   }
-  harLoadFailed(message) {
+  #harLoadFailed(message) {
     Common12.Console.Console.instance().error("Failed to load HAR file with following error: " + message);
   }
-  setGrouping(groupKey) {
-    if (this.activeGroupLookup) {
-      this.activeGroupLookup.reset();
+  #setGrouping(groupKey) {
+    if (this.#activeGroupLookup) {
+      this.#activeGroupLookup.reset();
     }
-    const groupLookup = groupKey ? this.groupLookups.get(groupKey) || null : null;
-    this.activeGroupLookup = groupLookup;
-    this.invalidateAllItems();
+    const groupLookup = groupKey ? this.#groupLookups.get(groupKey) || null : null;
+    this.#activeGroupLookup = groupLookup;
+    this.#invalidateAllItems();
   }
   nodeForRequest(request) {
-    return this.networkRequestToNode.get(request) || null;
+    return this.#networkRequestToNode.get(request) || null;
   }
   headerHeight() {
-    return this.headerHeightInternal;
+    return this.#headerHeight;
   }
   setRecording(recording) {
     this.recording = recording;
-    this.updateSummaryBar();
+    this.#updateSummaryBar();
   }
   columns() {
-    return this.columnsInternal;
+    return this.#columns;
   }
   summaryToolbar() {
-    return this.summaryToolbarInternal;
+    return this.#summaryToolbar;
   }
   modelAdded(networkManager) {
     const target = networkManager.target();
@@ -12450,16 +12449,16 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     const resourceTreeModel = target.model(SDK11.ResourceTreeModel.ResourceTreeModel);
     if (resourceTreeModel) {
-      resourceTreeModel.addEventListener(SDK11.ResourceTreeModel.Events.Load, this.loadEventFired, this);
+      resourceTreeModel.addEventListener(SDK11.ResourceTreeModel.Events.Load, this.#loadEventFired, this);
       resourceTreeModel.addEventListener(
         SDK11.ResourceTreeModel.Events.DOMContentLoaded,
-        this.domContentLoadedEventFired,
+        this.#domContentLoadedEventFired,
         this
       );
     }
     for (const request of Logs5.NetworkLog.NetworkLog.instance().requests()) {
-      if (this.isInScope(request)) {
-        this.refreshRequest(request);
+      if (this.#isInScope(request)) {
+        this.#refreshRequest(request);
       }
     }
   }
@@ -12470,10 +12469,10 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     const resourceTreeModel = target.model(SDK11.ResourceTreeModel.ResourceTreeModel);
     if (resourceTreeModel) {
-      resourceTreeModel.removeEventListener(SDK11.ResourceTreeModel.Events.Load, this.loadEventFired, this);
+      resourceTreeModel.removeEventListener(SDK11.ResourceTreeModel.Events.Load, this.#loadEventFired, this);
       resourceTreeModel.removeEventListener(
         SDK11.ResourceTreeModel.Events.DOMContentLoaded,
-        this.domContentLoadedEventFired,
+        this.#domContentLoadedEventFired,
         this
       );
     }
@@ -12483,60 +12482,66 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
   }
   linkifier() {
-    return this.linkifierInternal;
+    return this.#linkifier;
   }
   setWindow(start, end) {
     if (!start && !end) {
-      this.timeFilter = null;
-      this.timeCalculatorInternal.setWindow(null);
+      this.#timeFilter = null;
+      this.#timeCalculator.setWindow(null);
     } else {
-      this.timeFilter = _NetworkLogView.requestTimeFilter.bind(null, start, end);
-      this.timeCalculatorInternal.setWindow(new NetworkTimeCalculator4.NetworkTimeBoundary(start, end));
+      this.#timeFilter = _NetworkLogView.#requestTimeFilter.bind(null, start, end);
+      this.#timeCalculator.setWindow(new NetworkTimeCalculator4.NetworkTimeBoundary(start, end));
     }
-    this.filterRequests();
+    this.#filterRequests();
   }
   resetFocus() {
     this.dataGrid.element.focus();
   }
-  resetSuggestionBuilder() {
-    this.suggestionBuilder.clear();
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Is, NetworkForward2.UIFilter.IsFilterType.RUNNING);
-    this.suggestionBuilder.addItem(
+  #resetSuggestionBuilder() {
+    this.#suggestionBuilder.clear();
+    this.#suggestionBuilder.addItem(
+      NetworkForward2.UIFilter.FilterType.Is,
+      NetworkForward2.UIFilter.IsFilterType.RUNNING
+    );
+    this.#suggestionBuilder.addItem(
       NetworkForward2.UIFilter.FilterType.Is,
       NetworkForward2.UIFilter.IsFilterType.FROM_CACHE
     );
-    this.suggestionBuilder.addItem(
+    this.#suggestionBuilder.addItem(
       NetworkForward2.UIFilter.FilterType.Is,
       NetworkForward2.UIFilter.IsFilterType.SERVICE_WORKER_INTERCEPTED
     );
-    this.suggestionBuilder.addItem(
+    this.#suggestionBuilder.addItem(
       NetworkForward2.UIFilter.FilterType.Is,
       NetworkForward2.UIFilter.IsFilterType.SERVICE_WORKER_INITIATED
     );
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Is, NetworkForward2.UIFilter.IsFilterType.PRELOAD);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "100");
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "10k");
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "1M");
-    this.textFilterUI.setSuggestionProvider(this.suggestionBuilder.completions.bind(this.suggestionBuilder));
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.yes);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.no);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.content);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.headers);
+    this.#suggestionBuilder.addItem(
+      NetworkForward2.UIFilter.FilterType.Is,
+      NetworkForward2.UIFilter.IsFilterType.PRELOAD
+    );
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "100");
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "10k");
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.LargerThan, "1M");
+    this.#textFilterUI.setSuggestionProvider(this.#suggestionBuilder.completions.bind(this.#suggestionBuilder));
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.yes);
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.no);
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.content);
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasOverrides, overrideFilter.headers);
   }
-  filterChanged() {
+  #filterChanged() {
     this.removeAllNodeHighlights();
-    this.parseFilterQuery(this.textFilterUI.value(), this.invertFilterUI.checked());
-    this.filterRequests();
-    this.textFilterSetting.set(this.textFilterUI.value());
-    this.moreFiltersDropDownUI?.updateActiveFiltersCount();
-    this.moreFiltersDropDownUI?.updateTooltip();
-    this.columnsInternal.filterChanged();
+    this.#parseFilterQuery(this.#textFilterUI.value(), this.#invertFilterUI.checked());
+    this.#filterRequests();
+    this.#textFilterSetting.set(this.#textFilterUI.value());
+    this.#moreFiltersDropDownUI?.updateActiveFiltersCount();
+    this.#moreFiltersDropDownUI?.updateTooltip();
+    this.#columns.filterChanged();
   }
   async resetFilter() {
-    this.textFilterUI.clear();
+    this.#textFilterUI.clear();
   }
-  showRecordingHint() {
-    this.hideRecordingHint();
+  #showRecordingHint() {
+    this.#hideRecordingHint();
     const actionRegistry = UI14.ActionRegistry.ActionRegistry.instance();
     const actionName = this.recording ? "inspector-main.reload" : "network.toggle-recording";
     const action3 = actionRegistry.hasAction(actionName) ? actionRegistry.getAction(actionName) : null;
@@ -12548,31 +12553,31 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       PH1: buttonText,
       PH2: shortcutTitle
     });
-    this.recordingHint = new UI14.EmptyWidget.EmptyWidget(header, shortcutTitle ? description : "");
-    this.recordingHint.element.classList.add("network-status-pane");
-    this.recordingHint.link = "https://developer.chrome.com/docs/devtools/network/";
+    this.#recordingHint = new UI14.EmptyWidget.EmptyWidget(header, shortcutTitle ? description : "");
+    this.#recordingHint.element.classList.add("network-status-pane");
+    this.#recordingHint.link = "https://developer.chrome.com/docs/devtools/network/";
     if (shortcutTitle && action3) {
       const button = UI14.UIUtils.createTextButton(buttonText, () => action3.execute(), {
         jslogContext: actionName,
         variant: Buttons6.Button.Variant.TONAL
       });
-      this.recordingHint.element.appendChild(button);
+      this.#recordingHint.element.appendChild(button);
     }
-    this.recordingHint.show(this.element);
-    this.setHidden(true);
+    this.#recordingHint.show(this.element);
+    this.#setHidden(true);
   }
-  hideRecordingHint() {
-    this.setHidden(false);
-    if (this.recordingHint) {
-      this.recordingHint.detach();
-      this.recordingHint = null;
+  #hideRecordingHint() {
+    this.#setHidden(false);
+    if (this.#recordingHint) {
+      this.#recordingHint.detach();
+      this.#recordingHint = null;
     }
     UI14.ARIAUtils.LiveAnnouncer.alert(i18nString12(UIStrings13.networkDataAvailable));
   }
-  setHidden(value) {
-    this.columnsInternal.setHidden(value);
+  #setHidden(value) {
+    this.#columns.setHidden(value);
     this.dataGrid.setInert(value);
-    UI14.ARIAUtils.setHidden(this.summaryToolbarInternal, value);
+    UI14.ARIAUtils.setHidden(this.#summaryToolbar, value);
   }
   elementsToRestoreScrollPositionsFor() {
     if (!this.dataGrid) {
@@ -12581,9 +12586,9 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     return [this.dataGrid.scrollContainer];
   }
   columnExtensionResolved() {
-    this.invalidateAllItems(true);
+    this.#invalidateAllItems(true);
   }
-  setupDataGrid() {
+  #setupDataGrid() {
     this.dataGrid.setRowContextMenuCallback((contextMenu, node) => {
       const request = node.request();
       if (request) {
@@ -12594,8 +12599,8 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     this.dataGrid.setName("network-log");
     this.dataGrid.setResizeMethod(DataGrid4.DataGrid.ResizeMethod.LAST);
     this.dataGrid.element.classList.add("network-log-grid");
-    this.dataGrid.element.addEventListener("mousemove", this.dataGridMouseMove.bind(this), true);
-    this.dataGrid.element.addEventListener("mouseleave", () => this.setHoveredNode(null), true);
+    this.dataGrid.element.addEventListener("mousemove", this.#dataGridMouseMove.bind(this), true);
+    this.dataGrid.element.addEventListener("mouseleave", () => this.#setHoveredNode(null), true);
     this.dataGrid.element.addEventListener("keydown", (event) => {
       if (event.key === "ArrowRight" && this.dataGrid.selectedNode) {
         const initiatorLink = this.dataGrid.selectedNode.element().querySelector("button.devtools-link");
@@ -12623,30 +12628,30 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
         }
       }
     });
-    this.dataGrid.element.addEventListener("focus", this.onDataGridFocus.bind(this), true);
-    this.dataGrid.element.addEventListener("blur", this.onDataGridBlur.bind(this), true);
+    this.dataGrid.element.addEventListener("focus", this.#onDataGridFocus.bind(this), true);
+    this.dataGrid.element.addEventListener("blur", this.#onDataGridBlur.bind(this), true);
     return this.dataGrid;
   }
-  dataGridMouseMove(event) {
+  #dataGridMouseMove(event) {
     const mouseEvent = event;
     const node = this.dataGrid.dataGridNodeFromNode(mouseEvent.target);
     const highlightInitiatorChain = mouseEvent.shiftKey;
-    this.setHoveredNode(node, highlightInitiatorChain);
+    this.#setHoveredNode(node, highlightInitiatorChain);
   }
   hoveredNode() {
-    return this.hoveredNodeInternal;
+    return this.#hoveredNode;
   }
-  setHoveredNode(node, highlightInitiatorChain) {
-    if (this.hoveredNodeInternal) {
-      this.hoveredNodeInternal.setHovered(false, false);
+  #setHoveredNode(node, highlightInitiatorChain) {
+    if (this.#hoveredNode) {
+      this.#hoveredNode.setHovered(false, false);
     }
-    this.hoveredNodeInternal = node;
-    if (this.hoveredNodeInternal) {
-      this.hoveredNodeInternal.setHovered(true, Boolean(highlightInitiatorChain));
+    this.#hoveredNode = node;
+    if (this.#hoveredNode) {
+      this.#hoveredNode.setHovered(true, Boolean(highlightInitiatorChain));
     }
   }
-  updateSummaryBar() {
-    this.hideRecordingHint();
+  #updateSummaryBar() {
+    this.#hideRecordingHint();
     let transferSize = 0;
     let resourceSize = 0;
     let selectedNodeNumber = 0;
@@ -12656,7 +12661,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     let maxTime = -1;
     let nodeCount = 0;
     for (const request of Logs5.NetworkLog.NetworkLog.instance().requests()) {
-      const node = this.networkRequestToNode.get(request);
+      const node = this.#networkRequestToNode.get(request);
       if (!node) {
         continue;
       }
@@ -12679,19 +12684,19 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       }
     }
     if (!nodeCount) {
-      this.showRecordingHint();
+      this.#showRecordingHint();
       return;
     }
-    this.summaryToolbarInternal.removeToolbarItems();
+    this.#summaryToolbar.removeToolbarItems();
     const appendChunk = (chunk, title) => {
       const toolbarText = new UI14.Toolbar.ToolbarText(chunk);
       toolbarText.setTitle(title ? title : chunk);
-      this.summaryToolbarInternal.appendToolbarItem(toolbarText);
+      this.#summaryToolbar.appendToolbarItem(toolbarText);
       return toolbarText.element;
     };
     if (selectedNodeNumber !== nodeCount) {
       appendChunk(i18nString12(UIStrings13.sSRequests, { PH1: selectedNodeNumber, PH2: nodeCount }));
-      this.summaryToolbarInternal.appendSeparator();
+      this.#summaryToolbar.appendSeparator();
       appendChunk(
         i18nString12(UIStrings13.sSTransferred, {
           PH1: i18n25.ByteUtilities.formatBytesToKb(selectedTransferSize),
@@ -12699,7 +12704,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
         }),
         i18nString12(UIStrings13.sBSBTransferredOverNetwork, { PH1: selectedTransferSize, PH2: transferSize })
       );
-      this.summaryToolbarInternal.appendSeparator();
+      this.#summaryToolbar.appendSeparator();
       appendChunk(
         i18nString12(UIStrings13.sSResources, {
           PH1: i18n25.ByteUtilities.formatBytesToKb(selectedResourceSize),
@@ -12709,60 +12714,63 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       );
     } else {
       appendChunk(i18nString12(UIStrings13.sRequests, { PH1: nodeCount }));
-      this.summaryToolbarInternal.appendSeparator();
+      this.#summaryToolbar.appendSeparator();
       appendChunk(
         i18nString12(UIStrings13.sTransferred, { PH1: i18n25.ByteUtilities.bytesToString(transferSize) }),
         i18nString12(UIStrings13.sBTransferredOverNetwork, { PH1: transferSize })
       );
-      this.summaryToolbarInternal.appendSeparator();
+      this.#summaryToolbar.appendSeparator();
       appendChunk(
         i18nString12(UIStrings13.sResources, { PH1: i18n25.ByteUtilities.bytesToString(resourceSize) }),
         i18nString12(UIStrings13.sBResourcesLoadedByThePage, { PH1: resourceSize })
       );
     }
     if (baseTime !== -1 && maxTime !== -1) {
-      this.summaryToolbarInternal.appendSeparator();
+      this.#summaryToolbar.appendSeparator();
       appendChunk(i18nString12(UIStrings13.finishS, { PH1: i18n25.TimeUtilities.secondsToString(maxTime - baseTime) }));
-      if (this.mainRequestDOMContentLoadedTime !== -1 && this.mainRequestDOMContentLoadedTime > baseTime) {
-        this.summaryToolbarInternal.appendSeparator();
+      if (this.#mainRequestDOMContentLoadedTime !== -1 && this.#mainRequestDOMContentLoadedTime > baseTime) {
+        this.#summaryToolbar.appendSeparator();
         const domContentLoadedText = i18nString12(
           UIStrings13.domcontentloadedS,
-          { PH1: i18n25.TimeUtilities.secondsToString(this.mainRequestDOMContentLoadedTime - baseTime) }
+          { PH1: i18n25.TimeUtilities.secondsToString(this.#mainRequestDOMContentLoadedTime - baseTime) }
         );
         appendChunk(domContentLoadedText).style.color = `var(${_NetworkLogView.getDCLEventColor()})`;
       }
-      if (this.mainRequestLoadTime !== -1) {
-        this.summaryToolbarInternal.appendSeparator();
-        const loadText = i18nString12(UIStrings13.loadS, { PH1: i18n25.TimeUtilities.secondsToString(this.mainRequestLoadTime - baseTime) });
+      if (this.#mainRequestLoadTime !== -1) {
+        this.#summaryToolbar.appendSeparator();
+        const loadText = i18nString12(
+          UIStrings13.loadS,
+          { PH1: i18n25.TimeUtilities.secondsToString(this.#mainRequestLoadTime - baseTime) }
+        );
         appendChunk(loadText).style.color = `var(${_NetworkLogView.getLoadEventColor()})`;
       }
     }
   }
   scheduleRefresh() {
-    if (this.needsRefresh) {
+    if (this.#needsRefresh) {
       return;
     }
-    this.needsRefresh = true;
+    this.#needsRefresh = true;
     if (this.isShowing()) {
       void RenderCoordinator3.write("NetworkLogView.render", this.refresh.bind(this));
     }
   }
   addFilmStripFrames(times) {
-    this.columnsInternal.addEventDividers(times, "network-frame-divider");
+    this.#columns.addEventDividers(times, "network-frame-divider");
   }
   selectFilmStripFrame(time) {
-    this.columnsInternal.selectFilmStripFrame(time);
+    this.#columns.selectFilmStripFrame(time);
   }
   clearFilmStripFrame() {
-    this.columnsInternal.clearFilmStripFrame();
+    this.#columns.clearFilmStripFrame();
   }
-  refreshIfNeeded() {
-    if (this.needsRefresh) {
+  #refreshIfNeeded() {
+    if (this.#needsRefresh) {
       this.refresh();
     }
   }
-  invalidateAllItems(deferUpdate) {
-    this.staleRequests = new Set(Logs5.NetworkLog.NetworkLog.instance().requests().filter(this.isInScope));
+  #invalidateAllItems(deferUpdate) {
+    this.staleRequests = new Set(Logs5.NetworkLog.NetworkLog.instance().requests().filter(this.#isInScope));
     if (deferUpdate) {
       this.scheduleRefresh();
     } else {
@@ -12770,67 +12778,67 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
   }
   timeCalculator() {
-    return this.timeCalculatorInternal;
+    return this.#timeCalculator;
   }
   calculator() {
-    return this.calculatorInternal;
+    return this.#calculator;
   }
   setCalculator(x) {
-    if (!x || this.calculatorInternal === x) {
+    if (!x || this.#calculator === x) {
       return;
     }
-    if (this.calculatorInternal !== x) {
-      this.calculatorInternal = x;
-      this.columnsInternal.setCalculator(this.calculatorInternal);
+    if (this.#calculator !== x) {
+      this.#calculator = x;
+      this.#columns.setCalculator(this.#calculator);
     }
-    this.calculatorInternal.reset();
-    if (this.calculatorInternal.startAtZero) {
-      this.columnsInternal.hideEventDividers();
+    this.#calculator.reset();
+    if (this.#calculator.startAtZero) {
+      this.#columns.hideEventDividers();
     } else {
-      this.columnsInternal.showEventDividers();
+      this.#columns.showEventDividers();
     }
-    this.invalidateAllItems();
+    this.#invalidateAllItems();
   }
-  loadEventFired(event) {
+  #loadEventFired(event) {
     if (!this.recording) {
       return;
     }
     const time = event.data.loadTime;
     if (time) {
-      this.mainRequestLoadTime = time;
-      this.columnsInternal.addEventDividers([time], "network-load-divider");
+      this.#mainRequestLoadTime = time;
+      this.#columns.addEventDividers([time], "network-load-divider");
     }
   }
-  domContentLoadedEventFired(event) {
+  #domContentLoadedEventFired(event) {
     if (!this.recording) {
       return;
     }
     const { data } = event;
     if (data) {
-      this.mainRequestDOMContentLoadedTime = data;
-      this.columnsInternal.addEventDividers([data], "network-dcl-divider");
+      this.#mainRequestDOMContentLoadedTime = data;
+      this.#columns.addEventDividers([data], "network-dcl-divider");
     }
   }
   wasShown() {
     super.wasShown();
-    this.refreshIfNeeded();
-    this.columnsInternal.wasShown();
+    this.#refreshIfNeeded();
+    this.#columns.wasShown();
   }
   willHide() {
     super.willHide();
-    this.columnsInternal.willHide();
+    this.#columns.willHide();
   }
   flatNodesList() {
     const rootNode = this.dataGrid.rootNode();
     return rootNode.flatChildren();
   }
-  onDataGridFocus() {
+  #onDataGridFocus() {
     if (this.dataGrid.element.matches(":focus-visible")) {
       this.element.classList.add("grid-focused");
     }
     this.updateNodeBackground();
   }
-  onDataGridBlur() {
+  #onDataGridBlur() {
     this.element.classList.remove("grid-focused");
     this.updateNodeBackground();
   }
@@ -12847,9 +12855,9 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
   }
   stylesChanged() {
-    this.columnsInternal.scheduleRefresh();
+    this.#columns.scheduleRefresh();
   }
-  removeNodeAndMaybeAncestors(node) {
+  #removeNodeAndMaybeAncestors(node) {
     let parent = node.parent;
     if (!parent) {
       return;
@@ -12861,39 +12869,41 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       parent = grandparent;
     }
   }
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   refresh() {
-    this.needsRefresh = false;
+    this.#needsRefresh = false;
     this.removeAllNodeHighlights();
-    this.timeCalculatorInternal.updateBoundariesForEventTime(this.mainRequestLoadTime);
-    this.durationCalculator.updateBoundariesForEventTime(this.mainRequestLoadTime);
-    this.timeCalculatorInternal.updateBoundariesForEventTime(this.mainRequestDOMContentLoadedTime);
-    this.durationCalculator.updateBoundariesForEventTime(this.mainRequestDOMContentLoadedTime);
+    this.#timeCalculator.updateBoundariesForEventTime(this.#mainRequestLoadTime);
+    this.#durationCalculator.updateBoundariesForEventTime(this.#mainRequestLoadTime);
+    this.#timeCalculator.updateBoundariesForEventTime(this.#mainRequestDOMContentLoadedTime);
+    this.#durationCalculator.updateBoundariesForEventTime(this.#mainRequestDOMContentLoadedTime);
     const nodesToInsert = /* @__PURE__ */ new Map();
     const nodesToRefresh = [];
     const staleNodes = /* @__PURE__ */ new Set();
     while (this.staleRequests.size) {
       const request = this.staleRequests.values().next().value;
       this.staleRequests.delete(request);
-      let node = this.networkRequestToNode.get(request);
+      let node = this.#networkRequestToNode.get(request);
       if (!node) {
-        node = this.createNodeForRequest(request);
+        node = this.#createNodeForRequest(request);
       }
       staleNodes.add(node);
     }
     for (const node of staleNodes) {
       const request = node.request();
-      const isFilteredOut = !this.applyFilter(request);
+      const isFilteredOut = !this.#applyFilter(request);
       if (isFilteredOut) {
-        if (node === this.hoveredNodeInternal) {
-          this.setHoveredNode(null);
+        if (node === this.#hoveredNode) {
+          this.#setHoveredNode(null);
         }
         node.selected = false;
       } else {
         nodesToRefresh.push(node);
       }
-      this.timeCalculatorInternal.updateBoundaries(request);
-      this.durationCalculator.updateBoundaries(request);
-      const newParent = this.parentNodeForInsert(node);
+      this.#timeCalculator.updateBoundaries(request);
+      this.#durationCalculator.updateBoundaries(request);
+      const newParent = this.#parentNodeForInsert(node);
       const wasAlreadyFiltered = filteredNetworkRequests.has(node);
       if (wasAlreadyFiltered === isFilteredOut && node.parent === newParent) {
         continue;
@@ -12905,7 +12915,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       }
       const removeFromParent = node.parent && (isFilteredOut || node.parent !== newParent);
       if (removeFromParent) {
-        this.removeNodeAndMaybeAncestors(node);
+        this.#removeNodeAndMaybeAncestors(node);
       }
       if (!newParent || isFilteredOut) {
         continue;
@@ -12922,152 +12932,156 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     for (const node of nodesToRefresh) {
       node.refresh();
     }
-    this.updateSummaryBar();
+    this.#updateSummaryBar();
     if (nodesToInsert.size) {
-      this.columnsInternal.sortByCurrentColumn();
+      this.#columns.sortByCurrentColumn();
     }
     this.dataGrid.updateInstantly();
     this.didRefreshForTest();
   }
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   didRefreshForTest() {
   }
-  parentNodeForInsert(node) {
-    if (!this.activeGroupLookup) {
+  #parentNodeForInsert(node) {
+    if (!this.#activeGroupLookup) {
       return this.dataGrid.rootNode();
     }
-    const groupNode = this.activeGroupLookup.groupNodeForRequest(node.request());
+    const groupNode = this.#activeGroupLookup.groupNodeForRequest(node.request());
     if (!groupNode) {
       return this.dataGrid.rootNode();
     }
     return groupNode;
   }
+  // Accessed in web_tests / legacy_test_runner.
+  // eslint-disable-next-line @devtools/prefer-private-class-members
   reset() {
     this.dispatchEventToListeners("RequestActivated" /* RequestActivated */, { showPanel: "HidePanel" /* HidePanel */ });
     this.dispatchEventToListeners("RequestSelected" /* RequestSelected */, null);
-    this.setHoveredNode(null);
-    this.columnsInternal.reset();
-    this.timeFilter = null;
-    this.calculatorInternal.reset();
-    this.timeCalculatorInternal.setWindow(null);
-    this.linkifierInternal.reset();
-    if (this.activeGroupLookup) {
-      this.activeGroupLookup.reset();
+    this.#setHoveredNode(null);
+    this.#columns.reset();
+    this.#timeFilter = null;
+    this.#calculator.reset();
+    this.#timeCalculator.setWindow(null);
+    this.#linkifier.reset();
+    if (this.#activeGroupLookup) {
+      this.#activeGroupLookup.reset();
     }
     this.staleRequests.clear();
-    this.resetSuggestionBuilder();
-    this.mainRequestLoadTime = -1;
-    this.mainRequestDOMContentLoadedTime = -1;
-    this.networkRequestToNode = /* @__PURE__ */ new WeakMap();
+    this.#resetSuggestionBuilder();
+    this.#mainRequestLoadTime = -1;
+    this.#mainRequestDOMContentLoadedTime = -1;
+    this.#networkRequestToNode = /* @__PURE__ */ new WeakMap();
     this.dataGrid.rootNode().removeChildren();
-    this.updateSummaryBar();
+    this.#updateSummaryBar();
     this.scheduleRefresh();
   }
   // TODO(crbug.com/1477668)
   setTextFilterValue(filterString) {
-    this.textFilterUI.setValue(filterString);
-    this.networkHideDataURLSetting.set(false);
-    this.networkShowBlockedCookiesOnlySetting.set(false);
-    this.networkOnlyBlockedRequestsSetting.set(false);
-    this.networkOnlyThirdPartySetting.set(false);
-    this.networkHideChromeExtensions.set(false);
+    this.#textFilterUI.setValue(filterString);
+    this.#networkHideDataURLSetting.set(false);
+    this.#networkShowBlockedCookiesOnlySetting.set(false);
+    this.#networkOnlyBlockedRequestsSetting.set(false);
+    this.#networkOnlyThirdPartySetting.set(false);
+    this.#networkHideChromeExtensions.set(false);
     this.resourceCategoryFilterUI.reset();
   }
-  createNodeForRequest(request) {
+  #createNodeForRequest(request) {
     const node = new NetworkRequestNode(this, request);
-    this.networkRequestToNode.set(request, node);
+    this.#networkRequestToNode.set(request, node);
     filteredNetworkRequests.add(node);
     for (let redirect = request.redirectSource(); redirect; redirect = redirect.redirectSource()) {
-      this.refreshRequest(redirect);
+      this.#refreshRequest(redirect);
     }
     return node;
   }
-  isInScope(request) {
+  #isInScope(request) {
     const networkManager = SDK11.NetworkManager.NetworkManager.forRequest(request);
     return !networkManager || SDK11.TargetManager.TargetManager.instance().isInScope(networkManager);
   }
-  onRequestUpdated(event) {
+  #onRequestUpdated(event) {
     const { request, preserveLog } = event.data;
-    if (this.isInScope(request) || preserveLog) {
-      this.refreshRequest(request);
+    if (this.#isInScope(request) || preserveLog) {
+      this.#refreshRequest(request);
     }
   }
-  onRequestRemoved(event) {
+  #onRequestRemoved(event) {
     const { request } = event.data;
     this.staleRequests.delete(request);
-    const node = this.networkRequestToNode.get(request);
+    const node = this.#networkRequestToNode.get(request);
     if (node) {
-      this.removeNodeAndMaybeAncestors(node);
+      this.#removeNodeAndMaybeAncestors(node);
     }
   }
-  refreshRequest(request) {
+  #refreshRequest(request) {
     _NetworkLogView.subdomains(request.domain).forEach(
-      this.suggestionBuilder.addItem.bind(this.suggestionBuilder, NetworkForward2.UIFilter.FilterType.Domain)
+      this.#suggestionBuilder.addItem.bind(this.#suggestionBuilder, NetworkForward2.UIFilter.FilterType.Domain)
     );
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Method, request.requestMethod);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.MimeType, request.mimeType);
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Scheme, String(request.scheme));
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.StatusCode, String(request.statusCode));
-    this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.ResourceType, request.resourceType().name());
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Method, request.requestMethod);
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.MimeType, request.mimeType);
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Scheme, String(request.scheme));
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.StatusCode, String(request.statusCode));
+    this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.ResourceType, request.resourceType().name());
     const requestURLSecurityOrigin = request.requestURLSecurityOrigin();
     if (!requestURLSecurityOrigin.isOpaque()) {
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Url, requestURLSecurityOrigin.siteId());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.Url, requestURLSecurityOrigin.siteId());
     }
     const priority = request.priority();
     if (priority) {
-      this.suggestionBuilder.addItem(
+      this.#suggestionBuilder.addItem(
         NetworkForward2.UIFilter.FilterType.Priority,
         PerfUI4.NetworkPriorities.uiLabelForNetworkPriority(priority)
       );
     }
     if (request.mixedContentType !== Security.MixedContentType.None) {
-      this.suggestionBuilder.addItem(
+      this.#suggestionBuilder.addItem(
         NetworkForward2.UIFilter.FilterType.MixedContent,
         NetworkForward2.UIFilter.MixedContentFilterValues.ALL
       );
     }
     if (request.mixedContentType === Security.MixedContentType.OptionallyBlockable) {
-      this.suggestionBuilder.addItem(
+      this.#suggestionBuilder.addItem(
         NetworkForward2.UIFilter.FilterType.MixedContent,
         NetworkForward2.UIFilter.MixedContentFilterValues.DISPLAYED
       );
     }
     if (request.mixedContentType === Security.MixedContentType.Blockable) {
       const suggestion = request.wasBlocked() ? NetworkForward2.UIFilter.MixedContentFilterValues.BLOCKED : NetworkForward2.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN;
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.MixedContent, suggestion);
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.MixedContent, suggestion);
     }
     const responseHeaders = request.responseHeaders;
     for (const responseHeader of responseHeaders) {
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasResponseHeader, responseHeader.name);
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasResponseHeader, responseHeader.name);
       if (responseHeader.name === "Set-Cookie") {
-        this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.ResponseHeaderValueSetCookie);
+        this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.ResponseHeaderValueSetCookie);
       }
     }
     for (const header of request.requestHeaders()) {
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasRequestHeader, header.name);
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.HasRequestHeader, header.name);
     }
     for (const cookie of request.responseCookies) {
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieDomain, cookie.domain());
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieName, cookie.name());
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieValue, cookie.value());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieDomain, cookie.domain());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieName, cookie.name());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.SetCookieValue, cookie.value());
     }
     for (const cookie of request.allCookiesIncludingBlockedOnes()) {
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieDomain, cookie.domain());
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieName, cookie.name());
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookiePath, cookie.path());
-      this.suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieValue, cookie.value());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieDomain, cookie.domain());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieName, cookie.name());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookiePath, cookie.path());
+      this.#suggestionBuilder.addItem(NetworkForward2.UIFilter.FilterType.CookieValue, cookie.value());
     }
     this.staleRequests.add(request);
     this.scheduleRefresh();
   }
   rowHeight() {
-    return this.rowHeightInternal;
+    return this.#rowHeight;
   }
   switchViewMode(gridMode) {
-    this.columnsInternal.switchViewMode(gridMode);
+    this.#columns.switchViewMode(gridMode);
   }
   handleContextMenuForRequest(contextMenu, request) {
     contextMenu.appendApplicableItems(request);
-    const filtered = this.filterBar.hasActiveFilter();
+    const filtered = this.#filterBar.hasActiveFilter();
     const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString12(UIStrings13.copy), false, "copy");
     if (request) {
       const openAiAssistanceId = "drjones.network-panel-context";
@@ -13122,27 +13136,27 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       );
       copyMenu.footerSection().appendItem(
         filtered ? i18nString12(UIStrings13.copyAllListedURLs) : i18nString12(UIStrings13.copyAllURLs),
-        this.copyAllURLs.bind(this),
+        this.#copyAllURLs.bind(this),
         { jslogContext: "copy-all-urls" }
       );
       if (request.requestHeadersText()) {
         copyMenu.saveSection().appendItem(
           i18nString12(UIStrings13.copyRequestHeaders),
-          _NetworkLogView.copyRequestHeaders.bind(null, request),
+          _NetworkLogView.#copyRequestHeaders.bind(null, request),
           { jslogContext: "copy-request-headers" }
         );
       }
       if (request.responseHeadersText) {
         copyMenu.saveSection().appendItem(
           i18nString12(UIStrings13.copyResponseHeaders),
-          _NetworkLogView.copyResponseHeaders.bind(null, request),
+          _NetworkLogView.#copyResponseHeaders.bind(null, request),
           { jslogContext: "copy-response-headers" }
         );
       }
       if (request.finished) {
         copyMenu.saveSection().appendItem(
           i18nString12(UIStrings13.copyResponse),
-          _NetworkLogView.copyResponse.bind(null, request),
+          _NetworkLogView.#copyResponse.bind(null, request),
           { jslogContext: "copy-response" }
         );
       }
@@ -13162,80 +13176,80 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       if (Host5.Platform.isWin()) {
         copyMenu.defaultSection().appendItem(
           i18nString12(UIStrings13.copyAsCurlCmd),
-          this.copyCurlCommand.bind(this, request, "win"),
+          this.#copyCurlCommand.bind(this, request, "win"),
           { disabled: disableIfBlob, jslogContext: "copy-as-curl-cmd" }
         );
         copyMenu.defaultSection().appendItem(
           i18nString12(UIStrings13.copyAsCurlBash),
-          this.copyCurlCommand.bind(this, request, "unix"),
+          this.#copyCurlCommand.bind(this, request, "unix"),
           { disabled: disableIfBlob, jslogContext: "copy-as-curl-bash" }
         );
       } else {
         copyMenu.defaultSection().appendItem(
           i18nString12(UIStrings13.copyAsCurl),
-          this.copyCurlCommand.bind(this, request, "unix"),
+          this.#copyCurlCommand.bind(this, request, "unix"),
           { disabled: disableIfBlob, jslogContext: "copy-as-curl" }
         );
       }
       copyMenu.defaultSection().appendItem(
         i18nString12(UIStrings13.copyAsPowershell),
-        this.copyPowerShellCommand.bind(this, request),
+        this.#copyPowerShellCommand.bind(this, request),
         { disabled: disableIfBlob, jslogContext: "copy-as-powershell" }
       );
       copyMenu.defaultSection().appendItem(
         i18nString12(UIStrings13.copyAsFetch),
-        this.copyFetchCall.bind(this, request, 0 /* BROWSER */),
+        this.#copyFetchCall.bind(this, request, 0 /* BROWSER */),
         { disabled: disableIfBlob, jslogContext: "copy-as-fetch" }
       );
       copyMenu.defaultSection().appendItem(
         i18nString12(UIStrings13.copyAsNodejsFetch),
-        this.copyFetchCall.bind(this, request, 1 /* NODE_JS */),
+        this.#copyFetchCall.bind(this, request, 1 /* NODE_JS */),
         { disabled: disableIfBlob, jslogContext: "copy-as-nodejs-fetch" }
       );
-      this.appendCopyAsPreloadItem(copyMenu, request);
+      this.#appendCopyAsPreloadItem(copyMenu, request);
       if (Host5.Platform.isWin()) {
         copyMenu.footerSection().appendItem(
           filtered ? i18nString12(UIStrings13.copyAllListedAsCurlCmd) : i18nString12(UIStrings13.copyAllAsCurlCmd),
-          this.copyAllCurlCommand.bind(this, "win"),
+          this.#copyAllCurlCommand.bind(this, "win"),
           { jslogContext: "copy-all-as-curl-cmd" }
         );
         copyMenu.footerSection().appendItem(
           filtered ? i18nString12(UIStrings13.copyAllListedAsCurlBash) : i18nString12(UIStrings13.copyAllAsCurlBash),
-          this.copyAllCurlCommand.bind(this, "unix"),
+          this.#copyAllCurlCommand.bind(this, "unix"),
           { jslogContext: "copy-all-as-curl-bash" }
         );
       } else {
         copyMenu.footerSection().appendItem(
           filtered ? i18nString12(UIStrings13.copyAllListedAsCurl) : i18nString12(UIStrings13.copyAllAsCurl),
-          this.copyAllCurlCommand.bind(this, "unix"),
+          this.#copyAllCurlCommand.bind(this, "unix"),
           { jslogContext: "copy-all-as-curl" }
         );
       }
       copyMenu.footerSection().appendItem(
         filtered ? i18nString12(UIStrings13.copyAllListedAsPowershell) : i18nString12(UIStrings13.copyAllAsPowershell),
-        this.copyAllPowerShellCommand.bind(this),
+        this.#copyAllPowerShellCommand.bind(this),
         { jslogContext: "copy-all-as-powershell" }
       );
       copyMenu.footerSection().appendItem(
         filtered ? i18nString12(UIStrings13.copyAllListedAsFetch) : i18nString12(UIStrings13.copyAllAsFetch),
-        this.copyAllFetchCall.bind(this, 0 /* BROWSER */),
+        this.#copyAllFetchCall.bind(this, 0 /* BROWSER */),
         { jslogContext: "copy-all-as-fetch" }
       );
       copyMenu.footerSection().appendItem(
         filtered ? i18nString12(UIStrings13.copyAllListedAsNodejsFetch) : i18nString12(UIStrings13.copyAllAsNodejsFetch),
-        this.copyAllFetchCall.bind(this, 1 /* NODE_JS */),
+        this.#copyAllFetchCall.bind(this, 1 /* NODE_JS */),
         { jslogContext: "copy-all-as-nodejs-fetch" }
       );
     }
     copyMenu.footerSection().appendItem(
       filtered ? i18nString12(UIStrings13.copyAllListedAsHarSanitized) : i18nString12(UIStrings13.copyAllAsHarSanitized),
-      this.copyAllAsHAR.bind(this, { sanitize: true }),
+      this.#copyAllAsHAR.bind(this, { sanitize: true }),
       { jslogContext: "copy-all-as-har" }
     );
-    if (this.networkShowOptionsToGenerateHarWithSensitiveData.get()) {
+    if (this.#networkShowOptionsToGenerateHarWithSensitiveData.get()) {
       copyMenu.footerSection().appendItem(
         filtered ? i18nString12(UIStrings13.copyAllListedAsHarWithSensitiveData) : i18nString12(UIStrings13.copyAllAsHarWithSensitiveData),
-        this.copyAllAsHAR.bind(this, { sanitize: false }),
+        this.#copyAllAsHAR.bind(this, { sanitize: false }),
         { jslogContext: "copy-all-as-har-with-sensitive-data" }
       );
     }
@@ -13249,12 +13263,12 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     );
     contextMenu.editSection().appendItem(
       i18nString12(UIStrings13.clearBrowserCache),
-      this.clearBrowserCache.bind(this),
+      this.#clearBrowserCache.bind(this),
       { jslogContext: "clear-browser-cache" }
     );
     contextMenu.editSection().appendItem(
       i18nString12(UIStrings13.clearBrowserCookies),
-      this.clearBrowserCookies.bind(this),
+      this.#clearBrowserCookies.bind(this),
       { jslogContext: "clear-browser-cookies" }
     );
     if (request) {
@@ -13364,42 +13378,42 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       if (SDK11.NetworkManager.NetworkManager.canResendRequest(request, false)) {
         contextMenu.debugSection().appendItem(
           i18nString12(UIStrings13.editAndResendAsFetch),
-          this.resendFromConsole.bind(this, request),
+          this.#resendFromConsole.bind(this, request),
           { jslogContext: "edit-and-resend-as-fetch" }
         );
       }
     }
   }
-  harRequests() {
-    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
+  #harRequests() {
+    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.#applyFilter(request));
     return requests.filter(_NetworkLogView.getHTTPRequestsFilter).filter((request) => {
       return request.finished || request.resourceType() === Common12.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime || Boolean(request.eventSourceMessages()?.length);
     });
   }
-  async copyAllAsHAR(options) {
-    const harArchive = { log: await HAR.Log.Log.build(this.harRequests(), options) };
+  async #copyAllAsHAR(options) {
+    const harArchive = { log: await HAR.Log.Log.build(this.#harRequests(), options) };
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(JSON.stringify(harArchive, null, 2));
   }
-  copyAllURLs() {
-    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
-    const nonBlobRequests = this.filterOutBlobRequests(requests);
+  #copyAllURLs() {
+    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.#applyFilter(request));
+    const nonBlobRequests = this.#filterOutBlobRequests(requests);
     const urls = nonBlobRequests.map((request) => request.url());
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(urls.join("\n"));
   }
-  async copyCurlCommand(request, platform) {
+  async #copyCurlCommand(request, platform) {
     const command = await _NetworkLogView.generateCurlCommand(request, platform);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
   }
-  async copyAllCurlCommand(platform) {
-    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
-    const commands = await this.generateAllCurlCommand(requests, platform);
+  async #copyAllCurlCommand(platform) {
+    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.#applyFilter(request));
+    const commands = await this.#generateAllCurlCommand(requests, platform);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
-  copyPreloadElement(request) {
+  #copyPreloadElement(request) {
     const preloadLink = generatePreloadLink(request);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(preloadLink);
   }
-  appendCopyAsPreloadItem(copyMenu, request) {
+  #appendCopyAsPreloadItem(copyMenu, request) {
     const isHttpOrHttps = request.parsedURL.scheme === "http" || request.parsedURL.scheme === "https";
     const isGetRequest = request.requestMethod === "GET";
     const networkManager = SDK11.NetworkManager.NetworkManager.forRequest(request);
@@ -13408,22 +13422,22 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     const disablePreload = !isHttpOrHttps || request.isBlobRequest() || !isGetRequest || isMainDocument || !canPreloadRequest(request);
     copyMenu.defaultSection().appendItem(
       i18nString12(UIStrings13.copyAsPreload),
-      this.copyPreloadElement.bind(this, request),
+      this.#copyPreloadElement.bind(this, request),
       { disabled: disablePreload, jslogContext: "copy-as-preload" }
     );
   }
-  async copyFetchCall(request, style) {
-    const command = await this.generateFetchCall(request, style);
+  async #copyFetchCall(request, style) {
+    const command = await this.#generateFetchCall(request, style);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
   }
-  async copyAllFetchCall(style) {
-    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
-    const commands = await this.generateAllFetchCall(requests, style);
+  async #copyAllFetchCall(style) {
+    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.#applyFilter(request));
+    const commands = await this.#generateAllFetchCall(requests, style);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
-  async resendFromConsole(request) {
+  async #resendFromConsole(request) {
     Host5.userMetrics.editResendRequest(Host5.UserMetrics.resendRequestType(request.resourceType()));
-    let fetchCommand = await this.generateFetchCall(request, 0 /* BROWSER */, { commentForbiddenHeaders: true });
+    let fetchCommand = await this.#generateFetchCall(request, 0 /* BROWSER */, { commentForbiddenHeaders: true });
     if (!fetchCommand.startsWith("await ")) {
       fetchCommand = "await " + fetchCommand;
     }
@@ -13441,19 +13455,19 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       /* omitFocus */
       true
     );
-    _NetworkLogView.logResendConsoleMessage(request);
+    _NetworkLogView.#logResendConsoleMessage(request);
     const consoleViewWrapper = await UI14.ViewManager.ViewManager.instance().view("console-view");
     if (!consoleViewWrapper) {
       return;
     }
-    const widget8 = await consoleViewWrapper.widget();
-    const consoleView = widget8;
+    const widget9 = await consoleViewWrapper.widget();
+    const consoleView = widget9;
     if (typeof consoleView.insertIntoPrompt !== "function") {
       return;
     }
     consoleView.insertIntoPrompt(fetchCommand);
   }
-  static logResendConsoleMessage(request) {
+  static #logResendConsoleMessage(request) {
     const target = SDK11.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!target) {
       return;
@@ -13483,13 +13497,13 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     message.column = 0;
     message.stackTrace = void 0;
   }
-  async copyPowerShellCommand(request) {
-    const command = await this.generatePowerShellCommand(request);
+  async #copyPowerShellCommand(request) {
+    const command = await this.#generatePowerShellCommand(request);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
   }
-  async copyAllPowerShellCommand() {
-    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
-    const commands = await this.generateAllPowerShellCommand(requests);
+  async #copyAllPowerShellCommand() {
+    const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.#applyFilter(request));
+    const commands = await this.#generateAllPowerShellCommand(requests);
     Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
   }
   async exportAll(options) {
@@ -13504,8 +13518,8 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     if (!await stream.open(Common12.ParsedURL.ParsedURL.concatenate(filename, ".har"))) {
       return;
     }
-    const progressIndicator = this.progressBarContainer.createChild("devtools-progress");
-    await HAR.Writer.Writer.write(stream, this.harRequests(), options, progressIndicator);
+    const progressIndicator = this.#progressBarContainer.createChild("devtools-progress");
+    await HAR.Writer.Writer.write(stream, this.#harRequests(), options, progressIndicator);
     progressIndicator.done = true;
     void stream.close();
   }
@@ -13524,18 +13538,18 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       });
     }
   }
-  clearBrowserCache() {
+  #clearBrowserCache() {
     if (confirm(i18nString12(UIStrings13.areYouSureYouWantToClearBrowser))) {
       SDK11.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCache();
     }
   }
-  clearBrowserCookies() {
+  #clearBrowserCookies() {
     if (confirm(i18nString12(UIStrings13.areYouSureYouWantToClearBrowserCookies))) {
       SDK11.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCookies();
     }
   }
-  applyFilter(request) {
-    if (this.timeFilter && !this.timeFilter(request)) {
+  #applyFilter(request) {
+    if (this.#timeFilter && !this.#timeFilter(request)) {
       return false;
     }
     const categoryName = request.resourceType().category().name;
@@ -13543,11 +13557,11 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       return false;
     }
     const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL] = [
-      this.networkHideDataURLSetting.get(),
-      this.networkShowBlockedCookiesOnlySetting.get(),
-      this.networkOnlyBlockedRequestsSetting.get(),
-      this.networkOnlyThirdPartySetting.get(),
-      this.networkHideChromeExtensions.get()
+      this.#networkHideDataURLSetting.get(),
+      this.#networkShowBlockedCookiesOnlySetting.get(),
+      this.#networkOnlyBlockedRequestsSetting.get(),
+      this.#networkOnlyThirdPartySetting.get(),
+      this.#networkHideChromeExtensions.get()
     ];
     if (hideDataURL && (request.parsedURL.isDataURL() || request.parsedURL.isBlobURL())) {
       return false;
@@ -13564,14 +13578,14 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     if (hideExtensionURL && request.scheme === "chrome-extension") {
       return false;
     }
-    for (let i = 0; i < this.filters.length; ++i) {
-      if (!this.filters[i](request)) {
+    for (let i = 0; i < this.#filters.length; ++i) {
+      if (!this.#filters[i](request)) {
         return false;
       }
     }
     return true;
   }
-  isValidUrl(url) {
+  #isValidUrl(url) {
     try {
       new URL(url);
       return true;
@@ -13579,103 +13593,103 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
       return false;
     }
   }
-  parseFilterQuery(query, invert) {
-    const descriptors = this.filterParser.parse(query);
-    this.filters = descriptors.map((descriptor) => {
+  #parseFilterQuery(query, invert) {
+    const descriptors = this.#filterParser.parse(query);
+    this.#filters = descriptors.map((descriptor) => {
       const key = descriptor.key;
       const text = descriptor.text || "";
       const regex = descriptor.regex;
       let filter;
       if (key) {
         const defaultText = Platform6.StringUtilities.escapeForRegExp(key + ":" + text);
-        filter = this.createSpecialFilter(key, text) || _NetworkLogView.requestHostAndPathFilter.bind(null, new RegExp(defaultText, "i"));
+        filter = this.#createSpecialFilter(key, text) || _NetworkLogView.#requestHostAndPathFilter.bind(null, new RegExp(defaultText, "i"));
       } else if (descriptor.regex) {
-        filter = _NetworkLogView.requestHostAndPathFilter.bind(null, regex);
-      } else if (this.isValidUrl(text)) {
-        filter = _NetworkLogView.requestUrlFilter.bind(null, text);
+        filter = _NetworkLogView.#requestHostAndPathFilter.bind(null, regex);
+      } else if (this.#isValidUrl(text)) {
+        filter = _NetworkLogView.#requestUrlFilter.bind(null, text);
       } else {
-        filter = _NetworkLogView.requestHostAndPathFilter.bind(
+        filter = _NetworkLogView.#requestHostAndPathFilter.bind(
           null,
           new RegExp(Platform6.StringUtilities.escapeForRegExp(text), "i")
         );
       }
       if (descriptor.negative && !invert || !descriptor.negative && invert) {
-        return _NetworkLogView.negativeFilter.bind(null, filter);
+        return _NetworkLogView.#negativeFilter.bind(null, filter);
       }
       return filter;
     });
   }
-  createSpecialFilter(type, value) {
+  #createSpecialFilter(type, value) {
     switch (type) {
       case NetworkForward2.UIFilter.FilterType.Domain:
         return _NetworkLogView.createRequestDomainFilter(value);
       case NetworkForward2.UIFilter.FilterType.HasResponseHeader:
-        return _NetworkLogView.requestResponseHeaderFilter.bind(null, value);
+        return _NetworkLogView.#requestResponseHeaderFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.ResponseHeaderValueSetCookie:
-        return _NetworkLogView.requestResponseHeaderSetCookieFilter.bind(null, value);
+        return _NetworkLogView.#requestResponseHeaderSetCookieFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.HasRequestHeader:
-        return _NetworkLogView.requestRequestHeaderFilter.bind(null, value);
+        return _NetworkLogView.#requestRequestHeaderFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.Is:
         if (value.toLowerCase() === NetworkForward2.UIFilter.IsFilterType.RUNNING) {
-          return _NetworkLogView.runningRequestFilter;
+          return _NetworkLogView.#runningRequestFilter;
         }
         if (value.toLowerCase() === NetworkForward2.UIFilter.IsFilterType.FROM_CACHE) {
-          return _NetworkLogView.fromCacheRequestFilter;
+          return _NetworkLogView.#fromCacheRequestFilter;
         }
         if (value.toLowerCase() === NetworkForward2.UIFilter.IsFilterType.SERVICE_WORKER_INTERCEPTED) {
-          return _NetworkLogView.interceptedByServiceWorkerFilter;
+          return _NetworkLogView.#interceptedByServiceWorkerFilter;
         }
         if (value.toLowerCase() === NetworkForward2.UIFilter.IsFilterType.SERVICE_WORKER_INITIATED) {
-          return _NetworkLogView.initiatedByServiceWorkerFilter;
+          return _NetworkLogView.#initiatedByServiceWorkerFilter;
         }
         if (value.toLowerCase() === NetworkForward2.UIFilter.IsFilterType.PRELOAD) {
-          return _NetworkLogView.linkPreloadRequestFilter;
+          return _NetworkLogView.#linkPreloadRequestFilter;
         }
         break;
       case NetworkForward2.UIFilter.FilterType.LargerThan:
-        return this.createSizeFilter(value.toLowerCase());
+        return this.#createSizeFilter(value.toLowerCase());
       case NetworkForward2.UIFilter.FilterType.Method:
-        return _NetworkLogView.requestMethodFilter.bind(null, value);
+        return _NetworkLogView.#requestMethodFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.MimeType:
-        return _NetworkLogView.requestMimeTypeFilter.bind(null, value);
+        return _NetworkLogView.#requestMimeTypeFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.MixedContent:
-        return _NetworkLogView.requestMixedContentFilter.bind(
+        return _NetworkLogView.#requestMixedContentFilter.bind(
           null,
           value
         );
       case NetworkForward2.UIFilter.FilterType.Scheme:
-        return _NetworkLogView.requestSchemeFilter.bind(null, value);
+        return _NetworkLogView.#requestSchemeFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.SetCookieDomain:
-        return _NetworkLogView.requestSetCookieDomainFilter.bind(null, value);
+        return _NetworkLogView.#requestSetCookieDomainFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.SetCookieName:
-        return _NetworkLogView.requestSetCookieNameFilter.bind(null, value);
+        return _NetworkLogView.#requestSetCookieNameFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.SetCookieValue:
-        return _NetworkLogView.requestSetCookieValueFilter.bind(null, value);
+        return _NetworkLogView.#requestSetCookieValueFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.CookieDomain:
-        return _NetworkLogView.requestCookieDomainFilter.bind(null, value);
+        return _NetworkLogView.#requestCookieDomainFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.CookieName:
-        return _NetworkLogView.requestCookieNameFilter.bind(null, value);
+        return _NetworkLogView.#requestCookieNameFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.CookiePath:
-        return _NetworkLogView.requestCookiePathFilter.bind(null, value);
+        return _NetworkLogView.#requestCookiePathFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.CookieValue:
-        return _NetworkLogView.requestCookieValueFilter.bind(null, value);
+        return _NetworkLogView.#requestCookieValueFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.Priority:
-        return _NetworkLogView.requestPriorityFilter.bind(
+        return _NetworkLogView.#requestPriorityFilter.bind(
           null,
           PerfUI4.NetworkPriorities.uiLabelToNetworkPriority(value)
         );
       case NetworkForward2.UIFilter.FilterType.StatusCode:
-        return _NetworkLogView.statusCodeFilter.bind(null, value);
+        return _NetworkLogView.#statusCodeFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.HasOverrides:
-        return _NetworkLogView.hasOverridesFilter.bind(null, value);
+        return _NetworkLogView.#hasOverridesFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.ResourceType:
-        return _NetworkLogView.resourceTypeFilter.bind(null, value);
+        return _NetworkLogView.#resourceTypeFilter.bind(null, value);
       case NetworkForward2.UIFilter.FilterType.Url:
-        return _NetworkLogView.requestUrlFilter.bind(null, value);
+        return _NetworkLogView.#requestUrlFilter.bind(null, value);
     }
     return null;
   }
-  createSizeFilter(value) {
+  #createSizeFilter(value) {
     let multiplier = 1;
     if (value.endsWith("k")) {
       multiplier = 1e3;
@@ -13688,15 +13702,15 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     if (isNaN(quantity)) {
       return null;
     }
-    return _NetworkLogView.requestSizeLargerThanFilter.bind(null, quantity * multiplier);
+    return _NetworkLogView.#requestSizeLargerThanFilter.bind(null, quantity * multiplier);
   }
-  filterRequests() {
+  #filterRequests() {
     this.removeAllNodeHighlights();
-    this.invalidateAllItems();
+    this.#invalidateAllItems();
   }
-  reveal(request) {
+  #reveal(request) {
     this.removeAllNodeHighlights();
-    const node = this.networkRequestToNode.get(request);
+    const node = this.#networkRequestToNode.get(request);
     if (!node?.dataGrid) {
       return null;
     }
@@ -13708,9 +13722,9 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     return node;
   }
   revealAndHighlightRequest(request) {
-    const node = this.reveal(request);
+    const node = this.#reveal(request);
     if (node) {
-      this.highlightNode(node);
+      this.#highlightNode(node);
     }
   }
   revealAndHighlightRequestWithId(requestId) {
@@ -13725,22 +13739,22 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     if (clearFilter) {
       this.setTextFilterValue("");
     }
-    const node = this.reveal(request);
+    const node = this.#reveal(request);
     if (node) {
       node.select();
     }
   }
   removeAllNodeHighlights() {
-    if (this.highlightedNode) {
-      this.highlightedNode.element().classList.remove("highlighted-row");
-      this.highlightedNode = null;
+    if (this.#highlightedNode) {
+      this.#highlightedNode.element().classList.remove("highlighted-row");
+      this.#highlightedNode = null;
     }
   }
-  highlightNode(node) {
+  #highlightNode(node) {
     UI14.UIUtils.runCSSAnimationOnce(node.element(), "highlighted-row");
-    this.highlightedNode = node;
+    this.#highlightedNode = node;
   }
-  filterOutBlobRequests(requests) {
+  #filterOutBlobRequests(requests) {
     return requests.filter((request) => !request.isBlobRequest());
   }
   static #getValidClipboardUrl(url) {
@@ -13749,7 +13763,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return url;
   }
-  async generateFetchCall(request, style, generateOptions) {
+  async #generateFetchCall(request, style, generateOptions) {
     const internalOnly = /* @__PURE__ */ new Set(["method", "path", "scheme", "version"]);
     const shouldFilterHeader = (name, value) => {
       const lowerName = name.toLowerCase();
@@ -13816,9 +13830,9 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return `fetch(${url}, ${options});`;
   }
-  async generateAllFetchCall(requests, style) {
-    const nonBlobRequests = this.filterOutBlobRequests(requests);
-    const commands = await Promise.all(nonBlobRequests.map((request) => this.generateFetchCall(request, style)));
+  async #generateAllFetchCall(requests, style) {
+    const nonBlobRequests = this.#filterOutBlobRequests(requests);
+    const commands = await Promise.all(nonBlobRequests.map((request) => this.#generateFetchCall(request, style)));
     return commands.join(" ;\n");
   }
   static async generateCurlCommand(request, platform) {
@@ -13826,7 +13840,7 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     const ignoredHeaders = /* @__PURE__ */ new Set(["accept-encoding", "host", "method", "path", "scheme", "version", "authority", "protocol"]);
     function escapeStringWin(str) {
       const encapsChars = '^"';
-      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;*]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/[^ -~\r\n]/g, " ").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
+      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '""').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;*]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/[^ -~\r\n]/g, " ").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
     }
     function escapeStringPosix(str) {
       function escapeCharacter(x) {
@@ -13881,15 +13895,15 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     }
     return "curl " + command.join(command.length >= 3 ? platform === "win" ? " ^\n  " : " \\\n  " : " ");
   }
-  async generateAllCurlCommand(requests, platform) {
-    const nonBlobRequests = this.filterOutBlobRequests(requests);
+  async #generateAllCurlCommand(requests, platform) {
+    const nonBlobRequests = this.#filterOutBlobRequests(requests);
     const commands = await Promise.all(nonBlobRequests.map((request) => _NetworkLogView.generateCurlCommand(request, platform)));
     if (platform === "win") {
       return commands.join(" &\r\n");
     }
     return commands.join(" ;\n");
   }
-  async generatePowerShellCommand(request) {
+  async #generatePowerShellCommand(request) {
     const command = [];
     const ignoredHeaders = /* @__PURE__ */ new Set([
       "host",
@@ -13963,9 +13977,9 @@ var NetworkLogView = class _NetworkLogView extends NetworkLogViewBase {
     const prelude = session || "";
     return prelude + "Invoke-WebRequest -UseBasicParsing " + command.join(command.length >= 3 ? " `\n" : " ");
   }
-  async generateAllPowerShellCommand(requests) {
-    const nonBlobRequests = this.filterOutBlobRequests(requests);
-    const commands = await Promise.all(nonBlobRequests.map((request) => this.generatePowerShellCommand(request)));
+  async #generateAllPowerShellCommand(requests) {
+    const nonBlobRequests = this.#filterOutBlobRequests(requests);
+    const commands = await Promise.all(nonBlobRequests.map((request) => this.#generatePowerShellCommand(request)));
     return commands.join(";\r\n");
   }
   static getDCLEventColor() {
@@ -14005,32 +14019,32 @@ var overrideFilter = {
   headers: "headers"
 };
 var MoreFiltersDropDownUI = class extends Common12.ObjectWrapper.ObjectWrapper {
-  filterElement;
-  dropDownButton;
-  networkHideDataURLSetting;
-  networkHideChromeExtensionsSetting;
-  networkShowBlockedCookiesOnlySetting;
-  networkOnlyBlockedRequestsSetting;
-  networkOnlyThirdPartySetting;
-  activeFiltersCount;
-  activeFiltersCountAdorner;
+  #filterElement;
+  #dropDownButton;
+  #networkHideDataURLSetting;
+  #networkHideChromeExtensionsSetting;
+  #networkShowBlockedCookiesOnlySetting;
+  #networkOnlyBlockedRequestsSetting;
+  #networkOnlyThirdPartySetting;
+  #activeFiltersCount;
+  #activeFiltersCountAdorner;
   constructor() {
     super();
-    this.networkHideDataURLSetting = Common12.Settings.Settings.instance().createSetting("network-hide-data-url", false);
-    this.networkHideChromeExtensionsSetting = Common12.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
-    this.networkShowBlockedCookiesOnlySetting = Common12.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
-    this.networkOnlyBlockedRequestsSetting = Common12.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
-    this.networkOnlyThirdPartySetting = Common12.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
-    this.filterElement = document.createElement("div");
-    this.filterElement.setAttribute("aria-label", "Show only/hide requests dropdown");
-    this.filterElement.setAttribute("jslog", `${VisualLogging10.dropDown("more-filters").track({ click: true })}`);
-    this.activeFiltersCountAdorner = new Adorners.Adorner.Adorner();
-    this.activeFiltersCountAdorner.name = "countWrapper";
-    this.activeFiltersCount = document.createElement("span");
-    this.activeFiltersCountAdorner.append(this.activeFiltersCount);
-    this.activeFiltersCountAdorner.classList.add("active-filters-count");
+    this.#networkHideDataURLSetting = Common12.Settings.Settings.instance().createSetting("network-hide-data-url", false);
+    this.#networkHideChromeExtensionsSetting = Common12.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
+    this.#networkShowBlockedCookiesOnlySetting = Common12.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
+    this.#networkOnlyBlockedRequestsSetting = Common12.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
+    this.#networkOnlyThirdPartySetting = Common12.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.#filterElement = document.createElement("div");
+    this.#filterElement.setAttribute("aria-label", "Show only/hide requests dropdown");
+    this.#filterElement.setAttribute("jslog", `${VisualLogging10.dropDown("more-filters").track({ click: true })}`);
+    this.#activeFiltersCountAdorner = new Adorners.Adorner.Adorner();
+    this.#activeFiltersCountAdorner.name = "countWrapper";
+    this.#activeFiltersCount = document.createElement("span");
+    this.#activeFiltersCountAdorner.append(this.#activeFiltersCount);
+    this.#activeFiltersCountAdorner.classList.add("active-filters-count");
     this.updateActiveFiltersCount();
-    this.dropDownButton = new UI14.Toolbar.ToolbarMenuButton(
+    this.#dropDownButton = new UI14.Toolbar.ToolbarMenuButton(
       this.showMoreFiltersContextMenu.bind(this),
       /* isIconDropdown=*/
       false,
@@ -14043,36 +14057,36 @@ var MoreFiltersDropDownUI = class extends Common12.ObjectWrapper.ObjectWrapper {
       /* keepOpen=*/
       true
     );
-    this.dropDownButton.setTitle(i18nString12(UIStrings13.showOnlyHideRequests));
-    this.dropDownButton.setText(i18nString12(UIStrings13.moreFilters));
-    this.dropDownButton.setAdorner(this.activeFiltersCountAdorner);
-    this.filterElement.appendChild(this.dropDownButton.element);
-    this.dropDownButton.element.classList.add("dropdown-filterbar");
+    this.#dropDownButton.setTitle(i18nString12(UIStrings13.showOnlyHideRequests));
+    this.#dropDownButton.setText(i18nString12(UIStrings13.moreFilters));
+    this.#dropDownButton.setAdorner(this.#activeFiltersCountAdorner);
+    this.#filterElement.appendChild(this.#dropDownButton.element);
+    this.#dropDownButton.element.classList.add("dropdown-filterbar");
     this.updateTooltip();
   }
   #onSettingChanged() {
     this.dispatchEventToListeners(UI14.FilterBar.FilterUIEvents.FILTER_CHANGED);
   }
   showMoreFiltersContextMenu(contextMenu) {
-    this.networkHideDataURLSetting.addChangeListener(this.#onSettingChanged.bind(this));
-    this.networkHideChromeExtensionsSetting.addChangeListener(this.#onSettingChanged.bind(this));
-    this.networkShowBlockedCookiesOnlySetting.addChangeListener(this.#onSettingChanged.bind(this));
-    this.networkOnlyBlockedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
-    this.networkOnlyThirdPartySetting.addChangeListener(this.#onSettingChanged.bind(this));
+    this.#networkHideDataURLSetting.addChangeListener(this.#onSettingChanged.bind(this));
+    this.#networkHideChromeExtensionsSetting.addChangeListener(this.#onSettingChanged.bind(this));
+    this.#networkShowBlockedCookiesOnlySetting.addChangeListener(this.#onSettingChanged.bind(this));
+    this.#networkOnlyBlockedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
+    this.#networkOnlyThirdPartySetting.addChangeListener(this.#onSettingChanged.bind(this));
     contextMenu.defaultSection().appendCheckboxItem(
       i18nString12(UIStrings13.hideDataUrls),
-      () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()),
+      () => this.#networkHideDataURLSetting.set(!this.#networkHideDataURLSetting.get()),
       {
-        checked: this.networkHideDataURLSetting.get(),
+        checked: this.#networkHideDataURLSetting.get(),
         tooltip: i18nString12(UIStrings13.hidesDataAndBlobUrls),
         jslogContext: "hide-data-urls"
       }
     );
     contextMenu.defaultSection().appendCheckboxItem(
       i18nString12(UIStrings13.chromeExtensions),
-      () => this.networkHideChromeExtensionsSetting.set(!this.networkHideChromeExtensionsSetting.get()),
+      () => this.#networkHideChromeExtensionsSetting.set(!this.#networkHideChromeExtensionsSetting.get()),
       {
-        checked: this.networkHideChromeExtensionsSetting.get(),
+        checked: this.#networkHideChromeExtensionsSetting.get(),
         tooltip: i18nString12(UIStrings13.hideChromeExtension),
         jslogContext: "hide-extension-urls"
       }
@@ -14080,27 +14094,27 @@ var MoreFiltersDropDownUI = class extends Common12.ObjectWrapper.ObjectWrapper {
     contextMenu.defaultSection().appendSeparator();
     contextMenu.defaultSection().appendCheckboxItem(
       i18nString12(UIStrings13.hasBlockedCookies),
-      () => this.networkShowBlockedCookiesOnlySetting.set(!this.networkShowBlockedCookiesOnlySetting.get()),
+      () => this.#networkShowBlockedCookiesOnlySetting.set(!this.#networkShowBlockedCookiesOnlySetting.get()),
       {
-        checked: this.networkShowBlockedCookiesOnlySetting.get(),
+        checked: this.#networkShowBlockedCookiesOnlySetting.get(),
         tooltip: i18nString12(UIStrings13.onlyShowRequestsWithBlockedCookies),
         jslogContext: "only-blocked-response-cookies"
       }
     );
     contextMenu.defaultSection().appendCheckboxItem(
       i18nString12(UIStrings13.blockedRequests),
-      () => this.networkOnlyBlockedRequestsSetting.set(!this.networkOnlyBlockedRequestsSetting.get()),
+      () => this.#networkOnlyBlockedRequestsSetting.set(!this.#networkOnlyBlockedRequestsSetting.get()),
       {
-        checked: this.networkOnlyBlockedRequestsSetting.get(),
+        checked: this.#networkOnlyBlockedRequestsSetting.get(),
         tooltip: i18nString12(UIStrings13.onlyShowBlockedRequests),
         jslogContext: "only-blocked-requests"
       }
     );
     contextMenu.defaultSection().appendCheckboxItem(
       i18nString12(UIStrings13.thirdParty),
-      () => this.networkOnlyThirdPartySetting.set(!this.networkOnlyThirdPartySetting.get()),
+      () => this.#networkOnlyThirdPartySetting.set(!this.#networkOnlyThirdPartySetting.get()),
       {
-        checked: this.networkOnlyThirdPartySetting.get(),
+        checked: this.#networkOnlyThirdPartySetting.get(),
         tooltip: i18nString12(UIStrings13.onlyShowThirdPartyRequests),
         jslogContext: "only-3rd-party-requests"
       }
@@ -14108,31 +14122,31 @@ var MoreFiltersDropDownUI = class extends Common12.ObjectWrapper.ObjectWrapper {
   }
   selectedFilters() {
     const filters = [
-      ...this.networkHideDataURLSetting.get() ? [i18nString12(UIStrings13.hideDataUrls)] : [],
-      ...this.networkHideChromeExtensionsSetting.get() ? [i18nString12(UIStrings13.chromeExtensions)] : [],
-      ...this.networkShowBlockedCookiesOnlySetting.get() ? [i18nString12(UIStrings13.hasBlockedCookies)] : [],
-      ...this.networkOnlyBlockedRequestsSetting.get() ? [i18nString12(UIStrings13.blockedRequests)] : [],
-      ...this.networkOnlyThirdPartySetting.get() ? [i18nString12(UIStrings13.thirdParty)] : []
+      ...this.#networkHideDataURLSetting.get() ? [i18nString12(UIStrings13.hideDataUrls)] : [],
+      ...this.#networkHideChromeExtensionsSetting.get() ? [i18nString12(UIStrings13.chromeExtensions)] : [],
+      ...this.#networkShowBlockedCookiesOnlySetting.get() ? [i18nString12(UIStrings13.hasBlockedCookies)] : [],
+      ...this.#networkOnlyBlockedRequestsSetting.get() ? [i18nString12(UIStrings13.blockedRequests)] : [],
+      ...this.#networkOnlyThirdPartySetting.get() ? [i18nString12(UIStrings13.thirdParty)] : []
     ];
     return filters;
   }
   updateActiveFiltersCount() {
     const count = this.selectedFilters().length;
-    this.activeFiltersCount.textContent = count.toString();
-    count ? this.activeFiltersCountAdorner.classList.remove("hidden") : this.activeFiltersCountAdorner.classList.add("hidden");
+    this.#activeFiltersCount.textContent = count.toString();
+    count ? this.#activeFiltersCountAdorner.classList.remove("hidden") : this.#activeFiltersCountAdorner.classList.add("hidden");
   }
   updateTooltip() {
     if (this.selectedFilters().length) {
-      this.dropDownButton.setTitle(this.selectedFilters().join(", "));
+      this.#dropDownButton.setTitle(this.selectedFilters().join(", "));
     } else {
-      this.dropDownButton.setTitle(i18nString12(UIStrings13.showOnlyHideRequests));
+      this.#dropDownButton.setTitle(i18nString12(UIStrings13.showOnlyHideRequests));
     }
   }
   isActive() {
     return this.selectedFilters().length !== 0;
   }
   element() {
-    return this.filterElement;
+    return this.#filterElement;
   }
 };
 
@@ -14187,7 +14201,6 @@ var networkPanel_css_default = `/*
   --network-grid-focus-selected-color-has-error: var(--sys-color-surface-error);
   --network-grid-focus-selected-color-has-warning: var(--sys-color-surface-yellow);
   --network-grid-from-frame-color: var(--ref-palette-cyan95);
-  --network-grid-is-product-color: var(--ref-palette-yellow95);
   --network-frame-divider-color: var(--ref-palette-yellow60);
 }
 
@@ -14196,7 +14209,6 @@ var networkPanel_css_default = `/*
   --network-grid-initiator-path-color: var(--ref-palette-green40);
   --network-grid-initiated-path-color: var(--ref-palette-error20);
   --network-grid-from-frame-color: var(--ref-palette-neutral50);
-  --network-grid-is-product-color: var(--ref-palette-neutral70);
 }
 
 .network-details-view {
@@ -14210,11 +14222,6 @@ var networkPanel_css_default = `/*
 .network-item-view {
   display: flex;
   background: var(--sys-color-cdt-base-container);
-}
-
-.network-item-preview-toolbar {
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  background-color: var(--sys-color-surface1);
 }
 
 .resource-timing-view {
@@ -14257,7 +14264,7 @@ var networkPanel_css_default = `/*
 }
 
 .network .network-overview {
-  flex: 0 0 60px;
+  flex: 0 0 var(--sys-size-18);
 }
 
 .network-overview .resources-dividers-label-bar .resources-divider {
@@ -14311,10 +14318,6 @@ var networkPanel_css_default = `/*
   .panel.network devtools-toolbar {
     background-color: canvas;
   }
-}
-
-devtools-request-headers {
-  min-width: 360px;
 }
 
 /*# sourceURL=${import.meta.resolve("./networkPanel.css")} */`;
@@ -16398,10 +16401,6 @@ var requestPayloadTree_css_default = `/*
   color: var(--sys-color-state-disabled);
 }
 
-.request-payload-show-more-button {
-  margin: 0 var(--sys-size-3);
-}
-
 @media (forced-colors: active) {
   :host-context(.request-payload-tree) ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
     background: Highlight;
@@ -16929,14 +16928,16 @@ var RequestPayloadView = class _RequestPayloadView extends UI18.Widget.VBox {
 // ../../front_end/panels/network/RequestPreviewView.ts
 var RequestPreviewView_exports = {};
 __export(RequestPreviewView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW16,
   RequestPreviewView: () => RequestPreviewView
 });
 import "../../ui/legacy/legacy.js";
+import * as Common17 from "../../core/common/common.js";
 import * as i18n39 from "../../core/i18n/i18n.js";
 import * as TextUtils5 from "../../core/text_utils/text_utils.js";
 import * as SourceFrame2 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI21 from "../../ui/legacy/legacy.js";
-import { render as render16 } from "../../ui/lit/lit.js";
+import { Directives as Directives11, html as html16, render as render17 } from "../../ui/lit/lit.js";
 import * as VisualLogging14 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/network/RequestHTMLView.ts
@@ -17025,14 +17026,15 @@ var RequestHTMLView = class _RequestHTMLView extends UI19.Widget.VBox {
 // ../../front_end/panels/network/SignedExchangeInfoView.ts
 var SignedExchangeInfoView_exports = {};
 __export(SignedExchangeInfoView_exports, {
-  Category: () => Category,
+  DEFAULT_VIEW: () => DEFAULT_VIEW15,
   SignedExchangeInfoView: () => SignedExchangeInfoView
 });
+import "../../ui/kit/kit.js";
+import * as Common16 from "../../core/common/common.js";
 import * as Host9 from "../../core/host/host.js";
 import * as i18n37 from "../../core/i18n/i18n.js";
-import { Icon as Icon2, Link } from "../../ui/kit/kit.js";
-import * as Components5 from "../../ui/legacy/components/utils/utils.js";
 import * as UI20 from "../../ui/legacy/legacy.js";
+import { Directives as Directives10, html as html15, nothing as nothing11, render as render16 } from "../../ui/lit/lit.js";
 
 // gen/front_end/panels/network/signedExchangeInfoTree.css.js
 var signedExchangeInfoTree_css_default = `/*
@@ -17140,20 +17142,25 @@ var signedExchangeInfoView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.signed-exchange-info-view {
-  user-select: text;
-  overflow: auto;
-}
+@scope to (devtools-widget > *) {
+  :scope,
+  .signed-exchange-info-view {
+    user-select: text;
+    overflow: auto;
+  }
 
-.signed-exchange-info-tree {
-  flex-grow: 1;
-  overflow-y: auto;
-  margin: 0;
+  .signed-exchange-info-tree {
+    display: block;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin: 0;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./signedExchangeInfoView.css")} */`;
 
 // ../../front_end/panels/network/SignedExchangeInfoView.ts
+var { classMap: classMap4 } = Directives10;
 var UIStrings19 = {
   /**
    * @description Text for errors
@@ -17242,197 +17249,197 @@ var UIStrings19 = {
 };
 var str_19 = i18n37.i18n.registerUIStrings("panels/network/SignedExchangeInfoView.ts", UIStrings19);
 var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
-var SignedExchangeInfoView = class extends UI20.Widget.VBox {
-  responseHeadersItem;
-  constructor(request, element) {
-    super(element);
-    this.registerRequiredCSS(signedExchangeInfoView_css_default);
-    console.assert(request.signedExchangeInfo() !== null);
-    const signedExchangeInfo = request.signedExchangeInfo();
-    this.element.classList.add("signed-exchange-info-view");
-    const root = new UI20.TreeOutline.TreeOutlineInShadow();
-    root.registerRequiredCSS(signedExchangeInfoTree_css_default);
-    root.element.classList.add("signed-exchange-info-tree");
-    root.setFocusable(false);
-    root.setDense(true);
-    root.expandTreeElementsWhenArrowing = true;
-    this.element.appendChild(root.element);
-    const errorFieldSetMap = /* @__PURE__ */ new Map();
-    if (signedExchangeInfo.errors?.length) {
-      const errorMessagesCategory = new Category(root, i18nString18(UIStrings19.errors));
-      for (const error of signedExchangeInfo.errors) {
-        const fragment = document.createDocumentFragment();
-        const icon = new Icon2();
-        icon.name = "cross-circle-filled";
-        icon.classList.add("prompt-icon", "small");
-        fragment.appendChild(icon);
-        fragment.createChild("div", "error-log").textContent = error.message;
-        errorMessagesCategory.createLeaf(fragment);
-        if (error.errorField) {
-          let errorFieldSet = errorFieldSetMap.get(error.signatureIndex);
-          if (!errorFieldSet) {
-            errorFieldSet = /* @__PURE__ */ new Set();
-            errorFieldSetMap.set(error.signatureIndex, errorFieldSet);
-          }
-          errorFieldSet.add(error.errorField);
-        }
-      }
-    }
-    const titleElement = document.createDocumentFragment();
-    titleElement.createChild("div", "header-name").textContent = i18nString18(UIStrings19.signedHttpExchange);
-    const learnMoreNode = Link.create(
-      "https://github.com/WICG/webpackage",
-      i18nString18(UIStrings19.learnmore),
-      "header-toggle",
-      "learn-more"
-    );
-    titleElement.appendChild(learnMoreNode);
-    const headerCategory = new Category(root, titleElement);
-    if (signedExchangeInfo.header) {
-      const header = signedExchangeInfo.header;
-      const redirectDestination = request.redirectDestination();
-      const requestURLElement = this.formatHeader(i18nString18(UIStrings19.requestUrl), header.requestUrl);
-      if (redirectDestination) {
-        const viewRequestLink = Components5.Linkifier.Linkifier.linkifyRevealable(
-          redirectDestination,
-          "View request",
-          void 0,
-          void 0,
-          void 0,
-          "redirect-destination-request"
-        );
-        viewRequestLink.classList.add("header-toggle");
-        requestURLElement.appendChild(viewRequestLink);
-      }
-      headerCategory.createLeaf(requestURLElement);
-      headerCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.responseCode), String(header.responseCode)));
-      headerCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.headerIntegrityHash), header.headerIntegrity));
-      this.responseHeadersItem = headerCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.responseHeaders), ""));
-      const responseHeaders = header.responseHeaders;
-      for (const name in responseHeaders) {
-        const headerTreeElement = new UI20.TreeOutline.TreeElement(this.formatHeader(name, responseHeaders[name]));
-        headerTreeElement.selectable = false;
-        this.responseHeadersItem.appendChild(headerTreeElement);
-      }
-      this.responseHeadersItem.expand();
-      for (let i = 0; i < header.signatures.length; ++i) {
-        const errorFieldSet = errorFieldSetMap.get(i) || /* @__PURE__ */ new Set();
-        const signature = header.signatures[i];
-        const signatureCategory = new Category(root, i18nString18(UIStrings19.signature));
-        signatureCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.label), signature.label));
-        signatureCategory.createLeaf(this.formatHeaderForHexData(
-          i18nString18(UIStrings19.signature),
-          signature.signature,
-          errorFieldSet.has(Network.SignedExchangeErrorField.SignatureSig)
-        ));
-        if (signature.certUrl) {
-          const certURLElement = this.formatHeader(
-            i18nString18(UIStrings19.certificateUrl),
-            signature.certUrl,
-            errorFieldSet.has(Network.SignedExchangeErrorField.SignatureCertUrl)
-          );
-          if (signature.certificates) {
-            const viewCertLink = certURLElement.createChild("span", "devtools-link header-toggle");
-            viewCertLink.textContent = i18nString18(UIStrings19.viewCertificate);
-            viewCertLink.addEventListener(
-              "click",
-              Host9.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer.bind(
-                null,
-                signature.certificates
-              ),
-              false
-            );
-          }
-          signatureCategory.createLeaf(certURLElement);
-        }
-        signatureCategory.createLeaf(this.formatHeader(
-          i18nString18(UIStrings19.integrity),
-          signature.integrity,
-          errorFieldSet.has(Network.SignedExchangeErrorField.SignatureIntegrity)
-        ));
-        if (signature.certSha256) {
-          signatureCategory.createLeaf(this.formatHeaderForHexData(
-            i18nString18(UIStrings19.certificateSha),
-            signature.certSha256,
-            errorFieldSet.has(Network.SignedExchangeErrorField.SignatureCertSha256)
-          ));
-        }
-        signatureCategory.createLeaf(this.formatHeader(
-          i18nString18(UIStrings19.validityUrl),
-          signature.validityUrl,
-          errorFieldSet.has(Network.SignedExchangeErrorField.SignatureValidityUrl)
-        ));
-        signatureCategory.createLeaf().title = this.formatHeader(
-          i18nString18(UIStrings19.date),
-          new Date(1e3 * signature.date).toUTCString(),
-          errorFieldSet.has(Network.SignedExchangeErrorField.SignatureTimestamps)
-        );
-        signatureCategory.createLeaf().title = this.formatHeader(
-          i18nString18(UIStrings19.expires),
-          new Date(1e3 * signature.expires).toUTCString(),
-          errorFieldSet.has(Network.SignedExchangeErrorField.SignatureTimestamps)
-        );
-      }
-    }
-    if (signedExchangeInfo.securityDetails) {
-      const securityDetails = signedExchangeInfo.securityDetails;
-      const securityCategory = new Category(root, i18nString18(UIStrings19.certificate));
-      securityCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.subject), securityDetails.subjectName));
-      securityCategory.createLeaf(
-        this.formatHeader(i18nString18(UIStrings19.validFrom), new Date(1e3 * securityDetails.validFrom).toUTCString())
-      );
-      securityCategory.createLeaf(
-        this.formatHeader(i18nString18(UIStrings19.validUntil), new Date(1e3 * securityDetails.validTo).toUTCString())
-      );
-      securityCategory.createLeaf(this.formatHeader(i18nString18(UIStrings19.issuer), securityDetails.issuer));
-    }
+var DEFAULT_VIEW15 = (input, _output, target) => {
+  if (!input) {
+    render16(nothing11, target);
+    return;
   }
-  formatHeader(name, value, highlighted) {
-    const fragment = document.createDocumentFragment();
-    const nameElement = fragment.createChild("div", "header-name");
-    nameElement.textContent = name + ": ";
-    fragment.createChild("span", "header-separator");
-    const valueElement = fragment.createChild("div", "header-value source-code");
-    valueElement.textContent = value;
-    if (highlighted) {
-      nameElement.classList.add("error-field");
-      valueElement.classList.add("error-field");
-    }
-    return fragment;
-  }
-  formatHeaderForHexData(name, value, highlighted) {
-    const fragment = document.createDocumentFragment();
-    const nameElement = fragment.createChild("div", "header-name");
-    nameElement.textContent = name + ": ";
-    fragment.createChild("span", "header-separator");
-    const valueElement = fragment.createChild("div", "header-value source-code hex-data");
-    valueElement.textContent = value.replace(/(.{2})/g, "$1 ");
-    if (highlighted) {
-      nameElement.classList.add("error-field");
-      valueElement.classList.add("error-field");
-    }
-    return fragment;
-  }
+  const { formatHeader, formatHeaderForHexData } = SignedExchangeInfoView;
+  const renderLeaf = (content) => html15`<li role="treeitem" selectable="false">${content}</li>`;
+  const renderCategory2 = (title, children) => html15`
+    <li role="treeitem" toggle-on-click open selectable="false">
+      ${title}
+      <ul role="group">${children}</ul>
+    </li>`;
+  render16(
+    html15`
+        <style>${signedExchangeInfoView_css_default}</style>
+        <devtools-tree dense class="signed-exchange-info-tree" .template=${html15`
+          <style>${signedExchangeInfoTree_css_default}</style>
+          <ul role="tree">
+            ${input.errors.length ? renderCategory2(
+      i18nString18(UIStrings19.errors),
+      input.errors.map((errorMessage) => renderLeaf(html15`
+                  <devtools-icon name="cross-circle-filled" class="prompt-icon small"></devtools-icon><div
+                      class="error-log">${errorMessage}</div>`))
+    ) : nothing11}
+            ${renderCategory2(
+      html15`<div class="header-name">${i18nString18(UIStrings19.signedHttpExchange)}</div><devtools-link
+                    href="https://github.com/WICG/webpackage"
+                    class="header-toggle devtools-link"
+                    jslogcontext="learn-more">${i18nString18(UIStrings19.learnmore)}</devtools-link>`,
+      input.header ? html15`
+                  ${renderLeaf(html15`${formatHeader(i18nString18(UIStrings19.requestUrl), input.header.requestUrl)}${input.header.hasRedirectDestination ? html15`<devtools-link
+                          class="header-toggle devtools-link"
+                          jslogcontext="redirect-destination-request"
+                          @click=${input.onViewRequest}>${i18n37.i18n.lockedString("View request")}</devtools-link>` : nothing11}`)}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.responseCode), input.header.responseCode))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.headerIntegrityHash), input.header.headerIntegrity))}
+                  <li role="treeitem" open selectable="false">
+                    ${formatHeader(i18nString18(UIStrings19.responseHeaders), "")}
+                    ${input.header.responseHeaders.length ? html15`
+                      <ul role="group">
+                        ${input.header.responseHeaders.map((header) => renderLeaf(formatHeader(header.name, header.value)))}
+                      </ul>
+                    ` : nothing11}
+                  </li>
+                ` : nothing11
+    )}
+            ${(input.header?.signatures ?? []).map((signature) => renderCategory2(
+      i18nString18(UIStrings19.signature),
+      html15`
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.label), signature.label))}
+                  ${renderLeaf(formatHeaderForHexData(i18nString18(UIStrings19.signature), signature.signature, signature.hasSignatureError))}
+                  ${signature.certUrl ? renderLeaf(html15`
+                    ${formatHeader(i18nString18(UIStrings19.certificateUrl), signature.certUrl, signature.hasCertUrlError)}${signature.certificates ? html15`<devtools-link
+                          class="devtools-link header-toggle"
+                          jslogcontext="view-certificate"
+                          @click=${() => input.onViewCertificate(signature.certificates ?? [])}>${i18nString18(UIStrings19.viewCertificate)}</devtools-link>` : nothing11}`) : nothing11}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.integrity), signature.integrity, signature.hasIntegrityError))}
+                  ${signature.certSha256 ? renderLeaf(formatHeaderForHexData(
+        i18nString18(UIStrings19.certificateSha),
+        signature.certSha256,
+        signature.hasCertSha256Error
+      )) : nothing11}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.validityUrl), signature.validityUrl, signature.hasValidityUrlError))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.date), signature.date, signature.hasTimestampsError))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.expires), signature.expires, signature.hasTimestampsError))}
+                `
+    ))}
+            ${input.securityDetails ? renderCategory2(
+      i18nString18(UIStrings19.certificate),
+      html15`
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.subject), input.securityDetails.subjectName))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.validFrom), input.securityDetails.validFrom))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.validUntil), input.securityDetails.validUntil))}
+                  ${renderLeaf(formatHeader(i18nString18(UIStrings19.issuer), input.securityDetails.issuer))}
+                `
+    ) : nothing11}
+          </ul>
+        `}></devtools-tree>
+      `,
+    target,
+    { container: { classes: ["signed-exchange-info-view"] } }
+  );
 };
-var Category = class extends UI20.TreeOutline.TreeElement {
-  toggleOnClick;
-  expanded;
-  constructor(root, title) {
-    super(title, true);
-    this.selectable = false;
-    this.toggleOnClick = true;
-    this.expanded = true;
-    root.appendChild(this);
+var SignedExchangeInfoView = class extends UI20.Widget.VBox {
+  #request;
+  #view;
+  constructor(requestOrElement, elementOrView, view = DEFAULT_VIEW15) {
+    super(
+      requestOrElement instanceof HTMLElement ? requestOrElement : elementOrView instanceof HTMLElement ? elementOrView : void 0
+    );
+    this.#view = typeof elementOrView === "function" ? elementOrView : view;
+    if (requestOrElement && !(requestOrElement instanceof HTMLElement)) {
+      this.#request = requestOrElement;
+    }
   }
-  createLeaf(title) {
-    const leaf = new UI20.TreeOutline.TreeElement(title);
-    leaf.selectable = false;
-    this.appendChild(leaf);
-    return leaf;
+  get request() {
+    return this.#request;
+  }
+  set request(request) {
+    if (this.#request === request) {
+      return;
+    }
+    this.#request = request;
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const signedExchangeInfo = this.#request?.signedExchangeInfo();
+    if (!this.#request || !signedExchangeInfo) {
+      this.#view(null, void 0, this.contentElement);
+      return;
+    }
+    const request = this.#request;
+    const errorFieldSetMap = /* @__PURE__ */ new Map();
+    const errors = [];
+    for (const error of signedExchangeInfo.errors ?? []) {
+      errors.push(error.message);
+      if (error.errorField) {
+        const errorFieldSet = errorFieldSetMap.get(error.signatureIndex) ?? /* @__PURE__ */ new Set();
+        errorFieldSet.add(error.errorField);
+        errorFieldSetMap.set(error.signatureIndex, errorFieldSet);
+      }
+    }
+    const headerInfo = signedExchangeInfo.header ? {
+      requestUrl: signedExchangeInfo.header.requestUrl,
+      hasRedirectDestination: Boolean(request.redirectDestination()),
+      responseCode: String(signedExchangeInfo.header.responseCode),
+      headerIntegrity: signedExchangeInfo.header.headerIntegrity,
+      responseHeaders: Object.entries(signedExchangeInfo.header.responseHeaders).map(([name, value]) => ({ name, value })),
+      signatures: signedExchangeInfo.header.signatures.map((signature, i) => {
+        const errorFieldSet = errorFieldSetMap.get(i) ?? /* @__PURE__ */ new Set();
+        return {
+          label: signature.label,
+          signature: signature.signature,
+          hasSignatureError: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureSig),
+          certUrl: signature.certUrl,
+          hasCertUrlError: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureCertUrl),
+          certificates: signature.certificates,
+          integrity: signature.integrity,
+          hasIntegrityError: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureIntegrity),
+          certSha256: signature.certSha256,
+          hasCertSha256Error: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureCertSha256),
+          validityUrl: signature.validityUrl,
+          hasValidityUrlError: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureValidityUrl),
+          date: new Date(1e3 * signature.date).toUTCString(),
+          expires: new Date(1e3 * signature.expires).toUTCString(),
+          hasTimestampsError: errorFieldSet.has(Network.SignedExchangeErrorField.SignatureTimestamps)
+        };
+      })
+    } : null;
+    const securityDetails = signedExchangeInfo.securityDetails ? {
+      subjectName: signedExchangeInfo.securityDetails.subjectName,
+      validFrom: new Date(1e3 * signedExchangeInfo.securityDetails.validFrom).toUTCString(),
+      validUntil: new Date(1e3 * signedExchangeInfo.securityDetails.validTo).toUTCString(),
+      issuer: signedExchangeInfo.securityDetails.issuer
+    } : null;
+    this.#view(
+      {
+        errors,
+        header: headerInfo,
+        securityDetails,
+        onViewRequest: () => {
+          const redirectDestination = request.redirectDestination();
+          if (redirectDestination) {
+            void Common16.Revealer.reveal(redirectDestination);
+          }
+        },
+        onViewCertificate: (certificates) => Host9.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(certificates)
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  static formatHeader(name, value, highlighted) {
+    return html15`<div class=${classMap4({ "header-name": true, "error-field": Boolean(highlighted) })}>${name}: </div><span
+        class="header-separator"></span><div
+        class=${classMap4({ "header-value": true, "source-code": true, "error-field": Boolean(highlighted) })}>${value}</div>`;
+  }
+  static formatHeaderForHexData(name, value, highlighted) {
+    return html15`<div class=${classMap4({ "header-name": true, "error-field": Boolean(highlighted) })}>${name}: </div><span
+        class="header-separator"></span><div
+        class=${classMap4({ "header-value": true, "source-code": true, "hex-data": true, "error-field": Boolean(highlighted) })}>${value.replace(/(.{2})/g, "$1 ")}</div>`;
   }
 };
 
 // ../../front_end/panels/network/RequestPreviewView.ts
+var { widget: widget7 } = UI21.Widget;
+var { repeat: repeat4 } = Directives11;
 var UIStrings20 = {
   /**
    * @description Text in Request Preview View of the Network panel
@@ -17441,19 +17448,84 @@ var UIStrings20 = {
   /**
    * @description Text in Request Preview View of the Network panel
    */
-  previewNotAvailable: "Preview not available"
+  previewNotAvailable: "Preview not available",
+  /**
+   * @description Text shown in the empty widget when there is no content to
+   * preview in the Request Preview View of the Network panel.
+   */
+  nothingToPreview: "Nothing to preview"
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/network/RequestPreviewView.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
+var DEFAULT_VIEW16 = (input, _output, target) => {
+  let previewTemplate;
+  if (input.hasSignedExchange) {
+    previewTemplate = html16`${widget7(SignedExchangeInfoView, { request: input.request })}`;
+  } else if (input.error !== null) {
+    previewTemplate = html16`${widget7(UI21.EmptyWidget.EmptyWidget, {
+      header: i18nString19(UIStrings20.failedToLoadResponseData),
+      text: input.error
+    })}`;
+  } else if (input.parsedJSON) {
+    previewTemplate = html16`${widget7(SourceFrame2.JSONView.SearchableJsonView, { parsedJSON: input.parsedJSON })}`;
+  } else if (input.htmlDataURL) {
+    previewTemplate = html16`${widget7(RequestHTMLView, { dataURL: input.htmlDataURL })}`;
+  } else if (input.resourceType === Common17.ResourceType.resourceTypes.Image) {
+    previewTemplate = html16`${widget7(
+      (element) => new SourceFrame2.ImageView.ImageView(input.mimeType, input.request, element),
+      { showToolbar: true }
+    )}`;
+  } else if (input.resourceType === Common17.ResourceType.resourceTypes.Font) {
+    previewTemplate = html16`${widget7(
+      (element) => new SourceFrame2.FontView.FontView(input.mimeType, input.request, element),
+      { showToolbar: true }
+    )}`;
+  } else if (!input.isTextContent) {
+    previewTemplate = html16`${widget7(UI21.EmptyWidget.EmptyWidget, {
+      header: i18nString19(UIStrings20.previewNotAvailable),
+      text: ""
+    })}`;
+  } else if (!input.hasTextContent) {
+    previewTemplate = html16`${widget7(UI21.EmptyWidget.EmptyWidget, {
+      header: i18nString19(UIStrings20.nothingToPreview),
+      text: ""
+    })}`;
+  } else if (input.parsedXML) {
+    const parsedXML = input.parsedXML;
+    previewTemplate = html16`${widget7((element) => SourceFrame2.XMLView.XMLView.createSearchableView(parsedXML, element))}`;
+  } else {
+    previewTemplate = html16`${widget7(
+      (element) => new SourceFrame2.ResourceSourceFrame.SearchableContainer(
+        input.request,
+        input.highlighterType,
+        element
+      )
+    )}`;
+  }
+  render17(
+    html16`${repeat4([input.request], (request) => request, () => previewTemplate)}`,
+    target,
+    {
+      container: {
+        attributes: {
+          jslog: `${VisualLogging14.pane("preview").track({ resize: true })}`
+        }
+      }
+    }
+  );
+};
 var RequestPreviewView = class extends UI21.Widget.VBox {
   #request;
-  contentViewPromise = null;
-  constructor(request, element) {
-    super(
-      request instanceof HTMLElement ? request : element,
-      { jslog: `${VisualLogging14.pane("preview").track({ resize: true })}` }
-    );
-    this.element.classList.add("request-view");
+  #view;
+  #error = null;
+  #htmlDataURL = null;
+  #parsedJSON = null;
+  #parsedXML = null;
+  #isTextContent = false;
+  #hasTextContent = false;
+  constructor(request, view = DEFAULT_VIEW16) {
+    super(request instanceof HTMLElement ? request : void 0);
+    this.#view = view;
     if (request && !(request instanceof HTMLElement)) {
       this.#request = request;
     }
@@ -17466,85 +17538,118 @@ var RequestPreviewView = class extends UI21.Widget.VBox {
       return;
     }
     this.#request = request;
-    this.contentViewPromise = null;
-    this.detachChildWidgets();
-    this.element.removeChildren();
-    if (this.isShowing()) {
-      void this.doShowPreview();
-    }
+    this.#resetState();
+    this.requestUpdate();
   }
-  async showPreview() {
-    const request = this.#request;
-    const view = await this.createPreview();
-    if (this.#request !== request) {
-      return view;
-    }
-    view.show(this.element);
-    await view.updateComplete;
-    if (!(view instanceof UI21.View.SimpleView)) {
-      return view;
-    }
-    const toolbar5 = this.element.createChild("devtools-toolbar", "network-item-preview-toolbar");
-    void view.toolbarItems().then((items) => {
-      render16(items, toolbar5);
-    });
-    return view;
+  // Used by layout test
+  // http/tests/devtools/network/network-choose-preview-view.js
+  get contentViewPromise() {
+    return this.updateComplete.then(() => this.children().at(-1) ?? null);
   }
   wasShown() {
     super.wasShown();
-    void this.doShowPreview();
+    this.requestUpdate();
   }
-  doShowPreview() {
-    if (!this.contentViewPromise) {
-      this.contentViewPromise = this.showPreview();
+  async performUpdate() {
+    if (!this.#request) {
+      return;
     }
-    return this.contentViewPromise;
+    const request = this.#request;
+    await this.#loadPreviewData(request);
+    if (this.#request !== request) {
+      return;
+    }
+    let resourceType = Common17.ResourceType.ResourceType.fromMimeType(request.mimeType);
+    if (resourceType === Common17.ResourceType.resourceTypes.Other) {
+      resourceType = request.contentType();
+    }
+    const highlighterType = request.mimeType.replace(/;.*/, "") || request.contentType().canonicalMimeType();
+    this.#view(
+      {
+        request,
+        resourceType,
+        mimeType: request.mimeType,
+        highlighterType,
+        hasSignedExchange: Boolean(request.signedExchangeInfo()),
+        error: this.#error,
+        htmlDataURL: this.#htmlDataURL,
+        parsedJSON: this.#parsedJSON,
+        parsedXML: this.#parsedXML,
+        isTextContent: this.#isTextContent,
+        hasTextContent: this.#hasTextContent
+      },
+      void 0,
+      this.contentElement
+    );
   }
-  async htmlPreview() {
-    const contentData = await this.request.requestContentData();
+  #resetState() {
+    this.#error = null;
+    this.#htmlDataURL = null;
+    this.#parsedJSON = null;
+    this.#parsedXML = null;
+    this.#isTextContent = false;
+    this.#hasTextContent = false;
+  }
+  async #loadPreviewData(request) {
+    this.#resetState();
+    if (request.signedExchangeInfo()) {
+      return;
+    }
+    const contentData = await request.requestContentData();
+    if (this.#request !== request) {
+      return;
+    }
     if (TextUtils5.ContentData.ContentData.isError(contentData)) {
-      return new UI21.EmptyWidget.EmptyWidget(i18nString19(UIStrings20.failedToLoadResponseData), contentData.error);
+      this.#error = contentData.error;
+      return;
     }
     const allowlist = /* @__PURE__ */ new Set(["text/html", "text/plain", "application/xhtml+xml"]);
-    if (!allowlist.has(this.request.mimeType)) {
-      return null;
+    if (allowlist.has(request.mimeType)) {
+      const parsedJSON = await SourceFrame2.JSONView.JSONView.parseJSON(contentData.text);
+      if (this.#request !== request) {
+        return;
+      }
+      if (parsedJSON && typeof parsedJSON.data === "object") {
+        this.#parsedJSON = parsedJSON;
+        return;
+      }
+      const dataURL = contentData.asDataUrl();
+      if (dataURL) {
+        this.#htmlDataURL = dataURL;
+        return;
+      }
     }
-    const jsonView = await SourceFrame2.JSONView.JSONView.createView(contentData.text);
-    if (jsonView) {
-      return jsonView;
+    this.#isTextContent = contentData.isTextContent;
+    this.#hasTextContent = Boolean(contentData.isTextContent && contentData.text);
+    if (this.#hasTextContent) {
+      this.#parsedXML = SourceFrame2.XMLView.XMLView.parseXML(contentData.text, contentData.mimeType);
+      if (!this.#parsedXML) {
+        const parsedJSON = await SourceFrame2.JSONView.JSONView.parseJSON(contentData.text);
+        if (this.#request !== request) {
+          return;
+        }
+        if (parsedJSON && typeof parsedJSON.data === "object") {
+          this.#parsedJSON = parsedJSON;
+        }
+      }
     }
-    return RequestHTMLView.create(contentData);
-  }
-  async createPreview() {
-    if (this.request.signedExchangeInfo()) {
-      return new SignedExchangeInfoView(this.request);
-    }
-    const htmlErrorPreview = await this.htmlPreview();
-    if (htmlErrorPreview) {
-      return htmlErrorPreview;
-    }
-    const provided = await SourceFrame2.PreviewFactory.PreviewFactory.createPreview(this.request, this.request.mimeType);
-    if (provided) {
-      return provided;
-    }
-    return new UI21.EmptyWidget.EmptyWidget(i18nString19(UIStrings20.previewNotAvailable), "");
   }
 };
 
 // ../../front_end/panels/network/RequestResponseView.ts
 var RequestResponseView_exports = {};
 __export(RequestResponseView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW15,
+  DEFAULT_VIEW: () => DEFAULT_VIEW17,
   RequestResponseView: () => RequestResponseView
 });
-import * as Common16 from "../../core/common/common.js";
+import * as Common18 from "../../core/common/common.js";
 import * as Host10 from "../../core/host/host.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
 import * as TextUtils6 from "../../core/text_utils/text_utils.js";
 import * as SourceFrame3 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI22 from "../../ui/legacy/legacy.js";
 import * as Lit4 from "../../ui/lit/lit.js";
-var { html: html15, render: render17 } = Lit4;
+var { html: html17, render: render18 } = Lit4;
 var UIStrings21 = {
   /**
    * @description Text in Request Response View of the Network panel if no preview can be shown
@@ -17561,45 +17666,45 @@ var UIStrings21 = {
 };
 var str_21 = i18n41.i18n.registerUIStrings("panels/network/RequestResponseView.ts", UIStrings21);
 var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
-var { widgetRef, widget: widget7 } = UI22.Widget;
-var DEFAULT_VIEW15 = (input, output, target) => {
+var { widgetRef, widget: widget8 } = UI22.Widget;
+var DEFAULT_VIEW17 = (input, output, target) => {
   let widgetTemplate;
   if (TextUtils6.StreamingContentData.isError(input.contentData)) {
-    widgetTemplate = html15`${widget7((element) => new UI22.EmptyWidget.EmptyWidget(
+    widgetTemplate = html17`${widget8((element) => new UI22.EmptyWidget.EmptyWidget(
       i18nString20(UIStrings21.failedToLoadResponseData),
       input.contentData.error,
       element
     ))}`;
   } else if (input.request.statusCode === 204 || input.request.failed) {
-    widgetTemplate = html15`${widget7((element) => new UI22.EmptyWidget.EmptyWidget(
+    widgetTemplate = html17`${widget8((element) => new UI22.EmptyWidget.EmptyWidget(
       i18nString20(UIStrings21.noPreview),
       i18nString20(UIStrings21.thisRequestHasNoResponseData),
       element
     ))}`;
   } else if (input.renderAsText) {
-    widgetTemplate = html15`<devtools-widget ${widget7((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(
+    widgetTemplate = html17`<devtools-widget ${widget8((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(
       input.request,
       input.mimeType,
       element
     ))}
-                    ${widgetRef(SourceFrame3.ResourceSourceFrame.SearchableContainer, (widget8) => {
-      output.revealPosition = widget8.revealPosition.bind(widget8);
+                    ${widgetRef(SourceFrame3.ResourceSourceFrame.SearchableContainer, (widget9) => {
+      output.revealPosition = widget9.revealPosition.bind(widget9);
     })}></devtools-widget>`;
   } else {
-    widgetTemplate = html15`${widget7((element) => new BinaryResourceView(
+    widgetTemplate = html17`${widget8((element) => new BinaryResourceView(
       input.contentData,
       input.request.url(),
       input.request.resourceType(),
       element
     ))}`;
   }
-  render17(widgetTemplate, target);
+  render18(widgetTemplate, target);
 };
 var RequestResponseView = class extends UI22.Widget.VBox {
   request;
   #view;
   #revealPosition;
-  constructor(request, view = DEFAULT_VIEW15) {
+  constructor(request, view = DEFAULT_VIEW17) {
     super();
     this.request = request;
     this.#view = view;
@@ -17616,7 +17721,7 @@ var RequestResponseView = class extends UI22.Widget.VBox {
       const isWasm = contentData.mimeType === "application/wasm";
       renderAsText = contentData.isTextContent || isWasm;
       const isMinified = isWasm || !contentData.isTextContent ? false : TextUtils6.TextUtils.isMinified(contentData.content().text);
-      const mediaType = Common16.ResourceType.ResourceType.mediaTypeForMetrics(
+      const mediaType = Common18.ResourceType.ResourceType.mediaTypeForMetrics(
         mimeType,
         this.request.resourceType().isFromSourceMap(),
         isMinified,
@@ -17635,7 +17740,7 @@ var RequestResponseView = class extends UI22.Widget.VBox {
     this.#view(viewInput, viewOutput, this.contentElement);
   }
   getMimeTypeForDisplay() {
-    if (Common16.ResourceType.ResourceType.simplifyContentType(this.request.mimeType) === "application/json") {
+    if (Common18.ResourceType.ResourceType.simplifyContentType(this.request.mimeType) === "application/json") {
       return this.request.mimeType;
     }
     return this.request.resourceType().canonicalMimeType() || this.request.mimeType;
@@ -17652,7 +17757,7 @@ var ResourceDirectSocketChunkView_exports = {};
 __export(ResourceDirectSocketChunkView_exports, {
   ResourceDirectSocketChunkView: () => ResourceDirectSocketChunkView
 });
-import * as Common18 from "../../core/common/common.js";
+import * as Common20 from "../../core/common/common.js";
 import * as i18n45 from "../../core/i18n/i18n.js";
 import * as Platform12 from "../../core/platform/platform.js";
 import * as SDK15 from "../../core/sdk/sdk.js";
@@ -17662,7 +17767,7 @@ import * as Lit6 from "../../ui/lit/lit.js";
 import * as VisualLogging16 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/network/ResourceChunkView.ts
-import * as Common17 from "../../core/common/common.js";
+import * as Common19 from "../../core/common/common.js";
 import * as Host11 from "../../core/host/host.js";
 import * as i18n43 from "../../core/i18n/i18n.js";
 import * as Platform11 from "../../core/platform/platform.js";
@@ -17733,7 +17838,7 @@ var resourceChunkView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./resourceChunkView.css")} */`;
 
 // ../../front_end/panels/network/ResourceChunkView.ts
-var { html: html16, render: render18, Directives: { ifDefined: ifDefined4 } } = Lit5;
+var { html: html18, render: render19, Directives: { ifDefined: ifDefined4 } } = Lit5;
 var UIStrings22 = {
   /**
    * @description Text in Event Source Messages View of the Network panel
@@ -17788,16 +17893,16 @@ var str_22 = i18n43.i18n.registerUIStrings("panels/network/ResourceChunkView.ts"
 var i18nString21 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var i18nLazyString3 = i18n43.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
 function defaultHeaderTemplate() {
-  return html16`
+  return html18`
     <tr>
       <th id="data" weight="88">${i18nString21(UIStrings22.data)}</th>
       <th id="length" align="right" weight="5">${i18nString21(UIStrings22.length)}</th>
       <th id="time" sortable sort="ascending" weight="7">${i18nString21(UIStrings22.time)}</th>
     </tr>`;
 }
-var DEFAULT_VIEW16 = (input, _output, target) => {
-  render18(
-    html16`
+var DEFAULT_VIEW18 = (input, _output, target) => {
+  render19(
+    html18`
       <style>${resourceChunkView_css_default}</style>
       <div class="resource-chunk-view vbox">
         <devtools-toolbar class="resource-chunk-view-toolbar" jslog=${VisualLogging15.toolbar()}>
@@ -17815,7 +17920,7 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
               class="chrome-select"
               aria-label=${i18nString21(UIStrings22.filter)}
               @change=${input.onFilterTypeChange}>
-            ${FILTER_TYPES.map((item4) => html16`
+            ${FILTER_TYPES.map((item4) => html18`
               <option
                   value=${item4.name}
                   .selected=${input.selectedFilterType === item4.name}
@@ -17838,11 +17943,11 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
             <devtools-data-grid autoscroll name=${input.dataGridDisplayName} striped autofocus
                 resize="last"
                 @deselect=${input.onDeselect}
-                .template=${html16`
+                .template=${html18`
                   <style>${resourceChunkView_css_default}</style>
                   <table>
                     ${input.headerTemplate}
-                    ${Lit5.Directives.repeat(input.rows, (row) => row.chunk, (row) => html16`
+                    ${Lit5.Directives.repeat(input.rows, (row) => row.chunk, (row) => html18`
                       <tr class=${ifDefined4(row.cssClass)}
                           ?selected=${row.selected}
                           data-index=${row.index}
@@ -17855,7 +17960,7 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
                         ${input.columns.map((col) => {
       const value = col.id === "time" ? row.timeText : row.item.data[col.id] ?? "";
       const title = col.id === "time" ? row.timeTooltip : void 0;
-      return html16`
+      return html18`
                               <td class="resource-chunk-view-td" title=${ifDefined4(title)}
                                   data-value=${ifDefined4(typeof value === "string" ? value : void 0)}>
                                 ${value}
@@ -17868,10 +17973,10 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
             </devtools-data-grid>
           </div>
           <div slot="sidebar" class="vbox flex-auto" jslog=${VisualLogging15.pane("preview").track({ resize: true })}>
-            ${input.sidebarWidget ? html16`
+            ${input.sidebarWidget ? html18`
               <devtools-widget class="vbox flex-auto">
                 ${input.sidebarWidget.element}
-              </devtools-widget>` : html16`
+              </devtools-widget>` : html18`
               <devtools-widget
                   ${UI23.Widget.widget(UI23.EmptyWidget.EmptyWidget, {
       header: i18nString21(UIStrings22.noMessageSelected),
@@ -17901,10 +18006,10 @@ var ResourceChunkView = class extends UI23.Widget.VBox {
   get headerTemplate() {
     return defaultHeaderTemplate();
   }
-  constructor(request, messageFilterSettingKey, splitWidgetSettingKey, dataGridDisplayName, filterUsingRegexHint, opts, view = DEFAULT_VIEW16) {
+  constructor(request, messageFilterSettingKey, splitWidgetSettingKey, dataGridDisplayName, filterUsingRegexHint, opts, view = DEFAULT_VIEW18) {
     super(opts);
     this.#view = view;
-    this.messageFilterSetting = Common17.Settings.Settings.instance().createSetting(messageFilterSettingKey, "");
+    this.messageFilterSetting = Common19.Settings.Settings.instance().createSetting(messageFilterSettingKey, "");
     this.splitWidgetSettingKey = splitWidgetSettingKey;
     this.dataGridDisplayName = dataGridDisplayName;
     this.filterUsingRegexHint = filterUsingRegexHint;
@@ -18092,7 +18197,7 @@ var clearChunkOffsets = /* @__PURE__ */ new WeakMap();
 
 // ../../front_end/panels/network/ResourceDirectSocketChunkView.ts
 var {
-  html: html17
+  html: html19
 } = Lit6;
 var UIStrings23 = {
   /**
@@ -18128,7 +18233,7 @@ var str_23 = i18n45.i18n.registerUIStrings("panels/network/ResourceDirectSocketC
 var i18nString22 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
 var i18nLazyString4 = i18n45.i18n.getLazilyComputedLocalizedString.bind(void 0, str_23);
 function udpBoundHeaderTemplate() {
-  return html17`
+  return html19`
     <tr>
       <th id="data" weight="63">${i18nLazyString4(UIStrings23.data)}</th>
           <th id="address" align="right" weight="15">${i18nLazyString4(UIStrings23.address)}</th>
@@ -18279,7 +18384,7 @@ var ResourceChunkNode = class extends DataGridItem {
             new TextUtils9.ContentData.ContentData(this.dataText(), true, "application/octet-stream")
           ),
           Platform12.DevToolsPath.EmptyUrlString,
-          Common18.ResourceType.resourceTypes.DirectSocket
+          Common20.ResourceType.resourceTypes.DirectSocket
         );
       }
     }
@@ -18295,7 +18400,7 @@ var ResourceWebSocketFrameView_exports = {};
 __export(ResourceWebSocketFrameView_exports, {
   ResourceWebSocketFrameView: () => ResourceWebSocketFrameView
 });
-import * as Common19 from "../../core/common/common.js";
+import * as Common21 from "../../core/common/common.js";
 import * as i18n47 from "../../core/i18n/i18n.js";
 import * as Platform13 from "../../core/platform/platform.js";
 import * as SDK16 from "../../core/sdk/sdk.js";
@@ -18470,7 +18575,7 @@ var ResourceFrameNode = class extends DataGridItem {
             new TextUtils10.ContentData.ContentData(this.#dataText, true, "applicaiton/octet-stream")
           ),
           Platform13.DevToolsPath.EmptyUrlString,
-          Common19.ResourceType.resourceTypes.WebSocket
+          Common21.ResourceType.resourceTypes.WebSocket
         );
       }
     }
@@ -18611,7 +18716,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
     this.headerElement().setAttribute("jslog", `${VisualLogging18.toolbar("request-details").track({
       keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space"
     })}`);
-    if (request.resourceType() === Common20.ResourceType.resourceTypes.DirectSocket) {
+    if (request.resourceType() === Common22.ResourceType.resourceTypes.DirectSocket) {
       this.#firstTab = NetworkForward6.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION;
       this.appendTab(
         NetworkForward6.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION,
@@ -18630,7 +18735,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
         i18nString24(UIStrings25.headers)
       );
     }
-    this.#resourceViewTabSetting = Common20.Settings.Settings.instance().createSetting("resource-view-tab", this.#firstTab);
+    this.#resourceViewTabSetting = Common22.Settings.Settings.instance().createSetting("resource-view-tab", this.#firstTab);
     if (this.#request.hasOverriddenHeaders()) {
       const statusDot = document.createElement("div");
       statusDot.className = "status-dot";
@@ -18639,7 +18744,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
     }
     void this.#maybeAppendPayloadPanel();
     this.addEventListener(UI24.TabbedPane.Events.TabSelected, this.#tabSelected, this);
-    if (request.resourceType() === Common20.ResourceType.resourceTypes.WebSocket) {
+    if (request.resourceType() === Common22.ResourceType.resourceTypes.WebSocket) {
       const frameView = new ResourceWebSocketFrameView(request);
       this.appendTab(
         NetworkForward6.UIRequestLocation.UIRequestTabs.WS_FRAMES,
@@ -18647,7 +18752,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
         frameView,
         i18nString24(UIStrings25.websocketMessages)
       );
-    } else if (request.resourceType() === Common20.ResourceType.resourceTypes.DirectSocket) {
+    } else if (request.resourceType() === Common22.ResourceType.resourceTypes.DirectSocket) {
       this.appendTab(
         NetworkForward6.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CHUNKS,
         i18nString24(UIStrings25.messages),
@@ -18681,7 +18786,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
       );
       const signedExchangeInfo = request.signedExchangeInfo();
       if (signedExchangeInfo?.errors?.length) {
-        const icon = new Icon3();
+        const icon = new Icon2();
         icon.name = "cross-circle-filled";
         icon.classList.add("small");
         UI24.Tooltip.Tooltip.install(icon, i18nString24(UIStrings25.signedexchangeError));
@@ -18788,7 +18893,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
       );
     }
     if (this.#request.hasThirdPartyCookiePhaseoutIssue()) {
-      const icon = new Icon3();
+      const icon = new Icon2();
       icon.name = "warning-filled";
       icon.classList.add("small");
       icon.title = i18nString24(UIStrings25.thirdPartyPhaseout);
@@ -18833,7 +18938,7 @@ var NetworkItemView = class extends UI24.TabbedPane.TabbedPane {
   #maybeShowErrorIconInTrustTokenTabHeader() {
     const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
     if (trustTokenResult && !NetworkComponents2.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
-      const icon = new Icon3();
+      const icon = new Icon2();
       icon.name = "cross-circle-filled";
       icon.classList.add("small");
       this.setTabIcon(NetworkForward6.UIRequestLocation.UIRequestTabs.TRUST_TOKENS, icon);

@@ -265,7 +265,7 @@ describe('StylingAgent', function () {
                 });
                 assert.lengthOf(actionSteps, 1, 'Found non or multiple action steps');
                 const actionStep = actionSteps.at(0);
-                assert(actionStep.output.includes('Error: Output exceeded the maximum allowed length.'));
+                assert.strictEqual(actionStep.output, 'Error: Output of 149999 bytes exceeded the maximum allowed (8000 bytes).');
             });
         });
         it('generates an answer immediately', async function () {

@@ -534,11 +534,14 @@ function reset4() {
   processNames = /* @__PURE__ */ new Map();
   mainFrameNavigations = [];
   sameDocumentNavigations = [];
+  mainFrameId = "";
+  mainFrameURL = "";
   browserProcessId = Types5.Events.ProcessID(-1);
   browserThreadId = Types5.Events.ThreadID(-1);
   gpuProcessId = Types5.Events.ProcessID(-1);
   gpuThreadId = Types5.Events.ThreadID(-1);
   viewportRect = null;
+  devicePixelRatio = null;
   topLevelRendererIds = /* @__PURE__ */ new Set();
   threadsInProcess = /* @__PURE__ */ new Map();
   rendererProcessesByFrameId = /* @__PURE__ */ new Map();
@@ -800,7 +803,7 @@ __export(NetworkRequestsHandler_exports, {
 });
 import * as Platform3 from "../../../core/platform/platform.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -4134,7 +4137,7 @@ function parseCPUProfileData(parseOptions) {
             return;
           }
           traceEntryNode.parent = parentNode;
-          parentNode.children.push(traceEntryNode);
+          Helpers6.TreeHelpers.appendChild(parentNode, traceEntryNode);
         }
       };
       if (!candidates.length) {
@@ -4488,11 +4491,12 @@ function buildHierarchy(processes2, options) {
         thread.tree = Helpers7.TreeHelpers.makeEmptyTraceEntryTree();
         continue;
       }
-      const treeData = Helpers7.TreeHelpers.treify(thread.entries, options);
+      const treeData = Helpers7.TreeHelpers.treify(thread.entries, options, entryToNode2);
       thread.tree = treeData.tree;
-      for (const [entry, node] of treeData.entryToNode) {
-        entryToNode2.set(entry, node);
-        addEventToEntityMapping(entry, entityMappings2);
+      for (const entry of thread.entries) {
+        if (entryToNode2.has(entry)) {
+          addEventToEntityMapping(entry, entityMappings2);
+        }
       }
     }
   }

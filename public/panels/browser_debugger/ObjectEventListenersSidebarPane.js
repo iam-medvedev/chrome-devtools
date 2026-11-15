@@ -1,30 +1,26 @@
 // Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
+const { bindToAction } = UI.UIUtils;
 const { html } = Lit;
-export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
+export class ObjectEventListenersSidebarPane extends EventListeners.EventListenersView.EventListenersView {
+    jslog = `${VisualLogging.section('sources.global-listeners')}`;
     #lastRequestedContext;
-    // TODO(bmeurer): This is only public for web tests.
-    eventListenersView;
-    constructor() {
-        super();
-        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.global-listeners')}`);
-        this.eventListenersView = new EventListeners.EventListenersView.EventListenersView();
-        this.eventListenersView.show(this.element);
-        this.setDefaultFocusedChild(this.eventListenersView);
-        this.requestUpdate();
-    }
     toolbarItems() {
-        const refreshButton = UI.Toolbar.Toolbar.createActionButton('browser-debugger.refresh-global-event-listeners');
-        refreshButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
-        return html `${refreshButton.element}`;
+        // clang-format off
+        return html `
+      <devtools-button
+        ${bindToAction('browser-debugger.refresh-global-event-listeners')}
+        .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+      ></devtools-button>
+    `;
+        // clang-format on
     }
     async performUpdate() {
         if (this.#lastRequestedContext) {
@@ -49,13 +45,14 @@ export class ObjectEventListenersSidebarPane extends UI.Widget.VBox {
                 windowObjects.push(result.object);
             }
         }
-        this.eventListenersView.objects = windowObjects;
-        await this.eventListenersView.updateComplete;
+        this.setObjects(windowObjects);
+        await super.performUpdate();
     }
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.requestUpdate, this);
         UI.Context.Context.instance().setFlavor(ObjectEventListenersSidebarPane, this);
+        this.requestUpdate();
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(ObjectEventListenersSidebarPane, null);

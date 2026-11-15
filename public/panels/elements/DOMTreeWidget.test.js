@@ -343,6 +343,12 @@ describeWithEnvironment('DOMTreeWidget', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         await UI.Widget.Widget.allUpdatesComplete;
     }
+    /** Runs throttled processes at once so that tests do not wait on wall-clock time. */
+    function runThrottledProcessesImmediately() {
+        sinon.stub(Common.Throttler.Throttler.prototype, 'schedule').callsFake(async (process) => {
+            await process();
+        });
+    }
     function findElementsTreeWidget(domTree, node) {
         const tree = domTree.contentElement.querySelector('devtools-tree');
         if (!tree) {
@@ -915,6 +921,7 @@ describeWithEnvironment('DOMTreeWidget', () => {
             }
         });
         it('highlights and reveals node when highlighted in overlay', async () => {
+            runThrottledProcessesImmediately();
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             const domModel = target.model(SDK.DOMModel.DOMModel);
             sinon.stub(domModel, 'requestDocument').resolves(null);
@@ -947,10 +954,10 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 const spanNode = pNode.children()[0];
                 assert.strictEqual(spanNode.parentNode, pNode);
                 assert.strictEqual(pNode.parentNode, rootNode);
+                const scrollIntoViewSpy = sinon.spy(Element.prototype, 'scrollIntoViewIfNeeded');
                 // Trigger overlay highlight on spanNode.
                 overlayModel.dispatchEventToListeners("HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, spanNode);
-                await new Promise(resolve => setTimeout(resolve, 150));
-                await UI.Widget.Widget.allUpdatesComplete;
+                await waitForTreeUpdates();
                 assert.isNull(domTree.selectedDOMNode());
                 // Ancestors should be auto-expanded to reveal the highlighted node.
                 const currentRootTreeElements = internalTree.rootElement().children();
@@ -964,14 +971,135 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 const spanTreeElement = pTreeElement.children()[0];
                 assert.exists(spanTreeElement);
                 assert.isTrue(spanTreeElement.listItemElement.classList.contains('hovered'));
+                // The highlighted node scrolls into view.
+                sinon.assert.calledOnceWithExactly(scrollIntoViewSpy, true);
+                sinon.assert.calledOn(scrollIntoViewSpy, spanTreeElement.listItemElement);
                 const spanWidgetElement = spanTreeElement.listItemElement.querySelector('devtools-widget');
                 const spanWidget = UI.Widget.Widget.get(spanWidgetElement);
                 assert.isTrue(spanWidget.hovered);
                 // Clear overlay highlight.
                 overlayModel.dispatchEventToListeners("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, overlayModel);
-                await new Promise(resolve => setTimeout(resolve, 150));
-                await UI.Widget.Widget.allUpdatesComplete;
-                assert.isFalse(spanWidget.hovered);
+                await waitForTreeUpdates();
+                // The ancestors that were expanded for the highlight collapse again,
+                // which removes the highlighted row from the tree.
+                assert.isFalse(domTree.isNodeExpanded(rootNode));
+                assert.isFalse(domTree.isNodeExpanded(pNode));
+                assert.isFalse(rootTreeElement.expanded);
+                assert.lengthOf(rootTreeElement.children(), 0);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('keeps the new highlight when the ancestors of the previous highlight collapse', async () => {
+            runThrottledProcessesImmediately();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [
+                        { nodeId: 2, nodeName: 'P', children: [{ nodeId: 3, nodeName: 'SPAN' }] },
+                        { nodeId: 4, nodeName: 'UL', children: [{ nodeId: 5, nodeName: 'LI' }] },
+                    ],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const overlayModel = target.model(SDK.OverlayModel.OverlayModel);
+                assert.exists(overlayModel);
+                const [pNode, ulNode] = rootNode.children();
+                const spanNode = pNode.children()[0];
+                const liNode = ulNode.children()[0];
+                overlayModel.dispatchEventToListeners("HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, spanNode);
+                await waitForTreeUpdates();
+                const scrollIntoViewSpy = sinon.spy(Element.prototype, 'scrollIntoViewIfNeeded');
+                overlayModel.dispatchEventToListeners("HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, liNode);
+                await waitForTreeUpdates();
+                const [pTreeElement, ulTreeElement] = internalTree.rootElement().children()[0].children();
+                assert.isFalse(pTreeElement.expanded, 'P collapsed');
+                assert.isTrue(ulTreeElement.expanded, 'UL expanded');
+                const liTreeElement = ulTreeElement.children()[0];
+                assert.isTrue(liTreeElement.listItemElement.classList.contains('hovered'), 'LI hovered');
+                sinon.assert.calledOnceWithExactly(scrollIntoViewSpy, true);
+                sinon.assert.calledOn(scrollIntoViewSpy, liTreeElement.listItemElement);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('raises the children limit to reveal a paginated node highlighted in overlay', async () => {
+            runThrottledProcessesImmediately();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target);
+            try {
+                const childNodes = Array.from({ length: 10 }, (_, i) => ({ nodeId: i + 2, nodeName: 'SPAN' }));
+                const rootNode = createTestDOMTree(domModel, { nodeId: 1, nodeName: 'DIV', children: childNodes });
+                domTree.setExpandedChildrenLimit(rootNode, 5);
+                domTree.rootDOMNode = rootNode;
+                domTree.setNodeExpanded(rootNode, true);
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const scrollIntoViewSpy = sinon.spy(Element.prototype, 'scrollIntoViewIfNeeded');
+                const overlayModel = target.model(SDK.OverlayModel.OverlayModel);
+                assert.exists(overlayModel);
+                const eighthChild = rootNode.children()[7];
+                overlayModel.dispatchEventToListeners("HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, eighthChild);
+                await waitForTreeUpdates();
+                assert.strictEqual(domTree.expandedChildrenLimit(rootNode), 8);
+                const childTreeElements = internalTree.rootElement().children()[0].children();
+                // 8 children plus 1 expand-all item plus 1 closing tag tree element = 10
+                assert.lengthOf(childTreeElements, 10);
+                const highlightedTreeElement = childTreeElements[7];
+                assert.isTrue(highlightedTreeElement.listItemElement.classList.contains('hovered'));
+                sinon.assert.calledOnceWithExactly(scrollIntoViewSpy, true);
+                sinon.assert.calledOn(scrollIntoViewSpy, highlightedTreeElement.listItemElement);
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('highlights the parent row when an inlined text node is highlighted in overlay', async () => {
+            runThrottledProcessesImmediately();
+            SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            sinon.stub(domModel, 'requestDocument').resolves(null);
+            const { domTree } = setupDOMTreeWidget(target);
+            try {
+                const rootNode = createTestDOMTree(domModel, {
+                    nodeId: 1,
+                    nodeName: 'DIV',
+                    children: [{ nodeId: 2, nodeName: 'P', children: [{ nodeId: 3, nodeName: '#text', nodeValue: 'Hello' }] }],
+                });
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const tree = domTree.contentElement.querySelector('devtools-tree');
+                assert.exists(tree);
+                const internalTree = tree.getInternalTreeOutlineForTest();
+                const scrollIntoViewSpy = sinon.spy(Element.prototype, 'scrollIntoViewIfNeeded');
+                const overlayModel = target.model(SDK.OverlayModel.OverlayModel);
+                assert.exists(overlayModel);
+                const pNode = rootNode.children()[0];
+                const textNode = pNode.children()[0];
+                overlayModel.dispatchEventToListeners("HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, textNode);
+                await waitForTreeUpdates();
+                const pTreeElement = internalTree.rootElement().children()[0].children()[0];
+                assert.isTrue(pTreeElement.listItemElement.classList.contains('hovered'));
+                sinon.assert.calledOnceWithExactly(scrollIntoViewSpy, true);
+                sinon.assert.calledOn(scrollIntoViewSpy, pTreeElement.listItemElement);
             }
             finally {
                 domTree.detach();
@@ -5285,6 +5413,72 @@ describeWithEnvironment('DOMTreeWidget', () => {
                 assert.instanceOf(childrenList, HTMLOListElement);
                 assert.isTrue(childrenList.classList.contains('children'));
                 assert.isTrue(childrenList.matches('li.shadow-root + ol.children'));
+            }
+            finally {
+                domTree.detach();
+            }
+        });
+        it('renders one nested guide line per shadow root level inside an iframe', async () => {
+            const { domTree, domModel } = setupDOMTreeWidget(target, { includeCommonStyles: true });
+            try {
+                domTree.omitRootDOMNode = true;
+                const levels = 5;
+                // Node ids: host N uses 10*N, shadow root N uses 10*N+1.
+                const buildHost = (level, parentId) => {
+                    const hostId = 10 * level;
+                    const shadowRootId = hostId + 1;
+                    const shadowChildren = level < levels ?
+                        [buildHost(level + 1, shadowRootId)] :
+                        [makeNodePayload(shadowRootId + 5, 'SPAN', { parentId: shadowRootId })];
+                    return makeNodePayload(hostId, 'DIV', {
+                        parentId: parentId,
+                        attributes: ['id', `host-${level}`],
+                        shadowRoots: [makeNodePayload(shadowRootId, '#shadow-root', {
+                                parentId: hostId,
+                                nodeType: Node.DOCUMENT_FRAGMENT_NODE,
+                                shadowRootType: "open" /* Protocol.DOM.ShadowRootType.Open */,
+                                children: shadowChildren,
+                            })],
+                    });
+                };
+                const iframeDocumentPayload = makeDocumentPayload(3, [buildHost(1, 3)]);
+                const iframePayload = makeNodePayload(2, 'IFRAME', {
+                    parentId: 1,
+                    frameId: 'child-frame',
+                    contentDocument: iframeDocumentPayload,
+                });
+                const rootNode = SDK.DOMModel.DOMNode.create(domModel, null, false, makeDocumentPayload(1, [iframePayload]));
+                domTree.rootDOMNode = rootNode;
+                domTree.performUpdate();
+                await waitForTreeUpdates();
+                const iframeNode = domModel.nodeForId(2);
+                assert.isTrue(iframeNode.isIframe());
+                await expandAndFind(domTree, iframeNode);
+                await expandAndFind(domTree, iframeNode.contentDocument());
+                const guideLineLists = [];
+                for (let level = 1; level <= levels; level++) {
+                    const hostNode = domModel.nodeForId(10 * level);
+                    const shadowRootNode = domModel.nodeForId((10 * level + 1));
+                    assert.isTrue(shadowRootNode.isShadowRoot());
+                    const hostTreeElement = await expandAndFind(domTree, hostNode);
+                    const shadowRootTreeElement = await expandAndFind(domTree, shadowRootNode);
+                    assert.isFalse(hostTreeElement.listItemElement.classList.contains('shadow-root'));
+                    assert.isTrue(shadowRootTreeElement.listItemElement.classList.contains('shadow-root'));
+                    const childrenList = shadowRootTreeElement.listItemElement.nextElementSibling;
+                    assert.instanceOf(childrenList, HTMLOListElement);
+                    assert.isTrue(childrenList.matches('li.shadow-root + ol.children.expanded'));
+                    guideLineLists.push(childrenList);
+                }
+                assert.lengthOf(guideLineLists, levels);
+                // Each level nests inside the previous one and starts further to the
+                // right, so the five guide lines render side by side.
+                for (let i = 1; i < guideLineLists.length; i++) {
+                    assert.isTrue(guideLineLists[i - 1].contains(guideLineLists[i]));
+                    assert.isAbove(guideLineLists[i].getBoundingClientRect().left, guideLineLists[i - 1].getBoundingClientRect().left);
+                }
+                for (const list of guideLineLists) {
+                    assert.notStrictEqual(getComputedStyle(list).backgroundImage, 'none');
+                }
             }
             finally {
                 domTree.detach();

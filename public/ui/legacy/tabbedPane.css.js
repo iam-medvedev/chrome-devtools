@@ -142,7 +142,8 @@ export default `/*
   margin-left: var(--sys-size-1);
   justify-self: center;
   position: relative;
-  top: 0.75px;
+  /* Nudge the dot 1px down to optically align it with the tab title. */
+  top: var(--sys-size-1);
 }
 
 .tabbed-pane-header-tab {
@@ -247,7 +248,7 @@ export default `/*
   width: auto;
   flex: 0 0 auto;
   flex-direction: column;
-  padding-top: 5px;
+  padding-top: var(--sys-size-3);
   overflow: hidden;
 }
 
@@ -281,7 +282,7 @@ export default `/*
   color: var(--sys-color-on-surface);
   position: relative;
 
-  & > .tabbed-pane-header-tab-icon devtools-icon {
+  & > .tabbed-pane-header-tab-icon {
     margin: 0;
     margin-right: var(--sys-size-6);
   }
@@ -291,6 +292,10 @@ export default `/*
     background-color: var(--app-color-navigation-drawer-background-selected);
 
     & > .tabbed-pane-header-tab-icon devtools-icon {
+      color: var(--app-color-navigation-drawer-label-selected);
+    }
+
+    & > .tabbed-pane-header-tab-icon slot::slotted(devtools-icon) {
       color: var(--app-color-navigation-drawer-label-selected);
     }
   }
@@ -431,20 +436,12 @@ export default `/*
   }
 
   .close-button {
-    --tabbed-pane-close-icon-color: ButtonText;
-
     forced-color-adjust: none;
   }
 
   .close-button:hover,
   .close-button:active {
-    --tabbed-pane-close-icon-color: HighlightText;
-
     background-color: Highlight;
-  }
-
-  .selected .close-button {
-    --tabbed-pane-close-icon-color: HighlightText;
   }
 }
 

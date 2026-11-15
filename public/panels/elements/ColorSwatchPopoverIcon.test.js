@@ -12,6 +12,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment, setupActionRegistry } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { getMatchedStyles } from '../../testing/StyleHelpers.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Elements from './elements.js';
@@ -29,7 +30,7 @@ describe('ColorSwatchPopoverIcon', () => {
             const property = new SDK.CSSProperty.CSSProperty(sinon.createStubInstance(SDK.CSSStyleDeclaration.CSSStyleDeclaration), 0, 'color', 'red', true, false, true, false, '', undefined, []);
             const treeElement = new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
                 stylesContainer: new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel()),
-                section: sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection),
+                section: Object.assign(sinon.createStubInstance(Elements.StylePropertiesSection.StylePropertiesSection), { sectionTooltipIdFactory: new Tooltips.Tooltip.IdFactory() }),
                 matchedStyles: await getMatchedStyles({ connection }),
                 property,
                 isShorthand: false,
@@ -49,7 +50,7 @@ describe('ColorSwatchPopoverIcon', () => {
             const spectrum = showPopoverStub.args[0][0];
             assert.instanceOf(spectrum, ColorPicker.Spectrum.Spectrum);
             sinon.stub(spectrum, 'colorName').returns('--yellow');
-            spectrum.dispatchEventToListeners("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, 'yellow');
+            spectrum.element.dispatchEvent(new ColorPicker.Spectrum.ColorChangedEvent('yellow'));
             sinon.assert.calledOnce(iconColorChanged);
             assert.strictEqual(iconColorChanged.args[0][0].data.asString(), '#ffff00');
             assert.strictEqual(iconColorChanged.args[0][0].data.getAuthoredText(), 'var(--yellow)');

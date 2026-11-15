@@ -1779,9 +1779,9 @@ var imageView_css_default = `/*
 
   img.resource-image-view {
     max-width: 100%;
-    max-height: 1000px;
+    max-height: var(--sys-size-39);
     background-image: var(--image-file-checker);
-    box-shadow: 0 5px 10px var(--sys-color-outline);
+    box-shadow: 0 var(--sys-size-3) var(--sys-size-5) var(--sys-color-outline);
     user-select: text;
     -webkit-user-drag: auto;
   }
@@ -2310,6 +2310,7 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     }
     this.#parsedJSON = parsedJSON;
     this.objectTree = null;
+    this.#autoExpandCanceled = false;
     this.onSearchCanceled();
     this.requestUpdate();
   }
@@ -2379,6 +2380,7 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     });
     if (!this.startCollapsed) {
       this.objectTree.expanded = true;
+      void this.#autoExpandInitial(this.objectTree);
     }
     this.objectTree.addEventListener(
       ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED,
@@ -2391,6 +2393,64 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
       this
     );
   }
+  static #AUTO_EXPAND_ROW_BUDGET = 30;
+  static #AUTO_EXPAND_MAX_DEPTH = 4;
+  #autoExpandCanceled = false;
+  async #autoExpandInitial(tree) {
+    await tree.populateChildrenIfNeeded();
+    if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+      return;
+    }
+    const rootChildren = Array.from(tree.treeNodeChildren());
+    let visibleRows = Math.max(rootChildren.length, tree.arrayLength);
+    let frontier = rootChildren.filter((n) => n.hasChildren && n.canExpandRecursively);
+    for (let depth = 1; depth < _JSONView.#AUTO_EXPAND_MAX_DEPTH && frontier.length > 0; depth++) {
+      if (frontier.length === 1 && visibleRows <= _JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+        const only = frontier[0];
+        await only.populateChildrenIfNeeded();
+        if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+          return;
+        }
+        const onlyChildren = Array.from(only.treeNodeChildren());
+        const added = Math.max(onlyChildren.length, only.arrayLength);
+        if (added > 1 && visibleRows + added > _JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+          break;
+        }
+        only.expanded = true;
+        visibleRows += added;
+        frontier = onlyChildren.filter((n) => n.hasChildren && n.canExpandRecursively);
+        continue;
+      }
+      let addedRows = 0;
+      for (const node of frontier) {
+        await node.populateChildrenIfNeeded();
+        if (this.objectTree !== tree || !tree.expanded || this.#autoExpandCanceled) {
+          return;
+        }
+        const nodeChildren = Array.from(node.treeNodeChildren());
+        addedRows += Math.max(nodeChildren.length, node.arrayLength);
+        if (visibleRows + addedRows > _JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+          break;
+        }
+      }
+      if (visibleRows + addedRows > _JSONView.#AUTO_EXPAND_ROW_BUDGET) {
+        break;
+      }
+      const nextFrontier = [];
+      for (const node of frontier) {
+        node.expanded = true;
+        for (const child of node.treeNodeChildren()) {
+          if (child.hasChildren && child.canExpandRecursively) {
+            nextFrontier.push(child);
+          }
+        }
+      }
+      visibleRows += addedRows;
+      frontier = nextFrontier;
+    }
+    tree.dispatchEventToListeners(ObjectUI.ObjectPropertiesSection.ObjectTreeNodeBase.Events.CHILDREN_CHANGED);
+    this.requestUpdate();
+  }
   #onChildrenChanged() {
     this.requestUpdate();
   }
@@ -2401,6 +2461,24 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     }
     this.view({ objectTree: this.objectTree, parsedJSON: this.#parsedJSON }, void 0, this.contentElement);
   }
+  static #MAX_SEARCH_NODES = 1e4;
+  async #populateForSearch(root) {
+    const queue = [root];
+    let visited = 0;
+    while (queue.length > 0 && visited < _JSONView.#MAX_SEARCH_NODES) {
+      const node = queue.shift();
+      if (!node || !node.canExpandRecursively) {
+        continue;
+      }
+      visited++;
+      await node.populateChildrenIfNeeded();
+      for (const child of node.treeNodeChildren()) {
+        if (child.hasChildren) {
+          queue.push(child);
+        }
+      }
+    }
+  }
   jumpToMatch() {
     if (this.searchableView) {
       this.search.updateSearchableView(this.searchableView);
@@ -2409,9 +2487,13 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     if (currentMatch) {
       let current = currentMatch.node.parent;
       while (current) {
+        if (current instanceof ObjectUI.ObjectPropertiesSection.ObjectTreeNode) {
+          current.showAllChildren = true;
+        }
         current.expanded = true;
         current = current.parent;
       }
+      this.requestUpdate();
     }
   }
   onSearchCanceled() {
@@ -2422,12 +2504,13 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
   }
   async performSearch(searchConfig, shouldJump, jumpBackwards) {
     this.initialize();
+    this.#autoExpandCanceled = true;
     this.onSearchCanceled();
     const searchRegex = searchConfig.toSearchRegex(true).regex;
     if (!this.objectTree) {
       return;
     }
-    await this.objectTree.populateChildrenIfNeeded();
+    await this.#populateForSearch(this.objectTree);
     this.search.search(this.objectTree, jumpBackwards ?? false, (node, closeTag) => {
       if (closeTag || !searchRegex) {
         return [];

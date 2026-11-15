@@ -255,7 +255,7 @@ describeWithEnvironment('AnimationTimeline', () => {
             const resizer = view.contentElement.querySelector('.timeline-controls-resizer');
             assert.exists(resizer);
             const initialWidth = view.element.style.getPropertyValue('--timeline-controls-width');
-            assert.strictEqual(initialWidth, '150px');
+            assert.strictEqual(initialWidth, '144px');
             const resizerRect = resizer.getBoundingClientRect();
             resizer.dispatchEvent(new PointerEvent('pointerdown', {
                 clientX: resizerRect.x + resizerRect.width / 2,

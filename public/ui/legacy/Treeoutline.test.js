@@ -213,6 +213,38 @@ describe('TreeViewElement', () => {
         assert.isFalse(nodes[0].selected);
         assert.isTrue(nodes[1].selected);
     });
+    it('resolves `clonedRef` on a config element to the rendered list item', () => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const callback = sinon.spy();
+        const template = (withRef) => html `<devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">first node</li>
+        <li role="treeitem" ${withRef ? UI.UIUtils.clonedRef(callback) : Lit.nothing}>second node</li>
+      </ul>`}></devtools-tree>`;
+        // The ref is set before the tree element exists: it resolves on insertion.
+        render(template(true), container);
+        const component = container.querySelector('devtools-tree');
+        assert.isNotNull(component);
+        sinon.assert.notCalled(callback);
+        component.flushPendingUpdatesForTesting();
+        const nodes = component.getInternalTreeOutlineForTest().rootElement().children();
+        assert.lengthOf(nodes, 2);
+        sinon.assert.calledOnceWithExactly(callback, nodes[1].listItemElement);
+        // The ref stays: no further calls.
+        render(template(true), container);
+        component.flushPendingUpdatesForTesting();
+        sinon.assert.calledOnce(callback);
+        // The ref disappears: it resets.
+        render(template(false), container);
+        component.flushPendingUpdatesForTesting();
+        sinon.assert.calledTwice(callback);
+        sinon.assert.calledWithExactly(callback.secondCall, undefined);
+        // The ref appears again on an existing tree element: it resolves at once.
+        render(template(true), container);
+        sinon.assert.calledThrice(callback);
+        sinon.assert.calledWithExactly(callback.thirdCall, nodes[1].listItemElement);
+    });
     it('expands subtrees based on the `open` attribute', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `
       <ul role="tree">
@@ -710,6 +742,74 @@ describe('TreeViewElement', () => {
         assert.strictEqual(children[3].titleElement.textContent?.trim(), 'fourth child');
         assert.strictEqual(children[4].titleElement.textContent?.trim(), 'extra node');
     });
+    it('avoids selecting removed siblings when batch-removing multiple tree elements', async () => {
+        const { repeat } = Lit.Directives;
+        const makeTemplate = (items) => {
+            return html `
+        <ul role="tree">
+          ${repeat(items, item => item, item => html `<li role="treeitem">${item}</li>`)}
+        </ul>
+      `;
+        };
+        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(['first', 'second', 'third'])}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const [firstNode, secondNode, thirdNode] = treeOutline.rootElement().children();
+        assert.exists(firstNode);
+        assert.exists(secondNode);
+        assert.exists(thirdNode);
+        firstNode.select();
+        assert.strictEqual(treeOutline.selectedTreeElement, firstNode);
+        const secondSelectSpy = sinon.spy(secondNode, 'select');
+        const thirdSelectSpy = sinon.spy(thirdNode, 'select');
+        component.template = makeTemplate(['third']);
+        component.flushPendingUpdatesForTesting();
+        sinon.assert.notCalled(secondSelectSpy);
+        sinon.assert.called(thirdSelectSpy);
+        assert.strictEqual(treeOutline.selectedTreeElement, thirdNode);
+    });
+    it('avoids selecting removed siblings when batch-removing nested tree elements', async () => {
+        const makeTemplate = (hasFolders) => {
+            return html `
+        <ul role="tree">
+          ${hasFolders ? html `
+            <li role="treeitem" open>d
+              <ul role="group">
+                <li role="treeitem">a</li>
+              </ul>
+            </li>
+            <li role="treeitem" open>e
+              <ul role="group">
+                <li role="treeitem">b</li>
+              </ul>
+            </li>
+          ` :
+                Lit.nothing}
+          <li role="treeitem">c</li>
+        </ul>
+      `;
+        };
+        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(true)}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const [nodeD, nodeE, nodeC] = treeOutline.rootElement().children();
+        assert.exists(nodeD);
+        assert.exists(nodeE);
+        assert.exists(nodeC);
+        const nodeA = nodeD.children()[0];
+        const nodeB = nodeE.children()[0];
+        assert.exists(nodeA);
+        assert.exists(nodeB);
+        nodeA.select();
+        assert.strictEqual(treeOutline.selectedTreeElement, nodeA);
+        const nodeESelectSpy = sinon.spy(nodeE, 'select');
+        const nodeBSelectSpy = sinon.spy(nodeB, 'select');
+        const nodeCSelectSpy = sinon.spy(nodeC, 'select');
+        component.template = makeTemplate(false);
+        component.flushPendingUpdatesForTesting();
+        sinon.assert.notCalled(nodeESelectSpy);
+        sinon.assert.notCalled(nodeBSelectSpy);
+        sinon.assert.called(nodeCSelectSpy);
+        assert.strictEqual(treeOutline.selectedTreeElement, nodeC);
+    });
     it('marks a node as expandable even if it has empty subtree', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `
       <ul role="tree">
@@ -776,105 +876,6 @@ describe('TreeViewElement', () => {
         component.template = makeTemplate('updated');
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(parent.expanded);
-    });
-    it('correctly handles TreeElementWrapper nodes', async () => {
-        const treeElement = new UI.TreeOutline.TreeElement('wrapper node');
-        const container = document.createElement('div');
-        renderElementIntoDOM(container);
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
-        <li role="treeitem">last node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        let component = container.querySelector('devtools-tree');
-        let treeOutline = component.getInternalTreeOutlineForTest();
-        let children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 3);
-        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first node');
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
-        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'last node');
-        // Rerender with same wrapper but some changes in the nodes
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
-        <li role="treeitem" class=X>X node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        component = container.querySelector('devtools-tree');
-        treeOutline = component.getInternalTreeOutlineForTest();
-        children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 3);
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
-        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'X node');
-        // Rerender with same wrapper and the original tree
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
-        <li role="treeitem">last node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        component = container.querySelector('devtools-tree');
-        treeOutline = component.getInternalTreeOutlineForTest();
-        children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 3);
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
-        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'last node');
-        // Rerender with same wrapper
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <devtools-tree-wrapper .treeElement=${treeElement}></devtools-tree-wrapper>
-        <li role="treeitem">last node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        component = container.querySelector('devtools-tree');
-        treeOutline = component.getInternalTreeOutlineForTest();
-        children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 3);
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node');
-        // Rerender with different wrapper
-        const treeElement2 = new UI.TreeOutline.TreeElement('wrapper node 2');
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <devtools-tree-wrapper .treeElement=${treeElement2}></devtools-tree-wrapper>
-        <li role="treeitem">last node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        component = container.querySelector('devtools-tree');
-        treeOutline = component.getInternalTreeOutlineForTest();
-        children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 3);
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'wrapper node 2');
-        // Rerender with removed wrapper
-        render(html `
-      <devtools-tree .template=${html `
-      <ul role="tree">
-        <li role="treeitem">first node</li>
-        <li role="treeitem">last node</li>
-      </ul>`}></devtools-tree>
-    `, container);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        component = container.querySelector('devtools-tree');
-        treeOutline = component.getInternalTreeOutlineForTest();
-        children = treeOutline.rootElement().children();
-        assert.lengthOf(children, 2);
-        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first node');
-        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'last node');
     });
     it('respects selectable="false" on tree items', async () => {
         const component = await makeTree(html `<devtools-tree .template=${html `

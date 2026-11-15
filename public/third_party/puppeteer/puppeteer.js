@@ -1949,21 +1949,6 @@ function first(predicate, defaultValue) {
     }));
   };
 }
-function mergeScan(accumulator, seed, concurrent) {
-  if (concurrent === void 0) {
-    concurrent = Infinity;
-  }
-  return operate(function(source2, subscriber) {
-    var state = seed;
-    return mergeInternals(source2, subscriber, function(value, index) {
-      return accumulator(state, value, index);
-    }, concurrent, function(value) {
-      state = value;
-    }, false, void 0, function() {
-      return state = null;
-    });
-  });
-}
 function raceWith() {
   var otherSources = [];
   for (var _i = 0; _i < arguments.length; _i++) {
@@ -2584,8 +2569,8 @@ var EventEmitter = class {
    * @returns `this` to enable you to chain method calls.
    */
   once(type, handler) {
-    const onceHandler = (eventData) => {
-      handler(eventData);
+    const onceHandler = (...args) => {
+      handler(...args);
       this.off(type, onceHandler);
     };
     return this.on(type, onceHandler);
@@ -3458,7 +3443,7 @@ function mergeUint8Arrays(items) {
 }
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/util/version.js
-var packageVersion = "25.16.0";
+var packageVersion = "25.17.0";
 
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/common/PDFOptions.js
 var paperFormats = {
@@ -3555,6 +3540,9 @@ var withSourcePuppeteerURLIfNone = (functionName, object) => {
   };
   const site = new Error().stack;
   Error.prepareStackTrace = original;
+  if (!site) {
+    return object;
+  }
   return Object.assign(object, {
     [SOURCE_URL]: PuppeteerURL.fromCallSite(functionName, site)
   });
@@ -3587,28 +3575,34 @@ function evaluationString(fun, ...args) {
 async function getReadableAsTypedArray(readable, path, logger) {
   const buffers = [];
   const reader = readable.getReader();
-  if (path) {
-    const fileHandle = await environment.value.openFileForWriting(path);
-    try {
+  try {
+    if (path) {
+      const fileHandle = await environment.value.openFileForWriting(path);
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          buffers.push(value);
+          await fileHandle.writeFile(value);
+        }
+      } finally {
+        await fileHandle.close();
+      }
+    } else {
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
           break;
         }
         buffers.push(value);
-        await fileHandle.writeFile(value);
       }
-    } finally {
-      await fileHandle.close();
     }
-  } else {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        break;
-      }
-      buffers.push(value);
-    }
+  } catch (error) {
+    await reader.cancel().catch(() => {
+    });
+    throw error;
   }
   try {
     const concat2 = mergeUint8Arrays(buffers);
@@ -3631,6 +3625,12 @@ async function getReadableFromProtocolStream(client, handle) {
       if (eof) {
         await client.send("IO.close", { handle });
         controller.close();
+      }
+    },
+    async cancel() {
+      try {
+        await client.send("IO.close", { handle });
+      } catch {
       }
     }
   });
@@ -4990,9 +4990,9 @@ var Locator = class extends EventEmitter {
    *
    * @public
    */
-  map(mapper) {
+  map(mapper, ...args) {
     return new MappedLocator(this._clone(), (handle) => {
-      return handle.evaluateHandle(mapper);
+      return handle.evaluateHandle(mapper, ...args);
     });
   }
   /**
@@ -5002,9 +5002,9 @@ var Locator = class extends EventEmitter {
    *
    * @public
    */
-  filter(predicate) {
+  filter(predicate, ...args) {
     return new FilteredLocator(this._clone(), async (handle, signal) => {
-      await handle.frame.waitForFunction(predicate, { signal, timeout: this._timeout }, handle);
+      await handle.frame.waitForFunction(predicate, { signal, timeout: this._timeout }, handle, ...args);
       return true;
     });
   }
@@ -5390,33 +5390,36 @@ var Page = (() => {
     constructor(logger) {
       super(void 0, logger);
       this.logger = logger;
-      fromEmitterEvent(
+      const pending = /* @__PURE__ */ new Map();
+      let inflight = 0;
+      merge(fromEmitterEvent(
         this,
         "request"
         /* PageEvent.Request */
-      ).pipe(mergeMap((originalRequest) => {
-        return concat(of(1), merge(fromEmitterEvent(
-          this,
-          "requestfailed"
-          /* PageEvent.RequestFailed */
-        ), fromEmitterEvent(
-          this,
-          "requestfinished"
-          /* PageEvent.RequestFinished */
-        ), fromEmitterEvent(
-          this,
-          "response"
-          /* PageEvent.Response */
-        ).pipe(map((response) => {
-          return response.request();
-        }))).pipe(filter((request) => {
-          return request.id === originalRequest.id;
-        }), take(1), map(() => {
-          return -1;
-        })));
-      }), mergeScan((acc, addend) => {
-        return of(acc + addend);
-      }, 0), takeUntil(fromEmitterEvent(
+      ).pipe(map((request) => {
+        pending.set(request.id, (pending.get(request.id) ?? 0) + 1);
+        return ++inflight;
+      })), merge(fromEmitterEvent(
+        this,
+        "requestfailed"
+        /* PageEvent.RequestFailed */
+      ), fromEmitterEvent(
+        this,
+        "requestfinished"
+        /* PageEvent.RequestFinished */
+      ), fromEmitterEvent(
+        this,
+        "response"
+        /* PageEvent.Response */
+      ).pipe(map((response) => {
+        return response.request();
+      }))).pipe(filter((request) => {
+        return pending.has(request.id);
+      }), map((request) => {
+        inflight -= pending.get(request.id) ?? 0;
+        pending.delete(request.id);
+        return inflight;
+      }))).pipe(takeUntil(fromEmitterEvent(
         this,
         "close"
         /* PageEvent.Close */
@@ -5440,7 +5443,7 @@ var Page = (() => {
       if (wrapper === void 0) {
         wrapper = (event) => {
           event.enqueueInterceptAction(() => {
-            return handler(event);
+            return handler(event, void 0);
           });
         };
         this.#requestHandlers.set(handler, wrapper);
@@ -6763,6 +6766,23 @@ var Page = (() => {
     }
   };
 })();
+var supportedMetrics = /* @__PURE__ */ new Set([
+  "Timestamp",
+  "Documents",
+  "Frames",
+  "JSEventListeners",
+  "Nodes",
+  "LayoutCount",
+  "RecalcStyleCount",
+  "LayoutDuration",
+  "RecalcStyleDuration",
+  "ScriptDuration",
+  "TaskDuration",
+  "JSHeapUsedSize",
+  "JSHeapTotalSize",
+  "DomContentLoaded",
+  "NavigationStart"
+]);
 function normalizeRectangle(clip) {
   return {
     ...clip,
@@ -7261,6 +7281,195 @@ var JSHandle = (() => {
   return JSHandle2 = _classThis;
 })();
 
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/utils.js
+function createConsoleMessage(event, values, targetId, frame, worker) {
+  const textTokens = [];
+  for (const arg of values) {
+    textTokens.push(String(valueFromJSHandle(arg)));
+  }
+  const stackTraceLocations = [];
+  if (event.stackTrace) {
+    for (const callFrame of event.stackTrace.callFrames) {
+      stackTraceLocations.push({
+        url: callFrame.url,
+        lineNumber: callFrame.lineNumber,
+        columnNumber: callFrame.columnNumber,
+        scriptId: callFrame.scriptId
+      });
+    }
+  }
+  return new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, frame, event.stackTrace, targetId, worker);
+}
+function createEvaluationError(details) {
+  let name;
+  let message;
+  if (!details.exception) {
+    name = "Error";
+    message = details.text;
+  } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
+    return valueFromPrimitiveRemoteObject(details.exception);
+  } else {
+    const detail = getErrorDetails(details);
+    name = detail.name;
+    message = detail.message;
+  }
+  const messageHeight = message.split("\n").length;
+  const error = new Error(message);
+  error.name = name;
+  const stackLines = error.stack.split("\n");
+  const messageLines = stackLines.splice(0, messageHeight);
+  stackLines.shift();
+  if (details.stackTrace && stackLines.length < Error.stackTraceLimit) {
+    for (const frame of details.stackTrace.callFrames.reverse()) {
+      if (PuppeteerURL.isPuppeteerURL(frame.url) && frame.url !== PuppeteerURL.INTERNAL_URL) {
+        const url = PuppeteerURL.parse(frame.url);
+        stackLines.unshift(`    at ${frame.functionName || url.functionName} (${url.functionName} at ${url.siteString}, <anonymous>:${frame.lineNumber}:${frame.columnNumber})`);
+      } else {
+        stackLines.push(`    at ${frame.functionName || "<anonymous>"} (${frame.url}:${frame.lineNumber}:${frame.columnNumber})`);
+      }
+      if (stackLines.length >= Error.stackTraceLimit) {
+        break;
+      }
+    }
+  }
+  error.stack = [...messageLines, ...stackLines].join("\n");
+  return error;
+}
+var getErrorDetails = (details) => {
+  let name = "";
+  let message;
+  const lines = details.exception?.description?.split("\n    at ") ?? [];
+  const size = Math.min(details.stackTrace?.callFrames.length ?? 0, lines.length - 1);
+  lines.splice(-size, size);
+  if (details.exception?.className) {
+    name = details.exception.className;
+  }
+  message = lines.join("\n");
+  if (name && message.startsWith(`${name}: `)) {
+    message = message.slice(name.length + 2);
+  }
+  return { message, name };
+};
+function createClientError(details) {
+  let name;
+  let message;
+  if (!details.exception) {
+    name = "Error";
+    message = details.text;
+  } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
+    return valueFromPrimitiveRemoteObject(details.exception);
+  } else {
+    const detail = getErrorDetails(details);
+    name = detail.name;
+    message = detail.message;
+  }
+  const error = new Error(message);
+  error.name = name;
+  const messageHeight = error.message.split("\n").length;
+  const messageLines = error.stack.split("\n").splice(0, messageHeight);
+  const stackLines = [];
+  if (details.stackTrace) {
+    for (const frame of details.stackTrace.callFrames) {
+      stackLines.push(`    at ${frame.functionName || "<anonymous>"} (${frame.url}:${frame.lineNumber + 1}:${frame.columnNumber + 1})`);
+      if (stackLines.length >= Error.stackTraceLimit) {
+        break;
+      }
+    }
+  }
+  error.stack = [...messageLines, ...stackLines].join("\n");
+  return error;
+}
+function valueFromJSHandle(handle) {
+  const remoteObject = handle.remoteObject();
+  if (remoteObject.objectId) {
+    return valueFromRemoteObjectReference(handle);
+  } else {
+    return valueFromPrimitiveRemoteObject(remoteObject);
+  }
+}
+function valueFromRemoteObjectReference(handle) {
+  const remoteObject = handle.remoteObject();
+  assert(remoteObject.objectId, "Cannot extract value when no objectId is given");
+  const description = remoteObject.description ?? "";
+  if (remoteObject.subtype === "error" && description) {
+    const newlineIdx = description.indexOf("\n");
+    if (newlineIdx === -1) {
+      return description;
+    }
+    return description.slice(0, newlineIdx);
+  }
+  return `[${remoteObject.subtype || remoteObject.type} ${remoteObject.className}]`;
+}
+function valueFromPrimitiveRemoteObject(remoteObject) {
+  assert(!remoteObject.objectId, "Cannot extract value when objectId is given");
+  if (remoteObject.unserializableValue) {
+    if (remoteObject.type === "bigint") {
+      return BigInt(remoteObject.unserializableValue.replace("n", ""));
+    }
+    switch (remoteObject.unserializableValue) {
+      case "-0":
+        return -0;
+      case "NaN":
+        return NaN;
+      case "Infinity":
+        return Infinity;
+      case "-Infinity":
+        return -Infinity;
+      default:
+        throw new Error("Unsupported unserializable value: " + remoteObject.unserializableValue);
+    }
+  }
+  return remoteObject.value;
+}
+function addPageBinding(type, name, prefix) {
+  if (globalThis[name]) {
+    return;
+  }
+  Object.assign(globalThis, {
+    [name](...args) {
+      const callPuppeteer = globalThis[prefix + name];
+      callPuppeteer.args ??= /* @__PURE__ */ new Map();
+      callPuppeteer.callbacks ??= /* @__PURE__ */ new Map();
+      const seq = (callPuppeteer.lastSeq ?? 0) + 1;
+      callPuppeteer.lastSeq = seq;
+      callPuppeteer.args.set(seq, args);
+      callPuppeteer(JSON.stringify({
+        type,
+        name,
+        seq,
+        args,
+        isTrivial: !args.some((value) => {
+          return value instanceof Node;
+        })
+      }));
+      return new Promise((resolve, reject) => {
+        callPuppeteer.callbacks.set(seq, {
+          resolve(value) {
+            callPuppeteer.args.delete(seq);
+            resolve(value);
+          },
+          reject(value) {
+            callPuppeteer.args.delete(seq);
+            reject(value);
+          }
+        });
+      });
+    }
+  });
+}
+var CDP_BINDING_PREFIX = "puppeteer_";
+function pageBindingInitString(type, name) {
+  return evaluationString(addPageBinding, type, name, CDP_BINDING_PREFIX);
+}
+function convertConsoleMessageLevel(method) {
+  switch (method) {
+    case "warning":
+      return "warn";
+    default:
+      return method;
+  }
+}
+
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/Binding.js
 var __addDisposableResource5 = function(env, value, async2) {
   if (value !== null && value !== void 0) {
@@ -7346,13 +7555,14 @@ var Binding = class {
    */
   async run(context2, id, args, isTrivial) {
     const stack = new DisposableStack();
+    const cdpName = CDP_BINDING_PREFIX + this.#name;
     try {
       if (!isTrivial) {
         const env_1 = { stack: [], error: void 0, hasError: false };
         try {
           const handles = __addDisposableResource5(env_1, await context2.evaluateHandle((name, seq) => {
             return globalThis[name].args.get(seq);
-          }, this.#name, id), false);
+          }, cdpName, id), false);
           const properties = await handles.getProperties();
           for (const [index, handle] of properties) {
             if (index in args) {
@@ -7378,7 +7588,7 @@ var Binding = class {
         const callbacks = globalThis[name].callbacks;
         callbacks.get(seq).resolve(result);
         callbacks.delete(seq);
-      }, this.#name, id, await this.#fn(...args));
+      }, cdpName, id, await this.#fn(...args));
       for (const arg of args) {
         if (arg instanceof JSHandle) {
           stack.use(arg);
@@ -7392,7 +7602,7 @@ var Binding = class {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error.message, error.stack).catch((error2) => {
+        }, cdpName, id, error.message, error.stack).catch((error2) => {
           this.#logger?.(DEBUG_PREFIXES.error)?.(error2);
         });
       } else {
@@ -7400,7 +7610,7 @@ var Binding = class {
           const callbacks = globalThis[name].callbacks;
           callbacks.get(seq).reject(error2);
           callbacks.delete(seq);
-        }, this.#name, id, error).catch((error2) => {
+        }, cdpName, id, error).catch((error2) => {
           this.#logger?.(DEBUG_PREFIXES.error)?.(error2);
         });
       }
@@ -12692,194 +12902,6 @@ function intersectBoundingBox(box, width, height) {
   box.y = Math.max(box.y, 0);
 }
 
-// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/utils.js
-function createConsoleMessage(event, values, targetId, frame, worker) {
-  const textTokens = [];
-  for (const arg of values) {
-    textTokens.push(valueFromJSHandle(arg));
-  }
-  const stackTraceLocations = [];
-  if (event.stackTrace) {
-    for (const callFrame of event.stackTrace.callFrames) {
-      stackTraceLocations.push({
-        url: callFrame.url,
-        lineNumber: callFrame.lineNumber,
-        columnNumber: callFrame.columnNumber
-      });
-    }
-  }
-  return new ConsoleMessage(convertConsoleMessageLevel(event.type), textTokens.join(" "), values, stackTraceLocations, frame, event.stackTrace, targetId, worker);
-}
-function createEvaluationError(details) {
-  let name;
-  let message;
-  if (!details.exception) {
-    name = "Error";
-    message = details.text;
-  } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
-    return valueFromPrimitiveRemoteObject(details.exception);
-  } else {
-    const detail = getErrorDetails(details);
-    name = detail.name;
-    message = detail.message;
-  }
-  const messageHeight = message.split("\n").length;
-  const error = new Error(message);
-  error.name = name;
-  const stackLines = error.stack.split("\n");
-  const messageLines = stackLines.splice(0, messageHeight);
-  stackLines.shift();
-  if (details.stackTrace && stackLines.length < Error.stackTraceLimit) {
-    for (const frame of details.stackTrace.callFrames.reverse()) {
-      if (PuppeteerURL.isPuppeteerURL(frame.url) && frame.url !== PuppeteerURL.INTERNAL_URL) {
-        const url = PuppeteerURL.parse(frame.url);
-        stackLines.unshift(`    at ${frame.functionName || url.functionName} (${url.functionName} at ${url.siteString}, <anonymous>:${frame.lineNumber}:${frame.columnNumber})`);
-      } else {
-        stackLines.push(`    at ${frame.functionName || "<anonymous>"} (${frame.url}:${frame.lineNumber}:${frame.columnNumber})`);
-      }
-      if (stackLines.length >= Error.stackTraceLimit) {
-        break;
-      }
-    }
-  }
-  error.stack = [...messageLines, ...stackLines].join("\n");
-  return error;
-}
-var getErrorDetails = (details) => {
-  let name = "";
-  let message;
-  const lines = details.exception?.description?.split("\n    at ") ?? [];
-  const size = Math.min(details.stackTrace?.callFrames.length ?? 0, lines.length - 1);
-  lines.splice(-size, size);
-  if (details.exception?.className) {
-    name = details.exception.className;
-  }
-  message = lines.join("\n");
-  if (name && message.startsWith(`${name}: `)) {
-    message = message.slice(name.length + 2);
-  }
-  return { message, name };
-};
-function createClientError(details) {
-  let name;
-  let message;
-  if (!details.exception) {
-    name = "Error";
-    message = details.text;
-  } else if ((details.exception.type !== "object" || details.exception.subtype !== "error") && !details.exception.objectId) {
-    return valueFromPrimitiveRemoteObject(details.exception);
-  } else {
-    const detail = getErrorDetails(details);
-    name = detail.name;
-    message = detail.message;
-  }
-  const error = new Error(message);
-  error.name = name;
-  const messageHeight = error.message.split("\n").length;
-  const messageLines = error.stack.split("\n").splice(0, messageHeight);
-  const stackLines = [];
-  if (details.stackTrace) {
-    for (const frame of details.stackTrace.callFrames) {
-      stackLines.push(`    at ${frame.functionName || "<anonymous>"} (${frame.url}:${frame.lineNumber + 1}:${frame.columnNumber + 1})`);
-      if (stackLines.length >= Error.stackTraceLimit) {
-        break;
-      }
-    }
-  }
-  error.stack = [...messageLines, ...stackLines].join("\n");
-  return error;
-}
-function valueFromJSHandle(handle) {
-  const remoteObject = handle.remoteObject();
-  if (remoteObject.objectId) {
-    return valueFromRemoteObjectReference(handle);
-  } else {
-    return valueFromPrimitiveRemoteObject(remoteObject);
-  }
-}
-function valueFromRemoteObjectReference(handle) {
-  const remoteObject = handle.remoteObject();
-  assert(remoteObject.objectId, "Cannot extract value when no objectId is given");
-  const description = remoteObject.description ?? "";
-  if (remoteObject.subtype === "error" && description) {
-    const newlineIdx = description.indexOf("\n");
-    if (newlineIdx === -1) {
-      return description;
-    }
-    return description.slice(0, newlineIdx);
-  }
-  return `[${remoteObject.subtype || remoteObject.type} ${remoteObject.className}]`;
-}
-function valueFromPrimitiveRemoteObject(remoteObject) {
-  assert(!remoteObject.objectId, "Cannot extract value when objectId is given");
-  if (remoteObject.unserializableValue) {
-    if (remoteObject.type === "bigint") {
-      return BigInt(remoteObject.unserializableValue.replace("n", ""));
-    }
-    switch (remoteObject.unserializableValue) {
-      case "-0":
-        return -0;
-      case "NaN":
-        return NaN;
-      case "Infinity":
-        return Infinity;
-      case "-Infinity":
-        return -Infinity;
-      default:
-        throw new Error("Unsupported unserializable value: " + remoteObject.unserializableValue);
-    }
-  }
-  return remoteObject.value;
-}
-function addPageBinding(type, name, prefix) {
-  if (globalThis[name]) {
-    return;
-  }
-  Object.assign(globalThis, {
-    [name](...args) {
-      const callPuppeteer = globalThis[name];
-      callPuppeteer.args ??= /* @__PURE__ */ new Map();
-      callPuppeteer.callbacks ??= /* @__PURE__ */ new Map();
-      const seq = (callPuppeteer.lastSeq ?? 0) + 1;
-      callPuppeteer.lastSeq = seq;
-      callPuppeteer.args.set(seq, args);
-      globalThis[prefix + name](JSON.stringify({
-        type,
-        name,
-        seq,
-        args,
-        isTrivial: !args.some((value) => {
-          return value instanceof Node;
-        })
-      }));
-      return new Promise((resolve, reject) => {
-        callPuppeteer.callbacks.set(seq, {
-          resolve(value) {
-            callPuppeteer.args.delete(seq);
-            resolve(value);
-          },
-          reject(value) {
-            callPuppeteer.args.delete(seq);
-            reject(value);
-          }
-        });
-      });
-    }
-  });
-}
-var CDP_BINDING_PREFIX = "puppeteer_";
-function pageBindingInitString(type, name) {
-  return evaluationString(addPageBinding, type, name, CDP_BINDING_PREFIX);
-}
-function convertConsoleMessageLevel(method) {
-  switch (method) {
-    case "warning":
-      return "warn";
-    default:
-      return method;
-  }
-}
-
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/JSHandle.js
 var CdpJSHandle = class extends JSHandle {
   #disposed = false;
@@ -14669,7 +14691,11 @@ function normalizeHeadersInput(headers) {
 }
 function headersInputToRecord(headers) {
   return Object.fromEntries(Object.entries(normalizeHeadersInput(headers)).map(([key, value]) => {
-    return [key, Array.isArray(value) ? value.join(", ") : value];
+    const normalizedValue = Array.isArray(value) ? value.join(", ") : value;
+    if (/[\r\n]/.test(key) || /[\r\n]/.test(normalizedValue)) {
+      throw new Error(`Invalid header: CRLF characters are not allowed in header names or values (header: "${key}").`);
+    }
+    return [key, normalizedValue];
   }));
 }
 var HTTPRequest = class {
@@ -15119,6 +15145,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
   #initiator;
   #logger;
   #resolution = null;
+  #worker;
   get client() {
     return this.#client;
   }
@@ -15134,7 +15161,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
   set _fetchClient(fetchClient) {
     this.#fetchClient = fetchClient;
   }
-  constructor(client, frame, interceptionId, allowInterception, data, redirectChain, logger, fetchClient = client) {
+  constructor(client, frame, worker, interceptionId, allowInterception, data, redirectChain, logger, fetchClient = client) {
     super();
     this.#logger = logger;
     this.#client = client;
@@ -15160,6 +15187,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
     }
     this.#hasPostData = data.request.hasPostData ?? false;
     this.#frame = frame;
+    this.#worker = worker;
     this._redirectChain = redirectChain;
     this.#initiator = data.initiator;
     this.interception.enabled = allowInterception;
@@ -15212,6 +15240,12 @@ var CdpHTTPRequest = class extends HTTPRequest {
   response() {
     return this._response;
   }
+  page() {
+    return this.#frame?.page() ?? null;
+  }
+  worker() {
+    return this.#worker;
+  }
   frame() {
     return this.#frame;
   }
@@ -15233,7 +15267,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
     };
   }
   canBeIntercepted() {
-    return !this.url().startsWith("data:") && !this._fromMemoryCache;
+    return !this.url().startsWith("data:") && !this._fromMemoryCache && Boolean(this._interceptionId);
   }
   /**
    * @internal
@@ -15487,6 +15521,88 @@ function normalizeHeaderValue(name, value) {
   }).filter(Boolean).join(name === "set-cookie" ? "\n " : ", ");
 }
 
+// ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/ResponseBodyStream.js
+async function createResponseBodyStream(client, requestId) {
+  let controller;
+  let pending = [];
+  const run = (action) => {
+    if (pending) {
+      pending.push(action);
+    } else {
+      action();
+    }
+  };
+  const onDataReceived = (event) => {
+    if (event.requestId !== requestId || !event.data) {
+      return;
+    }
+    const chunk = stringToTypedArray(event.data, true);
+    run(() => {
+      controller.enqueue(chunk);
+    });
+  };
+  const onLoadingFinished = (event) => {
+    if (event.requestId !== requestId) {
+      return;
+    }
+    cleanup();
+    run(() => {
+      controller.close();
+    });
+  };
+  const onLoadingFailed = (event) => {
+    if (event.requestId !== requestId) {
+      return;
+    }
+    cleanup();
+    run(() => {
+      controller.error(new Error(`Loading failed: ${event.errorText}`));
+    });
+  };
+  const onDisconnected = () => {
+    cleanup();
+    run(() => {
+      controller.error(new TargetCloseError("Session closed."));
+    });
+  };
+  const cleanup = () => {
+    client.off("Network.dataReceived", onDataReceived);
+    client.off("Network.loadingFinished", onLoadingFinished);
+    client.off("Network.loadingFailed", onLoadingFailed);
+    client.off(CDPSessionEvent.Disconnected, onDisconnected);
+  };
+  const stream = new ReadableStream({
+    start(streamController) {
+      controller = streamController;
+    },
+    cancel() {
+      cleanup();
+    }
+  });
+  client.on("Network.dataReceived", onDataReceived);
+  client.on("Network.loadingFinished", onLoadingFinished);
+  client.on("Network.loadingFailed", onLoadingFailed);
+  client.on(CDPSessionEvent.Disconnected, onDisconnected);
+  let bufferedData;
+  try {
+    ({ bufferedData } = await client.send("Network.streamResourceContent", {
+      requestId
+    }));
+  } catch (error) {
+    cleanup();
+    throw error;
+  }
+  if (bufferedData) {
+    controller.enqueue(stringToTypedArray(bufferedData, true));
+  }
+  const actions = pending;
+  pending = null;
+  for (const action of actions) {
+    action();
+  }
+  return stream;
+}
+
 // ../../front_end/third_party/puppeteer/package/lib/puppeteer/cdp/HTTPResponse.js
 var CdpHTTPResponse = class extends HTTPResponse {
   #request;
@@ -15500,6 +15616,7 @@ var CdpHTTPResponse = class extends HTTPResponse {
   #headers = {};
   #securityDetails;
   #timing;
+  #encodedDataLength = 0;
   constructor(request, responsePayload, extraInfo) {
     super();
     this.#request = request;
@@ -15518,6 +15635,7 @@ var CdpHTTPResponse = class extends HTTPResponse {
     }
     this.#securityDetails = responsePayload.securityDetails ? new SecurityDetails(responsePayload.securityDetails) : null;
     this.#timing = responsePayload.timing || null;
+    this._setEncodedDataLength(responsePayload.encodedDataLength);
   }
   #parseStatusTextFromExtraInfo(extraInfo) {
     if (!extraInfo || !extraInfo.headersText) {
@@ -15536,6 +15654,11 @@ var CdpHTTPResponse = class extends HTTPResponse {
       return;
     }
     return statusText;
+  }
+  _setEncodedDataLength(encodedDataLength) {
+    if (encodedDataLength >= 0) {
+      this.#encodedDataLength = encodedDataLength;
+    }
   }
   _resolveBody(err) {
     if (err) {
@@ -15564,6 +15687,9 @@ var CdpHTTPResponse = class extends HTTPResponse {
   timing() {
     return this.#timing;
   }
+  encodedDataLength() {
+    return this.#encodedDataLength;
+  }
   content() {
     if (!this.#contentPromise) {
       this.#contentPromise = this.#bodyLoadedDeferred.valueOrThrow().then(async () => {
@@ -15581,6 +15707,28 @@ var CdpHTTPResponse = class extends HTTPResponse {
       });
     }
     return this.#contentPromise;
+  }
+  async stream() {
+    if (this.#bodyLoadedDeferred.finished()) {
+      return await this.#contentStream();
+    }
+    try {
+      return await createResponseBodyStream(this.#request.client, this.#request.id);
+    } catch (error) {
+      if (error instanceof ProtocolError && error.originalMessage.includes("already finished loading")) {
+        return await this.#contentStream();
+      }
+      throw error;
+    }
+  }
+  async #contentStream() {
+    const content = await this.content();
+    return new ReadableStream({
+      start(controller) {
+        controller.enqueue(content);
+        controller.close();
+      }
+    });
   }
   request() {
     return this.#request;
@@ -15654,6 +15802,31 @@ var NetworkEventManager = class {
     this.#queuedRedirectInfoMap.delete(networkRequestId);
     this.#responseReceivedExtraInfoMap.delete(networkRequestId);
   }
+  /**
+   * Ids of the requests whose Network events come from `client`, both the
+   * ones already emitted and the ones still waiting for more events.
+   */
+  requestIdsForClient(client) {
+    const ids = /* @__PURE__ */ new Set();
+    for (const [id, request] of this.#httpRequestsMap) {
+      if (request.client === client) {
+        ids.add(id);
+      }
+    }
+    for (const [id, stored] of this.#requestWillBeSentMap) {
+      if (stored.client === client) {
+        ids.add(id);
+      }
+    }
+    for (const [id, infos] of this.#queuedRedirectInfoMap) {
+      if (infos.some((info) => {
+        return info.client === client;
+      })) {
+        ids.add(id);
+      }
+    }
+    return ids;
+  }
   requestExtraInfo(networkRequestId) {
     if (!this.#requestWillBeSentExtraInfoMap.has(networkRequestId)) {
       this.#requestWillBeSentExtraInfoMap.set(networkRequestId, []);
@@ -15713,6 +15886,18 @@ var NetworkEventManager = class {
   }
   forgetRequest(networkRequestId) {
     this.#httpRequestsMap.delete(networkRequestId);
+  }
+  /**
+   * With request interception enabled, Network.loadingFailed can arrive before
+   * the Fetch.requestPaused event that creates the request. The failure is
+   * kept with the stored requestWillBeSent event until then, so that
+   * `requestfailed` is not lost.
+   */
+  storeLoadingFailedBeforeRequest(networkRequestId, event, client) {
+    const requestWillBeSent = this.#requestWillBeSentMap.get(networkRequestId);
+    if (requestWillBeSent) {
+      requestWillBeSent.loadingFailed = { event, client };
+    }
   }
   getQueuedEventGroup(networkRequestId) {
     return this.#queuedEventGroupMap.get(networkRequestId);
@@ -15821,6 +16006,33 @@ var NetworkManager = class extends EventEmitter {
   async #removeClient(client) {
     this.#clients.get(client)?.dispose();
     this.#clients.delete(client);
+    if (!this.#frameManager.worker(client)) {
+      return;
+    }
+    for (const requestId of this.#networkEventManager.requestIdsForClient(client)) {
+      if (client.connection()?._closed) {
+        this.#networkEventManager.forgetRequest(requestId);
+        this.#networkEventManager.forget(requestId);
+      } else {
+        this.#abortPendingWorkerRequest(requestId);
+      }
+    }
+  }
+  /**
+   * Chrome does not send `Network.loadingFailed` or `Network.loadingFinished`
+   * for requests that are still pending when a dedicated worker is
+   * terminated. Fail them so that listeners observe the end of the request
+   * and they no longer count as in flight (e.g. for `waitForNetworkIdle`).
+   */
+  #abortPendingWorkerRequest(requestId) {
+    const request = this.#networkEventManager.getRequest(requestId);
+    if (!request) {
+      this.#networkEventManager.forget(requestId);
+      return;
+    }
+    request._failureText = "net::ERR_ABORTED";
+    this.#forgetRequest(request, true);
+    this.emit(NetworkManagerEvent.RequestFailed, request);
   }
   async authenticate(credentials) {
     this.#credentials = credentials;
@@ -16019,6 +16231,10 @@ var NetworkManager = class extends EventEmitter {
   #onRequestWillBeSent(client, event) {
     if (this.#userRequestInterceptionEnabled && !event.request.url.startsWith("data:")) {
       const { requestId: networkRequestId } = event;
+      const previousRequestWillBeSent = this.#networkEventManager.getRequestWillBeSent(networkRequestId);
+      if (previousRequestWillBeSent && event.redirectResponse) {
+        this.#onRequest(previousRequestWillBeSent.client, previousRequestWillBeSent.event, void 0);
+      }
       this.#networkEventManager.storeRequestWillBeSent(networkRequestId, event, client);
       const requestPaused = this.#networkEventManager.getRequestPaused(networkRequestId);
       if (requestPaused) {
@@ -16082,7 +16298,7 @@ var NetworkManager = class extends EventEmitter {
     }
     const { event: requestWillBeSentEvent, client: networkClient } = requestWillBeSent;
     if (requestWillBeSentEvent.request.url !== event.request.url || requestWillBeSentEvent.request.method !== event.request.method) {
-      this.#networkEventManager.forgetRequestWillBeSent(networkRequestId);
+      this.#onRequest(networkClient, requestWillBeSentEvent, void 0);
       this.#networkEventManager.storeRequestPaused(networkRequestId, event, client);
       return;
     }
@@ -16117,11 +16333,17 @@ var NetworkManager = class extends EventEmitter {
   }
   #onRequestWithoutNetworkInstrumentation(client, event) {
     const frame = event.frameId ? this.#frameManager.frame(event.frameId) : null;
-    const request = new CdpHTTPRequest(client, frame, event.requestId, this.#userRequestInterceptionEnabled, event, [], this.#logger);
+    const worker = this.#frameManager.worker(client);
+    const request = new CdpHTTPRequest(client, frame, worker, event.requestId, this.#userRequestInterceptionEnabled, event, [], this.#logger);
     this.emit(NetworkManagerEvent.Request, request);
     void request.finalizeInterceptions();
   }
   #onRequest(client, event, fetchRequestId, fetchClient = client, fromMemoryCache = false) {
+    const storedRequestWillBeSent = this.#networkEventManager.getRequestWillBeSent(event.requestId);
+    const loadingFailed = storedRequestWillBeSent?.event === event ? storedRequestWillBeSent.loadingFailed : void 0;
+    if (storedRequestWillBeSent?.event === event) {
+      this.#networkEventManager.forgetRequestWillBeSent(event.requestId);
+    }
     let redirectChain = [];
     if (event.redirectResponse) {
       let redirectResponseExtraInfo = null;
@@ -16148,16 +16370,21 @@ var NetworkManager = class extends EventEmitter {
       }
     }
     const frame = event.frameId ? this.#frameManager.frame(event.frameId) : null;
-    const request = new CdpHTTPRequest(client, frame, fetchRequestId, this.#userRequestInterceptionEnabled, event, redirectChain, this.#logger, fetchClient);
+    const worker = this.#frameManager.worker(client);
+    const request = new CdpHTTPRequest(client, frame, worker, fetchRequestId, this.#userRequestInterceptionEnabled, event, redirectChain, this.#logger, fetchClient);
     const extraInfo = this.#networkEventManager.requestExtraInfo(event.requestId).shift();
     if (extraInfo) {
       request.updateHeaders(extraInfo.headers);
     }
     request._fromMemoryCache = fromMemoryCache;
     this.#networkEventManager.storeRequest(event.requestId, request);
-    this.#networkEventManager.forgetRequestWillBeSent(event.requestId);
     this.emit(NetworkManagerEvent.Request, request);
-    void request.finalizeInterceptions();
+    const interceptionsFinalized = request.finalizeInterceptions();
+    if (loadingFailed) {
+      void interceptionsFinalized.finally(() => {
+        this.#emitLoadingFailed(loadingFailed.client, loadingFailed.event);
+      });
+    }
   }
   #onRequestWillBeSentExtraInfo(_client, event) {
     const request = this.#networkEventManager.getRequest(event.requestId);
@@ -16244,6 +16471,7 @@ var NetworkManager = class extends EventEmitter {
     this.#networkEventManager.responseExtraInfo(event.requestId).push(event);
   }
   #forgetRequest(request, events) {
+    request.response()?._resolveBody();
     const requestId = request.id;
     const interceptionId = request._interceptionId;
     this.#networkEventManager.forgetRequest(requestId);
@@ -16268,9 +16496,7 @@ var NetworkManager = class extends EventEmitter {
       return;
     }
     this.#adoptCdpSessionIfNeeded(client, request);
-    if (request.response()) {
-      request.response()?._resolveBody();
-    }
+    request.response()?._setEncodedDataLength(event.encodedDataLength);
     this.#forgetRequest(request, true);
     this.emit(NetworkManagerEvent.RequestFinished, request);
   }
@@ -16285,14 +16511,13 @@ var NetworkManager = class extends EventEmitter {
   #emitLoadingFailed(client, event) {
     const request = this.#networkEventManager.getRequest(event.requestId);
     if (!request) {
+      if (this.#userRequestInterceptionEnabled) {
+        this.#networkEventManager.storeLoadingFailedBeforeRequest(event.requestId, event, client);
+      }
       return;
     }
     this.#adoptCdpSessionIfNeeded(client, request);
     request._failureText = event.errorText || event.blockedReason || null;
-    const response = request.response();
-    if (response) {
-      response._resolveBody();
-    }
     this.#forgetRequest(request, true);
     this.emit(NetworkManagerEvent.RequestFailed, request);
   }
@@ -16549,6 +16774,9 @@ var FrameManager = class extends EventEmitter {
   }
   page() {
     return this.#page;
+  }
+  worker(client) {
+    return this.#page.worker(client);
   }
   mainFrame() {
     const mainFrame = this._frameTree.getMainFrame();
@@ -18468,18 +18696,28 @@ var CdpPage = class _CdpPage extends Page {
     const networkManagerEmitter = new EventEmitter(this.#frameManager.networkManager);
     networkManagerEmitter.on(NetworkManagerEvent.Request, (request) => {
       this.emit("request", request);
+      this.browserContext().emit("request", request);
+      this.browser().emit("request", request);
     });
     networkManagerEmitter.on(NetworkManagerEvent.RequestServedFromCache, (request) => {
       this.emit("requestservedfromcache", request);
+      this.browserContext().emit("requestservedfromcache", request);
+      this.browser().emit("requestservedfromcache", request);
     });
     networkManagerEmitter.on(NetworkManagerEvent.Response, (response) => {
       this.emit("response", response);
+      this.browserContext().emit("response", response);
+      this.browser().emit("response", response);
     });
     networkManagerEmitter.on(NetworkManagerEvent.RequestFailed, (request) => {
       this.emit("requestfailed", request);
+      this.browserContext().emit("requestfailed", request);
+      this.browser().emit("requestfailed", request);
     });
     networkManagerEmitter.on(NetworkManagerEvent.RequestFinished, (request) => {
       this.emit("requestfinished", request);
+      this.browserContext().emit("requestfinished", request);
+      this.browser().emit("requestfinished", request);
     });
     this.#tabTargetClient.on(CDPSessionEvent.Swapped, this.#onActivation.bind(this));
     this.#tabTargetClient.on(CDPSessionEvent.Ready, this.#onSecondaryTarget.bind(this));
@@ -18583,7 +18821,7 @@ var CdpPage = class _CdpPage extends Page {
           /* PageEvent.Console */
         ) === 0;
         const noListenersForConsoleOnWorker = worker.listenerCount(WebWorkerEvent.Console) === 0;
-        if (noListenersForConsoleOnPage && noListenersForConsoleOnWorker) {
+        if (noListenersForConsoleOnPage && noListenersForConsoleOnWorker && !this.#hasBrowserConsoleListeners()) {
           for (const arg of message.args()) {
             void arg.dispose().catch((error) => {
               this.logger?.(DEBUG_PREFIXES.error)?.(error);
@@ -18591,9 +18829,7 @@ var CdpPage = class _CdpPage extends Page {
           }
           return;
         }
-        if (!noListenersForConsoleOnPage) {
-          this.emit("console", message);
-        }
+        this.#emitConsoleMessage(message);
       });
       this.emit("workercreated", worker);
     }
@@ -18750,7 +18986,7 @@ var CdpPage = class _CdpPage extends Page {
       });
     }
     if (source2 !== "worker") {
-      this.emit("console", new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace, this.#primaryTarget._targetId, void 0));
+      this.#emitConsoleMessage(new ConsoleMessage(convertConsoleMessageLevel(level), text, [], [{ url, lineNumber }], void 0, stackTrace, this.#primaryTarget._targetId, void 0));
     }
   }
   mainFrame() {
@@ -18776,6 +19012,9 @@ var CdpPage = class _CdpPage extends Page {
   }
   workers() {
     return Array.from(this.#workers.values());
+  }
+  worker(client) {
+    return this.#workers.get(client.id()) ?? null;
   }
   async setRequestInterception(value) {
     return await this.#frameManager.networkManager.setRequestInterception(value);
@@ -18999,7 +19238,7 @@ var CdpPage = class _CdpPage extends Page {
       /* PageEvent.Console */
     ) > 0;
     const hasWorkerConsoleListeners = world.environment instanceof WebWorker && world.environment.listenerCount(WebWorkerEvent.Console) > 0;
-    if (!hasPageConsoleListeners) {
+    if (!hasPageConsoleListeners && !this.#hasBrowserConsoleListeners()) {
       if (!hasWorkerConsoleListeners) {
         for (const value of values) {
           void value.dispose().catch((error) => {
@@ -19017,7 +19256,25 @@ var CdpPage = class _CdpPage extends Page {
     if (world.environment instanceof CdpFrame) {
       frame = world.environment;
     }
-    this.emit("console", createConsoleMessage(event, values, targetId, frame));
+    this.#emitConsoleMessage(createConsoleMessage(event, values, targetId, frame));
+  }
+  #hasBrowserConsoleListeners() {
+    return this.browserContext().listenerCount(
+      "console"
+      /* BrowserContextEvent.Console */
+    ) > 0 || this.browser().listenerCount(
+      "console"
+      /* BrowserEvent.Console */
+    ) > 0;
+  }
+  /**
+   * Emits the message on the page and bubbles it up to the browser context
+   * and the browser.
+   */
+  #emitConsoleMessage(message) {
+    this.emit("console", message);
+    this.browserContext().emit("console", message);
+    this.browser().emit("console", message);
   }
   async #onBindingCalled(world, event) {
     let payload;
@@ -19281,21 +19538,6 @@ var CdpPage = class _CdpPage extends Page {
     return new CdpScreenRecording(this, options, this.logger);
   }
 };
-var supportedMetrics = /* @__PURE__ */ new Set([
-  "Timestamp",
-  "Documents",
-  "Frames",
-  "JSEventListeners",
-  "Nodes",
-  "LayoutCount",
-  "RecalcStyleCount",
-  "LayoutDuration",
-  "RecalcStyleDuration",
-  "ScriptDuration",
-  "TaskDuration",
-  "JSHeapUsedSize",
-  "JSHeapTotalSize"
-]);
 function getIntersectionRect(clip, viewport) {
   const x2 = Math.max(clip.x, viewport.x);
   const y = Math.max(clip.y, viewport.y);
@@ -19852,11 +20094,40 @@ var WorkerTarget = class extends CdpTarget {
         /* isAutoAttachEmulated=*/
         false
       )).then((client) => {
-        return new CdpWebWorker(client, this._getTargetInfo().url, this._targetId, this.type(), () => {
+        const worker = new CdpWebWorker(client, this._getTargetInfo().url, this._targetId, this.type(), () => {
         }, void 0, this.logger);
+        this.#bubbleConsoleMessages(worker);
+        return worker;
       });
     }
     return await this.#workerPromise;
+  }
+  /**
+   * Service and shared workers are not owned by a page, so their console
+   * messages are bubbled up to the browser context and the browser here.
+   */
+  #bubbleConsoleMessages(worker) {
+    worker.internalEmitter.on(WebWorkerEvent.Console, (message) => {
+      const context2 = this.browserContext();
+      const browser = this.browser();
+      const hasListeners = worker.listenerCount(WebWorkerEvent.Console) > 0 || context2.listenerCount(
+        "console"
+        /* BrowserContextEvent.Console */
+      ) > 0 || browser.listenerCount(
+        "console"
+        /* BrowserEvent.Console */
+      ) > 0;
+      if (!hasListeners) {
+        for (const arg of message.args()) {
+          void arg.dispose().catch((error) => {
+            this.logger?.(DEBUG_PREFIXES.error)?.(error);
+          });
+        }
+        return;
+      }
+      context2.emit("console", message);
+      browser.emit("console", message);
+    });
   }
 };
 var OtherTarget = class extends CdpTarget {

@@ -66,7 +66,7 @@ __export(CSSMetadata_exports, {
   cssMetadata: () => cssMetadata
 });
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -2906,7 +2906,7 @@ var Runtime;
   })(ConsoleAPICalledEventType = Runtime9.ConsoleAPICalledEventType || (Runtime9.ConsoleAPICalledEventType = {}));
 })(Runtime || (Runtime = {}));
 
-// ../../front_end/generated/SupportedCSSProperties.ts
+// gen/front_end/generated/SupportedCSSProperties.ts
 var generatedProperties = [
   {
     "longhands": [
@@ -3219,6 +3219,11 @@ var generatedProperties = [
   },
   {
     "inherited": true,
+    "keywords": [
+      "horizontal-tb",
+      "vertical-rl",
+      "vertical-lr"
+    ],
     "name": "-webkit-writing-mode"
   },
   {
@@ -3327,6 +3332,7 @@ var generatedProperties = [
       "animation-fill-mode",
       "animation-iteration-count",
       "animation-name",
+      "animation-navigation-behavior",
       "animation-play-state",
       "animation-range-end",
       "animation-range-start",
@@ -3884,6 +3890,15 @@ var generatedProperties = [
   },
   {
     "keywords": [
+      "abrupt",
+      "continuous"
+    ],
+    "name": "animation-navigation-behavior",
+    "runtime_flag": "CSSAnimationNavigationBehavior",
+    "runtime_flag_status": "experimental"
+  },
+  {
+    "keywords": [
       "running",
       "paused"
     ],
@@ -3938,6 +3953,11 @@ var generatedProperties = [
       "none",
       "move",
       "no-drag"
+    ],
+    "keywords": [
+      "drag",
+      "no-drag",
+      "none"
     ],
     "name": "app-region"
   },
@@ -5232,7 +5252,7 @@ var generatedProperties = [
     ],
     "name": "corner",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5243,7 +5263,7 @@ var generatedProperties = [
     ],
     "name": "corner-block-end",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5261,7 +5281,7 @@ var generatedProperties = [
     ],
     "name": "corner-block-start",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5279,7 +5299,7 @@ var generatedProperties = [
     ],
     "name": "corner-bottom",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5288,7 +5308,7 @@ var generatedProperties = [
     ],
     "name": "corner-bottom-left",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -5308,7 +5328,7 @@ var generatedProperties = [
     ],
     "name": "corner-bottom-right",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -5335,7 +5355,7 @@ var generatedProperties = [
     ],
     "name": "corner-end-end",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "name": "corner-end-end-shape"
@@ -5347,7 +5367,7 @@ var generatedProperties = [
     ],
     "name": "corner-end-start",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "name": "corner-end-start-shape"
@@ -5361,7 +5381,7 @@ var generatedProperties = [
     ],
     "name": "corner-inline-end",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5379,7 +5399,7 @@ var generatedProperties = [
     ],
     "name": "corner-inline-start",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5397,7 +5417,7 @@ var generatedProperties = [
     ],
     "name": "corner-left",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5415,7 +5435,7 @@ var generatedProperties = [
     ],
     "name": "corner-right",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5440,7 +5460,7 @@ var generatedProperties = [
     ],
     "name": "corner-start-end",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "name": "corner-start-end-shape"
@@ -5452,7 +5472,7 @@ var generatedProperties = [
     ],
     "name": "corner-start-start",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "name": "corner-start-start-shape"
@@ -5466,7 +5486,7 @@ var generatedProperties = [
     ],
     "name": "corner-top",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "longhands": [
@@ -5475,7 +5495,7 @@ var generatedProperties = [
     ],
     "name": "corner-top-left",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -5495,7 +5515,7 @@ var generatedProperties = [
     ],
     "name": "corner-top-right",
     "runtime_flag": "CSSCornersShorthand",
-    "runtime_flag_status": "experimental"
+    "runtime_flag_status": "stable"
   },
   {
     "keywords": [
@@ -5657,9 +5677,7 @@ var generatedProperties = [
       "flow",
       "math",
       "ruby",
-      "ruby-text",
-      "grid-lanes",
-      "inline-grid-lanes"
+      "ruby-text"
     ],
     "name": "display"
   },
@@ -5935,9 +5953,7 @@ var generatedProperties = [
       "ic-height",
       "from-font"
     ],
-    "name": "font-size-adjust",
-    "runtime_flag": "CSSFontSizeAdjust",
-    "runtime_flag_status": "stable"
+    "name": "font-size-adjust"
   },
   {
     "inherited": true,
@@ -7318,6 +7334,11 @@ var generatedProperties = [
   },
   {
     "is_descriptor": true,
+    "keywords": [
+      "upright",
+      "rotate-left",
+      "rotate-right"
+    ],
     "name": "page-orientation"
   },
   {
@@ -7568,9 +7589,6 @@ var generatedProperties = [
       "grid-rows",
       "grid-columns",
       "grid-order",
-      "grid-lanes-flow",
-      "grid-lanes-track",
-      "grid-lanes-order",
       "source-order"
     ],
     "name": "reading-flow"
@@ -7752,9 +7770,7 @@ var generatedProperties = [
       "none",
       "spaces"
     ],
-    "name": "ruby-overhang",
-    "runtime_flag": "CSSRubyOverhang",
-    "runtime_flag_status": "stable"
+    "name": "ruby-overhang"
   },
   {
     "inherited": true,
@@ -8050,8 +8066,7 @@ var generatedProperties = [
   {
     "keywords": [
       "normal",
-      "always",
-      "before"
+      "always"
     ],
     "name": "scroll-snap-stop"
   },
@@ -8298,8 +8313,7 @@ var generatedProperties = [
       "-webkit-right",
       "-webkit-center",
       "start",
-      "end",
-      "match-parent"
+      "end"
     ],
     "name": "text-align"
   },
@@ -8321,8 +8335,7 @@ var generatedProperties = [
       "left",
       "right",
       "center",
-      "justify",
-      "match-parent"
+      "justify"
     ],
     "name": "text-align-last"
   },
@@ -8417,8 +8430,7 @@ var generatedProperties = [
     "inherited": true,
     "keywords": [
       "none",
-      "auto",
-      "all"
+      "auto"
     ],
     "name": "text-decoration-skip-ink"
   },
@@ -8852,8 +8864,7 @@ var generatedProperties = [
       "auto",
       "none",
       "text",
-      "all",
-      "contain"
+      "all"
     ],
     "name": "user-select"
   },
@@ -9202,6 +9213,13 @@ var generatedPropertyValues = {
       "read-write-plaintext-only"
     ]
   },
+  "-webkit-writing-mode": {
+    "values": [
+      "horizontal-tb",
+      "vertical-rl",
+      "vertical-lr"
+    ]
+  },
   "accent-color": {
     "values": [
       "auto",
@@ -9289,6 +9307,12 @@ var generatedPropertyValues = {
   "animation-name": {
     "values": [
       "none"
+    ]
+  },
+  "animation-navigation-behavior": {
+    "values": [
+      "abrupt",
+      "continuous"
     ]
   },
   "animation-play-state": {
@@ -11190,6 +11214,13 @@ var generatedPropertyValues = {
       "add"
     ]
   },
+  "page-orientation": {
+    "values": [
+      "upright",
+      "rotate-left",
+      "rotate-right"
+    ]
+  },
   "paint-order": {
     "values": [
       "normal",
@@ -11341,9 +11372,6 @@ var generatedPropertyValues = {
       "grid-rows",
       "grid-columns",
       "grid-order",
-      "grid-lanes-flow",
-      "grid-lanes-track",
-      "grid-lanes-order",
       "source-order"
     ]
   },
@@ -11551,8 +11579,7 @@ var generatedPropertyValues = {
   "scroll-snap-stop": {
     "values": [
       "normal",
-      "always",
-      "before"
+      "always"
     ]
   },
   "scroll-snap-type": {
@@ -11747,8 +11774,7 @@ var generatedPropertyValues = {
   "text-decoration-skip-ink": {
     "values": [
       "none",
-      "auto",
-      "all"
+      "auto"
     ]
   },
   "text-decoration-skip-spaces": {
@@ -15924,6 +15950,7 @@ var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
   #id;
   #modelByConstructor = /* @__PURE__ */ new Map();
   #isSuspended;
+  #suspendGeneration = 0;
   /**
    * Generally when a target crashes we don't need to know, with one exception.
    * If a target crashes during the recording of a performance trace, after the
@@ -16112,10 +16139,14 @@ var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
       return;
     }
     this.#isSuspended = true;
+    const generation = ++this.#suspendGeneration;
     if (this.#hasCrashed) {
       return;
     }
     await Promise.all(Array.from(this.models().values(), (m) => m.preSuspendModel(reason)));
+    if (generation !== this.#suspendGeneration) {
+      return;
+    }
     await Promise.all(Array.from(this.models().values(), (m) => m.suspendModel(reason)));
   }
   async resume() {
@@ -16123,6 +16154,7 @@ var Target2 = class extends ProtocolClient.InspectorBackend.TargetBase {
       return;
     }
     this.#isSuspended = false;
+    ++this.#suspendGeneration;
     if (this.#hasCrashed) {
       return;
     }
@@ -22075,7 +22107,9 @@ function comparePositions(a, b) {
 // ../../front_end/core/sdk/SourceMapRangeMappings.ts
 var SourceMapRangeMappings_exports = {};
 __export(SourceMapRangeMappings_exports, {
-  decodeRangeMappings: () => decodeRangeMappings
+  decodeRangeMappings: () => decodeRangeMappings,
+  interpolateGeneratedPosition: () => interpolateGeneratedPosition,
+  interpolateOriginalPosition: () => interpolateOriginalPosition
 });
 function decodeRangeMappings(encodedRangeMappings) {
   const rangeMappings = [];
@@ -22095,6 +22129,20 @@ function decodeRangeMappings(encodedRangeMappings) {
   }
   rangeMappings.push(indices);
   return rangeMappings;
+}
+function interpolateOriginalPosition(rangeMapping, lineNumber, columnNumber) {
+  const lineOffset = lineNumber - rangeMapping.lineNumber;
+  return {
+    lineNumber: rangeMapping.sourceLineNumber + lineOffset,
+    columnNumber: lineOffset === 0 ? rangeMapping.sourceColumnNumber + (columnNumber - rangeMapping.columnNumber) : columnNumber
+  };
+}
+function interpolateGeneratedPosition(rangeMapping, lineNumber, columnNumber) {
+  const lineOffset = lineNumber - rangeMapping.sourceLineNumber;
+  return {
+    lineNumber: rangeMapping.lineNumber + lineOffset,
+    columnNumber: lineOffset === 0 ? rangeMapping.columnNumber + (columnNumber - rangeMapping.sourceColumnNumber) : columnNumber
+  };
 }
 
 // ../../front_end/core/sdk/SourceMapScopesInfo.ts
@@ -23146,11 +23194,31 @@ var SourceMap = class _SourceMap {
     const index = Platform7.ArrayUtilities.upperBound(
       mappings,
       void 0,
-      (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber
+      (_, entry2) => lineNumber - entry2.lineNumber || columnNumber - entry2.columnNumber
     );
-    return index ? mappings[index - 1] : null;
+    if (!index) {
+      return null;
+    }
+    const entry = mappings[index - 1];
+    if (!entry.isRangeMapping || entry.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
+      return entry;
+    }
+    const sourcePosition = interpolateOriginalPosition(entry, lineNumber, columnNumber);
+    return new SourceMapEntry(
+      lineNumber,
+      columnNumber,
+      entry.sourceIndex,
+      entry.sourceURL,
+      sourcePosition.lineNumber,
+      sourcePosition.columnNumber,
+      void 0,
+      true
+    );
   }
-  /** Returns the entry at the given position but only if an entry exists for that exact position */
+  /**
+   * Returns the entry at the given position but only if an entry exists for that exact position.
+   * A range mapping maps every position it covers exactly, so those positions count as exact too.
+   */
   findEntryExact(lineNumber, columnNumber) {
     const entry = this.findEntry(lineNumber, columnNumber);
     if (entry?.lineNumber === lineNumber && entry.columnNumber === columnNumber) {
@@ -23181,6 +23249,16 @@ var SourceMap = class _SourceMap {
       endLine,
       endColumn
     );
+    if (mappings[startIndex].isRangeMapping) {
+      const sourceEnd = endIndex < mappings.length ? interpolateOriginalPosition(mappings[startIndex], endLine, endColumn) : { lineNumber: endLine, columnNumber: endColumn };
+      const sourceRange2 = new TextUtils15.TextRange.TextRange(
+        mappings[startIndex].sourceLineNumber,
+        mappings[startIndex].sourceColumnNumber,
+        sourceEnd.lineNumber,
+        sourceEnd.columnNumber
+      );
+      return { range, sourceRange: sourceRange2, sourceURL };
+    }
     const reverseMappings = this.#reversedMappings(sourceURL);
     const startSourceLine = mappings[startIndex].sourceLineNumber;
     const startSourceColumn = mappings[startIndex].sourceColumnNumber;
@@ -24192,7 +24270,12 @@ var TargetManager = class _TargetManager extends Common11.ObjectWrapper.ObjectWr
     }
     this.#isSuspended = true;
     this.dispatchEventToListeners("SuspendStateChanged" /* SUSPEND_STATE_CHANGED */);
-    const suspendPromises = Array.from(this.#targets.values(), (target) => target.suspend(reason));
+    const suspendPromises = Array.from(this.#targets.values(), async (target) => {
+      await this.#waitForPromiseWithTimeout(
+        target.suspend(reason),
+        `Timeout waiting for target ${target.name()} to suspend`
+      );
+    });
     await Promise.all(suspendPromises);
   }
   async #waitForPromiseWithTimeout(promise, timeoutMessage) {
@@ -24201,9 +24284,12 @@ var TargetManager = class _TargetManager extends Common11.ObjectWrapper.ObjectWr
       this.getConsole().warn(timeoutMessage);
       timeoutResolve();
     }, 2e3);
-    await Promise.race([promise, timeoutPromise]);
-    globalThis.clearTimeout(timeoutId);
-    timeoutResolve();
+    try {
+      await Promise.race([promise, timeoutPromise]);
+    } finally {
+      globalThis.clearTimeout(timeoutId);
+      timeoutResolve();
+    }
   }
   async resumeAllTargets() {
     if (!this.#isSuspended) {
@@ -33209,10 +33295,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     return await enablePromise;
   }
   onFrameNavigated() {
-    if (_DebuggerModel.shouldResyncDebuggerId) {
-      return;
-    }
-    _DebuggerModel.shouldResyncDebuggerId = true;
+    _DebuggerModel.modelsNeedingDebuggerIdResync.add(this);
   }
   registerDebugger(response) {
     if (response.getError()) {
@@ -33220,6 +33303,9 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     const { debuggerId } = response;
+    if (typeof this.#debuggerId === "string" && this.#debuggerId !== debuggerId) {
+      debuggerIdToModel.delete(this.#debuggerId);
+    }
     debuggerIdToModel.set(debuggerId, this);
     this.#debuggerId = debuggerId;
     this.dispatchEventToListeners("DebuggerIsReadyToPause" /* DebuggerIsReadyToPause */, this);
@@ -33228,19 +33314,29 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     return Boolean(this.#debuggerId);
   }
   static async modelForDebuggerId(debuggerId) {
-    if (_DebuggerModel.shouldResyncDebuggerId) {
+    const existingModel = debuggerIdToModel.get(debuggerId);
+    if (existingModel) {
+      return existingModel;
+    }
+    if (_DebuggerModel.modelsNeedingDebuggerIdResync.size > 0 || _DebuggerModel.resyncDebuggerIdPromise) {
       await _DebuggerModel.resyncDebuggerIdForModels();
-      _DebuggerModel.shouldResyncDebuggerId = false;
     }
     return debuggerIdToModel.get(debuggerId) || null;
   }
   static async resyncDebuggerIdForModels() {
-    const dbgModels = debuggerIdToModel.values();
-    for (const dbgModel of dbgModels) {
-      if (dbgModel.debuggerEnabled()) {
-        await dbgModel.syncDebuggerId();
-      }
+    if (!_DebuggerModel.resyncDebuggerIdPromise) {
+      const promise = (async () => {
+        while (_DebuggerModel.modelsNeedingDebuggerIdResync.size > 0) {
+          const dbgModels = Array.from(_DebuggerModel.modelsNeedingDebuggerIdResync).filter((m) => m.debuggerEnabled());
+          _DebuggerModel.modelsNeedingDebuggerIdResync.clear();
+          await Promise.all(dbgModels.map((m) => m.syncDebuggerId()));
+        }
+      })();
+      _DebuggerModel.resyncDebuggerIdPromise = promise.finally(() => {
+        _DebuggerModel.resyncDebuggerIdPromise = null;
+      });
     }
+    await _DebuggerModel.resyncDebuggerIdPromise;
   }
   async disableDebugger() {
     if (!this.#debuggerEnabled) {
@@ -33256,6 +33352,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       debuggerIdToModel.delete(this.#debuggerId);
     }
     this.#debuggerId = null;
+    _DebuggerModel.modelsNeedingDebuggerIdResync.delete(this);
   }
   skipAllPauses(skip) {
     if (this.#skipAllPausesSetting.get()) {
@@ -33729,6 +33826,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     return !error;
   }
   dispose() {
+    _DebuggerModel.modelsNeedingDebuggerIdResync.delete(this);
     if (this.#debuggerId) {
       debuggerIdToModel.delete(this.#debuggerId);
     }
@@ -33747,7 +33845,8 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   async resumeModel() {
     await this.enableDebugger();
   }
-  static shouldResyncDebuggerId = false;
+  static modelsNeedingDebuggerIdResync = /* @__PURE__ */ new Set();
+  static resyncDebuggerIdPromise = null;
   getEvaluateOnCallFrameCallback() {
     return this.evaluateOnCallFrameCallback;
   }
@@ -42073,6 +42172,11 @@ var RehydratingConnectionTransport = class {
   fetchPromiseForTest;
   #onConnectionLost;
   #rehydratingWindow = window;
+  // The window we announced ourselves to; the only one allowed to send the trace.
+  #hostWindow = null;
+  // Popup openers (`TimelinePanel.#launchRehydratedSession`) are always same-origin, whereas
+  // external tools may embed `trace_app.html` in a cross-origin iframe (crbug.com/453705035).
+  #requireSameOriginHost = false;
   #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
   constructor(onConnectionLost) {
     this.#onConnectionLost = onConnectionLost;
@@ -42105,32 +42209,53 @@ var RehydratingConnectionTransport = class {
     return false;
   }
   #setupMessagePassing() {
-    this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
     if (this.#rehydratingWindow.opener) {
+      this.#hostWindow = this.#rehydratingWindow.opener;
+      this.#requireSameOriginHost = true;
+      this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
       this.#rehydratingWindow.opener.postMessage({ type: "REHYDRATING_WINDOW_READY" });
     } else if (this.#rehydratingWindow !== window.top) {
+      this.#hostWindow = this.#rehydratingWindow.parent;
+      this.#requireSameOriginHost = false;
+      this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
       this.#rehydratingWindow.parent.postMessage({ type: "REHYDRATING_IFRAME_READY" }, "*");
     } else {
       this.#onConnectionLost(i18nString14(UIStrings14.noHostWindow));
     }
   }
   /**
+   * The trace payload is replayed into the front-end as synthetic CDP events, so only accept it
+   * from the window we announced ourselves to. For popups, also require same-origin (matching
+   * `TimelinePanel.#launchRehydratedSession`); iframe embedders may be cross-origin
+   * (crbug.com/453705035), so `event.source` is checked there.
+   */
+  #isFromHostWindow(event) {
+    if (this.#hostWindow === null || event.source !== this.#hostWindow) {
+      return false;
+    }
+    if (this.#requireSameOriginHost && event.origin !== this.#rehydratingWindow.location.origin) {
+      return false;
+    }
+    return true;
+  }
+  /**
    * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
    * the trace event and all necessary data to power a rehydrated session.
    */
   onReceiveHostWindowPayload(event) {
-    if (event.data.type === "REHYDRATING_TRACE_FILE") {
-      const traceJson = event.data.traceJson;
-      let trace;
-      try {
-        trace = new TraceObject(JSON.parse(traceJson));
-      } catch {
-        this.#onConnectionLost(i18nString14(UIStrings14.errorLoadingLog));
-        return;
-      }
-      void this.startHydration(trace);
+    if (!this.#isFromHostWindow(event) || event.data?.type !== "REHYDRATING_TRACE_FILE") {
+      return;
     }
     this.#rehydratingWindow.removeEventListener("message", this.#onReceiveHostWindowPayloadBound);
+    const traceJson = event.data.traceJson;
+    let trace;
+    try {
+      trace = new TraceObject(JSON.parse(traceJson));
+    } catch {
+      this.#onConnectionLost(i18nString14(UIStrings14.errorLoadingLog));
+      return;
+    }
+    void this.startHydration(trace);
   }
   async startHydration(trace) {
     if (!this.onMessage || this.rehydratingConnectionState !== 2 /* INITIALIZED */) {
@@ -42218,6 +42343,7 @@ var RehydratingConnectionTransport = class {
     }
   }
   disconnect() {
+    this.#rehydratingWindow.removeEventListener("message", this.#onReceiveHostWindowPayloadBound);
     return Promise.reject();
   }
 };
@@ -45273,8 +45399,8 @@ var PreloadingAttemptRegistry = class {
     this.reconstructPipelines();
   }
   mergePrevious(prev) {
-    for (const [id, attempt] of this.map.entries()) {
-      prev.map.set(id, attempt);
+    for (const attempt of this.map.values()) {
+      prev.upsert(attempt);
     }
     this.map = prev.map;
     this.reconstructPipelines();

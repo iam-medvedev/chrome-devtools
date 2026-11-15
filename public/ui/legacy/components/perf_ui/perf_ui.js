@@ -49,7 +49,7 @@ var chartViewport_css_default = `/*
 
 :host-context(.platform-mac) ::-webkit-scrollbar-thumb {
   background-color: var(--color-scrollbar-mac); /* stylelint-disable-line plugin/use_theme_colors */
-  border-radius: 50px;
+  border-radius: var(--sys-shape-corner-full);
 }
 
 :host-context(.platform-mac) .chart-viewport-v-scroll:hover::-webkit-scrollbar-thumb {
@@ -80,14 +80,6 @@ var chartViewport_css_default = `/*
   top: 0;
   bottom: 0;
   text-align: center;
-}
-
-.chart-viewport-selection-overlay .time-span {
-  white-space: nowrap;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 /*# sourceURL=${import.meta.resolve("./chartViewport.css")} */`;
@@ -620,7 +612,8 @@ var FlameChartBase = Common.ObjectWrapper.eventMixin(
 var FlameChart = class extends FlameChartBase {
   flameChartDelegate;
   chartViewport;
-  dataProvider;
+  #dataProvider;
+  #windowTimes;
   candyStripePattern;
   candyStripePatternGray;
   contextMenu;
@@ -737,11 +730,13 @@ var FlameChart = class extends FlameChartBase {
       enableCursorElement
     });
     this.chartViewport.show(this.contentElement);
-    this.dataProvider = dataProvider;
+    this.#dataProvider = dataProvider;
     this.viewportElement = this.chartViewport.viewportElement;
     this.canvas = this.viewportElement.createChild("canvas", "fill");
     if (optionalConfig.canvasVELogContext) {
       const context = VisualLogging.canvas(optionalConfig.canvasVELogContext).track({
+        click: true,
+        drag: true,
         hover: true
       });
       this.canvas.setAttribute("jslog", `${context}`);
@@ -865,17 +860,33 @@ var FlameChart = class extends FlameChartBase {
   disableRangeSelection() {
     this.chartViewport.disableRangeSelection();
   }
+  get dataProvider() {
+    return this.#dataProvider;
+  }
+  set dataProvider(dataProvider) {
+    this.setDataProvider(dataProvider);
+  }
   setDataProvider(dataProvider) {
-    if (this.dataProvider === dataProvider) {
+    if (this.#dataProvider === dataProvider) {
       return;
     }
-    this.dataProvider = dataProvider;
+    this.#dataProvider = dataProvider;
     this.reset();
-    this.chartViewport.setWindowTimes(
-      dataProvider.minimumBoundary(),
-      dataProvider.minimumBoundary() + dataProvider.totalTime()
-    );
+    if (this.#windowTimes) {
+      this.chartViewport.setWindowTimes(this.#windowTimes.min, this.#windowTimes.max, this.#windowTimes.animate);
+    } else {
+      this.chartViewport.setWindowTimes(
+        dataProvider.minimumBoundary(),
+        dataProvider.minimumBoundary() + dataProvider.totalTime()
+      );
+    }
     this.scheduleUpdate();
+  }
+  get delegate() {
+    return this.flameChartDelegate;
+  }
+  set delegate(flameChartDelegate) {
+    this.setDelegate(flameChartDelegate);
   }
   setDelegate(flameChartDelegate) {
     this.flameChartDelegate = flameChartDelegate;
@@ -1115,6 +1126,7 @@ var FlameChart = class extends FlameChartBase {
     };
   }
   set windowTimes(windowTimes) {
+    this.#windowTimes = windowTimes;
     this.setWindowTimes(windowTimes.min, windowTimes.max, windowTimes.animate);
   }
   performUpdate() {
@@ -2840,20 +2852,26 @@ var FlameChart = class extends FlameChartBase {
     const { entryStartTimes, entryTotalTimes, entryLevels } = timelineData;
     this.customDrawnPositions.clear();
     context.save();
+    const top = this.chartViewport.scrollOffset();
     const posArray = [];
     for (const [entryIndex, drawOverride] of this.#indexToDrawOverride.entries()) {
-      const entryStartTime = entryStartTimes[entryIndex];
-      const entryTotalTime = entryTotalTimes[entryIndex];
       const level = entryLevels[entryIndex];
-      const group = this.dataProvider.groupForEvent?.(entryIndex);
-      if (group?.hidden) {
+      if (!this.visibleLevels?.[level]) {
         continue;
       }
-      const unclippedXStart = this.chartViewport.timeToPosition(entryStartTime);
-      const unclippedXEnd = this.chartViewport.timeToPosition(entryStartTime + entryTotalTime);
-      const x = unclippedXStart;
       const y = this.levelToOffset(level);
       const height = this.levelHeight(level);
+      if (this.offsetHeight > 0 && (y + height < top || y > top + this.offsetHeight)) {
+        continue;
+      }
+      const entryStartTime = entryStartTimes[entryIndex];
+      const entryTotalTime = entryTotalTimes[entryIndex];
+      const unclippedXStart = this.chartViewport.timeToPosition(entryStartTime);
+      const unclippedXEnd = this.chartViewport.timeToPosition(entryStartTime + entryTotalTime);
+      if (this.offsetWidth > 0 && (unclippedXEnd + height < 0 || unclippedXStart - height > this.offsetWidth)) {
+        continue;
+      }
+      const x = unclippedXStart;
       const width = unclippedXEnd - unclippedXStart;
       const pos = drawOverride(
         context,
@@ -4584,7 +4602,7 @@ var filmStripView_css_default = `/*
 }
 
 .film-strip-view .frame .time {
-  font-size: 10px;
+  font-size: var(--sys-typescale-body5-size);
   margin-top: var(--sys-size-2);
 }
 
@@ -5127,7 +5145,7 @@ __export(NetworkPriorities_exports, {
 });
 import * as i18n7 from "../../../../core/i18n/i18n.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -8090,7 +8108,8 @@ var overviewGrid_css_default = `/*
 }
 
 .overview-grid-window-resizer::after {
-  left: 5px;
+  /* 2px (--sys-size-2) ::before left inset + 1px (--sys-size-1) ::before width + 2px (--sys-size-2) inter-grip gap */
+  left: calc(2 * var(--sys-size-2) + var(--sys-size-1));
 }
 
 .overview-grid-window-resizer:focus-visible {
@@ -8895,8 +8914,8 @@ var pieChart_css_default = `/*
 
 .pie-chart-swatch {
   display: inline-block;
-  width: 11px;
-  height: 11px;
+  width: var(--sys-size-5);
+  height: var(--sys-size-5);
   margin: 0 var(--sys-size-4);
   top: var(--sys-size-1);
   position: relative;

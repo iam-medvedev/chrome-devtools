@@ -55,8 +55,8 @@ export default `/*
 }
 
 .conditions-list-item {
-  padding: 3px 5px;
-  height: 30px;
+  padding: var(--sys-size-2) var(--sys-size-3);
+  height: var(--sys-size-12);
   display: flex;
   align-items: center;
   position: relative;
@@ -75,7 +75,7 @@ export default `/*
 }
 
 .conditions-list-text:last-child {
-  flex-basis: 100px;
+  flex-basis: var(--sys-size-19);
   text-align: left;
 }
 
@@ -96,7 +96,7 @@ export default `/*
 .conditions-list-separator {
   flex: 0 0 var(--sys-size-1);
   background-color: var(--sys-color-divider);
-  height: 30px;
+  height: var(--sys-size-13);
   margin: 0 var(--sys-size-3);
 }
 

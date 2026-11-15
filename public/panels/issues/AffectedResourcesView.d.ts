@@ -5,6 +5,7 @@ import type * as IssuesManager from '../../models/issues_manager/issues_manager.
 import * as Logs from '../../models/logs/logs.js';
 import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { type LitTemplate } from '../../ui/lit/lit.js';
 import type { IssueView } from './IssueView.js';
 export declare const enum AffectedItem {
     COOKIE = "Cookie",
@@ -23,6 +24,14 @@ export interface CreateRequestCellOptions {
     networkTab?: NetworkForward.UIRequestLocation.UIRequestTabs;
     additionalOnClickAction?: () => void;
 }
+export interface FrameCellData {
+    url: string;
+    hasFrame: boolean;
+    onReveal: () => void;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+}
+export declare function renderFrameCell(frame: FrameCellData | undefined): LitTemplate;
 /**
  * The base class for all affected resource views. It provides basic scaffolding
  * as well as machinery for resolving request and frame ids to SDK objects.
@@ -46,6 +55,7 @@ export declare abstract class AffectedResourcesView extends UI.TreeOutline.TreeE
     isEmpty(): boolean;
     clear(): void;
     expandIfOneResource(): void;
+    protected createFrameCellData(frameId: Protocol.Page.FrameId, issueCategory: IssuesManager.Issue.IssueCategory): FrameCellData;
     protected createFrameCell(frameId: Protocol.Page.FrameId, issueCategory: IssuesManager.Issue.IssueCategory): HTMLElement;
     protected createRequestCell(affectedRequest: Protocol.Audits.AffectedRequest, options?: CreateRequestCellOptions): HTMLElement;
     protected createElementCell({ backendNodeId, nodeName, target }: IssuesManager.Issue.AffectedElement, issueCategory: IssuesManager.Issue.IssueCategory): Promise<Element>;

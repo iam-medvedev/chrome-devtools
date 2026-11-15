@@ -653,7 +653,7 @@ __export(Dialog_exports, {
 });
 import * as Common16 from "../../core/common/common.js";
 import * as i18n27 from "../../core/i18n/i18n.js";
-import { nothing as nothing7, render as render10 } from "../lit/lit.js";
+import { nothing as nothing7, render as render11 } from "../lit/lit.js";
 import * as Buttons7 from "../components/buttons/buttons.js";
 import * as VisualLogging17 from "../visual_logging/visual_logging.js";
 
@@ -840,7 +840,7 @@ import * as Root8 from "../../core/root/root.js";
 import * as Buttons5 from "../components/buttons/buttons.js";
 import * as VisualLogging15 from "../visual_logging/visual_logging.js";
 import { createIcon as createIcon7 } from "../kit/kit.js";
-import { nothing as nothing5, render as render7 } from "../lit/lit.js";
+import { nothing as nothing5, render as render8 } from "../lit/lit.js";
 import * as SettingUIRegistration from "../settings/settings.js";
 
 // ../../front_end/ui/legacy/ContextMenu.ts
@@ -859,7 +859,7 @@ __export(ContextMenu_exports, {
 import * as Host8 from "../../core/host/host.js";
 import * as Root7 from "../../core/root/root.js";
 import * as Buttons4 from "../components/buttons/buttons.js";
-import { html as html5, render as render6 } from "../lit/lit.js";
+import { html as html5, render as render7 } from "../lit/lit.js";
 import * as VisualLogging11 from "../visual_logging/visual_logging.js";
 
 // ../../front_end/ui/legacy/ShortcutRegistry.ts
@@ -1635,6 +1635,7 @@ __export(SoftContextMenu_exports, {
 import * as i18n19 from "../../core/i18n/i18n.js";
 import { createIcon as createIcon6 } from "../kit/kit.js";
 import * as VisualLogging10 from "../visual_logging/visual_logging.js";
+import { render as render6 } from "../lit/lit.js";
 
 // ../../front_end/ui/legacy/InspectorView.ts
 var InspectorView_exports = {};
@@ -1936,7 +1937,7 @@ var infobar_css_default = `/*
 .infobar-details-row {
   display: flex;
   flex-direction: column;
-  line-height: 18px;
+  line-height: var(--sys-typescale-body3-5-line-height);
 
   + .infobar-details-row {
     padding-top: var(--sys-size-3);
@@ -2222,7 +2223,7 @@ var inspectorDrawerTabbedPane_css_default = `/*
 }
 
 .collapsed-vertical-drawer-container {
-  height: calc(100% - 27px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -2238,7 +2239,7 @@ var inspectorDrawerTabbedPane_css_default = `/*
   flex-direction: column;
   align-items: center;
   height: auto;
-  width: 27px;
+  width: 100%;
 }
 
 devtools-toolbar.collapsed-vertical-drawer-toolbar-content {
@@ -2255,8 +2256,8 @@ devtools-toolbar.collapsed-vertical-drawer-toolbar-content .toolbar-button {
   margin: 0 auto;
   padding: 0;
   padding-right: var(--sys-size-1);
-  width: 27px;
-  height: 26px;
+  width: 100%;
+  height: var(--toolbar-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3945,6 +3946,7 @@ var SplitWidget = class extends SplitWidgetBase {
       }
     });
     this.#resizerElement = this.contentElement.createChild("div", "shadow-split-widget-resizer");
+    this.#resizerElement.setAttribute("jslog", `${VisualLogging4.resizer().track({ drag: true })}`);
     this.#resizerWidget = new SimpleResizerWidget();
     this.#resizerWidget.setEnabled(true);
     this.#resizerWidget.addEventListener("ResizeStart" /* RESIZE_START */, this.#onResizeStart, this);
@@ -4467,11 +4469,11 @@ var SplitWidget = class extends SplitWidgetBase {
   uninstallResizer(resizerElement) {
     this.#resizerWidget.removeElement(resizerElement);
   }
-  toggleResizer(resizer, on) {
+  toggleResizer(resizer2, on) {
     if (on) {
-      this.installResizer(resizer);
+      this.installResizer(resizer2);
     } else {
-      this.uninstallResizer(resizer);
+      this.uninstallResizer(resizer2);
     }
   }
   #settingForOrientation() {
@@ -4822,7 +4824,8 @@ var tabbedPane_css_default = `/*
   margin-left: var(--sys-size-1);
   justify-self: center;
   position: relative;
-  top: 0.75px;
+  /* Nudge the dot 1px down to optically align it with the tab title. */
+  top: var(--sys-size-1);
 }
 
 .tabbed-pane-header-tab {
@@ -4927,7 +4930,7 @@ var tabbedPane_css_default = `/*
   width: auto;
   flex: 0 0 auto;
   flex-direction: column;
-  padding-top: 5px;
+  padding-top: var(--sys-size-3);
   overflow: hidden;
 }
 
@@ -4961,7 +4964,7 @@ var tabbedPane_css_default = `/*
   color: var(--sys-color-on-surface);
   position: relative;
 
-  & > .tabbed-pane-header-tab-icon devtools-icon {
+  & > .tabbed-pane-header-tab-icon {
     margin: 0;
     margin-right: var(--sys-size-6);
   }
@@ -4971,6 +4974,10 @@ var tabbedPane_css_default = `/*
     background-color: var(--app-color-navigation-drawer-background-selected);
 
     & > .tabbed-pane-header-tab-icon devtools-icon {
+      color: var(--app-color-navigation-drawer-label-selected);
+    }
+
+    & > .tabbed-pane-header-tab-icon slot::slotted(devtools-icon) {
       color: var(--app-color-navigation-drawer-label-selected);
     }
   }
@@ -5111,20 +5118,12 @@ var tabbedPane_css_default = `/*
   }
 
   .close-button {
-    --tabbed-pane-close-icon-color: ButtonText;
-
     forced-color-adjust: none;
   }
 
   .close-button:hover,
   .close-button:active {
-    --tabbed-pane-close-icon-color: HighlightText;
-
     background-color: Highlight;
-  }
-
-  .selected .close-button {
-    --tabbed-pane-close-icon-color: HighlightText;
   }
 }
 
@@ -9475,7 +9474,7 @@ function createLocaleInfobar() {
   const locale = new Intl.Locale(closestSupportedLocale);
   const closestSupportedLanguageInCurrentLocale = new Intl.DisplayNames([devtoolsLocale.locale], { type: "language" }).of(locale.language || "en") || "English";
   const languageSetting = Common11.Settings.Settings.instance().moduleSetting("language");
-  return new Infobar(
+  const infobar = new Infobar(
     "info" /* INFO */,
     i18nString9(UIStrings9.devToolsLanguageMissmatch, { PH1: closestSupportedLanguageInCurrentLocale }),
     [
@@ -9503,6 +9502,8 @@ function createLocaleInfobar() {
     getDisableLocaleInfoBarSetting(),
     "language-mismatch"
   );
+  infobar.setCloseCallback(() => getDisableLocaleInfoBarSetting().set(true));
+  return infobar;
 }
 function reloadDevTools() {
   if (DockController.instance().canDock() && DockController.instance().dockSide() === "undocked" /* UNDOCKED */) {
@@ -9937,13 +9938,20 @@ var SoftContextMenu = class _SoftContextMenu {
     }
     if (item8.element && !item8.label) {
       const wrapper = menuItemElement.createChild("div", "soft-context-menu-custom-item");
-      wrapper.appendChild(item8.element);
-      if (item8.element?.classList.contains("location-menu")) {
-        const label = item8.element.ariaLabel || "";
-        item8.element.ariaLabel = "";
+      if (item8.element instanceof Element) {
+        wrapper.appendChild(item8.element);
+      } else {
+        render6(item8.element, wrapper);
+      }
+      const customElement = item8.element instanceof Element ? item8.element : wrapper.firstElementChild;
+      if (customElement instanceof HTMLElement && customElement.classList.contains("location-menu")) {
+        const label = customElement.ariaLabel || "";
+        customElement.ariaLabel = "";
         setLabel(menuItemElement, label);
       }
-      detailsForElement.customElement = item8.element;
+      if (customElement instanceof HTMLElement) {
+        detailsForElement.customElement = customElement;
+      }
       this.detailsForElementMap.set(menuItemElement, detailsForElement);
       return menuItemElement;
     }
@@ -9952,7 +9960,13 @@ var SoftContextMenu = class _SoftContextMenu {
     }
     createTextChild(menuItemElement, item8.label || "");
     if (item8.element) {
-      menuItemElement.appendChild(item8.element);
+      if (item8.element instanceof Element) {
+        menuItemElement.appendChild(item8.element);
+      } else {
+        const fragment = document.createDocumentFragment();
+        render6(item8.element, fragment);
+        menuItemElement.appendChild(fragment);
+      }
     }
     menuItemElement.createChild("span", "soft-context-menu-shortcut").textContent = item8.shortcut || "";
     menuItemElement.addEventListener("mousedown", this.menuItemMouseDown.bind(this), false);
@@ -9972,7 +9986,7 @@ var SoftContextMenu = class _SoftContextMenu {
     } else if (item8.shortcut) {
       accessibleName = i18nString10(UIStrings10.sS, { PH1: String(item8.label), PH2: item8.shortcut });
     }
-    if (item8.element?.className === "new-badge") {
+    if (menuItemElement.querySelector(".new-badge")) {
       accessibleName = i18nString10(UIStrings10.sS, { PH1: String(item8.label), PH2: i18nString10(UIStrings10.newFeature) });
     }
     setLabel(menuItemElement, accessibleName);
@@ -10990,13 +11004,15 @@ var ContextMenu = class _ContextMenu extends SubMenu {
         menuObject,
         ownerDocument
       );
-      VisualLogging11.registerLoggable(
-        menuObject,
-        `${VisualLogging11.menu()}`,
-        this.loggableParent,
-        new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING * menuObject.length)
-      );
-      this.registerLoggablesWithin(menuObject);
+      if (menuObject.length > 0) {
+        VisualLogging11.registerLoggable(
+          menuObject,
+          `${VisualLogging11.menu()}`,
+          this.loggableParent,
+          new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING * menuObject.length)
+        );
+        this.registerLoggablesWithin(menuObject);
+      }
       this.openHostedMenu = menuObject;
       queueMicrotask(listenToEvents.bind(this));
     }
@@ -11086,7 +11102,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       this.onItemSelected,
       this
     );
-    if (this.openHostedMenu) {
+    if (this.openHostedMenu && this.openHostedMenu.length > 0) {
       void VisualLogging11.logResize(this.openHostedMenu, new DOMRect(0, 0, 0, 0));
     }
     this.openHostedMenu = null;
@@ -11250,7 +11266,7 @@ var MenuButton = class extends HTMLElement {
       throw new Error("<devtools-menu-button> expects an icon.");
     }
     const accessibleLabel = this.accessibleLabel ?? this.title;
-    render6(
+    render7(
       html5`
         <devtools-button .disabled=${this.disabled}
                          .iconName=${this.iconName}
@@ -13758,7 +13774,7 @@ var Toolbar = class _Toolbar extends HTMLElement {
       }
     }
     this.items = [];
-    render7(nothing5, this);
+    render8(nothing5, this);
   }
   hideSeparatorDupes() {
     if (!this.items.length) {
@@ -13856,10 +13872,10 @@ var ToolbarItem = class extends Common14.ObjectWrapper.ObjectWrapper {
     return this.#visible;
   }
   setVisible(x) {
+    this.element.classList.toggle("hidden", !x);
     if (this.#visible === x) {
       return;
     }
-    this.element.classList.toggle("hidden", !x);
     this.#visible = x;
     if (this.toolbar && !(this instanceof ToolbarSeparator)) {
       this.toolbar.hideSeparatorDupes();
@@ -14688,13 +14704,12 @@ input {
   color: var(--sys-color-on-primary);
 }
 
-:host(:not(.small)) input:not(.small) {
+:host(:not(.small, .inside-datagrid)) input:not(.small) {
   margin: var(--sys-size-4);
 }
 
 :host(.inside-datagrid) input {
-  height: 10px;
-  width: 10px;
+  margin: 0 var(--sys-size-3);
 }
 
 .devtools-checkbox-text {
@@ -14709,47 +14724,6 @@ input {
 .devtools-checkbox-subtitle {
   color: var(--sys-color-token-subtle);
   white-space: break-spaces;
-}
-
-@media (forced-colors: active) {
-  input.devtools-checkbox-theme-preserve {
-    forced-color-adjust: none;
-  }
-
-  input.devtools-checkbox-theme-preserve:active {
-    background: HighlightText;
-  }
-
-  input.devtools-checkbox-theme-preserve:checked,
-  input.devtools-checkbox-theme-preserve:active:checked {
-    background: Highlight;
-    border-color: Highlight;
-  }
-
-  input.devtools-checkbox-theme-preserve:hover:enabled {
-    border-color: Highlight;
-  }
-
-  input.devtools-checkbox-theme-preserve:active::before,
-  input.devtools-checkbox-theme-preserve:active::after {
-    background-color: Highlight;
-  }
-
-  input.devtools-checkbox-theme-preserve:checked::before,
-  input.devtools-checkbox-theme-preserve:checked::after,
-  input.devtools-checkbox-theme-preserve:active:checked::before,
-  input.devtools-checkbox-theme-preserve:active:checked::after {
-    background-color: HighlightText;
-  }
-
-  input.devtools-checkbox-theme-preserve:hover:checked::before,
-  input.devtools-checkbox-theme-preserve:hover:checked::after {
-    background-color: Highlight !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  input.devtools-checkbox-theme-preserve:hover:checked {
-    background: HighlightText;
-  }
 }
 
 /*# sourceURL=${import.meta.resolve("./checkboxTextLabel.css")} */`;
@@ -15088,31 +15062,18 @@ input[type='radio'] {
   }
 }
 
-@media (forced-colors: active) {
-  input[type='radio'] {
-    --gradient-start: ButtonFace;
-    --gradient-end: ButtonFace;
-
-    &:checked {
-      --gradient-start: Highlight;
-      --gradient-end: Highlight;
-    }
-  }
-}
-
 /* Range inputs */
 input[type='range'] {
   appearance: none;
   margin: 0;
   padding: 0;
-  height: 10px;
-  width: 88px;
+  height: var(--sys-size-5);
+  width: var(--sys-size-19);
   outline: none;
   background: none;
 }
 
-input[type='range']::-webkit-slider-thumb,
-.-theme-preserve {
+input[type='range']::-webkit-slider-thumb {
   appearance: none;
   margin: 0;
   padding: 0;
@@ -15416,7 +15377,7 @@ dt-icon-label {
 button.link {
   border: none;
   background: none;
-  padding: 3px;
+  padding: var(--sys-size-2);
 }
 
 button.link:focus-visible {
@@ -15459,7 +15420,7 @@ button.link:focus-visible {
   border: var(--override-spinner-size, 3px) solid
     var(--override-spinner-color, var(--sys-color-token-subtle));
   border-radius: var(--sys-shape-corner-medium-small);
-  clip-path: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
+  clip-path: rect(0 var(--clip-size, 15px) var(--clip-size, 15px) 0);
   content: '';
   position: absolute;
   animation: spinner-animation 1s linear infinite;
@@ -15492,7 +15453,7 @@ button.link:focus-visible {
 :host-context(.theme-with-dark-background) devtools-adorner {
   --override-adorner-border-color: var(--sys-color-tonal-outline);
   --override-adorner-active-background-color: var(
-    --sys-color-state-riple-neutral-on-subtle
+    --sys-color-state-ripple-neutral-on-subtle
   );
 }
 
@@ -15524,7 +15485,6 @@ iframe.panel.extension {
 
 @media (forced-colors: active) {
   :root {
-    --legacy-accent-color: Highlight;
     --legacy-focus-ring-inactive-shadow-color: ButtonText;
   }
 }
@@ -15605,16 +15565,8 @@ devtools-toolbar {
     }
   }
 
-  .toolbar-item-search {
-    min-width: 5.2em;
-    max-width: 300px;
-    flex: 1 1 auto;
-    justify-content: start;
-    overflow: revert;
-  }
-
   .toolbar-text {
-    margin: 0 5px;
+    margin: 0 var(--sys-size-3);
     flex: none;
     color: var(--ui-text);
   }
@@ -15684,31 +15636,14 @@ devtools-toolbar {
     z-index: -1;
   }
 
-  .toolbar-glyph {
-    flex: none;
-  }
   /* Button */
 
   .toolbar-button:disabled {
     opacity: 50%;
   }
 
-  .toolbar-button.toolbar-state-on .toolbar-glyph {
-    color: var(--icon-toggled);
-  }
-
-  .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
-  .toolbar-button.toolbar-state-off.toolbar-default-with-red-color
-    .toolbar-glyph {
-    color: var(
-      --icon-error
-    ) !important; /* stylelint-disable-line declaration-no-important */
-  }
-
   .toolbar-button:not(
-      .toolbar-has-glyph,
       .toolbar-has-dropdown,
-      .largeicon-menu,
       .toolbar-button-secondary
     ) {
     font-weight: bold;
@@ -15728,16 +15663,8 @@ devtools-toolbar {
     color: var(--sys-color-primary-bright);
   }
 
-  .toolbar-button:enabled:hover:not(:active) .toolbar-glyph {
-    color: var(--sys-color-on-surface);
-  }
-
   .toolbar-button:enabled:hover:not(:active) .toolbar-text {
     color: var(--sys-color-on-surface);
-  }
-
-  .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-glyph {
-    color: var(--sys-color-primary);
   }
 
   .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-text {
@@ -15747,7 +15674,7 @@ devtools-toolbar {
   /* Checkbox */
 
   & > devtools-checkbox {
-    padding: 0 5px 0 0;
+    padding: 0 var(--sys-size-3) 0 0;
     white-space: unset;
   }
 
@@ -15827,7 +15754,7 @@ devtools-toolbar {
   .toolbar-divider {
     background-color: var(--sys-color-divider);
     width: var(--sys-size-1);
-    margin: 5px var(--sys-size-3);
+    margin: var(--sys-size-3);
     height: var(--sys-size-8);
   }
 
@@ -15886,11 +15813,6 @@ devtools-toolbar {
       color: Graytext;
     }
 
-    .toolbar-button.toolbar-state-on .toolbar-glyph {
-      forced-color-adjust: none;
-      color: Highlight;
-    }
-
     .toolbar-button.toolbar-state-on .toolbar-text {
       forced-color-adjust: none;
       color: Highlight;
@@ -15905,18 +15827,6 @@ devtools-toolbar {
       color: GrayText;
     }
 
-    .toolbar-button:disabled .toolbar-glyph {
-      color: GrayText;
-    }
-
-    .toolbar-button:enabled.hover:not(:active) .toolbar-glyph {
-      forced-color-adjust: none;
-      color: Highlight;
-    }
-
-    .toolbar-button:enabled:hover .toolbar-glyph,
-    .toolbar-button:enabled:focus .toolbar-glyph,
-    .toolbar-button:enabled:hover:not(:active) .toolbar-glyph,
     .toolbar-button:enabled:hover devtools-icon,
     .toolbar-button:enabled:focus devtools-icon {
       color: HighlightText;
@@ -15948,16 +15858,6 @@ devtools-toolbar {
       background: ButtonFace;
       color: ButtonText;
     }
-  }
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 100%;
-  }
-
-  to {
-    opacity: 0%;
   }
 }
 
@@ -16179,7 +16079,8 @@ div.error {
 
 // ../../front_end/ui/legacy/UIUtils.ts
 var Directives4 = Lit4.Directives;
-var render9 = Lit4.render;
+var html7 = Lit4.html;
+var render10 = Lit4.render;
 var UIStrings13 = {
   /**
    * @description Context menu item to open a link in a new tab.
@@ -17247,7 +17148,7 @@ function bindInput(input, apply, validate, numeric, modifierMultiplier) {
     }
   }
   function onKeyDown(event) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.isComposing) {
       const valid2 = validate(input.value);
       if (valid2) {
         apply(input.value);
@@ -17614,11 +17515,7 @@ var PromotionManager = class _PromotionManager {
 function maybeCreateNewBadge(promotionId) {
   const promotionManager = PromotionManager.instance();
   if (promotionManager.maybeShowPromotion(promotionId)) {
-    const badge2 = document.createElement("div");
-    badge2.className = "new-badge";
-    badge2.textContent = i18nString13(UIStrings13.new);
-    badge2.setAttribute("jslog", `${VisualLogging16.badge("new-badge")}`);
-    return badge2;
+    return html7`<div class="new-badge" jslog=${VisualLogging16.badge("new-badge")}>${i18nString13(UIStrings13.new)}</div>`;
   }
   return void 0;
 }
@@ -17874,7 +17771,6 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   }
   static cloneNode(node) {
     const clone = node.cloneNode(false);
-    _HTMLElementWithLightDOMTemplate.registerClone(node, clone);
     for (const child of node.childNodes) {
       clone.appendChild(_HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
@@ -17885,6 +17781,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
         registerWidgetConfig(clone, currentConfig);
       }
     }
+    _HTMLElementWithLightDOMTemplate.registerClone(node, clone);
     return clone;
   }
   /**
@@ -17971,7 +17868,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       );
     }
     _HTMLElementWithLightDOMTemplate.patchLitTemplate(template);
-    render9(template, this.#contentTemplate.content);
+    render10(template, this.#contentTemplate.content);
   }
   flushPendingMutationsForTesting() {
     const records = this.#mutationObserver.takeRecords();
@@ -18868,7 +18765,7 @@ var DialogWidget = class extends DialogWidgetBase {
   }
   performUpdate() {
     if (this.open) {
-      render10(this.#content ?? nothing7, this.#dialog.contentElement);
+      render11(this.#content ?? nothing7, this.#dialog.contentElement);
       if (!this.#dialog.isShowing()) {
         this.#dialog.show(this.contentElement.ownerDocument, this.#dialogStack);
         this.#dialog.contentElement.focus();
@@ -19349,7 +19246,7 @@ __export(EmptyWidget_exports, {
 });
 import "../kit/kit.js";
 import * as i18n29 from "../../core/i18n/i18n.js";
-import { html as html6, render as render11 } from "../lit/lit.js";
+import { html as html8, render as render12 } from "../lit/lit.js";
 import * as VisualLogging18 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -19382,14 +19279,14 @@ var UIStrings15 = {
 var str_15 = i18n29.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings15);
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var DEFAULT_VIEW2 = (input, _output, target) => {
-  render11(html6`
+  render12(html8`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging18.section("empty-view")}>
       <div class="empty-state-header">${input.header}</div>
       <div class="empty-state-description">
         <span>${input.text}</span>
-        ${input.link ? html6`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString15(UIStrings15.learnMore)}</devtools-link>` : ""}
+        ${input.link ? html8`<devtools-link href=${input.link} jslogContext=${"learn-more"}>${i18nString15(UIStrings15.learnMore)}</devtools-link>` : ""}
       </div>
       <slot></slot>
     </div>`, target, { container: { classes: ["empty-widget-container", "empty-view-scroller"] } });
@@ -19532,7 +19429,7 @@ var filter_css_default = `/*
 
 .filter-checkbox-filter {
   padding-left: var(--sys-size-1);
-  padding-right: 7px;
+  padding-right: var(--sys-size-4);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -19554,7 +19451,7 @@ var filter_css_default = `/*
 .filter-divider {
   background-color: var(--sys-color-divider);
   width: var(--sys-size-1);
-  margin: 5px var(--sys-size-3);
+  margin: var(--sys-size-3);
   height: var(--sys-size-8);
 }
 
@@ -19567,14 +19464,18 @@ var filter_css_default = `/*
 }
 
 .toolbar-button .active-filters-count {
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 
   --override-adorner-background-color: var(--sys-color-tonal-container);
   --override-adorner-border-color: var(--sys-color-tonal-container);
   --override-adorner-text-color: var(--sys-color-primary);
-  --override-adorner-font-size: 10px;
+  --override-adorner-font-size: var(--sys-typescale-body5-size);
 
   font-weight: 700;
+
+  span {
+    line-height: 1;
+  }
 }
 
 .toolbar-text {
@@ -20350,7 +20251,7 @@ __export(ListWidget_exports, {
 import * as i18n33 from "../../core/i18n/i18n.js";
 import * as Platform21 from "../../core/platform/platform.js";
 import * as Buttons8 from "../components/buttons/buttons.js";
-import { html as html7, nothing as nothing8, render as render12 } from "../lit/lit.js";
+import { html as html9, nothing as nothing8, render as render13 } from "../lit/lit.js";
 import * as VisualLogging20 from "../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -20392,7 +20293,7 @@ var listWidget_css_default = `/*
 
 .list-widget-input-validation-error {
   color: var(--sys-color-error);
-  margin: 0 5px;
+  margin: 0 var(--sys-size-3);
 }
 
 .controls-container {
@@ -20404,7 +20305,7 @@ var listWidget_css_default = `/*
 }
 
 .controls-gradient {
-  flex: 0 1 50px;
+  flex: 0 1 var(--sys-size-16);
 
   .list-item:hover & {
     background-image: linear-gradient(90deg, transparent, var(--sys-color-cdt-base-container));
@@ -20456,17 +20357,12 @@ var listWidget_css_default = `/*
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  padding: 5px;
+  padding: var(--sys-size-3);
   gap: var(--sys-size-6);
 }
 
-.editor-buttons > button {
-  flex: none;
-  margin-right: 10px;
-}
-
 .editor-content input {
-  margin-right: 10px;
+  margin-right: var(--sys-size-5);
 }
 
 .editor-content input.error-input {
@@ -20674,11 +20570,11 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render12(html7`
+    render13(html9`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
-          ${controlLabels?.hideEdit ? nothing8 : html7`<devtools-button class=toolbar-button
+          ${controlLabels?.hideEdit ? nothing8 : html9`<devtools-button class=toolbar-button
                            .iconName=${"edit"}
                            .jslogContext=${"edit-item"}
                            .title=${controlLabels?.edit ?? i18nString17(UIStrings17.editString)}
@@ -21296,7 +21192,7 @@ var progressIndicator_css_default = `/*
 .progress-indicator-shadow-container .title {
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 150px;
+  max-width: var(--sys-size-22);
   margin-right: var(--sys-size-2);
   color: var(--sys-color-token-subtle);
 }
@@ -21401,7 +21297,7 @@ __export(RemoteDebuggingTerminatedScreen_exports, {
 });
 import * as i18n35 from "../../core/i18n/i18n.js";
 import * as Buttons9 from "../components/buttons/buttons.js";
-import { html as html8, render as render13 } from "../lit/lit.js";
+import { html as html10, render as render14 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -21466,8 +21362,8 @@ var UIStrings18 = {
 var str_18 = i18n35.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var DEFAULT_VIEW3 = (input, _output, target) => {
-  render13(
-    html8`
+  render14(
+    html10`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString18(UIStrings18.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -21869,6 +21765,7 @@ var rootView_css_default = `/*
 // ../../front_end/ui/legacy/RootView.ts
 var RootView = class extends VBox {
   window;
+  #onWindowResize = () => this.doResize();
   constructor(universe) {
     super();
     this.markAsRoot();
@@ -21881,12 +21778,16 @@ var RootView = class extends VBox {
     });
   }
   attachToDocument(document2) {
-    if (document2.defaultView) {
-      document2.defaultView.addEventListener("resize", this.doResize.bind(this), false);
-    }
+    this.window?.removeEventListener("resize", this.#onWindowResize, false);
     this.window = document2.defaultView;
+    this.window?.addEventListener("resize", this.#onWindowResize, false);
     this.doResize();
     this.show(document2.body);
+  }
+  onDetach() {
+    this.window?.removeEventListener("resize", this.#onWindowResize, false);
+    this.window = null;
+    super.onDetach();
   }
   doResize() {
     if (this.window) {
@@ -22084,7 +21985,7 @@ var searchableView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./searchableView.css")} */`;
 
 // ../../front_end/ui/legacy/SearchableView.ts
-var { html: html9, nothing: nothing9, render: render14, Directives: Directives5 } = Lit5;
+var { html: html11, nothing: nothing9, render: render15, Directives: Directives5 } = Lit5;
 var UIStrings19 = {
   /**
    * @description Button text and placeholder to replace the current search match in the search bar.
@@ -22159,7 +22060,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/SearchableView.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 function renderClearButton(jslogContext, onClick) {
-  return html9`
+  return html11`
     <devtools-button class="clear-button" tabindex="-1" aria-label=${i18nString19(UIStrings19.clearInput)}
         .data=${{
     variant: Buttons10.Button.Variant.ICON,
@@ -22171,7 +22072,7 @@ function renderClearButton(jslogContext, onClick) {
         @click=${onClick}></devtools-button>`;
 }
 function renderConfigToggle(iconName, label, toggled, onClick) {
-  return html9`
+  return html11`
     <devtools-button aria-label=${label}
         .data=${{
     variant: Buttons10.Button.Variant.ICON_TOGGLE,
@@ -22187,7 +22088,7 @@ function renderConfigToggle(iconName, label, toggled, onClick) {
 }
 var DEFAULT_VIEW4 = (input, output, target) => {
   const replaceLabel = input.secondRowVisible ? i18nString19(UIStrings19.disableFindAndReplace) : i18nString19(UIStrings19.enableFindAndReplace);
-  render14(html9`
+  render15(html11`
     <style>${searchableView_css_default}</style>
     <slot></slot>
     <div class="search-bar ${input.searchIsVisible ? "" : "hidden"} ${input.secondRowVisible ? "replaceable" : ""}"
@@ -22878,7 +22779,7 @@ button.soft-dropdown {
   position: relative;
   border: none;
   background: none;
-  max-width: 120px;
+  max-width: var(--sys-size-21);
 
   &[disabled] {
     background: var(--sys-color-state-disabled-container);
@@ -23264,9 +23165,9 @@ var SimpleView = class extends VBox {
 };
 
 // ../../front_end/ui/legacy/StackPane.ts
-var { html: html10, render: render15 } = Lit6;
+var { html: html12, render: render16 } = Lit6;
 var SLOT_VIEW = (input, _output, target) => {
-  render15(html10`<slot name=${input.name}></slot>`, target);
+  render16(html12`<slot name=${input.name}></slot>`, target);
 };
 var SlotView = class extends SimpleView {
   #pane;
@@ -23291,7 +23192,7 @@ var SlotView = class extends SimpleView {
   }
 };
 var STACK_VIEW = (input, _output, target) => {
-  render15(html10`<devtools-widget ${widget(WrapperWidget, { widget: input.location.widget() })}></devtools-widget>`, target);
+  render16(html12`<devtools-widget ${widget(WrapperWidget, { widget: input.location.widget() })}></devtools-widget>`, target);
 };
 var StackPaneElement = class extends HTMLElement {
   #location = ViewManager.instance().createStackLocation();
@@ -23360,7 +23261,7 @@ __export(TargetCrashedScreen_exports, {
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n41 from "../../core/i18n/i18n.js";
-import { html as html11, render as render16 } from "../lit/lit.js";
+import { html as html13, render as render17 } from "../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -23396,8 +23297,8 @@ var UIStrings21 = {
 var str_21 = i18n41.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var DEFAULT_VIEW5 = (input, _output, target) => {
-  render16(
-    html11`
+  render17(
+    html13`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString21(UIStrings21.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString21(UIStrings21.oncePageIsReloadedDevtoolsWill)}</div>`,
@@ -23422,7 +23323,6 @@ var Treeoutline_exports = {};
 __export(Treeoutline_exports, {
   Events: () => Events11,
   TreeElement: () => TreeElement,
-  TreeElementWrapper: () => TreeElementWrapper,
   TreeOutline: () => TreeOutline,
   TreeOutlineInShadow: () => TreeOutlineInShadow,
   TreeSearch: () => TreeSearch,
@@ -23630,8 +23530,9 @@ ol.tree-outline:not(.hide-selection-when-blurred, .elements-tree-outline) li.sel
   &::before {
     flex-shrink: 0;
     overflow: hidden;
-    margin-right: 3px;
-    margin-left: -3px;
+    /* Shift 20px mask left by 2px to center its glyph in the 16px slot. */
+    margin-right: var(--sys-size-2);
+    margin-left: calc(-1 * var(--sys-size-2));
   }
 
   & .selection {
@@ -23782,7 +23683,7 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("ui/legacy/Treeoutline.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render17 } = Lit7;
+var { render: render18 } = Lit7;
 var Events11 = /* @__PURE__ */ ((Events12) => {
   Events12["ElementAttached"] = "ElementAttached";
   Events12["ElementsDetached"] = "ElementsDetached";
@@ -24441,7 +24342,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render17(icons, this.leadingIconsElement);
+    render18(icons, this.leadingIconsElement);
   }
   setTrailingIcons(icons) {
     if (!this.trailingIconsElement && !icons.length) {
@@ -24454,7 +24355,7 @@ var TreeElement = class {
       this.listItemNode.appendChild(this.trailingIconsElement);
       this.ensureSelection();
     }
-    render17(icons, this.trailingIconsElement);
+    render18(icons, this.trailingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -25178,19 +25079,14 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
 };
 function getTreeNodes(nodeList) {
   return nodeList.values().flatMap((node) => {
-    if (node instanceof TreeElementWrapper) {
-      return [node];
-    }
     if (node instanceof HTMLLIElement && node.role === "treeitem") {
       return [
         node,
-        ...node.querySelectorAll(
-          'ul[role="group"] li[role="treeitem"],ul[role="group"] devtools-tree-wrapper'
-        )
+        ...node.querySelectorAll('ul[role="group"] li[role="treeitem"]')
       ];
     }
     if (node instanceof HTMLElement) {
-      return node.querySelectorAll('li[role="treeitem"],devtools-tree-wrapper');
+      return node.querySelectorAll('li[role="treeitem"]');
     }
     return [];
   }).toArray();
@@ -25240,13 +25136,11 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       }
     });
     this.#treeOutline.addEventListener("ElementExpanded" /* ElementExpanded */, (event) => {
-      this.dispatchEvent(new _TreeViewElement.TreeElementExpandEvent(event.data, true));
       if (event.data instanceof TreeViewTreeElement) {
         event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true }));
       }
     });
     this.#treeOutline.addEventListener("ElementCollapsed" /* ElementCollapsed */, (event) => {
-      this.dispatchEvent(new _TreeViewElement.TreeElementExpandEvent(event.data, false));
       if (event.data instanceof TreeViewTreeElement) {
         event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false }));
       }
@@ -25374,35 +25268,22 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
           nextElement = nextTreeEl;
           break;
         }
-        if (e instanceof TreeElementWrapper && e.treeElement && e.treeElement.parent === parent.treeElement) {
-          nextElement = e.treeElement;
-          break;
-        }
       }
       const index = nextElement ? parent.treeElement.indexOfChild(nextElement) : parent.treeElement.children().length;
-      let treeElement;
-      if (node instanceof HTMLLIElement) {
-        treeElement = new TreeViewTreeElement(this.#treeOutline, node);
-        const expandable = Boolean(node.querySelector(':scope > ul[role="group"]'));
-        treeElement.setExpandable(expandable);
-        treeElement.updateExpansionFromAttribute();
-      } else {
-        treeElement = node.treeElement;
+      const treeElement = new TreeViewTreeElement(this.#treeOutline, node);
+      const expandable = Boolean(node.querySelector(':scope > ul[role="group"]'));
+      treeElement.setExpandable(expandable);
+      treeElement.updateExpansionFromAttribute();
+      parent.treeElement.insertChild(treeElement, index);
+      if (parent.treeElement instanceof TreeViewTreeElement) {
+        parent.treeElement.updateExpansionFromAttribute();
       }
-      if (treeElement) {
-        if (treeElement.parent) {
-          removeNode(treeElement);
-        }
-        parent.treeElement.insertChild(treeElement, index);
-        if (parent.treeElement instanceof TreeViewTreeElement) {
-          parent.treeElement.updateExpansionFromAttribute();
-        }
-        if (hasBooleanAttribute(node, "selected")) {
-          treeElement.revealAndSelect(!this.hasFocus());
-        }
-        if (parent.expanded) {
-          parent.treeElement.expand();
-        }
+      if (hasBooleanAttribute(node, "selected")) {
+        treeElement.revealAndSelect(!this.hasFocus());
+      }
+      HTMLElementWithLightDOMTemplate.registerClone(node, treeElement.listItemElement);
+      if (parent.expanded) {
+        parent.treeElement.expand();
       }
     }
     for (const element of new Set(getStyleElements(nodes))) {
@@ -25410,15 +25291,17 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     }
   }
   removeNodes(nodes) {
+    const nodesWithSelection = [];
     for (const node of getTreeNodes(nodes)) {
-      if (node instanceof HTMLLIElement) {
-        TreeViewTreeElement.get(node)?.removeFromTree();
-      } else if (node.treeElement) {
-        removeNode(
-          node.treeElement,
-          Boolean(node.treeElement.parent && node.treeElement.parent.configElement?.querySelector(':scope > ul[role="group"]'))
-        );
+      const treeElement = TreeViewTreeElement.get(node);
+      if (treeElement && this.#treeOutline.selectedTreeElement?.hasAncestorOrSelf(treeElement)) {
+        nodesWithSelection.push(node);
+      } else {
+        treeElement?.removeFromTree();
       }
+    }
+    for (const node of nodesWithSelection) {
+      TreeViewTreeElement.get(node)?.removeFromTree();
     }
   }
   set hideOverflow(hide) {
@@ -25482,12 +25365,6 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     }
   }
   TreeViewElement2.EnterEvent = EnterEvent;
-  class TreeElementExpandEvent extends CustomEvent {
-    constructor(treeElement, expanded) {
-      super("treeelementexpand", { detail: { treeElement, expanded } });
-    }
-  }
-  TreeViewElement2.TreeElementExpandEvent = TreeElementExpandEvent;
 })(TreeViewElement || (TreeViewElement = {}));
 var IfExpandedDirective = class extends Lit7.Directive.Directive {
   #partInfo;
@@ -25532,26 +25409,7 @@ var IfExpandedDirective = class extends Lit7.Directive.Directive {
   }
 };
 var ifExpanded = Lit7.Directive.directive(IfExpandedDirective);
-var TreeElementWrapper = class extends HTMLElement {
-  #treeElement;
-  set treeElement(treeElement) {
-    if (this.#treeElement === treeElement) {
-      return;
-    }
-    if (this.#treeElement?.parent) {
-      const parent = this.#treeElement.parent;
-      const index = parent.indexOfChild(this.#treeElement);
-      parent.removeChildAtIndex(index);
-      parent.insertChild(treeElement, index);
-    }
-    this.#treeElement = treeElement;
-  }
-  get treeElement() {
-    return this.#treeElement;
-  }
-};
 customElements.define("devtools-tree", TreeViewElement);
-customElements.define("devtools-tree-wrapper", TreeElementWrapper);
 function loggingParentProvider(e) {
   const treeElement = TreeElement.getTreeElementBylistItemNode(e);
   const parentElement = treeElement?.parent?.listItemElement;

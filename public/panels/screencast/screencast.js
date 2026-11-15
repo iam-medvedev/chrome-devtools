@@ -11,7 +11,7 @@ __export(InputModel_exports, {
 });
 import * as SDK from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3018,7 +3018,7 @@ var screencastView_css_default = `/*
 
   .screencast-navigation .progress {
     background-color: var(--sys-color-primary-bright);
-    height: 3px;
+    height: var(--sys-size-2);
     left: 0;
     position: absolute;
     top: 100%;  /* Align with the bottom edge of the parent. */
@@ -3096,7 +3096,7 @@ var screencastView_css_default = `/*
 
   .screencast-glasspane {
     background-color: color-mix(in srgb, var(--sys-color-cdt-base-container) 80%, transparent);
-    font-size: 30px;
+    font-size: var(--sys-typescale-headline1-size);
     z-index: 100;
     display: flex;
     justify-content: center;
@@ -4088,7 +4088,6 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var appInstance;
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
-    <style>${UI2.inspectorCommonStyles}</style>
     <devtools-split-view
       direction="column"
       sidebar-position="second"

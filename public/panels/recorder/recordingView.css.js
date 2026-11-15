@@ -33,40 +33,48 @@ export default `/*
   .sections {
     min-height: 0;
     background-color: var(--sys-color-cdt-base-container);
-    z-index: 0;
-    position: relative;
+    /* Keeps the stacking of the screenshots local to the sections. */
+    isolation: isolate;
     container: sections / inline-size;
   }
 
   .section {
-    display: flex;
-    padding: 0 var(--sys-size-8);
-    gap: var(--sys-size-5);
-    position: relative;
+    /*
+     * The steps span the full width of the section so that their highlight
+     * covers the whole row. Their content is inset to leave room for the
+     * screenshot, which is placed on top of the steps.
+     */
+    --timeline-section-inset-inline-start: calc(var(--sys-size-8) + var(--sys-size-19) + var(--sys-size-5));
+    --timeline-section-inset-inline-end: var(--sys-size-8);
+
+    display: grid;
+    grid-template-areas: 'section';
+    grid-template-columns: minmax(0, 1fr);
+    /* Divider between the sections. */
+    box-shadow: inset 0 calc(-1 * var(--sys-size-1)) var(--sys-color-divider);
   }
 
-  .section::after {
-    content: '';
-    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-  }
-
-  .section:last-child::after {
-    content: none;
+  .section:last-child {
+    box-shadow: none;
   }
 
   .screenshot-wrapper {
-    flex: 0 0 var(--sys-size-19);
+    grid-area: section;
+    align-self: start;
+    width: var(--sys-size-19);
+    margin-inline-start: var(--sys-size-8);
     padding-top: var(--sys-size-13);
-    /* We want this to be on top of \\'.step-overlay\\' */
-    z-index: 2;
+    /* Draw the screenshot on top of the step highlights. */
+    z-index: 1;
+    /* Only the screenshot itself should cover the steps below it. */
+    pointer-events: none;
   }
 
   @container sections (max-width: 400px) {
+    .section {
+      --timeline-section-inset-inline-start: var(--sys-size-8);
+    }
+
     .screenshot-wrapper {
       display: none;
     }
@@ -80,30 +88,18 @@ export default `/*
     height: auto;
     border: var(--sys-size-1) solid var(--sys-color-divider);
     border-radius: 1px;
+    pointer-events: auto;
   }
 
   .content {
-    flex: 1;
+    grid-area: section;
+    align-self: start;
     min-width: 0;
   }
 
-  .steps {
-    flex: 1;
-    position: relative;
-    align-self: flex-start;
-    overflow: visible;
-  }
-
   .step {
-    position: relative;
-    padding-left: var(--sys-size-14);
     margin: var(--sys-size-8) 0;
-  }
-
-  .step .action {
-    font-size: var(--sys-typescale-body3-size);
-    line-height: var(--sys-typescale-body4-line-height);
-    letter-spacing: 0.03em;
+    margin-inline-start: calc(var(--timeline-section-inset-inline-start) + var(--sys-size-14));
   }
 
   .recording {
@@ -234,10 +230,19 @@ export default `/*
     outline-offset: var(--sys-size-2);
   }
 
+  /*
+   * The settings and the actions are separated by column rules, which are only
+   * drawn between items on the same line, so that no separator is left
+   * dangling at the end of a line when they wrap.
+   * This relies on CSS gap decorations (column-rule on flex containers);
+   * browsers without them show no separators.
+   */
   .settings {
     margin-top: var(--sys-size-3);
     display: flex;
     flex-wrap: wrap;
+    column-gap: calc(2 * 5px + var(--sys-size-1));
+    column-rule: var(--sys-size-1) solid var(--sys-color-divider);
     font-size: var(--sys-typescale-body4-size);
     line-height: var(--sys-typescale-body2-line-height);
     letter-spacing: 0.03em;
@@ -246,26 +251,15 @@ export default `/*
 
   .settings.expanded {
     gap: 10px;
-  }
-
-  .settings .separator {
-    width: var(--sys-size-1);
-    height: var(--sys-size-9);
-    background-color: var(--sys-color-divider);
-    margin: 0 5px;
+    column-rule: none;
   }
 
   .actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--sys-size-6);
-  }
-
-  .actions .separator {
-    width: var(--sys-size-1);
-    height: var(--sys-size-11);
-    background-color: var(--sys-color-divider);
+    gap: var(--sys-size-6) calc(2 * var(--sys-size-6) + var(--sys-size-1));
+    column-rule: var(--sys-size-1) solid var(--sys-color-divider);
   }
 
   .is-recording .header-title::before {
@@ -278,14 +272,12 @@ export default `/*
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
     padding: var(--sys-size-6);
     background: var(--sys-color-cdt-base-container);
-    z-index: 1;
   }
 
   .controls {
     align-items: center;
     display: flex;
     justify-content: center;
-    position: relative;
     width: 100%;
   }
 

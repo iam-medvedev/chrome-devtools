@@ -814,12 +814,6 @@ var breakpointsView_css_default = `/*
  * found in the LICENSE file.
  */
 @scope to (devtools-widget > *) {
-  :host {
-    flex: auto;
-    display: flex;
-    flex-direction: column;
-  }
-
   .code-snippet {
     width: 100%;
     font-family: var(--source-code-font-family);
@@ -841,7 +835,7 @@ var breakpointsView_css_default = `/*
     height: var(--sys-size-6);
     width: var(--sys-size-6);
     flex-shrink: 0;
-    margin: 3px 0;
+    margin: var(--sys-size-3) 0;
   }
 
   details {
@@ -916,14 +910,13 @@ var breakpointsView_css_default = `/*
     display: flex;
     align-items: center;
     justify-content: right;
-    font-size: 10px;
-    font-weight: 500;
   }
 
   .breakpoint-item-location-or-actions {
     min-width: var(--sys-size-9);
     flex: 0 0 auto;
     display: flex;
+    align-items: center;
     padding-left: var(--sys-size-5);
     justify-content: right;
   }
@@ -944,7 +937,7 @@ var breakpointsView_css_default = `/*
   }
 
   button + button {
-    padding-left: 11px;
+    padding-left: var(--sys-size-6);
   }
 
   summary:hover button {
@@ -961,9 +954,6 @@ var breakpointsView_css_default = `/*
   }
 
   .type-indicator {
-    --override-color-conditional-breakpoint: var(--ref-palette-orange70);
-    --override-color-logpoint: var(--ref-palette-pink60);
-
     border-right: var(--sys-size-3) solid;
     border-radius: 0 var(--sys-size-2) var(--sys-size-2) 0;
     border-color: transparent;
@@ -986,18 +976,12 @@ var breakpointsView_css_default = `/*
     background-color: var(--sys-color-tonal-container);
   }
 
-  .theme-with-dark-background .type-indicator,
-  :host-context(.theme-with-dark-background) .type-indicator {
-    --override-color-conditional-breakpoint: var(--ref-palette-yellow60);
-    --override-color-logpoint: var(--ref-palette-pink70);
-  }
-
   .breakpoint-item.logpoint > label > .type-indicator {
-    border-color: var(--override-color-logpoint);
+    border-color: var(--sys-color-pink-bright);
   }
 
   .breakpoint-item.conditional-breakpoint > label > .type-indicator {
-    border-color: var(--override-color-conditional-breakpoint);
+    border-color: var(--sys-color-orange-bright);
   }
 
   .checkbox-label {
@@ -1012,8 +996,8 @@ var breakpointsView_css_default = `/*
 
   devtools-icon[name="file-script"] {
     color: var(--icon-file-script);
-    width: 18px;
-    height: 18px;
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
 
     summary:hover & {
       display: none;
@@ -1030,7 +1014,7 @@ var breakpointsView_css_default = `/*
   }
 
   .location {
-    line-height: 14px;
+    line-height: var(--sys-typescale-body4-line-height);
     text-overflow: ellipsis;
     overflow: hidden;
   }
@@ -1045,11 +1029,6 @@ var breakpointsView_css_default = `/*
 
   .pause-on-caught-exceptions {
     margin-bottom: var(--sys-size-2);
-  }
-
-  /* TODO(crbug.com/1382762): Remove special casing with dependent toggles as soon as Node LTS caught up on independent pause of exception toggles. */
-  input:disabled + span {
-    color: var(--sys-color-state-disabled);
   }
 
   .pause-on-caught-exceptions > .checkbox-label > input,
@@ -2170,17 +2149,17 @@ __export(CallStackSidebarPane_exports, {
   defaultMaxAsyncStackChainDepth: () => defaultMaxAsyncStackChainDepth
 });
 import "../../ui/kit/kit.js";
-import * as Common16 from "../../core/common/common.js";
+import * as Common17 from "../../core/common/common.js";
 import * as Host10 from "../../core/host/host.js";
 import * as i18n37 from "../../core/i18n/i18n.js";
 import * as Platform14 from "../../core/platform/platform.js";
-import * as Bindings10 from "../../models/bindings/bindings.js";
+import * as Bindings11 from "../../models/bindings/bindings.js";
 import * as Persistence11 from "../../models/persistence/persistence.js";
 import * as StackTrace5 from "../../models/stack_trace/stack_trace.js";
 import * as Workspace25 from "../../models/workspace/workspace.js";
 import * as Input3 from "../../ui/components/input/input.js";
 import * as UI18 from "../../ui/legacy/legacy.js";
-import { Directives as Directives4, html as html18, nothing as nothing11, render as render14 } from "../../ui/lit/lit.js";
+import { Directives as Directives5, html as html19, nothing as nothing12, render as render15 } from "../../ui/lit/lit.js";
 import * as VisualLogging13 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/callStackSidebarPane.css.js
@@ -2344,14 +2323,14 @@ __export(SourcesPanel_exports, {
   minToolbarWidth: () => minToolbarWidth
 });
 import "../../ui/legacy/legacy.js";
-import * as Common15 from "../../core/common/common.js";
+import * as Common16 from "../../core/common/common.js";
 import * as Host9 from "../../core/host/host.js";
 import * as i18n35 from "../../core/i18n/i18n.js";
 import * as Platform13 from "../../core/platform/platform.js";
 import * as Root2 from "../../core/root/root.js";
 import * as SDK13 from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -5193,17 +5172,17 @@ var Runtime;
 
 // ../../front_end/panels/sources/SourcesPanel.ts
 import * as Badges2 from "../../models/badges/badges.js";
-import * as Bindings9 from "../../models/bindings/bindings.js";
-import * as Breakpoints3 from "../../models/breakpoints/breakpoints.js";
+import * as Bindings10 from "../../models/bindings/bindings.js";
+import * as Breakpoints4 from "../../models/breakpoints/breakpoints.js";
 import * as StackTrace3 from "../../models/stack_trace/stack_trace.js";
 import * as Workspace23 from "../../models/workspace/workspace.js";
 import * as PanelCommon3 from "../common/common.js";
-import * as Buttons9 from "../../ui/components/buttons/buttons.js";
+import * as Buttons10 from "../../ui/components/buttons/buttons.js";
 import * as Geometry2 from "../../ui/geometry/geometry.js";
 import * as ObjectUI2 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI17 from "../../ui/legacy/legacy.js";
-import { html as html17, nothing as nothing10, render as render13 } from "../../ui/lit/lit.js";
-import * as Settings10 from "../../ui/settings/settings.js";
+import { html as html18, nothing as nothing11, render as render14 } from "../../ui/lit/lit.js";
+import * as Settings11 from "../../ui/settings/settings.js";
 import * as VisualLogging12 from "../../ui/visual_logging/visual_logging.js";
 import * as Snippets5 from "../snippets/snippets.js";
 
@@ -5211,10 +5190,15 @@ import * as Snippets5 from "../snippets/snippets.js";
 var DebuggerPausedMessage_exports = {};
 __export(DebuggerPausedMessage_exports, {
   BreakpointTypeNouns: () => BreakpointTypeNouns,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   DebuggerPausedMessage: () => DebuggerPausedMessage
 });
+import * as Common5 from "../../core/common/common.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
 import * as SDK4 from "../../core/sdk/sdk.js";
+import * as Bindings2 from "../../models/bindings/bindings.js";
+import * as Breakpoints2 from "../../models/breakpoints/breakpoints.js";
+import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
 import * as Lit2 from "../../ui/lit/lit.js";
 import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
@@ -5394,6 +5378,13 @@ var debuggerPausedMessage_css_default = `/*
   text-overflow: ellipsis;
 }
 
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sys-size-3);
+  padding-top: var(--sys-size-4);
+}
+
 .paused-status.error-reason .status-sub {
   color: var(--sys-color-error);
   line-height: 11px;
@@ -5512,7 +5503,19 @@ var UIStrings5 = {
    * @description Text in DOMDebugger model.
    * @example {"script-src 'self'"} PH1
    */
-  scriptBlockedDueToContent: "Script blocked due to Content Security Policy directive: {PH1}"
+  scriptBlockedDueToContent: "Script blocked due to Content Security Policy directive: {PH1}",
+  /**
+   * @description Button label in the Debugger paused banner of the Sources panel when execution repeatedly pauses at the same breakpoint. Clicking disables that breakpoint and resumes script execution.
+   */
+  disableBreakpoint: "Disable breakpoint",
+  /**
+   * @description Button label in the Debugger paused banner of the Sources panel when execution repeatedly pauses at the same location. Clicking adds a never-pause-here rule at the current line and resumes script execution.
+   */
+  neverPauseHere: "Never pause here",
+  /**
+   * @description Button label in the Debugger paused banner of the Sources panel when execution repeatedly pauses at the same location. Clicking deactivates all breakpoints and resumes script execution.
+   */
+  deactivateAll: "Deactivate all"
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.ts", UIStrings5);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
@@ -5552,6 +5555,32 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
               ${input.domBreakpointData ? domBreakpointSubtext(input.domBreakpointData) : input.subText}
             </div>` : nothing3}
         </span>
+        ${input.onDisableBreakpoint || input.onNeverPauseHere || input.onDeactivateBreakpointsAndResume ? html5`
+          <div class="status-actions">
+            ${input.onDisableBreakpoint ? html5`
+              <devtools-button
+                  .variant=${Buttons2.Button.Variant.OUTLINED}
+                  .size=${Buttons2.Button.Size.MICRO}
+                  .jslogContext=${"disable-breakpoint"}
+                  @click=${() => input.onDisableBreakpoint?.()}>
+                ${i18nString4(UIStrings5.disableBreakpoint)}
+              </devtools-button>` : input.onNeverPauseHere ? html5`
+              <devtools-button
+                  .variant=${Buttons2.Button.Variant.OUTLINED}
+                  .size=${Buttons2.Button.Size.MICRO}
+                  .jslogContext=${"never-pause-here"}
+                  @click=${() => input.onNeverPauseHere?.()}>
+                ${i18nString4(UIStrings5.neverPauseHere)}
+              </devtools-button>` : nothing3}
+            ${input.onDeactivateBreakpointsAndResume ? html5`
+              <devtools-button
+                  .variant=${Buttons2.Button.Variant.TEXT}
+                  .size=${Buttons2.Button.Size.MICRO}
+                  .jslogContext=${"debugger.toggle-breakpoints-active"}
+                  @click=${() => input.onDeactivateBreakpointsAndResume?.()}>
+                ${i18nString4(UIStrings5.deactivateAll)}
+              </devtools-button>` : nothing3}
+          </div>` : nothing3}
       </div>` : nothing3}
     </div>`, target, {
     container: {
@@ -5561,17 +5590,34 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
   });
 };
 var DebuggerPausedMessage = class _DebuggerPausedMessage extends UI5.Widget.Widget {
-  constructor(element, [eventBreakpointsManager], view = DEFAULT_VIEW4) {
+  constructor(element, [
+    eventBreakpointsManager,
+    debuggerWorkspaceBinding,
+    breakpointManager,
+    settings
+  ], view = DEFAULT_VIEW4) {
     super(element, {
       useShadowDom: "pure"
     });
     this.view = view;
     this.#eventBreakpointsManager = eventBreakpointsManager;
+    this.#recurringPauseDetector = new Breakpoints2.RecurringPauseDetector.RecurringPauseDetector(
+      debuggerWorkspaceBinding,
+      breakpointManager,
+      settings
+    );
   }
   view;
-  static INJECT = [SDK4.EventBreakpointsModel.EventBreakpointsManager];
+  static INJECT = [
+    SDK4.EventBreakpointsModel.EventBreakpointsManager,
+    Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding,
+    Breakpoints2.BreakpointManager.BreakpointManager,
+    Common5.Settings.Settings
+  ];
   #viewInput = null;
+  #renderGeneration = 0;
   #eventBreakpointsManager;
+  #recurringPauseDetector;
   static descriptionWithoutStack(description) {
     const firstCallFrame = /^\s+at\s/m.exec(description);
     return firstCallFrame ? description.substring(0, firstCallFrame.index - 1) : description.substring(0, description.lastIndexOf("\n"));
@@ -5615,25 +5661,32 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage extends UI5.Widget.Widg
     return breakpoint?.name ?? "";
   }
   async render(details, debuggerWorkspaceBinding, breakpointManager) {
+    const generation = ++this.#renderGeneration;
+    const escapeActionsPromise = this.#recurringPauseDetector.onPaused(details);
     if (!details) {
+      await escapeActionsPromise;
+      if (generation !== this.#renderGeneration) {
+        return;
+      }
       this.#viewInput = null;
       this.requestUpdate();
       return;
     }
     const errorLike = details.reason === Debugger.PausedEventReason.Exception || details.reason === Debugger.PausedEventReason.PromiseRejection || details.reason === Debugger.PausedEventReason.Assert || details.reason === Debugger.PausedEventReason.OOM;
+    let viewInput = null;
     if (details.reason === Debugger.PausedEventReason.DOM) {
-      this.#viewInput = await _DebuggerPausedMessage.createDOMBreakpointHitMessageDetails(details);
+      viewInput = await _DebuggerPausedMessage.createDOMBreakpointHitMessageDetails(details);
     } else if (details.reason === Debugger.PausedEventReason.EventListener) {
       const eventNameForUI = this.#findEventNameForUi(details.auxData);
-      this.#viewInput = { mainText: i18nString4(UIStrings5.pausedOnEventListener), subText: eventNameForUI, errorLike };
+      viewInput = { mainText: i18nString4(UIStrings5.pausedOnEventListener), subText: eventNameForUI, errorLike };
     } else if (details.reason === Debugger.PausedEventReason.XHR) {
       const auxData = details.auxData;
-      this.#viewInput = { mainText: i18nString4(UIStrings5.pausedOnXhrOrFetch), subText: auxData.url || "", errorLike };
+      viewInput = { mainText: i18nString4(UIStrings5.pausedOnXhrOrFetch), subText: auxData.url || "", errorLike };
     } else if (details.reason === Debugger.PausedEventReason.Exception) {
       const auxData = details.auxData;
       const description = auxData.description || auxData.value || "";
       const descriptionWithoutStack = _DebuggerPausedMessage.descriptionWithoutStack(description);
-      this.#viewInput = {
+      viewInput = {
         mainText: i18nString4(UIStrings5.pausedOnException),
         subText: descriptionWithoutStack,
         title: description,
@@ -5643,28 +5696,28 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage extends UI5.Widget.Widg
       const auxData = details.auxData;
       const description = auxData.description || auxData.value || "";
       const descriptionWithoutStack = _DebuggerPausedMessage.descriptionWithoutStack(description);
-      this.#viewInput = {
+      viewInput = {
         mainText: i18nString4(UIStrings5.pausedOnPromiseRejection),
         subText: descriptionWithoutStack,
         title: description,
         errorLike
       };
     } else if (details.reason === Debugger.PausedEventReason.Assert) {
-      this.#viewInput = { mainText: i18nString4(UIStrings5.pausedOnAssertion), errorLike };
+      viewInput = { mainText: i18nString4(UIStrings5.pausedOnAssertion), errorLike };
     } else if (details.reason === Debugger.PausedEventReason.DebugCommand) {
-      this.#viewInput = { mainText: i18nString4(UIStrings5.pausedOnDebuggedFunction), errorLike };
+      viewInput = { mainText: i18nString4(UIStrings5.pausedOnDebuggedFunction), errorLike };
     } else if (details.reason === Debugger.PausedEventReason.OOM) {
-      this.#viewInput = { mainText: i18nString4(UIStrings5.pausedBeforePotentialOutofmemory), errorLike };
+      viewInput = { mainText: i18nString4(UIStrings5.pausedBeforePotentialOutofmemory), errorLike };
     } else if (details.reason === Debugger.PausedEventReason.CSPViolation && details.auxData?.["violationType"]) {
       const text = details.auxData["violationType"];
       if (text === DOMDebugger.CSPViolationType.TrustedtypeSinkViolation) {
-        this.#viewInput = {
+        viewInput = {
           mainText: i18nString4(UIStrings5.pausedOnCspViolation),
           subText: i18nString4(UIStrings5.trustedTypeSinkViolation),
           errorLike
         };
       } else if (text === DOMDebugger.CSPViolationType.TrustedtypePolicyViolation) {
-        this.#viewInput = {
+        viewInput = {
           mainText: i18nString4(UIStrings5.pausedOnCspViolation),
           subText: i18nString4(UIStrings5.trustedTypePolicyViolation),
           errorLike
@@ -5674,13 +5727,22 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage extends UI5.Widget.Widg
       const uiLocation = await debuggerWorkspaceBinding.rawLocationToUILocation(details.callFrames[0].location());
       const breakpoint = uiLocation ? breakpointManager.findBreakpoint(uiLocation) : null;
       const defaultText = breakpoint ? i18nString4(UIStrings5.pausedOnBreakpoint) : i18nString4(UIStrings5.debuggerPaused);
-      this.#viewInput = { mainText: defaultText, errorLike };
+      viewInput = { mainText: defaultText, errorLike };
     } else {
-      this.#viewInput = null;
       console.warn(
         "ScriptsPanel paused, but callFrames.length is zero."
       );
     }
+    const escapeActions = await escapeActionsPromise;
+    if (generation !== this.#renderGeneration) {
+      return;
+    }
+    this.#viewInput = viewInput ? {
+      ...viewInput,
+      onDisableBreakpoint: escapeActions.disableBreakpoint,
+      onNeverPauseHere: escapeActions.neverPauseHere,
+      onDeactivateBreakpointsAndResume: escapeActions.deactivateBreakpointsAndResume
+    } : null;
     this.requestUpdate();
   }
   performUpdate() {
@@ -5711,18 +5773,18 @@ __export(SourcesNavigator_exports, {
 });
 import "../../ui/kit/kit.js";
 import "../../ui/legacy/legacy.js";
-import * as Common8 from "../../core/common/common.js";
+import * as Common9 from "../../core/common/common.js";
 import * as Host4 from "../../core/host/host.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
 import * as Platform6 from "../../core/platform/platform.js";
 import * as SDK6 from "../../core/sdk/sdk.js";
-import * as Bindings4 from "../../models/bindings/bindings.js";
+import * as Bindings5 from "../../models/bindings/bindings.js";
 import * as Persistence5 from "../../models/persistence/persistence.js";
 import * as Workspace7 from "../../models/workspace/workspace.js";
-import * as Buttons3 from "../../ui/components/buttons/buttons.js";
+import * as Buttons4 from "../../ui/components/buttons/buttons.js";
 import * as uiI18n from "../../ui/i18n/i18n.js";
 import * as UI8 from "../../ui/legacy/legacy.js";
-import * as Lit4 from "../../ui/lit/lit.js";
+import * as Lit3 from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 import * as Snippets2 from "../snippets/snippets.js";
 
@@ -5744,24 +5806,30 @@ __export(NavigatorView_exports, {
   iconTypeForNodeType: () => iconTypeForNodeType,
   renderFolderLeadingIcon: () => renderFolderLeadingIcon,
   renderGroupTrailingIcons: () => renderGroupTrailingIcons,
-  renderSourceTitleWidget: () => renderSourceTitleWidget,
   renderSourceTrailingIcons: () => renderSourceTrailingIcons
 });
 import "../../ui/components/spinners/spinners.js";
 import "../../ui/kit/kit.js";
-import * as Common7 from "../../core/common/common.js";
+import * as Common8 from "../../core/common/common.js";
 import * as Host3 from "../../core/host/host.js";
 import * as i18n11 from "../../core/i18n/i18n.js";
 import * as Platform5 from "../../core/platform/platform.js";
 import * as SDK5 from "../../core/sdk/sdk.js";
 import * as TextUtils4 from "../../core/text_utils/text_utils.js";
 import * as AiAssistance from "../../models/ai_assistance/ai_assistance.js";
-import * as Bindings3 from "../../models/bindings/bindings.js";
+import * as Bindings4 from "../../models/bindings/bindings.js";
 import * as Persistence3 from "../../models/persistence/persistence.js";
 import * as Workspace5 from "../../models/workspace/workspace.js";
-import * as Buttons2 from "../../ui/components/buttons/buttons.js";
+import * as Buttons3 from "../../ui/components/buttons/buttons.js";
 import * as UI7 from "../../ui/legacy/legacy.js";
-import * as Lit3 from "../../ui/lit/lit.js";
+import {
+  CustomDirectives,
+  Directive,
+  Directives as Directives2,
+  html as html6,
+  nothing as nothing4,
+  render as render5
+} from "../../ui/lit/lit.js";
 import * as SettingsUI2 from "../../ui/settings/settings.js";
 import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 import * as Snippets from "../snippets/snippets.js";
@@ -5798,14 +5866,19 @@ var navigatorTree_css_default = `/*
  */
 
 .is-ignore-listed {
-  .tree-element-title,
-  .leading-icons {
+  & > .tree-element-title {
     opacity: 40%;
   }
 }
 
 .tree-outline li {
   min-height: var(--sys-size-9);
+}
+
+.tree-outline.tree-variant-navigation li > .tree-element-title {
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .tree-outline li:hover:not(.selected) .selection {
@@ -5954,7 +6027,7 @@ __export(SearchSourcesView_exports, {
   SearchSources: () => SearchSources,
   SearchSourcesView: () => SearchSourcesView
 });
-import * as Common6 from "../../core/common/common.js";
+import * as Common7 from "../../core/common/common.js";
 import * as UI6 from "../../ui/legacy/legacy.js";
 import * as Search from "../search/search.js";
 
@@ -5964,10 +6037,10 @@ __export(SourcesSearchScope_exports, {
   FileBasedSearchResult: () => FileBasedSearchResult,
   SourcesSearchScope: () => SourcesSearchScope
 });
-import * as Common5 from "../../core/common/common.js";
+import * as Common6 from "../../core/common/common.js";
 import * as Platform3 from "../../core/platform/platform.js";
 import * as TextUtils2 from "../../core/text_utils/text_utils.js";
-import * as Bindings2 from "../../models/bindings/bindings.js";
+import * as Bindings3 from "../../models/bindings/bindings.js";
 import * as Persistence from "../../models/persistence/persistence.js";
 import * as Workspace3 from "../../models/workspace/workspace.js";
 import * as SettingsUI from "../../ui/settings/settings.js";
@@ -6015,7 +6088,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
   performIndexing(progress) {
     this.stopSearch();
     const projects = this.projects();
-    const compositeProgress = new Common5.Progress.CompositeProgress(progress);
+    const compositeProgress = new Common6.Progress.CompositeProgress(progress);
     for (let i = 0; i < projects.length; ++i) {
       const project = projects[i];
       const projectProgress = compositeProgress.createSubProgress([...project.uiSourceCodes()].length);
@@ -6023,8 +6096,8 @@ var SourcesSearchScope = class _SourcesSearchScope {
     }
   }
   projects() {
-    const searchInAnonymousAndContentScripts = Common5.Settings.Settings.instance().resolve(SettingsUI.SourcesSettings.searchInAnonymousAndContentScriptsSettingDescriptor).get();
-    const localOverridesEnabled = Common5.Settings.Settings.instance().resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get();
+    const searchInAnonymousAndContentScripts = Common6.Settings.Settings.instance().resolve(SettingsUI.SourcesSettings.searchInAnonymousAndContentScriptsSettingDescriptor).get();
+    const localOverridesEnabled = Common6.Settings.Settings.instance().resolve(Persistence.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get();
     return Workspace3.Workspace.WorkspaceImpl.instance().projects().filter((project) => {
       if (project.type() === Workspace3.Workspace.projectTypes.Service) {
         return false;
@@ -6048,9 +6121,9 @@ var SourcesSearchScope = class _SourcesSearchScope {
     this.searchFinishedCallback = searchFinishedCallback;
     this.searchConfig = searchConfig;
     const promises = [];
-    const compositeProgress = new Common5.Progress.CompositeProgress(progress);
+    const compositeProgress = new Common6.Progress.CompositeProgress(progress);
     const searchContentProgress = compositeProgress.createSubProgress();
-    const findMatchingFilesProgress = new Common5.Progress.CompositeProgress(compositeProgress.createSubProgress());
+    const findMatchingFilesProgress = new Common6.Progress.CompositeProgress(compositeProgress.createSubProgress());
     for (const project of this.projects()) {
       const weight = [...project.uiSourceCodes()].length;
       const findMatchingFilesInProjectProgress = findMatchingFilesProgress.createSubProgress(weight);
@@ -6110,7 +6183,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
     files = Platform3.ArrayUtilities.mergeOrdered(files, dirtyFiles, _SourcesSearchScope.urlComparator);
     const uiSourceCodes = [];
     for (const uiSourceCode of files) {
-      const script = Bindings2.DefaultScriptMapping.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode);
+      const script = Bindings3.DefaultScriptMapping.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode);
       if (script && !script.isAnonymousScript()) {
         continue;
       }
@@ -6258,7 +6331,7 @@ var ActionDelegate = class {
       case "sources.search": {
         const selection = UI6.InspectorView.InspectorView.instance().element.window().getSelection();
         const query = selection ? selection.toString().replace(/\r?\n.*/, "") : "";
-        void Common6.Revealer.reveal(new SearchSources(query));
+        void Common7.Revealer.reveal(new SearchSources(query));
         return true;
       }
     }
@@ -6277,7 +6350,9 @@ var Revealer3 = class {
 };
 
 // ../../front_end/panels/sources/NavigatorView.ts
-var { html: html6, render: render5 } = Lit3;
+var { classMap: classMap2, repeat: repeat2 } = Directives2;
+var { widget: widget2 } = UI7.Widget;
+var on = Directive.directive(CustomDirectives.InterceptBindingDirective);
 var UIStrings6 = {
   /**
    * @description Text in Navigator view of the Sources panel.
@@ -6431,22 +6506,6 @@ var TYPE_ORDERS = /* @__PURE__ */ new Map([
   [Types.AutomaticFileSystem, 99],
   [Types.FileSystem, 100]
 ]);
-var DEFAULT_VIEW5 = (input, _output, target) => {
-  const showPlaceholder = !input.showTree;
-  render5(
-    html6`
-        <style>${navigatorView_css_default}</style>
-        <slot name="header"></slot>
-        <div class="vbox flex-auto" ?hidden=${!showPlaceholder}>
-          <slot name="placeholder"></slot>
-        </div>
-        <div class="vbox flex-auto" ?hidden=${showPlaceholder}>
-          ${input.treeElement}
-        </div>
-      `,
-    target
-  );
-};
 function iconTypeForNodeType(type) {
   switch (type) {
     case Types.Domain:
@@ -6496,19 +6555,13 @@ function renderSourceTrailingIcons(uiSourceCode, onSelectSource) {
       .iconName=${icon}
       .title=${action4.title()}
       .jslogContext=${"ask-ai"}
-      @click=${{
-    handleEvent: (ev) => {
-      ev.stopPropagation();
-      onSelectSource(uiSourceCode, false);
-      void action4.execute();
-    },
-    capture: true
+      @click=${(ev) => {
+    ev.stopPropagation();
+    onSelectSource(uiSourceCode, false);
+    void action4.execute();
   }}
-      @mousedown=${{
-    handleEvent: (ev) => {
-      ev.stopPropagation();
-    },
-    capture: true
+      @mousedown=${(ev) => {
+    ev.stopPropagation();
   }}
     ></devtools-floating-button>
   </span>`];
@@ -6525,8 +6578,8 @@ function renderGroupTrailingIcons(project) {
     case "disconnected": {
       return [html6`<devtools-button
         .data=${{
-        variant: Buttons2.Button.Variant.OUTLINED,
-        size: Buttons2.Button.Size.MICRO,
+        variant: Buttons3.Button.Variant.OUTLINED,
+        size: Buttons3.Button.Size.MICRO,
         title: i18nString5(UIStrings6.connectFolderToWorkspace),
         jslogContext: "automatic-workspace-folders.connect"
       }}
@@ -6541,6 +6594,37 @@ function renderGroupTrailingIcons(project) {
     }
   }
   return [];
+}
+function nodeAriaLabel(node) {
+  if (node instanceof NavigatorUISourceCodeTreeNode) {
+    return `${node.uiSourceCode().name()}, ${node.type}`;
+  }
+  return `${node.mergedTitle()}, ${node.type}`;
+}
+function renderLeadingIcon(node) {
+  if (node instanceof NavigatorUISourceCodeTreeNode) {
+    const icon2 = PanelUtils.getIconForSourceFile(node.uiSourceCode());
+    const binding = Persistence3.Persistence.PersistenceImpl.instance().binding(node.uiSourceCode());
+    const networkPersistenceManager = Persistence3.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    const isHeaderOverride = networkPersistenceManager.isActiveHeaderOverrides(node.uiSourceCode());
+    const hasDotBadge = Boolean(binding || isHeaderOverride);
+    const isDotPurple = Boolean(binding ? networkPersistenceManager.project() === binding.fileSystem.project() : isHeaderOverride);
+    const badge = hasDotBadge ? isDotPurple ? "purple" : "green" : "none";
+    return html6`<span class="leading-icons icons-container" data-badge=${badge}>${icon2}</span>`;
+  }
+  const icon = renderFolderLeadingIcon(node.type);
+  return html6`<span class="leading-icons icons-container">${icon}</span>`;
+}
+function renderTrailingIcons(node, input) {
+  if (node instanceof NavigatorUISourceCodeTreeNode) {
+    const trailing = renderSourceTrailingIcons(node.uiSourceCode(), input.onSelectSource);
+    return trailing.length > 0 ? html6`<span class="trailing-icons icons-container">${trailing}</span>` : nothing4;
+  }
+  if (node instanceof NavigatorGroupTreeNode) {
+    const trailing = renderGroupTrailingIcons(node.project);
+    return trailing.length > 0 ? html6`<span class="trailing-icons icons-container">${trailing}</span>` : nothing4;
+  }
+  return nothing4;
 }
 var DEFAULT_NAVIGATOR_SOURCE_TITLE_VIEW = (input, _output, target) => {
   const stopPropagationIfEditing = (event) => {
@@ -6603,132 +6687,356 @@ var NavigatorSourceTitleWidget = class extends UI7.Widget.Widget {
     this.#view(viewInput, void 0, this.contentElement);
   }
 };
-var renderSourceTitleWidget = (input, _output, target) => {
-  render5(html6`
-        <devtools-widget style="display: contents" ${UI7.Widget.widget(NavigatorSourceTitleWidget, {
-    title: input.title,
-    editing: input.editing,
-    onCommit: input.onCommit,
-    onCancel: input.onCancel
-  })}></devtools-widget>
-      `, target);
-  const widgetElement = target.firstElementChild;
-  if (widgetElement) {
-    const widget7 = UI7.Widget.Widget.getOrCreateWidget(widgetElement);
-    void widget7.performUpdate();
+var TITLE_JSLOG = `${VisualLogging5.value("title").track({ change: true })}`;
+function renderTitle(node, input) {
+  if (node instanceof NavigatorUISourceCodeTreeNode) {
+    return html6`<span title=${node.computedTooltip()} class="tree-element-title" jslog=${TITLE_JSLOG}>
+      <devtools-widget ${widget2(NavigatorSourceTitleWidget, {
+      title: node.title,
+      editing: node.isEditing,
+      onCommit: (detail) => input.onCommitRename(node, detail),
+      onCancel: () => input.onCancelRename(node)
+    })}></devtools-widget>
+    </span>`;
   }
+  return html6`<span title=${node.computedTooltip()} class="tree-element-title" data-title=${node.mergedTitle()}>${node.mergedTitle()}</span>`;
+}
+function renderNode(node, input) {
+  const children = node.effectiveChildren();
+  const isExpandable = node instanceof NavigatorFolderTreeNode || node instanceof NavigatorGroupTreeNode && !(node.project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem) || children.length > 0;
+  const isExpanded = input.expandedNodes.has(node) || node instanceof NavigatorFolderTreeNode && input.expandedNodes.has(node.mergedLeafNode());
+  const isSelected = (input.selectedNode === node || node instanceof NavigatorFolderTreeNode && input.selectedNode === node.mergedLeafNode()) && !(node instanceof NavigatorUISourceCodeTreeNode && node.isEditing);
+  const classes = {
+    "navigator-folder-tree-item": node instanceof NavigatorFolderTreeNode || node instanceof NavigatorGroupTreeNode,
+    "navigator-file-tree-item": node instanceof NavigatorUISourceCodeTreeNode,
+    ["navigator-" + node.type + "-tree-item"]: true,
+    "is-from-source-map": Boolean(node.recursiveProperties.exclusivelySourceMapped),
+    "is-ignore-listed": Boolean(node.recursiveProperties.exclusivelyIgnored),
+    "has-mapped-files": node.hasMappedFiles,
+    selected: isSelected
+  };
+  return html6`
+    <li role="treeitem"
+        data-title=${node.title}
+        data-node-id=${node.id}
+        class=${classMap2(classes)}
+        ?open=${isExpanded}
+        ?selected=${isSelected}
+        aria-label=${nodeAriaLabel(node)}
+        jslog=${VisualLogging5.treeItem(node instanceof NavigatorUISourceCodeTreeNode ? node.uiSourceCode().contentType().name() : contextForNodeType(node.type)).track({ click: true })}
+        draggable=${node instanceof NavigatorUISourceCodeTreeNode ? "true" : "false"}
+        @expand=${on((e) => input.onExpand(node, e.detail.expanded))}
+        @select=${on((e) => input.onSelect(node, Boolean(e.detail?.selectedByUser)))}
+        @enter=${on(() => {
+    if (node instanceof NavigatorUISourceCodeTreeNode) {
+      input.onSelectSource(node.uiSourceCode(), true);
+    }
+  })}
+        @keydown=${on((e) => {
+    if (e.key === " " && node instanceof NavigatorUISourceCodeTreeNode && !node.isEditing) {
+      e.consume(true);
+      input.onSelectSource(node.uiSourceCode(), true);
+    }
+  })}
+        @click=${on((e) => {
+    if (node instanceof NavigatorUISourceCodeTreeNode && e.button === 0) {
+      input.onSelectSource(node.uiSourceCode(), false);
+    }
+  })}
+        @dblclick=${on((e) => input.onDoubleClick(node, e.button === 1))}
+        @contextmenu=${on((e) => input.onContextMenu(node, new UI7.ContextMenu.ContextMenu(e)))}
+        @dragstart=${on((e) => {
+    if (node instanceof NavigatorUISourceCodeTreeNode && e.dataTransfer) {
+      e.dataTransfer.setData("text/plain", node.uiSourceCode().url());
+      e.dataTransfer.effectAllowed = "copy";
+    }
+  })}
+        @mousedown=${on((e) => {
+    if (e.button === 0) {
+      input.onMouseDown(node);
+    }
+  })}
+        @mousemove=${on(() => input.onHover(node, true))}
+        @mouseleave=${on(() => input.onHover(node, false))}
+    >
+      ${renderLeadingIcon(node)}
+      ${renderTitle(node, input)}
+      ${renderTrailingIcons(node, input)}
+      ${isExpandable ? html6`
+        <ul role="group">
+          ${renderNodes(children, input)}
+        </ul>
+      ` : nothing4}
+    </li>
+  `;
+}
+function renderNodes(nodes, input) {
+  return html6`${repeat2(nodes, (node) => node.id, (node) => renderNode(node, input))}`;
+}
+function onTreeKeyDown(input, event) {
+  if (event.key === " " && input.selectedNode instanceof NavigatorUISourceCodeTreeNode && !input.selectedNode.isEditing) {
+    event.consume(true);
+    input.onSelectSource(input.selectedNode.uiSourceCode(), true);
+  }
+}
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  const showPlaceholder = !input.showTree;
+  render5(
+    html6`
+        <style>${navigatorView_css_default}</style>
+        <slot name="header"></slot>
+        <div class="vbox flex-auto" ?hidden=${!showPlaceholder}>
+          <slot name="placeholder"></slot>
+        </div>
+        <div class="vbox flex-auto" ?hidden=${showPlaceholder}>
+          <devtools-tree autofocus navigation-variant hide-overflow
+            @keydown=${(e) => onTreeKeyDown(input, e)}
+            .template=${html6`
+            <style>${navigatorTree_css_default}</style>
+            <ul role="tree">
+              ${renderNodes(input.nodes, input)}
+            </ul>
+          `}></devtools-tree>
+        </div>
+      `,
+    target
+  );
 };
 var Events2 = /* @__PURE__ */ ((Events6) => {
   Events6["UI_SOURCE_CODE_ADDED"] = "ui-source-code-added";
   Events6["SOURCE_SELECTED"] = "source-selected";
   return Events6;
 })(Events2 || {});
-var NavigatorViewBase = Common7.ObjectWrapper.eventMixin(UI7.Widget.VBox);
+var NavigatorViewBase = Common8.ObjectWrapper.eventMixin(UI7.Widget.VBox);
 var NavigatorView = class _NavigatorView extends NavigatorViewBase {
-  static INJECT = [Bindings3.NetworkProject.NetworkProjectManager];
-  scriptsTree;
-  uiSourceCodeNodes;
-  subfolderNodes;
+  static INJECT = [
+    Bindings4.NetworkProject.NetworkProjectManager,
+    Workspace5.Workspace.WorkspaceImpl,
+    Workspace5.IgnoreListManager.IgnoreListManager,
+    Persistence3.Persistence.PersistenceImpl,
+    Persistence3.NetworkPersistenceManager.NetworkPersistenceManager,
+    SDK5.TargetManager.TargetManager,
+    Common8.Settings.Settings
+  ];
+  #uiSourceCodeNodes;
+  #subfolderNodes;
   rootNode;
-  frameNodes;
-  authoredNode;
-  deployedNode;
-  navigatorGroupByFolderSetting;
-  navigatorJustMyCodeSetting;
-  navigatorGroupByAuthoredSetting;
+  #frameNodes;
+  #authoredNode;
+  #deployedNode;
+  #navigatorGroupByFolderSetting;
+  #navigatorJustMyCodeSetting;
+  #navigatorGroupByAuthoredSetting;
   #navigatorGroupByAuthoredChangeListener;
   #enableAuthoredGrouping = false;
   #projectFilter;
-  #workspace = Workspace5.Workspace.WorkspaceImpl.instance();
-  #initialized = false;
-  groupByFrame;
-  groupByAuthored;
-  groupByDomain;
-  groupByFolder;
-  selectedNode = null;
-  expandedNodes = /* @__PURE__ */ new WeakSet();
-  treeElementNodes = /* @__PURE__ */ new WeakMap();
+  #workspace;
+  #subscribed = false;
+  #needsRegroup = false;
+  #prevJustMyCode;
+  #groupingChangedListener = this.#groupingChanged.bind(this);
+  #ignoreListChangedListener = this.#ignoreListChanged.bind(this);
+  #networkProjectManager;
+  #ignoreListManager;
+  #persistence;
+  #networkPersistenceManager;
+  #targetManager;
+  #settings;
+  #groupByFrame;
+  #groupByAuthored;
+  #groupByDomain;
+  #groupByFolder;
+  #selectedNode = null;
+  #expandedNodes = /* @__PURE__ */ new WeakSet();
   #renamingNode = null;
   #view;
-  constructor(element, [networkProjectManager] = [Bindings3.NetworkProject.NetworkProjectManager.instance()], view = DEFAULT_VIEW5) {
+  constructor(element, [
+    networkProjectManager = Bindings4.NetworkProject.NetworkProjectManager.instance(),
+    workspace = Workspace5.Workspace.WorkspaceImpl.instance(),
+    ignoreListManager = Workspace5.IgnoreListManager.IgnoreListManager.instance(),
+    persistence = Persistence3.Persistence.PersistenceImpl.instance(),
+    networkPersistenceManager = Persistence3.NetworkPersistenceManager.NetworkPersistenceManager.instance(),
+    targetManager = SDK5.TargetManager.TargetManager.instance(),
+    settings = Common8.Settings.Settings.instance()
+  ] = [], view = DEFAULT_VIEW5) {
     super(element, { useShadowDom: true });
     this.#view = view;
-    this.scriptsTree = new UI7.TreeOutline.TreeOutlineInShadow(UI7.TreeOutline.TreeVariant.NAVIGATION_TREE);
-    this.scriptsTree.registerRequiredCSS(navigatorTree_css_default);
-    this.scriptsTree.setHideOverflow(true);
-    this.scriptsTree.setComparator(this.treeElementsCompare.bind(this));
-    this.scriptsTree.setFocusable(false);
-    this.setDefaultFocusedElement(this.scriptsTree.element);
-    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementAttached, () => this.requestUpdate());
-    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementsDetached, () => this.requestUpdate());
-    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementSelected, (event) => {
-      const node = this.nodeForTreeElement(event.data);
-      this.selectedNode = node ?? null;
-    });
-    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementExpanded, (event) => {
-      const node = this.nodeForTreeElement(event.data);
-      if (node) {
-        this.expandedNodes.add(node);
-        node.populate();
-      }
-    });
-    this.scriptsTree.addEventListener(UI7.TreeOutline.Events.ElementCollapsed, (event) => {
-      const node = this.nodeForTreeElement(event.data);
-      if (node) {
-        this.expandedNodes.delete(node);
-      }
-    });
-    this.uiSourceCodeNodes = new Platform5.MapUtilities.Multimap();
-    this.subfolderNodes = /* @__PURE__ */ new Map();
+    this.#networkProjectManager = networkProjectManager;
+    this.#workspace = workspace;
+    this.#ignoreListManager = ignoreListManager;
+    this.#persistence = persistence;
+    this.#networkPersistenceManager = networkPersistenceManager;
+    this.#targetManager = targetManager;
+    this.#settings = settings;
+    this.#uiSourceCodeNodes = new Platform5.MapUtilities.Multimap();
+    this.#subfolderNodes = /* @__PURE__ */ new Map();
     this.rootNode = new NavigatorRootTreeNode(this);
     this.rootNode.populate();
-    this.frameNodes = /* @__PURE__ */ new Map();
+    this.#frameNodes = /* @__PURE__ */ new Map();
     UI7.ShortcutRegistry.ShortcutRegistry.instance().addShortcutListener(
       this.contentElement,
-      { "sources.rename": this.renameShortcut.bind(this) }
+      { "sources.rename": this.#renameShortcut.bind(this) }
     );
-    this.navigatorGroupByFolderSetting = Common7.Settings.Settings.instance().resolve(SettingsUI2.SourcesSettings.navigatorGroupByFolderSettingDescriptor);
-    this.navigatorGroupByFolderSetting.addChangeListener(this.groupingChanged.bind(this));
-    this.navigatorJustMyCodeSetting = Common7.Settings.Settings.instance().resolve(SettingsUI2.SourcesSettings.navigatorJustMyCodeSettingDescriptor);
-    this.navigatorJustMyCodeSetting.addChangeListener(this.groupingChanged.bind(this));
-    Workspace5.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
-    this.initGrouping();
-    Persistence3.Persistence.PersistenceImpl.instance().addEventListener(
-      Persistence3.Persistence.Events.BindingCreated,
-      this.onBindingChanged,
-      this
-    );
-    Persistence3.Persistence.PersistenceImpl.instance().addEventListener(
-      Persistence3.Persistence.Events.BindingRemoved,
-      this.onBindingChanged,
-      this
-    );
-    Persistence3.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(
+    this.#navigatorGroupByFolderSetting = this.#settings.resolve(SettingsUI2.SourcesSettings.navigatorGroupByFolderSettingDescriptor);
+    this.#navigatorJustMyCodeSetting = this.#settings.resolve(SettingsUI2.SourcesSettings.navigatorJustMyCodeSettingDescriptor);
+    this.#initGrouping();
+    this.requestUpdate();
+  }
+  get ignoreListManager() {
+    return this.#ignoreListManager;
+  }
+  get persistence() {
+    return this.#persistence;
+  }
+  get settings() {
+    return this.#settings;
+  }
+  wasShown() {
+    super.wasShown();
+    this.#subscribe();
+    this.requestUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#unsubscribe();
+  }
+  #subscribe() {
+    if (this.#subscribed) {
+      return;
+    }
+    this.#subscribed = true;
+    this.#navigatorGroupByFolderSetting.addChangeListener(this.#groupingChangedListener);
+    this.#navigatorJustMyCodeSetting.addChangeListener(this.#groupingChangedListener);
+    if (this.#navigatorGroupByAuthoredSetting && this.#navigatorGroupByAuthoredChangeListener) {
+      this.#navigatorGroupByAuthoredSetting.addChangeListener(this.#navigatorGroupByAuthoredChangeListener);
+    }
+    this.#ignoreListManager.addChangeListener(this.#ignoreListChangedListener);
+    this.#persistence.addEventListener(Persistence3.Persistence.Events.BindingCreated, this.#onBindingChanged, this);
+    this.#persistence.addEventListener(Persistence3.Persistence.Events.BindingRemoved, this.#onBindingChanged, this);
+    this.#networkPersistenceManager.addEventListener(
       Persistence3.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED,
       this.#onRequestsForHeaderOverridesFileChanged,
       this
     );
-    SDK5.TargetManager.TargetManager.instance().addEventListener(
-      SDK5.TargetManager.Events.NAME_CHANGED,
-      this.targetNameChanged,
+    this.#targetManager.addEventListener(SDK5.TargetManager.Events.NAME_CHANGED, this.#targetNameChanged, this);
+    this.#targetManager.observeTargets(this);
+    this.#networkProjectManager.addEventListener(
+      Bindings4.NetworkProject.Events.FRAME_ATTRIBUTION_ADDED,
+      this.#frameAttributionAdded,
       this
     );
-    SDK5.TargetManager.TargetManager.instance().observeTargets(this);
-    networkProjectManager.addEventListener(
-      Bindings3.NetworkProject.Events.FRAME_ATTRIBUTION_ADDED,
-      this.frameAttributionAdded,
+    this.#networkProjectManager.addEventListener(
+      Bindings4.NetworkProject.Events.FRAME_ATTRIBUTION_REMOVED,
+      this.#frameAttributionRemoved,
       this
     );
-    networkProjectManager.addEventListener(
-      Bindings3.NetworkProject.Events.FRAME_ATTRIBUTION_REMOVED,
-      this.frameAttributionRemoved,
-      this
-    );
-    this.requestUpdate();
+    const prevGroupByFolder = this.#groupByFolder;
+    const prevGroupByDomain = this.#groupByDomain;
+    const prevGroupByAuthored = this.#groupByAuthored;
+    const prevJustMyCode = this.#prevJustMyCode;
+    this.#initGrouping();
+    const groupingChanged = prevGroupByFolder !== this.#groupByFolder || prevGroupByDomain !== this.#groupByDomain || prevGroupByAuthored !== this.#groupByAuthored || prevJustMyCode !== this.#prevJustMyCode;
+    if (groupingChanged || this.#needsRegroup) {
+      this.#needsRegroup = false;
+      this.#groupingChanged();
+      return;
+    }
+    this.#resetWorkspace(this.#workspace);
+    const current = new Set(this.#workspace.uiSourceCodes());
+    const workspaceProjects = new Set(this.#workspace.projects());
+    const toRemove = [];
+    for (const uiSourceCode of this.#uiSourceCodeNodes.keys()) {
+      if (!current.has(uiSourceCode) || !workspaceProjects.has(uiSourceCode.project()) || !this.#acceptsUISourceCode(uiSourceCode) || this.#navigatorJustMyCodeSetting.get() && this.#ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+        toRemove.push(uiSourceCode);
+      }
+    }
+    if (toRemove.length > 0) {
+      this.#removeUISourceCodes(toRemove);
+    }
+    const rootOrDeployed = this.#rootOrDeployedNode();
+    for (const child of [...rootOrDeployed.children()]) {
+      if (child instanceof NavigatorGroupTreeNode && child.project && !workspaceProjects.has(child.project)) {
+        this.removeProject(child.project);
+      }
+    }
+    for (const uiSourceCode of current) {
+      if (!this.#uiSourceCodeNodes.has(uiSourceCode)) {
+        this.#addUISourceCode(uiSourceCode);
+      } else {
+        const frames = Bindings4.NetworkProject.NetworkProject.framesForUISourceCode(uiSourceCode);
+        const desiredFrames = new Set(frames.length > 0 ? frames : [null]);
+        for (const node of [...this.#uiSourceCodeNodes.get(uiSourceCode)]) {
+          if (!desiredFrames.has(node.frame())) {
+            this.#removeUISourceCodeNode(node);
+          }
+        }
+        const existingFrames = new Set(Array.from(this.#uiSourceCodeNodes.get(uiSourceCode), (node) => node.frame()));
+        for (const frame of desiredFrames) {
+          if (!existingFrames.has(frame)) {
+            this.#addUISourceCodeNode(uiSourceCode, frame);
+          }
+        }
+      }
+    }
+    if (this.#targetManager) {
+      const liveTargets = new Set(this.#targetManager.targets());
+      const scopeTarget = this.#targetManager.scopeTarget();
+      for (const child of [...rootOrDeployed.children()]) {
+        if (child.id.startsWith("target:")) {
+          const targetId = child.id.slice("target:".length);
+          const target = this.#targetManager.targetById(targetId);
+          if (!target || !liveTargets.has(target) || target === scopeTarget) {
+            rootOrDeployed.removeChild(child);
+          } else {
+            child.setTitle(target.name());
+          }
+        }
+      }
+    }
+    this.rootNode.updateTitleRecursive();
   }
-  wasShown() {
-    super.wasShown();
-    this.requestUpdate();
+  #unsubscribe() {
+    if (!this.#subscribed) {
+      return;
+    }
+    this.#subscribed = false;
+    this.#navigatorGroupByFolderSetting.removeChangeListener(this.#groupingChangedListener);
+    this.#navigatorJustMyCodeSetting.removeChangeListener(this.#groupingChangedListener);
+    if (this.#navigatorGroupByAuthoredSetting && this.#navigatorGroupByAuthoredChangeListener) {
+      this.#navigatorGroupByAuthoredSetting.removeChangeListener(this.#navigatorGroupByAuthoredChangeListener);
+    }
+    this.#ignoreListManager.removeChangeListener(this.#ignoreListChangedListener);
+    this.#persistence.removeEventListener(Persistence3.Persistence.Events.BindingCreated, this.#onBindingChanged, this);
+    this.#persistence.removeEventListener(Persistence3.Persistence.Events.BindingRemoved, this.#onBindingChanged, this);
+    this.#networkPersistenceManager.removeEventListener(
+      Persistence3.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED,
+      this.#onRequestsForHeaderOverridesFileChanged,
+      this
+    );
+    this.#targetManager.removeEventListener(SDK5.TargetManager.Events.NAME_CHANGED, this.#targetNameChanged, this);
+    this.#targetManager.unobserveTargets(this);
+    this.#networkProjectManager.removeEventListener(
+      Bindings4.NetworkProject.Events.FRAME_ATTRIBUTION_ADDED,
+      this.#frameAttributionAdded,
+      this
+    );
+    this.#networkProjectManager.removeEventListener(
+      Bindings4.NetworkProject.Events.FRAME_ATTRIBUTION_REMOVED,
+      this.#frameAttributionRemoved,
+      this
+    );
+    this.#workspace.removeEventListener(
+      Workspace5.Workspace.Events.UISourceCodeAdded,
+      this.#uiSourceCodeAddedCallback,
+      this
+    );
+    this.#workspace.removeEventListener(
+      Workspace5.Workspace.Events.UISourceCodeRemoved,
+      this.#uiSourceCodeRemovedCallback,
+      this
+    );
+    this.#workspace.removeEventListener(Workspace5.Workspace.Events.ProjectAdded, this.#projectAddedCallback, this);
+    this.#workspace.removeEventListener(Workspace5.Workspace.Events.ProjectRemoved, this.#projectRemovedCallback, this);
   }
   get enableAuthoredGrouping() {
     return this.#enableAuthoredGrouping;
@@ -6738,20 +7046,25 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       return;
     }
     this.#enableAuthoredGrouping = enableAuthoredGrouping;
-    if (this.navigatorGroupByAuthoredSetting && this.#navigatorGroupByAuthoredChangeListener) {
-      this.navigatorGroupByAuthoredSetting.removeChangeListener(this.#navigatorGroupByAuthoredChangeListener);
-      this.navigatorGroupByAuthoredSetting = void 0;
+    if (this.#navigatorGroupByAuthoredSetting && this.#navigatorGroupByAuthoredChangeListener) {
+      this.#navigatorGroupByAuthoredSetting.removeChangeListener(this.#navigatorGroupByAuthoredChangeListener);
+      this.#navigatorGroupByAuthoredSetting = void 0;
       this.#navigatorGroupByAuthoredChangeListener = void 0;
     }
     if (enableAuthoredGrouping) {
-      this.navigatorGroupByAuthoredSetting = Common7.Settings.Settings.instance().resolve(
-        SettingsUI2.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor
-      );
-      this.#navigatorGroupByAuthoredChangeListener = this.groupingChanged.bind(this);
-      this.navigatorGroupByAuthoredSetting.addChangeListener(this.#navigatorGroupByAuthoredChangeListener);
+      this.#navigatorGroupByAuthoredSetting = this.#settings.resolve(SettingsUI2.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor);
+      this.#navigatorGroupByAuthoredChangeListener = this.#groupingChanged.bind(this);
+      if (this.#subscribed) {
+        this.#navigatorGroupByAuthoredSetting.addChangeListener(this.#navigatorGroupByAuthoredChangeListener);
+      }
     }
-    if (this.#initialized && Boolean(this.groupByAuthored) !== Boolean(this.navigatorGroupByAuthoredSetting?.get())) {
-      this.groupingChanged();
+    if (Boolean(this.#groupByAuthored) !== Boolean(this.#navigatorGroupByAuthoredSetting?.get())) {
+      if (this.#subscribed) {
+        this.#initGrouping();
+        this.#groupingChanged();
+      } else {
+        this.#needsRegroup = true;
+      }
     }
     this.requestUpdate();
   }
@@ -6763,12 +7076,14 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       return;
     }
     this.#projectFilter = projectFilter;
-    if (this.#initialized) {
-      this.groupingChanged();
+    if (this.#subscribed) {
+      this.#groupingChanged();
+    } else {
+      this.#needsRegroup = true;
     }
     this.requestUpdate();
   }
-  static nodeOrder(node) {
+  static #nodeOrder(node) {
     if (node.boostOrder) {
       return 0;
     }
@@ -6788,61 +7103,56 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     return order;
   }
   static compareNodes(node1, node2) {
-    const order1 = _NavigatorView.nodeOrder(node1);
-    const order2 = _NavigatorView.nodeOrder(node2);
+    const order1 = _NavigatorView.#nodeOrder(node1);
+    const order2 = _NavigatorView.#nodeOrder(node2);
     if (order1 > order2) {
       return 1;
     }
     if (order1 < order2) {
       return -1;
     }
-    return 0;
+    return Platform5.StringUtilities.naturalOrderComparator(node1.mergedTitle(), node2.mergedTitle());
   }
   static appendSearchItem(contextMenu, path) {
     const searchLabel = path ? i18nString5(UIStrings6.searchInFolder) : i18nString5(UIStrings6.searchInAllFiles);
     const searchSources = new SearchSources(path && `file:${path}`);
     contextMenu.viewSection().appendItem(
       searchLabel,
-      () => Common7.Revealer.reveal(searchSources),
+      () => Common8.Revealer.reveal(searchSources),
       { jslogContext: path ? "search-in-folder" : "search-in-all-files" }
     );
   }
-  treeElementsCompare(treeElement1, treeElement2) {
-    const node1 = this.nodeForTreeElement(treeElement1);
-    const node2 = this.nodeForTreeElement(treeElement2);
-    if (node1 && node2) {
-      const order = _NavigatorView.compareNodes(node1, node2);
-      if (order !== 0) {
-        return order;
-      }
-    }
-    return Platform5.StringUtilities.naturalOrderComparator(treeElement1.titleAsText(), treeElement2.titleAsText());
-  }
   performUpdate() {
-    if (!this.#initialized) {
-      this.#initialized = true;
-      this.initGrouping();
-      this.resetWorkspace(this.#workspace);
-      this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
-    }
+    const nodes = this.rootNode.effectiveChildren();
     this.#view(
       {
-        treeElement: this.scriptsTree.element,
-        showTree: Boolean(this.scriptsTree.firstChild())
+        nodes,
+        expandedNodes: this.#expandedNodes,
+        selectedNode: this.#selectedNode,
+        onExpand: this.#onExpand.bind(this),
+        onSelect: this.#onSelect.bind(this),
+        onDoubleClick: this.#onDoubleClick.bind(this),
+        onContextMenu: this.#onContextMenu.bind(this),
+        onHover: this.#onHover.bind(this),
+        onMouseDown: this.#onMouseDown.bind(this),
+        onSelectSource: this.sourceSelected.bind(this),
+        onCommitRename: this.#onCommitRename.bind(this),
+        onCancelRename: this.#onCancelRename.bind(this),
+        showTree: nodes.length > 0
       },
       void 0,
       this.contentElement
     );
   }
-  onBindingChanged(event) {
+  #onBindingChanged(event) {
     const binding = event.data;
     let isFromSourceMap = false;
-    const networkNodes = this.uiSourceCodeNodes.get(binding.network);
+    const networkNodes = this.#uiSourceCodeNodes.get(binding.network);
     for (const networkNode of networkNodes) {
       networkNode.updateTitle();
       isFromSourceMap ||= networkNode.uiSourceCode().contentType().isFromSourceMap();
     }
-    const fileSystemNodes = this.uiSourceCodeNodes.get(binding.fileSystem);
+    const fileSystemNodes = this.#uiSourceCodeNodes.get(binding.fileSystem);
     for (const fileSystemNode of fileSystemNodes) {
       fileSystemNode.updateTitle();
       isFromSourceMap ||= fileSystemNode.uiSourceCode().contentType().isFromSourceMap();
@@ -6850,8 +7160,8 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     const pathTokens = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(binding.fileSystem);
     let folderPath = Platform5.DevToolsPath.EmptyEncodedPathString;
     for (let i = 0; i < pathTokens.length - 1; ++i) {
-      folderPath = Common7.ParsedURL.ParsedURL.concatenate(folderPath, pathTokens[i]);
-      const folderId = this.folderNodeId(
+      folderPath = Common8.ParsedURL.ParsedURL.concatenate(folderPath, pathTokens[i]);
+      const folderId = this.#folderNodeId(
         binding.fileSystem.project(),
         null,
         null,
@@ -6859,128 +7169,178 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
         isFromSourceMap,
         folderPath
       );
-      const folderNode = this.subfolderNodes.get(folderId);
+      const folderNode = this.#subfolderNodes.get(folderId);
       if (folderNode) {
         folderNode.updateTitle();
       }
-      folderPath = Common7.ParsedURL.ParsedURL.concatenate(folderPath, "/");
+      folderPath = Common8.ParsedURL.ParsedURL.concatenate(folderPath, "/");
     }
-    const fileSystemRoot = this.rootOrDeployedNode().child(binding.fileSystem.project().id());
+    const fileSystemRoot = this.#rootOrDeployedNode().child(binding.fileSystem.project().id());
     if (fileSystemRoot) {
       fileSystemRoot.updateTitle();
     }
   }
   #onRequestsForHeaderOverridesFileChanged(event) {
     const headersFileUiSourceCode = event.data;
-    const networkNodes = this.uiSourceCodeNodes.get(headersFileUiSourceCode);
+    const networkNodes = this.#uiSourceCodeNodes.get(headersFileUiSourceCode);
     for (const networkNode of networkNodes) {
       networkNode.updateTitle();
     }
   }
-  focus() {
-    this.scriptsTree.focus();
-  }
-  selectNode(node, omitFocus, selectedByUser) {
-    node.treeNode().select(omitFocus, selectedByUser);
+  selectNode(node) {
+    this.#selectedNode = node;
+    this.requestUpdate();
   }
   expandNode(node) {
-    node.treeNode().expand();
+    const leaf = node instanceof NavigatorFolderTreeNode ? node.mergedLeafNode() : node;
+    this.#expandedNodes.add(node);
+    this.#expandedNodes.add(leaf);
+    node.populate();
+    leaf.populate();
+    this.requestUpdate();
   }
   collapseNode(node) {
-    node.treeNode().collapse();
+    const leaf = node instanceof NavigatorFolderTreeNode ? node.mergedLeafNode() : node;
+    this.#expandedNodes.delete(node);
+    this.#expandedNodes.delete(leaf);
+    this.requestUpdate();
   }
   isNodeExpanded(node) {
-    return this.expandedNodes.has(node);
+    return this.#expandedNodes.has(node);
   }
   isNodeSelected(node) {
-    return this.selectedNode === node;
+    return this.#selectedNode === node;
   }
   setNodeSelected(node) {
-    this.selectedNode = node;
+    this.#selectedNode = node;
   }
   setNodeExpanded(node) {
-    this.expandedNodes.add(node);
+    this.#expandedNodes.add(node);
   }
-  setNodeForTreeElement(treeElement, node) {
-    this.treeElementNodes.set(treeElement, node);
+  isNodeSelectedOrDescendant(node) {
+    let curr = this.#selectedNode;
+    while (curr) {
+      if (curr === node) {
+        return true;
+      }
+      curr = curr.parent;
+    }
+    return false;
+  }
+  deselectIfDescendant(node) {
+    if (this.isNodeSelectedOrDescendant(node)) {
+      this.#selectedNode = null;
+    }
+  }
+  #onExpand(node, expanded) {
+    const leaf = node instanceof NavigatorFolderTreeNode ? node.mergedLeafNode() : node;
+    if (expanded) {
+      this.#expandedNodes.add(node);
+      this.#expandedNodes.add(leaf);
+      node.populate();
+      leaf.populate();
+    } else {
+      this.#expandedNodes.delete(node);
+      this.#expandedNodes.delete(leaf);
+    }
+    this.requestUpdate();
+  }
+  #onSelect(node, selectedByUser) {
+    if (!selectedByUser && this.#selectedNode !== null) {
+      return;
+    }
+    if (node instanceof NavigatorFolderTreeNode) {
+      this.#selectedNode = node.mergedLeafNode();
+    } else {
+      this.#selectedNode = node;
+    }
+  }
+  #onDoubleClick(node, middleClick) {
+    if (node instanceof NavigatorUISourceCodeTreeNode) {
+      this.sourceSelected(node.uiSourceCode(), !middleClick);
+    }
+  }
+  #onContextMenu(node, contextMenu) {
+    this.selectNode(node);
+    if (node instanceof NavigatorUISourceCodeTreeNode) {
+      this.handleFileContextMenu(contextMenu, node);
+    } else if (node instanceof NavigatorFolderTreeNode || node instanceof NavigatorGroupTreeNode) {
+      this.handleFolderContextMenu(contextMenu, node);
+    }
+  }
+  #onHover(node, hovered) {
     if (node instanceof NavigatorFolderTreeNode || node instanceof NavigatorGroupTreeNode) {
-      node.updateTooltip(treeElement);
-      UI7.ARIAUtils.setLabel(treeElement.listItemElement, `${treeElement.title}, ${node.type}`);
-    }
-    if (treeElement.selected) {
-      this.setNodeSelected(node);
-    }
-    if (treeElement.expanded) {
-      this.setNodeExpanded(node);
+      this.folderHovered(node, hovered);
     }
   }
-  nodeForTreeElement(treeElement) {
-    return this.treeElementNodes.get(treeElement);
-  }
-  /**
-   * Central place to add elements to the tree to
-   * enable focus if the tree has elements
-   */
-  appendChild(parent, child) {
-    this.scriptsTree.setFocusable(true);
-    parent.appendChild(child);
-  }
-  /**
-   * Central place to remove elements from the tree to
-   * disable focus if the tree is empty
-   */
-  removeChild(parent, child) {
-    parent.removeChild(child);
-    if (!this.scriptsTree.selectedTreeElement) {
-      this.selectedNode = null;
+  #onMouseDown(node) {
+    if (!(node instanceof NavigatorUISourceCodeTreeNode)) {
+      return;
     }
-    if (this.scriptsTree.rootElement().childCount() === 0) {
-      this.scriptsTree.setFocusable(false);
+    if (!this.shouldRenameOnMouseDown(node)) {
+      return;
     }
+    setTimeout(() => {
+      if (this.shouldRenameOnMouseDown(node)) {
+        this.rename(node, false);
+      }
+    }, 300);
   }
-  resetWorkspace(workspace) {
-    if (this.#workspace) {
+  #onCommitRename(node, newTitle) {
+    void node.commitRename(newTitle);
+  }
+  #onCancelRename(node) {
+    node.cancelRename();
+  }
+  #resetWorkspace(workspace) {
+    if (this.#subscribed && this.#workspace) {
       this.#workspace.removeEventListener(
         Workspace5.Workspace.Events.UISourceCodeAdded,
-        this.uiSourceCodeAddedCallback,
+        this.#uiSourceCodeAddedCallback,
         this
       );
       this.#workspace.removeEventListener(
         Workspace5.Workspace.Events.UISourceCodeRemoved,
-        this.uiSourceCodeRemovedCallback,
+        this.#uiSourceCodeRemovedCallback,
         this
       );
-      this.#workspace.removeEventListener(Workspace5.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-      this.#workspace.removeEventListener(Workspace5.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+      this.#workspace.removeEventListener(Workspace5.Workspace.Events.ProjectAdded, this.#projectAddedCallback, this);
+      this.#workspace.removeEventListener(
+        Workspace5.Workspace.Events.ProjectRemoved,
+        this.#projectRemovedCallback,
+        this
+      );
     }
     this.#workspace = workspace;
-    this.#workspace.addEventListener(
-      Workspace5.Workspace.Events.UISourceCodeAdded,
-      this.uiSourceCodeAddedCallback,
-      this
-    );
-    this.#workspace.addEventListener(
-      Workspace5.Workspace.Events.UISourceCodeRemoved,
-      this.uiSourceCodeRemovedCallback,
-      this
-    );
-    this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-    this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
-    this.#workspace.projects().forEach(this.projectAdded.bind(this));
-    this.computeUniqueFileSystemProjectNames();
+    if (this.#subscribed) {
+      this.#workspace.addEventListener(
+        Workspace5.Workspace.Events.UISourceCodeAdded,
+        this.#uiSourceCodeAddedCallback,
+        this
+      );
+      this.#workspace.addEventListener(
+        Workspace5.Workspace.Events.UISourceCodeRemoved,
+        this.#uiSourceCodeRemovedCallback,
+        this
+      );
+      this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectAdded, this.#projectAddedCallback, this);
+      this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectRemoved, this.#projectRemovedCallback, this);
+    }
+    this.#workspace.projects().forEach(this.#projectAdded.bind(this));
+    this.#computeUniqueFileSystemProjectNames();
   }
-  projectAddedCallback(event) {
+  #projectAddedCallback(event) {
     const project = event.data;
-    this.projectAdded(project);
+    this.#projectAdded(project);
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
-      this.computeUniqueFileSystemProjectNames();
+      this.#computeUniqueFileSystemProjectNames();
     }
   }
-  projectRemovedCallback(event) {
+  #projectRemovedCallback(event) {
     const project = event.data;
     this.removeProject(project);
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
-      this.computeUniqueFileSystemProjectNames();
+      this.#computeUniqueFileSystemProjectNames();
     }
   }
   acceptProject(project) {
@@ -6989,87 +7349,85 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return !project.isServiceProject();
   }
-  frameAttributionAdded(event) {
+  #frameAttributionAdded(event) {
     const { uiSourceCode } = event.data;
-    if (!this.acceptsUISourceCode(uiSourceCode)) {
+    if (!this.#acceptsUISourceCode(uiSourceCode)) {
       return;
     }
     const addedFrame = event.data.frame;
-    this.addUISourceCodeNode(uiSourceCode, addedFrame);
+    this.#addUISourceCodeNode(uiSourceCode, addedFrame);
   }
-  frameAttributionRemoved(event) {
+  #frameAttributionRemoved(event) {
     const { uiSourceCode } = event.data;
-    if (!this.acceptsUISourceCode(uiSourceCode)) {
+    if (!this.#acceptsUISourceCode(uiSourceCode)) {
       return;
     }
     const removedFrame = event.data.frame;
-    const node = Array.from(this.uiSourceCodeNodes.get(uiSourceCode)).find((node2) => node2.frame() === removedFrame);
+    const node = Array.from(this.#uiSourceCodeNodes.get(uiSourceCode)).find((node2) => node2.frame() === removedFrame);
     if (node) {
-      this.removeUISourceCodeNode(node);
+      this.#removeUISourceCodeNode(node);
     }
   }
-  acceptsUISourceCode(uiSourceCode) {
+  #acceptsUISourceCode(uiSourceCode) {
     return this.acceptProject(uiSourceCode.project());
   }
-  addUISourceCode(uiSourceCode) {
-    if (this.navigatorJustMyCodeSetting.get() && Workspace5.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
-      uiSourceCode
-    )) {
+  #addUISourceCode(uiSourceCode) {
+    if (this.#navigatorJustMyCodeSetting.get() && this.#ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
       return;
     }
-    if (!this.acceptsUISourceCode(uiSourceCode)) {
+    if (!this.#acceptsUISourceCode(uiSourceCode)) {
       return;
     }
     if (uiSourceCode.isFetchXHR()) {
       return;
     }
-    const frames = Bindings3.NetworkProject.NetworkProject.framesForUISourceCode(uiSourceCode);
+    const frames = Bindings4.NetworkProject.NetworkProject.framesForUISourceCode(uiSourceCode);
     if (frames.length) {
       for (const frame of frames) {
-        this.addUISourceCodeNode(uiSourceCode, frame);
+        this.#addUISourceCodeNode(uiSourceCode, frame);
       }
     } else {
-      this.addUISourceCodeNode(uiSourceCode, null);
+      this.#addUISourceCodeNode(uiSourceCode, null);
     }
     this.dispatchEventToListeners("ui-source-code-added" /* UI_SOURCE_CODE_ADDED */, uiSourceCode);
   }
-  addUISourceCodeNode(uiSourceCode, frame) {
+  #addUISourceCodeNode(uiSourceCode, frame) {
     const isFromSourceMap = uiSourceCode.contentType().isFromSourceMap();
     let path;
     if (uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.FileSystem) {
       path = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1);
     } else {
-      path = Common7.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split("/").slice(1, -1);
+      path = Common8.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split("/").slice(1, -1);
     }
     const project = uiSourceCode.project();
-    const target = Bindings3.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
-    const folderNode = this.folderNode(uiSourceCode, project, target, frame, uiSourceCode.origin(), path, isFromSourceMap);
+    const target = Bindings4.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+    const folderNode = this.#folderNode(uiSourceCode, project, target, frame, uiSourceCode.origin(), path, isFromSourceMap);
     const uiSourceCodeNode = new NavigatorUISourceCodeTreeNode(this, uiSourceCode, frame);
     const existingNode = folderNode.child(uiSourceCodeNode.id);
     if (existingNode && existingNode instanceof NavigatorUISourceCodeTreeNode) {
-      this.uiSourceCodeNodes.set(uiSourceCode, existingNode);
+      this.#uiSourceCodeNodes.set(uiSourceCode, existingNode);
     } else {
       folderNode.appendChild(uiSourceCodeNode);
-      this.uiSourceCodeNodes.set(uiSourceCode, uiSourceCodeNode);
+      this.#uiSourceCodeNodes.set(uiSourceCode, uiSourceCodeNode);
       uiSourceCodeNode.updateTitleBubbleUp();
     }
-    this.selectDefaultTreeNode();
+    this.#selectDefaultTreeNode();
   }
-  uiSourceCodeAddedCallback(event) {
+  #uiSourceCodeAddedCallback(event) {
     const uiSourceCode = event.data;
-    this.addUISourceCode(uiSourceCode);
+    this.#addUISourceCode(uiSourceCode);
   }
-  uiSourceCodeRemovedCallback(event) {
-    this.removeUISourceCodes([event.data]);
+  #uiSourceCodeRemovedCallback(event) {
+    this.#removeUISourceCodes([event.data]);
   }
   tryAddProject(project) {
-    this.projectAdded(project);
+    this.#projectAdded(project);
     for (const uiSourceCode of project.uiSourceCodes()) {
-      this.addUISourceCode(uiSourceCode);
+      this.#addUISourceCode(uiSourceCode);
     }
   }
-  projectAdded(project) {
-    const rootOrDeployed = this.rootOrDeployedNode();
+  #projectAdded(project) {
+    const rootOrDeployed = this.#rootOrDeployedNode();
     const FILE_SYSTEM_TYPES = [
       Workspace5.Workspace.projectTypes.ConnectableFileSystem,
       Workspace5.Workspace.projectTypes.FileSystem
@@ -7079,26 +7437,20 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     const type = project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem || project instanceof Persistence3.FileSystemWorkspaceBinding.FileSystem && project.fileSystem().automatic ? Types.AutomaticFileSystem : Types.FileSystem;
     rootOrDeployed.appendChild(new NavigatorGroupTreeNode(this, project, project.id(), type, project.displayName()));
-    this.selectDefaultTreeNode();
+    this.#selectDefaultTreeNode();
   }
-  // TODO(einbinder) remove this code after crbug.com/964075 is fixed
-  selectDefaultTreeNode() {
+  #selectDefaultTreeNode() {
     const children = this.rootNode.children();
-    if (children.length && !this.selectedNode) {
-      this.selectNode(
-        children[0],
-        true,
-        false
-        /* selectedByUser */
-      );
+    if (children.length && !this.#selectedNode) {
+      this.selectNode(children[0]);
     }
   }
-  computeUniqueFileSystemProjectNames() {
+  #computeUniqueFileSystemProjectNames() {
     const fileSystemProjects = this.#workspace.projectsForType(Workspace5.Workspace.projectTypes.FileSystem);
     if (!fileSystemProjects.length) {
       return;
     }
-    const reversedIndex = Common7.Trie.Trie.newArrayTrie();
+    const reversedIndex = Common8.Trie.Trie.newArrayTrie();
     const reversedPaths = [];
     for (const project of fileSystemProjects) {
       const fileSystem = project;
@@ -7106,7 +7458,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       reversedPaths.push(reversedPathParts);
       reversedIndex.add(reversedPathParts);
     }
-    const rootOrDeployed = this.rootOrDeployedNode();
+    const rootOrDeployed = this.#rootOrDeployedNode();
     for (let i = 0; i < fileSystemProjects.length; ++i) {
       const reversedPath = reversedPaths[i];
       const project = fileSystemProjects[i];
@@ -7118,7 +7470,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       );
       reversedIndex.add(reversedPath);
       const prefixPath = reversedPath.slice(0, commonPrefix.length + 1);
-      const path = Common7.ParsedURL.ParsedURL.encodedPathToRawPathString(
+      const path = Common8.ParsedURL.ParsedURL.encodedPathToRawPathString(
         prefixPath.reverse().join("/")
       );
       const fileSystemNode = rootOrDeployed.child(project.id());
@@ -7128,21 +7480,18 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
   }
   removeProject(project) {
-    this.removeUISourceCodes(project.uiSourceCodes());
+    this.#removeUISourceCodes(project.uiSourceCodes());
     if (project.type() !== Workspace5.Workspace.projectTypes.ConnectableFileSystem && project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return;
     }
-    const fileSystemNode = this.rootNode.child(project.id());
-    if (!fileSystemNode) {
-      return;
-    }
-    this.rootNode.removeChild(fileSystemNode);
+    const fileSystemNode = this.#rootOrDeployedNode().child(project.id()) ?? this.rootNode.child(project.id());
+    fileSystemNode?.parent?.removeChild(fileSystemNode);
   }
-  folderNodeId(project, target, frame, projectOrigin, isFromSourceMap, path) {
+  #folderNodeId(project, target, frame, projectOrigin, isFromSourceMap, path) {
     const projectId = project.type() === Workspace5.Workspace.projectTypes.FileSystem ? project.id() : "";
-    let targetId = target && !(this.groupByAuthored && isFromSourceMap) ? target.id() : "";
-    let frameId = this.groupByFrame && frame ? frame.id : "";
-    if (this.groupByAuthored) {
+    let targetId = target && !(this.#groupByAuthored && isFromSourceMap) ? target.id() : "";
+    let frameId = this.#groupByFrame && frame ? frame.id : "";
+    if (this.#groupByAuthored) {
       if (isFromSourceMap) {
         targetId = "Authored";
         frameId = "";
@@ -7152,40 +7501,40 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return targetId + ":" + projectId + ":" + frameId + ":" + projectOrigin + ":" + path;
   }
-  folderNode(uiSourceCode, project, target, frame, projectOrigin, path, fromSourceMap) {
+  #folderNode(uiSourceCode, project, target, frame, projectOrigin, path, fromSourceMap) {
     if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
       return this.rootNode;
     }
-    if (target && !this.groupByFolder && !fromSourceMap) {
-      return this.domainNode(uiSourceCode, project, target, frame, projectOrigin);
+    if (target && !this.#groupByFolder && !fromSourceMap) {
+      return this.#domainNode(uiSourceCode, project, target, frame, projectOrigin);
     }
-    const folderPath = Common7.ParsedURL.ParsedURL.join(path, "/");
-    const folderId = this.folderNodeId(project, target, frame, projectOrigin, fromSourceMap, folderPath);
-    let folderNode = this.subfolderNodes.get(folderId);
+    const folderPath = Common8.ParsedURL.ParsedURL.join(path, "/");
+    const folderId = this.#folderNodeId(project, target, frame, projectOrigin, fromSourceMap, folderPath);
+    let folderNode = this.#subfolderNodes.get(folderId);
     if (folderNode) {
       return folderNode;
     }
     if (!path.length) {
       if (target) {
-        return this.domainNode(uiSourceCode, project, target, frame, projectOrigin);
+        return this.#domainNode(uiSourceCode, project, target, frame, projectOrigin);
       }
-      return this.rootOrDeployedNode().child(project.id());
+      return this.#rootOrDeployedNode().child(project.id());
     }
-    const parentNode = this.folderNode(uiSourceCode, project, target, frame, projectOrigin, path.slice(0, -1), fromSourceMap);
+    const parentNode = this.#folderNode(uiSourceCode, project, target, frame, projectOrigin, path.slice(0, -1), fromSourceMap);
     let type = Types.NetworkFolder;
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
       type = Types.FileSystemFolder;
     }
-    const name = Common7.ParsedURL.ParsedURL.encodedPathToRawPathString(path[path.length - 1]);
+    const name = Common8.ParsedURL.ParsedURL.encodedPathToRawPathString(path[path.length - 1]);
     folderNode = new NavigatorFolderTreeNode(this, project, folderId, type, folderPath, name, projectOrigin);
-    this.subfolderNodes.set(folderId, folderNode);
+    this.#subfolderNodes.set(folderId, folderNode);
     parentNode.appendChild(folderNode);
     return folderNode;
   }
-  domainNode(uiSourceCode, project, target, frame, projectOrigin) {
+  #domainNode(uiSourceCode, project, target, frame, projectOrigin) {
     const isAuthored = uiSourceCode.contentType().isFromSourceMap();
-    const frameNode = this.frameNode(project, target, frame, isAuthored);
-    if (!this.groupByDomain) {
+    const frameNode = this.#frameNode(project, target, frame, isAuthored);
+    if (!this.#groupByDomain) {
       return frameNode;
     }
     let domainNode = frameNode.child(projectOrigin);
@@ -7197,22 +7546,22 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       project,
       projectOrigin,
       Types.Domain,
-      this.computeProjectDisplayName(target, projectOrigin)
+      this.#computeProjectDisplayName(target, projectOrigin)
     );
-    if (frame && projectOrigin === Common7.ParsedURL.ParsedURL.extractOrigin(frame.url)) {
+    if (frame && projectOrigin === Common8.ParsedURL.ParsedURL.extractOrigin(frame.url)) {
       domainNode.boostOrder = true;
     }
     frameNode.appendChild(domainNode);
-    if (isAuthored && this.groupByAuthored) {
+    if (isAuthored && this.#groupByAuthored) {
       this.expandNode(domainNode);
     }
     return domainNode;
   }
-  frameNode(project, target, frame, isAuthored) {
-    if (!this.groupByFrame || !frame || this.groupByAuthored && isAuthored) {
-      return this.targetNode(project, target, isAuthored);
+  #frameNode(project, target, frame, isAuthored) {
+    if (!this.#groupByFrame || !frame || this.#groupByAuthored && isAuthored) {
+      return this.#targetNode(project, target, isAuthored);
     }
-    let frameNode = this.frameNodes.get(frame);
+    let frameNode = this.#frameNodes.get(frame);
     if (frameNode) {
       return frameNode;
     }
@@ -7225,21 +7574,21 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       void 0,
       frame
     );
-    this.frameNodes.set(frame, frameNode);
+    this.#frameNodes.set(frame, frameNode);
     const parentFrame = frame.parentFrame();
     if (!parentFrame) {
       frameNode.boostOrder = true;
     }
-    this.frameNode(project, parentFrame ? parentFrame.resourceTreeModel().target() : target, parentFrame, isAuthored).appendChild(frameNode);
+    this.#frameNode(project, parentFrame ? parentFrame.resourceTreeModel().target() : target, parentFrame, isAuthored).appendChild(frameNode);
     if (!parentFrame) {
       this.expandNode(frameNode);
     }
     return frameNode;
   }
-  targetNode(project, target, isAuthored) {
-    if (this.groupByAuthored && isAuthored) {
-      if (!this.authoredNode) {
-        this.authoredNode = new NavigatorGroupTreeNode(
+  #targetNode(project, target, isAuthored) {
+    if (this.#groupByAuthored && isAuthored) {
+      if (!this.#authoredNode) {
+        this.#authoredNode = new NavigatorGroupTreeNode(
           this,
           null,
           "group:Authored",
@@ -7247,13 +7596,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           i18nString5(UIStrings6.authored),
           i18nString5(UIStrings6.authoredTooltip)
         );
-        this.rootNode.appendChild(this.authoredNode);
-        this.expandNode(this.authoredNode);
+        this.rootNode.appendChild(this.#authoredNode);
+        this.expandNode(this.#authoredNode);
       }
-      return this.authoredNode;
+      return this.#authoredNode;
     }
-    const rootOrDeployed = this.rootOrDeployedNode();
-    if (target === SDK5.TargetManager.TargetManager.instance().scopeTarget()) {
+    const rootOrDeployed = this.#rootOrDeployedNode();
+    if (target === this.#targetManager.scopeTarget()) {
       return rootOrDeployed;
     }
     let targetNode = rootOrDeployed.child("target:" + target.id());
@@ -7269,10 +7618,10 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return targetNode;
   }
-  rootOrDeployedNode() {
-    if (this.groupByAuthored) {
-      if (!this.deployedNode) {
-        this.deployedNode = new NavigatorGroupTreeNode(
+  #rootOrDeployedNode() {
+    if (this.#groupByAuthored) {
+      if (!this.#deployedNode) {
+        this.#deployedNode = new NavigatorGroupTreeNode(
           this,
           null,
           "group:Deployed",
@@ -7280,13 +7629,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           i18nString5(UIStrings6.deployed),
           i18nString5(UIStrings6.deployedTooltip)
         );
-        this.rootNode.appendChild(this.deployedNode);
+        this.rootNode.appendChild(this.#deployedNode);
       }
-      return this.deployedNode;
+      return this.#deployedNode;
     }
     return this.rootNode;
   }
-  computeProjectDisplayName(target, projectOrigin) {
+  #computeProjectDisplayName(target, projectOrigin) {
     const runtimeModel = target.model(SDK5.RuntimeModel.RuntimeModel);
     const executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
     let matchingContextName = null;
@@ -7309,12 +7658,12 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (!projectOrigin) {
       return i18nString5(UIStrings6.noDomain);
     }
-    const parsedURL = new Common7.ParsedURL.ParsedURL(projectOrigin);
+    const parsedURL = new Common8.ParsedURL.ParsedURL(projectOrigin);
     const prettyURL = parsedURL.isValid ? parsedURL.host + (parsedURL.port ? ":" + parsedURL.port : "") : "";
     return prettyURL || projectOrigin;
   }
   revealUISourceCode(uiSourceCode, select) {
-    const nodes = this.uiSourceCodeNodes.get(uiSourceCode);
+    const nodes = this.#uiSourceCodeNodes.get(uiSourceCode);
     if (nodes.size === 0) {
       return null;
     }
@@ -7322,24 +7671,23 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     if (!node) {
       return null;
     }
-    if (this.selectedNode) {
+    if (this.#selectedNode) {
       if (this.isRenaming()) {
         return null;
       }
-      this.selectedNode.treeNode().deselect();
-      this.selectedNode = null;
+      this.#selectedNode = null;
     }
     node.reveal(select);
     return node;
   }
   sourceSelected(uiSourceCode, focusSource) {
     this.dispatchEventToListeners("source-selected" /* SOURCE_SELECTED */, { uiSourceCode, focusSource });
-    void Common7.Revealer.reveal(uiSourceCode, !focusSource);
+    void Common8.Revealer.reveal(uiSourceCode, !focusSource);
   }
   #isUISourceCodeOrAnyAncestorSelected(node) {
     let currentNode = node;
     while (currentNode) {
-      if (currentNode === this.selectedNode) {
+      if (currentNode === this.#selectedNode) {
         return true;
       }
       currentNode = currentNode.parent;
@@ -7349,10 +7697,10 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     return false;
   }
-  removeUISourceCodes(uiSourceCodes) {
+  #removeUISourceCodes(uiSourceCodes) {
     const nodesWithSelectionOnPath = [];
     for (const uiSourceCode of uiSourceCodes) {
-      const nodes = this.uiSourceCodeNodes.get(uiSourceCode);
+      const nodes = this.#uiSourceCodeNodes.get(uiSourceCode);
       for (const node of nodes) {
         if (this.#isUISourceCodeOrAnyAncestorSelected(node)) {
           nodesWithSelectionOnPath.push(node);
@@ -7364,10 +7712,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     nodesWithSelectionOnPath.forEach(this.removeUISourceCodeNode.bind(this));
   }
   removeUISourceCodeNode(node) {
+    this.#removeUISourceCodeNode(node);
+  }
+  #removeUISourceCodeNode(node) {
     const uiSourceCode = node.uiSourceCode();
-    this.uiSourceCodeNodes.delete(uiSourceCode, node);
+    this.#uiSourceCodeNodes.delete(uiSourceCode, node);
     const project = uiSourceCode.project();
-    const target = Bindings3.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+    const target = Bindings4.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
     let frame = node.frame();
     let parentNode = node.parent;
     if (!parentNode) {
@@ -7380,7 +7731,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       if (!parentNode) {
         break;
       }
-      if ((parentNode === this.rootNode || parentNode === this.deployedNode) && project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
+      if ((parentNode === this.rootNode || parentNode === this.#deployedNode) && project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
         break;
       }
       if (!(currentNode instanceof NavigatorGroupTreeNode || currentNode instanceof NavigatorFolderTreeNode)) {
@@ -7391,13 +7742,13 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
         break;
       }
       if (currentNode.type === Types.Frame) {
-        this.discardFrame(
+        this.#discardFrame(
           frame,
-          Boolean(this.groupByAuthored) && uiSourceCode.contentType().isFromSourceMap()
+          Boolean(this.#groupByAuthored) && uiSourceCode.contentType().isFromSourceMap()
         );
         frame = frame.parentFrame();
       } else {
-        const folderId = this.folderNodeId(
+        const folderId = this.#folderNodeId(
           project,
           target,
           frame,
@@ -7405,55 +7756,54 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           uiSourceCode.contentType().isFromSourceMap(),
           currentNode instanceof NavigatorFolderTreeNode && currentNode.folderPath || Platform5.DevToolsPath.EmptyEncodedPathString
         );
-        this.subfolderNodes.delete(folderId);
+        this.#subfolderNodes.delete(folderId);
         parentNode.removeChild(currentNode);
       }
-      if (currentNode === this.authoredNode) {
-        this.authoredNode = void 0;
-      } else if (currentNode === this.deployedNode) {
-        this.deployedNode = void 0;
+      if (currentNode === this.#authoredNode) {
+        this.#authoredNode = void 0;
+      } else if (currentNode === this.#deployedNode) {
+        this.#deployedNode = void 0;
       }
       currentNode = parentNode;
     }
   }
   reset(tearDownOnly) {
-    for (const node of this.uiSourceCodeNodes.valuesArray()) {
+    for (const node of this.#uiSourceCodeNodes.valuesArray()) {
       node.dispose();
     }
-    this.scriptsTree.removeChildren();
-    this.scriptsTree.setFocusable(false);
-    this.selectedNode = null;
+    this.#selectedNode = null;
     this.#renamingNode = null;
-    this.expandedNodes = /* @__PURE__ */ new WeakSet();
-    this.uiSourceCodeNodes.clear();
-    this.subfolderNodes.clear();
-    this.frameNodes.clear();
+    this.#expandedNodes = /* @__PURE__ */ new WeakSet();
+    this.#uiSourceCodeNodes.clear();
+    this.#subfolderNodes.clear();
+    this.#frameNodes.clear();
     this.rootNode.reset();
-    this.authoredNode = void 0;
-    this.deployedNode = void 0;
+    this.#authoredNode = void 0;
+    this.#deployedNode = void 0;
     if (!tearDownOnly) {
-      this.resetWorkspace(Workspace5.Workspace.WorkspaceImpl.instance());
+      this.#resetWorkspace(this.#workspace);
     }
+    this.requestUpdate();
   }
-  async renameShortcut() {
-    if (!(this.selectedNode instanceof NavigatorUISourceCodeTreeNode) || !this.selectedNode.uiSourceCode().canRename()) {
+  async #renameShortcut() {
+    if (!(this.#selectedNode instanceof NavigatorUISourceCodeTreeNode) || !this.#selectedNode.uiSourceCode().canRename()) {
       return false;
     }
-    this.rename(this.selectedNode, false);
+    this.rename(this.#selectedNode, false);
     return true;
   }
-  handleContextMenuCreate(project, path, uiSourceCode) {
+  #handleContextMenuCreate(project, path, uiSourceCode) {
     if (uiSourceCode) {
       const relativePath = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode);
       relativePath.pop();
-      path = Common7.ParsedURL.ParsedURL.join(relativePath, "/");
+      path = Common8.ParsedURL.ParsedURL.join(relativePath, "/");
     }
     void this.create(project, path, uiSourceCode);
   }
-  handleContextMenuRename(node) {
+  #handleContextMenuRename(node) {
     this.rename(node, false);
   }
-  async handleContextMenuExclude(project, path) {
+  async #handleContextMenuExclude(project, path) {
     const shouldExclude = await UI7.UIUtils.ConfirmDialog.show(
       i18nString5(UIStrings6.folderWillNotBeShown),
       i18nString5(UIStrings6.excludeThisFolder),
@@ -7468,7 +7818,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       UI7.UIUtils.endBatchUpdate();
     }
   }
-  async handleContextMenuDelete(uiSourceCode) {
+  async #handleContextMenuDelete(uiSourceCode) {
     const shouldDelete = await UI7.UIUtils.ConfirmDialog.show(
       i18nString5(UIStrings6.actionCannotBeUndone),
       i18nString5(UIStrings6.deleteThisFile),
@@ -7479,18 +7829,11 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       uiSourceCode.project().deleteFile(uiSourceCode);
     }
   }
-  fileDragStarted(node, event) {
-    if (!event.dataTransfer) {
-      return;
-    }
-    event.dataTransfer.setData("text/plain", node.uiSourceCode().url());
-    event.dataTransfer.effectAllowed = "copy";
-  }
   shouldRenameOnMouseDown(node) {
-    if (!node.uiSourceCode().canRename() || !node.treeElement) {
+    if (!node.uiSourceCode().canRename()) {
       return false;
     }
-    return this.selectedNode === node && this.scriptsTree.element.hasFocus() && !this.isRenaming();
+    return this.#selectedNode === node && this.contentElement.hasFocus() && !this.isRenaming();
   }
   startRenamingNode(node) {
     this.#renamingNode = node;
@@ -7503,61 +7846,59 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
   isRenaming() {
     return this.#renamingNode !== null;
   }
-  handleFileContextMenu(event, node) {
+  handleFileContextMenu(contextMenu, node) {
     const uiSourceCode = node.uiSourceCode();
     if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
-      const contextMenu2 = new UI7.ContextMenu.ContextMenu(event);
-      contextMenu2.headerSection().appendItem(
+      contextMenu.headerSection().appendItem(
         i18nString5(UIStrings6.run),
         () => Snippets.ScriptSnippetFileSystem.evaluateScriptSnippet(uiSourceCode),
         { jslogContext: "run" }
       );
-      contextMenu2.editSection().appendItem(
+      contextMenu.editSection().appendItem(
         i18nString5(UIStrings6.rename),
         () => this.rename(node, false),
         { jslogContext: "rename" }
       );
-      contextMenu2.editSection().appendItem(
+      contextMenu.editSection().appendItem(
         i18nString5(UIStrings6.remove),
         () => uiSourceCode.project().deleteFile(uiSourceCode),
         { jslogContext: "remove" }
       );
-      contextMenu2.saveSection().appendItem(
+      contextMenu.saveSection().appendItem(
         i18nString5(UIStrings6.saveAs),
-        this.handleSaveAs.bind(this, uiSourceCode),
+        this.#handleSaveAs.bind(this, uiSourceCode),
         { jslogContext: "save-as" }
       );
-      void contextMenu2.show();
+      void contextMenu.show();
       return;
     }
-    const contextMenu = new UI7.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(uiSourceCode);
     const project = uiSourceCode.project();
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
       contextMenu.editSection().appendItem(
         i18nString5(UIStrings6.rename),
-        this.handleContextMenuRename.bind(this, node),
+        this.#handleContextMenuRename.bind(this, node),
         { jslogContext: "rename" }
       );
       contextMenu.editSection().appendItem(
         i18nString5(UIStrings6.makeACopy),
-        this.handleContextMenuCreate.bind(this, project, Platform5.DevToolsPath.EmptyEncodedPathString, uiSourceCode),
+        this.#handleContextMenuCreate.bind(this, project, Platform5.DevToolsPath.EmptyEncodedPathString, uiSourceCode),
         { jslogContext: "make-a-copy" }
       );
       contextMenu.editSection().appendItem(
         i18nString5(UIStrings6.delete),
-        this.handleContextMenuDelete.bind(this, uiSourceCode),
+        this.#handleContextMenuDelete.bind(this, uiSourceCode),
         { jslogContext: "delete" }
       );
     }
     void contextMenu.show();
   }
-  async handleSaveAs(uiSourceCode) {
+  async #handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const contentData = await uiSourceCode.requestContentData();
     if (TextUtils4.ContentData.ContentData.isError(contentData)) {
       console.error(`Failed to retrieve content for ${uiSourceCode.url()}: ${contentData}`);
-      Common7.Console.Console.instance().error(
+      Common8.Console.Console.instance().error(
         i18nString5(UIStrings6.saveAsFailed),
         /* show=*/
         false
@@ -7565,17 +7906,17 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       return;
     }
     await Workspace5.FileManager.FileManager.instance().save(
-      this.addJSExtension(uiSourceCode.url()),
+      this.#addJSExtension(uiSourceCode.url()),
       contentData,
       /* forceSaveAs=*/
       true
     );
     Workspace5.FileManager.FileManager.instance().close(uiSourceCode.url());
   }
-  addJSExtension(url) {
-    return Common7.ParsedURL.ParsedURL.concatenate(url, ".js");
+  #addJSExtension(url) {
+    return Common8.ParsedURL.ParsedURL.concatenate(url, ".js");
   }
-  async handleDeleteFolder(node) {
+  async #handleDeleteFolder(node) {
     const shouldRemove = await UI7.UIUtils.ConfirmDialog.show(
       i18nString5(UIStrings6.actionCannotBeUndone),
       i18nString5(UIStrings6.deleteFolder),
@@ -7584,33 +7925,33 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     );
     if (shouldRemove) {
       Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.OverrideTabDeleteFolderContextMenu);
-      const topNode = this.findTopNonMergedNode(node);
-      await this.removeUISourceCodeFromProject(topNode);
-      await this.deleteDirectoryRecursively(topNode);
+      const topNode = this.#findTopNonMergedNode(node);
+      await this.#removeUISourceCodeFromProject(topNode);
+      await this.#deleteDirectoryRecursively(topNode);
     }
   }
-  async removeUISourceCodeFromProject(node) {
+  async #removeUISourceCodeFromProject(node) {
     node.children().slice(0).forEach(async (child) => {
-      await this.removeUISourceCodeFromProject(child);
+      await this.#removeUISourceCodeFromProject(child);
     });
     if (node instanceof NavigatorUISourceCodeTreeNode) {
       node.uiSourceCode().project().removeUISourceCode(node.uiSourceCode().url());
     }
   }
-  async deleteDirectoryRecursively(node) {
+  async #deleteDirectoryRecursively(node) {
     if (!(node instanceof NavigatorFolderTreeNode)) {
       return;
     }
-    await Persistence3.NetworkPersistenceManager.NetworkPersistenceManager.instance().project()?.deleteDirectoryRecursively(node.folderPath);
+    await this.#networkPersistenceManager.project()?.deleteDirectoryRecursively(node.folderPath);
   }
-  findTopNonMergedNode(node) {
+  #findTopNonMergedNode(node) {
     if (!node.isMerged) {
       return node;
     }
     if (!(node.parent instanceof NavigatorFolderTreeNode)) {
       return node;
     }
-    return this.findTopNonMergedNode(node.parent);
+    return this.#findTopNonMergedNode(node.parent);
   }
   folderHovered(node, hovered) {
     if (node instanceof NavigatorGroupTreeNode && node.frame) {
@@ -7620,14 +7961,14 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
           overlayModel.highlightFrame(node.frame.id);
         }
       } else {
-        SDK5.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK5.TargetManager.TargetManager.instance());
+        SDK5.OverlayModel.OverlayModel.hideDOMNodeHighlight(this.#targetManager);
       }
     }
   }
-  handleFolderContextMenu(event, node) {
-    const path = node instanceof NavigatorFolderTreeNode ? node.folderPath : Platform5.DevToolsPath.EmptyEncodedPathString;
-    const project = node.project || null;
-    const contextMenu = new UI7.ContextMenu.ContextMenu(event);
+  handleFolderContextMenu(contextMenu, node) {
+    const activeNode = node instanceof NavigatorFolderTreeNode ? node.mergedLeafNode() : node;
+    const path = activeNode instanceof NavigatorFolderTreeNode ? activeNode.folderPath : Platform5.DevToolsPath.EmptyEncodedPathString;
+    const project = activeNode.project || null;
     if (project?.type() !== Workspace5.Workspace.projectTypes.ConnectableFileSystem) {
       _NavigatorView.appendSearchItem(contextMenu, path);
     }
@@ -7635,7 +7976,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       return;
     }
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
-      const folderPath = Common7.ParsedURL.ParsedURL.urlToRawPathString(
+      const folderPath = Common8.ParsedURL.ParsedURL.urlToRawPathString(
         Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path),
         Host3.Platform.isWin()
       );
@@ -7646,24 +7987,27 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       );
       if (project.canCreateFile()) {
         contextMenu.defaultSection().appendItem(i18nString5(UIStrings6.newFile), () => {
-          this.handleContextMenuCreate(project, path, void 0);
+          this.#handleContextMenuCreate(project, path, void 0);
         }, { jslogContext: "new-file" });
       }
-    } else if (node instanceof NavigatorFolderTreeNode && node.origin && node.folderPath) {
-      const url = Common7.ParsedURL.ParsedURL.concatenate(node.origin, "/", node.folderPath);
+    } else if (activeNode instanceof NavigatorFolderTreeNode && activeNode.origin && activeNode.folderPath) {
+      const url = Common8.ParsedURL.ParsedURL.concatenate(activeNode.origin, "/", activeNode.folderPath);
       const options = {
-        isContentScript: node.recursiveProperties.exclusivelyContentScripts || false,
-        isKnownThirdParty: node.recursiveProperties.exclusivelyThirdParty || false,
-        isCurrentlyIgnoreListed: node.recursiveProperties.exclusivelyIgnored || false
+        isContentScript: activeNode.recursiveProperties.exclusivelyContentScripts || false,
+        isKnownThirdParty: activeNode.recursiveProperties.exclusivelyThirdParty || false,
+        isCurrentlyIgnoreListed: activeNode.recursiveProperties.exclusivelyIgnored || false
       };
-      for (const { text, callback, jslogContext } of Workspace5.IgnoreListManager.IgnoreListManager.instance().getIgnoreListFolderContextMenuItems(url, options)) {
+      for (const { text, callback, jslogContext } of this.#ignoreListManager.getIgnoreListFolderContextMenuItems(
+        url,
+        options
+      )) {
         contextMenu.defaultSection().appendItem(text, callback, { jslogContext });
       }
     }
     if (project.canExcludeFolder(path)) {
       contextMenu.defaultSection().appendItem(
         i18nString5(UIStrings6.excludeFolder),
-        this.handleContextMenuExclude.bind(this, project, path),
+        this.#handleContextMenuExclude.bind(this, project, path),
         { jslogContext: "exclude-folder" }
       );
     }
@@ -7681,9 +8025,9 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
     }
     if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
       if (Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== Persistence3.PlatformFileSystem.PlatformFileSystemType.OVERRIDES) {
-        if (node instanceof NavigatorGroupTreeNode) {
+        if (activeNode instanceof NavigatorGroupTreeNode) {
           contextMenu.defaultSection().appendItem(i18nString5(UIStrings6.removeFolderFromWorkspace), async () => {
-            const header = i18nString5(UIStrings6.areYouSureYouWantToRemoveThis, { PH1: node.title });
+            const header = i18nString5(UIStrings6.areYouSureYouWantToRemoveThis, { PH1: activeNode.title });
             const shouldRemove = await UI7.UIUtils.ConfirmDialog.show(i18nString5(UIStrings6.workspaceStopSyncing), header, void 0, {
               okButtonLabel: i18nString5(UIStrings6.remove),
               jslogContext: "remove-folder-from-workspace-confirmation"
@@ -7693,10 +8037,10 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
             }
           }, { jslogContext: "remove-folder-from-workspace" });
         }
-      } else if (!(node instanceof NavigatorGroupTreeNode)) {
+      } else if (!(activeNode instanceof NavigatorGroupTreeNode)) {
         contextMenu.defaultSection().appendItem(
           i18nString5(UIStrings6.delete),
-          this.handleDeleteFolder.bind(this, node),
+          this.#handleDeleteFolder.bind(this, activeNode),
           { jslogContext: "delete" }
         );
       }
@@ -7712,7 +8056,7 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       }
       if (!committed) {
         uiSourceCode.remove();
-      } else if (node.treeElement?.listItemElement.hasFocus()) {
+      } else if (this.contentElement.hasFocus()) {
         this.sourceSelected(uiSourceCode, true);
       }
     }
@@ -7734,61 +8078,73 @@ var NavigatorView = class _NavigatorView extends NavigatorViewBase {
       this.rename(node, true);
     }
   }
-  groupingChanged() {
+  #groupingChanged() {
     this.reset(true);
-    this.initGrouping();
-    this.resetWorkspace(Workspace5.Workspace.WorkspaceImpl.instance());
-    this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+    this.#initGrouping();
+    this.#resetWorkspace(this.#workspace);
+    this.#workspace.uiSourceCodes().forEach(this.#addUISourceCode.bind(this));
   }
-  ignoreListChanged() {
-    if (this.navigatorJustMyCodeSetting.get()) {
-      this.groupingChanged();
+  #ignoreListChanged() {
+    if (this.#navigatorJustMyCodeSetting.get()) {
+      this.#groupingChanged();
     } else {
       this.rootNode.updateTitleRecursive();
     }
   }
-  initGrouping() {
-    this.groupByFrame = true;
-    this.groupByDomain = this.navigatorGroupByFolderSetting.get();
-    this.groupByFolder = this.groupByDomain;
-    if (this.navigatorGroupByAuthoredSetting) {
-      this.groupByAuthored = this.navigatorGroupByAuthoredSetting.get();
+  #initGrouping() {
+    this.#groupByFrame = true;
+    this.#groupByDomain = this.#navigatorGroupByFolderSetting.get();
+    this.#groupByFolder = this.#groupByDomain;
+    if (this.#navigatorGroupByAuthoredSetting) {
+      this.#groupByAuthored = this.#navigatorGroupByAuthoredSetting.get();
     } else {
-      this.groupByAuthored = false;
+      this.#groupByAuthored = false;
     }
+    this.#prevJustMyCode = this.#navigatorJustMyCodeSetting.get();
   }
-  resetForTest() {
+  resetForTest(groupBy) {
+    if (groupBy) {
+      if (typeof groupBy.frame === "boolean") {
+        this.#groupByFrame = groupBy.frame;
+      }
+      if (typeof groupBy.domain === "boolean") {
+        this.#groupByDomain = groupBy.domain;
+      }
+      if (typeof groupBy.folder === "boolean") {
+        this.#groupByFolder = groupBy.folder;
+      }
+    }
     this.reset();
-    this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+    this.#workspace.uiSourceCodes().forEach(this.#addUISourceCode.bind(this));
   }
-  discardFrame(frame, isAuthored) {
+  #discardFrame(frame, isAuthored) {
     if (isAuthored) {
       return;
     }
-    const node = this.frameNodes.get(frame);
+    const node = this.#frameNodes.get(frame);
     if (!node) {
       return;
     }
     if (node.parent) {
       node.parent.removeChild(node);
     }
-    this.frameNodes.delete(frame);
+    this.#frameNodes.delete(frame);
     for (const child of frame.childFrames) {
-      this.discardFrame(child, isAuthored);
+      this.#discardFrame(child, isAuthored);
     }
   }
   targetAdded(_target) {
   }
   targetRemoved(target) {
-    const rootOrDeployed = this.rootOrDeployedNode();
+    const rootOrDeployed = this.#rootOrDeployedNode();
     const targetNode = rootOrDeployed.child("target:" + target.id());
     if (targetNode) {
       rootOrDeployed.removeChild(targetNode);
     }
   }
-  targetNameChanged(event) {
+  #targetNameChanged(event) {
     const target = event.data;
-    const targetNode = this.rootOrDeployedNode().child("target:" + target.id());
+    const targetNode = this.#rootOrDeployedNode().child("target:" + target.id());
     if (targetNode) {
       targetNode.setTitle(target.name());
     }
@@ -7800,27 +8156,38 @@ var NavigatorTreeNode = class {
   type;
   boostOrder = false;
   hasMappedFiles = false;
-  populated;
-  isMerged;
+  #populated = false;
+  isMerged = false;
+  mergedTitle() {
+    return this.title;
+  }
+  effectiveChildren() {
+    return this.#children.filter((node) => !node.isMerged);
+  }
   parent;
   title;
   tooltip;
   recursiveProperties;
   #children = [];
   #childById = /* @__PURE__ */ new Map();
+  #disposed = false;
   constructor(navigatorView, id, type, tooltip) {
     this.id = id;
     this.navigatorView = navigatorView;
     this.type = type;
     this.tooltip = tooltip;
-    this.populated = false;
-    this.isMerged = false;
     this.recursiveProperties = {
       exclusivelySourceMapped: null,
       exclusivelyIgnored: null,
       exclusivelyContentScripts: null,
       exclusivelyThirdParty: null
     };
+  }
+  isDisposed() {
+    return this.#disposed;
+  }
+  dispose() {
+    this.#disposed = true;
   }
   computedTooltip() {
     if (this.tooltip) {
@@ -7838,59 +8205,6 @@ var NavigatorTreeNode = class {
       tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
     }
     return tooltip;
-  }
-  updateTooltip(treeElement) {
-    if (!treeElement) {
-      return;
-    }
-    let tooltip = this.computedTooltip();
-    if (treeElement.listItemElement.classList.contains("is-ignore-listed") && !this.recursiveProperties.exclusivelyIgnored) {
-      tooltip = i18nString5(UIStrings6.sIgnoreListed, { PH1: tooltip });
-    }
-    treeElement.tooltip = tooltip;
-  }
-  createFolderTreeElement(title, node, expandable = true) {
-    const treeElement = new UI7.TreeOutline.TreeElement("", expandable, contextForNodeType(this.type));
-    treeElement.listItemElement.classList.add("navigator-" + this.type + "-tree-item", "navigator-folder-tree-item");
-    treeElement.title = title;
-    treeElement.tooltip = title;
-    treeElement.setLeadingIcons([renderFolderLeadingIcon(this.type)]);
-    this.navigatorView.setNodeForTreeElement(treeElement, node);
-    treeElement.onattach = () => {
-      treeElement.collapse();
-      this.navigatorView.nodeForTreeElement(treeElement)?.onattach();
-    };
-    let hovered = false;
-    treeElement.listItemElement.addEventListener("contextmenu", (event) => {
-      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
-      if (!activeNode || !(activeNode instanceof NavigatorFolderTreeNode || activeNode instanceof NavigatorGroupTreeNode)) {
-        return;
-      }
-      this.navigatorView.selectNode(activeNode);
-      this.navigatorView.handleFolderContextMenu(event, activeNode);
-    }, false);
-    treeElement.listItemElement.addEventListener("mousemove", (_event) => {
-      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
-      if (hovered || !activeNode) {
-        return;
-      }
-      hovered = true;
-      this.navigatorView.folderHovered(activeNode, true);
-    }, false);
-    treeElement.listItemElement.addEventListener("mouseleave", (_event) => {
-      const activeNode = this.navigatorView.nodeForTreeElement(treeElement);
-      if (!activeNode) {
-        return;
-      }
-      hovered = false;
-      this.navigatorView.folderHovered(activeNode, false);
-    }, false);
-    return treeElement;
-  }
-  treeNode() {
-    throw new Error("Not implemented");
-  }
-  dispose() {
   }
   updateTitle() {
   }
@@ -7924,27 +8238,19 @@ var NavigatorTreeNode = class {
     if (this.parent) {
       this.parent.populate();
     }
-    this.populated = true;
+    this.#populated = true;
     this.wasPopulated();
   }
   wasPopulated() {
-    const children = this.children();
-    for (let i = 0; i < children.length; ++i) {
-      this.navigatorView.appendChild(this.treeNode(), children[i].treeNode());
-    }
+    this.navigatorView.requestUpdate();
   }
-  didAddChild(node) {
-    if (this.isPopulated()) {
-      this.navigatorView.appendChild(this.treeNode(), node.treeNode());
-    }
+  didAddChild(_node) {
+    this.navigatorView.requestUpdate();
   }
-  willRemoveChild(node) {
-    if (this.isPopulated()) {
-      this.navigatorView.removeChild(this.treeNode(), node.treeNode());
-    }
+  willRemoveChild(_node) {
   }
   isPopulated() {
-    return this.populated;
+    return this.#populated;
   }
   isEmpty() {
     return !this.#children.length;
@@ -7956,20 +8262,37 @@ var NavigatorTreeNode = class {
     return this.#childById.get(id) ?? null;
   }
   appendChild(node) {
-    this.#children.push(node);
+    Platform5.ArrayUtilities.insertWithComparator(this.#children, node, NavigatorView.compareNodes);
     this.#childById.set(node.id, node);
     node.parent = this;
     this.didAddChild(node);
   }
+  resortChild(node) {
+    const idx = this.#children.indexOf(node);
+    if (idx < 0) {
+      return;
+    }
+    this.#children.splice(idx, 1);
+    Platform5.ArrayUtilities.insertWithComparator(this.#children, node, NavigatorView.compareNodes);
+    this.navigatorView.requestUpdate();
+  }
   removeChild(node) {
-    this.willRemoveChild(node);
+    const isSelected = this.navigatorView.isNodeSelectedOrDescendant(node);
     const idx = this.#children.findIndex((n) => n.id === node.id);
+    const nextNode = isSelected && idx >= 0 ? this.#children[idx + 1] ?? this.#children[idx - 1] ?? (this !== this.navigatorView.rootNode ? this : null) : null;
+    if (nextNode) {
+      this.navigatorView.selectNode(nextNode);
+    } else {
+      this.navigatorView.deselectIfDescendant(node);
+    }
+    this.willRemoveChild(node);
     if (idx >= 0) {
       this.#children.splice(idx, 1);
     }
     this.#childById.delete(node.id);
     node.parent = null;
     node.dispose();
+    this.navigatorView.requestUpdate();
   }
   reset() {
     this.#children = [];
@@ -7990,30 +8313,33 @@ var NavigatorRootTreeNode = class extends NavigatorTreeNode {
   isRoot() {
     return true;
   }
-  treeNode() {
-    return this.navigatorView.scriptsTree.rootElement();
-  }
 };
 var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
   #uiSourceCode;
-  treeElement;
   isEditing = false;
-  #renameCallback;
-  #disposed = false;
-  eventListeners;
+  #eventListeners;
   #frame;
+  #renameCallback;
   constructor(navigatorView, uiSourceCode, frame) {
     super(navigatorView, "UISourceCode:" + uiSourceCode.canonicalScriptId(), Types.File);
     this.#uiSourceCode = uiSourceCode;
-    this.treeElement = null;
-    this.eventListeners = [];
     this.#frame = frame;
     this.recursiveProperties.exclusivelySourceMapped = uiSourceCode.contentType().isFromSourceMap();
     if (uiSourceCode.contentType().isScript()) {
       this.recursiveProperties.exclusivelyThirdParty = uiSourceCode.isKnownThirdParty();
       this.recursiveProperties.exclusivelyContentScripts = uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.ContentScripts;
     }
+    window.dispatchEvent(new CustomEvent(
+      "source-tree-file-added",
+      { bubbles: true, cancelable: true, detail: this.#uiSourceCode.fullDisplayName() }
+    ));
     this.updateTitle();
+    const updateTitleBound = this.updateTitle.bind(this, void 0);
+    this.#eventListeners = [
+      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.TitleChanged, updateTitleBound),
+      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
+      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
+    ];
   }
   frame() {
     return this.#frame;
@@ -8021,126 +8347,8 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
   uiSourceCode() {
     return this.#uiSourceCode;
   }
-  updateIcon() {
-    if (!this.treeElement) {
-      return;
-    }
-    const icon = PanelUtils.getIconForSourceFile(this.#uiSourceCode);
-    this.treeElement.setLeadingIcons([icon]);
-  }
-  updateAccessibleName() {
-    if (!this.treeElement) {
-      return;
-    }
-    UI7.ARIAUtils.setLabel(this.treeElement.listItemElement, `${this.#uiSourceCode.name()}, ${this.type}`);
-  }
-  updateTrailingIcons() {
-    if (!this.treeElement) {
-      return;
-    }
-    const trailingIcons = renderSourceTrailingIcons(
-      this.#uiSourceCode,
-      (uiSourceCode, focusSource) => this.navigatorView.sourceSelected(uiSourceCode, focusSource)
-    );
-    this.treeElement.setTrailingIcons(trailingIcons);
-  }
-  onattach() {
-    this.updateTrailingIcons();
-  }
-  treeNode() {
-    if (this.treeElement) {
-      return this.treeElement;
-    }
-    this.treeElement = new UI7.TreeOutline.TreeElement("", false, this.#uiSourceCode.contentType().name());
-    this.treeElement.title = this.treeElement.titleElement;
-    this.treeElement.listItemElement.classList.add(
-      "navigator-" + this.#uiSourceCode.contentType().name() + "-tree-item",
-      "navigator-file-tree-item"
-    );
-    this.treeElement.listItemElement.draggable = true;
-    this.treeElement.titleElement.setAttribute("jslog", `${VisualLogging5.value("title").track({
-      change: true
-    })}`);
-    this.navigatorView.setNodeForTreeElement(this.treeElement, this);
-    const treeElement = this.treeElement;
-    treeElement.selectOnMouseDown = (event) => {
-      if (event.which !== 1 || !this.navigatorView.shouldRenameOnMouseDown(this)) {
-        UI7.TreeOutline.TreeElement.prototype.selectOnMouseDown.call(treeElement, event);
-        return;
-      }
-      window.setTimeout(() => {
-        if (this.navigatorView.shouldRenameOnMouseDown(this)) {
-          this.navigatorView.rename(this, false);
-        }
-      }, 300);
-    };
-    treeElement.onspace = () => {
-      this.navigatorView.sourceSelected(this.#uiSourceCode, true);
-      return true;
-    };
-    treeElement.ondblclick = (event) => {
-      const middleClick = event.button === 1;
-      this.navigatorView.sourceSelected(this.#uiSourceCode, !middleClick);
-      return false;
-    };
-    treeElement.onenter = () => {
-      this.navigatorView.sourceSelected(this.#uiSourceCode, true);
-      return true;
-    };
-    treeElement.ondelete = () => true;
-    treeElement.onattach = () => {
-      this.onattach();
-    };
-    treeElement.listItemElement.addEventListener("click", () => {
-      this.navigatorView.sourceSelected(this.#uiSourceCode, false);
-    }, false);
-    treeElement.listItemElement.addEventListener("contextmenu", (event) => {
-      this.navigatorView.selectNode(this);
-      this.navigatorView.handleFileContextMenu(event, this);
-    }, false);
-    treeElement.listItemElement.addEventListener("dragstart", (event) => {
-      this.navigatorView.fileDragStarted(this, event);
-    }, false);
-    window.dispatchEvent(new CustomEvent(
-      "source-tree-file-added",
-      { bubbles: true, cancelable: true, detail: this.#uiSourceCode.fullDisplayName() }
-    ));
-    this.updateTitle();
-    const updateTitleBound = this.updateTitle.bind(this, void 0);
-    this.eventListeners = [
-      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.TitleChanged, updateTitleBound),
-      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
-      this.#uiSourceCode.addEventListener(Workspace5.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
-    ];
-    return this.treeElement;
-  }
-  updateTreeElement() {
-    if (!this.treeElement) {
-      return;
-    }
-    renderSourceTitleWidget(
-      {
-        title: this.title,
-        editing: this.isEditing,
-        onCommit: this.#handlePromptCommit.bind(this),
-        onCancel: this.#handlePromptCancel.bind(this)
-      },
-      void 0,
-      this.treeElement.titleElement
-    );
-    this.updateIcon();
-    this.updateTrailingIcons();
-    this.treeElement.listItemElement.classList.toggle(
-      "is-ignore-listed",
-      Boolean(this.recursiveProperties.exclusivelyIgnored)
-    );
-    this.treeElement.tooltip = this.tooltip ?? "";
-    this.updateAccessibleName();
-  }
   updateTitle(ignoreIsDirty) {
-    const isIgnoreListed = Workspace5.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
-      this.#uiSourceCode
-    );
+    const isIgnoreListed = this.navigatorView.ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(this.#uiSourceCode);
     this.recursiveProperties.exclusivelyIgnored = this.#uiSourceCode.contentType().isScript() || isIgnoreListed ? isIgnoreListed : null;
     let titleText = this.#uiSourceCode.displayName();
     if (!ignoreIsDirty && !this.isEditing && this.#uiSourceCode.isDirty()) {
@@ -8156,13 +8364,14 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     }
     this.tooltip = tooltip;
     this.updateId("UISourceCode:" + this.#uiSourceCode.canonicalScriptId());
-    this.updateTreeElement();
+    this.navigatorView.requestUpdate();
   }
   hasChildren() {
     return false;
   }
   dispose() {
-    Common7.EventTarget.removeEventListeners(this.eventListeners);
+    super.dispose();
+    Common8.EventTarget.removeEventListeners(this.#eventListeners);
     if (this.isEditing) {
       this.isEditing = false;
       this.navigatorView.stopRenamingNode(this);
@@ -8172,26 +8381,20 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     if (callback) {
       callback(false);
     }
-    this.#disposed = true;
   }
   reveal(select) {
-    if (this.parent) {
-      this.parent.populate();
-      this.navigatorView.expandNode(this.parent);
+    let parent = this.parent;
+    while (parent && parent !== this.navigatorView.rootNode) {
+      parent.populate();
+      this.navigatorView.expandNode(parent);
+      parent = parent.parent;
     }
-    if (this.treeElement) {
-      this.treeElement.reveal(true);
-      if (select) {
-        this.navigatorView.selectNode(this, true);
-      }
+    if (select) {
+      this.navigatorView.selectNode(this);
     }
   }
   rename(callback) {
-    if (this.#disposed || !this.treeElement) {
-      return;
-    }
-    this.treeElement.listItemElement.focus();
-    if (!this.treeElement.treeOutline) {
+    if (this.isDisposed()) {
       return;
     }
     this.#renameCallback = callback;
@@ -8199,8 +8402,8 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     this.isEditing = true;
     this.updateTitle(true);
   }
-  #handlePromptCommit(newTitle) {
-    if (this.#disposed || !this.treeElement?.treeOutline) {
+  async commitRename(newTitle) {
+    if (this.isDisposed()) {
       return;
     }
     const oldTitle = this.title;
@@ -8208,35 +8411,22 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
       this.isEditing = false;
       this.title = newTitle;
       this.navigatorView.stopRenamingNode(this);
-      this.updateTreeElement();
-      void this.#uiSourceCode.rename(newTitle).then(this.#handleRenameCallback.bind(this));
-      return;
-    }
-    this.#afterEditing(true);
-  }
-  #handleRenameCallback(success) {
-    if (this.#disposed) {
-      return;
-    }
-    if (!success) {
-      this.isEditing = false;
-      this.navigatorView.stopRenamingNode(this);
-      this.updateTitle();
-      this.rename(this.#renameCallback);
-      return;
-    }
-    if (this.treeElement) {
-      const { parent } = this.treeElement;
-      if (parent) {
-        parent.removeChild(this.treeElement);
-        parent.appendChild(this.treeElement);
-        this.navigatorView.selectNode(this);
+      this.navigatorView.requestUpdate();
+      const success = await this.#uiSourceCode.rename(newTitle);
+      if (this.isDisposed()) {
+        return;
       }
+      if (!success) {
+        this.updateTitle();
+        this.rename(this.#renameCallback);
+        return;
+      }
+      this.parent?.resortChild(this);
     }
     this.#afterEditing(true);
   }
-  #handlePromptCancel() {
-    if (this.#disposed) {
+  cancelRename() {
+    if (this.isDisposed()) {
       return;
     }
     this.#afterEditing(false);
@@ -8245,10 +8435,15 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     this.isEditing = false;
     this.navigatorView.stopRenamingNode(this);
     this.updateTitle();
-    const callback = this.#renameCallback;
-    this.#renameCallback = void 0;
-    if (callback) {
-      callback(committed);
+    this.navigatorView.selectNode(this);
+    this.navigatorView.requestUpdate();
+    void this.navigatorView.updateComplete.then(() => {
+      this.navigatorView.focus();
+    });
+    if (this.#renameCallback) {
+      const cb = this.#renameCallback;
+      this.#renameCallback = void 0;
+      cb(committed);
     }
   }
 };
@@ -8257,7 +8452,6 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
   folderPath;
   origin;
   title;
-  treeElement = null;
   constructor(navigatorView, project, id, type, folderPath, title, origin) {
     super(navigatorView, id, type);
     this.project = project;
@@ -8265,19 +8459,21 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
     this.title = title;
     this.origin = origin;
   }
-  treeNode() {
-    if (this.treeElement) {
-      return this.treeElement;
+  computedTooltip() {
+    if (this.isMerged) {
+      return super.computedTooltip();
     }
-    this.treeElement = this.createTreeElement(this.title, this);
-    this.updateTitle();
-    return this.treeElement;
+    const leafNode = this.mergedLeafNode();
+    if (leafNode !== this) {
+      return leafNode.computedTooltip();
+    }
+    return super.computedTooltip();
   }
-  computeHasMappedFiles() {
+  #computeHasMappedFiles() {
     if (!this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return false;
     }
-    const absoluteFileSystemPath = Common7.ParsedURL.ParsedURL.concatenate(
+    const absoluteFileSystemPath = Common8.ParsedURL.ParsedURL.concatenate(
       Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(
         this.project.id()
       ),
@@ -8285,23 +8481,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       this.folderPath
     );
     const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    return isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(absoluteFileSystemPath);
-  }
-  updateTreeElement() {
-    if (!this.treeElement) {
-      return;
-    }
-    this.treeElement.listItemElement.classList.toggle(
-      "is-from-source-map",
-      Boolean(this.recursiveProperties.exclusivelySourceMapped)
-    );
-    this.treeElement.listItemElement.classList.toggle(
-      "is-ignore-listed",
-      Boolean(this.recursiveProperties.exclusivelyIgnored)
-    );
-    this.treeElement.listItemElement.classList.toggle("has-mapped-files", this.hasMappedFiles);
-    const activeNode = this.navigatorView.nodeForTreeElement(this.treeElement) ?? this;
-    activeNode.updateTooltip(this.treeElement);
+    return isOverrides ? this.navigatorView.settings.resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : this.navigatorView.persistence.filePathHasBindings(absoluteFileSystemPath);
   }
   updateTitle() {
     let propName;
@@ -8317,117 +8497,60 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
       }
       this.recursiveProperties[propName] = propValue;
     }
-    this.hasMappedFiles = this.computeHasMappedFiles();
-    this.updateTreeElement();
+    this.hasMappedFiles = this.#computeHasMappedFiles();
+    this.navigatorView.requestUpdate();
   }
-  createTreeElement(title, node) {
-    return this.createFolderTreeElement(title, node);
-  }
-  wasPopulated() {
-    if (!this.treeElement || this.navigatorView.nodeForTreeElement(this.treeElement) !== this) {
-      return;
-    }
-    this.addChildrenRecursive();
-  }
-  addChildrenRecursive() {
+  didAddChild(node) {
     const children = this.children();
-    for (let i = 0; i < children.length; ++i) {
-      const child = children[i];
-      this.didAddChild(child);
-      if (child instanceof _NavigatorFolderTreeNode) {
-        child.addChildrenRecursive();
+    if (children.length === 1 && this.shouldMerge(node)) {
+      node.isMerged = true;
+      if (this.navigatorView.isNodeExpanded(this)) {
+        node.populate();
+        this.navigatorView.setNodeExpanded(node);
+      }
+    } else if (children.length === 2) {
+      const oldNode = children[0] !== node ? children[0] : children[1];
+      if (oldNode) {
+        oldNode.isMerged = false;
+        if (this.navigatorView.isNodeExpanded(this) || this.navigatorView.isNodeExpanded(oldNode)) {
+          this.populate();
+          oldNode.populate();
+          this.navigatorView.setNodeExpanded(this);
+          this.navigatorView.setNodeExpanded(oldNode);
+        }
       }
     }
+    super.didAddChild(node);
   }
   shouldMerge(node) {
     return this.type !== Types.Domain && node instanceof _NavigatorFolderTreeNode;
   }
-  didAddChild(node) {
-    if (!this.treeElement) {
-      return;
+  mergedTitle() {
+    const children = this.children();
+    if (children.length === 1 && children[0].isMerged) {
+      return this.title + "/" + children[0].mergedTitle();
     }
-    let children = this.children();
-    if (children.length === 1 && this.shouldMerge(node)) {
-      node.isMerged = true;
-      this.treeElement.title = this.treeElement.title + "/" + node.title;
-      node.treeElement = this.treeElement;
-      node.updateTitle();
-      this.navigatorView.setNodeForTreeElement(this.treeElement, node);
-      return;
-    }
-    let oldNode;
-    if (children.length === 2) {
-      oldNode = children[0] !== node ? children[0] : children[1];
-    }
-    if (oldNode?.isMerged) {
-      oldNode.isMerged = false;
-      const mergedToNodes = [];
-      mergedToNodes.push(this);
-      let treeNode = this;
-      while (treeNode && treeNode.isMerged) {
-        treeNode = treeNode.parent;
-        if (treeNode) {
-          mergedToNodes.push(treeNode);
-        }
-      }
-      mergedToNodes.reverse();
-      const titleText = mergedToNodes.map((node2) => node2.title).join("/");
-      const nodes = [];
-      treeNode = oldNode;
-      do {
-        nodes.push(treeNode);
-        children = treeNode.children();
-        treeNode = children.length === 1 ? children[0] : null;
-      } while (treeNode?.isMerged);
-      if (!this.isPopulated()) {
-        this.treeElement.title = titleText;
-        this.navigatorView.setNodeForTreeElement(this.treeElement, this);
-        for (let i = 0; i < nodes.length; ++i) {
-          nodes[i].treeElement = null;
-          nodes[i].isMerged = false;
-        }
-        this.updateTitle();
-        return;
-      }
-      const oldTreeElement = this.treeElement;
-      const treeElement = this.createTreeElement(titleText, this);
-      for (let i = 0; i < mergedToNodes.length; ++i) {
-        mergedToNodes[i].treeElement = treeElement;
-        mergedToNodes[i].updateTitle();
-      }
-      if (oldTreeElement.parent) {
-        this.navigatorView.appendChild(oldTreeElement.parent, treeElement);
-      }
-      const oldTreeElementNode = this.navigatorView.nodeForTreeElement(oldTreeElement);
-      const wasExpanded = Boolean(oldTreeElementNode && this.navigatorView.isNodeExpanded(oldTreeElementNode));
-      oldTreeElement.title = nodes.map((node2) => node2.title).join("/");
-      this.navigatorView.setNodeForTreeElement(oldTreeElement, nodes[nodes.length - 1]);
-      if (oldTreeElement.parent) {
-        this.navigatorView.removeChild(oldTreeElement.parent, oldTreeElement);
-      }
-      this.navigatorView.appendChild(this.treeElement, oldTreeElement);
-      if (wasExpanded) {
-        this.navigatorView.expandNode(this);
-      }
-      this.updateTitle();
-    }
-    if (this.isPopulated()) {
-      this.navigatorView.appendChild(this.treeElement, node.treeNode());
-    }
+    return this.title;
   }
-  willRemoveChild(node) {
-    const actualNode = node;
-    if (actualNode.isMerged || !this.isPopulated() || !this.treeElement || !actualNode.treeElement) {
-      return;
+  mergedLeafNode() {
+    const children = this.children();
+    if (children.length === 1 && children[0].isMerged) {
+      return children[0].mergedLeafNode();
     }
-    this.navigatorView.removeChild(this.treeElement, actualNode.treeElement);
+    return this;
+  }
+  effectiveChildren() {
+    const leaf = this.mergedLeafNode();
+    if (!leaf.isPopulated()) {
+      return [];
+    }
+    return leaf.children().filter((node) => !node.isMerged);
   }
 };
 var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
   project;
   title;
   frame;
-  treeElement;
   constructor(navigatorView, project, id, type, title, tooltip, frame) {
     super(navigatorView, id, type, tooltip);
     this.project = project;
@@ -8435,26 +8558,7 @@ var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
     this.frame = frame;
     this.populate();
   }
-  treeNode() {
-    if (this.treeElement) {
-      return this.treeElement;
-    }
-    const expandable = !(this.project instanceof Persistence3.AutomaticFileSystemWorkspaceBinding.FileSystem);
-    this.treeElement = this.createFolderTreeElement(this.title, this, expandable);
-    this.updateTrailingIcons();
-    return this.treeElement;
-  }
-  updateTrailingIcons() {
-    if (!this.treeElement) {
-      return;
-    }
-    const trailingIcons = renderGroupTrailingIcons(this.project);
-    this.treeElement.setTrailingIcons(trailingIcons);
-  }
-  onattach() {
-    this.updateTitle();
-  }
-  computeHasMappedFiles() {
+  #computeHasMappedFiles() {
     if (!this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return false;
     }
@@ -8462,34 +8566,24 @@ var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
       this.project.id()
     );
     const isOverrides = Persistence3.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(this.project) === "overrides";
-    return isOverrides ? Common7.Settings.Settings.instance().resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : Persistence3.Persistence.PersistenceImpl.instance().filePathHasBindings(fileSystemPath);
+    return isOverrides ? this.navigatorView.settings.resolve(Persistence3.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).get() : this.navigatorView.persistence.filePathHasBindings(fileSystemPath);
   }
   updateTitle() {
-    this.hasMappedFiles = this.computeHasMappedFiles();
-    this.updateTrailingIcons();
-    if (!this.treeElement || !this.project || this.project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
-      return;
-    }
-    const wasActive = this.treeElement.listItemElement.classList.contains("has-mapped-files");
+    const wasActive = this.hasMappedFiles;
+    this.hasMappedFiles = this.#computeHasMappedFiles();
     const isActive = this.hasMappedFiles;
-    this.treeElement.listItemElement.classList.toggle("has-mapped-files", isActive);
-    if (wasActive === isActive) {
-      return;
+    if (this.project?.type() === Workspace5.Workspace.projectTypes.FileSystem && wasActive !== isActive) {
+      if (isActive) {
+        this.navigatorView.expandNode(this);
+      } else {
+        this.navigatorView.collapseNode(this);
+      }
     }
-    if (this.treeElement.childrenListElement.hasFocus()) {
-      return;
-    }
-    if (isActive) {
-      this.navigatorView.expandNode(this);
-    } else {
-      this.navigatorView.collapseNode(this);
-    }
+    this.navigatorView.requestUpdate();
   }
   setTitle(title) {
     this.title = title;
-    if (this.treeElement) {
-      this.treeElement.title = this.title;
-    }
+    this.navigatorView.requestUpdate();
   }
 };
 
@@ -8500,18 +8594,9 @@ var sourcesNavigator_css_default = `/*
  * found in the LICENSE file.
  */
 
-.border-container {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  flex-shrink: 0;
-}
-
 .navigator-toolbar {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding-left: var(--sys-size-5);
-}
-
-.automatic-workspace-infobar {
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .automatic-file-system-nudge {
@@ -8526,10 +8611,10 @@ var sourcesNavigator_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./sourcesNavigator.css")} */`;
 
 // ../../front_end/panels/sources/SourcesNavigator.ts
-var { html: html7, render: render6, Directives: { ref: ref2 } } = Lit4;
+var { html: html7, render: render6, Directives: { ref: ref2 } } = Lit3;
 var { urlString } = Platform6.DevToolsPath;
 var { bindToAction, bindToSetting } = UI8.UIUtils;
-var { widget: widget2 } = UI8.Widget;
+var { widget: widget3 } = UI8.Widget;
 var UIStrings7 = {
   /**
    * @description Text to show if no workspaces are set up. Learn more at https://goo.gle/devtools-workspace.
@@ -8627,7 +8712,7 @@ var NETWORK_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
         <devtools-widget
           jslog=${VisualLogging6.pane("navigator-network").track({ resize: true })}
           @ui-source-code-added=${(e) => input.onUISourceCodeAdded(e.detail)}
-          ${widget2(NavigatorView, {
+          ${widget3(NavigatorView, {
       enableAuthoredGrouping: true,
       projectFilter: input.projectFilter
     })}
@@ -8674,7 +8759,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends SourcesNavigatorV
   }
   acceptProject(project) {
     return project.type() === Workspace7.Workspace.projectTypes.Network && SDK6.TargetManager.TargetManager.instance().isInScope(
-      Bindings4.NetworkProject.NetworkProject.getTargetForProject(project)
+      Bindings5.NetworkProject.NetworkProject.getTargetForProject(project)
     );
   }
   onScopeChange() {
@@ -8724,7 +8809,7 @@ var FILES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
           jslog=${VisualLogging6.pane("navigator-files").track({ resize: true })}
           @contextmenu=${input.onContextMenu}
           @source-selected=${input.onSourceSelected}
-          ${widget2(NavigatorView, {
+          ${widget3(NavigatorView, {
       projectFilter: input.projectFilter
     })}
           ${ref2((e) => {
@@ -8737,7 +8822,7 @@ var FILES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
             <devtools-button
               class="toolbar-button"
               .iconName=${"plus"}
-              .variant=${Buttons3.Button.Variant.TEXT}
+              .variant=${Buttons4.Button.Variant.TEXT}
               .reducedFocusRing=${true}
               ${bindToAction("sources.add-folder-to-workspace")}
             >${i18nString6(UIStrings7.addFolderManually)}</devtools-button>
@@ -8751,7 +8836,7 @@ var FILES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
           </span>
           <devtools-widget
             slot="placeholder"
-            ${widget2(UI8.EmptyWidget.EmptyWidget, {
+            ${widget3(UI8.EmptyWidget.EmptyWidget, {
       header: i18nString6(UIStrings7.noWorkspace),
       text: i18nString6(UIStrings7.explainWorkspace),
       link: "https://developer.chrome.com/docs/devtools/workspaces/"
@@ -8786,7 +8871,7 @@ var FilesNavigatorView = class extends SourcesNavigatorView {
     ];
   }
   willHide() {
-    Common8.EventTarget.removeEventListeners(this.#eventListeners);
+    Common9.EventTarget.removeEventListeners(this.#eventListeners);
     super.willHide();
   }
   async performUpdate() {
@@ -8825,7 +8910,7 @@ var OVERRIDES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
         <devtools-widget
           jslog=${VisualLogging6.pane("navigator-overrides").track({ resize: true })}
           @source-selected=${input.onSourceSelected}
-          ${widget2(NavigatorView, {
+          ${widget3(NavigatorView, {
       projectFilter: input.projectFilter
     })}
           ${ref2((e) => {
@@ -8837,7 +8922,7 @@ var OVERRIDES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
           <devtools-toolbar class="navigator-toolbar" slot="header">
             ${input.hasProject ? html7`
               <devtools-checkbox
-                ${bindToSetting(Common8.Settings.Settings.instance().resolve(
+                ${bindToSetting(Common9.Settings.Settings.instance().resolve(
       Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor
     ))}
               >${i18nString6(UIStrings7.localOverrides)}</devtools-checkbox>
@@ -8847,7 +8932,7 @@ var OVERRIDES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
                 title=${i18nString6(UIStrings7.clearConfiguration)}
                 aria-label=${i18nString6(UIStrings7.clearConfiguration)}
                 .iconName=${"clear"}
-                .variant=${Buttons3.Button.Variant.ICON}
+                .variant=${Buttons4.Button.Variant.ICON}
                 @click=${input.onClearConfiguration}
               ></devtools-button>
             ` : html7`
@@ -8856,7 +8941,7 @@ var OVERRIDES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
                 title=${i18nString6(UIStrings7.selectFolderForOverrides)}
                 aria-label=${i18nString6(UIStrings7.selectFolderForOverrides)}
                 .iconName=${"plus"}
-                .variant=${Buttons3.Button.Variant.TEXT}
+                .variant=${Buttons4.Button.Variant.TEXT}
                 .reducedFocusRing=${true}
                 @click=${input.onSetupNewWorkspace}
               >${i18nString6(UIStrings7.selectFolderForOverrides)}</devtools-button>
@@ -8864,7 +8949,7 @@ var OVERRIDES_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
           </devtools-toolbar>
           <devtools-widget
             slot="placeholder"
-            ${widget2(UI8.EmptyWidget.EmptyWidget, {
+            ${widget3(UI8.EmptyWidget.EmptyWidget, {
       header: i18nString6(UIStrings7.noLocalOverrides),
       text: i18nString6(UIStrings7.explainLocalOverrides),
       link: "https://developer.chrome.com/docs/devtools/overrides/"
@@ -8915,7 +9000,7 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends SourcesNaviga
           if (!project) {
             return;
           }
-          Common8.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(false);
+          Common9.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(false);
           project.remove();
         },
         onSourceSelected: this.sourceSelected.bind(this)
@@ -8948,7 +9033,7 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends SourcesNaviga
     if (!fileSystem) {
       return;
     }
-    Common8.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(true);
+    Common9.Settings.Settings.instance().resolve(Persistence5.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).set(true);
   }
   sourceSelected() {
     Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverridesSourceSelected);
@@ -8963,7 +9048,7 @@ var CONTENT_SCRIPTS_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
         <style>${sourcesNavigator_css_default}</style>
         <devtools-widget
           jslog=${VisualLogging6.pane("navigator-content-scripts").track({ resize: true })}
-          ${widget2(NavigatorView, {
+          ${widget3(NavigatorView, {
       projectFilter: input.projectFilter
     })}
           ${ref2((e) => {
@@ -8974,7 +9059,7 @@ var CONTENT_SCRIPTS_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
         >
           <devtools-widget
             slot="placeholder"
-            ${widget2(UI8.EmptyWidget.EmptyWidget, {
+            ${widget3(UI8.EmptyWidget.EmptyWidget, {
       header: i18nString6(UIStrings7.noContentScripts),
       text: i18nString6(UIStrings7.explainContentScripts),
       link: urlString`https://developer.chrome.com/extensions/content_scripts`
@@ -9012,7 +9097,7 @@ var SNIPPETS_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
         <devtools-widget
           jslog=${VisualLogging6.pane("navigator-snippets").track({ resize: true })}
           @contextmenu=${input.onContextMenu}
-          ${widget2(NavigatorView, {
+          ${widget3(NavigatorView, {
       projectFilter: input.projectFilter
     })}
           ${ref2((e) => {
@@ -9027,7 +9112,7 @@ var SNIPPETS_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
               title=${i18nString6(UIStrings7.newSnippet)}
               aria-label=${i18nString6(UIStrings7.newSnippet)}
               .iconName=${"plus"}
-              .variant=${Buttons3.Button.Variant.TEXT}
+              .variant=${Buttons4.Button.Variant.TEXT}
               .reducedFocusRing=${true}
               .jslogContext=${"sources.new-snippet"}
               @click=${input.onNewSnippet}
@@ -9035,7 +9120,7 @@ var SNIPPETS_NAVIGATOR_DEFAULT_VIEW = (input, output, target) => {
           </devtools-toolbar>
           <devtools-widget
             slot="placeholder"
-            ${widget2(UI8.EmptyWidget.EmptyWidget, {
+            ${widget3(UI8.EmptyWidget.EmptyWidget, {
       header: i18nString6(UIStrings7.noSnippets),
       text: i18nString6(UIStrings7.explainSnippets),
       link: "https://developer.chrome.com/docs/devtools/javascript/snippets/"
@@ -9088,7 +9173,7 @@ var ActionDelegate2 = class {
   handleAction(_context, actionId) {
     switch (actionId) {
       case "sources.create-snippet":
-        void Snippets2.ScriptSnippetFileSystem.findSnippetsProject().createFile(Platform6.DevToolsPath.EmptyEncodedPathString, null, "").then((uiSourceCode) => Common8.Revealer.reveal(uiSourceCode));
+        void Snippets2.ScriptSnippetFileSystem.findSnippetsProject().createFile(Platform6.DevToolsPath.EmptyEncodedPathString, null, "").then((uiSourceCode) => Common9.Revealer.reveal(uiSourceCode));
         return true;
       case "sources.add-folder-to-workspace":
         void Persistence5.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
@@ -9167,19 +9252,19 @@ __export(SourcesView_exports, {
   SwitchFileActionDelegate: () => SwitchFileActionDelegate
 });
 import "../../ui/legacy/legacy.js";
-import * as Common14 from "../../core/common/common.js";
+import * as Common15 from "../../core/common/common.js";
 import * as i18n31 from "../../core/i18n/i18n.js";
 import * as Platform12 from "../../core/platform/platform.js";
 import * as Root from "../../core/root/root.js";
 import * as SDK11 from "../../core/sdk/sdk.js";
-import * as Bindings8 from "../../models/bindings/bindings.js";
+import * as Bindings9 from "../../models/bindings/bindings.js";
 import * as Persistence10 from "../../models/persistence/persistence.js";
 import * as Workspace21 from "../../models/workspace/workspace.js";
-import * as Buttons8 from "../../ui/components/buttons/buttons.js";
+import * as Buttons9 from "../../ui/components/buttons/buttons.js";
 import * as QuickOpen from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as SourceFrame11 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "../../ui/legacy/legacy.js";
-import { html as html15, nothing as nothing8, render as render11 } from "../../ui/lit/lit.js";
+import { html as html16, nothing as nothing9, render as render12 } from "../../ui/lit/lit.js";
 import * as VisualLogging10 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/sourcesView.css.js
@@ -9198,7 +9283,8 @@ var sourcesView_css_default = `/*
   .sources-toolbar {
     display: flex;
     flex: 0 0 auto;
-    min-height: 27px;
+    /* 28px toolbar height (--sys-size-12) minus 1px top border (--sys-size-1), matching the 26px devtools-toolbar height plus 1px border-top when empty. */
+    min-height: calc(var(--sys-size-12) - var(--sys-size-1));
     background-color: var(--sys-color-cdt-base-container);
     border-top: var(--sys-size-1) solid var(--sys-color-divider);
     overflow: hidden;
@@ -9226,7 +9312,7 @@ __export(TabbedEditorContainer_exports, {
 });
 import "../../ui/components/tooltips/tooltips.js";
 import "../../ui/kit/kit.js";
-import * as Common13 from "../../core/common/common.js";
+import * as Common14 from "../../core/common/common.js";
 import * as Host8 from "../../core/host/host.js";
 import * as i18n29 from "../../core/i18n/i18n.js";
 import * as Platform11 from "../../core/platform/platform.js";
@@ -9236,7 +9322,7 @@ import * as Workspace19 from "../../models/workspace/workspace.js";
 import * as uiI18n3 from "../../ui/i18n/i18n.js";
 import * as SourceFrame9 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI14 from "../../ui/legacy/legacy.js";
-import { Directives as Directives3, html as html14, nothing as nothing7, render as render10 } from "../../ui/lit/lit.js";
+import { Directives as Directives4, html as html15, nothing as nothing8, render as render11 } from "../../ui/lit/lit.js";
 import * as VisualLogging9 from "../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon2 from "../common/common.js";
 import * as Snippets4 from "../snippets/snippets.js";
@@ -9361,7 +9447,7 @@ __export(EditorHistory_exports, {
   MAX_SERIALIZABLE_URL_LENGTH: () => MAX_SERIALIZABLE_URL_LENGTH,
   historyItemKey: () => historyItemKey
 });
-import * as Common9 from "../../core/common/common.js";
+import * as Common10 from "../../core/common/common.js";
 import * as TextUtils5 from "../../core/text_utils/text_utils.js";
 var MAX_PREVIOUSLY_VIEWED_FILES_COUNT = 30;
 var MAX_SERIALIZABLE_URL_LENGTH = 4096;
@@ -9380,7 +9466,7 @@ var HistoryItem = class _HistoryItem {
     this.scrollLineNumber = scrollLineNumber;
   }
   static fromObject(serializedHistoryItem) {
-    const resourceType = Common9.ResourceType.ResourceType.fromName(serializedHistoryItem.resourceTypeName);
+    const resourceType = Common10.ResourceType.ResourceType.fromName(serializedHistoryItem.resourceTypeName);
     if (resourceType === null) {
       throw new TypeError(`Invalid resource type name "${serializedHistoryItem.resourceTypeName}"`);
     }
@@ -9603,7 +9689,7 @@ __export(UISourceCodeFrame_exports, {
   UISourceCodeFrame: () => UISourceCodeFrame
 });
 import "../../ui/kit/kit.js";
-import * as Common12 from "../../core/common/common.js";
+import * as Common13 from "../../core/common/common.js";
 import * as Host7 from "../../core/host/host.js";
 import * as i18n27 from "../../core/i18n/i18n.js";
 import * as SDK10 from "../../core/sdk/sdk.js";
@@ -9615,12 +9701,12 @@ import * as IssuesManager from "../../models/issues_manager/issues_manager.js";
 import * as Persistence6 from "../../models/persistence/persistence.js";
 import * as Workspace17 from "../../models/workspace/workspace.js";
 import * as CodeMirror6 from "../../third_party/codemirror.next/codemirror.next.js";
-import * as Buttons7 from "../../ui/components/buttons/buttons.js";
+import * as Buttons8 from "../../ui/components/buttons/buttons.js";
 import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.js";
 import * as TextEditor5 from "../../ui/components/text_editor/text_editor.js";
 import * as SourceFrame7 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI13 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html13, nothing as nothing6, render as render9 } from "../../ui/lit/lit.js";
+import { Directives as Directives3, html as html14, nothing as nothing7, render as render10 } from "../../ui/lit/lit.js";
 
 // ../../front_end/panels/sources/CoveragePlugin.ts
 var CoveragePlugin_exports = {};
@@ -9632,7 +9718,7 @@ import * as SDK7 from "../../core/sdk/sdk.js";
 import * as TextUtils6 from "../../core/text_utils/text_utils.js";
 import * as Workspace11 from "../../models/workspace/workspace.js";
 import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.js";
-import * as Buttons4 from "../../ui/components/buttons/buttons.js";
+import * as Buttons5 from "../../ui/components/buttons/buttons.js";
 import * as UI9 from "../../ui/legacy/legacy.js";
 import { html as html8 } from "../../ui/lit/lit.js";
 import * as Coverage from "../coverage/coverage.js";
@@ -9730,7 +9816,7 @@ var CoveragePlugin = class extends Plugin {
         class="toolbar-button toolbar-button-secondary"
         title=${title}
         aria-label=${title}
-        .variant=${Buttons4.Button.Variant.TEXT}
+        .variant=${Buttons5.Button.Variant.TEXT}
         .reducedFocusRing=${true}
         .jslogContext=${"debugger.show-coverage"}
         @click=${() => void UI9.ViewManager.ViewManager.instance().showView("coverage")}
@@ -9823,10 +9909,10 @@ function coverageGutter(url) {
         void UI9.ViewManager.ViewManager.instance().showView("coverage").then(() => {
           const view = UI9.ViewManager.ViewManager.instance().view("coverage");
           return view?.widget();
-        }).then((widget7) => {
+        }).then((widget9) => {
           const matchFormattedSuffix = url.match(/(.*):formatted$/);
           const urlWithoutFormattedSuffix = matchFormattedSuffix?.[1] || url;
-          widget7.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
+          widget9.selectCoverageItemByUrl(urlWithoutFormattedSuffix);
         });
         return true;
       }
@@ -9858,19 +9944,21 @@ __export(CSSPlugin_exports, {
   CSSPlugin: () => CSSPlugin,
   cssBindings: () => cssBindings
 });
-import * as Common10 from "../../core/common/common.js";
+import "../../ui/kit/kit.js";
+import * as Common11 from "../../core/common/common.js";
 import * as i18n17 from "../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined3 } from "../../core/platform/platform.js";
 import * as SDK8 from "../../core/sdk/sdk.js";
-import * as Bindings5 from "../../models/bindings/bindings.js";
+import * as Bindings6 from "../../models/bindings/bindings.js";
 import * as Workspace12 from "../../models/workspace/workspace.js";
 import * as CodeMirror3 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as Geometry from "../../ui/geometry/geometry.js";
-import { createIcon } from "../../ui/kit/kit.js";
 import * as ColorPicker from "../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor from "../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI10 from "../../ui/legacy/legacy.js";
+import { html as html9, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
+var { widget: widget4 } = UI10.Widget;
 var UIStrings9 = {
   /**
    * @description Swatch icon element title in CSSPlugin of the Sources panel
@@ -9954,7 +10042,7 @@ function findColorsAndCurves(state, from, to, onColor, onCurve) {
         content = state.sliceDoc(node.from, node.node.parent.to);
       }
       if (content) {
-        const parsedColor = Common10.Color.parse(content);
+        const parsedColor = Common11.Color.parse(content);
         if (parsedColor) {
           onColor(node.from, parsedColor, content);
         } else {
@@ -9966,6 +10054,17 @@ function findColorsAndCurves(state, from, to, onColor, onCurve) {
       }
     }
   });
+}
+function renderColorSwatch(input, _output, target) {
+  render7(
+    html9`<devtools-color-swatch
+      .color=${input.color}
+      title=${i18nString8(UIStrings9.openColorPicker)}
+      @colorchanged=${input.onColorChanged}
+      @colorformatchanged=${input.onColorFormatChanged}
+      @swatchclick=${input.onClick}><span ?hidden=${true}>${input.text}</span></devtools-color-swatch>`,
+    target
+  );
 }
 var ColorSwatchWidget = class extends CodeMirror3.WidgetType {
   #text;
@@ -9981,41 +10080,57 @@ var ColorSwatchWidget = class extends CodeMirror3.WidgetType {
     return this.#color.equal(other.#color) && this.#text === other.#text && this.#from === other.#from;
   }
   toDOM(view) {
-    const swatch = new InlineEditor.ColorSwatch.ColorSwatch(i18nString8(UIStrings9.openColorPicker));
-    swatch.renderColor(this.#color);
-    const value2 = swatch.createChild("span");
-    value2.textContent = this.#text;
-    value2.setAttribute("hidden", "true");
-    swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (event) => {
-      const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
-      view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
-      this.#text = insert;
-      this.#color = swatch.color;
-    });
-    swatch.addEventListener(InlineEditor.ColorSwatch.ColorFormatChangedEvent.eventName, (event) => {
-      const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
-      view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
-      this.#text = insert;
-      this.#color = swatch.color;
-    });
-    swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, (event) => {
-      event.consume(true);
-      view.dispatch({
-        effects: setTooltip.of({
-          type: 0 /* COLOR */,
-          pos: view.posAtDOM(swatch),
-          text: this.#text,
-          swatch,
-          color: this.#color
-        })
-      });
-    });
-    return swatch;
+    const fragment = document.createDocumentFragment();
+    renderColorSwatch(
+      {
+        color: this.#color,
+        text: this.#text,
+        onColorChanged: (event) => {
+          const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
+          view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
+          this.#text = insert;
+          this.#color = event.currentTarget.color;
+        },
+        onColorFormatChanged: (event) => {
+          const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
+          view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
+          this.#text = insert;
+          this.#color = event.currentTarget.color;
+        },
+        onClick: (event) => {
+          event.consume(true);
+          const swatch = event.currentTarget;
+          view.dispatch({
+            effects: setTooltip.of({
+              type: 0 /* COLOR */,
+              pos: view.posAtDOM(swatch),
+              text: this.#text,
+              swatch,
+              color: this.#color
+            })
+          });
+        }
+      },
+      void 0,
+      fragment
+    );
+    return fragment.firstElementChild;
   }
   ignoreEvent() {
     return true;
   }
 };
+function renderCurveSwatch(input, _output, target) {
+  render7(
+    html9`<devtools-icon
+      class="bezier-swatch-icon"
+      name="bezier-curve-filled"
+      title=${i18nString8(UIStrings9.openCubicBezierEditor)}
+      jslog=${VisualLogging7.showStyleEditor("bezier")}
+      @click=${input.onClick}></devtools-icon>`,
+    target
+  );
+}
 var CurveSwatchWidget = class extends CodeMirror3.WidgetType {
   constructor(curve, text) {
     super();
@@ -10028,89 +10143,99 @@ var CurveSwatchWidget = class extends CodeMirror3.WidgetType {
     return this.curve.asCSSText() === other.curve.asCSSText() && this.text === other.text;
   }
   toDOM(view) {
-    const container = document.createElement("span");
-    const bezierText = container.createChild("span");
-    const icon = createIcon("bezier-curve-filled", "bezier-swatch-icon");
-    icon.setAttribute("jslog", `${VisualLogging7.showStyleEditor("bezier")}`);
-    bezierText.append(this.text);
-    UI10.Tooltip.Tooltip.install(icon, i18nString8(UIStrings9.openCubicBezierEditor));
-    icon.addEventListener("click", (event) => {
-      event.consume(true);
-      view.dispatch({
-        effects: setTooltip.of({
-          type: 1 /* CURVE */,
-          pos: view.posAtDOM(icon),
-          text: this.text,
-          swatch: icon,
-          curve: this.curve
-        })
-      });
-    }, false);
-    return icon;
+    const fragment = document.createDocumentFragment();
+    renderCurveSwatch(
+      {
+        onClick: (event) => {
+          event.consume(true);
+          const icon = event.currentTarget;
+          view.dispatch({
+            effects: setTooltip.of({
+              type: 1 /* CURVE */,
+              pos: view.posAtDOM(icon),
+              text: this.text,
+              swatch: icon,
+              curve: this.curve
+            })
+          });
+        }
+      },
+      void 0,
+      fragment
+    );
+    return fragment.firstElementChild;
   }
   ignoreEvent() {
     return true;
   }
 };
+function renderSpectrum(color, onColorChanged, onSizeChanged) {
+  return html9`<devtools-widget
+    ${widget4(ColorPicker.Spectrum.Spectrum, { color })}
+    @spectrumcolorchanged=${onColorChanged}
+    @sizechanged=${onSizeChanged}></devtools-widget>`;
+}
+function renderBezierEditor(curve, onBezierChanged) {
+  return html9`<devtools-widget
+    ${widget4(InlineEditor.BezierEditor.BezierEditor, { model: curve })}
+    @bezierchanged=${onBezierChanged}></devtools-widget>`;
+}
+function renderCSSTooltip(input, _output, target) {
+  render7(
+    html9`<div
+      class="cm-tooltip-swatchEdit"
+      @keydown=${input.onKeyDown}
+      @focusout=${input.onFocusOut}
+      @mousedown=${input.onMouseDown}>${input.active.type === 0 /* COLOR */ ? renderSpectrum(input.active.color, input.onChange, input.onSizeChanged) : renderBezierEditor(input.active.curve, input.onChange)}</div>`,
+    target
+  );
+}
 function createCSSTooltip(active) {
   return {
     pos: active.pos,
     arrow: false,
     create(view) {
       let text = active.text;
-      let widget7, addListener;
-      if (active.type === 0 /* COLOR */) {
-        const spectrum = new ColorPicker.Spectrum.Spectrum();
-        addListener = (handler) => {
-          spectrum.addEventListener(ColorPicker.Spectrum.Events.COLOR_CHANGED, handler);
-        };
-        spectrum.addEventListener(ColorPicker.Spectrum.Events.SIZE_CHANGED, () => view.requestMeasure());
-        spectrum.setColor(active.color);
-        widget7 = spectrum;
-      } else {
-        const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
-        widget7 = spectrum;
-        addListener = (handler) => {
-          spectrum.addEventListener(InlineEditor.BezierEditor.Events.BEZIER_CHANGED, handler);
-        };
-      }
-      const dom = document.createElement("div");
-      dom.className = "cm-tooltip-swatchEdit";
-      widget7.markAsRoot();
-      widget7.show(dom);
-      widget7.showWidget();
-      widget7.element.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          event.consume();
-          view.dispatch({
-            effects: setTooltip.of(null),
-            changes: text === active.text ? void 0 : { from: active.pos, to: active.pos + text.length, insert: active.text }
-          });
-          widget7.hideWidget();
-          view.focus();
-        }
-      });
-      widget7.element.addEventListener("focusout", (event) => {
-        if (event.relatedTarget && !widget7.element.contains(event.relatedTarget)) {
-          view.dispatch({ effects: setTooltip.of(null) });
-          widget7.hideWidget();
-        }
-      }, false);
-      widget7.element.addEventListener("mousedown", (event) => event.consume());
-      return {
-        dom,
-        resize: false,
-        offset: { x: -8, y: 0 },
-        mount: () => {
-          widget7.focus();
-          widget7.wasShown();
-          addListener((event) => {
+      const fragment = document.createDocumentFragment();
+      renderCSSTooltip(
+        {
+          active,
+          onChange: (event) => {
             view.dispatch({
               changes: { from: active.pos, to: active.pos + text.length, insert: event.data },
               annotations: isSwatchEdit.of(true)
             });
             text = event.data;
-          });
+          },
+          onSizeChanged: () => view.requestMeasure(),
+          onKeyDown: (event) => {
+            if (event.key === "Escape") {
+              event.consume();
+              view.dispatch({
+                effects: setTooltip.of(null),
+                changes: text === active.text ? void 0 : { from: active.pos, to: active.pos + text.length, insert: active.text }
+              });
+              view.focus();
+            }
+          },
+          onFocusOut: (event) => {
+            const dom2 = event.currentTarget;
+            if (event.relatedTarget && !dom2.contains(event.relatedTarget)) {
+              view.dispatch({ effects: setTooltip.of(null) });
+            }
+          },
+          onMouseDown: (event) => event.consume()
+        },
+        void 0,
+        fragment
+      );
+      const dom = fragment.firstElementChild;
+      return {
+        dom,
+        resize: false,
+        offset: { x: -8, y: 0 },
+        mount: () => {
+          dom.firstElementChild?.focus();
         }
       };
     }
@@ -10252,7 +10377,7 @@ var CSSPlugin = class extends Plugin {
   populateTextAreaContextMenu(contextMenu) {
     function addSourceMapURL(cssModel2, sourceUrl) {
       const dialog4 = AddDebugInfoURLDialog.createAddSourceMapURLDialog((sourceMapUrl) => {
-        Bindings5.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().modelToInfo.get(cssModel2)?.addSourceMap(
+        Bindings6.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().modelToInfo.get(cssModel2)?.addSourceMap(
           sourceUrl,
           sourceMapUrl
         );
@@ -10307,29 +10432,29 @@ __export(DebuggerPlugin_exports, {
   getVariableValuesByLine: () => getVariableValuesByLine
 });
 import "../../ui/components/tooltips/tooltips.js";
-import * as Common11 from "../../core/common/common.js";
+import * as Common12 from "../../core/common/common.js";
 import * as Host5 from "../../core/host/host.js";
 import * as i18n19 from "../../core/i18n/i18n.js";
 import * as Platform7 from "../../core/platform/platform.js";
 import * as SDK9 from "../../core/sdk/sdk.js";
 import * as TextUtils7 from "../../core/text_utils/text_utils.js";
 import * as Badges from "../../models/badges/badges.js";
-import * as Bindings6 from "../../models/bindings/bindings.js";
-import * as Breakpoints2 from "../../models/breakpoints/breakpoints.js";
+import * as Bindings7 from "../../models/bindings/bindings.js";
+import * as Breakpoints3 from "../../models/breakpoints/breakpoints.js";
 import * as Formatter from "../../models/formatter/formatter.js";
 import * as SourceMapScopes from "../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace from "../../models/stack_trace/stack_trace.js";
 import * as Workspace14 from "../../models/workspace/workspace.js";
 import * as CodeMirror4 from "../../third_party/codemirror.next/codemirror.next.js";
-import * as Buttons5 from "../../ui/components/buttons/buttons.js";
+import * as Buttons6 from "../../ui/components/buttons/buttons.js";
 import * as TextEditor3 from "../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as SourceFrame5 from "../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
-import { html as html9, nothing as nothing4, render as render7 } from "../../ui/lit/lit.js";
+import { html as html10, nothing as nothing5, render as render8 } from "../../ui/lit/lit.js";
 import * as SettingsUI3 from "../../ui/settings/settings.js";
 import * as VisualLogging8 from "../../ui/visual_logging/visual_logging.js";
-var { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints2.BreakpointManager;
+var { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints3.BreakpointManager;
 var UIStrings10 = {
   /**
    * @description Text in Debugger plugin of the Sources panel.
@@ -10451,15 +10576,15 @@ var MAX_POSSIBLE_BREAKPOINT_LINE = 2500;
 var MAX_CODE_SIZE_FOR_VALUE_DECORATIONS = 1e4;
 var MAX_PROPERTIES_IN_SCOPE_FOR_VALUE_DECORATIONS = 500;
 function renderBreakpointEditDialogHost(input, _output, target) {
-  render7(html9`<div><devtools-widget>${input.dialog.element}</devtools-widget></div>`, target);
+  render8(html10`<div><devtools-widget>${input.dialog.element}</devtools-widget></div>`, target);
 }
 function renderMissingDebugFile(input, _output, target) {
-  render7(html9`<span class="infobar-selectable">${input.message}${input.onShowRequest ? html9`<devtools-button
+  render8(html10`<span class="infobar-selectable">${input.message}${input.onShowRequest ? html10`<devtools-button
       style="margin-left: 10px"
       title=${i18nString9(UIStrings10.openDeveloperResources)}
-      .variant=${Buttons5.Button.Variant.TEXT}
+      .variant=${Buttons6.Button.Variant.TEXT}
       .jslogContext=${"show-request"}
-      @click=${input.onShowRequest}>${i18nString9(UIStrings10.showRequest)}</devtools-button>` : nothing4}</span>`, target);
+      @click=${input.onShowRequest}>${i18nString9(UIStrings10.showRequest)}</devtools-button>` : nothing5}</span>`, target);
 }
 var debuggerPluginForUISourceCode = /* @__PURE__ */ new WeakMap();
 var DebuggerPlugin = class extends Plugin {
@@ -10468,14 +10593,14 @@ var DebuggerPlugin = class extends Plugin {
     this.transformer = transformer;
     debuggerPluginForUISourceCode.set(uiSourceCode, this);
     this.scriptsPanel = SourcesPanel.instance();
-    this.breakpointManager = Breakpoints2.BreakpointManager.BreakpointManager.instance();
+    this.breakpointManager = Breakpoints3.BreakpointManager.BreakpointManager.instance();
     this.breakpointManager.addEventListener(
-      Breakpoints2.BreakpointManager.Events.BreakpointAdded,
+      Breakpoints3.BreakpointManager.Events.BreakpointAdded,
       this.breakpointChange,
       this
     );
     this.breakpointManager.addEventListener(
-      Breakpoints2.BreakpointManager.Events.BreakpointRemoved,
+      Breakpoints3.BreakpointManager.Events.BreakpointRemoved,
       this.breakpointChange,
       this
     );
@@ -10676,7 +10801,7 @@ var DebuggerPlugin = class extends Plugin {
         {
           text: i18nString9(UIStrings10.removeFromIgnoreList),
           delegate: unIgnoreList,
-          buttonVariant: Buttons5.Button.Variant.TONAL,
+          buttonVariant: Buttons6.Button.Variant.TONAL,
           dismiss: true,
           jslogContext: "remove-from-ignore-list"
         }
@@ -10726,7 +10851,7 @@ var DebuggerPlugin = class extends Plugin {
     }
     const line = this.editor.state.doc.line(editorLineNumber + 1);
     const breakpoints = this.lineBreakpoints(line);
-    const supportsConditionalBreakpoints = Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(
+    const supportsConditionalBreakpoints = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(
       this.uiSourceCode
     );
     if (!breakpoints.length) {
@@ -10825,7 +10950,7 @@ var DebuggerPlugin = class extends Plugin {
         this.updateScriptFile(scriptFile.script?.debuggerModel);
       }
     }
-    if (this.uiSourceCode.project().type() === Workspace14.Workspace.projectTypes.Network && Common11.Settings.Settings.instance().resolve(SDK9.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get() && !Workspace14.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
+    if (this.uiSourceCode.project().type() === Workspace14.Workspace.projectTypes.Network && Common12.Settings.Settings.instance().resolve(SDK9.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get() && !Workspace14.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
       if (this.scriptFileForDebuggerModel.size) {
         const scriptFile = this.scriptFileForDebuggerModel.values().next().value;
         const addSourceMapURLLabel = i18nString9(UIStrings10.addSourceMap);
@@ -10834,7 +10959,7 @@ var DebuggerPlugin = class extends Plugin {
           addSourceMapURL.bind(null, scriptFile),
           { jslogContext: "add-source-map" }
         );
-        if (scriptFile.script?.isWasm() && !Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager.hasPluginForScript(
+        if (scriptFile.script?.isWasm() && !Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager.hasPluginForScript(
           scriptFile.script
         )) {
           contextMenu.debugSection().appendItem(
@@ -10957,7 +11082,7 @@ var DebuggerPlugin = class extends Plugin {
     if (selectedCallFrame.script.isJavaScript()) {
       const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(
         selectedCallFrame,
-        Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+        Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
       );
       try {
         resolvedText = await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
@@ -11078,7 +11203,7 @@ var DebuggerPlugin = class extends Plugin {
     dialog4.oldCondition = oldCondition, dialog4.breakpointType = isLogpointForDialog ? SDK9.DebuggerModel.BreakpointType.LOGPOINT : SDK9.DebuggerModel.BreakpointType.CONDITIONAL_BREAKPOINT;
     dialog4.location = async () => {
       const uiLocation = breakpoint ? breakpoint.getClosestResolvedLocation() ?? { lineNumber: breakpoint.lineNumber(), columnNumber: breakpoint.columnNumber() } : location ?? await this.defaultBreakpointLocation(line);
-      const rawLocations = await Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
+      const rawLocations = await Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
         this.uiSourceCode,
         uiLocation.lineNumber,
         uiLocation.columnNumber
@@ -11186,7 +11311,7 @@ var DebuggerPlugin = class extends Plugin {
     }
   }
   async #rawLocationToEditorOffset(location, url) {
-    const uiLocation = location && await Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
+    const uiLocation = location && await Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
     if (!uiLocation || uiLocation.uiSourceCode.url() !== url) {
       return null;
     }
@@ -11213,7 +11338,7 @@ var DebuggerPlugin = class extends Plugin {
     if (!this.editor) {
       return null;
     }
-    if (!Common11.Settings.Settings.instance().resolve(SettingsUI3.SourcesSettings.inlineVariableValuesSettingDescriptor).get()) {
+    if (!Common12.Settings.Settings.instance().resolve(SettingsUI3.SourcesSettings.inlineVariableValuesSettingDescriptor).get()) {
       return null;
     }
     const executionContext = UI11.Context.Context.instance().flavor(SDK9.RuntimeModel.ExecutionContext);
@@ -11558,7 +11683,7 @@ var DebuggerPlugin = class extends Plugin {
     const line = editor.state.doc.lineAt(position);
     if (!SourceFrame5.SourceFrame.isBreakableLine(editor.state, line) || // Editing breakpoints only make sense for conditional breakpoints
     // and logpoints.
-    !Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(
+    !Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(
       this.uiSourceCode
     )) {
       return;
@@ -11594,7 +11719,7 @@ var DebuggerPlugin = class extends Plugin {
   }
   updateScriptFiles() {
     for (const debuggerModel of SDK9.TargetManager.TargetManager.instance().models(SDK9.DebuggerModel.DebuggerModel)) {
-      const scriptFile = Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
+      const scriptFile = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
         this.uiSourceCode,
         debuggerModel
       );
@@ -11606,7 +11731,7 @@ var DebuggerPlugin = class extends Plugin {
   }
   updateScriptFile(debuggerModel) {
     this.scriptFileForDebuggerModel.delete(debuggerModel);
-    const newScriptFile = Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
+    const newScriptFile = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
       this.uiSourceCode,
       debuggerModel
     );
@@ -11639,9 +11764,9 @@ var DebuggerPlugin = class extends Plugin {
     for (const resource of warning.resources) {
       const pageResourceKey = SDK9.PageResourceLoader.PageResourceLoader.makeExtensionKey(resource.resourceUrl, resource.initiator);
       const onShowRequest = SDK9.PageResourceLoader.PageResourceLoader.instance().getResourcesLoaded().get(pageResourceKey) ? () => {
-        void Common11.Revealer.reveal(new SDK9.PageResourceLoader.ResourceKey(pageResourceKey));
+        void Common12.Revealer.reveal(new SDK9.PageResourceLoader.ResourceKey(pageResourceKey));
       } : void 0;
-      const message = i18nString9(UIStrings10.debugFileNotFound, { PH1: Common11.ParsedURL.ParsedURL.extractName(resource.resourceUrl) });
+      const message = i18nString9(UIStrings10.debugFileNotFound, { PH1: Common12.ParsedURL.ParsedURL.extractName(resource.resourceUrl) });
       const fragment = document.createDocumentFragment();
       renderMissingDebugFile({ message, onShowRequest }, void 0, fragment);
       this.missingDebugInfoBar.createDetailsRowMessage(fragment.firstElementChild);
@@ -11654,7 +11779,7 @@ var DebuggerPlugin = class extends Plugin {
   }
   scriptHasSourceMap() {
     for (const debuggerModel of SDK9.TargetManager.TargetManager.instance().models(SDK9.DebuggerModel.DebuggerModel)) {
-      const scriptFile = Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
+      const scriptFile = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(
         this.uiSourceCode,
         debuggerModel
       );
@@ -11673,7 +11798,7 @@ var DebuggerPlugin = class extends Plugin {
           debuggerModel.target(),
           script.script.sourceURL
         );
-        const resolvedUrl = Common11.ParsedURL.ParsedURL.completeURL(initiatorUrl, url);
+        const resolvedUrl = Common12.ParsedURL.ParsedURL.completeURL(initiatorUrl, url);
         if (resolvedUrl) {
           const resource = resourceMap.get(SDK9.PageResourceLoader.PageResourceLoader.makeKey(
             resolvedUrl,
@@ -11691,7 +11816,7 @@ var DebuggerPlugin = class extends Plugin {
     if (this.sourceMapInfobar) {
       return;
     }
-    if (!Common11.Settings.Settings.instance().resolve(SDK9.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get()) {
+    if (!Common12.Settings.Settings.instance().resolve(SDK9.SDKSettings.jsSourceMapsEnabledSettingDescriptor).get()) {
       return;
     }
     if (!this.scriptHasSourceMap()) {
@@ -11706,7 +11831,7 @@ var DebuggerPlugin = class extends Plugin {
         UI11.Infobar.Type.INFO,
         i18nString9(UIStrings10.sourceMapSkipped),
         [],
-        Common11.Settings.Settings.instance().createSetting("source-map-skipped-infobar-disabled", false),
+        Common12.Settings.Settings.instance().createSetting("source-map-skipped-infobar-disabled", false),
         "source-map-skipped"
       );
       if (!this.sourceMapInfobar) {
@@ -11719,7 +11844,7 @@ var DebuggerPlugin = class extends Plugin {
         UI11.Infobar.Type.INFO,
         i18nString9(UIStrings10.sourceMapLoaded),
         [],
-        Common11.Settings.Settings.instance().createSetting("source-map-infobar-disabled", false),
+        Common12.Settings.Settings.instance().createSetting("source-map-infobar-disabled", false),
         "source-map-loaded"
       );
       if (!this.sourceMapInfobar) {
@@ -11821,7 +11946,7 @@ var DebuggerPlugin = class extends Plugin {
     await this.setBreakpoint(origin.lineNumber, origin.columnNumber, condition, enabled, isLogpoint);
   }
   async setBreakpoint(lineNumber, columnNumber, condition, enabled, isLogpoint) {
-    Common11.Settings.Settings.instance().resolve(SDK9.SDKSettings.breakpointsActiveSettingDescriptor).set(true);
+    Common12.Settings.Settings.instance().resolve(SDK9.SDKSettings.breakpointsActiveSettingDescriptor).set(true);
     const bp = await this.breakpointManager.setBreakpoint(
       this.uiSourceCode,
       lineNumber,
@@ -11829,12 +11954,12 @@ var DebuggerPlugin = class extends Plugin {
       condition,
       enabled,
       isLogpoint,
-      Breakpoints2.BreakpointManager.BreakpointOrigin.USER_ACTION
+      Breakpoints3.BreakpointManager.BreakpointOrigin.USER_ACTION
     );
     const uiLocation = new Workspace14.UISourceCode.UILocation(this.uiSourceCode, lineNumber, columnNumber);
     const normalizedLocation = await this.breakpointManager.debuggerWorkspaceBinding.normalizeUILocation(uiLocation);
     if (normalizedLocation.id() !== uiLocation.id()) {
-      void Common11.Revealer.reveal(normalizedLocation);
+      void Common12.Revealer.reveal(normalizedLocation);
     }
     this.breakpointWasSetForTest(lineNumber, columnNumber, condition, enabled);
     if (bp) {
@@ -11902,12 +12027,12 @@ var DebuggerPlugin = class extends Plugin {
     this.popoverHelper?.dispose();
     this.setExecutionLocation(null);
     this.breakpointManager.removeEventListener(
-      Breakpoints2.BreakpointManager.Events.BreakpointAdded,
+      Breakpoints3.BreakpointManager.Events.BreakpointAdded,
       this.breakpointChange,
       this
     );
     this.breakpointManager.removeEventListener(
-      Breakpoints2.BreakpointManager.Events.BreakpointRemoved,
+      Breakpoints3.BreakpointManager.Events.BreakpointRemoved,
       this.breakpointChange,
       this
     );
@@ -11942,8 +12067,8 @@ var DebuggerPlugin = class extends Plugin {
       return;
     }
     this.#sourcesPanelDebuggedMetricsRecorded = true;
-    const mimeType = Common11.ResourceType.ResourceType.mimeFromURL(this.uiSourceCode.url());
-    const mediaType = Common11.ResourceType.ResourceType.mediaTypeForMetrics(
+    const mimeType = Common12.ResourceType.ResourceType.mimeFromURL(this.uiSourceCode.url());
+    const mediaType = Common12.ResourceType.ResourceType.mediaTypeForMetrics(
       mimeType ?? "",
       this.uiSourceCode.contentType().isFromSourceMap(),
       TextUtils7.TextUtils.isMinified(this.uiSourceCode.content()),
@@ -11966,7 +12091,7 @@ var BreakpointLocationRevealer = class {
   }
 };
 async function computeNonBreakableLines(state, transformer, sourceCode) {
-  const debuggerWorkspaceBinding = Bindings6.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+  const debuggerWorkspaceBinding = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
   const mappedLines = await debuggerWorkspaceBinding.getMappedLines(sourceCode);
   if (!mappedLines) {
     return [];
@@ -12020,7 +12145,7 @@ var breakpointMarkers = CodeMirror4.StateField.define({
   ]
 });
 function renderBreakpointInlineMarker(input, _output, target) {
-  render7(html9`<span class=${input.className}
+  render8(html10`<span class=${input.className}
                     jslog=${VisualLogging8.breakpointMarker().track({ click: true })}
                     @click=${input.onClick}
                     @contextmenu=${input.onContextMenu}></span>`, target);
@@ -12070,9 +12195,9 @@ var BreakpointInlineMarker = class extends CodeMirror4.WidgetType {
   }
 };
 function renderBreakpointGutterMarker(input, _output, target) {
-  const lineNumber = html9`<div jslog=${VisualLogging8.breakpointMarker().track({ click: true })}
-                               aria-details=${input.tooltipId ?? nothing4}>${input.lineNumber}</div>`;
-  render7(input.condition && input.tooltipId ? html9`<div>${lineNumber}<devtools-tooltip id=${input.tooltipId} jslogcontext="breakpoint-tooltip">${input.condition}</devtools-tooltip></div>` : lineNumber, target);
+  const lineNumber = html10`<div jslog=${VisualLogging8.breakpointMarker().track({ click: true })}
+                               aria-details=${input.tooltipId ?? nothing5}>${input.lineNumber}</div>`;
+  render8(input.condition && input.tooltipId ? html10`<div>${lineNumber}<devtools-tooltip id=${input.tooltipId} jslogcontext="breakpoint-tooltip">${input.condition}</devtools-tooltip></div>` : lineNumber, target);
 }
 var BreakpointGutterMarker = class _BreakpointGutterMarker extends CodeMirror4.GutterMarker {
   constructor(elementClass, position, condition) {
@@ -12143,7 +12268,7 @@ function renderValueDecoration(input, _output, target) {
     const propertyCount = value2.preview ? value2.preview.properties.length : 0;
     const entryCount = value2.preview?.entries ? value2.preview.entries.length : 0;
     if (value2.preview && propertyCount + entryCount < 10) {
-      return html9`<span>${formatter.renderObjectPreview(value2.preview)}</span>`;
+      return html10`<span>${formatter.renderObjectPreview(value2.preview)}</span>`;
     }
     return ObjectUI.ObjectPropertiesSection.renderPropertyValue(
       value2,
@@ -12153,7 +12278,7 @@ function renderValueDecoration(input, _output, target) {
       false
     );
   };
-  render7(html9`<div class="cm-variableValues">${input.pairs.map(([name, value2], index) => html9`${index > 0 ? ", " : nothing4}<span>${name} = ${renderValue(value2)}</span>`)}</div>`, target);
+  render8(html10`<div class="cm-variableValues">${input.pairs.map(([name, value2], index) => html10`${index > 0 ? ", " : nothing5}<span>${name} = ${renderValue(value2)}</span>`)}</div>`, target);
 }
 var ValueDecoration = class extends CodeMirror4.WidgetType {
   constructor(pairs) {
@@ -12638,7 +12763,7 @@ import * as i18n21 from "../../core/i18n/i18n.js";
 import * as Platform8 from "../../core/platform/platform.js";
 import * as Workspace16 from "../../models/workspace/workspace.js";
 import * as CodeMirror5 from "../../third_party/codemirror.next/codemirror.next.js";
-import { html as html10, render as render8 } from "../../ui/lit/lit.js";
+import { html as html11, render as render9 } from "../../ui/lit/lit.js";
 var UIStrings11 = {
   /**
    * @description The millisecond unit.
@@ -12648,7 +12773,7 @@ var UIStrings11 = {
 var str_11 = i18n21.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
 var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 function renderPerformanceMarker(input, _output, target) {
-  render8(html10`
+  render9(html11`
     <div class="cm-profileMarker"
          style="background-color: hsla(44, 100%, 50%, ${input.intensity.toFixed(3)})">
       ${input.value.toFixed(1)}
@@ -12775,10 +12900,10 @@ __export(ResourceOriginPlugin_exports, {
   ResourceOriginPlugin: () => ResourceOriginPlugin
 });
 import * as i18n23 from "../../core/i18n/i18n.js";
-import * as Bindings7 from "../../models/bindings/bindings.js";
+import * as Bindings8 from "../../models/bindings/bindings.js";
 import * as uiI18n2 from "../../ui/i18n/i18n.js";
 import * as Components from "../../ui/legacy/components/utils/utils.js";
-import { html as html11, nothing as nothing5 } from "../../ui/lit/lit.js";
+import { html as html12, nothing as nothing6 } from "../../ui/lit/lit.js";
 var UIStrings12 = {
   /**
    * @description Text in the bottom toolbar of the Sources panel that lists the source mapped origin scripts.
@@ -12800,7 +12925,7 @@ var ResourceOriginPlugin = class extends Plugin {
     return contentType.hasScripts() || contentType.isFromSourceMap();
   }
   rightToolbarItems() {
-    const debuggerWorkspaceBinding = Bindings7.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const debuggerWorkspaceBinding = Bindings8.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     if (this.uiSourceCode.contentType().isFromSourceMap()) {
       const links = [];
       for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
@@ -12809,7 +12934,7 @@ var ResourceOriginPlugin = class extends Plugin {
           continue;
         }
         const url = uiSourceCode.url();
-        const text = Bindings7.ResourceUtils.displayNameForURL(url);
+        const text = Bindings8.ResourceUtils.displayNameForURL(url);
         const title = i18nString11(UIStrings12.sourceMappedFromS, { PH1: text });
         const link = Components.Linkifier.Linkifier.linkifyRevealable(
           uiSourceCode,
@@ -12822,15 +12947,15 @@ var ResourceOriginPlugin = class extends Plugin {
         link.tabIndex = 0;
         links.push(link);
       }
-      for (const originURL of Bindings7.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(this.uiSourceCode)) {
+      for (const originURL of Bindings8.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(this.uiSourceCode)) {
         links.push(Components.Linkifier.Linkifier.renderLinkifiedUrl(originURL, { tabStop: true }));
       }
       if (links.length === 0) {
         return [];
       }
-      const linksTemplate = html11`<span>${links.map((link, index) => html11`${index > 0 ? ", " : nothing5}${link}`)}</span>`;
+      const linksTemplate = html12`<span>${links.map((link, index) => html12`${index > 0 ? ", " : nothing6}${link}`)}</span>`;
       return [
-        html11`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: linksTemplate })}</div>`
+        html12`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: linksTemplate })}</div>`
       ];
     }
     for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
@@ -12838,7 +12963,7 @@ var ResourceOriginPlugin = class extends Plugin {
         const link = this.#linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
         link.tabIndex = 0;
         return [
-          html11`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: link })}</div>`
+          html12`<div class="toolbar-item">${uiI18n2.getFormatLocalizedStringTemplate(str_12, UIStrings12.fromS, { PH1: link })}</div>`
         ];
       }
     }
@@ -12857,10 +12982,10 @@ __export(SnippetsPlugin_exports, {
 import "../../ui/kit/kit.js";
 import * as Host6 from "../../core/host/host.js";
 import * as i18n25 from "../../core/i18n/i18n.js";
-import * as Buttons6 from "../../ui/components/buttons/buttons.js";
+import * as Buttons7 from "../../ui/components/buttons/buttons.js";
 import * as TextEditor4 from "../../ui/components/text_editor/text_editor.js";
 import * as UI12 from "../../ui/legacy/legacy.js";
-import { html as html12 } from "../../ui/lit/lit.js";
+import { html as html13 } from "../../ui/lit/lit.js";
 import * as Snippets3 from "../snippets/snippets.js";
 var { bindToAction: bindToAction2 } = UI12.UIUtils;
 var UIStrings13 = {
@@ -12882,12 +13007,12 @@ var SnippetsPlugin = class extends Plugin {
   rightToolbarItems() {
     const action4 = UI12.ActionRegistry.ActionRegistry.instance().getAction("debugger.run-snippet");
     const text = Host6.Platform.isMac() ? i18nString12(UIStrings13.enter) : i18nString12(UIStrings13.ctrlenter);
-    return [html12`<devtools-button
+    return [html13`<devtools-button
       class="toolbar-button"
       title=${action4.title()}
       aria-label=${action4.title()}
       .iconName=${"play"}
-      .variant=${Buttons6.Button.Variant.TEXT}
+      .variant=${Buttons7.Button.Variant.TEXT}
       .reducedFocusRing=${true}
       ${bindToAction2("debugger.run-snippet")}
     >${text}</devtools-button>`];
@@ -12898,7 +13023,7 @@ var SnippetsPlugin = class extends Plugin {
 };
 
 // ../../front_end/panels/sources/UISourceCodeFrame.ts
-var { styleMap } = Directives2;
+var { styleMap } = Directives3;
 var UIStrings14 = {
   /**
    * @description Title of the format button
@@ -12907,7 +13032,7 @@ var UIStrings14 = {
 };
 var str_14 = i18n27.i18n.registerUIStrings("panels/sources/UISourceCodeFrame.ts", UIStrings14);
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
-var UISourceCodeFrameBase = Common12.ObjectWrapper.eventMixin(
+var UISourceCodeFrameBase = Common13.ObjectWrapper.eventMixin(
   SourceFrame7.SourceFrame.SourceFrameImpl
 );
 var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
@@ -12929,7 +13054,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
     this.#uiSourceCode = uiSourceCode;
     this.#persistenceBinding = Persistence6.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     this.#boundOnBindingChanged = this.onBindingChanged.bind(this);
-    Common12.Settings.Settings.instance().resolve(Persistence6.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).addChangeListener(this.onNetworkPersistenceChanged, this);
+    Common13.Settings.Settings.instance().resolve(Persistence6.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).addChangeListener(this.onNetworkPersistenceChanged, this);
     this.#errorPopoverHelper = new UI13.PopoverHelper.PopoverHelper(
       this.textEditor.editor.contentDOM,
       this.getErrorPopoverContent.bind(this),
@@ -13014,8 +13139,8 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
   }
   unloadUISourceCode() {
     this.textEditor.removeAttribute("data-file-path");
-    Common12.EventTarget.removeEventListeners(this.#messageAndDecorationListeners);
-    Common12.EventTarget.removeEventListeners(this.#uiSourceCodeEventListeners);
+    Common13.EventTarget.removeEventListeners(this.#messageAndDecorationListeners);
+    Common13.EventTarget.removeEventListeners(this.#uiSourceCodeEventListeners);
     this.#uiSourceCode.removeWorkingCopyGetter();
     Persistence6.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(
       this.#uiSourceCode,
@@ -13045,7 +13170,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
     this.updateStyle();
     const isFormattable = FormatterActions.FORMATTABLE_MEDIA_TYPES.includes(this.contentType);
     const isEditable = Persistence6.Persistence.PersistenceImpl.instance().hasEditableContent(this.#uiSourceCode);
-    const isJavaScript = Common12.ResourceType.ResourceType.isJavaScriptMimeType(this.contentType);
+    const isJavaScript = Common13.ResourceType.ResourceType.isJavaScriptMimeType(this.contentType);
     const canPrettyPrint = isFormattable && (!isEditable || !isJavaScript);
     const autoPrettyPrint = !this.#uiSourceCode.contentType().isFromSourceMap();
     this.setCanPrettyPrint(canPrettyPrint, autoPrettyPrint);
@@ -13065,7 +13190,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
   getContentType() {
     const binding = Persistence6.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode);
     const mimeType = binding ? binding.network.mimeType() : this.#uiSourceCode.mimeType();
-    return Common12.ResourceType.ResourceType.simplifyContentType(mimeType);
+    return Common13.ResourceType.ResourceType.simplifyContentType(mimeType);
   }
   #canEditSource() {
     if (this.hasLoadError()) {
@@ -13151,7 +13276,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
       return;
     }
     const content = TextUtils9.ContentData.ContentData.textOr(contentDataOrError, "");
-    const indent = Common12.Settings.Settings.instance().resolve(SDK10.SDKSettings.textEditorIndentSettingDescriptor).get();
+    const indent = Common13.Settings.Settings.instance().resolve(SDK10.SDKSettings.textEditorIndentSettingDescriptor).get();
     const { formattedContent, formattedMapping } = await Formatter2.ScriptFormatter.format(this.#uiSourceCode.contentType(), this.contentType, content, indent);
     if (this.#uiSourceCode.workingCopy() === formattedContent) {
       return;
@@ -13213,7 +13338,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
     this.dispatchEventToListeners("ToolbarItemsChanged" /* TOOLBAR_ITEMS_CHANGED */);
   }
   disposePlugins() {
-    Common12.EventTarget.removeEventListeners(this.#pluginEventListeners);
+    Common13.EventTarget.removeEventListeners(this.#pluginEventListeners);
     for (const plugin of this.plugins) {
       plugin.dispose();
     }
@@ -13269,7 +13394,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
     this.unloadUISourceCode();
     this.textEditor.editor.destroy();
     this.detach();
-    Common12.Settings.Settings.instance().resolve(Persistence6.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).removeChangeListener(this.onNetworkPersistenceChanged, this);
+    Common13.Settings.Settings.instance().resolve(Persistence6.NetworkPersistenceManager.persistenceNetworkOverridesEnabledSettingDescriptor).removeChangeListener(this.onNetworkPersistenceChanged, this);
     this.disposeView();
   }
   onMessageAdded(event) {
@@ -13294,15 +13419,15 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
   async toolbarItems() {
     const leftToolbarItems = [await super.toolbarItems()];
     const isEditable = Persistence6.Persistence.PersistenceImpl.instance().hasEditableContent(this.#uiSourceCode);
-    const isJavaScript = Common12.ResourceType.ResourceType.isJavaScriptMimeType(this.contentType);
+    const isJavaScript = Common13.ResourceType.ResourceType.isJavaScriptMimeType(this.contentType);
     const isInplaceFormattable = isEditable && isJavaScript;
     if (isInplaceFormattable) {
-      leftToolbarItems.unshift(html13`<devtools-button
+      leftToolbarItems.unshift(html14`<devtools-button
         class="toolbar-button"
         title=${i18nString13(UIStrings14.format)}
         aria-label=${i18nString13(UIStrings14.format)}
         .iconName=${"brackets"}
-        .variant=${Buttons7.Button.Variant.TOOLBAR}
+        .variant=${Buttons8.Button.Variant.TOOLBAR}
         @click=${() => void this.#formatSourceInPlace()}
       ></devtools-button>`);
     }
@@ -13311,12 +13436,12 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
       leftToolbarItems.push(...plugin.leftToolbarItems());
       rightToolbarItems.push(...plugin.rightToolbarItems());
     }
-    return html13`
+    return html14`
       ${leftToolbarItems}
-      ${rightToolbarItems.length ? html13`
+      ${rightToolbarItems.length ? html14`
         <div class="toolbar-spacer"></div>
         ${rightToolbarItems}
-      ` : nothing6}
+      ` : nothing7}
     `;
   }
   getErrorPopoverContent(event) {
@@ -13368,8 +13493,8 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends UISourceCodeFrameBase {
       return;
     }
     this.#sourcesPanelOpenedMetricsRecorded = true;
-    const mimeType = Common12.ResourceType.ResourceType.mimeFromURL(this.#uiSourceCode.url());
-    const mediaType = Common12.ResourceType.ResourceType.mediaTypeForMetrics(
+    const mimeType = Common13.ResourceType.ResourceType.mimeFromURL(this.#uiSourceCode.url());
+    const mediaType = Common13.ResourceType.ResourceType.mediaTypeForMetrics(
       mimeType ?? "",
       this.#uiSourceCode.contentType().isFromSourceMap(),
       TextUtils9.TextUtils.isMinified(this.#uiSourceCode.content()),
@@ -13516,14 +13641,14 @@ var MessageWidget = class extends CodeMirror6.WidgetType {
     const maxIssueIconData = maxIssue && getIconDataForLevel(maxIssue.level());
     const issue = this.messages.find((m) => m.level() === Workspace17.UISourceCode.Message.Level.ISSUE);
     const issueIconData = issue && getIconDataForMessage(issue);
-    render9(html13`<span class="cm-messageIcon">${maxIssueIconData ? html13`<devtools-icon
+    render10(html14`<span class="cm-messageIcon">${maxIssueIconData ? html14`<devtools-icon
           class="cm-messageIcon-error"
           name=${maxIssueIconData.iconName}
-          style=${styleMap({ height: maxIssueIconData.height, width: maxIssueIconData.width })}></devtools-icon>` : nothing6}${issueIconData ? html13`<devtools-icon
+          style=${styleMap({ height: maxIssueIconData.height, width: maxIssueIconData.width })}></devtools-icon>` : nothing7}${issueIconData ? html14`<devtools-icon
           class="cm-messageIcon-issue extra-small"
           @click=${() => (issue.clickHandler() || Math.min)()}
           name=${issueIconData.iconName}
-          style=${styleMap({ height: issueIconData.height, width: issueIconData.width })}></devtools-icon>` : nothing6}</span>`, wrap);
+          style=${styleMap({ height: issueIconData.height, width: issueIconData.width })}></devtools-icon>` : nothing7}</span>`, wrap);
     return wrap.firstElementChild;
   }
 };
@@ -13585,7 +13710,7 @@ function renderMessage(message, count) {
   let iconOrCounter;
   if (count === 1) {
     const data = getIconDataForMessage(message);
-    iconOrCounter = html13`<devtools-icon
+    iconOrCounter = html14`<devtools-icon
       name=${data.iconName}
       style=${styleMap({
       height: data.height,
@@ -13594,22 +13719,22 @@ function renderMessage(message, count) {
       class="text-editor-row-message-icon extra-small"
       @click=${() => (message.clickHandler() || Math.min)()}></devtools-icon>`;
   } else {
-    iconOrCounter = html13`<dt-small-bubble
+    iconOrCounter = html14`<dt-small-bubble
           class="text-editor-row-message-repeat-count"
           .type=${getBubbleTypePerLevel(message.level())}
         >${String(count)}</dt-small-bubble>`;
   }
-  return html13`<div class="text-editor-row-message">
+  return html14`<div class="text-editor-row-message">
     ${iconOrCounter}
     <div>
-      ${message.text().split("\n").map((line) => html13`<div>${line}</div>`)}
+      ${message.text().split("\n").map((line) => html14`<div>${line}</div>`)}
     </div>
   </div>`;
 }
 var DEFAULT_POPOVER_VIEW = (input, _output, target) => {
   const counts = countDuplicates(input.messages);
-  render9(
-    html13`<style>
+  render10(
+    html14`<style>
         .text-editor-row-message {
           display: flex;
           align-items: center;
@@ -13618,7 +13743,7 @@ var DEFAULT_POPOVER_VIEW = (input, _output, target) => {
         .text-editor-row-message-repeat-count {
           flex-shrink: 0;
         }
-      </style><div class="text-editor-messages-description-container">${input.messages.map((message, i) => counts[i] ? renderMessage(message, counts[i]) : nothing6)}</div>`,
+      </style><div class="text-editor-messages-description-container">${input.messages.map((message, i) => counts[i] ? renderMessage(message, counts[i]) : nothing7)}</div>`,
     target
   );
 };
@@ -13704,16 +13829,16 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var { repeat: repeat2 } = Directives3;
-var { widget: widget3 } = UI14.Widget;
+var { repeat: repeat3 } = Directives4;
+var { widget: widget5 } = UI14.Widget;
 var HEADER_OVERRIDES_FILENAME = ".headers";
 var UI_SOURCE_CODE_WIDGET_MAP = /* @__PURE__ */ new WeakMap();
 function defaultSourceViewFactory(uiSourceCode) {
   const contentType = uiSourceCode.contentType();
-  if (contentType === Common13.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith("image/")) {
+  if (contentType === Common14.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith("image/")) {
     return new SourceFrame9.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
   }
-  if (contentType === Common13.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes("font")) {
+  if (contentType === Common14.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes("font")) {
     return new SourceFrame9.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
   }
   if (uiSourceCode.name() === Persistence8.NetworkPersistenceManager.HEADERS_FILENAME) {
@@ -13737,7 +13862,7 @@ function removeSourceViewCache(uiSourceCode) {
   return view;
 }
 function renderPlaceholder(input) {
-  return html14`
+  return html15`
     <style>${tabbedEditorContainer_css_default}</style>
     <div class="sources-placeholder">
       <div class="tabbed-pane-placeholder-row workspace">
@@ -13751,10 +13876,10 @@ function renderPlaceholder(input) {
       </div>
       <div class="shortcuts-list tabbed-pane-placeholder-row" role="list"
             aria-label=${i18nString14(UIStrings15.sourceViewActions)}>
-        ${input.shortcuts.map((shortcut) => !shortcut.keys.length ? html14`<div class="shortcut-line" role="listitem"></div>` : html14`<div class="shortcut-line" role="listitem">
+        ${input.shortcuts.map((shortcut) => !shortcut.keys.length ? html15`<div class="shortcut-line" role="listitem"></div>` : html15`<div class="shortcut-line" role="listitem">
               <button @click=${shortcut.onClick}>${shortcut.description}</button>
               <span class="shortcuts">
-                ${shortcut.keys.map((key) => html14`
+                ${shortcut.keys.map((key) => html15`
                   <span class="keybinds-key"><span>${key}</span></span>
                 `)}
               </span>
@@ -13764,22 +13889,22 @@ function renderPlaceholder(input) {
 }
 function renderTabIcon(tab) {
   if (tab.hasLoadError) {
-    return html14`
+    return html15`
       <devtools-icon slot=${`icon-${tab.tabId}`} class="small" name="cross-circle-filled"
                      title=${i18nString14(UIStrings15.unableToLoadThisContent)}>
       </devtools-icon>`;
   }
   if (tab.icon) {
-    return html14`<span slot=${`icon-${tab.tabId}`}>${tab.icon}</span>`;
+    return html15`<span slot=${`icon-${tab.tabId}`}>${tab.icon}</span>`;
   }
-  return nothing7;
+  return nothing8;
 }
 function renderTabSuffix(tab, input) {
   if (!tab.hasUnsavedCommittedChanges) {
-    return nothing7;
+    return nothing8;
   }
   const tooltipId = `tab-tooltip-${tab.tabId}`;
-  return html14`
+  return html15`
     <div slot=${`suffix-${tab.tabId}`}>
       <devtools-icon name="warning-filled" class="small" aria-describedby=${tooltipId}></devtools-icon>
       <devtools-tooltip id=${tooltipId} variant="rich">
@@ -13787,20 +13912,20 @@ function renderTabSuffix(tab, input) {
     str_15,
     UIStrings15.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace,
     {
-      PH1: html14`<devtools-link class="devtools-link" @click=${input.onConnectAutomaticFileSystem}>${tab.disconnectedAutomaticFileSystemRoot}</devtools-link>`
+      PH1: html15`<devtools-link class="devtools-link" @click=${input.onConnectAutomaticFileSystem}>${tab.disconnectedAutomaticFileSystemRoot}</devtools-link>`
     }
   ) : uiI18n3.getFormatLocalizedStringTemplate(
     str_15,
     UIStrings15.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace,
     {
-      PH1: html14`<devtools-link href="https://developer.chrome.com/docs/devtools/workspaces/">Workspace</devtools-link>`
+      PH1: html15`<devtools-link href="https://developer.chrome.com/docs/devtools/workspaces/">Workspace</devtools-link>`
     }
   )}
       </devtools-tooltip>
     </div>`;
 }
 var DEFAULT_VIEW6 = (input, _output, target) => {
-  render10(html14`
+  render11(html15`
     <devtools-tabbed-pane
       class="flex-auto vbox"
       .closeableTabs=${true}
@@ -13819,14 +13944,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
       <devtools-toolbar class="tabbed-pane-right-toolbar" slot="right">
         ${input.rightToolbarItems}
       </devtools-toolbar>
-      ${repeat2(input.openTabs, (tab) => tab.tabId, (tab) => html14`
+      ${repeat3(input.openTabs, (tab) => tab.tabId, (tab) => html15`
         <div id=${tab.tabId}
              class="vbox flex-auto"
              label=${tab.title}
              tab-tooltip=${tab.tooltip}
              ?closeable=${tab.isCloseable}
              ?selected=${input.activeTabId === tab.tabId}>
-             ${tab.widget ? html14`${widget3(UI14.Widget.WrapperWidget, { widget: tab.widget })}` : nothing7}
+             ${tab.widget ? html15`${widget5(UI14.Widget.WrapperWidget, { widget: tab.widget })}` : nothing8}
         </div>
         ${renderTabIcon(tab)}
         ${renderTabSuffix(tab, input)}`)}
@@ -13842,7 +13967,7 @@ function titleForFile(uiSourceCode) {
   }
   return title;
 }
-var TabbedEditorContainerBase = Common13.ObjectWrapper.eventMixin(
+var TabbedEditorContainerBase = Common14.ObjectWrapper.eventMixin(
   UI14.Widget.VBox
 );
 var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorContainerBase {
@@ -13888,7 +14013,7 @@ var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorCon
         if (hasUnsavedCommittedChanges) {
           const { automaticFileSystem } = Persistence8.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
           if (automaticFileSystem?.state === "disconnected") {
-            disconnectedAutomaticFileSystemRoot = Common13.ParsedURL.ParsedURL.extractName(automaticFileSystem.root);
+            disconnectedAutomaticFileSystemRoot = Common14.ParsedURL.ParsedURL.extractName(automaticFileSystem.root);
           }
         }
         const icon = !hasLoadError ? PanelCommon2.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode) ?? void 0 : void 0;
@@ -14038,7 +14163,7 @@ var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorCon
     this.#sourceViewFactory = sourceViewFactory;
     this.#tabDelegate = new EditorContainerTabDelegate(this);
     this.#historyManager = new EditingLocationHistoryManager(this);
-    this.#previouslyViewedFilesSetting = Common13.Settings.Settings.instance().createLocalSetting("previously-viewed-files", []);
+    this.#previouslyViewedFilesSetting = Common14.Settings.Settings.instance().createLocalSetting("previously-viewed-files", []);
     this.#history = History.fromObject(this.#previouslyViewedFilesSetting.get());
     this.#tabIds = /* @__PURE__ */ new Map();
     this.#files = /* @__PURE__ */ new Map();
@@ -14613,9 +14738,9 @@ var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorCon
   }
   #uiSourceCodeTitleChanged(event) {
     const uiSourceCode = event.data;
-    const widget7 = getViewByUISourceCode(uiSourceCode);
-    if (widget7) {
-      if (this.#sourceViewTypeForWidget(widget7) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
+    const widget9 = getViewByUISourceCode(uiSourceCode);
+    if (widget9) {
+      if (this.#sourceViewTypeForWidget(widget9) !== this.#sourceViewTypeForUISourceCode(uiSourceCode)) {
         this.#removeUISourceCodes([uiSourceCode]);
         this.#addUISourceCode(uiSourceCode);
         this.showFile(uiSourceCode);
@@ -14696,14 +14821,14 @@ var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorCon
       sourceView.dispose();
     }
   }
-  #sourceViewTypeForWidget(widget7) {
-    if (widget7 instanceof SourceFrame9.ImageView.ImageView) {
+  #sourceViewTypeForWidget(widget9) {
+    if (widget9 instanceof SourceFrame9.ImageView.ImageView) {
       return "ImageView" /* IMAGE_VIEW */;
     }
-    if (widget7 instanceof SourceFrame9.FontView.FontView) {
+    if (widget9 instanceof SourceFrame9.FontView.FontView) {
       return "FontView" /* FONT_VIEW */;
     }
-    if (widget7 instanceof Components2.HeadersView.HeadersView) {
+    if (widget9 instanceof Components2.HeadersView.HeadersView) {
       return "HeadersView" /* HEADERS_VIEW */;
     }
     return "SourceView" /* SOURCE_VIEW */;
@@ -14714,9 +14839,9 @@ var TabbedEditorContainer = class _TabbedEditorContainer extends TabbedEditorCon
     }
     const contentType = uiSourceCode.contentType();
     switch (contentType) {
-      case Common13.ResourceType.resourceTypes.Image:
+      case Common14.ResourceType.resourceTypes.Image:
         return "ImageView" /* IMAGE_VIEW */;
-      case Common13.ResourceType.resourceTypes.Font:
+      case Common14.ResourceType.resourceTypes.Font:
         return "FontView" /* FONT_VIEW */;
       default:
         return "SourceView" /* SOURCE_VIEW */;
@@ -14769,18 +14894,18 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var { widget: widget4, widgetRef: widgetRef2 } = UI15.Widget;
+var { widget: widget6, widgetRef: widgetRef2 } = UI15.Widget;
 var toolbarItemsCache = /* @__PURE__ */ new WeakMap();
 function renderNavigatorToggleButton(isNavigatorSidebarOpen, onToggleNavigatorSidebar) {
   const navHidden = !isNavigatorSidebarOpen;
   const title = navHidden ? i18nString15(UIStrings16.showNavigator) : i18nString15(UIStrings16.hideNavigator);
-  return html15`
+  return html16`
     <devtools-button
       class="toolbar-button"
       title=${title}
       aria-label=${title}
       .iconName=${navHidden ? "left-panel-open" : "left-panel-close"}
-      .variant=${Buttons8.Button.Variant.TOOLBAR}
+      .variant=${Buttons9.Button.Variant.TOOLBAR}
       jslog=${VisualLogging10.toggleSubpane().track({ click: true }).context("navigator")}
       @click=${() => onToggleNavigatorSidebar?.()}
     ></devtools-button>`;
@@ -14789,13 +14914,13 @@ function renderDebuggerToggleButton(isDebuggerSidebarOpen, isVertical, isDebugge
   const debuggerHidden = !isDebuggerSidebarOpen;
   const title = debuggerHidden ? i18nString15(UIStrings16.showDebugger) : i18nString15(UIStrings16.hideDebugger);
   const glyph = debuggerHidden ? isVertical ? "right-panel-open" : "bottom-panel-open" : isVertical ? "right-panel-close" : "bottom-panel-close";
-  return html15`
+  return html16`
     <devtools-button
       class="toolbar-button"
       title=${title}
       aria-label=${title}
       .iconName=${glyph}
-      .variant=${Buttons8.Button.Variant.TOOLBAR}
+      .variant=${Buttons9.Button.Variant.TOOLBAR}
       ?disabled=${!isDebuggerSidebarButtonEnabled}
       jslog=${VisualLogging10.toggleSubpane().track({ click: true }).context("debugger")}
       @click=${() => onToggleDebuggerSidebar?.()}
@@ -14825,11 +14950,11 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     input.isVertical,
     input.isDebuggerSidebarButtonEnabled,
     input.onToggleDebuggerSidebar
-  ) : nothing8;
-  render11(html15`
+  ) : nothing9;
+  render12(html16`
     <style>${sourcesView_css_default}</style>
     <devtools-widget class="vbox flex-auto"
-      ${widget4(UI15.SearchableView.SearchableView, {
+      ${widget6(UI15.SearchableView.SearchableView, {
     searchProvider: input.searchProvider,
     replaceProvider: input.replaceProvider,
     settingName: "sources-view-search-config",
@@ -14842,7 +14967,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
   })}
     >
       <devtools-widget class="vbox flex-auto ${input.breakpointsActive ? "" : "breakpoints-deactivated"}"
-        ${widget4(TabbedEditorContainer, {
+        ${widget6(TabbedEditorContainer, {
     // Params are applied in order: set callbacks before `sourceLocation`
     // so the initial selection is reported.
     onEditorSelected: input.onEditorSelected,
@@ -14870,7 +14995,7 @@ var DEFAULT_VIEW7 = (input, output, target) => {
     }
   });
 };
-var SourcesViewBase = Common14.ObjectWrapper.eventMixin(
+var SourcesViewBase = Common15.ObjectWrapper.eventMixin(
   UI15.Widget.VBox
 );
 var SourcesView = class _SourcesView extends SourcesViewBase {
@@ -14880,7 +15005,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
   #sourceLocation;
   #visibleView = null;
   #currentUISourceCode = null;
-  #scriptViewToolbarItems = nothing8;
+  #scriptViewToolbarItems = nothing9;
   #isSearchReplaceable = false;
   #toolbarChangedListener = null;
   #searchView;
@@ -14997,7 +15122,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
       if (uiSourceCode.project().type() !== Workspace21.Workspace.projectTypes.Network) {
         continue;
       }
-      const target = Bindings8.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+      const target = Bindings9.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
       if (SDK11.TargetManager.TargetManager.instance().isInScope(target)) {
         this.addUISourceCode(uiSourceCode);
       } else {
@@ -15023,7 +15148,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
         break;
       }
       case Workspace21.Workspace.projectTypes.Network: {
-        const target = Bindings8.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+        const target = Bindings9.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
         if (!SDK11.TargetManager.TargetManager.instance().isInScope(target)) {
           return;
         }
@@ -15071,7 +15196,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
         this.requestUpdate();
       });
     } else {
-      this.#scriptViewToolbarItems = nothing8;
+      this.#scriptViewToolbarItems = nothing9;
       this.requestUpdate();
     }
   }
@@ -15108,7 +15233,7 @@ var SourcesView = class _SourcesView extends SourcesViewBase {
   }
   #removeToolbarChangedListener() {
     if (this.#toolbarChangedListener) {
-      Common14.EventTarget.removeEventListeners([this.#toolbarChangedListener]);
+      Common15.EventTarget.removeEventListeners([this.#toolbarChangedListener]);
     }
     this.#toolbarChangedListener = null;
   }
@@ -15247,8 +15372,8 @@ var SwitchFileActionDelegate = class _SwitchFileActionDelegate {
     }
     candidates.sort(Platform12.StringUtilities.naturalOrderComparator);
     const index = Platform12.NumberUtilities.mod(candidates.indexOf(name) + 1, candidates.length);
-    const fullURL = Common14.ParsedURL.ParsedURL.concatenate(
-      url ? Common14.ParsedURL.ParsedURL.concatenate(url, "/") : "",
+    const fullURL = Common15.ParsedURL.ParsedURL.concatenate(
+      url ? Common15.ParsedURL.ParsedURL.concatenate(url, "/") : "",
       candidates[index]
     );
     const nextUISourceCode = currentUISourceCode.project().uiSourceCodeForURL(fullURL);
@@ -15321,7 +15446,7 @@ __export(ThreadsSidebarPane_exports, {
 import * as i18n33 from "../../core/i18n/i18n.js";
 import * as SDK12 from "../../core/sdk/sdk.js";
 import * as UI16 from "../../ui/legacy/legacy.js";
-import * as Lit5 from "../../ui/lit/lit.js";
+import * as Lit4 from "../../ui/lit/lit.js";
 import * as VisualLogging11 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/threadsSidebarPane.css.js
@@ -15393,7 +15518,7 @@ var threadsSidebarPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./threadsSidebarPane.css")} */`;
 
 // ../../front_end/panels/sources/ThreadsSidebarPane.ts
-var { html: html16, render: render12, nothing: nothing9 } = Lit5;
+var { html: html17, render: render13, nothing: nothing10 } = Lit4;
 var UIStrings17 = {
   /**
    * @description Text in Threads sidebar of the Sources panel.
@@ -15403,10 +15528,10 @@ var UIStrings17 = {
 var str_17 = i18n33.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var DEFAULT_VIEW8 = (input, _output, target) => {
-  render12(html16`
+  render13(html17`
     <style>${threadsSidebarPane_css_default}</style>
     <div role="listbox">
-    ${input.threads.map((thread) => html16`
+    ${input.threads.map((thread) => html17`
       <button
         class="thread-item"
         @click=${thread.onSelect}
@@ -15416,7 +15541,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
       >
         <div class="thread-item-title">${thread.name}</div>
         <div class="thread-item-paused-state">${thread.paused ? i18nString16(UIStrings17.paused) : ""}</div>
-        ${thread.selected ? html16`<devtools-icon name="large-arrow-right-filled" class="selected-thread-icon"></devtools-icon>` : nothing9}
+        ${thread.selected ? html17`<devtools-icon name="large-arrow-right-filled" class="selected-thread-icon"></devtools-icon>` : nothing10}
       </button>
     `)}
     </div>
@@ -15508,7 +15633,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
 
 // ../../front_end/panels/sources/SourcesPanel.ts
 var { bindToAction: bindToAction3 } = UI17.UIUtils;
-var { widget: widget5 } = UI17.Widget;
+var { widget: widget7 } = UI17.Widget;
 var UIStrings18 = {
   /**
    * @description Text that appears when user drags and drops a folder in the Sources panel.
@@ -15619,13 +15744,13 @@ var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var primitiveRemoteObjectTypes = /* @__PURE__ */ new Set(["number", "boolean", "bigint", "undefined"]);
 var sourcesPanelInstance;
 function isSidebarOpenInSplitSetting(settingName, isVertical) {
-  const state = Common15.Settings.Settings.instance().createSetting(settingName, {}).get();
+  const state = Common16.Settings.Settings.instance().createSetting(settingName, {}).get();
   const orientationState = isVertical ? state.vertical : state.horizontal;
   const showMode = orientationState?.showMode ?? (isVertical ? state.horizontal?.showMode : state.vertical?.showMode);
   return showMode !== UI17.SplitWidget.ShowMode.ONLY_MAIN;
 }
 function setSidebarOpenInSplitSetting(settingName, isVertical, open) {
-  const setting = Common15.Settings.Settings.instance().createSetting(settingName, {});
+  const setting = Common16.Settings.Settings.instance().createSetting(settingName, {});
   const state = setting.get() || {};
   const showMode = open ? UI17.SplitWidget.ShowMode.BOTH : UI17.SplitWidget.ShowMode.ONLY_MAIN;
   const currentOrientationState = (isVertical ? state.vertical : state.horizontal) || {};
@@ -15642,7 +15767,7 @@ function setSidebarOpenInSplitSetting(settingName, isVertical, open) {
   setting.set(state);
 }
 var DEFAULT_VIEW9 = (input, _output, target) => {
-  render13(html17`
+  render14(html18`
     <style>${sourcesPanel_css_default}</style>
     <devtools-split-view
         class="widget split-widget ${input.isVertical ? "" : "sources-split-view-vertical"}"
@@ -15662,24 +15787,24 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
           @change=${input.onNavigatorSplitChange}>
         <devtools-widget
             slot="sidebar"
-            ${widget5(UI17.Widget.WrapperWidget, {
+            ${widget7(UI17.Widget.WrapperWidget, {
     widget: input.isNavigatorSidebarOpen ? input.navigatorTabbedPane : null
   })}>
         </devtools-widget>
         <devtools-widget
             slot="main"
-            ${widget5(UI17.Widget.WrapperWidget, { widget: input.sourcesView })}>
+            ${widget7(UI17.Widget.WrapperWidget, { widget: input.sourcesView })}>
         </devtools-widget>
       </devtools-split-view>
-      ${!input.isTraceApp && input.sidebarPaneStackWidget ? input.isVertical ? html17`
+      ${!input.isTraceApp && input.sidebarPaneStackWidget ? input.isVertical ? html18`
         <devtools-widget
             slot="sidebar"
-            ${widget5(UI17.Widget.VBox, {
+            ${widget7(UI17.Widget.VBox, {
     minimumSize: new Geometry2.Size(minToolbarWidth, 25)
   })}>
           ${renderDebugPaneContent(input)}
         </devtools-widget>
-      ` : html17`
+      ` : html18`
         <devtools-split-view
             slot="sidebar"
             direction="column"
@@ -15688,25 +15813,25 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
             sidebar-initial-size="0.5">
           <devtools-widget
               slot="main"
-              ${widget5(UI17.Widget.VBox, {
+              ${widget7(UI17.Widget.VBox, {
     minimumSize: new Geometry2.Size(minToolbarWidth, 25)
   })}>
             ${renderDebugPaneContent(input)}
           </devtools-widget>
-          ${input.debuggerSidebarTabbedPane ? html17`
+          ${input.debuggerSidebarTabbedPane ? html18`
             <devtools-widget
                 slot="sidebar"
-                ${widget5(UI17.Widget.WrapperWidget, { widget: input.debuggerSidebarTabbedPane })}>
+                ${widget7(UI17.Widget.WrapperWidget, { widget: input.debuggerSidebarTabbedPane })}>
             </devtools-widget>
-          ` : nothing10}
+          ` : nothing11}
         </devtools-split-view>
-      ` : nothing10}
+      ` : nothing11}
     </devtools-split-view>
   `, target);
 };
 function renderDebugPaneContent(input) {
-  return html17`
-    ${input.isDebuggerSidebarOpen ? html17`
+  return html18`
+    ${input.isDebuggerSidebarOpen ? html18`
       <devtools-toolbar
           class="scripts-debug-toolbar"
           jslog=${VisualLogging12.toolbar("debug").track({
@@ -15715,13 +15840,13 @@ function renderDebugPaneContent(input) {
         <devtools-button ${bindToAction3("debugger.toggle-pause")}>
           <devtools-button
               .iconName=${"stop"}
-              .variant=${Buttons9.Button.Variant.TOOLBAR}
+              .variant=${Buttons10.Button.Variant.TOOLBAR}
               .title=${i18nString17(UIStrings18.terminateCurrentJavascriptCall)}
               @click=${input.onTerminateExecution}>
           </devtools-button>
           <devtools-button
               .iconName=${"play"}
-              .variant=${Buttons9.Button.Variant.TOOLBAR}
+              .variant=${Buttons10.Button.Variant.TOOLBAR}
               .title=${i18nString17(UIStrings18.resumeWithAllPausesBlockedForMs)}
               @click=${input.onLongResume}>
           </devtools-button>
@@ -15733,14 +15858,14 @@ function renderDebugPaneContent(input) {
         <div class="toolbar-divider"></div>
         <devtools-button ${bindToAction3("debugger.toggle-breakpoints-active")}></devtools-button>
       </devtools-toolbar>
-    ` : nothing10}
+    ` : nothing11}
     <devtools-widget
         class="flex-none"
-        ${widget5(UI17.Widget.WrapperWidget, { widget: input.debuggerPausedMessage })}>
+        ${widget7(UI17.Widget.WrapperWidget, { widget: input.debuggerPausedMessage })}>
     </devtools-widget>
     <devtools-widget
         class="flex-auto"
-        ${widget5(UI17.Widget.WrapperWidget, { widget: input.sidebarPaneStackWidget })}>
+        ${widget7(UI17.Widget.WrapperWidget, { widget: input.sidebarPaneStackWidget })}>
     </devtools-widget>
   `;
 }
@@ -15788,7 +15913,12 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     this.#stepOutAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.step-out");
     this.#stepAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.step");
     this.#toggleBreakpointsActiveAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.toggle-breakpoints-active");
-    this.#debuggerPausedMessage = new DebuggerPausedMessage(void 0, [SDK13.EventBreakpointsModel.EventBreakpointsManager.instance()]);
+    this.#debuggerPausedMessage = new DebuggerPausedMessage(void 0, [
+      SDK13.EventBreakpointsModel.EventBreakpointsManager.instance(),
+      Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
+      Breakpoints4.BreakpointManager.BreakpointManager.instance(),
+      Common16.Settings.Settings.instance()
+    ]);
     this.navigatorTabbedLocation = UI17.ViewManager.ViewManager.instance().createTabbedLocation(
       this.#revealNavigatorSidebar.bind(this),
       "navigator-view",
@@ -15823,11 +15953,11 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     this.threadsSidebarPane = null;
     this.watchSidebarPane = UI17.ViewManager.ViewManager.instance().view("sources.watch");
     this.#callstackPane = CallStackSidebarPane.instance();
-    Common15.Settings.Settings.instance().resolve(Settings10.MainSettings.sidebarPositionSettingDescriptor).addChangeListener(() => this.#updateSidebarPosition());
+    Common16.Settings.Settings.instance().resolve(Settings11.MainSettings.sidebarPositionSettingDescriptor).addChangeListener(() => this.#updateSidebarPosition());
     this.#updateSidebarPosition(true);
     void this.#updateDebuggerButtonsAndStatus();
     this.#setTarget(UI17.Context.Context.instance().flavor(SDK13.Target.Target));
-    Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor).addChangeListener(this.#breakpointsActiveStateChanged, this);
+    Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor).addChangeListener(this.#breakpointsActiveStateChanged, this);
     UI17.Context.Context.instance().addFlavorChangeListener(SDK13.Target.Target, this.#onCurrentTargetChanged, this);
     UI17.Context.Context.instance().addFlavorChangeListener(
       StackTrace3.StackTrace.DebuggableFrameFlavor,
@@ -16010,7 +16140,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     return true;
   }
   onResize() {
-    if (Common15.Settings.Settings.instance().resolve(Settings10.MainSettings.sidebarPositionSettingDescriptor).get() === "auto") {
+    if (Common16.Settings.Settings.instance().resolve(Settings11.MainSettings.sidebarPositionSettingDescriptor).get() === "auto") {
       this.element.window().requestAnimationFrame(() => this.#updateSidebarPosition());
     }
   }
@@ -16031,7 +16161,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   #debuggerPaused(event) {
     const debuggerModel = event.data;
     const details = debuggerModel.debuggerPausedDetails();
-    if (!this.#paused && Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
+    if (!this.#paused && Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
       void this.setAsCurrentPanel();
     }
     if (UI17.Context.Context.instance().flavor(SDK13.Target.Target) === debuggerModel.target()) {
@@ -16064,7 +16194,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     }
     window.focus();
     Host9.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-    const withOverlay = UI17.Context.Context.instance().flavor(SDK13.Target.Target)?.model(SDK13.OverlayModel.OverlayModel) && !Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
+    const withOverlay = UI17.Context.Context.instance().flavor(SDK13.Target.Target)?.model(SDK13.OverlayModel.OverlayModel) && !Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
     if (withOverlay && !this.#overlayLoggables) {
       this.#overlayLoggables = { debuggerPausedMessage: {}, resumeButton: {}, stepOverButton: {} };
       VisualLogging12.registerLoggable(
@@ -16180,17 +16310,17 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     contextMenu.appendItemsAtLocation("navigatorMenu");
     this.#addSettingMenuItem(
       contextMenu.viewSection(),
-      Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.navigatorGroupByFolderSettingDescriptor),
+      Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.navigatorGroupByFolderSettingDescriptor),
       i18nString17(UIStrings18.groupByFolder)
     );
     this.#addSettingMenuItem(
       contextMenu.viewSection(),
-      Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor),
+      Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.navigatorGroupByAuthoredSettingDescriptor),
       i18nString17(UIStrings18.groupByAuthored)
     );
     this.#addSettingMenuItem(
       contextMenu.viewSection(),
-      Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.navigatorJustMyCodeSettingDescriptor),
+      Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.navigatorJustMyCodeSettingDescriptor),
       i18nString17(UIStrings18.hideIgnoreListed)
     );
   }
@@ -16215,8 +16345,8 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     const details = currentDebuggerModel ? currentDebuggerModel.debuggerPausedDetails() : null;
     await this.#debuggerPausedMessage.render(
       details,
-      Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
-      Breakpoints3.BreakpointManager.BreakpointManager.instance()
+      Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
+      Breakpoints4.BreakpointManager.BreakpointManager.instance()
     );
     await this.#debuggerPausedMessage.updateComplete;
     if (!currentDebuggerModel) {
@@ -16274,7 +16404,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   #editorSelected(event) {
     const uiSourceCode = event.data;
     UI17.Context.Context.instance().setFlavor(Workspace23.UISourceCode.UISourceCode, uiSourceCode);
-    if (!this.#showSourcesViewInWrapper && Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.autoRevealInNavigatorSettingDescriptor).get()) {
+    if (!this.#showSourcesViewInWrapper && Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.autoRevealInNavigatorSettingDescriptor).get()) {
       void this.revealInNavigator(uiSourceCode, true);
     }
   }
@@ -16297,7 +16427,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     event.returnValue = true;
     void UI17.ViewManager.ViewManager.instance().showView("sources");
     for (const sourceCode of unsavedSourceCodes) {
-      void Common15.Revealer.reveal(sourceCode);
+      void Common16.Revealer.reveal(sourceCode);
     }
   };
   togglePause() {
@@ -16374,7 +16504,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     if (!executionContext) {
       return;
     }
-    const rawLocations = await Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
+    const rawLocations = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(
       uiLocation.uiSourceCode,
       uiLocation.lineNumber,
       0
@@ -16385,13 +16515,16 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     }
   }
   toggleBreakpointsActive() {
-    const setting = Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor);
+    const setting = Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor);
     setting.set(!setting.get());
   }
   #breakpointsActiveStateChanged() {
-    const active = Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor).get();
+    const active = Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.breakpointsActiveSettingDescriptor).get();
     this.#toggleBreakpointsActiveAction.setToggled(!active);
     this.#sourcesView.toggleBreakpointsActiveState(active);
+    if (this.#paused) {
+      void this.#updateDebuggerButtonsAndStatus();
+    }
   }
   appendApplicableItems(event, contextMenu, target) {
     if (target instanceof Workspace23.UISourceCode.UISourceCode) {
@@ -16417,7 +16550,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
       return;
     }
     const eventTarget = event.target;
-    if (!uiSourceCode.project().isServiceProject() && !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) && !(Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.navigatorJustMyCodeSettingDescriptor).get() && Workspace23.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
+    if (!uiSourceCode.project().isServiceProject() && !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) && !(Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.navigatorJustMyCodeSettingDescriptor).get() && Workspace23.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
       uiSourceCode
     ))) {
       contextMenu.revealSection().appendItem(
@@ -16459,7 +16592,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
         );
       }
     }
-    if (uiSourceCode.contentType().hasScripts() && Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
+    if (uiSourceCode.contentType().hasScripts() && Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
       this.#callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
     }
     function appendSubmenuPromptAction(submenu, action4, label, prompt, jslogContext) {
@@ -16478,7 +16611,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   }
   appendUILocationItems(contextMenu, uiLocation) {
     const uiSourceCode = uiLocation.uiSourceCode;
-    if (!Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
+    if (!Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
       return;
     }
     const contentType = uiSourceCode.contentType();
@@ -16496,7 +16629,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     }
   }
   #appendRemoteObjectItems(contextMenu, remoteObject) {
-    const indent = Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.textEditorIndentSettingDescriptor).get();
+    const indent = Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.textEditorIndentSettingDescriptor).get();
     const executionContext = UI17.Context.Context.instance().flavor(SDK13.RuntimeModel.ExecutionContext);
     function getObjectTitle() {
       if (remoteObject.type === "wasm") {
@@ -16599,7 +16732,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     if (!response?.location) {
       return;
     }
-    const uiLocation = await Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
+    const uiLocation = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
       response.location
     );
     if (uiLocation) {
@@ -16611,7 +16744,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     this.#setNavigatorSidebarOpen(true);
   }
   #revealDebuggerSidebar() {
-    if (!Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
+    if (!Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
       return;
     }
     void this.setAsCurrentPanel();
@@ -16619,7 +16752,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   }
   #updateSidebarPosition(force = false) {
     let vertically;
-    const position = Common15.Settings.Settings.instance().resolve(Settings10.MainSettings.sidebarPositionSettingDescriptor).get();
+    const position = Common16.Settings.Settings.instance().resolve(Settings11.MainSettings.sidebarPositionSettingDescriptor).get();
     if (position === "right") {
       vertically = false;
     } else if (position === "bottom") {
@@ -16729,7 +16862,7 @@ var UILocationRangeRevealer = class _UILocationRangeRevealer {
 };
 var DebuggerLocationRevealer = class {
   async reveal(rawLocation, omitFocus) {
-    const uiLocation = await Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
+    const uiLocation = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(
       rawLocation
     );
     if (uiLocation) {
@@ -16744,7 +16877,7 @@ var UISourceCodeRevealer = class {
 };
 var DebuggerPausedDetailsRevealer = class {
   async reveal(_object) {
-    if (Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
+    if (Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.autoFocusOnDebuggerPausedEnabledSettingDescriptor).get()) {
       return await SourcesPanel.instance().setAsCurrentPanel();
     }
   }
@@ -16757,7 +16890,7 @@ var RevealingActionDelegate = class {
     }
     switch (actionId) {
       case "debugger.toggle-pause": {
-        const actionHandledInPausedOverlay = context.flavor(UI17.ShortcutRegistry.ForwardedShortcut) && !Common15.Settings.Settings.instance().resolve(SDK13.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
+        const actionHandledInPausedOverlay = context.flavor(UI17.ShortcutRegistry.ForwardedShortcut) && !Common16.Settings.Settings.instance().resolve(SDK13.SDKSettings.disablePausedStateOverlaySettingDescriptor).get();
         if (actionHandledInPausedOverlay) {
           return true;
         }
@@ -16834,7 +16967,7 @@ var ActionDelegate4 = class {
         return true;
       }
       case "sources.toggle-word-wrap": {
-        const setting = Common15.Settings.Settings.instance().resolve(Settings10.SourcesSettings.sourcesWordWrapSettingDescriptor);
+        const setting = Common16.Settings.Settings.instance().resolve(Settings11.SourcesSettings.sourcesWordWrapSettingDescriptor);
         setting.set(!setting.get());
         return true;
       }
@@ -16843,9 +16976,9 @@ var ActionDelegate4 = class {
   }
 };
 var QUICK_SOURCE_DEFAULT_VIEW = (input, _output, target) => {
-  render13(html17`
+  render14(html18`
     <div class="sources-view-wrapper vbox flex-auto">
-      ${input.sourcesView ? widget5(UI17.Widget.WrapperWidget, { widget: input.sourcesView }) : nothing10}
+      ${input.sourcesView ? widget7(UI17.Widget.WrapperWidget, { widget: input.sourcesView }) : nothing11}
     </div>
   `, target, { container: { attributes: { jslog: `${VisualLogging12.panel("sources.quick").track({ resize: true })}` } } });
 };
@@ -16897,7 +17030,7 @@ var QuickSourceView = class _QuickSourceView extends UI17.Widget.VBox {
 };
 
 // ../../front_end/panels/sources/CallStackSidebarPane.ts
-var { classMap: classMap2, ifDefined: ifDefined3 } = Directives4;
+var { classMap: classMap3, ifDefined: ifDefined3 } = Directives5;
 var UIStrings19 = {
   /**
    * @description Text in the call stack sidebar of the Sources panel
@@ -16954,7 +17087,7 @@ var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 function getMissingDebugInfoTooltip(missingDebugInfo, functionName) {
   const { resources, details } = convertMissingDebugInfo(missingDebugInfo, functionName);
   const messages = resources.map(
-    (r) => i18nString18(UIStrings19.debugFileNotFound, { PH1: Common16.ParsedURL.ParsedURL.extractName(r.resourceUrl) })
+    (r) => i18nString18(UIStrings19.debugFileNotFound, { PH1: Common17.ParsedURL.ParsedURL.extractName(r.resourceUrl) })
   );
   return [details, ...messages].join("\n");
 }
@@ -16981,8 +17114,8 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
       input.onItemContextMenu(item2, contextMenu);
       void contextMenu.show();
     };
-    return html18`
-      <div class=${classMap2({
+    return html19`
+      <div class=${classMap3({
       "call-frame-item": true,
       "async-header": isAsyncHeader,
       "ignore-listed-call-frame": isIgnoreListed,
@@ -17009,19 +17142,19 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
           <div class="call-frame-title-text"
               title=${ifDefined3(!isAsyncHeader ? item2.title : void 0)}>${item2.title}</div>
         </div>
-        ${!isAsyncHeader ? html18`
+        ${!isAsyncHeader ? html19`
           <div class="call-frame-location"
               title=${item2.linkText}>${Platform14.StringUtilities.trimMiddle(item2.linkText, 30)}</div>
-        ` : nothing11}
+        ` : nothing12}
         <devtools-icon .name=${"large-arrow-right-filled"} class="selected-call-frame-icon small"></devtools-icon>
-        ${missingDebugInfoTooltip ? html18`
+        ${missingDebugInfoTooltip ? html19`
           <devtools-icon .name=${"warning-filled"} class="call-frame-warning-icon small"
               title=${missingDebugInfoTooltip}></devtools-icon>
-        ` : nothing11}
+        ` : nothing12}
       </div>
     `;
   };
-  render14(html18`
+  render15(html19`
     <style>${Input3.checkboxStyles}</style>
     <style>${callStackSidebarPane_css_default}</style>
     <div
@@ -17074,6 +17207,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
   #view;
   #items = [];
   #focusedItem = null;
+  #pendingAutoActivation = false;
   #showIgnoreListed = false;
   #showIgnoreListMessage = false;
   #ignoreListCheckboxChecked = false;
@@ -17133,7 +17267,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       this.requestUpdate();
     }
     if (details) {
-      const stackTrace = await Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromDebuggerPaused(details, details.debuggerModel.target());
+      const stackTrace = await Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createStackTraceFromDebuggerPaused(details, details.debuggerModel.target());
       if (flavorChangeId !== this.#flavorChangeId) {
         return;
       }
@@ -17150,6 +17284,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       this.#showIgnoreListMessage = false;
       this.#items = [];
       this.#focusedItem = null;
+      this.#pendingAutoActivation = false;
       UI18.Context.Context.instance().setFlavor(StackTrace5.StackTrace.DebuggableFrameFlavor, null);
       return;
     }
@@ -17179,13 +17314,19 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
     this.#updateIgnoreListState();
     if (this.maxAsyncStackChainDepth === defaultMaxAsyncStackChainDepth) {
       this.#focusedItem = this.#firstVisibleItem() ?? (this.#items[0] ?? null);
-      if (this.#focusedItem && (UI18.Context.Context.instance().flavor(QuickSourceView) || UI18.Context.Context.instance().flavor(SourcesPanel))) {
-        this.activateItem(this.#focusedItem);
+      const itemToActivate = this.#itemToAutoActivate();
+      if (itemToActivate && (UI18.Context.Context.instance().flavor(QuickSourceView) || UI18.Context.Context.instance().flavor(SourcesPanel))) {
+        this.activateItem(itemToActivate);
+      } else {
+        this.#pendingAutoActivation = Boolean(itemToActivate);
       }
     } else {
       const activeItem = this.activeCallFrameItem();
       this.#focusedItem = this.#isItemVisible(activeItem) ? activeItem : this.#firstVisibleItem() ?? (this.#items[0] ?? null);
     }
+  }
+  #itemToAutoActivate() {
+    return this.#items.find((item2) => Boolean(item2.frame) && this.#isItemVisible(item2)) ?? this.#items.find((item2) => Boolean(item2.frame)) ?? null;
   }
   #isItemVisible(item2) {
     if (!item2 || !this.#items.includes(item2)) {
@@ -17197,8 +17338,9 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
     return this.#items.find((item2) => this.#showIgnoreListed || !item2.isIgnoreListed) ?? null;
   }
   #updateIgnoreListState() {
-    const hasIgnoreListed = this.#items.some((item2) => item2.isIgnoreListed);
-    const allIgnoreListed = this.#items.length > 0 && this.#items.every((item2) => item2.isIgnoreListed);
+    const nonHeaderItems = this.#items.filter((item2) => !item2.isAsyncHeader);
+    const hasIgnoreListed = nonHeaderItems.some((item2) => item2.isIgnoreListed);
+    const allIgnoreListed = nonHeaderItems.length > 0 && nonHeaderItems.every((item2) => item2.isIgnoreListed);
     if (allIgnoreListed) {
       this.#showIgnoreListed = true;
       this.#showIgnoreListMessage = false;
@@ -17208,6 +17350,14 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
     }
   }
   performUpdate() {
+    if (this.#pendingAutoActivation && (UI18.Context.Context.instance().flavor(QuickSourceView) || UI18.Context.Context.instance().flavor(SourcesPanel))) {
+      const itemToActivate = this.#itemToAutoActivate();
+      if (itemToActivate) {
+        this.activateItem(itemToActivate);
+      } else {
+        this.#pendingAutoActivation = false;
+      }
+    }
     const viewInput = {
       showIgnoreListMessage: this.#showIgnoreListMessage,
       showIgnoreListedChecked: this.#ignoreListCheckboxChecked,
@@ -17314,11 +17464,12 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
     });
   }
   activateItem(item2) {
+    this.#pendingAutoActivation = false;
     const uiLocation = item2.uiLocation;
     if (!uiLocation) {
       return;
     }
-    if (this.#items.includes(item2)) {
+    if (this.#isItemVisible(item2)) {
       this.#focusedItem = item2;
     }
     const debuggerCallFrame = item2.frame;
@@ -17329,9 +17480,8 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
         StackTrace5.StackTrace.DebuggableFrameFlavor.for(debuggerCallFrame)
       );
     } else {
-      void Common16.Revealer.reveal(uiLocation);
+      void Common17.Revealer.reveal(uiLocation);
     }
-    this.requestUpdate();
   }
   activeCallFrameItem() {
     const frameFlavor = UI18.Context.Context.instance().flavor(StackTrace5.StackTrace.DebuggableFrameFlavor);
@@ -17360,6 +17510,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       const newItem = this.#items[i];
       if (newItem.frame) {
         this.activateItem(newItem);
+        this.requestUpdate();
         break;
       }
     }
@@ -17371,6 +17522,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       const newItem = this.#items[i];
       if (newItem.frame) {
         this.activateItem(newItem);
+        this.requestUpdate();
         break;
       }
     }
@@ -17431,6 +17583,7 @@ var Item = class _Item {
     const description = UI18.UIUtils.asyncFragmentLabel(stackTrace, fragment);
     const item2 = new _Item(description);
     item2.isAsyncHeader = true;
+    item2.isIgnoreListed = fragment.frames.length > 0 && fragment.frames.every((frame) => Boolean(frame.uiSourceCode?.isIgnoreListed()));
     return item2;
   }
   constructor(title) {
@@ -17606,12 +17759,12 @@ __export(FilteredUISourceCodeListProvider_exports, {
   FilteredUISourceCodeListProvider: () => FilteredUISourceCodeListProvider
 });
 import "../../ui/components/highlighting/highlighting.js";
-import * as Common17 from "../../core/common/common.js";
+import * as Common18 from "../../core/common/common.js";
 import * as i18n39 from "../../core/i18n/i18n.js";
 import * as Persistence13 from "../../models/persistence/persistence.js";
 import * as Workspace26 from "../../models/workspace/workspace.js";
 import * as QuickOpen3 from "../../ui/legacy/components/quick_open/quick_open.js";
-import { Directives as Directives5, html as html19, nothing as nothing12 } from "../../ui/lit/lit.js";
+import { Directives as Directives6, html as html20, nothing as nothing13 } from "../../ui/lit/lit.js";
 import * as SettingsUI4 from "../../ui/settings/settings.js";
 
 // gen/front_end/panels/sources/filteredUISourceCodeListProvider.css.js
@@ -17688,7 +17841,7 @@ var UIStrings20 = {
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
-var { classMap: classMap3 } = Directives5;
+var { classMap: classMap4 } = Directives6;
 var FILE_SYSTEM_SCORE_BONUS = 1e6;
 var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidget.Provider {
   queryLineNumberAndColumnNumber;
@@ -17738,7 +17891,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     if (this.uiSourceCodeIds.has(uiSourceCode.canonicalScriptId())) {
       return false;
     }
-    if (Common17.Settings.Settings.instance().resolve(SettingsUI4.SourcesSettings.navigatorJustMyCodeSettingDescriptor).get() && Workspace26.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
+    if (Common18.Settings.Settings.instance().resolve(SettingsUI4.SourcesSettings.navigatorJustMyCodeSettingDescriptor).get() && Workspace26.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(
       uiSourceCode
     )) {
       return false;
@@ -17778,7 +17931,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       this.scorer = new FilePathScoreFunction(query);
     }
     let multiplier = 10;
-    const isSnippet = Common17.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
+    const isSnippet = Common18.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
     const isUnboundLocalFile = uiSourceCode.project().type() === Workspace26.Workspace.projectTypes.FileSystem && !Persistence13.Persistence.PersistenceImpl.instance().binding(uiSourceCode) && !isSnippet;
     if (isUnboundLocalFile) {
       multiplier = 5;
@@ -17823,14 +17976,14 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       }
     }
     const isFileSystem = this.isFileSystemFile(uiSourceCode);
-    return html19`
+    return html20`
       <style>${filteredUISourceCodeListProvider_css_default}</style>
       <div class="filtered-ui-source-code-list-item
-                  ${classMap3({ "is-ignore-listed": isIgnoreListed })}">
+                  ${classMap4({ "is-ignore-listed": isIgnoreListed })}">
         <devtools-highlight
             type="markup"
             ranges=${titleRanges.map((r) => `${r.offset},${r.length}`).join(" ")}
-            class="filtered-ui-source-code-title ${classMap3({ "search-mode": Boolean(query) })}">
+            class="filtered-ui-source-code-title ${classMap4({ "search-mode": Boolean(query) })}">
           ${uiSourceCode.displayName() + (this.queryLineNumberAndColumnNumber || "")}
         </devtools-highlight>
         <devtools-highlight
@@ -17839,7 +17992,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
             class="filtered-ui-source-code-subtitle" title=${tooltipText}>
           ${this.renderSubtitleElement(fullDisplayName.substring(0, fileNameIndex + 1))}
         </devtools-highlight>
-        ${isFileSystem ? html19`<span class="tag">${i18nString19(UIStrings20.workspace)}</span>` : nothing12}
+        ${isFileSystem ? html20`<span class="tag">${i18nString19(UIStrings20.workspace)}</span>` : nothing13}
       </div>`;
   }
   renderSubtitleElement(text) {
@@ -17848,7 +18001,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     if (text.length > maxTextLength) {
       splitPosition = text.length - maxTextLength;
     }
-    return html19`
+    return html20`
       <div class="first-part">${text.substring(0, splitPosition)}</div>
       <div class="second-part">${text.substring(splitPosition)}</div>`;
   }
@@ -17927,7 +18080,7 @@ import "../../ui/kit/kit.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
 import * as QuickOpen4 from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI19 from "../../ui/legacy/legacy.js";
-import { html as html20 } from "../../ui/lit/lit.js";
+import { html as html21 } from "../../ui/lit/lit.js";
 var UIStrings21 = {
   /**
    * @description Text in the go to line quick open menu of the Sources panel.
@@ -17988,7 +18141,7 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     return this.#goToLineStrings.length;
   }
   renderItem(itemIndex, _query) {
-    return html20`
+    return html21`
       <devtools-icon name="colon"></devtools-icon>
       <div>
         <div>${this.#goToLineStrings[itemIndex]}</div>
@@ -18076,11 +18229,11 @@ __export(OpenFileQuickOpen_exports, {
   OpenFileQuickOpen: () => OpenFileQuickOpen
 });
 import "../../ui/kit/kit.js";
-import * as Common18 from "../../core/common/common.js";
+import * as Common19 from "../../core/common/common.js";
 import * as Host11 from "../../core/host/host.js";
 import { PanelUtils as PanelUtils2 } from "../utils/utils.js";
-import { Directives as Directives6, html as html21 } from "../../ui/lit/lit.js";
-var { styleMap: styleMap2 } = Directives6;
+import { Directives as Directives7, html as html22 } from "../../ui/lit/lit.js";
+var { styleMap: styleMap2 } = Directives7;
 var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   attach() {
     this.setDefaultScores(TabbedEditorContainer.defaultUISourceCodeScores());
@@ -18092,9 +18245,9 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
       return;
     }
     if (typeof lineNumber === "number") {
-      void Common18.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+      void Common19.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
     } else {
-      void Common18.Revealer.reveal(uiSourceCode);
+      void Common19.Revealer.reveal(uiSourceCode);
     }
   }
   filterProject(project) {
@@ -18102,7 +18255,7 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   }
   renderItem(itemIndex, query) {
     const { iconName, color } = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
-    return html21`
+    return html22`
       <devtools-icon class="large" name=${iconName} style=${styleMap2({ color })}></devtools-icon>
       ${super.renderItem(itemIndex, query)}`;
   }
@@ -18120,7 +18273,7 @@ import * as i18n43 from "../../core/i18n/i18n.js";
 import * as CodeMirror7 from "../../third_party/codemirror.next/codemirror.next.js";
 import * as QuickOpen5 from "../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI20 from "../../ui/legacy/legacy.js";
-import { html as html22, nothing as nothing13 } from "../../ui/lit/lit.js";
+import { html as html23, nothing as nothing14 } from "../../ui/lit/lit.js";
 var UIStrings22 = {
   /**
    * @description Text in Go to line Quick Open of the Sources panel.
@@ -18437,10 +18590,10 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
     }
     const title = item2.title + (item2.subtitle ? item2.subtitle : "");
     const highlightRanges = QuickOpen5.FilteredListWidget.FilteredListWidget.getHighlightRanges(title, query, true);
-    return html22`
+    return html23`
       <devtools-icon name="deployed"></devtools-icon>
       <div><devtools-highlight type="markup" ranges=${highlightRanges}>${title}</devtools-highlight></div>
-      ${location ? html22`<span class="tag">${location}</span>` : nothing13}`;
+      ${location ? html23`<span class="tag">${location}</span>` : nothing14}`;
   }
   selectItem(itemIndex, _promptValue) {
     if (itemIndex === null) {
@@ -18473,12 +18626,12 @@ var PersistenceActions_exports = {};
 __export(PersistenceActions_exports, {
   ContextMenuProvider: () => ContextMenuProvider
 });
-import * as Common19 from "../../core/common/common.js";
+import * as Common20 from "../../core/common/common.js";
 import * as Host12 from "../../core/host/host.js";
 import * as i18n45 from "../../core/i18n/i18n.js";
 import * as SDK14 from "../../core/sdk/sdk.js";
 import * as TextUtils12 from "../../core/text_utils/text_utils.js";
-import * as Bindings11 from "../../models/bindings/bindings.js";
+import * as Bindings12 from "../../models/bindings/bindings.js";
 import * as Persistence15 from "../../models/persistence/persistence.js";
 import * as Workspace28 from "../../models/workspace/workspace.js";
 import * as UI21 from "../../ui/legacy/legacy.js";
@@ -18537,7 +18690,7 @@ var ContextMenuProvider = class {
       const maybeScript = getScript(contentProvider);
       if (maybeScript?.isWasm()) {
         try {
-          const base64 = await maybeScript.getWasmBytecode().then(Common19.Base64.encode);
+          const base64 = await maybeScript.getWasmBytecode().then(Common20.Base64.encode);
           contentData = new TextUtils12.ContentData.ContentData(
             base64,
             /* isBase64=*/
@@ -18546,7 +18699,7 @@ var ContextMenuProvider = class {
           );
         } catch (e) {
           console.error(`Unable to convert WASM byte code for ${url} to base64. Not saving to disk`, e.stack);
-          Common19.Console.Console.instance().error(
+          Common20.Console.Console.instance().error(
             i18nString22(UIStrings23.saveWasmFailed),
             /* show=*/
             false
@@ -18557,7 +18710,7 @@ var ContextMenuProvider = class {
         const contentDataOrError = await contentProvider.requestContentData();
         if (TextUtils12.ContentData.ContentData.isError(contentDataOrError)) {
           console.error(`Failed to retrieve content for ${url}: ${contentDataOrError}`);
-          Common19.Console.Console.instance().error(
+          Common20.Console.Console.instance().error(
             i18nString22(UIStrings23.saveFailed),
             /* show=*/
             false
@@ -18594,8 +18747,8 @@ var ContextMenuProvider = class {
     const fileSystemUISourceCode = binding ? binding.fileSystem : contentProvider instanceof Workspace28.UISourceCode.UISourceCode && contentProvider.project().type() === Workspace28.Workspace.projectTypes.FileSystem ? contentProvider : uiSourceCode;
     if (fileSystemUISourceCode && fileSystemUISourceCode.project().type() === Workspace28.Workspace.projectTypes.FileSystem) {
       const fileURL = fileSystemUISourceCode.contentURL();
-      if (Common19.ParsedURL.schemeIs(fileURL, "file:")) {
-        const path = Common19.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host12.Platform.isWin());
+      if (Common20.ParsedURL.schemeIs(fileURL, "file:")) {
+        const path = Common20.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host12.Platform.isWin());
         contextMenu.revealSection().appendItem(
           i18nString22(UIStrings23.openInContainingFolder),
           () => Host12.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path),
@@ -18637,7 +18790,7 @@ var ContextMenuProvider = class {
     const networkPersistenceManager = Persistence15.NetworkPersistenceManager.NetworkPersistenceManager.instance();
     const isSuccess = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
     if (isSuccess) {
-      await Common19.Revealer.reveal(uiSourceCode);
+      await Common20.Revealer.reveal(uiSourceCode);
     }
     if (contentProvider instanceof SDK14.NetworkRequest.NetworkRequest) {
       Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverrideContentFromNetworkContextMenu);
@@ -18661,9 +18814,9 @@ var ContextMenuProvider = class {
   async #redirectOverrideToDeployedUiSourceCode(deployedUiSourceCode, originalUiSourceCode) {
     Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverrideContentContextMenuSourceMappedWarning);
     const deployedUrl = deployedUiSourceCode.url();
-    const deployedName = Bindings11.ResourceUtils.displayNameForURL(deployedUrl);
+    const deployedName = Bindings12.ResourceUtils.displayNameForURL(deployedUrl);
     const originalUrl = originalUiSourceCode.url();
-    const originalName = Bindings11.ResourceUtils.displayNameForURL(originalUrl);
+    const originalName = Bindings12.ResourceUtils.displayNameForURL(originalUrl);
     const shouldJumpToDeployedFile = await UI21.UIUtils.ConfirmDialog.show(
       i18nString22(UIStrings23.overrideSourceMappedFileExplanation, { PH1: originalName }),
       i18nString22(UIStrings23.overrideSourceMappedFileWarning, { PH1: deployedName }),
@@ -18676,19 +18829,19 @@ var ContextMenuProvider = class {
     }
   }
   #getDeployedUiSourceCode(uiSourceCode) {
-    const debuggerWorkspaceBinding = Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const debuggerWorkspaceBinding = Bindings12.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     for (const deployedScript of debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)) {
       const deployedUiSourceCode2 = debuggerWorkspaceBinding.uiSourceCodeForScript(deployedScript);
       if (deployedUiSourceCode2) {
         return deployedUiSourceCode2;
       }
     }
-    const [deployedStylesUrl] = Bindings11.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(uiSourceCode);
+    const [deployedStylesUrl] = Bindings12.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(uiSourceCode);
     if (!deployedStylesUrl) {
       return null;
     }
     const deployedUiSourceCode = Workspace28.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(deployedStylesUrl) || Workspace28.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(
-      Common19.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl)
+      Common20.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl)
     );
     return deployedUiSourceCode;
   }
@@ -18697,15 +18850,15 @@ function getScript(contentProvider) {
   if (!(contentProvider instanceof Workspace28.UISourceCode.UISourceCode)) {
     return null;
   }
-  const target = Bindings11.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider);
+  const target = Bindings12.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider);
   const model = target?.model(SDK14.DebuggerModel.DebuggerModel);
   if (model) {
-    const resourceFile = Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(contentProvider, model);
+    const resourceFile = Bindings12.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(contentProvider, model);
     if (resourceFile?.script) {
       return resourceFile.script;
     }
   }
-  return Bindings11.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(
+  return Bindings12.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(
     contentProvider
   )[0] ?? null;
 }
@@ -18722,7 +18875,7 @@ import * as StackTrace7 from "../../models/stack_trace/stack_trace.js";
 import * as ObjectUI3 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "../../ui/legacy/components/utils/utils.js";
 import * as UI22 from "../../ui/legacy/legacy.js";
-import { html as html23, nothing as nothing14, render as render15 } from "../../ui/lit/lit.js";
+import { html as html24, nothing as nothing15, render as render16 } from "../../ui/lit/lit.js";
 import * as VisualLogging14 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
@@ -18744,7 +18897,7 @@ var scopeChainSidebarPane_css_default = `/*
 
 .scope-chain-sidebar-pane-section-icon {
   flex: none;
-  margin-right: 5px;
+  margin-right: var(--sys-size-3);
 }
 
 .scope-chain-sidebar-pane-section-subtitle {
@@ -18801,11 +18954,11 @@ var DEFAULT_VIEW11 = (input, output, target) => {
   const createScopeSection = ({ scope, objectTree }) => {
     let emptyPlaceholder;
     if (scope.type() === Debugger.ScopeType.Local || scope.type() === Debugger.ScopeType.Closure) {
-      emptyPlaceholder = html23`${i18nString23(UIStrings24.noVariables)}`;
+      emptyPlaceholder = html24`${i18nString23(UIStrings24.noVariables)}`;
     }
     const icon = scope.icon();
     const { title, subtitle } = scopeTitle(scope);
-    return html23`
+    return html24`
           <li role="treeitem"
               class="scope-chain-sidebar-pane-section"
               aria-label=${title}
@@ -18822,26 +18975,26 @@ var DEFAULT_VIEW11 = (input, output, target) => {
                  @click=${() => {
       input.onToggle(objectTree, !objectTree.expanded);
     }}>
-              ${icon ? html23`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing14}
+              ${icon ? html24`<img class="scope-chain-sidebar-pane-section-icon" src=${icon}>` : nothing15}
               <div class="scope-chain-sidebar-pane-section-title">${title}</div>
               <div class="scope-chain-sidebar-pane-section-subtitle">${subtitle}</div>
             </div>
 
-            ${objectTree.expanded ? ObjectUI3.ObjectPropertiesSection.renderObjectTree(objectTree, input.linkifier, emptyPlaceholder) : html23`<ul role="group"></ul>`}
+            ${objectTree.expanded ? ObjectUI3.ObjectPropertiesSection.renderObjectTree(objectTree, input.linkifier, emptyPlaceholder) : html24`<ul role="group"></ul>`}
           </li>`;
   };
-  render15(
+  render16(
     // clang-format off
-    html23`
+    html24`
     <style>${scopeChainSidebarPane_css_default}</style>
-    ${input.scopeChain ? html23`
-      <devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus .template=${html23`<ul role=tree class="source-code object-properties-section">
+    ${input.scopeChain ? html24`
+      <devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus .template=${html24`<ul role=tree class="source-code object-properties-section">
           <style>${ObjectUI3.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI3.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
           <style>${scopeChainSidebarPane_css_default}</style>
-          ${input.scopeChain?.map((item2) => createScopeSection(item2)) ?? nothing14}
+          ${input.scopeChain?.map((item2) => createScopeSection(item2)) ?? nothing15}
         </ul>`}>
-      </devtools-tree>` : html23`
+      </devtools-tree>` : html24`
       <div class=gray-info-message tabindex=-1>${input.isPaused ? i18nString23(UIStrings24.loading) : i18nString23(UIStrings24.notPaused)}</div>`}
     `,
     // clang-format on
@@ -19016,21 +19169,21 @@ __export(WatchExpressionsSidebarPane_exports, {
   WatchExpressionPromptWidget: () => WatchExpressionPromptWidget,
   WatchExpressionsSidebarPane: () => WatchExpressionsSidebarPane
 });
-import * as Common20 from "../../core/common/common.js";
+import * as Common21 from "../../core/common/common.js";
 import * as Host13 from "../../core/host/host.js";
 import * as i18n49 from "../../core/i18n/i18n.js";
 import * as Platform16 from "../../core/platform/platform.js";
 import * as SDK15 from "../../core/sdk/sdk.js";
-import * as Bindings12 from "../../models/bindings/bindings.js";
+import * as Bindings13 from "../../models/bindings/bindings.js";
 import * as Formatter3 from "../../models/formatter/formatter.js";
 import * as SourceMapScopes3 from "../../models/source_map_scopes/source_map_scopes.js";
 import * as StackTrace9 from "../../models/stack_trace/stack_trace.js";
-import * as Buttons10 from "../../ui/components/buttons/buttons.js";
+import * as Buttons11 from "../../ui/components/buttons/buttons.js";
 import * as TextEditor6 from "../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI4 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components4 from "../../ui/legacy/components/utils/utils.js";
 import * as UI23 from "../../ui/legacy/legacy.js";
-import { Directives as Directives7, html as html24, nothing as nothing15, render as render16 } from "../../ui/lit/lit.js";
+import { Directives as Directives8, html as html25, nothing as nothing16, render as render17 } from "../../ui/lit/lit.js";
 import * as VisualLogging15 from "../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
@@ -19125,16 +19278,6 @@ li.watch-expression-tree-item > span.tree-element-title {
   padding-left: var(--sys-size-3);
   text-overflow: ellipsis;
   flex-shrink: 1;
-}
-
-.watch-expression .text-prompt {
-  text-overflow: clip;
-  overflow: hidden;
-  white-space: nowrap;
-  padding-left: var(--sys-size-3);
-  min-height: 18px;
-  line-height: 18px;
-  user-select: text;
 }
 
 .watch-expression-text-prompt-proxy {
@@ -19243,12 +19386,12 @@ var UIStrings25 = {
 var str_25 = i18n49.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings25);
 var i18nString24 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
 var watchExpressionsSidebarPaneInstance;
-var { classMap: classMap4, ifDefined: ifDefined4 } = Directives7;
-var { widget: widget6 } = UI23.Widget;
+var { classMap: classMap5, ifDefined: ifDefined4 } = Directives8;
+var { widget: widget8 } = UI23.Widget;
 var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
   const e = input.expression;
   if (!e) {
-    render16(nothing15, target);
+    render17(nothing16, target);
     return;
   }
   const stopPropagationIfEditing = (event) => {
@@ -19262,10 +19405,10 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
     false,
     e.expression ?? void 0
   );
-  render16(
-    html24`
+  render17(
+    html25`
         <devtools-prompt
-            class=${classMap4({
+            class=${classMap5({
       monospace: true,
       "watch-expression": true,
       "watch-expression-text-prompt-proxy": Boolean(e.editing)
@@ -19279,22 +19422,22 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
             @mousedown=${stopPropagationIfEditing}
             @click=${stopPropagationIfEditing}
             @dblclick=${stopPropagationIfEditing}>
-          <div class=${classMap4({
+          <div class=${classMap5({
       "watch-expression-header": true,
       "watch-expression-object-header": !e.exceptionDetails && e.result !== void 0 && e.result.hasChildren && !e.result.object.customPreview()
     })}
                @contextmenu=${input.onContextMenu}
                @dblclick=${input.onStartEditing}>
-            <div class=${classMap4({
+            <div class=${classMap5({
       "watch-expression-title": true,
       "tree-element-title": true,
       dimmed: Boolean(e.exceptionDetails) && !e.result
     })}>
               <devtools-button
                 .data=${{
-      variant: Buttons10.Button.Variant.ICON,
+      variant: Buttons11.Button.Variant.ICON,
       iconName: "bin",
-      size: Buttons10.Button.Size.SMALL,
+      size: Buttons11.Button.Size.SMALL,
       jslogContext: "delete-watch-expression"
     }}
                 class=watch-expression-delete-button
@@ -19302,7 +19445,7 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
                 @click=${input.onDelete}></devtools-button>
               ${renderNameElement()}
               <span class=watch-expressions-separator>: </span>
-              ${e.exceptionDetails || !e.result ? html24`<span
+              ${e.exceptionDetails || !e.result ? html25`<span
                     class="watch-expression-error value"
                     title=${ifDefined4(e.exceptionDetails?.exception?.description)}
                     >${i18nString24(UIStrings25.notAvailable)}</span>` : ObjectUI4.ObjectPropertiesSection.renderPropertyValue(
@@ -19318,11 +19461,11 @@ var DEFAULT_PROMPT_VIEW = (input, _output, target) => {
     )}
             </div>
           </div>
-          ${e.editing ? html24`
+          ${e.editing ? html25`
             <datalist id=${input.completionsId}>
-              ${input.completions.map((c) => html24`<option>${c}</option>`)}
+              ${input.completions.map((c) => html25`<option>${c}</option>`)}
             </datalist>
-          ` : nothing15}
+          ` : nothing16}
         </devtools-prompt>
       `,
     target
@@ -19464,13 +19607,13 @@ var DEFAULT_VIEW12 = (input, output, target) => {
   };
   const renderTreeElement = (e) => {
     const completionsId = `watch-expression-completions-${input.watchExpressions.indexOf(e)}`;
-    return html24`<li
-          class=${classMap4({ "watch-expression-tree-item": true, "watch-expression-editing": e.editing })}
+    return html25`<li
+          class=${classMap5({ "watch-expression-tree-item": true, "watch-expression-editing": e.editing })}
           ?open=${Boolean(e.result?.expanded)}
           @keydown=${onExpressionKeydown.bind(void 0, e)}
           @expand=${(event) => input.onExpand(e, event.detail.expanded, event.detail.recursively)}
           role=treeitem>
-            <devtools-widget ${widget6(WatchExpressionPromptWidget, {
+            <devtools-widget ${widget8(WatchExpressionPromptWidget, {
       expression: e,
       linkifier: input.linkifier,
       completionsId,
@@ -19480,16 +19623,16 @@ var DEFAULT_VIEW12 = (input, output, target) => {
       onDelete: () => input.onDelete(e),
       onContextMenu: (event) => onContextMenu(e, event)
     })}></devtools-widget>
-        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing15 : ObjectUI4.ObjectPropertiesSection.renderObjectTree(e.result, input.linkifier)}
+        ${e.editing || !e.result || e.exceptionDetails || !e.result.hasChildren || e.result.object.customPreview() ? nothing16 : ObjectUI4.ObjectPropertiesSection.renderObjectTree(e.result, input.linkifier)}
       </li>`;
   };
-  render16(
+  render17(
     // clang-format off
-    html24`
+    html25`
       <style>${watchExpressionsSidebarPane_css_default}</style>
-      ${input.watchExpressions.length === 0 ? html24`<div class=gray-info-message tabindex=-1 >
+      ${input.watchExpressions.length === 0 ? html25`<div class=gray-info-message tabindex=-1 >
         ${i18nString24(UIStrings25.noWatchExpressions)}
-        </div>` : html24`<devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus toggle-on-click .template=${html24`
+        </div>` : html25`<devtools-tree autofocus hide-overflow show-selection-on-keyboard-focus toggle-on-click .template=${html25`
         <ul role=tree class="source-code object-properties-section">
           <style>${ObjectUI4.ObjectPropertiesSection.objectValueStyles}</style>
           <style>${ObjectUI4.ObjectPropertiesSection.objectPropertiesSectionStyles}</style>
@@ -19520,7 +19663,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   constructor() {
     super({ useShadowDom: true });
     this.#watchExpressions = [];
-    this.#watchExpressionsSetting = Common20.Settings.Settings.instance().createLocalSetting("watch-expressions", []);
+    this.#watchExpressionsSetting = Common21.Settings.Settings.instance().createLocalSetting("watch-expressions", []);
     UI23.Context.Context.instance().addFlavorChangeListener(
       SDK15.RuntimeModel.ExecutionContext,
       this.#refreshExpressions,
@@ -19545,19 +19688,19 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     return this.#watchExpressions;
   }
   toolbarItems() {
-    return html24`
+    return html25`
       <devtools-button .data=${{
-      variant: Buttons10.Button.Variant.TOOLBAR,
+      variant: Buttons11.Button.Variant.TOOLBAR,
       iconName: "plus",
-      size: Buttons10.Button.Size.SMALL,
+      size: Buttons11.Button.Size.SMALL,
       title: i18nString24(UIStrings25.addWatchExpression),
       jslogContext: "add-watch-expression"
     }}
         @click=${(e) => this.addButtonClicked(e)}></devtools-button>
       <devtools-button .data=${{
-      variant: Buttons10.Button.Variant.TOOLBAR,
+      variant: Buttons11.Button.Variant.TOOLBAR,
       iconName: "refresh",
-      size: Buttons10.Button.Size.SMALL,
+      size: Buttons11.Button.Size.SMALL,
       title: i18nString24(UIStrings25.refreshWatchExpressions),
       jslogContext: "refresh-watch-expressions"
     }}
@@ -19739,7 +19882,7 @@ var WatchExpression = class _WatchExpression {
     if (callFrame?.script.isJavaScript()) {
       const nameMap = await SourceMapScopes3.NamesResolver.allVariablesInCallFrame(
         callFrame,
-        Bindings12.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
+        Bindings13.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
       );
       try {
         expression = await Formatter3.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, nameMap);

@@ -617,7 +617,7 @@ var eventListenersView_css_default = `/*
 
 .tree-outline-disclosure {
   padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
-  padding-right: 3px;
+  padding-right: var(--sys-size-2);
 }
 
 .tree-outline-disclosure li.parent::before {
@@ -903,10 +903,12 @@ var DEFAULT_VIEW = (input, output, target) => {
       </ul>
     `}></devtools-tree>`}`,
     // clang-format on
-    target
+    target,
+    { container: { attributes: { jslog: input.jslog } } }
   );
 };
 var EventListenersView = class _EventListenersView extends UI.Widget.VBox {
+  jslog;
   #objects = [];
   #filter;
   #view;
@@ -922,9 +924,12 @@ var EventListenersView = class _EventListenersView extends UI.Widget.VBox {
     if (this.#objects === val) {
       return;
     }
+    this.setObjects(val);
+    this.requestUpdate();
+  }
+  setObjects(val) {
     this.#listeners = void 0;
     this.#objects = val;
-    this.requestUpdate();
   }
   get filter() {
     return this.#filter;
@@ -948,6 +953,7 @@ var EventListenersView = class _EventListenersView extends UI.Widget.VBox {
     const input = {
       listeners: listeners ?? /* @__PURE__ */ new Map(),
       filter: this.#filter,
+      jslog: this.jslog,
       togglePassiveListener: (listener) => {
         void listener.togglePassive().then(() => {
           this.#listeners = void 0;

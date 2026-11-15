@@ -38,10 +38,10 @@ var linearMemoryHighlightChipList_css_default = `/*
 .highlight-chip {
   background: var(--sys-color-cdt-base-container);
   border: var(--sys-size-1) solid var(--sys-color-divider);
-  height: 18px;
+  height: calc(var(--sys-size-8) + 2 * var(--sys-size-1)); /* --sys-size-8 micro button height + top/bottom --sys-size-1 borders */
   border-radius: var(--sys-shape-corner-extra-small);
   flex: 0 0 auto;
-  max-width: 250px;
+  max-width: var(--sys-size-29);
   position: relative;
   padding: 0 var(--sys-size-4);
 }
@@ -673,11 +673,11 @@ var linearMemoryValueInterpreter_css_default = `/*
     border: var(--sys-size-1) solid var(--sys-color-divider);
     background-color: var(--sys-color-cdt-base-container);
     overflow: hidden;
-    width: 400px;
+    width: var(--sys-size-31);
   }
 
   .settings-toolbar {
-    min-height: 26px;
+    min-height: var(--sys-size-11);
     display: flex;
     flex-wrap: nowrap;
     justify-content: space-between;
@@ -1199,7 +1199,7 @@ var valueInterpreterSettings_css_default = `/*
     display: flex;
     flex-wrap: wrap;
     margin: 0 var(--sys-size-6) var(--sys-size-6);
-    gap: 15px 45px;
+    gap: var(--sys-size-8) var(--sys-size-16);
   }
 
   .value-types-selection {
@@ -1331,7 +1331,6 @@ function renderEndiannessSetting(onEndiannessChanged, currentEndiannes) {
 var DEFAULT_VIEW5 = (input, _output, target) => {
   render5(
     html5`
-    <style>${UI5.inspectorCommonStyles}</style>
     <style>${linearMemoryValueInterpreter_css_default}</style>
     <div class="value-interpreter">
       <div class="settings-toolbar">
@@ -1516,7 +1515,7 @@ var linearMemoryViewer_css_default = `/*
   .cell {
     text-align: center;
     border: var(--sys-size-1) solid transparent;
-    border-radius: 2px;
+    border-radius: var(--sys-shape-corner-extra-small);
 
     &.focused-area {
       background-color: var(--sys-color-tonal-container);
@@ -1531,7 +1530,7 @@ var linearMemoryViewer_css_default = `/*
   }
 
   .byte-cell {
-    min-width: 21px;
+    min-width: var(--sys-size-9);
     color: var(--sys-color-on-surface);
   }
 

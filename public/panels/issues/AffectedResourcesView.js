@@ -8,11 +8,12 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as RequestLinkIcon from '../../ui/components/request_link_icon/request_link_icon.js';
 import { Icon } from '../../ui/kit/kit.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { render } from '../../ui/lit/lit.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
 const UIStrings = {
@@ -44,6 +45,37 @@ export const extractShortPath = (path) => {
     // if path ends with '/', 2nd regex returns everything between the last two '/'
     return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
 };
+export function renderFrameCell(frame) {
+    if (!frame) {
+        return html `<td></td>`;
+    }
+    // clang-format off
+    return html `
+    <td class="affected-resource-cell"
+        @mouseenter=${frame.onMouseEnter}
+        @mouseleave=${frame.onMouseLeave}>
+      ${frame.hasFrame ? html `
+        <devtools-button
+          class="elements-panel"
+          .data=${{
+        variant: "icon" /* Buttons.Button.Variant.ICON */,
+        iconName: 'code-circle',
+        // On devtools-button (ui/components/buttons/button.css), Size.MICRO sets both
+        // --button-width/--button-height and --icon-size to --sys-size-8 (16x16),
+        // matching the previous 16x16 medium icon size.
+        size: "MICRO" /* Buttons.Button.Size.MICRO */,
+        title: i18nString(UIStrings.clickToRevealTheFramesDomNodeIn),
+        accessibleLabel: i18nString(UIStrings.clickToRevealTheFramesDomNodeIn),
+        jslogContext: 'elements-panel',
+    }}
+          @click=${frame.onReveal}>
+        </devtools-button>
+      ` : nothing}
+      ${frame.url}
+    </td>
+  `;
+    // clang-format on
+}
 /**
  * The base class for all affected resource views. It provides basic scaffolding
  * as well as machinery for resolving request and frame ids to SDK objects.
@@ -139,6 +171,33 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
         if (frameWasUnresolved) {
             this.update();
         }
+    }
+    createFrameCellData(frameId, issueCategory) {
+        const frame = this.#resolveFrameId(frameId);
+        const url = frame && (frame.unreachableUrl() || frame.url) || i18nString(UIStrings.unknown);
+        return {
+            url,
+            hasFrame: Boolean(frame),
+            onReveal: async () => {
+                Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.ELEMENT */);
+                const currentFrame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+                if (currentFrame) {
+                    const ownerNode = await currentFrame.getOwnerDOMNodeOrDocument();
+                    if (ownerNode) {
+                        void Common.Revealer.reveal(ownerNode);
+                    }
+                }
+            },
+            onMouseEnter: () => {
+                const currentFrame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
+                if (currentFrame) {
+                    void currentFrame.highlight();
+                }
+            },
+            onMouseLeave: () => {
+                SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
+            },
+        };
     }
     createFrameCell(frameId, issueCategory) {
         const frame = this.#resolveFrameId(frameId);

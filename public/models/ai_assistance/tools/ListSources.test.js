@@ -55,9 +55,10 @@ describe('ListSourcesTool', () => {
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
-        assert.lengthOf(response.result.files, 1);
-        assert.strictEqual(response.result.files[0].name, 'example.com/script1.js');
-        assert.strictEqual(response.result.files[0].id, 1);
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/script1.js',
+        ].join('\n'));
     });
     it('filters out ignore-listed files', async () => {
         const { uiSourceCodes } = createContentProviderUISourceCodes({
@@ -85,8 +86,10 @@ describe('ListSourcesTool', () => {
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
-        assert.lengthOf(response.result.files, 1);
-        assert.strictEqual(response.result.files[0].name, 'example.com/script1.js');
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/script1.js',
+        ].join('\n'));
     });
     it('filters out files with opaque origins', async () => {
         createContentProviderUISourceCodes({
@@ -113,8 +116,10 @@ describe('ListSourcesTool', () => {
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
-        assert.lengthOf(response.result.files, 1);
-        assert.strictEqual(response.result.files[0].name, 'example.com/script1.js');
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/script1.js',
+        ].join('\n'));
     });
     it('prioritizes source-mapped files over non-source-mapped ones with identical URLs', async () => {
         createContentProviderUISourceCodes({
@@ -149,8 +154,10 @@ describe('ListSourcesTool', () => {
         };
         const response = await tool.handler({}, context);
         assertIsResult(response);
-        assert.lengthOf(response.result.files, 1);
-        assert.strictEqual(response.result.files[0].name, 'example.com/script.js');
+        assert.strictEqual(response.result, [
+            'id;name',
+            '2;/script.js',
+        ].join('\n'));
         const sourceCodes = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes({ status: 'ESTABLISHED_ORIGIN', origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com') }, universe.workspace);
         assert.lengthOf(sourceCodes, 1);
         assert.isTrue(sourceCodes[0].contentType().isFromSourceMap());
@@ -175,6 +182,117 @@ describe('ListSourcesTool', () => {
         };
         const response = await tool.handler({}, context);
         assertIsError(response, 'Cross-origin access blocked due to navigation.');
+    });
+    it('returns a message when no matching files are found', async () => {
+        const context = {
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, 'No source files found for the current origin.');
+    });
+    it('strips host from same-origin HTTP(S) files and handles root /(index)', async () => {
+        createContentProviderUISourceCodes({
+            items: [
+                {
+                    url: urlString `https://example.com/`,
+                    mimeType: 'text/html',
+                    resourceType: Common.ResourceType.resourceTypes.Document,
+                },
+            ],
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        const context = {
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/(index)',
+        ].join('\n'));
+    });
+    it('handles non-default port and mixed-case URL host correctly', async () => {
+        createContentProviderUISourceCodes({
+            items: [
+                {
+                    url: urlString `https://ExAmPlE.cOm:8080/script.js`,
+                    mimeType: 'application/javascript',
+                    resourceType: Common.ResourceType.resourceTypes.Script,
+                },
+            ],
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        const context = {
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com:8080'),
+            }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/script.js',
+        ].join('\n'));
+    });
+    it('does not strip host for local file:// origin', async () => {
+        createContentProviderUISourceCodes({
+            items: [
+                {
+                    url: urlString `file:///var/www/html/script.js`,
+                    mimeType: 'application/javascript',
+                    resourceType: Common.ResourceType.resourceTypes.Script,
+                },
+            ],
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        const context = {
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('file:///var/www/html/script.js'),
+            }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/var/www/html/script.js',
+        ].join('\n'));
+    });
+    it('escapes newlines and carriage returns in filenames', async () => {
+        createContentProviderUISourceCodes({
+            items: [
+                {
+                    url: urlString `https://example.com/bad%0D%0A2;injected.js`,
+                    mimeType: 'application/javascript',
+                    resourceType: Common.ResourceType.resourceTypes.Script,
+                },
+            ],
+            projectType: Workspace.Workspace.projectTypes.Network,
+            universe,
+        });
+        const context = {
+            getOriginLock: () => ({
+                status: 'ESTABLISHED_ORIGIN',
+                origin: SDK.SecurityOrigin.SecurityOrigin.create('https://example.com'),
+            }),
+        };
+        const response = await tool.handler({}, context);
+        assertIsResult(response);
+        assert.strictEqual(response.result, [
+            'id;name',
+            '1;/bad%0D%0A2;injected.js',
+        ].join('\n'));
     });
     describe('getUISourceCodes and getSourceById', () => {
         it('filters sources by established origin in getUISourceCodes', () => {
@@ -337,6 +455,46 @@ describe('ListSourcesTool', () => {
             const filtered = AiAssistance.ListSources.ListSourcesTool.getUISourceCodes(originLock, universe.workspace);
             assert.notInclude(filtered, uiSourceCodes[0]);
             assert.isFalse(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[0]));
+        });
+        it('excludes cross-origin fetchable source-mapped files inside a same-origin project while keeping non-fetchable ones', async () => {
+            const attackerOrigin = SDK.SecurityOrigin.SecurityOrigin.create('https://attacker.com');
+            const { project, uiSourceCodes } = createContentProviderUISourceCodes({
+                items: [
+                    {
+                        url: urlString `https://victim.example/api/account`,
+                        mimeType: 'application/javascript',
+                        resourceType: Common.ResourceType.resourceTypes.SourceMapScript,
+                    },
+                    {
+                        url: urlString `webpack:///./src/index.ts`,
+                        mimeType: 'text/typescript',
+                        resourceType: Common.ResourceType.resourceTypes.SourceMapScript,
+                    },
+                    {
+                        url: urlString `https://attacker.com/src/helper.ts`,
+                        mimeType: 'text/typescript',
+                        resourceType: Common.ResourceType.resourceTypes.SourceMapScript,
+                    },
+                ],
+                projectId: 'jsSourceMaps::target:https://attacker.com',
+                projectType: Workspace.Workspace.projectTypes.Network,
+                universe,
+            });
+            sinon.stub(project, 'securityOrigin').returns(attackerOrigin);
+            const originLock = {
+                status: 'ESTABLISHED_ORIGIN',
+                origin: attackerOrigin,
+            };
+            const response = await tool.handler({}, { getOriginLock: () => originLock });
+            assertIsResult(response);
+            assert.strictEqual(response.result, [
+                'id;name',
+                '1;webpack:///./src/index.ts',
+                '2;/src/helper.ts',
+            ].join('\n'));
+            assert.isFalse(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[0]));
+            assert.isTrue(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[1]));
+            assert.isTrue(AiAssistance.ListSources.ListSourcesTool.uiSourceCodeId.has(uiSourceCodes[2]));
         });
     });
 });

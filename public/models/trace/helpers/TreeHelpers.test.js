@@ -60,6 +60,19 @@ describe('TreeHelpers', () => {
             }
             const childrenOfC = getEventsIn(nodeC.children.values());
             assert.deepEqual(childrenOfC, []);
+            assert.strictEqual(nodeC.children, nodeD.children);
+            assert.strictEqual(nodeD.children, nodeE.children);
+        });
+        it('populates a provided targetEntryToNode map in place', () => {
+            const data = [
+                makeCompleteEvent('A', 0, 10),
+                makeCompleteEvent('B', 1, 3),
+            ];
+            const targetMap = new Map();
+            const { entryToNode } = Trace.Helpers.TreeHelpers.treify(data, undefined, targetMap);
+            assert.strictEqual(entryToNode, targetMap);
+            assert.strictEqual(targetMap.size, 2);
+            assert.strictEqual(targetMap.get(data[0])?.children[0], targetMap.get(data[1]));
         });
         it('can build a hierarchy of events with filters', async () => {
             /**

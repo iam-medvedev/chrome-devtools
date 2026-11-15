@@ -155,7 +155,20 @@ describeWithEnvironment('NetworkLogView', () => {
             requestHeaders: [{ name: 'cookie', value: 'eva="Sg4="' }],
         });
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' -b \'eva=\"Sg4=\"\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"eva=^\\^"Sg4=^\\^"^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" -b ^"eva=^"^"Sg4=^"^"^"');
+    });
+    it('generates a valid curl command when header values contain quotes followed by command separators', async () => {
+        // A quote in the value must not be able to end the quoted argument when
+        // the cmd.exe command is pasted into PowerShell, where neither ^ nor \
+        // is an escape character. crbug.com/581185930
+        const request = createNetworkRequest(urlString `http://localhost`, {
+            requestHeaders: [
+                { name: 'x-header', value: 'alpha"; Write-Output pwned; "omega' },
+                { name: 'x-backslash', value: 'a\\"b | Write-Output pwned & c' },
+            ],
+        });
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'x-header: alpha"; Write-Output pwned; "omega\' \\\n  -H \'x-backslash: a\\"b | Write-Output pwned & c\'');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"x-header: alpha^"^"; Write-Output pwned; ^"^"omega^" ^\n  -H ^"x-backslash: a^\\^\\^"^"b ^| Write-Output pwned ^& c^"');
     });
     it('generates a valid curl command for nameless cookies without an equal sign', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -243,7 +256,7 @@ describeWithEnvironment('NetworkLogView', () => {
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '{"a":1}');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/json\' \\\n  --data-raw \'{"a":1}\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/json^" ^\n  --data-raw ^"^{^\\^"a^\\^":1^}^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/json^" ^\n  --data-raw ^"^{^"^"a^"^":1^}^"');
     });
     it('generates a valid curl command for a POST request with binary data', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -252,7 +265,7 @@ describeWithEnvironment('NetworkLogView', () => {
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '1234\r\n00\x02\x03\x04\x05\'"!');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'1234\\r\\n00\\u0002\\u0003\\u0004\\u0005\\\'"\\u0021\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^ ^ ^ ^ \'^\\^"^!^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"1234^\n\n00^ ^ ^ ^ \'^"^"^!^"');
     });
     it('generates a valid curl command for a POST request with binary data containing %', async () => {
         const request = createNetworkRequest(urlString `http://localhost`, {
@@ -261,7 +274,7 @@ describeWithEnvironment('NetworkLogView', () => {
         request.requestMethod = 'POST';
         request.setRequestFormData(true, '%OS%\\r\\n%%OS%%\\r\\n"\\\\"\'$&!');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl --url \'http://localhost\' \\\n  -H \'Content-Type: application/binary\' \\\n  --data-raw $\'%OS%\\\\r\\\\n%%OS%%\\\\r\\\\n"\\\\\\\\"\\\'$&\\u0021\'');
-        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"^%^OS^%^\\^\\r^\\^\\n^%^%^OS^%^%^\\^\\r^\\^\\n^\\^"^\\^\\^\\^\\^\\^"\'^$^&^!^"');
+        assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl --url ^"http://localhost^" ^\n  -H ^"Content-Type: application/binary^" ^\n  --data-raw ^"^%^OS^%^\\^\\r^\\^\\n^%^%^OS^%^%^\\^\\r^\\^\\n^"^"^\\^\\^\\^\\^"^"\'^$^&^!^"');
     });
     it('generates a valid curl command for a URL with special characters', async () => {
         const request = createNetworkRequest(urlString `http://example.com/?a=[]{}`, {});
@@ -399,6 +412,30 @@ describeWithEnvironment('NetworkLogView', () => {
                     'Finish: 234\u00a0ms',
                     'DOMContentLoaded: 249\u00a0ms',
                     'Load: 251\u00a0ms',
+                ]);
+            }
+            else {
+                assert.lengthOf(textElements, 0);
+            }
+        });
+        it('shows summary toolbar with filtered counts when filter is active', () => {
+            target.setInspectedURL(urlString `http://example.com/`);
+            const request1 = createNetworkRequest('http://example.com/index.html', { finished: true });
+            request1.setTransferSize(1024);
+            request1.resourceSize = 2048;
+            const request2 = createNetworkRequest('http://example.com/script.js', { finished: true });
+            request2.setTransferSize(3072);
+            request2.resourceSize = 4096;
+            networkLogView.setTextFilterValue('script.js');
+            renderElementIntoDOM(networkLogView);
+            const toolbar = networkLogView.summaryToolbar();
+            const textElements = toolbar.querySelectorAll('.toolbar-text');
+            const textContents = [...textElements].map(item => item.textContent);
+            if (inScope) {
+                assert.deepEqual(textContents, [
+                    '1 / 2 requests',
+                    '3.1\u00a0kB / 4.1\u00a0kB transferred',
+                    '4.1\u00a0kB / 6.1\u00a0kB resources',
                 ]);
             }
             else {
@@ -1351,6 +1388,21 @@ describeWithEnvironment('NetworkLogView placeholder', () => {
         testPlaceholderText(networkLogView, 'Currently recording network activity', 'Perform a request or reload the page by using the \"Reload page\" button or by pressing Ctrl');
         testPlaceholderButton(networkLogView, 'Reload page', RELOAD_ID);
     });
+    it('hides placeholder when requests are recorded and shows it again on reset', async () => {
+        const networkLogView = createNetworkLogView();
+        renderElementIntoDOM(networkLogView);
+        assert.isNotNull(networkLogView.element.querySelector('.network-status-pane'));
+        const request = createNetworkRequest({ requestId: 'req1', url: 'https://example.com/' });
+        const requestsStub = sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requests').returns([request]);
+        Logs.NetworkLog.NetworkLog.instance().dispatchEventToListeners(Logs.NetworkLog.Events.RequestAdded, { request });
+        await RenderCoordinator.done({ waitForWork: true });
+        assert.isNull(networkLogView.element.querySelector('.network-status-pane'));
+        requestsStub.returns([]);
+        Logs.NetworkLog.NetworkLog.instance().dispatchEventToListeners(Logs.NetworkLog.Events.Reset, { clearIfPreserved: true });
+        await RenderCoordinator.done({ waitForWork: true });
+        assert.isNotNull(networkLogView.element.querySelector('.network-status-pane'));
+        networkLogView.detach();
+    });
 });
 describeWithEnvironment('NetworkLogView', () => {
     it('renders when actions aren\'t registered', async () => {
@@ -1401,6 +1453,28 @@ describeWithEnvironment('NetworkLogView', () => {
         const call = dispatchEventSpy.getCalls().find(c => c.args[0] === "RequestSelected" /* Network.NetworkDataGridNode.Events.RequestSelected */);
         assert.exists(call);
         assert.isNull(call.args[1]);
+    });
+    it('toggles no-node-selected class on container when updateNodeSelectedClass is called', () => {
+        const networkLogView = createNetworkLogView();
+        assert.isTrue(networkLogView.element.classList.contains('no-node-selected'));
+        networkLogView.updateNodeSelectedClass(true);
+        assert.isFalse(networkLogView.element.classList.contains('no-node-selected'));
+        networkLogView.updateNodeSelectedClass(false);
+        assert.isTrue(networkLogView.element.classList.contains('no-node-selected'));
+    });
+});
+describeWithEnvironment('MoreFiltersDropDownUI', () => {
+    it('tracks active state and selected filter labels across settings', () => {
+        const moreFilters = new Network.NetworkLogView.MoreFiltersDropDownUI();
+        assert.isFalse(moreFilters.isActive());
+        assert.deepEqual(moreFilters.selectedFilters(), []);
+        Common.Settings.Settings.instance().createSetting('network-hide-data-url', false).set(true);
+        Common.Settings.Settings.instance().createSetting('network-only-blocked-requests', false).set(true);
+        Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false).set(true);
+        moreFilters.updateActiveFiltersCount();
+        moreFilters.updateTooltip();
+        assert.isTrue(moreFilters.isActive());
+        assert.deepEqual(moreFilters.selectedFilters(), ['Hide data URLs', 'Blocked requests', '3rd-party requests']);
     });
 });
 function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {

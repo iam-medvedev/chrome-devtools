@@ -31,7 +31,7 @@ var consoleContextSelector_css_default = `/*
     white-space: nowrap;
     display: flex;
     flex-direction: column;
-    height: 36px;
+    height: calc(var(--sys-size-13) + 2 * var(--sys-size-2)); /* 32px two-line content box (.title + .subtitle) + top and bottom --sys-size-2 padding */
     justify-content: center;
     overflow-y: auto;
 
@@ -47,13 +47,6 @@ var consoleContextSelector_css_default = `/*
       overflow: hidden;
       text-overflow: ellipsis;
       flex-grow: 0;
-    }
-
-    .badge {
-      pointer-events: none;
-      margin-right: var(--sys-size-3);
-      display: inline-block;
-      height: 15px;
     }
   }
 
@@ -398,7 +391,7 @@ __export(ConsoleFilter_exports, {
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as TextUtils from "../../core/text_utils/text_utils.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3596,23 +3589,16 @@ var consoleInsightTeaser_css_default = `/*
     background-size: 400% 100%;
     animation: gradient 4s infinite linear;
     margin-top: var(--sys-size-5);
-  }
+    background-image: linear-gradient(
+      70deg,
+      color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 0%,
+      color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 30%,
+      color-mix(in srgb, var(--sys-color-on-surface) 15%, transparent) 50%,
+      color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 70%,
+      color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 100%
+    );
 
-  @media (prefers-color-scheme: light) {
-    .loader {
-      background-image: linear-gradient(
-        70deg,
-        color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 0%,
-        color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 30%,
-        color-mix(in srgb, var(--sys-color-on-surface) 15%, transparent) 50%,
-        color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 70%,
-        color-mix(in srgb, var(--sys-color-on-surface) 5%, transparent) 100%
-      );
-    }
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .loader {
+    .theme-with-dark-background & {
       background-image: linear-gradient(
         70deg,
         color-mix(in srgb, var(--sys-color-on-surface) 10%, transparent) 0%,
@@ -3878,7 +3864,6 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   overflow: hidden;
 
   --override-error-text-color: var(--sys-color-on-error-container);
-  --message-corner-rounder-background: var(--sys-color-cdt-base-container);
 }
 
 .console-toolbar-container {
@@ -3935,9 +3920,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .console-prompt-editor-container {
-  min-height: 21px;
   padding-left: var(--sys-size-2);
-  padding-top: var(--sys-size-1);
 }
 
 .console-message,
@@ -3968,13 +3951,16 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .message-level-icon,
 .command-result-icon {
   position: absolute;
-  left: -17px;
+  left: calc(-1 * var(--sys-size-9));
   top: var(--sys-size-2);
   user-select: none;
 }
 
 .console-message-repeat-count {
-  margin: 1.4px 0 0 10px;
+  display: inline-flex;
+  align-self: flex-start;
+  /* 24px (--sys-size-11) message gutter minus 14px (--sys-size-7) bubble size */
+  margin: var(--sys-size-2) 0 0 calc(var(--sys-size-11) - var(--sys-size-7));
   flex: none;
 }
 
@@ -4023,7 +4009,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   flex: none;
   position: relative;
   left: var(--sys-size-5);
-  top: 3px;
+  top: var(--sys-size-3);
   margin-right: var(--sys-size-2);
 }
 
@@ -4150,27 +4136,24 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 
 .console-message-wrapper .nesting-level-marker + .console-message::after {
   position: absolute;
-  left: -30px;
+  /* 24px (--sys-size-11) .console-message left margin + 6px (--sys-size-4) pseudo-element width */
+  left: calc(-1 * (var(--sys-size-11) + var(--sys-size-4)));
   top: 0;
   width: var(--sys-size-4);
   height: 100%;
   box-sizing: border-box;
   background-color: var(--sys-color-surface-yellow);
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
+  border-top-left-radius: var(--sys-shape-corner-extra-small);
+  border-bottom-left-radius: var(--sys-shape-corner-extra-small);
   content: "";
 }
 
 .console-error-level {
   background-color: var(--sys-color-surface-error);
-
-  --message-corner-rounder-background: var(--sys-color-surface-error);
 }
 
 .console-warning-level {
   background-color: var(--sys-color-surface-yellow);
-
-  --message-corner-rounder-background: var(--sys-color-surface-yellow);
 }
 
 .console-view-object-properties-section {
@@ -4180,7 +4163,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   display: inline-block;
   overflow-wrap: break-word;
   max-width: 100%;
-  margin-top: -1.5px;
+  margin-top: calc(-1 * var(--sys-size-1));
 }
 
 /* Console content is rendered in "Noto Sans Mono" on Linux, which has a
@@ -4346,14 +4329,14 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 
 .object-state-note {
   display: inline-block;
-  width: 11px;
-  height: 11px;
+  width: var(--sys-size-6);
+  height: var(--sys-size-6);
   color: var(--sys-color-on-tonal-container);
   text-align: center;
-  border-radius: 3px;
-  line-height: 13px;
+  border-radius: var(--sys-shape-corner-extra-small);
+  line-height: var(--sys-size-6);
   margin: 0 var(--sys-size-4);
-  font-size: 9px;
+  font-size: var(--sys-typescale-label-size);
 }
 
 .console-object {
@@ -4386,7 +4369,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 }
 
 .devtools-console-insight {
-  margin: 9px var(--sys-size-10) 11px var(--sys-size-11);
+  margin: var(--sys-size-5) var(--sys-size-10) var(--sys-size-5) var(--sys-size-11);
 }
 
 .hover-button {
@@ -4396,7 +4379,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   border-radius: var(--sys-shape-corner-full);
   border: none;
   /* todo: extract to global styles and make it work with dark mode. */
-  box-shadow: 0 1px 3px 1px rgb(0 0 0 / 15%), 0 1px 2px 0 rgb(0 0 0 / 30%); /* stylelint-disable-line plugin/use_theme_colors */
+  box-shadow: var(--sys-elevation-level1);
   box-sizing: border-box;
   background-color: var(--sys-color-tonal-container);
   color: var(--sys-color-on-tonal-container);
@@ -4441,7 +4424,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
 .hover-button:focus,
 .hover-button:hover {
   border-radius: var(--sys-shape-corner-extra-small);
-  max-width: 200px;
+  max-width: var(--sys-size-26);
   transition:
     max-width var(--sys-motion-duration-short4) var(--sys-motion-easing-emphasized),
     border-radius 50ms linear;
@@ -5692,8 +5675,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   renderSymbolizedError(errorRemoteObject) {
     const container = document.createElement("span");
-    const widget3 = new SymbolizedErrorWidget();
-    widget3.ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
+    const widget4 = new SymbolizedErrorWidget();
+    widget4.ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance();
     const selectableChildIndex = this.selectableChildren.length;
     const format2 = async () => {
       const error = await Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createSymbolizedError(
@@ -5701,16 +5684,16 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
         this.message.exceptionDetails
       );
       if (error) {
-        widget3.error = error;
+        widget4.error = error;
       }
-      await widget3.updateComplete;
-      const selectableLinks = widget3.linkElements.map((element) => ({ element, forceSelect: () => element.focus() }));
+      await widget4.updateComplete;
+      const selectableLinks = widget4.linkElements.map((element) => ({ element, forceSelect: () => element.focus() }));
       this.selectableChildren.splice(selectableChildIndex, 0, ...selectableLinks);
     };
     this.#formatErrorStackPromiseForTest = Promise.all([this.#formatErrorStackPromiseForTest, format2()]).then(() => {
     });
-    widget3.markAsRoot();
-    widget3.show(container);
+    widget4.markAsRoot();
+    widget4.show(container);
     return container;
   }
   formatAsArrayEntry(output) {
@@ -6330,9 +6313,12 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   get text() {
     return this.message.messageText;
   }
+  toString() {
+    return Components2.Linkifier.Linkifier.untruncatedTextContent(this.contentElement());
+  }
   toExportString() {
     const lines = [];
-    const messageContent = Components2.Linkifier.Linkifier.untruncatedTextContent(this.contentElement());
+    const messageContent = this.toString();
     for (let i = 0; i < this.repeatCount(); ++i) {
       lines.push(messageContent);
     }
@@ -7071,12 +7057,12 @@ async function formatStackTrace(message) {
   if (!previewContainer) {
     return "";
   }
-  const widget3 = UI4.Widget.Widget.get(previewContainer);
-  if (!widget3) {
+  const widget4 = UI4.Widget.Widget.get(previewContainer);
+  if (!widget4) {
     return "";
   }
-  await widget3.updateComplete;
-  const preview = widget3.contentElement.querySelector(".stack-preview-container");
+  await widget4.updateComplete;
+  const preview = widget4.contentElement.querySelector(".stack-preview-container");
   const nodes = preview.childTextNodes();
   const messageContent = nodes.filter((n) => {
     return !n.parentElement?.closest(".show-all-link,.show-less-link,.hidden-row");
@@ -7756,7 +7742,7 @@ var consolePinPane_css_default = `/*
 }
 
 .console-pins {
-  max-height: 200px;
+  max-height: var(--sys-size-25);
   overflow-y: auto;
   background: var(--sys-color-cdt-base-container);
 
@@ -7790,7 +7776,9 @@ var consolePinPane_css_default = `/*
 }
 
 .console-pin-name {
-  margin-left: -5px;
+  /* Cancel CodeMirror .cm-line's 6px left padding so
+   * expression text aligns with .console-pin-preview. */
+  margin-left: calc(-1 * var(--sys-size-4));
   margin-bottom: var(--sys-size-1);
   height: auto;
 }
@@ -9284,7 +9272,7 @@ var ConsoleViewport = class {
 var ConsolePrompt_exports = {};
 __export(ConsolePrompt_exports, {
   ConsolePrompt: () => ConsolePrompt,
-  DEFAULT_VIEW: () => DEFAULT_VIEW6,
+  DEFAULT_VIEW: () => DEFAULT_VIEW7,
   Events: () => Events2
 });
 import "../../ui/kit/kit.js";
@@ -9301,7 +9289,7 @@ import * as CodeMirror2 from "../../third_party/codemirror.next/codemirror.next.
 import * as TextEditor2 from "../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI5 from "../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html7, nothing as nothing7, render as render7 } from "../../ui/lit/lit.js";
+import { Directives as Directives2, html as html8, nothing as nothing7, render as render8 } from "../../ui/lit/lit.js";
 import * as Settings10 from "../../ui/settings/settings.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
@@ -9310,9 +9298,11 @@ var ConsolePanel_exports = {};
 __export(ConsolePanel_exports, {
   ConsolePanel: () => ConsolePanel,
   ConsoleRevealer: () => ConsoleRevealer,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   WrapperView: () => WrapperView
 });
 import * as UI10 from "../../ui/legacy/legacy.js";
+import { html as html7, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/console/ConsoleView.ts
@@ -9509,9 +9499,14 @@ var UIStrings5 = {
    */
   saveAs: "Save as\u2026",
   /**
+   * @description A context menu item in the Console view of the Console panel. Copies the message
+   * the user right-clicked to the clipboard.
+   */
+  copyMessage: "Copy message",
+  /**
    * @description Text to copy console log to clipboard.
    */
-  copyConsole: "Copy console",
+  copyConsole: "Copy all messages",
   /**
    * @description A context menu item in the Console view of the Console panel.
    */
@@ -10628,6 +10623,11 @@ var ConsoleView = class _ConsoleView extends UI9.Widget.VBox {
         { jslogContext: "copy-visible-styled-selection" }
       );
     }
+    if (consoleViewMessage) {
+      contextMenu.clipboardSection().appendItem(i18nString5(UIStrings5.copyMessage), () => {
+        Host4.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(consoleViewMessage.toString());
+      }, { jslogContext: "copy-message" });
+    }
     if (consoleMessage) {
       const request = Logs3.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
       if (request && SDK7.NetworkManager.NetworkManager.canResendRequest(request, true)) {
@@ -11297,23 +11297,48 @@ var messagesSortedBySymbol = /* @__PURE__ */ new WeakMap();
 var consoleMessageToViewMessage = /* @__PURE__ */ new WeakMap();
 
 // ../../front_end/panels/console/ConsolePanel.ts
-var consolePanelInstance;
+var { widget: widget3 } = UI10.Widget;
+var DEFAULT_VIEW6 = (input, _output, target) => {
+  render7(html7`
+    ${widget3(UI10.Widget.WrapperWidget, {
+    widget: input.showConsoleView ? ConsoleView.instance() : null
+  })}
+  `, target, {
+    container: {
+      attributes: {
+        jslog: `${VisualLogging6.panel("console").track({ resize: true })}`
+      }
+    }
+  });
+};
+var consolePanelInstance = null;
 var ConsolePanel = class _ConsolePanel extends UI10.Panel.Panel {
-  view;
+  #view;
   #drawerWasMinimized = false;
-  constructor() {
+  #ownsConsoleView = false;
+  constructor(view = DEFAULT_VIEW6) {
     super("console");
-    this.view = ConsoleView.instance();
+    this.#view = view;
+  }
+  performUpdate() {
+    this.#view(
+      { showConsoleView: this.#ownsConsoleView },
+      void 0,
+      this.contentElement
+    );
   }
   static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
+    const { forceNew, view } = opts;
     if (!consolePanelInstance || forceNew) {
-      consolePanelInstance = new _ConsolePanel();
+      consolePanelInstance = new _ConsolePanel(view);
     }
     return consolePanelInstance;
   }
+  static removeInstance() {
+    consolePanelInstance = null;
+  }
   static updateContextFlavor() {
-    const consoleView = _ConsolePanel.instance().view;
+    const consoleView = ConsoleView.instance();
     UI10.Context.Context.instance().setFlavor(ConsoleView, consoleView.isShowing() ? consoleView : null);
   }
   wasShown() {
@@ -11321,14 +11346,18 @@ var ConsolePanel = class _ConsolePanel extends UI10.Panel.Panel {
     const inspectorView = UI10.InspectorView.InspectorView.instance();
     this.#drawerWasMinimized = inspectorView.isDrawerMinimized();
     const wrapper = wrapperViewInstance;
+    wrapper?.hideViewInWrapper();
     if (wrapper?.isShowing()) {
       inspectorView.setDrawerMinimized(true);
     }
-    this.view.show(this.element);
+    this.#ownsConsoleView = true;
+    this.performUpdate();
     _ConsolePanel.updateContextFlavor();
   }
   willHide() {
     super.willHide();
+    this.#ownsConsoleView = false;
+    this.performUpdate();
     const inspectorView = UI10.InspectorView.InspectorView.instance();
     inspectorView.setDrawerMinimized(false);
     if (wrapperViewInstance) {
@@ -11345,22 +11374,35 @@ var ConsolePanel = class _ConsolePanel extends UI10.Panel.Panel {
 };
 var wrapperViewInstance = null;
 var WrapperView = class _WrapperView extends UI10.Widget.VBox {
-  view;
-  constructor() {
-    super({ jslog: `${VisualLogging6.panel("console").track({ resize: true })}` });
-    this.view = ConsoleView.instance();
+  #view;
+  #ownsConsoleView = false;
+  constructor(element, view = DEFAULT_VIEW6) {
+    super(element);
+    this.#view = view;
   }
-  static instance() {
-    if (!wrapperViewInstance) {
-      wrapperViewInstance = new _WrapperView();
+  performUpdate() {
+    this.#view(
+      { showConsoleView: this.#ownsConsoleView },
+      void 0,
+      this.contentElement
+    );
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew, view } = opts;
+    if (!wrapperViewInstance || forceNew) {
+      wrapperViewInstance = new _WrapperView(void 0, view);
     }
     return wrapperViewInstance;
+  }
+  static removeInstance() {
+    wrapperViewInstance = null;
   }
   wasShown() {
     super.wasShown();
     if (!ConsolePanel.instance().isShowing()) {
       this.showViewInWrapper();
     } else {
+      this.performUpdate();
       UI10.InspectorView.InspectorView.instance().setDrawerMinimized(true);
     }
     ConsolePanel.updateContextFlavor();
@@ -11370,10 +11412,15 @@ var WrapperView = class _WrapperView extends UI10.Widget.VBox {
     ConsolePanel.updateContextFlavor();
   }
   showViewInWrapper() {
-    this.view.show(this.element);
+    this.#ownsConsoleView = true;
+    this.performUpdate();
+  }
+  hideViewInWrapper() {
+    this.#ownsConsoleView = false;
+    this.performUpdate();
   }
   insertIntoPrompt(text) {
-    this.view.insertIntoPrompt(text);
+    ConsoleView.instance().insertIntoPrompt(text);
   }
 };
 var ConsoleRevealer = class {
@@ -11461,8 +11508,8 @@ var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_6);
 var ConsolePromptBase = Common7.ObjectWrapper.eventMixin(
   UI11.Widget.Widget
 );
-var DEFAULT_VIEW6 = (input, output, target) => {
-  render7(html7`
+var DEFAULT_VIEW7 = (input, output, target) => {
+  render8(html8`
     <style>${consolePrompt_css_default}</style>
     <div class="console-prompt-editor-container">
       <devtools-text-editor
@@ -11540,7 +11587,7 @@ var ConsolePrompt = class extends ConsolePromptBase {
     const effects = this.#javaScriptCompletionCompartment.reconfigure(extensions);
     this.editor?.dispatch({ effects });
   }
-  constructor(aiCodeCompletionConfig, view = DEFAULT_VIEW6) {
+  constructor(aiCodeCompletionConfig, view = DEFAULT_VIEW7) {
     super();
     this.#view = view;
     this.addCompletionsFromHistory = true;

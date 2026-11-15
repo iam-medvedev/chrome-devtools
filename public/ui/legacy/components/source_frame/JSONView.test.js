@@ -85,6 +85,102 @@ describeWithEnvironment('JSONView', () => {
         currentMatches = CSS.highlights.get('current-search-result');
         assert.strictEqual(currentMatches?.size ?? 0, 0);
     });
+    it('finds nested keys and values inside collapsed JSON branches and expands ancestors on jump', async () => {
+        const parsed = await SourceFrame.JSONView.JSONView.parseJSON('{"outer":{"inner":{"needle":"found-value"}}}');
+        assert.isNotNull(parsed);
+        const jsonView = new SourceFrame.JSONView.JSONView(parsed, true);
+        const searchableView = new UI.SearchableView.SearchableView(jsonView, null);
+        jsonView.setSearchableView(searchableView);
+        renderElementIntoDOM(jsonView);
+        await raf();
+        await jsonView.performSearch(new UI.SearchableView.SearchConfig('found-value', false, false, false), true);
+        await doubleRaf();
+        const treeView = jsonView.contentElement.querySelector('devtools-tree');
+        assert.exists(treeView?.shadowRoot);
+        assert.include(treeView.shadowRoot.textContent ?? '', 'needle');
+        const currentMatches = CSS.highlights.get('current-search-result');
+        assert.strictEqual(currentMatches?.size, 1);
+        assert.exists(currentMatches);
+        assert.strictEqual(Array.from(currentMatches.values())[0]?.toString(), 'found-value');
+    });
+    it('matches property paths such as items[1].id or items.1.id', async () => {
+        const parsed = await SourceFrame.JSONView.JSONView.parseJSON('{"items":[{"id":"first"},{"id":"target"}]}');
+        assert.isNotNull(parsed);
+        const jsonView = new SourceFrame.JSONView.JSONView(parsed, true);
+        const searchableView = new UI.SearchableView.SearchableView(jsonView, null);
+        jsonView.setSearchableView(searchableView);
+        renderElementIntoDOM(jsonView);
+        await raf();
+        await jsonView.performSearch(new UI.SearchableView.SearchConfig('items[1].id', false, false, false), true);
+        await doubleRaf();
+        const treeView = jsonView.contentElement.querySelector('devtools-tree');
+        assert.exists(treeView?.shadowRoot);
+        assert.include(treeView.shadowRoot.textContent ?? '', 'target');
+        let highlightedMatches = CSS.highlights.get('highlighted-search-result');
+        let currentMatches = CSS.highlights.get('current-search-result');
+        assert.strictEqual((highlightedMatches?.size ?? 0) + (currentMatches?.size ?? 0), 1);
+        assert.strictEqual(currentMatches?.size, 1);
+        assert.exists(currentMatches);
+        assert.strictEqual(Array.from(currentMatches.values())[0]?.toString(), 'id');
+        await jsonView.performSearch(new UI.SearchableView.SearchConfig('items.1.id', false, false, false), true);
+        await doubleRaf();
+        highlightedMatches = CSS.highlights.get('highlighted-search-result');
+        currentMatches = CSS.highlights.get('current-search-result');
+        assert.strictEqual((highlightedMatches?.size ?? 0) + (currentMatches?.size ?? 0), 1);
+        assert.strictEqual(currentMatches?.size, 1);
+        assert.exists(currentMatches);
+        assert.strictEqual(Array.from(currentMatches.values())[0]?.toString(), 'id');
+        await jsonView.performSearch(new UI.SearchableView.SearchConfig('items', false, false, false), true);
+        await doubleRaf();
+        highlightedMatches = CSS.highlights.get('highlighted-search-result');
+        currentMatches = CSS.highlights.get('current-search-result');
+        assert.strictEqual((highlightedMatches?.size ?? 0) + (currentMatches?.size ?? 0), 1);
+    });
+    it('auto-expands single-child wrapper chains and small levels within the row budget when startCollapsed is false', async () => {
+        const parsed = await SourceFrame.JSONView.JSONView.parseJSON('{"data":{"viewer":{"user":{"id":42,"name":"Ada"}}}}');
+        assert.isNotNull(parsed);
+        const jsonView = new SourceFrame.JSONView.JSONView(parsed);
+        renderElementIntoDOM(jsonView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await doubleRaf();
+        const treeView = jsonView.contentElement.querySelector('devtools-tree');
+        assert.exists(treeView);
+        // Collapsed children may still be populated and present in the DOM, so check the expansion state instead of text.
+        const findChild = (parent, name) => parent.children().find(c => c.listItemElement.dataset.objectPropertyNameForTest === name);
+        const root = treeView.getInternalTreeOutlineForTest().firstChild();
+        assert.exists(root);
+        assert.isTrue(root.expanded);
+        const data = findChild(root, 'data');
+        assert.exists(data);
+        assert.isTrue(data.expanded);
+        const viewer = findChild(data, 'viewer');
+        assert.exists(viewer);
+        assert.isTrue(viewer.expanded);
+        const user = findChild(viewer, 'user');
+        assert.exists(user);
+        assert.isTrue(user.expanded);
+        assert.exists(findChild(user, 'name'));
+    });
+    it('keeps levels collapsed when expanding them would exceed the auto-expand row budget', async () => {
+        const items = Array.from({ length: 35 }, (_, i) => ({ id: `item-${i}` }));
+        const parsed = new SourceFrame.JSONView.ParsedJSON({ items, meta: { page: 1, total: 35 } }, '', '');
+        const jsonView = new SourceFrame.JSONView.JSONView(parsed);
+        renderElementIntoDOM(jsonView);
+        await UI.Widget.Widget.allUpdatesComplete;
+        await doubleRaf();
+        const treeView = jsonView.contentElement.querySelector('devtools-tree');
+        assert.exists(treeView);
+        // Collapsed children may still be populated and present in the DOM, so check the expansion state instead of text.
+        const root = treeView.getInternalTreeOutlineForTest().firstChild();
+        assert.exists(root);
+        assert.isTrue(root.expanded);
+        const itemsElement = root.children().find(c => c.listItemElement.dataset.objectPropertyNameForTest === 'items');
+        const metaElement = root.children().find(c => c.listItemElement.dataset.objectPropertyNameForTest === 'meta');
+        assert.exists(itemsElement);
+        assert.exists(metaElement);
+        assert.isFalse(itemsElement.expanded);
+        assert.isFalse(metaElement.expanded);
+    });
     it('renders visual baseline of JSONView', async () => {
         const parsedJSON = new SourceFrame.JSONView.ParsedJSON({
             stringField: 'hello world',

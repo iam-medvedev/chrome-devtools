@@ -18,7 +18,7 @@ __export(SecurityModel_exports, {
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 
-// ../../front_end/generated/protocol.ts
+// gen/front_end/generated/protocol.ts
 var Accessibility;
 ((Accessibility2) => {
   let AXValueType;
@@ -3044,7 +3044,9 @@ var SecurityDispatcher = class {
 // ../../front_end/panels/security/SecurityPanel.ts
 var SecurityPanel_exports = {};
 __export(SecurityPanel_exports, {
+  DEFAULT_SECURITY_MAIN_VIEW: () => DEFAULT_SECURITY_MAIN_VIEW,
   DEFAULT_SECURITY_ORIGIN_VIEW: () => DEFAULT_SECURITY_ORIGIN_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   OriginGroup: () => OriginGroup,
   SecurityMainView: () => SecurityMainView,
   SecurityOriginView: () => SecurityOriginView,
@@ -3054,13 +3056,14 @@ __export(SecurityPanel_exports, {
   renderCertificateViewerButton: () => renderCertificateViewerButton,
   renderHighlightedUrl: () => renderHighlightedUrl
 });
+import "../../ui/kit/kit.js";
 import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as NetworkForward from "../network/forward/forward.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
-import { createIcon } from "../../ui/kit/kit.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html2, nothing as nothing2, render as render2 } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
@@ -3072,56 +3075,58 @@ var lockIcon_css_default = `/*
  * found in the LICENSE file.
  */
 
-.lock-icon,
-.security-property {
-  height: var(--sys-size-9);
-  width: var(--sys-size-9);
-}
+@scope to (devtools-widget > *) {
+  .lock-icon,
+  .security-property {
+    height: var(--sys-size-9);
+    width: var(--sys-size-9);
+  }
 
-.lock-icon-secure {
-  color: var(--sys-color-green);
-}
+  .lock-icon-secure {
+    color: var(--sys-color-green);
+  }
 
-.lock-icon-insecure {
-  color: var(--sys-color-error);
-}
+  .lock-icon-insecure {
+    color: var(--sys-color-error);
+  }
 
-.lock-icon-insecure-broken {
-  color: var(--sys-color-error);
-}
+  .lock-icon-insecure-broken {
+    color: var(--sys-color-error);
+  }
 
-.security-property-secure {
-  color: var(--sys-color-green);
-}
+  .security-property-secure {
+    color: var(--sys-color-green);
+  }
 
-.security-property-neutral {
-  color: var(--sys-color-error);
-}
+  .security-property-neutral {
+    color: var(--sys-color-error);
+  }
 
-.security-property-insecure {
-  color: var(--sys-color-error);
-}
+  .security-property-insecure {
+    color: var(--sys-color-error);
+  }
 
-.security-property-insecure-broken {
-  color: var(--sys-color-error);
-}
+  .security-property-insecure-broken {
+    color: var(--sys-color-error);
+  }
 
-.security-property-info {
-  color: var(--sys-color-on-surface-subtle);
-}
+  .security-property-info {
+    color: var(--sys-color-on-surface-subtle);
+  }
 
-.security-property-unknown {
-  color: var(--sys-color-on-surface-subtle);
-}
+  .security-property-unknown {
+    color: var(--sys-color-on-surface-subtle);
+  }
 
-.url-scheme-secure {
-  color: var(--sys-color-green);
-}
+  .url-scheme-secure {
+    color: var(--sys-color-green);
+  }
 
-.url-scheme-neutral,
-.url-scheme-insecure,
-.url-scheme-insecure-broken {
-  color: var(--sys-color-error);
+  .url-scheme-neutral,
+  .url-scheme-insecure,
+  .url-scheme-insecure-broken {
+    color: var(--sys-color-error);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./lockIcon.css")} */`;
@@ -3133,186 +3138,190 @@ var mainView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.devtools-link {
-  display: inline-block;
-}
+@scope to (devtools-widget > *) {
+  .devtools-link {
+    display: inline-block;
+  }
 
-.security-main-view {
-  overflow: hidden auto;
-  background-color: var(--sys-color-cdt-base-container);
-}
+  :scope,
+  .security-main-view {
+    overflow: hidden auto;
+    background-color: var(--sys-color-cdt-base-container);
+  }
 
-.security-main-view > div {
-  flex-shrink: 0;
-}
+  :scope > div,
+  .security-main-view > div {
+    flex-shrink: 0;
+  }
 
-.security-summary-section-title {
-  font-size: var(--sys-typescale-headline4-size);
-  margin: var(--sys-size-6) var(--sys-size-8);
-  user-select: text;
-}
+  .security-summary-section-title {
+    font-size: var(--sys-typescale-headline4-size);
+    margin: var(--sys-size-6) var(--sys-size-8);
+    user-select: text;
+  }
 
-.lock-spectrum {
-  margin: var(--sys-size-5) var(--sys-size-8);
-  display: flex;
-  align-items: flex-start;
-}
+  .lock-spectrum {
+    margin: var(--sys-size-5) var(--sys-size-8);
+    display: flex;
+    align-items: flex-start;
+  }
 
-.security-summary .lock-icon {
-  flex: none;
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-  margin: 0;
-}
-/* Separate the middle icon from the other two. */
+  .security-summary .lock-icon {
+    flex: none;
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    margin: 0;
+  }
+  /* Separate the middle icon from the other two. */
 
-.security-summary .lock-icon-neutral {
-  margin: 0 var(--sys-size-8);
-}
-
-.security-summary:not(.security-summary-secure) .lock-icon-secure,
-.security-summary:not(.security-summary-neutral) .lock-icon-neutral,
-.security-summary:not(.security-summary-insecure) .lock-icon-insecure,
-.security-summary:not(.security-summary-insecure-broken) .lock-icon-insecure-broken {
-  color: var(--sys-color-state-disabled);
-}
-
-@media (forced-colors: active) {
-  .security-summary-neutral .lock-icon-neutral {
-    color: Highlight;
+  .security-summary .lock-icon-neutral {
+    margin: 0 var(--sys-size-8);
   }
 
   .security-summary:not(.security-summary-secure) .lock-icon-secure,
   .security-summary:not(.security-summary-neutral) .lock-icon-neutral,
   .security-summary:not(.security-summary-insecure) .lock-icon-insecure,
   .security-summary:not(.security-summary-insecure-broken) .lock-icon-insecure-broken {
-    color: canvastext;
+    color: var(--sys-color-state-disabled);
   }
-}
 
-.triangle-pointer-container {
-  margin: var(--sys-size-5) var(--sys-size-11) 0;
-  padding: 0;
-}
+  @media (forced-colors: active) {
+    .security-summary-neutral .lock-icon-neutral {
+      color: Highlight;
+    }
 
-.triangle-pointer-wrapper {
-  /* Defaults for dynamic properties. */
-  transform: translateX(0);
-  transition: transform 0.3s;
-}
+    .security-summary:not(.security-summary-secure) .lock-icon-secure,
+    .security-summary:not(.security-summary-neutral) .lock-icon-neutral,
+    .security-summary:not(.security-summary-insecure) .lock-icon-insecure,
+    .security-summary:not(.security-summary-insecure-broken) .lock-icon-insecure-broken {
+      color: canvastext;
+    }
+  }
 
-.triangle-pointer {
-  width: var(--sys-size-6);
-  height: var(--sys-size-6);
-  margin-bottom: calc(-1 * var(--sys-size-4));
-  margin-left: calc(-1 * var(--sys-size-4));
-  transform: rotate(-45deg);
-  border-style: solid;
-  border-width: var(--sys-size-1) var(--sys-size-1) 0 0;
-  background: var(--sys-color-cdt-base-container);
-  border-color: var(--sys-color-neutral-outline);
-}
+  .triangle-pointer-container {
+    margin: var(--sys-size-5) var(--sys-size-11) 0;
+    padding: 0;
+  }
 
-.security-summary-secure .triangle-pointer-wrapper {
-  transform: translateX(0);
-}
+  .triangle-pointer-wrapper {
+    /* Defaults for dynamic properties. */
+    transform: translateX(0);
+    transition: transform 0.3s;
+  }
 
-.security-summary-neutral .triangle-pointer-wrapper {
-  transform: translateX(var(--sys-size-13));
-}
+  .triangle-pointer {
+    width: var(--sys-size-6);
+    height: var(--sys-size-6);
+    margin-bottom: calc(-1 * var(--sys-size-4));
+    margin-left: calc(-1 * var(--sys-size-4));
+    transform: rotate(-45deg);
+    border-style: solid;
+    border-width: var(--sys-size-1) var(--sys-size-1) 0 0;
+    background: var(--sys-color-cdt-base-container);
+    border-color: var(--sys-color-neutral-outline);
+  }
 
-.security-summary-insecure .triangle-pointer-wrapper {
-  transform: translateX(var(--sys-size-18));
-}
+  .security-summary-secure .triangle-pointer-wrapper {
+    transform: translateX(0);
+  }
 
-.security-summary-insecure-broken .triangle-pointer-wrapper {
-  transform: translateX(var(--sys-size-18));
-}
+  .security-summary-neutral .triangle-pointer-wrapper {
+    transform: translateX(var(--sys-size-13));
+  }
 
-.security-summary-text {
-  padding: var(--sys-size-8) var(--sys-size-11);
-  border-style: solid;
-  border-width: var(--sys-size-1) 0;
-  font-size: var(--sys-typescale-body2-size);
-  background: var(--sys-color-cdt-base-container);
-  border-color: var(--sys-color-neutral-outline);
-  user-select: text;
-}
+  .security-summary-insecure .triangle-pointer-wrapper {
+    transform: translateX(var(--sys-size-18));
+  }
 
-.security-summary-secure .triangle-pointer,
-.security-summary-secure .security-summary-text,
-.security-explanation-title-secure {
-  color: var(--sys-color-green);
-}
+  .security-summary-insecure-broken .triangle-pointer-wrapper {
+    transform: translateX(var(--sys-size-18));
+  }
 
-.security-summary-insecure-broken .triangle-pointer,
-.security-summary-insecure-broken .security-summary-text,
-.security-explanation-title-neutral,
-.security-explanation-title-insecure,
-.security-explanation-title-insecure-broken {
-  color: var(--sys-color-error);
-}
+  .security-summary-text {
+    padding: var(--sys-size-8) var(--sys-size-11);
+    border-style: solid;
+    border-width: var(--sys-size-1) 0;
+    font-size: var(--sys-typescale-body2-size);
+    background: var(--sys-color-cdt-base-container);
+    border-color: var(--sys-color-neutral-outline);
+    user-select: text;
+  }
 
-.security-explanation-list {
-  padding-bottom: var(--sys-size-8);
-}
+  .security-summary-secure .triangle-pointer,
+  .security-summary-secure .security-summary-text,
+  .security-explanation-title-secure {
+    color: var(--sys-color-green);
+  }
 
-.security-explanation-list:empty {
-  border-bottom: none;
-  padding: 0;
-}
+  .security-summary-insecure-broken .triangle-pointer,
+  .security-summary-insecure-broken .security-summary-text,
+  .security-explanation-title-neutral,
+  .security-explanation-title-insecure,
+  .security-explanation-title-insecure-broken {
+    color: var(--sys-color-error);
+  }
 
-.security-explanations-main {
-  margin-top: calc(-1 * var(--sys-size-3));
-  background-color: var(--sys-color-cdt-base-container);
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-}
+  .security-explanation-list {
+    padding-bottom: var(--sys-size-8);
+  }
 
-.security-explanations-extra {
-  background-color: transparent;
-}
+  .security-explanation-list:empty {
+    border-bottom: none;
+    padding: 0;
+  }
 
-.security-explanation {
-  padding: 11px;
-  display: flex;
-  white-space: nowrap;
-  border: none;
-  color: var(--sys-color-token-subtle);
-}
+  .security-explanations-main {
+    margin-top: calc(-1 * var(--sys-size-3));
+    background-color: var(--sys-color-cdt-base-container);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  }
 
-.security-explanation-text {
-  flex: auto;
-  white-space: normal;
-  max-width: var(--sys-size-33);
-}
+  .security-explanations-extra {
+    background-color: transparent;
+  }
 
-.origin-button {
-  margin-top: var(--sys-size-4);
-}
+  .security-explanation {
+    padding: var(--sys-size-6);
+    display: flex;
+    white-space: nowrap;
+    border: none;
+    color: var(--sys-color-token-subtle);
+  }
 
-.security-explanation .security-property {
-  flex: none;
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-  margin-right: var(--sys-size-8);
-}
+  .security-explanation-text {
+    flex: auto;
+    white-space: normal;
+    max-width: var(--sys-size-33);
+  }
 
-.security-explanation-title {
-  color: var(--sys-color-token-subtle);
-  margin-top: var(--sys-size-1);
-  margin-bottom: var(--sys-size-5);
-}
+  .origin-button {
+    margin-top: var(--sys-size-4);
+  }
 
-.security-mixed-content {
-  margin-top: var(--sys-size-5);
-}
+  .security-explanation .security-property {
+    flex: none;
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    margin-right: var(--sys-size-8);
+  }
 
-.security-explanation-recommendations {
-  padding-inline-start: var(--sys-size-8);
-}
+  .security-explanation-title {
+    color: var(--sys-color-token-subtle);
+    margin-top: var(--sys-size-1);
+    margin-bottom: var(--sys-size-5);
+  }
 
-.security-explanation-recommendations > li {
-  margin-bottom: var(--sys-size-3);
+  .security-mixed-content {
+    margin-top: var(--sys-size-5);
+  }
+
+  .security-explanation-recommendations {
+    padding-inline-start: var(--sys-size-8);
+  }
+
+  .security-explanation-recommendations > li {
+    margin-bottom: var(--sys-size-3);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./mainView.css")} */`;
@@ -3324,121 +3333,123 @@ var originView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.title-section {
-  padding: var(--sys-size-8) 0 var(--sys-size-11);
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-}
+@scope to (devtools-widget > *) {
+  .title-section {
+    padding: var(--sys-size-8) 0 var(--sys-size-11);
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  }
 
-.title-section-header {
-  padding-left: var(--sys-size-8);
-  padding-bottom: 10px;
-  font-size: var(--sys-typescale-body2-size);
-}
+  .title-section-header {
+    padding-left: var(--sys-size-8);
+    padding-bottom: var(--sys-size-6);
+    font-size: var(--sys-typescale-body2-size);
+  }
 
-.security-origin-view {
-  overflow: hidden scroll;
-  display: block;
-  user-select: text;
-}
+  :scope,
+  .security-origin-view {
+    overflow: hidden scroll;
+    display: block;
+    user-select: text;
+  }
 
-.security-origin-view .origin-view-section {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding: var(--sys-size-6) var(--sys-size-4) var(--sys-size-6) var(--sys-size-11);
-  font-size: var(--sys-typescale-body4-size);
-}
+  .origin-view-section {
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    padding: var(--sys-size-6) var(--sys-size-4) var(--sys-size-6) var(--sys-size-11);
+    font-size: var(--sys-typescale-body4-size);
+  }
 
-.origin-view-notes {
-  margin-top: var(--sys-size-2);
-  color: var(--sys-color-token-subtle);
-}
+  .origin-view-notes {
+    margin-top: var(--sys-size-2);
+    color: var(--sys-color-token-subtle);
+  }
 
-.origin-view-section-notes {
-  margin-top: var(--sys-size-4);
-  color: var(--sys-color-token-subtle);
-}
+  .origin-view-section-notes {
+    margin-top: var(--sys-size-4);
+    color: var(--sys-color-token-subtle);
+  }
 
-.security-origin-view .origin-display {
-  font-size: var(--sys-typescale-body4-size);
-  padding-left: var(--sys-size-8);
-  display: flex;
-  align-items: center;
-}
+  .origin-display {
+    font-size: var(--sys-typescale-body4-size);
+    padding-left: var(--sys-size-8);
+    display: flex;
+    align-items: center;
+  }
 
-.title-section > .view-network-button {
-  padding: var(--sys-size-4) 0 0 var(--sys-size-8);
-}
+  .title-section > .view-network-button {
+    padding: var(--sys-size-4) 0 0 var(--sys-size-8);
+  }
 
-.security-origin-view .origin-display devtools-icon {
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-  margin-right: var(--sys-size-6);
-}
+  .origin-display devtools-icon {
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+    margin-right: var(--sys-size-6);
+  }
 
-.security-origin-view .origin-view-section-title {
-  margin-top: var(--sys-size-3);
-  margin-bottom: var(--sys-size-3);
-  font-weight: bold;
-}
+  .origin-view-section-title {
+    margin-top: var(--sys-size-3);
+    margin-bottom: var(--sys-size-3);
+    font-weight: bold;
+  }
 
-.security-origin-view .details-table {
-  border-spacing: 0;
-}
+  .details-table {
+    border-spacing: 0;
+  }
 
-.security-origin-view .details-table-row {
-  white-space: nowrap;
-  overflow: hidden;
-  line-height: var(--sys-size-10);
-  vertical-align: top;
-}
+  .details-table-row {
+    white-space: nowrap;
+    overflow: hidden;
+    line-height: var(--sys-size-10);
+    vertical-align: top;
+  }
 
-.security-origin-view .details-table-row > td {
-  padding: 0;
-}
+  .details-table-row > td {
+    padding: 0;
+  }
 
-.security-origin-view .details-table-row > td:first-child {
-  color: var(--sys-color-token-subtle);
-  width: calc(var(--sys-size-21) + 1em); /* 128px label column + 1em right padding */
-  text-align: right;
-  padding-right: 1em;
-}
+  .details-table-row > td:first-child {
+    color: var(--sys-color-token-subtle);
+    width: calc(var(--sys-size-21) + 1em); /* 128px label column + 1em right padding */
+    text-align: right;
+    padding-right: 1em;
+  }
 
-.security-origin-view .details-table-row > td:nth-child(2) {
-  white-space: normal;
-}
+  .details-table-row > td:nth-child(2) {
+    white-space: normal;
+  }
 
-.security-origin-view .sct-details .details-table .details-table-row:last-child td:last-child {
-  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-  padding-bottom: var(--sys-size-5);
-}
+  .sct-details .details-table .details-table-row:last-child td:last-child {
+    border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+    padding-bottom: var(--sys-size-5);
+  }
 
-.security-origin-view .sct-details .details-table:last-child .details-table-row:last-child td:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
+  .sct-details .details-table:last-child .details-table-row:last-child td:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 
-.security-origin-view .details-toggle {
-  margin-left: 126px;
-}
+  .details-toggle {
+    margin-left: calc(var(--sys-size-21) + 1em); /* 128px label column + 1em right padding */
+  }
 
+  .details-table .empty-san {
+    color: var(--sys-color-state-disabled);
+  }
 
-.security-origin-view .details-table .empty-san {
-  color: var(--sys-color-state-disabled);
-}
+  .details-table .san-entry {
+    display: block;
+  }
 
-.security-origin-view .details-table .san-entry {
-  display: block;
-}
+  .truncated-san .truncated-entry {
+    display: none;
+  }
 
-.security-origin-view .truncated-san .truncated-entry {
-  display: none;
-}
+  .origin-view-section:last-child {
+    border-bottom: none;
+  }
 
-.origin-view-section:last-child {
-  border-bottom: none;
-}
-
-.devtools-link {
-  display: inline-flex;
+  .devtools-link {
+    display: inline-flex;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./originView.css")} */`;
@@ -3554,8 +3565,7 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/security/SecurityPanelSidebar.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var DEFAULT_VIEW = (input, output, target) => {
-  const renderIcon = (icon) => html`${icon}`;
+var DEFAULT_VIEW = (input, _output, target) => {
   const renderOrigin = (origin, state) => {
     const icon = getSecurityStateIconForDetailedView(state, `security-property security-property-${state}`);
     const selected = input.selectedElementId === origin;
@@ -3565,10 +3575,10 @@ var DEFAULT_VIEW = (input, output, target) => {
               title=${origin}
               ?selected=${selected}
               @click=${() => {
-      output.onElementSelected(origin);
-      output.onShowOrigin(origin);
+      input.onElementSelected(origin);
+      input.onShowOrigin(origin);
     }}>
-            ${renderIcon(icon)}
+            ${icon}
             ${renderHighlightedUrl(origin, state)}
           </li>
         `;
@@ -3641,7 +3651,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     const showReloadMessage = group === "MainOrigin" /* MainOrigin */ && input.origins.size === 0;
     return html`
       <li role="treeitem" class="security-sidebar-origins" open ?hidden=${isHidden}>
-        ${icon ? renderIcon(icon) : nothing}
+        ${icon ?? nothing}
         <span class="security-sidebar-origins-title">${title}</span>
         <ul role="group" aria-label=${title}>
           ${showReloadMessage ? html`
@@ -3655,7 +3665,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     `;
   };
   render(html`
-    <devtools-tree class="security-sidebar" navigation-variant .template=${html`
+    <devtools-tree class="security-sidebar" autofocus navigation-variant .template=${html`
       <style>${sidebar_css_default}</style>
       <style>${lockIcon_css_default}</style>
       <ul role="tree">
@@ -3667,10 +3677,10 @@ var DEFAULT_VIEW = (input, output, target) => {
                 title=${i18nString2(UIStrings2.overview)}
                 ?selected=${input.selectedElementId === "overview"}
                 @click=${() => {
-    output.onElementSelected("overview");
-    output.onShowOrigin(null);
+    input.onElementSelected("overview");
+    input.onShowOrigin(null);
   }}>
-              ${renderIcon(overviewIcon)}
+              ${overviewIcon}
               <span title=${i18nString2(UIStrings2.overview)}>${i18nString2(UIStrings2.overview)}</span>
             </li>
             ${Object.values(OriginGroup).map((group) => renderGroup(group))}
@@ -3692,54 +3702,78 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
   constructor(element, view = DEFAULT_VIEW) {
     super(element);
     this.#view = view;
+    this.setMinimumSize(100, 25);
   }
   set onShowOrigin(callback) {
     this.#onShowOrigin = callback;
+  }
+  get onShowOrigin() {
+    return this.#onShowOrigin;
   }
   wasShown() {
     super.wasShown();
     this.requestUpdate();
   }
-  showOverview() {
-    this.#selectedElementId = "overview";
-    this.requestUpdate();
-    this.#onShowOrigin?.(null);
-  }
-  toggleOriginsList(hidden) {
-    this.#originsHidden = hidden;
-    this.#showOriginsUnconditionally = !hidden;
-    this.requestUpdate();
-  }
-  addOrigin(origin, securityState) {
-    this.#origins.set(origin, securityState);
-    this.requestUpdate();
-  }
-  setMainOrigin(origin) {
+  set mainOrigin(origin) {
+    if (this.#mainOrigin === origin) {
+      return;
+    }
     this.#mainOrigin = origin;
     this.requestUpdate();
   }
   get mainOrigin() {
     return this.#mainOrigin;
   }
-  updateOrigin(origin, securityState) {
-    this.#origins.set(origin, securityState);
+  set origins(origins) {
+    if (this.#origins === origins) {
+      return;
+    }
+    this.#origins = origins;
     this.requestUpdate();
   }
-  updateOverviewSecurityState(securityState) {
-    this.#overviewSecurityState = securityState;
+  get origins() {
+    return this.#origins;
+  }
+  set originsHidden(originsHidden) {
+    if (this.#originsHidden === originsHidden) {
+      return;
+    }
+    this.#originsHidden = originsHidden;
     this.requestUpdate();
   }
-  clearOrigins() {
-    this.#origins.clear();
+  get originsHidden() {
+    return this.#originsHidden;
+  }
+  set showOriginsUnconditionally(showOriginsUnconditionally) {
+    if (this.#showOriginsUnconditionally === showOriginsUnconditionally) {
+      return;
+    }
+    this.#showOriginsUnconditionally = showOriginsUnconditionally;
     this.requestUpdate();
   }
-  set selectedOrigin(origin) {
-    this.#selectedElementId = origin ?? "overview";
-    this.requestUpdate();
-    this.#onShowOrigin?.(origin);
+  get showOriginsUnconditionally() {
+    return this.#showOriginsUnconditionally;
   }
-  get selectedOrigin() {
-    return this.#selectedElementId;
+  set overviewSecurityState(overviewSecurityState) {
+    if (this.#overviewSecurityState === overviewSecurityState) {
+      return;
+    }
+    this.#overviewSecurityState = overviewSecurityState;
+    this.requestUpdate();
+  }
+  get overviewSecurityState() {
+    return this.#overviewSecurityState;
+  }
+  set activeOrigin(origin) {
+    const elementId = origin ?? "overview";
+    if (this.#selectedElementId === elementId) {
+      return;
+    }
+    this.#selectedElementId = elementId;
+    this.requestUpdate();
+  }
+  get activeOrigin() {
+    return this.#selectedElementId === "overview" ? null : this.#selectedElementId;
   }
   performUpdate() {
     const input = {
@@ -3748,9 +3782,7 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
       originsHidden: this.#originsHidden,
       showOriginsUnconditionally: this.#showOriginsUnconditionally,
       overviewSecurityState: this.#overviewSecurityState,
-      selectedElementId: this.#selectedElementId
-    };
-    const output = {
+      selectedElementId: this.#selectedElementId,
       onElementSelected: (id) => {
         this.#selectedElementId = id;
         this.requestUpdate();
@@ -3759,12 +3791,13 @@ var SecurityPanelSidebar = class extends UI.Widget.VBox {
         this.#onShowOrigin?.(origin);
       }
     };
-    this.#view(input, output, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
 };
 
 // ../../front_end/panels/security/SecurityPanel.ts
-var { widget, widgetRef } = UI2.Widget;
+var { widget } = UI2.Widget;
+var { ifDefined } = Directives2;
 var UIStrings3 = {
   /**
    * @description Title of the overview section in the Security panel.
@@ -4197,9 +4230,9 @@ function getSecurityStateIconNameForDetailedView(securityState) {
   return iconName;
 }
 function getSecurityStateIconForDetailedView(securityState, className) {
-  return createIcon(getSecurityStateIconNameForDetailedView(securityState), className);
+  return html2`<devtools-icon name=${getSecurityStateIconNameForDetailedView(securityState)} class=${className}></devtools-icon>`;
 }
-function getSecurityStateIconForOverview(securityState, className) {
+function getSecurityStateIconForOverview(securityState, className, title) {
   let iconName;
   switch (securityState) {
     case Security.SecurityState.Unknown:
@@ -4218,7 +4251,7 @@ function getSecurityStateIconForOverview(securityState, className) {
     case Security.SecurityState.Info:
       throw new Error(`Unexpected security state ${securityState}`);
   }
-  return createIcon(iconName, className);
+  return html2`<devtools-icon name=${iconName} class=${className} title=${ifDefined(title)}></devtools-icon>`;
 }
 function renderHighlightedUrl(url, securityState) {
   const schemeSeparator = "://";
@@ -4247,64 +4280,72 @@ function renderCertificateViewerButton(text, jslogContext, onClick) {
     onClick();
   }}>${text}</devtools-button>`;
 }
-var DEFAULT_VIEW2 = (input, output, target) => {
-  render2(
-    html2`
-    <devtools-split-view direction="column" name="security"
-      ${UI2.Widget.widgetRef(UI2.SplitWidget.SplitWidget, (e) => {
-      output.splitWidget = e;
-    })}>
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  const { activeOrigin, activeOriginState } = input;
+  render2(html2`
+    <devtools-split-view direction="column" name="security">
       <devtools-widget
         slot="sidebar"
-        ${widget(SecurityPanelSidebar)}
-        ${widgetRef(SecurityPanelSidebar, (e) => {
-      output.sidebar = e;
-    })}>
+        autofocus
+        class="panel-sidebar"
+        jslog=${VisualLogging.pane("sidebar").track({ resize: true })}
+        ${widget(SecurityPanelSidebar, {
+    mainOrigin: input.mainOrigin,
+    origins: input.sidebarOrigins,
+    originsHidden: input.originsHidden,
+    showOriginsUnconditionally: input.showOriginsUnconditionally,
+    overviewSecurityState: input.overviewSecurityState,
+    activeOrigin: input.activeOrigin,
+    onShowOrigin: input.onShowOrigin
+  })}>
       </devtools-widget>
-  </devtools-split-view>`,
-    target
-  );
+      ${activeOrigin !== null && activeOriginState !== null ? html2`
+        <devtools-widget
+          slot="main"
+          ${widget(SecurityOriginView, {
+    origin: activeOrigin,
+    securityState: activeOriginState.securityState,
+    securityDetails: activeOriginState.securityDetails,
+    loadedFromCache: activeOriginState.loadedFromCache
+  })}>
+        </devtools-widget>` : html2`
+        <devtools-widget
+          slot="main"
+          ${widget(SecurityMainView, {
+    visibleSecurityState: input.visibleSecurityState,
+    filterRequestCounts: input.filterRequestCounts
+  })}>
+        </devtools-widget>`}
+    </devtools-split-view>
+  `, target);
 };
 var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
-  mainView;
-  sidebar;
-  lastResponseReceivedForLoaderId;
-  origins;
-  filterRequestCounts;
-  visibleView;
-  eventListeners;
-  securityModel;
-  splitWidget;
-  view;
+  #view;
+  #lastResponseReceivedForLoaderId = /* @__PURE__ */ new Map();
+  #origins = /* @__PURE__ */ new Map();
+  #sidebarOrigins = /* @__PURE__ */ new Map();
+  #filterRequestCounts = /* @__PURE__ */ new Map();
+  #visibleSecurityState = null;
+  #activeOrigin = null;
+  #mainOrigin = null;
+  #originsHidden = false;
+  #showOriginsUnconditionally = false;
+  #overviewSecurityState = Security.SecurityState.Unknown;
+  #eventListeners = [];
+  #securityModel = null;
+  #onShowOrigin = (origin) => {
+    this.showOrigin(origin);
+  };
   constructor(view = DEFAULT_VIEW2) {
     super("security");
-    this.view = view;
-    this.update();
-    this.sidebar.setMinimumSize(100, 25);
-    this.sidebar.element.classList.add("panel-sidebar");
-    this.sidebar.element.setAttribute("jslog", `${VisualLogging.pane("sidebar").track({ resize: true })}`);
-    this.mainView = new SecurityMainView();
-    this.sidebar.onShowOrigin = (origin) => {
-      if (origin) {
-        this.showOrigin(origin);
-      } else {
-        this.setVisibleView(this.mainView);
-      }
-    };
-    this.lastResponseReceivedForLoaderId = /* @__PURE__ */ new Map();
-    this.origins = /* @__PURE__ */ new Map();
-    this.filterRequestCounts = /* @__PURE__ */ new Map();
-    this.visibleView = null;
-    this.eventListeners = [];
-    this.securityModel = null;
+    this.#view = view;
     SDK2.TargetManager.TargetManager.instance().observeModels(SecurityModel, this, { scoped: true });
     SDK2.TargetManager.TargetManager.instance().addModelListener(
       SDK2.ResourceTreeModel.ResourceTreeModel,
       SDK2.ResourceTreeModel.Events.PrimaryPageChanged,
-      this.onPrimaryPageChanged,
+      this.#onPrimaryPageChanged,
       this
     );
-    this.sidebar.showOverview();
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -4313,62 +4354,51 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     }
     return securityPanelInstance;
   }
-  static createCertificateViewerButtonForCert(text, names) {
-    const certificateButton = UI2.UIUtils.createTextButton(text, (e) => {
-      e.consume();
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
-    }, { className: "origin-button", jslogContext: "security.view-certificate" });
-    UI2.ARIAUtils.markAsButton(certificateButton);
-    return certificateButton;
-  }
-  update() {
-    this.view({ panel: this }, this, this.contentElement);
-  }
-  updateVisibleSecurityState(visibleSecurityState) {
-    this.sidebar.updateOverviewSecurityState(visibleSecurityState.securityState);
-    this.mainView.updateVisibleSecurityState(visibleSecurityState);
-  }
-  onVisibleSecurityStateChanged({ data }) {
-    this.updateVisibleSecurityState(data);
-  }
-  showOrigin(origin) {
-    const originState = this.origins.get(origin);
-    if (!originState) {
-      return;
-    }
-    if (!originState.originView) {
-      originState.originView = new SecurityOriginView(origin, originState);
-    }
-    this.setVisibleView(originState.originView);
-  }
   wasShown() {
     super.wasShown();
-    if (!this.visibleView) {
-      this.sidebar.showOverview();
-    }
+    this.requestUpdate();
   }
-  focus() {
-    this.sidebar.focus();
+  performUpdate() {
+    const activeOriginState = this.#activeOrigin ? this.#origins.get(this.#activeOrigin) ?? null : null;
+    const input = {
+      mainOrigin: this.#mainOrigin,
+      sidebarOrigins: this.#sidebarOrigins,
+      originsHidden: this.#originsHidden,
+      showOriginsUnconditionally: this.#showOriginsUnconditionally,
+      overviewSecurityState: this.#overviewSecurityState,
+      activeOrigin: this.#activeOrigin,
+      activeOriginState,
+      visibleSecurityState: this.#visibleSecurityState,
+      filterRequestCounts: this.#filterRequestCounts,
+      onShowOrigin: this.#onShowOrigin
+    };
+    this.#view(input, void 0, this.contentElement);
   }
-  setVisibleView(view) {
-    if (this.visibleView === view) {
+  showOrigin(origin) {
+    if (origin !== null && !this.#origins.has(origin)) {
       return;
     }
-    if (this.visibleView) {
-      this.visibleView.detach();
+    if (this.#activeOrigin === origin) {
+      return;
     }
-    this.visibleView = view;
-    if (view) {
-      this.splitWidget.setMainWidget(view);
-    }
+    this.#activeOrigin = origin;
+    this.requestUpdate();
   }
-  onResponseReceived(event) {
+  #updateVisibleSecurityState(visibleSecurityState) {
+    this.#overviewSecurityState = visibleSecurityState.securityState;
+    this.#visibleSecurityState = visibleSecurityState;
+    this.requestUpdate();
+  }
+  #onVisibleSecurityStateChanged({ data }) {
+    this.#updateVisibleSecurityState(data);
+  }
+  #onResponseReceived(event) {
     const request = event.data.request;
     if (request.resourceType() === Common.ResourceType.resourceTypes.Document && request.loaderId) {
-      this.lastResponseReceivedForLoaderId.set(request.loaderId, request);
+      this.#lastResponseReceivedForLoaderId.set(request.loaderId, request);
     }
   }
-  processRequest(request) {
+  #processRequest(request) {
     const origin = Common.ParsedURL.ParsedURL.extractOrigin(request.url());
     if (!origin) {
       return;
@@ -4377,7 +4407,7 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     if (request.mixedContentType === Security.MixedContentType.Blockable || request.mixedContentType === Security.MixedContentType.OptionallyBlockable) {
       securityState = Security.SecurityState.Insecure;
     }
-    const originState = this.origins.get(origin);
+    const originState = this.#origins.get(origin);
     if (originState) {
       if (securityStateCompare(securityState, originState.securityState) < 0) {
         originState.securityState = securityState;
@@ -4385,10 +4415,10 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
         if (securityDetails) {
           originState.securityDetails = securityDetails;
         }
-        this.sidebar.updateOrigin(origin, securityState);
-        if (originState.originView) {
-          originState.originView.setSecurityState(securityState, originState.securityDetails);
-        }
+        const newSidebarOrigins = new Map(this.#sidebarOrigins);
+        newSidebarOrigins.set(origin, securityState);
+        this.#sidebarOrigins = newSidebarOrigins;
+        this.requestUpdate();
       }
     } else {
       const newOriginState = {
@@ -4396,16 +4426,19 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
         securityDetails: request.securityDetails(),
         loadedFromCache: request.cached()
       };
-      this.origins.set(origin, newOriginState);
-      this.sidebar.addOrigin(origin, securityState);
+      this.#origins.set(origin, newOriginState);
+      const newSidebarOrigins = new Map(this.#sidebarOrigins);
+      newSidebarOrigins.set(origin, securityState);
+      this.#sidebarOrigins = newSidebarOrigins;
+      this.requestUpdate();
     }
   }
-  onRequestFinished(event) {
+  #onRequestFinished(event) {
     const request = event.data;
-    this.updateFilterRequestCounts(request);
-    this.processRequest(request);
+    this.#updateFilterRequestCounts(request);
+    this.#processRequest(request);
   }
-  updateFilterRequestCounts(request) {
+  #updateFilterRequestCounts(request) {
     if (request.mixedContentType === Security.MixedContentType.None) {
       return;
     }
@@ -4417,77 +4450,73 @@ var SecurityPanel = class _SecurityPanel extends UI2.Panel.Panel {
     } else if (request.mixedContentType === Security.MixedContentType.OptionallyBlockable) {
       filterKey = NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED;
     }
-    const currentCount = this.filterRequestCounts.get(filterKey);
-    if (!currentCount) {
-      this.filterRequestCounts.set(filterKey, 1);
-    } else {
-      this.filterRequestCounts.set(filterKey, currentCount + 1);
-    }
-    this.mainView.setFilterRequestCounts(new Map(this.filterRequestCounts));
+    const currentCount = this.#filterRequestCounts.get(filterKey) ?? 0;
+    const newCounts = new Map(this.#filterRequestCounts);
+    newCounts.set(filterKey, currentCount + 1);
+    this.#filterRequestCounts = newCounts;
+    this.requestUpdate();
   }
   modelAdded(securityModel) {
     if (securityModel.target() !== securityModel.target().outermostTarget()) {
       return;
     }
-    this.securityModel = securityModel;
+    this.#securityModel = securityModel;
     const resourceTreeModel = securityModel.resourceTreeModel();
     const networkManager = securityModel.networkManager();
-    if (this.eventListeners.length) {
-      Common.EventTarget.removeEventListeners(this.eventListeners);
+    if (this.#eventListeners.length) {
+      Common.EventTarget.removeEventListeners(this.#eventListeners);
     }
-    this.eventListeners = [
-      securityModel.addEventListener("VisibleSecurityStateChanged" /* VisibleSecurityStateChanged */, this.onVisibleSecurityStateChanged, this),
+    this.#eventListeners = [
+      securityModel.addEventListener("VisibleSecurityStateChanged" /* VisibleSecurityStateChanged */, this.#onVisibleSecurityStateChanged, this),
       resourceTreeModel.addEventListener(
         SDK2.ResourceTreeModel.Events.InterstitialShown,
-        this.onInterstitialShown,
+        this.#onInterstitialShown,
         this
       ),
       resourceTreeModel.addEventListener(
         SDK2.ResourceTreeModel.Events.InterstitialHidden,
-        this.onInterstitialHidden,
+        this.#onInterstitialHidden,
         this
       ),
-      networkManager.addEventListener(SDK2.NetworkManager.Events.ResponseReceived, this.onResponseReceived, this),
-      networkManager.addEventListener(SDK2.NetworkManager.Events.RequestFinished, this.onRequestFinished, this)
+      networkManager.addEventListener(SDK2.NetworkManager.Events.ResponseReceived, this.#onResponseReceived, this),
+      networkManager.addEventListener(SDK2.NetworkManager.Events.RequestFinished, this.#onRequestFinished, this)
     ];
     if (resourceTreeModel.isInterstitialShowing) {
-      this.onInterstitialShown();
+      this.#onInterstitialShown();
     }
   }
   modelRemoved(securityModel) {
-    if (this.securityModel !== securityModel) {
+    if (this.#securityModel !== securityModel) {
       return;
     }
-    this.securityModel = null;
-    Common.EventTarget.removeEventListeners(this.eventListeners);
+    this.#securityModel = null;
+    Common.EventTarget.removeEventListeners(this.#eventListeners);
   }
-  onPrimaryPageChanged(event) {
+  #onPrimaryPageChanged(event) {
     const { frame } = event.data;
-    const request = this.lastResponseReceivedForLoaderId.get(frame.loaderId);
-    this.sidebar.showOverview();
-    this.sidebar.clearOrigins();
-    this.origins.clear();
-    this.lastResponseReceivedForLoaderId.clear();
-    this.filterRequestCounts.clear();
-    this.mainView.setFilterRequestCounts(new Map(this.filterRequestCounts));
+    const request = this.#lastResponseReceivedForLoaderId.get(frame.loaderId);
+    this.#activeOrigin = null;
+    this.#origins.clear();
+    this.#sidebarOrigins = /* @__PURE__ */ new Map();
+    this.#lastResponseReceivedForLoaderId.clear();
+    this.#filterRequestCounts = /* @__PURE__ */ new Map();
     const origin = Common.ParsedURL.ParsedURL.extractOrigin(request ? request.url() : frame.url);
-    this.sidebar.setMainOrigin(origin);
+    this.#mainOrigin = origin;
+    this.requestUpdate();
     if (request) {
-      this.processRequest(request);
+      this.#processRequest(request);
     }
   }
-  onInterstitialShown() {
-    this.sidebar.showOverview();
-    this.sidebar.toggleOriginsList(
-      true
-      /* hidden */
-    );
+  #onInterstitialShown() {
+    this.#activeOrigin = null;
+    this.#originsHidden = true;
+    this.#showOriginsUnconditionally = false;
+    this.requestUpdate();
   }
-  onInterstitialHidden() {
-    this.sidebar.toggleOriginsList(
-      false
-      /* hidden */
-    );
+  #onInterstitialHidden() {
+    this.#originsHidden = false;
+    this.#showOriginsUnconditionally = true;
+    this.requestUpdate();
   }
 };
 var OriginGroup = /* @__PURE__ */ ((OriginGroup2) => {
@@ -4497,130 +4526,214 @@ var OriginGroup = /* @__PURE__ */ ((OriginGroup2) => {
   OriginGroup2["Unknown"] = "Unknown";
   return OriginGroup2;
 })(OriginGroup || {});
-var SecurityMainView = class extends UI2.Widget.VBox {
-  #summarySection;
-  #securityExplanationsMain;
-  #securityExplanationsExtra;
-  #lockSpectrum;
-  #summaryText;
-  #explanations;
-  #securityState;
-  #filterRequestCounts = /* @__PURE__ */ new Map();
-  constructor(element) {
-    super(element, { jslog: `${VisualLogging.pane("security.main-view")}` });
-    this.registerRequiredCSS(lockIcon_css_default, mainView_css_default);
-    this.setMinimumSize(200, 100);
-    this.contentElement.classList.add("security-main-view");
-    this.#summarySection = this.contentElement.createChild("div", "security-summary");
-    this.#securityExplanationsMain = this.contentElement.createChild("div", "security-explanation-list security-explanations-main");
-    this.#securityExplanationsExtra = this.contentElement.createChild("div", "security-explanation-list security-explanations-extra");
-    const summaryDiv = this.#summarySection.createChild("div", "security-summary-section-title");
-    summaryDiv.textContent = i18nString3(UIStrings3.securityOverview);
-    UI2.ARIAUtils.markAsHeading(summaryDiv, 1);
-    const lockSpectrum = this.#summarySection.createChild("div", "lock-spectrum");
-    this.#lockSpectrum = /* @__PURE__ */ new Map([
-      [
-        Security.SecurityState.Secure,
-        lockSpectrum.appendChild(
-          getSecurityStateIconForOverview(Security.SecurityState.Secure, "lock-icon lock-icon-secure")
-        )
-      ],
-      [
-        Security.SecurityState.Neutral,
-        lockSpectrum.appendChild(
-          getSecurityStateIconForOverview(Security.SecurityState.Neutral, "lock-icon lock-icon-neutral")
-        )
-      ],
-      [
-        Security.SecurityState.Insecure,
-        lockSpectrum.appendChild(
-          getSecurityStateIconForOverview(Security.SecurityState.Insecure, "lock-icon lock-icon-insecure")
-        )
-      ]
-    ]);
-    UI2.Tooltip.Tooltip.install(
-      this.#getLockSpectrumDiv(Security.SecurityState.Secure),
+function renderExplanation(explanation, input) {
+  const icon = getSecurityStateIconForDetailedView(
+    explanation.securityState,
+    `security-property security-property-${explanation.securityState}`
+  );
+  const mixedContent = explanation.mixedContent;
+  return html2`
+    <div class=${`security-explanation security-explanation-${explanation.securityState}`}>
+      ${icon}
+      <div class="security-explanation-text">
+        <div class="security-explanation-title">${explanation.title ? html2`<span>${explanation.title} - </span><span class=${`security-explanation-title-${explanation.securityState}`}>${explanation.summary}</span>` : explanation.summary}</div>
+        <div>${explanation.description}</div>
+        ${explanation.certificate.length > 0 ? renderCertificateViewerButton(
+    i18nString3(UIStrings3.viewCertificate),
+    "security.view-certificate",
+    () => input.onShowCertificateViewer(explanation.certificate)
+  ) : nothing2}
+        ${explanation.recommendations?.length ? html2`
+          <ul class="security-explanation-recommendations">
+            ${explanation.recommendations.map((recommendation) => html2`<li>${recommendation}</li>`)}
+          </ul>` : nothing2}
+        ${mixedContent ? mixedContent.count === 0 ? html2`
+          <div class="security-mixed-content">${i18nString3(UIStrings3.reloadThePageToRecordRequestsFor)}</div>` : html2`
+          <devtools-button
+              class="security-mixed-content"
+              .variant=${Buttons.Button.Variant.TEXT}
+              .jslogContext=${"reveal-in-network"}
+              @click=${(e) => {
+    e.consume();
+    input.onShowNetworkFilter(mixedContent.filterKey);
+  }}>${i18nString3(UIStrings3.viewDRequestsInNetworkPanel, { n: mixedContent.count })}</devtools-button>` : nothing2}
+      </div>
+    </div>`;
+}
+var DEFAULT_SECURITY_MAIN_VIEW = (input, _output, target) => {
+  const isInsecureBroken = input.securityState === Security.SecurityState.InsecureBroken;
+  const insecureIconClass = isInsecureBroken ? "lock-icon lock-icon-insecure-broken" : "lock-icon lock-icon-insecure";
+  const insecureTooltip = isInsecureBroken ? i18nString3(UIStrings3.notSecureBroken) : i18nString3(UIStrings3.notSecure);
+  render2(
+    html2`
+      <style>${lockIcon_css_default}</style>
+      <style>${mainView_css_default}</style>
+      <div class=${Directives2.classMap({
+      "security-summary": true,
+      [`security-summary-${input.securityState}`]: input.securityState !== null
+    })}>
+        <div class="security-summary-section-title" role="heading" aria-level="1">
+          ${i18nString3(UIStrings3.securityOverview)}
+        </div>
+        <div class="lock-spectrum">
+          ${getSecurityStateIconForOverview(
+      Security.SecurityState.Secure,
+      "lock-icon lock-icon-secure",
       i18nString3(UIStrings3.secure)
-    );
-    UI2.Tooltip.Tooltip.install(
-      this.#getLockSpectrumDiv(Security.SecurityState.Neutral),
+    )}
+          ${getSecurityStateIconForOverview(
+      Security.SecurityState.Neutral,
+      "lock-icon lock-icon-neutral",
       i18nString3(UIStrings3.info)
-    );
-    UI2.Tooltip.Tooltip.install(
-      this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
-      i18nString3(UIStrings3.notSecure)
-    );
-    this.#summarySection.createChild("div", "triangle-pointer-container").createChild("div", "triangle-pointer-wrapper").createChild("div", "triangle-pointer");
-    this.#summaryText = this.#summarySection.createChild("div", "security-summary-text");
-    UI2.ARIAUtils.markAsHeading(this.#summaryText, 2);
-    this.#explanations = null;
-    this.#securityState = null;
-  }
-  setFilterRequestCounts(filterRequestCounts) {
-    this.#filterRequestCounts = filterRequestCounts;
-    this.#refreshExplanations();
-  }
-  #getLockSpectrumDiv(securityState) {
-    const element = this.#lockSpectrum.get(securityState);
-    if (!element) {
-      throw new Error(`Invalid argument: ${securityState}`);
-    }
-    return element;
-  }
-  #addExplanation(parent, explanation) {
-    const explanationSection = parent.createChild("div", "security-explanation");
-    explanationSection.classList.add("security-explanation-" + explanation.securityState);
-    const icon = getSecurityStateIconForDetailedView(
-      explanation.securityState,
-      "security-property security-property-" + explanation.securityState
-    );
-    explanationSection.appendChild(icon);
-    const text = explanationSection.createChild("div", "security-explanation-text");
-    const explanationHeader = text.createChild("div", "security-explanation-title");
-    if (explanation.title) {
-      explanationHeader.createChild("span").textContent = explanation.title + " - ";
-      explanationHeader.createChild("span", "security-explanation-title-" + explanation.securityState).textContent = explanation.summary;
-    } else {
-      explanationHeader.textContent = explanation.summary;
-    }
-    text.createChild("div").textContent = explanation.description;
-    if (explanation.certificate.length) {
-      text.appendChild(SecurityPanel.createCertificateViewerButtonForCert(
-        i18nString3(UIStrings3.viewCertificate),
-        explanation.certificate
-      ));
-    }
-    if (explanation.recommendations?.length) {
-      const recommendationList = text.createChild("ul", "security-explanation-recommendations");
-      for (const recommendation of explanation.recommendations) {
-        recommendationList.createChild("li").textContent = recommendation;
+    )}
+          ${getSecurityStateIconForOverview(
+      isInsecureBroken ? Security.SecurityState.InsecureBroken : Security.SecurityState.Insecure,
+      insecureIconClass,
+      insecureTooltip
+    )}
+        </div>
+        <div class="triangle-pointer-container">
+          <div class="triangle-pointer-wrapper">
+            <div class="triangle-pointer"></div>
+          </div>
+        </div>
+        <div class="security-summary-text" role="heading" aria-level="2">${input.summaryText}</div>
+      </div>
+      <div class="security-explanation-list security-explanations-main">${input.mainExplanations.length > 0 ? input.mainExplanations.map((explanation) => renderExplanation(explanation, input)) : nothing2}</div>
+      <div class="security-explanation-list security-explanations-extra">${input.extraExplanations.length > 0 ? input.extraExplanations.map((explanation) => renderExplanation(explanation, input)) : nothing2}</div>
+    `,
+    target,
+    {
+      container: {
+        classes: ["security-main-view"],
+        attributes: {
+          jslog: `${VisualLogging.pane("security.main-view")}`
+        }
       }
     }
-    return text;
+  );
+};
+var SecurityMainView = class extends UI2.Widget.VBox {
+  #view;
+  #visibleSecurityState = null;
+  #summaryText = "";
+  #explanations = null;
+  #securityState = null;
+  #filterRequestCounts = /* @__PURE__ */ new Map();
+  #showCertificateViewer = (certificate) => {
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(certificate);
+  };
+  #showNetworkFilter = (filterKey) => {
+    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
+      [{ filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey }]
+    ));
+  };
+  constructor(element, view = DEFAULT_SECURITY_MAIN_VIEW) {
+    super(element);
+    this.#view = view;
+    this.setMinimumSize(200, 100);
   }
-  updateVisibleSecurityState(visibleSecurityState) {
-    this.#summarySection.classList.remove("security-summary-" + this.#securityState);
-    this.#securityState = visibleSecurityState.securityState;
-    this.#summarySection.classList.add("security-summary-" + this.#securityState);
-    if (this.#securityState === Security.SecurityState.Insecure) {
-      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure");
-      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure-broken");
-      UI2.Tooltip.Tooltip.install(
-        this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
-        i18nString3(UIStrings3.notSecure)
-      );
-    } else if (this.#securityState === Security.SecurityState.InsecureBroken) {
-      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.add("lock-icon-insecure-broken");
-      this.#getLockSpectrumDiv(Security.SecurityState.Insecure).classList.remove("lock-icon-insecure");
-      UI2.Tooltip.Tooltip.install(
-        this.#getLockSpectrumDiv(Security.SecurityState.Insecure),
-        i18nString3(UIStrings3.notSecureBroken)
-      );
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const mainExplanations = [];
+    const extraExplanations = [];
+    if (this.#explanations) {
+      for (const explanation of this.#explanations) {
+        if (explanation.securityState === Security.SecurityState.Info) {
+          extraExplanations.push({
+            securityState: explanation.securityState,
+            title: explanation.title,
+            summary: explanation.summary,
+            description: explanation.description,
+            certificate: explanation.certificate ?? [],
+            recommendations: explanation.recommendations
+          });
+        } else {
+          let mixedContent;
+          switch (explanation.mixedContentType) {
+            case Security.MixedContentType.Blockable: {
+              const filterKey = NetworkForward.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN;
+              mixedContent = { filterKey, count: this.#filterRequestCounts.get(filterKey) ?? 0 };
+              break;
+            }
+            case Security.MixedContentType.OptionallyBlockable: {
+              const filterKey = NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED;
+              mixedContent = { filterKey, count: this.#filterRequestCounts.get(filterKey) ?? 0 };
+              break;
+            }
+            default:
+              break;
+          }
+          mainExplanations.push({
+            securityState: explanation.securityState,
+            title: explanation.title,
+            summary: explanation.summary,
+            description: explanation.description,
+            certificate: explanation.certificate ?? [],
+            recommendations: explanation.recommendations,
+            mixedContent
+          });
+        }
+      }
     }
-    const { summary, explanations } = this.#getSecuritySummaryAndExplanations(visibleSecurityState);
-    this.#summaryText.textContent = summary || SummaryMessages[this.#securityState]();
-    this.#explanations = this.#orderExplanations(explanations);
-    this.#refreshExplanations();
+    const blockedCount = this.#filterRequestCounts.get(NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED) ?? 0;
+    if (blockedCount > 0) {
+      mainExplanations.push({
+        securityState: Security.SecurityState.Info,
+        summary: i18nString3(UIStrings3.blockedMixedContent),
+        description: i18nString3(UIStrings3.yourPageRequestedNonsecure),
+        certificate: [],
+        mixedContent: {
+          filterKey: NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED,
+          count: blockedCount
+        }
+      });
+    }
+    this.#view(
+      {
+        securityState: this.#securityState,
+        summaryText: this.#summaryText,
+        mainExplanations,
+        extraExplanations,
+        onShowCertificateViewer: this.#showCertificateViewer,
+        onShowNetworkFilter: this.#showNetworkFilter
+      },
+      void 0,
+      this.contentElement
+    );
+  }
+  set filterRequestCounts(filterRequestCounts) {
+    if (this.#filterRequestCounts === filterRequestCounts) {
+      return;
+    }
+    this.#filterRequestCounts = filterRequestCounts;
+    this.requestUpdate();
+  }
+  get filterRequestCounts() {
+    return this.#filterRequestCounts;
+  }
+  set visibleSecurityState(visibleSecurityState) {
+    if (this.#visibleSecurityState === visibleSecurityState) {
+      return;
+    }
+    this.#visibleSecurityState = visibleSecurityState;
+    if (visibleSecurityState) {
+      this.#securityState = visibleSecurityState.securityState;
+      const { summary, explanations } = this.#getSecuritySummaryAndExplanations(visibleSecurityState);
+      this.#summaryText = summary || SummaryMessages[this.#securityState]();
+      this.#explanations = this.#orderExplanations(explanations);
+    } else {
+      this.#securityState = null;
+      this.#summaryText = "";
+      this.#explanations = null;
+    }
+    this.requestUpdate();
+  }
+  get visibleSecurityState() {
+    return this.#visibleSecurityState;
   }
   #getSecuritySummaryAndExplanations(visibleSecurityState) {
     const { securityState, securityStateIssueIds } = visibleSecurityState;
@@ -4886,76 +4999,6 @@ ${i18nString3(UIStrings3.ifYouBelieveThisIsShownInErrorSafety)}`;
     }
     return orderedExplanations;
   }
-  refreshExplanations() {
-    this.#refreshExplanations();
-  }
-  #refreshExplanations() {
-    this.#securityExplanationsMain.removeChildren();
-    this.#securityExplanationsExtra.removeChildren();
-    if (!this.#explanations) {
-      return;
-    }
-    for (const explanation of this.#explanations) {
-      if (explanation.securityState === Security.SecurityState.Info) {
-        this.#addExplanation(this.#securityExplanationsExtra, explanation);
-      } else {
-        switch (explanation.mixedContentType) {
-          case Security.MixedContentType.Blockable:
-            this.#addMixedContentExplanation(
-              this.#securityExplanationsMain,
-              explanation,
-              NetworkForward.UIFilter.MixedContentFilterValues.BLOCK_OVERRIDDEN
-            );
-            break;
-          case Security.MixedContentType.OptionallyBlockable:
-            this.#addMixedContentExplanation(
-              this.#securityExplanationsMain,
-              explanation,
-              NetworkForward.UIFilter.MixedContentFilterValues.DISPLAYED
-            );
-            break;
-          default:
-            this.#addExplanation(this.#securityExplanationsMain, explanation);
-            break;
-        }
-      }
-    }
-    if ((this.#filterRequestCounts.get(NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED) ?? 0) > 0) {
-      const explanation = {
-        securityState: Security.SecurityState.Info,
-        summary: i18nString3(UIStrings3.blockedMixedContent),
-        description: i18nString3(UIStrings3.yourPageRequestedNonsecure),
-        mixedContentType: Security.MixedContentType.Blockable,
-        certificate: [],
-        title: ""
-      };
-      this.#addMixedContentExplanation(
-        this.#securityExplanationsMain,
-        explanation,
-        NetworkForward.UIFilter.MixedContentFilterValues.BLOCKED
-      );
-    }
-  }
-  #addMixedContentExplanation(parent, explanation, filterKey) {
-    const element = this.#addExplanation(parent, explanation);
-    const filterRequestCount = this.#filterRequestCounts.get(filterKey) ?? 0;
-    if (!filterRequestCount) {
-      const refreshPrompt = element.createChild("div", "security-mixed-content");
-      refreshPrompt.textContent = i18nString3(UIStrings3.reloadThePageToRecordRequestsFor);
-      return;
-    }
-    const requestsAnchor = element.createChild("button", "security-mixed-content devtools-link text-button link-style");
-    UI2.ARIAUtils.markAsLink(requestsAnchor);
-    requestsAnchor.tabIndex = 0;
-    requestsAnchor.textContent = i18nString3(UIStrings3.viewDRequestsInNetworkPanel, { n: filterRequestCount });
-    requestsAnchor.addEventListener("click", this.#showNetworkFilter.bind(this, filterKey));
-  }
-  #showNetworkFilter(filterKey, e) {
-    e.consume();
-    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters(
-      [{ filterType: NetworkForward.UIFilter.FilterType.MixedContent, filterValue: filterKey }]
-    ));
-  }
 };
 var SAN_NUM_SHOWN_WHEN_TRUNCATED = 2;
 function isSanListTruncatable(sanList) {
@@ -5194,7 +5237,6 @@ var DEFAULT_SECURITY_ORIGIN_VIEW = (input, _output, target) => {
       ${renderTitleSection(input.origin, input.securityState, input.onRevealInNetwork)}
     </div>
     ${renderSecurityDetails(input)}`,
-    // clang-format on
     target,
     {
       container: {
@@ -5206,30 +5248,71 @@ var DEFAULT_SECURITY_ORIGIN_VIEW = (input, _output, target) => {
 };
 var SecurityOriginView = class extends UI2.Widget.VBox {
   #view;
-  #origin;
-  #loadedFromCache;
-  #securityState;
-  #securityDetails;
-  #isSanListTruncated;
+  #origin = Platform.DevToolsPath.EmptyUrlString;
+  #loadedFromCache = false;
+  #securityState = Security.SecurityState.Unknown;
+  #securityDetails = null;
+  #isSanListTruncated = false;
   #isCertificateTransparencyDetailsShown = false;
-  constructor(origin, originState, view = DEFAULT_SECURITY_ORIGIN_VIEW) {
-    super();
+  constructor(element, view = DEFAULT_SECURITY_ORIGIN_VIEW) {
+    super(element);
     this.#view = view;
     this.setMinimumSize(200, 100);
+  }
+  wasShown() {
+    super.wasShown();
+    this.requestUpdate();
+  }
+  set origin(origin) {
+    if (this.#origin === origin) {
+      return;
+    }
     this.#origin = origin;
-    this.#securityState = originState.securityState;
-    this.#securityDetails = originState.securityDetails;
-    this.#loadedFromCache = originState.loadedFromCache;
     this.#isSanListTruncated = isSanListTruncatable(this.#securityDetails?.sanList ?? []);
-    this.#renderView();
+    this.#isCertificateTransparencyDetailsShown = false;
+    this.requestUpdate();
+  }
+  get origin() {
+    return this.#origin;
+  }
+  set securityState(securityState) {
+    if (this.#securityState === securityState) {
+      return;
+    }
+    this.#securityState = securityState;
+    this.requestUpdate();
+  }
+  get securityState() {
+    return this.#securityState;
+  }
+  set securityDetails(securityDetails) {
+    if (this.#securityDetails === securityDetails) {
+      return;
+    }
+    this.#securityDetails = securityDetails;
+    this.#isSanListTruncated = isSanListTruncatable(securityDetails?.sanList ?? []);
+    this.requestUpdate();
+  }
+  get securityDetails() {
+    return this.#securityDetails;
+  }
+  set loadedFromCache(loadedFromCache) {
+    if (this.#loadedFromCache === loadedFromCache) {
+      return;
+    }
+    this.#loadedFromCache = loadedFromCache;
+    this.requestUpdate();
+  }
+  get loadedFromCache() {
+    return this.#loadedFromCache;
   }
   #toggleSanTruncation = () => {
     this.#isSanListTruncated = !this.#isSanListTruncated;
-    this.#renderView();
+    this.requestUpdate();
   };
   #toggleCertificateTransparencyDetails = () => {
     this.#isCertificateTransparencyDetailsShown = !this.#isCertificateTransparencyDetailsShown;
-    this.#renderView();
+    this.requestUpdate();
   };
   #showCertificateViewer = async () => {
     const names = await SDK2.NetworkManager.MultitargetNetworkManager.instance().getCertificate(this.#origin);
@@ -5237,15 +5320,14 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
     }
   };
-  setSecurityState(newSecurityState, securityDetails) {
-    if (this.#securityDetails !== securityDetails) {
-      this.#isSanListTruncated = isSanListTruncatable(securityDetails?.sanList ?? []);
-    }
-    this.#securityState = newSecurityState;
-    this.#securityDetails = securityDetails;
-    this.#renderView();
-  }
-  #renderView() {
+  #revealInNetwork = () => {
+    const parsedURL = new Common.ParsedURL.ParsedURL(this.#origin);
+    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
+      { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },
+      { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme }
+    ]));
+  };
+  performUpdate() {
     this.#view(
       {
         origin: this.#origin,
@@ -5263,13 +5345,6 @@ var SecurityOriginView = class extends UI2.Widget.VBox {
       this.contentElement
     );
   }
-  #revealInNetwork = () => {
-    const parsedURL = new Common.ParsedURL.ParsedURL(this.#origin);
-    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
-      { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },
-      { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme }
-    ]));
-  };
 };
 export {
   SecurityModel_exports as SecurityModel,

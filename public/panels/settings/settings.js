@@ -258,6 +258,7 @@ var settingsScreenInstance;
 var SETTINGS_SCREEN_DEFAULT_VIEW = (input, _output, target) => {
   render(
     html`
+        <style>${settingsScreen_css_default}</style>
         <devtools-tabbed-pane
           vertical
           ?focus-header=${input.focusTabHeader}
@@ -296,7 +297,6 @@ var SettingsScreen = class _SettingsScreen extends UI.Widget.VBox {
   constructor(view = SETTINGS_SCREEN_DEFAULT_VIEW) {
     super({ useShadowDom: true });
     this.#view = view;
-    this.registerRequiredCSS(settingsScreen_css_default);
     this.appendApplicableItems(UI.ViewManager.ViewLocationValues.SETTINGS_VIEW);
     const keyBindsView = this.#views.find((v) => v.viewId() === "keybinds");
     if (keyBindsView) {
@@ -1693,7 +1693,7 @@ var AISettingsTab = class extends UI2.Widget.VBox {
     }
     if (!this.#aiAssistanceSetting.unavailable) {
       const aiAssistanceData = {
-        settingName: i18n3.i18n.lockedString(AiAssistanceModel.AiUtils.isGeminiBranding() ? "Gemini in Chrome DevTools" : "AI assistance"),
+        settingName: i18n3.i18n.lockedString("AI assistance"),
         setting: this.#aiAssistanceSetting,
         disabledReasons: this.#mapSettingDisabledReasons(this.#aiAssistanceSetting.disabledReasons),
         iconName: AiAssistanceModel.AiUtils.getIconName(),
@@ -1888,8 +1888,8 @@ var backendLinkingSettingsTab_css_default = `/*
 
   .description-text {
     color: var(--sys-color-on-surface-subtle);
-    font-size: var(--sys-typescale-body-medium-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body4-size);
+    line-height: var(--sys-typescale-body4-line-height);
     margin: 0 0 var(--sys-size-5);
   }
 
@@ -1898,8 +1898,8 @@ var backendLinkingSettingsTab_css_default = `/*
     grid-template-columns: max-content 1fr;
     gap: var(--sys-size-2) var(--sys-size-6);
     align-items: baseline;
-    font-size: var(--sys-typescale-body-small-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-typescale-body4-line-height);
     margin: 0;
 
     dd {
@@ -1907,7 +1907,7 @@ var backendLinkingSettingsTab_css_default = `/*
     }
 
     .column-header {
-      font-size: var(--sys-typescale-label-small-size);
+      font-size: var(--sys-typescale-body5-size);
       font-weight: var(--ref-typeface-weight-medium);
       border-bottom: 1px solid var(--sys-color-neutral-outline);
       padding-bottom: var(--sys-size-2);
@@ -1944,8 +1944,8 @@ var backendLinkingSettingsTab_css_default = `/*
     align-items: center;
     gap: var(--sys-size-3);
     color: var(--sys-color-on-surface-subtle);
-    font-size: var(--sys-typescale-body-small-size);
-    line-height: var(--sys-typescale-body-medium-line-height);
+    font-size: var(--sys-typescale-body5-size);
+    line-height: var(--sys-typescale-body4-line-height);
   }
 }
 
@@ -2078,7 +2078,6 @@ var DEFAULT_VIEW = (input, output, target) => {
   render3(
     html3`
      <style>${backendLinkingSettingsTab_css_default}</style>
-      <style>${UI3.inspectorCommonStyles}</style>
       <div class="settings-card-container-wrapper" jslog=${VisualLogging3.pane("backend-linking")}>
         <div class="settings-card-container">
           <devtools-card heading=${i18nString3(UIStrings3.rulesSectionHeading)}>
@@ -4043,11 +4042,6 @@ var workspaceSettingsTab_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
-  .mappings-info,
-  .folder-exclude-pattern {
-    height: var(--settings-single-item-height);
-  }
-
   .mapping-view-container {
     padding-left: 0;
     padding-right: 0;

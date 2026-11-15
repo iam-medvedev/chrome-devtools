@@ -98,8 +98,8 @@ button {
   &.toolbar,
   &.icon,
   &.only-icon {
-    --button-height: 26px;
-    --button-width: 26px;
+    --button-height: var(--sys-size-11);
+    --button-width: var(--sys-size-11);
     --icon-size: var(--sys-size-9);
 
     padding: 0;
@@ -307,20 +307,6 @@ button {
     top: 0;
     left: 0;
     background-color: var(--hover-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
-
-    &.primary {
-      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
-    }
-
-    &.tonal {
-      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-hover-on-subtle));
-    }
-
-    &.toobar {
-      devtools-icon {
-        color: var(--icon-default-hover);
-      }
-    }
   }
 
   &:active::before,
@@ -333,20 +319,6 @@ button {
     top: 0;
     left: 0;
     background-color: var(--active-layer-color); /* stylelint-disable-line plugin/use_theme_colors */
-
-    &.primary {
-      border: var(--button-border-size) solid color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-ripple-primary) 32%);
-    }
-
-    &.tonal {
-      background: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-state-ripple-primary) 50%);
-    }
-
-    &.toolbar {
-      devtools-icon {
-        color: var(--icon-toggled);
-      }
-    }
   }
 }
 
@@ -839,50 +811,6 @@ button {
   }
 }
 
-.gemini {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: var(--sys-size-9);
-  height: var(--sys-size-9);
-  border-radius: var(--sys-shape-corner-full);
-  background-image: var(--app-gradient-google-ai);
-  font: var(--sys-typescale-body4-medium);
-  color: var(--ref-palette-neutral100);
-  transition: width 1s, padding 1s;
-  margin-left: auto;
-  overflow: hidden;
-  position: relative;
-  border: 0;
-
-  &:focus-visible {
-    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-  }
-
-  &:hover::after,
-  &:active::after {
-    content: "";
-    height: 100%;
-    width: 100%;
-    border-radius: inherit;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  &:hover::after {
-    background-color: var(--sys-color-state-hover-on-prominent);
-  }
-
-  &:active::after {
-    background-color: var(--sys-color-state-ripple-primary);
-  }
-
-  devtools-icon {
-    color: var(--ref-palette-neutral100) !important; /* stylelint-disable-line declaration-no-important */
-  }
-}
-
 @media (forced-colors: active) {
   button {
     forced-color-adjust: none;
@@ -911,7 +839,7 @@ button {
 /*# sourceURL=${import.meta.resolve("./floatingButton.css")} */`;
 
 // ../../front_end/ui/components/buttons/FloatingButton.ts
-var { html: html2, Directives: { classMap: classMap2 } } = Lit2;
+var { html: html2 } = Lit2;
 var FloatingButton = class extends HTMLElement {
   static observedAttributes = ["icon-name", "jslogcontext", "disabled"];
   #shadow = this.attachShadow({ mode: "open" });
@@ -976,13 +904,10 @@ var FloatingButton = class extends HTMLElement {
     }
   }
   #render() {
-    const classes = classMap2({
-      gemini: this.iconName === "spark"
-    });
     Lit2.render(
       html2`
         <style>${floatingButton_css_default}</style>
-        <button class=${classes} ?disabled=${this.disabled}><devtools-icon .name=${this.iconName}></devtools-icon></button>`,
+        <button ?disabled=${this.disabled}><devtools-icon .name=${this.iconName}></devtools-icon></button>`,
       this.#shadow,
       { host: this }
     );
@@ -1038,7 +963,7 @@ var textButton_css_default = `/*
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.text-button:not(:disabled, .primary-button):focus-visible {
+.text-button:not(:disabled):focus-visible {
   outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
   color: var(--sys-color-on-primary);
   background-color: var(--sys-color-cdt-base-container);
@@ -1062,30 +987,6 @@ var textButton_css_default = `/*
   font: inherit;
   cursor: pointer;
   height: unset;
-}
-
-.text-button.primary-button,
-.text-button.primary-button:not(:disabled):focus {
-  background-color: var(--sys-color-primary);
-  border: none;
-  color: var(--sys-color-on-primary);
-}
-
-.text-button.primary-button:not(:disabled):active {
-  background-color: color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-ripple-primary) 32%);
-  color: var(--sys-color-on-primary);
-}
-
-.text-button.primary-button:not(:disabled):hover {
-  background-color: color-mix(in srgb, var(--sys-color-primary), var(--sys-color-state-hover-on-prominent) 6%);
-  color: var(--sys-color-on-primary);
-}
-
-.text-button.primary-button:not(:disabled):focus-visible {
-  background-color: var(--sys-color-primary);
-  outline-offset: var(--sys-size-2);
-  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-  color: var(--sys-color-on-primary);
 }
 
 @media (forced-colors: active) {
@@ -1118,26 +1019,6 @@ var textButton_css_default = `/*
     background-color: Highlight;
     color: HighlightText !important; /* stylelint-disable-line declaration-no-important */
     box-shadow: var(--sys-color-primary);
-  }
-
-  .text-button.primary-button {
-    forced-color-adjust: none;
-    background-color: Highlight;
-    color: HighlightText;
-    border: var(--sys-size-1) solid Highlight;
-  }
-
-  .text-button.primary-button:not(:disabled):focus-visible {
-    background-color: Highlight;
-    color: HighlightText !important; /* stylelint-disable-line declaration-no-important */
-    border-color: ButtonText;
-  }
-
-  .text-button.primary-button:not(:disabled):hover,
-  .text-button.primary-button:not(:disabled):active {
-    background-color: HighlightText;
-    color: Highlight !important; /* stylelint-disable-line declaration-no-important */
-    border-color: Highlight;
   }
 }
 

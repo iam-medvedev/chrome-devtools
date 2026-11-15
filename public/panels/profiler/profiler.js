@@ -2601,25 +2601,6 @@ var profilesPanel_css_default = `/*
   flex: 0 0 var(--sys-size-19) !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.profile-text-view {
-  padding: 10px;
-  overflow: auto;
-  margin: 0;
-  user-select: text;
-  cursor: text;
-}
-
-.empty-landing-page {
-  position: absolute;
-  background-color: var(--sys-color-cdt-base-container);
-  justify-content: center;
-  align-items: center;
-  overflow: auto;
-  font-size: var(--sys-typescale-body1-size);
-  color: var(--sys-color-token-subtle);
-  padding: 50px;
-}
-
 @media (forced-colors: active) {
   .profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
     background: Highlight;
@@ -3610,8 +3591,7 @@ var SamplingHeapProfileType = class _SamplingHeapProfileType extends SamplingHea
     return i18nString3(UIStrings3.samplingProfiles);
   }
   get description() {
-    const formattedDescription = [i18nString3(UIStrings3.recordMemoryAllocations)];
-    return formattedDescription.join("\n");
+    return i18nString3(UIStrings3.recordMemoryAllocations);
   }
   hasTemporaryView() {
     return this.#recordTimelineSetting.get();
@@ -7795,13 +7775,6 @@ var TrackingHeapSnapshotProfileType = class _TrackingHeapSnapshotProfileType ext
   }
   // eslint-disable-next-line @typescript-eslint/naming-convention
   static TypeId = "HEAP-RECORD";
-  // TODO(crbug.com/1228674): Remove event strings once they are no longer used in web tests.
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static HeapStatsUpdate = "HeapStatsUpdate";
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static TrackingStarted = "TrackingStarted";
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static TrackingStopped = "TrackingStopped";
 };
 var TrackingHeapSnapshotProfileTypeEvents = /* @__PURE__ */ ((TrackingHeapSnapshotProfileTypeEvents2) => {
   TrackingHeapSnapshotProfileTypeEvents2["HEAP_STATS_UPDATE"] = "HeapStatsUpdate";
@@ -8134,7 +8107,7 @@ import * as i18n17 from "../../core/i18n/i18n.js";
 import * as Platform9 from "../../core/platform/platform.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
 import * as UI10 from "../../ui/legacy/legacy.js";
-import { html as html8, nothing as nothing2, render as render7 } from "../../ui/lit/lit.js";
+import { html as html8, nothing as nothing3, render as render7 } from "../../ui/lit/lit.js";
 import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/profiler/IsolateSelector.ts
@@ -8147,9 +8120,9 @@ import * as Common10 from "../../core/common/common.js";
 import * as i18n15 from "../../core/i18n/i18n.js";
 import * as SDK5 from "../../core/sdk/sdk.js";
 import * as UI9 from "../../ui/legacy/legacy.js";
-import { Directives as Directives5, html as html7, render as render6 } from "../../ui/lit/lit.js";
+import { Directives as Directives5, html as html7, nothing as nothing2, render as render6 } from "../../ui/lit/lit.js";
 import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
-var { classMap, ifDefined, repeat: repeat2 } = Directives5;
+var { classMap, ifDefined, ref: ref3, repeat: repeat2 } = Directives5;
 var UIStrings8 = {
   /**
    * @description Aria label for JavaScript VM instances target list in heap profiler.
@@ -8199,7 +8172,8 @@ var UIStrings8 = {
 };
 var str_7 = i18n15.i18n.registerUIStrings("panels/profiler/IsolateSelector.ts", UIStrings8);
 var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW5 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, output, target) => {
+  output.scrollSelectedIntoView = void 0;
   const onKeyDown = (event) => {
     if (!input.items.length) {
       return;
@@ -8226,7 +8200,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
     }
     event.consume(true);
     if (nextIndex !== -1 && nextIndex !== selectedIndex) {
-      input.onSelect(nextIndex);
+      input.onSelect(nextIndex, true);
     }
   };
   render6(html7`
@@ -8234,12 +8208,14 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       <div class="javascript-vm-instances-list"
            role="listbox"
            aria-label=${i18nString7(UIStrings8.javascriptVmInstances)}
+           aria-activedescendant=${ifDefined(input.items[input.selectedIndex]?.optionId)}
            tabindex=${input.items.length ? 0 : -1}
            @keydown=${onKeyDown}>
         ${repeat2(input.items, (item3) => item3.id, (item3, index) => {
     const isSelected = index === input.selectedIndex;
     return html7`
-            <div class=${classMap({
+            <div id=${item3.optionId}
+                 class=${classMap({
       "profile-memory-usage-item": true,
       hbox: true,
       selected: isSelected
@@ -8253,7 +8229,12 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
       resize: true,
       keydown: "ArrowUp|ArrowDown|PageUp|PageDown|Home|End"
     })}
-                 @click=${() => input.onSelect(index)}>
+                 @click=${() => input.onSelect(index)}
+                 ${isSelected ? ref3((el) => {
+      if (el instanceof HTMLElement) {
+        output.scrollSelectedIntoView = () => el.scrollIntoViewIfNeeded(false);
+      }
+    }) : nothing2}>
               <div class="profile-memory-usage-item-size"
                    title=${i18nString7(UIStrings8.heapSizeInUseByLiveJsObjects)}>
                 ${item3.heapText}
@@ -8332,9 +8313,11 @@ function getIsolateTitles(isolate) {
 }
 var IsolateSelector = class extends UI9.Widget.VBox {
   #view;
+  #viewOutput = {};
   #isolates = [];
   #itemStates = /* @__PURE__ */ new Map();
   #selectedIsolate = null;
+  #pendingScrollToSelected = false;
   #totalText = "";
   #totalTrend = { text: "", increasing: false };
   constructor(element, view = DEFAULT_VIEW5) {
@@ -8354,16 +8337,21 @@ var IsolateSelector = class extends UI9.Widget.VBox {
         trendIntervalMinutes,
         totalText: this.#totalText,
         trend: this.#totalTrend,
-        onSelect: (index) => {
+        onSelect: (index, scrollIntoView = false) => {
           const isolate = this.#isolates[index];
           if (isolate) {
+            this.#pendingScrollToSelected = scrollIntoView;
             this.#selectIsolate(isolate);
           }
         }
       },
-      void 0,
+      this.#viewOutput,
       this.contentElement
     );
+    if (this.#pendingScrollToSelected) {
+      this.#pendingScrollToSelected = false;
+      this.#viewOutput.scrollSelectedIntoView?.();
+    }
   }
   wasShown() {
     super.wasShown();
@@ -8408,6 +8396,7 @@ var IsolateSelector = class extends UI9.Widget.VBox {
   isolateAdded(isolate) {
     const item3 = {
       id: isolate.id(),
+      optionId: UI9.ARIAUtils.nextId("isolate-option-"),
       heapText: "",
       trend: { text: "", increasing: false },
       titles: getIsolateTitles(isolate)
@@ -8710,7 +8699,7 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
                       ${customContent}
                     </span>
                   </p>
-                ` : nothing2}
+                ` : nothing3}
               </div>
             `;
   })}

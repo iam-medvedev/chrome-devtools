@@ -1,62 +1,95 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
-import { AffectedResourcesView } from './AffectedResourcesView.js';
+import { html, render } from '../../ui/lit/lit.js';
+import { AffectedResourcesView, renderFrameCell } from './AffectedResourcesView.js';
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <tr>
+      <td class="affected-resource-header">${i18nString(UIStrings.limitExceeded)}</td>
+      <td class="affected-resource-header">${i18nString(UIStrings.resolutionStatus)}</td>
+      <td class="affected-resource-header">${i18nString(UIStrings.frameUrl)}</td>
+    </tr>
+    ${input.rows.map(row => html `
+      <tr class="affected-resource-heavy-ad">
+        <td class="affected-resource-heavy-ad-info">${row.reason}</td>
+        <td class="affected-resource-heavy-ad-info">${row.status}</td>
+        ${renderFrameCell(row.frame)}
+      </tr>
+    `)}
+  `, target);
+    // clang-format on
+};
 const UIStrings = {
     /**
-     * @description Label in the Issues panel for the number of affected heavy ad resources.
+     * @description Label in the Issues panel for the number of affected heavy ad
+     * resources.
      */
     nResources: '{n, plural, =1 {# resource} other {# resources}}',
     /**
-     * @description Column header in the Issues panel for the exceeded limit type in the heavy ads affected resources table.
+     * @description Column header in the Issues panel for the exceeded limit type
+     * in the heavy ads affected resources table.
      */
     limitExceeded: 'Limit exceeded',
     /**
-     * @description Column header in the Issues panel for the resolution status in the heavy ads affected resources table.
+     * @description Column header in the Issues panel for the resolution status in
+     * the heavy ads affected resources table.
      */
     resolutionStatus: 'Resolution status',
     /**
-     * @description Column header in the Issues panel for the frame URL in the heavy ads affected resources table.
+     * @description Column header in the Issues panel for the frame URL in the
+     * heavy ads affected resources table.
      */
     frameUrl: 'Frame URL',
     /**
-     * @description Resolution status in the Issues panel indicating that a heavy ad was removed.
+     * @description Resolution status in the Issues panel indicating that a heavy
+     * ad was removed.
      */
     removed: 'Removed',
     /**
-     * @description Resolution status in the Issues panel indicating that a heavy ad received a warning.
+     * @description Resolution status in the Issues panel indicating that a heavy
+     * ad received a warning.
      */
     warned: 'Warned',
     /**
-     * @description Reason in the Issues panel for a heavy ad issue indicating peak CPU usage limit was exceeded.
+     * @description Reason in the Issues panel for a heavy ad issue indicating
+     * peak CPU usage limit was exceeded.
      */
     cpuPeakLimit: 'CPU peak limit',
     /**
-     * @description Reason in the Issues panel for a heavy ad issue indicating total CPU usage limit was exceeded.
+     * @description Reason in the Issues panel for a heavy ad issue indicating
+     * total CPU usage limit was exceeded.
      */
     cpuTotalLimit: 'CPU total limit',
     /**
-     * @description Reason in the Issues panel for a heavy ad issue indicating total network bandwidth limit was exceeded.
+     * @description Reason in the Issues panel for a heavy ad issue indicating
+     * total network bandwidth limit was exceeded.
      */
     networkLimit: 'Network limit',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/AffectedHeavyAdView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AffectedHeavyAdView extends AffectedResourcesView {
+    #view;
+    constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
+        super(parent, issue, jslogContext);
+        this.#view = view;
+    }
     #appendAffectedHeavyAds(heavyAds) {
-        const header = document.createElement('tr');
-        this.appendColumnTitle(header, i18nString(UIStrings.limitExceeded));
-        this.appendColumnTitle(header, i18nString(UIStrings.resolutionStatus));
-        this.appendColumnTitle(header, i18nString(UIStrings.frameUrl));
-        this.affectedResources.appendChild(header);
-        let count = 0;
+        const rows = [];
+        const issueCategory = this.issue.getCategory();
         for (const heavyAd of heavyAds) {
-            this.#appendAffectedHeavyAd(heavyAd.details());
-            count++;
+            const details = heavyAd.details();
+            rows.push({
+                reason: this.#limitToString(details.reason),
+                status: this.#statusToString(details.resolution),
+                frame: this.createFrameCellData(details.frame.frameId, issueCategory),
+            });
         }
-        this.updateAffectedResourceCount(count);
+        this.#view({ rows }, undefined, this.affectedResources);
+        this.updateAffectedResourceCount(rows.length);
     }
     getResourceNameWithCount(count) {
         return i18nString(UIStrings.nResources, { n: count });
@@ -81,24 +114,8 @@ export class AffectedHeavyAdView extends AffectedResourcesView {
         }
         return '';
     }
-    #appendAffectedHeavyAd(heavyAd) {
-        const element = document.createElement('tr');
-        element.classList.add('affected-resource-heavy-ad');
-        const reason = document.createElement('td');
-        reason.classList.add('affected-resource-heavy-ad-info');
-        reason.textContent = this.#limitToString(heavyAd.reason);
-        element.appendChild(reason);
-        const status = document.createElement('td');
-        status.classList.add('affected-resource-heavy-ad-info');
-        status.textContent = this.#statusToString(heavyAd.resolution);
-        element.appendChild(status);
-        const frameId = heavyAd.frame.frameId;
-        const frameUrl = this.createFrameCell(frameId, this.issue.getCategory());
-        element.appendChild(frameUrl);
-        this.affectedResources.appendChild(element);
-    }
     update() {
-        this.clear();
+        this.requestResolver.clear();
         this.#appendAffectedHeavyAds(this.issue.getHeavyAdIssues());
     }
 }
