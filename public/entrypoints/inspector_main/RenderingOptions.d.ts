@@ -18,7 +18,7 @@ export interface ViewInput {
     prefersContrastSetting: Common.Settings.Setting<string> | null;
     prefersReducedMotionSetting: Common.Settings.Setting<string>;
     prefersReducedDataSetting: Common.Settings.Setting<string> | null;
-    prefersReducedTransparencySetting: Common.Settings.Setting<string> | null;
+    prefersReducedTransparencySetting: Common.Settings.Setting<string>;
     colorGamutSetting: Common.Settings.Setting<string>;
     visionDeficiencySetting: Common.Settings.Setting<unknown>;
     osTextScaleSetting: Common.Settings.Setting<string>;

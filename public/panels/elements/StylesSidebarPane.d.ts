@@ -1,3 +1,4 @@
+import '../../ui/kit/kit.js';
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -20,6 +21,18 @@ import { WebCustomData } from './WebCustomData.js';
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
 /** Title of the function section **/
 export declare const FUNCTION_SECTION_NAME = "@function";
+export interface HeaderViewInput {
+    showNoMatches: boolean;
+    toolbarItems: readonly UI.Toolbar.ToolbarItem[];
+    toolbarItemsLocation?: string;
+    toolbarPane: UI.Widget.Widget | null;
+    toolbarPaneAnimation: string | null;
+    onFilterChanged: (text: string) => void;
+    onRegexToggled: (toggled: boolean) => void;
+    onToolbarPaneAnimationEnd: (animationName: string) => void;
+}
+export type HeaderView = (input: HeaderViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_HEADER_VIEW: HeaderView;
 declare const StylesSidebarPaneBase: Common.ObjectWrapper.EventMixin<EventTypes, typeof ElementsSidebarPane>;
 export declare class StylesSidebarPane extends StylesSidebarPaneBase implements StylesContainer {
     #private;
@@ -28,11 +41,8 @@ export declare class StylesSidebarPane extends StylesSidebarPaneBase implements 
     private animatedToolbarPane;
     private pendingWidget;
     private pendingWidgetToggle;
-    private toolbar;
-    private toolbarPaneElement;
     private lastFilterChange;
     private visibleSections;
-    private noMatchesElement;
     private sectionsContainer;
     sectionByElement: WeakMap<Node, StylePropertiesSection>;
     readonly linkifier: Components.Linkifier.Linkifier;
@@ -56,7 +66,7 @@ export declare class StylesSidebarPane extends StylesSidebarPaneBase implements 
     activeCSSAngle: InlineEditor.CSSAngle.CSSAngle | null;
     aiCodeCompletionConfig?: TextEditor.AiCodeCompletionProvider.AiCodeCompletionConfig;
     aiCodeCompletionProvider?: StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider;
-    constructor(computedStyleModel: ComputedStyle.ComputedStyleModel.ComputedStyleModel, changeTracker?: ChangeTracker.ChangeTracker.ChangeTracker);
+    constructor(computedStyleModel: ComputedStyle.ComputedStyleModel.ComputedStyleModel, changeTracker?: ChangeTracker.ChangeTracker.ChangeTracker, headerView?: HeaderView);
     get webCustomData(): WebCustomData | undefined;
     get changeTracker(): ChangeTracker.ChangeTracker.ChangeTracker | undefined;
     private onScroll;
@@ -72,7 +82,6 @@ export declare class StylesSidebarPane extends StylesSidebarPaneBase implements 
     jumpToCounterStyleDefinition(counterStyleName: string): void;
     forceUpdate(): void;
     private updateCollapsedSectionsSetting;
-    private sectionsContainerKeyDown;
     private sectionsContainerFocusChanged;
     resetFocus(): void;
     onAddButtonLongClick(event: Event): void;
@@ -115,9 +124,9 @@ export declare class StylesSidebarPane extends StylesSidebarPaneBase implements 
     willHide(): void;
     hideAllPopovers(): void;
     getSectionBlockByName(name: string): SectionBlock | undefined;
+    highlightSectionBlock(block: SectionBlock): void;
     allSections(): StylePropertiesSection[];
     private clipboardCopy;
-    private createStylesSidebarToolbar;
     showToolbarPane(widget: UI.Widget.Widget | null, toggle: UI.Toolbar.ToolbarToggle | null): void;
     appendToolbarItem(item: UI.Toolbar.ToolbarItem): void;
     addStyleUpdateListener(listener: () => void): void;
@@ -139,12 +148,32 @@ export interface EventTypes {
     [Events.INITIAL_UPDATE_COMPLETED]: void;
     [Events.STYLES_UPDATE_COMPLETED]: StylesUpdateCompletedEvent;
 }
+/**
+ * Describes the separator that is rendered above the sections of a {@link SectionBlock}.
+ */
+export interface SectionBlockTitle {
+    /** Text of the separator. For layer separators, this is the "Layer" label. */
+    text: string;
+    /** Context of the `sectionHeader` visual logging element, if any. */
+    jslogContext?: string;
+    /** Node to link to after the text, e.g. for blocks of inherited styles. */
+    node?: SDK.DOMModel.DOMNode;
+    /** Name of the layer, for layer separators. */
+    layerName?: string;
+    /** Whether the layer name is rendered as a link that reveals the layer in the layer tree. */
+    canRevealLayer?: boolean;
+}
 export declare class SectionBlock {
     #private;
     readonly id: string;
+    readonly title: SectionBlockTitle | null;
+    readonly expandable: boolean;
     sections: StylePropertiesSection[];
     childBlocks: SectionBlock[];
-    constructor(titleElement: Element | null, expandable?: boolean, expandedByDefault?: boolean, id?: string);
+    /** Called when the block is expanded or collapsed, so that the owner can re-render its title. */
+    onExpandedChanged?: () => void;
+    constructor(title: SectionBlockTitle | null, expandable?: boolean, expandedByDefault?: boolean, id?: string);
+    get expanded(): boolean;
     expand(expand: boolean): void;
     static createPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string | null): SectionBlock;
     static createInheritedPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string | null, node: SDK.DOMModel.DOMNode): Promise<SectionBlock>;
@@ -156,7 +185,14 @@ export declare class SectionBlock {
     static createInheritedNodeBlock(node: SDK.DOMModel.DOMNode): Promise<SectionBlock>;
     static createLayerBlock(rule: SDK.CSSRule.CSSStyleRule, parentBlockId?: string): SectionBlock;
     updateFilter(): number;
-    titleElement(): Element | null;
+    /**
+     * Whether the title of this block is hidden because none of its sections match the current filter.
+     */
+    isHidden(): boolean;
+    /**
+     * The text content of the rendered title, or `null` if the block has no title.
+     */
+    titleText(): string | null;
 }
 export declare class IdleCallbackManager {
     private discarded;

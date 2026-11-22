@@ -12,7 +12,7 @@ __export(AccessibilityAgent_exports, {
 import * as Host29 from "../../core/host/host.js";
 import * as i18n47 from "../../core/i18n/i18n.js";
 import * as Root6 from "../../core/root/root.js";
-import * as SDK25 from "../../core/sdk/sdk.js";
+import * as SDK27 from "../../core/sdk/sdk.js";
 import * as AiUtils5 from "../ai-utils/ai-utils.js";
 
 // ../../front_end/models/ai_assistance/ChangeManager.ts
@@ -156,7 +156,8 @@ var defaultTimeFormatterOptions = {
   style: "unit",
   unitDisplay: "narrow",
   minimumFractionDigits: 0,
-  maximumFractionDigits: 0
+  maximumFractionDigits: 0,
+  signDisplay: "negative"
 };
 var defaultByteFormatterOptions = {
   style: "unit",
@@ -214,7 +215,7 @@ var byteFormatters = {
   })
 };
 function numberIsTooLarge(x) {
-  return !Number.isFinite(x) || x === Number.MAX_VALUE;
+  return !Number.isFinite(x) || Math.abs(x) > Number.MAX_SAFE_INTEGER;
 }
 function seconds(x) {
   if (numberIsTooLarge(x)) {
@@ -224,10 +225,10 @@ function seconds(x) {
     return formatAndEnsureSpace(timeFormatters.second, x);
   }
   const asMilli = x * 1e3;
-  if (asMilli < 1) {
+  if (Math.abs(asMilli) < 1) {
     return micros(x * 1e6);
   }
-  if (asMilli < 1e3) {
+  if (Math.abs(asMilli) < 1e3) {
     return millis(asMilli);
   }
   return formatAndEnsureSpace(timeFormatters.second, x);
@@ -236,7 +237,7 @@ function millis(x) {
   if (numberIsTooLarge(x)) {
     return "-";
   }
-  if (x < 1) {
+  if (Math.abs(x) < 1) {
     return formatAndEnsureSpace(timeFormatters.milliWithPrecision, x);
   }
   return formatAndEnsureSpace(timeFormatters.milli, x);
@@ -245,7 +246,7 @@ function micros(x) {
   if (numberIsTooLarge(x)) {
     return "-";
   }
-  if (x < 100) {
+  if (Math.abs(x) < 100) {
     return formatAndEnsureSpace(timeFormatters.micro, x);
   }
   const asMilli = x / 1e3;
@@ -297,6 +298,9 @@ function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
 
 // ../../front_end/models/ai_assistance/data_formatters/LighthouseFormatter.ts
 var PASS_THRESHOLD = 0.9;
+var MAX_TABLE_ITEMS = 10;
+var MAX_SUB_ITEMS = 5;
+var MAX_NON_LONGEST_SIBLINGS = 3;
 var AUDIT_TABLE_COLUMN_KEYS = /* @__PURE__ */ new Map([
   // For webmcp-registered-tools, only include the tool name and description to
   // keep the output concise (omitting inputSchema, source, and element).
@@ -431,8 +435,8 @@ var LighthouseFormatter = class {
     return this.audits(report, categoryId);
   }
   /**
-   * Returns a markdown list of all audits in a given category.
-   * Highlight failing audits (score < 90).
+   * Formats non-hidden failing, errored, and detail-bearing informative audits in a
+   * category, capping large tables, sub-item lists, and network-tree branches.
    */
   audits(report, categoryOrId) {
     const category = typeof categoryOrId === "string" ? report.categories[categoryOrId] : categoryOrId;
@@ -576,27 +580,60 @@ var LighthouseFormatter = class {
         return "";
     }
   }
+  /**
+   * Formats a Lighthouse critical-request `network-tree`, appending a count of
+   * requests omitted by `#formatNetworkTreeNodes`. Every formatted node emits
+   * one line, so omitted requests equal total tree nodes minus `nodeLines.length`.
+   */
   #formatNetworkTree(details) {
     if (Object.keys(details.chains).length === 0) {
       return "";
     }
-    const lines = [`Maximum critical path latency: ${millis(details.longestChain.duration)}`];
-    lines.push(...this.#formatNetworkTreeNodes(details.chains, 0));
+    const nodeLines = this.#formatNetworkTreeNodes(details.chains, 0);
+    const omittedCount = this.#countNetworkTreeNodes(details.chains) - nodeLines.length;
+    const lines = [
+      `Maximum critical path latency: ${millis(details.longestChain.duration)}`,
+      ...nodeLines
+    ];
+    if (omittedCount > 0) {
+      lines.push(`- ...and ${omittedCount} more ${omittedCount === 1 ? "request" : "requests"} omitted`);
+    }
     return lines.join("\n");
   }
+  /**
+   * Formats request nodes at `depth`: all `isLongest` critical-chain nodes
+   * first, followed by up to `MAX_NON_LONGEST_SIBLINGS` other sibling requests.
+   * Formats `children` only for `isLongest` nodes so the critical chain appears
+   * in full without expanding every sibling's dependency tree.
+   */
   #formatNetworkTreeNodes(nodes, depth) {
-    const lines = [];
+    const allNodes = Object.values(nodes);
+    const visibleNodes = [
+      ...allNodes.filter((node) => node.isLongest),
+      ...allNodes.filter((node) => !node.isLongest).slice(0, MAX_NON_LONGEST_SIBLINGS)
+    ];
     const indent = "  ".repeat(depth);
-    for (const node of Object.values(nodes)) {
+    const lines = [];
+    for (const node of visibleNodes) {
       const longestSuffix = node.isLongest ? " (longest chain)" : "";
       lines.push(
         `${indent}- ${node.url} (${millis(node.navStartToEndTime)}, ${bytes(node.transferSize)})${longestSuffix}`
       );
-      if (node.children) {
+      if (node.isLongest && node.children) {
         lines.push(...this.#formatNetworkTreeNodes(node.children, depth + 1));
       }
     }
     return lines;
+  }
+  /**
+   * Recursively counts every request node across `nodes` and all descendant `children`.
+   */
+  #countNetworkTreeNodes(nodes) {
+    let count = 0;
+    for (const node of Object.values(nodes)) {
+      count += 1 + (node.children ? this.#countNetworkTreeNodes(node.children) : 0);
+    }
+    return count;
   }
   #formatList(details, auditId) {
     const itemStrings = [];
@@ -658,36 +695,83 @@ var LighthouseFormatter = class {
     const lines = [];
     const allowedKeys = auditId ? AUDIT_TABLE_COLUMN_KEYS.get(auditId) : void 0;
     const filteredHeadings = allowedKeys ? headings.filter((h) => allowedKeys.has(h.key)) : headings;
+    let emittedItems = 0;
+    let omittedItems = 0;
     for (const item of items) {
       const itemLines = [];
       for (const heading of filteredHeadings) {
-        const value = item[heading.key];
+        const value = heading.key ? item[heading.key] : void 0;
         const formattedValues = this.#formatTableValues(value, heading.valueType);
         for (const { labelSuffix, value: v } of formattedValues) {
           const baseLabel = heading.label || heading.key;
           const label = labelSuffix ? `${baseLabel} ${labelSuffix}` : baseLabel;
           itemLines.push(`  * **${label}**: ${this.#toSingleLine(v)}`);
         }
-        const subItems = item.subItems;
-        if (subItems && typeof subItems === "object" && "type" in subItems && subItems.type === "subitems" && heading.subItemsHeading) {
-          for (const subItem of subItems.items) {
-            const subValue = subItem[heading.subItemsHeading.key];
-            if (subValue === value) {
-              continue;
-            }
-            const formattedSubValues = this.#formatTableValues(subValue, heading.subItemsHeading.valueType);
-            for (const { value: v } of formattedSubValues) {
-              itemLines.push(`    * ${this.#toSingleLine(v)}`);
-            }
-          }
-        }
       }
-      if (itemLines.length > 0) {
-        lines.push(`- Item:`);
+      const subItems = item.subItems;
+      if (subItems && typeof subItems === "object" && "type" in subItems && subItems.type === "subitems") {
+        itemLines.push(...this.#formatSubItems(item, subItems.items, filteredHeadings));
+      }
+      if (itemLines.length === 0) {
+        continue;
+      }
+      if (emittedItems < MAX_TABLE_ITEMS) {
+        lines.push("- Item:");
         lines.push(...itemLines);
+        emittedItems++;
+      } else {
+        omittedItems++;
       }
     }
+    if (omittedItems > 0) {
+      lines.push(`- ...and ${omittedItems} more ${omittedItems === 1 ? "item" : "items"} omitted`);
+    }
     return lines.join("\n");
+  }
+  /**
+   * Formats up to `MAX_SUB_ITEMS` non-empty sub-items for a table `item` and
+   * appends an omitted count when more sub-items exist.
+   */
+  #formatSubItems(item, subItems, headings) {
+    const formatted = subItems.map((subItem) => this.#formatSubItem(item, subItem, headings)).filter((line) => Boolean(line));
+    if (formatted.length === 0) {
+      return [];
+    }
+    const visible = formatted.slice(0, MAX_SUB_ITEMS);
+    const omittedCount = formatted.length - visible.length;
+    const lines = ["  * **Sub-items**:", ...visible.map((line) => `    * ${line}`)];
+    if (omittedCount > 0) {
+      lines.push(`    * ...and ${omittedCount} more ${omittedCount === 1 ? "sub-item" : "sub-items"} omitted`);
+    }
+    return lines;
+  }
+  /**
+   * Formats one sub-item row across `headings` that define `subItemsHeading`,
+   * returning `null` when every column is empty or matches the parent `item`.
+   */
+  #formatSubItem(item, subItem, headings) {
+    const parts = [];
+    for (const heading of headings) {
+      if (!heading.subItemsHeading) {
+        continue;
+      }
+      const parentValue = heading.key ? item[heading.key] : void 0;
+      const subValue = subItem[heading.subItemsHeading.key];
+      if (subValue === parentValue) {
+        continue;
+      }
+      const valueType = heading.subItemsHeading.valueType ?? heading.valueType;
+      const baseLabel = valueType === heading.valueType ? heading.label : "";
+      for (const { labelSuffix, value } of this.#formatTableValues(subValue, valueType)) {
+        const text = this.#toSingleLine(value);
+        if (!text) {
+          continue;
+        }
+        const label = [baseLabel, labelSuffix].filter(Boolean).join(" ");
+        parts.push(label ? `${label}: ${text}` : text);
+      }
+    }
+    return parts.length > 0 ? parts.join(", ") : null;
   }
   #formatTableValues(value, valueType) {
     if (value === void 0 || value === null) {
@@ -716,6 +800,8 @@ var LighthouseFormatter = class {
           }
           return [{ value: parts.join(":") }];
         }
+        case "subitems":
+          return [];
       }
     }
     return [];
@@ -1242,6 +1328,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1566,7 +1655,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -2350,6 +2438,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -3037,6 +3126,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3664,30 +3754,30 @@ function isDisallowedCssValue(value) {
   return value.includes("\\") || value.includes("/*") || DISALLOWED_CSS_URL_FUNCTION_REGEX.test(value);
 }
 async function sanitizeStyleChanges(selector, styles) {
-  const cssStyleValue = [];
   const changedStyles = [];
   const kebabStyles = Platform2.StringUtilities.toKebabCaseKeys(styles);
   for (const [style, value] of Object.entries(kebabStyles)) {
     if (!value.trim() || isDisallowedCssValue(value)) {
       continue;
     }
-    cssStyleValue.push(`${style}: ${value};`);
     changedStyles.push(style);
   }
   if (typeof CSSStyleSheet === "undefined" || typeof CSSStyleRule === "undefined") {
     return Object.fromEntries(changedStyles.map((style) => [style, kebabStyles[style]]));
   }
   const styleSheet = new CSSStyleSheet({ disabled: true });
-  await styleSheet.replace(`${selector} { ${cssStyleValue.join(" ")} }`);
+  await styleSheet.replace(`${selector} {}`);
   const sanitizedStyles = {};
   for (const cssRule of styleSheet.cssRules) {
     if (!(cssRule instanceof CSSStyleRule)) {
       continue;
     }
     for (const style of changedStyles) {
-      const value = cssRule.style.getPropertyValue(style);
+      cssRule.style.cssText = `${style}: ${kebabStyles[style]};`;
+      const value = cssRule.style.getPropertyValue(style).trim();
       if (value && !DISALLOWED_CSS_URL_FUNCTION_REGEX.test(value)) {
-        sanitizedStyles[style] = value;
+        const priority = cssRule.style.getPropertyPriority(style);
+        sanitizedStyles[style] = priority === "important" ? `${value} !important` : value;
       }
     }
   }
@@ -5771,7 +5861,14 @@ ${this.formatRequestInitiatorChain()}`;
     const networkLog = this.#networkLog ?? Logs.NetworkLog.NetworkLog.instance();
     return formatRequestInitiatorChain(this.#request, networkLog);
   }
+  /**
+   * Formats waterfall timing phases into `Label: value` lines, omitting phases that did not occur.
+   *
+   * In `ResourceTiming`, `connectStart` to `connectEnd` spans the `sslStart` to `sslEnd` handshake.
+   * The `SSL` label notes this overlap because plain-text output lacks waterfall bars to show nested ranges.
+   */
   formatNetworkRequestTiming() {
+    const { RequestTimeRangeNames } = NetworkTimeCalculator;
     const results = NetworkTimeCalculator.calculateRequestTimeRanges(this.#request, this.#calculator.minimumBoundary());
     const getDuration = (name) => {
       const result = results.find((r) => r.name === name);
@@ -5791,27 +5888,43 @@ ${this.formatRequestInitiatorChain()}`;
       },
       {
         label: "Queueing (duration)",
-        value: getDuration("queueing")
+        value: getDuration(RequestTimeRangeNames.QUEUEING)
       },
       {
         label: "Connection start (stalled) (duration)",
-        value: getDuration("blocking")
+        value: getDuration(RequestTimeRangeNames.BLOCKING)
+      },
+      {
+        label: "Proxy negotiation (duration)",
+        value: getDuration(RequestTimeRangeNames.PROXY)
+      },
+      {
+        label: "DNS lookup (duration)",
+        value: getDuration(RequestTimeRangeNames.DNS)
+      },
+      {
+        label: "Initial connection (duration)",
+        value: getDuration(RequestTimeRangeNames.CONNECTING)
+      },
+      {
+        label: "SSL (included in Initial connection) (duration)",
+        value: getDuration(RequestTimeRangeNames.SSL)
       },
       {
         label: "Request sent (duration)",
-        value: getDuration("sending")
+        value: getDuration(RequestTimeRangeNames.SENDING)
       },
       {
         label: "Waiting for server response (duration)",
-        value: getDuration("waiting")
+        value: getDuration(RequestTimeRangeNames.WAITING)
       },
       {
         label: "Content download (duration)",
-        value: getDuration("receiving")
+        value: getDuration(RequestTimeRangeNames.RECEIVING)
       },
       {
         label: "Duration (duration)",
-        value: getDuration("total")
+        value: getDuration(RequestTimeRangeNames.TOTAL)
       }
     ];
     return labels.filter((label) => !!label.value).map((label) => `${label.label}: ${label.value}`).join("\n");
@@ -5958,7 +6071,7 @@ function formatLines(title, lines, maxLength) {
 }
 
 // ../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.ts
-var PerformanceTraceFormatter = class {
+var PerformanceTraceFormatter = class _PerformanceTraceFormatter {
   #focus;
   #parsedTrace;
   #insightSet;
@@ -6193,6 +6306,27 @@ var PerformanceTraceFormatter = class {
     }
     return lines.join("\n");
   }
+  #getCriticalRequests(insightSet) {
+    const criticalRequests = [];
+    const walkRequest = (node) => {
+      criticalRequests.push(node.request);
+      node.children.forEach(walkRequest);
+    };
+    insightSet.model.NetworkDependencyTree?.rootNodes.forEach(walkRequest);
+    return criticalRequests;
+  }
+  /**
+   * Returns true when `formatCriticalRequests()` emits compressed network rows
+   * (backed by `NetworkDependencyTree.rootNodes`, the insight's `CriticalRequestNode` tree).
+   */
+  hasCriticalRequests() {
+    for (const insightSet of this.#parsedTrace.insights?.values() ?? []) {
+      if (this.#getCriticalRequests(insightSet).length > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
   formatCriticalRequests() {
     const parsedTrace = this.#parsedTrace;
     return this.#formatFactByInsightSet({
@@ -6200,12 +6334,7 @@ var PerformanceTraceFormatter = class {
       title: "Critical network requests",
       empty: "none",
       cb: async (insightSet) => {
-        const criticalRequests = [];
-        const walkRequest = (node) => {
-          criticalRequests.push(node.request);
-          node.children.forEach(walkRequest);
-        };
-        insightSet.model.NetworkDependencyTree?.rootNodes.forEach(walkRequest);
+        const criticalRequests = this.#getCriticalRequests(insightSet);
         return criticalRequests.length ? this.formatNetworkRequests(criticalRequests, { verbose: false }) : null;
       }
     });
@@ -6656,6 +6785,22 @@ Durations (all in milliseconds):
 - \`responseHeaders\`: A list (separated by '|') of values for specific, pre-defined response headers, enclosed in square brackets.
 The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
 `;
+  /**
+   * Shared `PromptFact` wrapper for `callFrameDataFormatDescription`, enabling
+   * reference-based deduplication across `AiAgent2` callers.
+   */
+  static callFrameDataFormatFact = {
+    title: "Call frame data format",
+    description: _PerformanceTraceFormatter.callFrameDataFormatDescription
+  };
+  /**
+   * Shared `PromptFact` wrapper for `networkDataFormatDescription`, enabling
+   * reference-based deduplication across `PerformanceTraceContext` and `SKILLS.performance`.
+   */
+  static networkDataFormatFact = {
+    title: "Network request data format",
+    description: _PerformanceTraceFormatter.networkDataFormatDescription
+  };
   /**
    * This is the network request data passed to the Performance agent.
    *
@@ -8124,10 +8269,11 @@ var UIStringsNotTranslate2 = {
   gettingNetworkRequestDetails: "Getting network request details"
 };
 var lockedString6 = i18n13.i18n.lockedString;
+var TRACE_EVENT_KEY_REGEX = /^[a-z]+-\d+$/;
 var GetNetworkRequestDetailsTool = class {
   name = "getNetworkRequestDetails" /* GET_NETWORK_REQUEST_DETAILS */;
   permissionPrompt = "never" /* NEVER */;
-  description = "Retrieves the full headers, timing, status, and body details of a specific network request by ID.";
+  description = "Retrieves the full headers, timing, status, body, and initiator chain details of a specific network request by ID.";
   #networkLog;
   constructor(networkLog) {
     this.#networkLog = networkLog;
@@ -8170,6 +8316,11 @@ var GetNetworkRequestDetailsTool = class {
       return isOriginAllowedByLock(originLock, req.initiatorSecurityOrigin());
     });
     if (!request) {
+      if (TRACE_EVENT_KEY_REGEX.test(args.id)) {
+        return {
+          error: `No request found. "${args.id}" is a performance trace eventKey, not a network request ID. Use getTraceEventByKey to inspect trace events, or call listNetworkRequests to find network request IDs.`
+        };
+      }
       return {
         error: "No request found"
       };
@@ -8207,7 +8358,6 @@ __export(FileFormatter_exports, {
   FileFormatter: () => FileFormatter
 });
 import * as Bindings from "../bindings/bindings.js";
-import * as Logs4 from "../logs/logs.js";
 var MAX_FILE_SIZE = 5e3;
 var FileFormatter = class _FileFormatter {
   static formatSourceMapDetails(selectedFile, debuggerWorkspaceBinding) {
@@ -8244,42 +8394,34 @@ var FileFormatter = class _FileFormatter {
   }
   #file;
   #debuggerWorkspaceBinding;
-  #networkLog;
   constructor(file, debuggerWorkspaceBinding = (
     // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
-  ), networkLog = Logs4.NetworkLog.NetworkLog.instance()) {
+  )) {
     this.#file = file;
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    this.#networkLog = networkLog;
   }
   formatFile(options = {}) {
     const sourceMapDetails = _FileFormatter.formatSourceMapDetails(this.#file, this.#debuggerWorkspaceBinding);
-    const lines = [
+    return [
       `File name: ${this.#file.displayName()}`,
       `URL: ${this.#file.url()}`,
-      sourceMapDetails
-    ];
-    const resource = Bindings.ResourceUtils.resourceForURL(this.#file.url());
-    if (resource?.request) {
-      lines.push(`Request initiator chain:
-${formatRequestInitiatorChain(resource.request, this.#networkLog)}`);
-    }
-    lines.push(`File content:
-${this.#formatFileContent(options.offset ?? 0)}`);
-    return lines.filter((line) => line.trim() !== "").join("\n");
+      sourceMapDetails,
+      this.#formatFileContent(options.offset ?? 0)
+    ].filter(Boolean).join("\n");
   }
   /**
-   * Returns at most `MAX_FILE_SIZE` characters starting at `offset`. If the
-   * content continues past that, a notice after the code block gives the
-   * offset where the next part starts, so the model can read the rest instead
-   * of re-requesting the same part.
+   * Formats the file content section with at most `MAX_FILE_SIZE` characters
+   * starting at `offset`. Non-zero offsets label the header with the character
+   * range, and truncated parts append a notice with the next part's offset.
    */
   #formatFileContent(offset) {
     const contentData = this.#file.workingCopyContentData();
     const content = contentData.isTextContent ? contentData.text : "<binary data>";
     const end = Math.min(offset + MAX_FILE_SIZE, content.length);
-    const codeBlock = `\`\`\`
+    const header = offset > 0 ? `File content (characters ${offset}-${end} of ${content.length}):` : "File content:";
+    const codeBlock = `${header}
+\`\`\`
 ${content.slice(offset, end)}
 \`\`\``;
     if (end === content.length) {
@@ -8297,6 +8439,7 @@ __export(ListSources_exports, {
 });
 import * as Host9 from "../../core/host/host.js";
 import * as i18n15 from "../../core/i18n/i18n.js";
+import * as Platform5 from "../../core/platform/platform.js";
 import * as Workspace3 from "../workspace/workspace.js";
 var UIStringsNotTranslate3 = {
   listingSources: "Listing workspace sources"
@@ -8314,11 +8457,16 @@ var ListSourcesTool = class _ListSourcesTool {
     _ListSourcesTool.uiSourceCodeId = /* @__PURE__ */ new WeakMap();
     _ListSourcesTool.idToUiSourceCode = /* @__PURE__ */ new Map();
   }
+  /**
+   * Collects readable text network `UISourceCode`s allowed by the origin lock, skipping ignore-listed and binary files.
+   * Returns the deduplicated files alongside the count of distinct omitted binary URLs that have no readable counterpart.
+   */
   static getUISourceCodes(originLock, workspace = Workspace3.Workspace.WorkspaceImpl.instance()) {
     if (originLock.status !== "ESTABLISHED_ORIGIN" || originLock.origin.isOpaque()) {
-      return [];
+      return { files: [], omittedBinaryCount: 0 };
     }
     const uiSourceCodes = /* @__PURE__ */ new Map();
+    const omittedBinaryUrls = /* @__PURE__ */ new Set();
     for (const project of workspace.projectsForType(Workspace3.Workspace.projectTypes.Network)) {
       const projectOrigin = project.securityOrigin?.();
       if (projectOrigin && !isOriginAllowedByLock(originLock, projectOrigin)) {
@@ -8331,7 +8479,13 @@ var ListSourcesTool = class _ListSourcesTool {
         if (!isOriginAllowedByLock(originLock, uiSourceCode.securityOrigin())) {
           continue;
         }
+        const mimeType = uiSourceCode.mimeType();
+        const isReadable = mimeType ? Platform5.MimeType.isTextType(mimeType) : uiSourceCode.contentType().isTextType();
         const url = uiSourceCode.url();
+        if (!isReadable) {
+          omittedBinaryUrls.add(url);
+          continue;
+        }
         if (!uiSourceCodes.get(url) || uiSourceCode.contentType().isFromSourceMap()) {
           uiSourceCodes.set(url, uiSourceCode);
           if (!_ListSourcesTool.uiSourceCodeId.has(uiSourceCode)) {
@@ -8342,7 +8496,13 @@ var ListSourcesTool = class _ListSourcesTool {
         }
       }
     }
-    return Array.from(uiSourceCodes.values());
+    for (const url of uiSourceCodes.keys()) {
+      omittedBinaryUrls.delete(url);
+    }
+    return {
+      files: Array.from(uiSourceCodes.values()),
+      omittedBinaryCount: omittedBinaryUrls.size
+    };
   }
   static getSourceById(id, originLock) {
     if (!Number.isInteger(id) || id <= 0) {
@@ -8373,21 +8533,18 @@ var ListSourcesTool = class _ListSourcesTool {
     if ("error" in originResult) {
       return originResult;
     }
-    const files = _ListSourcesTool.getUISourceCodes(originLock);
-    if (files.length === 0) {
-      return {
-        result: "No source files found for the current origin."
-      };
+    const { files, omittedBinaryCount } = _ListSourcesTool.getUISourceCodes(originLock);
+    const lines = files.length === 0 ? ["No source files found for the current origin."] : [
+      "id;name",
+      ...files.map((file) => {
+        const id = _ListSourcesTool.uiSourceCodeId.get(file) ?? 0;
+        return `${id};${formatSourceName(file, originResult.origin)}`;
+      })
+    ];
+    if (omittedBinaryCount > 0) {
+      lines.push(`(Omitted ${omittedBinaryCount} binary image/font/media/wasm files; load the network skill and call listNetworkRequests to inspect binary asset URLs.)`);
     }
-    const establishedOrigin = originResult.origin;
-    const rows = files.map((file) => {
-      const id = _ListSourcesTool.uiSourceCodeId.get(file) ?? 0;
-      const name = formatSourceName(file, establishedOrigin);
-      return `${id};${name}`;
-    });
-    return {
-      result: ["id;name", ...rows].join("\n")
-    };
+    return { result: lines.join("\n") };
   }
 };
 function formatSourceName(file, establishedOrigin) {
@@ -8572,7 +8729,7 @@ __export(GetStorageValues_exports, {
 });
 import * as Host12 from "../../core/host/host.js";
 import * as i18n21 from "../../core/i18n/i18n.js";
-import * as Platform5 from "../../core/platform/platform.js";
+import * as Platform6 from "../../core/platform/platform.js";
 import * as SDK12 from "../../core/sdk/sdk.js";
 var lockedString10 = i18n21.i18n.lockedString;
 var MAX_NUM_CHAR_LENGTH2 = 1e4;
@@ -8623,7 +8780,7 @@ var GetStorageValuesTool = class {
         title = lockedString10("Reading session storage values");
         break;
       default:
-        Platform5.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+        Platform6.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
     }
     return {
       title,
@@ -8746,18 +8903,23 @@ var GetStylesTool = class {
   /**
    * Handles the request to retrieve computed and authored CSS styles for specified elements.
    *
-   * Resolves element backend node IDs using the primary page target and verifies that each
-   * element's security origin matches the established origin lock before querying CSS models.
+   * Normalizes and expands shorthand property names, resolves element backend node IDs using the
+   * primary page target, and verifies that each element's security origin matches the established
+   * origin lock before querying CSS models.
    */
   async handler(params, context, _options) {
-    const widgets = [];
-    const result = {};
+    const propertySets = this.#resolveStyleProperties(params.styleProperties);
+    if ("error" in propertySets) {
+      return propertySets;
+    }
+    const { expandedProperties, authoredProperties } = propertySets;
     const target = context.getTarget();
     if (!target) {
       return { error: "Error: Could not find the inspected page." };
     }
+    const widgets = [];
+    const result = {};
     for (const uid of params.elements) {
-      result[uid] = { computed: {}, authored: {} };
       const node = new SDK13.DOMModel.DeferredDOMNode(target, uid);
       const resolved = await node.resolvePromise();
       if (!resolved) {
@@ -8780,28 +8942,76 @@ var GetStylesTool = class {
           computedStyles: styles,
           backendNodeId: node.backendNodeId(),
           matchedCascade: matchedStyles,
-          properties: params.styleProperties
+          properties: [...expandedProperties]
         }
       });
-      for (const prop of params.styleProperties) {
-        result[uid].computed[prop] = styles.get(prop);
+      const computed = {};
+      for (const prop of expandedProperties) {
+        computed[prop] = styles.get(prop);
       }
-      for (const style of matchedStyles.nodeStyles()) {
-        for (const property of style.allProperties()) {
-          if (!params.styleProperties.includes(property.name)) {
-            continue;
-          }
-          const state = matchedStyles.propertyState(property);
-          if (state === SDK13.CSSMatchedStyles.PropertyState.ACTIVE) {
-            result[uid].authored[property.name] = property.value;
-          }
-        }
-      }
+      result[uid] = {
+        computed,
+        authored: this.#collectAuthoredStyles(matchedStyles, authoredProperties)
+      };
     }
     return {
       result: JSON.stringify(result, null, 2),
       widgets
     };
+  }
+  /**
+   * Normalizes requested CSS property names, rejects "all" and "*", and computes
+   * separate property sets for computed-style lookups and authored-rule matching.
+   */
+  #resolveStyleProperties(styleProperties) {
+    const cssMetadata = SDK13.CSSMetadata.cssMetadata();
+    const expandedProperties = /* @__PURE__ */ new Set();
+    for (const rawProperty of styleProperties) {
+      const trimmed = rawProperty.trim();
+      if (!trimmed) {
+        continue;
+      }
+      const canonical = trimmed.startsWith("--") ? trimmed : trimmed.toLowerCase();
+      if (canonical === "all" || canonical === "*") {
+        return {
+          error: 'Error: Generic values like "all" or "*" are not supported. Provide specific CSS property names.'
+        };
+      }
+      expandedProperties.add(canonical);
+      for (const longhand of cssMetadata.getLonghands(canonical) ?? []) {
+        expandedProperties.add(longhand);
+      }
+    }
+    const authoredProperties = new Set(expandedProperties);
+    for (const prop of expandedProperties) {
+      for (const shorthand of cssMetadata.getShorthands(prop) ?? []) {
+        if (shorthand !== "all") {
+          authoredProperties.add(shorthand);
+        }
+      }
+    }
+    return { expandedProperties, authoredProperties };
+  }
+  /**
+   * Collects active, non-empty authored CSS declarations matching `authoredProperties`
+   * across the element's matched style cascade.
+   */
+  #collectAuthoredStyles(matchedStyles, authoredProperties) {
+    const authored = {};
+    for (const style of matchedStyles.nodeStyles()) {
+      for (const property of style.allProperties()) {
+        if (!authoredProperties.has(property.name)) {
+          continue;
+        }
+        if (property.implicit && !property.value) {
+          continue;
+        }
+        if (matchedStyles.propertyState(property) === SDK13.CSSMatchedStyles.PropertyState.ACTIVE) {
+          authored[property.name] = property.value;
+        }
+      }
+    }
+    return authored;
   }
 };
 
@@ -9251,14 +9461,15 @@ var ListCookiesTool = class {
 // ../../front_end/models/ai_assistance/tools/ListNetworkRequests.ts
 var ListNetworkRequests_exports = {};
 __export(ListNetworkRequests_exports, {
-  ListNetworkRequestsTool: () => ListNetworkRequestsTool
+  ListNetworkRequestsTool: () => ListNetworkRequestsTool,
+  requestDurationState: () => requestDurationState
 });
 import * as Common4 from "../../core/common/common.js";
 import * as Host20 from "../../core/host/host.js";
 import * as i18n35 from "../../core/i18n/i18n.js";
-import * as Platform6 from "../../core/platform/platform.js";
+import * as Platform7 from "../../core/platform/platform.js";
 import * as SDK16 from "../../core/sdk/sdk.js";
-import * as Logs5 from "../logs/logs.js";
+import * as Logs4 from "../logs/logs.js";
 var UIStringsNotTranslate10 = {
   listingNetworkRequests: "Listing network requests"
 };
@@ -9285,7 +9496,7 @@ function formatRequestUrl(rawUrl, baseOrigin) {
     if (commaIndex !== -1 && commaIndex < 60) {
       truncated = cleanUrl.slice(0, commaIndex + 1);
     } else {
-      truncated = Platform6.StringUtilities.truncateToCodeUnitLength(cleanUrl, 60);
+      truncated = Platform7.StringUtilities.truncateToCodeUnitLength(cleanUrl, 60);
     }
     return truncated + "...<truncated>";
   }
@@ -9303,12 +9514,31 @@ function formatRequestUrl(rawUrl, baseOrigin) {
   const pathPart = queryOrFragmentIndex === -1 ? cleanUrl : cleanUrl.slice(0, queryOrFragmentIndex);
   const suffixPart = queryOrFragmentIndex === -1 ? "" : cleanUrl.slice(queryOrFragmentIndex);
   if (pathPart.length > 300) {
-    return Platform6.StringUtilities.truncateToCodeUnitLength(pathPart, 300) + "...<truncated>";
+    return Platform7.StringUtilities.truncateToCodeUnitLength(pathPart, 300) + "...<truncated>";
   }
   if (suffixPart.length > 100) {
-    return pathPart + Platform6.StringUtilities.truncateToCodeUnitLength(suffixPart, 100) + "...<truncated>";
+    return pathPart + Platform7.StringUtilities.truncateToCodeUnitLength(suffixPart, 100) + "...<truncated>";
   }
   return cleanUrl;
+}
+function requestDurationState(request) {
+  if (request.duration >= 0) {
+    return { type: "value", seconds: request.duration };
+  }
+  return request.finished || request.preserved ? { type: "unavailable" } : { type: "pending" };
+}
+function formatRequestDuration(request) {
+  const state = requestDurationState(request);
+  switch (state.type) {
+    case "value":
+      return seconds(state.seconds);
+    case "unavailable":
+      return "-";
+    case "pending":
+      return "pending";
+    default:
+      Platform7.assertNever(state, "Unknown RequestDurationState type");
+  }
 }
 var ListNetworkRequestsTool = class {
   name = "listNetworkRequests" /* LIST_NETWORK_REQUESTS */;
@@ -9342,7 +9572,7 @@ var ListNetworkRequestsTool = class {
       return originResult;
     }
     const establishedOrigin = originResult.origin;
-    const networkLog = this.#networkLog ?? Logs5.NetworkLog.NetworkLog.instance();
+    const networkLog = this.#networkLog ?? Logs4.NetworkLog.NetworkLog.instance();
     let hasCrossOriginRequest = false;
     const requestsToShow = [];
     for (const request of networkLog.requests()) {
@@ -9355,7 +9585,7 @@ var ListNetworkRequestsTool = class {
     if (requestsToShow.length === 0) {
       if (hasCrossOriginRequest) {
         return {
-          error: `No requests showing with origin ${establishedOrigin.siteId()}. Tell the user to start a new chat`
+          error: `No requests showing with origin ${establishedOrigin.siteId()}. This conversation is locked to ${establishedOrigin.siteId()} (for example from a selected cross-origin file in Sources or an earlier page). Ask the user to start a new chat and remove the cross-origin file from context (or select a resource from the current page first).`
         };
       }
       return {
@@ -9368,9 +9598,8 @@ var ListNetworkRequestsTool = class {
     for (const request of requestsToShow) {
       const id = request.requestId().replace(/[\r\n]+/g, "");
       const url = formatRequestUrl(request.url(), baseOrigin);
-      lines.push(
-        `${id};${url};${request.statusCode};${seconds(request.duration)};${formatBytesToKb(request.transferSize)}`
-      );
+      const duration = formatRequestDuration(request);
+      lines.push(`${id};${url};${request.statusCode};${duration};${formatBytesToKb(request.transferSize)}`);
     }
     return {
       result: lines.join("\n"),
@@ -9455,7 +9684,7 @@ __export(ListStorageKeys_exports, {
 });
 import * as Host22 from "../../core/host/host.js";
 import * as i18n39 from "../../core/i18n/i18n.js";
-import * as Platform7 from "../../core/platform/platform.js";
+import * as Platform8 from "../../core/platform/platform.js";
 import * as SDK18 from "../../core/sdk/sdk.js";
 var lockedString19 = i18n39.i18n.lockedString;
 var ListStorageKeysTool = class {
@@ -9497,7 +9726,7 @@ var ListStorageKeysTool = class {
         title = lockedString19("Reading session storage keys");
         break;
       default:
-        Platform7.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
+        Platform8.TypeScriptUtilities.assertNever(args.type, `Unknown storage type: ${args.type}`);
     }
     return {
       title,
@@ -9543,6 +9772,7 @@ __export(RecordPerformanceTrace_exports, {
 });
 import * as Host24 from "../../core/host/host.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
+import * as SDK21 from "../../core/sdk/sdk.js";
 
 // ../../front_end/models/ai_assistance/contexts/PerformanceTraceContext.ts
 var PerformanceTraceContext_exports = {};
@@ -9570,13 +9800,16 @@ __export(AiAgent_exports, {
   sanitizeSuggestionsList: () => sanitizeSuggestionsList
 });
 import * as Host23 from "../../core/host/host.js";
-import * as Platform8 from "../../core/platform/platform.js";
+import * as Platform9 from "../../core/platform/platform.js";
 import * as Root4 from "../../core/root/root.js";
 import * as SDK19 from "../../core/sdk/sdk.js";
 import * as AiUtils4 from "../ai-utils/ai-utils.js";
 var { debugLog: debugLog2, isDebugMode } = AiUtils4.Debug;
 var MAX_SUGGESTION_LENGTH = 200;
 var SUGGEST_FOLLOW_UPS_FUNCTION_NAME = "suggestFollowUps";
+var SUGGEST_FOLLOW_UPS_RECORDED_RESULT = "Suggestions recorded.";
+var SUGGEST_FOLLOW_UPS_MISSING_TEXT_RESULT = "Suggestions recorded, but your response text was empty. Provide your final Markdown answer to the user now.";
+var SUGGEST_FOLLOW_UPS_PREMATURE_RESULT = "Ignored: call suggestFollowUps only in the final response after all other tool calls complete.";
 var ResponseType = /* @__PURE__ */ ((ResponseType2) => {
   ResponseType2["CONTEXT"] = "context";
   ResponseType2["TITLE"] = "title";
@@ -9655,6 +9888,15 @@ var ConversationContext = class {
    */
   async getPromptDetails() {
     return null;
+  }
+  /**
+   * Returns persistent facts about the context that are only sent to the model
+   * once per conversation, reducing token usage in subsequent turns.
+   * Return stable constant `PromptFact` references so `AiAgent2` can deduplicate them.
+   * Currently only used by AiAgent2 (V1 agents use `addFact()`).
+   */
+  getPromptFacts() {
+    return [];
   }
   /**
    * Returns a list of context details to display to the user in the UI.
@@ -9741,9 +9983,9 @@ var AiAgent = class {
     this.#facts.clear();
   }
   /**
-   * Clears any subclass-specific caches. This is called when a run encounters
-   * an error (e.g., cross-origin navigation, abort, or execution error) to
-   * prevent unvalidated cached data from being replayed in subsequent runs.
+   * Clears subclass-specific caches after a non-`MAX_STEPS` error (such as
+   * cross-origin navigation, abort, or execution failure) when uncommitted
+   * `runEntries` are discarded instead of committed to `#history`.
    */
   clearCache() {
   }
@@ -9769,12 +10011,19 @@ var AiAgent = class {
     return [];
   }
   buildRequest(part, role) {
+    return this.#buildRequest(part, role, this.#history);
+  }
+  /**
+   * Constructs the AIDA conversation request, accepting an explicit `history`
+   * array so active runs can include uncommitted `runEntries` alongside `#history`.
+   */
+  #buildRequest(part, role, history) {
     const parts = Array.isArray(part) ? part : [part];
     const currentMessage = {
       parts,
       role
     };
-    const history = [...this.#history];
+    const historicalContexts = history.length ? [...history] : void 0;
     const declarations = [];
     for (const [name, definition] of this.#functionDeclarations.entries()) {
       declarations.push({
@@ -9794,7 +10043,7 @@ var AiAgent = class {
       client: Host23.AidaClient.CLIENT_NAME,
       current_message: currentMessage,
       preamble: preamble10,
-      historical_contexts: history.length ? history : void 0,
+      historical_contexts: historicalContexts,
       facts: facts.length ? facts : void 0,
       ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
       options: {
@@ -9853,25 +10102,15 @@ var AiAgent = class {
     return response;
   }
   /**
-   * Parses a streaming text response into a
-   * though/action/title/answer/suggestions component.
+   * Parses a partial or completed model text response into answer text and
+   * optional follow-up suggestions.
+   *
+   * By default, extracts `SUGGESTIONS:` text directives for V1 agents
+   * (`StylingAgent`, `PerformanceAgent`). `AiAgent2` overrides this method
+   * because V2 receives suggestions from `suggestFollowUps` tool calls.
    */
   parseTextResponse(response) {
     return this.parseTextResponseForSuggestions(response.trim());
-  }
-  /**
-   * Parses the text of a response that is still streaming. Only the `answer`
-   * of the result is shown, as a partial answer. By default, partial answers
-   * use the same parsing as completed answers.
-   *
-   * This hook exists so that `AiAgent2` (AI V2) can parse follow-up
-   * suggestions differently without changing the V1 agents. Remove it once
-   * AI V2 ships and the V1 agents are removed. b/568697679 explores getting
-   * suggestions from a function call instead of parsing them from text,
-   * which would remove the need for this parsing.
-   */
-  parsePartialTextResponse(response) {
-    return this.parseTextResponse(response);
   }
   async finalizeAnswer(answer) {
     return answer;
@@ -9902,6 +10141,22 @@ var AiAgent = class {
    */
   async preRun() {
   }
+  /**
+   * Appends the completed run's messages to `#history` and notifies subclasses
+   * to promote their in-flight run drafts.
+   */
+  #commitRun(runEntries) {
+    this.#history.push(...runEntries);
+    this.onRunCommitted();
+  }
+  /**
+   * Called after `#commitRun()` appends a run's messages to `#history` on final
+   * answers, `CONTEXT_CHANGE`, and `MAX_STEPS`, and skipped on aborts, errors,
+   * or early generator exits. Subclasses can override this method to promote
+   * per-run draft state to session state.
+   */
+  onRunCommitted() {
+  }
   async *run(initialQuery, options, multimodalInput) {
     await options.selected?.refresh();
     this.context = options.selected ?? void 0;
@@ -9912,7 +10167,9 @@ var AiAgent = class {
     }
     Host23.userMetrics.freestylerQueryLength(enhancedQuery.length);
     const query = multimodalInput ? [{ text: enhancedQuery }, multimodalInput.input] : [{ text: enhancedQuery }];
-    let request = this.buildRequest(query, Host23.AidaClient.Role.USER);
+    const runEntries = [];
+    let latestSuggestions;
+    let request = this.#buildRequest(query, Host23.AidaClient.Role.USER, [...this.#history, ...runEntries]);
     const clientFeatureName = Host23.AidaClient.getClientFeatureName(this.clientFeature);
     debugLog2(`[AiAgent] Starting conversation with client ${clientFeatureName}, userTier ${this.userTier}`);
     yield* this.handleContextDetails(options.selected);
@@ -9934,7 +10191,7 @@ var AiAgent = class {
           textResponse = fetchResult.text ?? "";
           functionCalls = fetchResult.functionCalls;
           if (!functionCalls && !fetchResult.completed) {
-            const parsed = this.parsePartialTextResponse(textResponse);
+            const parsed = this.parseTextResponse(textResponse);
             const partialAnswer = "answer" in parsed ? parsed.answer : "";
             if (!partialAnswer) {
               continue;
@@ -9952,18 +10209,24 @@ var AiAgent = class {
         yield this.#createErrorResponse(error);
         break;
       }
-      this.#history.push(request.current_message);
-      const hasOtherFunctionCalls = Boolean(functionCalls?.some((call) => call.name !== SUGGEST_FOLLOW_UPS_FUNCTION_NAME));
-      if (!functionCalls || !hasOtherFunctionCalls) {
-        yield* this.#handleFinalResponse(i, textResponse, functionCalls, rpcId);
+      runEntries.push(request.current_message);
+      const hasTextResponse = Boolean(textResponse.trim());
+      const onlySuggestFollowUps = Boolean(functionCalls?.every((call) => call.name === SUGGEST_FOLLOW_UPS_FUNCTION_NAME));
+      if (onlySuggestFollowUps && functionCalls) {
+        for (const call of functionCalls) {
+          latestSuggestions = sanitizeSuggestionsList(call.args?.suggestions) ?? latestSuggestions;
+        }
+      }
+      if (!functionCalls || onlySuggestFollowUps && hasTextResponse) {
+        yield* this.#handleFinalResponse(i, textResponse, functionCalls, rpcId, runEntries, latestSuggestions);
         break;
       }
-      if (textResponse) {
+      if (hasTextResponse) {
         const parsedResponse = this.parseTextResponse(textResponse);
         yield await this.#createCompletedAnswer(parsedResponse.answer, rpcId);
       }
       debugLog2(`[AiAgent] Step ${i + 1}: Model requested function calls:`, functionCalls);
-      const outcome = yield* this.#runFunctionCalls(functionCalls, textResponse, options);
+      const outcome = yield* this.#runFunctionCalls(functionCalls, textResponse, options, runEntries);
       if (outcome.type === "contextChanged") {
         return;
       }
@@ -9971,14 +10234,19 @@ var AiAgent = class {
         break;
       }
       if (i === MAX_STEPS - 1) {
-        this.#history.push({
+        runEntries.push({
           parts: outcome.functionResponses,
           role: Host23.AidaClient.Role.ROLE_UNSPECIFIED
         });
+        this.#commitRun(runEntries);
         yield this.#createErrorResponse("max-steps" /* MAX_STEPS */);
         break;
       }
-      request = this.buildRequest(outcome.functionResponses, Host23.AidaClient.Role.ROLE_UNSPECIFIED);
+      request = this.#buildRequest(
+        outcome.functionResponses,
+        Host23.AidaClient.Role.ROLE_UNSPECIFIED,
+        [...this.#history, ...runEntries]
+      );
     }
     if (isDebugMode()) {
       dispatchAiAssistanceDoneEvent();
@@ -9989,13 +10257,14 @@ var AiAgent = class {
    * Handles the final model response of a run when no further tool calls need
    * to execute.
    *
-   * - If `textResponse` is empty, yields an `UNKNOWN` error.
-   * - Otherwise, records the answer as a `MODEL` turn in `#history` (excluding
-   *   `suggestFollowUps`) and yields a completed `ANSWER` with follow-up
-   *   suggestions.
+   * - If `textResponse` is empty or whitespace-only, yields an `UNKNOWN` error
+   *   without committing `runEntries`.
+   * - Otherwise, records the answer (and any `suggestFollowUps` calls verbatim
+   *   with matching synthetic `functionResponse` parts) in `#history` and yields
+   *   a completed `ANSWER` with follow-up suggestions.
    */
-  async *#handleFinalResponse(stepIndex, textResponse, functionCalls, rpcId) {
-    if (!textResponse) {
+  async *#handleFinalResponse(stepIndex, textResponse, functionCalls, rpcId, runEntries, latestSuggestions) {
+    if (!textResponse.trim()) {
       debugLog2(
         "[AiAgent] Model returned an empty text response without tool calls:",
         { step: stepIndex + 1, rpcId, functionCalls }
@@ -10003,17 +10272,29 @@ var AiAgent = class {
       yield this.#createErrorResponse("unknown" /* UNKNOWN */);
       return;
     }
-    const lastSuggestCall = functionCalls?.findLast((call) => call.name === SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
-    const followUpSuggestions = sanitizeSuggestionsList(lastSuggestCall?.args?.suggestions);
     const parsedResponse = this.parseTextResponse(textResponse);
     debugLog2(`[AiAgent] Step ${stepIndex + 1}: Model returned text response:`, parsedResponse.answer);
-    this.#history.push({
-      parts: [{
-        text: parsedResponse.answer
-      }],
+    const modelParts = [{ text: parsedResponse.answer }];
+    if (functionCalls) {
+      modelParts.push(...functionCalls.map((functionCall) => ({ functionCall })));
+    }
+    runEntries.push({
+      parts: modelParts,
       role: Host23.AidaClient.Role.MODEL
     });
-    const suggestions = followUpSuggestions ?? parsedResponse.suggestions;
+    if (functionCalls) {
+      runEntries.push({
+        parts: functionCalls.map((functionCall) => ({
+          functionResponse: {
+            name: functionCall.name,
+            response: { result: SUGGEST_FOLLOW_UPS_RECORDED_RESULT }
+          }
+        })),
+        role: Host23.AidaClient.Role.ROLE_UNSPECIFIED
+      });
+    }
+    this.#commitRun(runEntries);
+    const suggestions = latestSuggestions ?? parsedResponse.suggestions;
     yield await this.#createCompletedAnswer(parsedResponse.answer, rpcId, suggestions);
   }
   /**
@@ -10032,21 +10313,24 @@ var AiAgent = class {
   }
   /**
    * Runs every function call in one model response, one after another, in the
-   * order the model returned them.
+   * order the model returned them. `suggestFollowUps` calls do not run a
+   * handler or yield UI events; instead, they receive a synthetic
+   * `functionResponse` that rejects premature calls (when other tools are
+   * present) or asks for the missing Markdown answer.
    *
-   * The model's text and all calls are stored in history as one MODEL turn.
-   * Every `functionCall` in history gets a matching `functionResponse`: in the
-   * returned `functionResponses`, or, after a context change, in history
-   * directly. When the run stops, the ERROR response removes the run from
-   * history instead.
+   * Non-empty `textResponse` and all calls are stored in history as one `MODEL`
+   * turn. Every `functionCall` in history gets a matching `functionResponse`:
+   * in the returned `functionResponses`, or, after a context change, in history
+   * directly. When the run stops, uncommitted `runEntries` are discarded.
    */
-  async *#runFunctionCalls(functionCalls, textResponse, options) {
-    const modelParts = textResponse ? [{ text: textResponse }] : [];
+  async *#runFunctionCalls(functionCalls, textResponse, options, runEntries) {
+    const modelParts = textResponse.trim() ? [{ text: textResponse }] : [];
     modelParts.push(...functionCalls.map((functionCall) => ({ functionCall })));
-    this.#history.push({
+    runEntries.push({
       parts: modelParts,
       role: Host23.AidaClient.Role.MODEL
     });
+    const onlySuggestFollowUps = functionCalls.every((call) => call.name === SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
     const functionResponses = [];
     try {
       for (const [index, functionCall] of functionCalls.entries()) {
@@ -10055,7 +10339,7 @@ var AiAgent = class {
             functionResponse: {
               name: functionCall.name,
               response: {
-                result: "Ignored: call suggestFollowUps only in the final response after all other tool calls complete."
+                result: onlySuggestFollowUps ? SUGGEST_FOLLOW_UPS_MISSING_TEXT_RESULT : SUGGEST_FOLLOW_UPS_PREMATURE_RESULT
               }
             }
           });
@@ -10074,10 +10358,11 @@ var AiAgent = class {
           functionResponses.push(
             ...this.#contextChangeResponses(functionCall, functionCalls.slice(index + 1), result.description)
           );
-          this.#history.push({
+          runEntries.push({
             parts: functionResponses,
             role: Host23.AidaClient.Role.ROLE_UNSPECIFIED
           });
+          this.#commitRun(runEntries);
           yield {
             type: "context-change" /* CONTEXT_CHANGE */,
             description: result.description,
@@ -10341,7 +10626,7 @@ var AiAgent = class {
         responseTimestamp
       });
       try {
-        Platform8.HostRuntime.HOST_RUNTIME.getLocalStorage()?.setItem(
+        Platform9.HostRuntime.HOST_RUNTIME.getLocalStorage()?.setItem(
           "aiAssistanceStructuredLog",
           JSON.stringify(this.#structuredLog)
         );
@@ -10350,14 +10635,8 @@ var AiAgent = class {
       }
     }
   }
-  #removeLastRunParts() {
-    this.#history.splice(this.#history.findLastIndex((item) => {
-      return item.role === Host23.AidaClient.Role.USER;
-    }));
-  }
   #createErrorResponse(error) {
     if (error !== "max-steps" /* MAX_STEPS */) {
-      this.#removeLastRunParts();
       this.clearCache();
     }
     if (error !== "abort" /* ABORT */) {
@@ -10737,6 +11016,17 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     return suggestions;
   }
   /**
+   * Supplies the compressed network request column legend on the first turn when
+   * critical requests exist, without exposing static LLM format instructions in
+   * `getUserFacingDetails()` UI disclosures or mutating `getPromptDetails()`.
+   */
+  getPromptFacts() {
+    if (this.createFormatter().hasCriticalRequests()) {
+      return [PerformanceTraceFormatter.networkDataFormatFact];
+    }
+    return [];
+  }
+  /**
    * Returns a markdown-formatted payload containing the trace data facts
    * (summary, critical requests, activities, third-party code, and longest tasks)
    * to be included directly in the LLM's prompt.
@@ -11001,6 +11291,11 @@ var RecordPerformanceTraceTool = class {
     if (!capabilities.performanceRecordAndReload) {
       return { error: "Performance recording is not available." };
     }
+    if (capabilities.getTarget()?.model(SDK21.DebuggerModel.DebuggerModel)?.isPaused()) {
+      return {
+        error: "Error: Cannot record a performance trace because JavaScript execution is paused on a breakpoint. Do not retry; ask the user to resume execution in the Sources panel first."
+      };
+    }
     try {
       const result = await capabilities.performanceRecordAndReload();
       return {
@@ -11021,7 +11316,7 @@ __export(ResolveDevtoolsNodePath_exports, {
 });
 import * as Host25 from "../../core/host/host.js";
 import * as i18n43 from "../../core/i18n/i18n.js";
-import * as SDK21 from "../../core/sdk/sdk.js";
+import * as SDK22 from "../../core/sdk/sdk.js";
 var ResolveDevtoolsNodePathTool = class {
   name = "resolveDevtoolsNodePath" /* RESOLVE_DEVTOOLS_NODE_PATH */;
   permissionPrompt = "never" /* NEVER */;
@@ -11066,7 +11361,7 @@ var ResolveDevtoolsNodePathTool = class {
    */
   async handler(params, context) {
     const target = context.getTarget();
-    const domModel = target?.model(SDK21.DOMModel.DOMModel);
+    const domModel = target?.model(SDK22.DOMModel.DOMModel);
     if (!domModel) {
       return { error: "Error: Inspected target not found." };
     }
@@ -11106,6 +11401,7 @@ __export(RunLighthouse_exports, {
   RunLighthouseTool: () => RunLighthouseTool
 });
 import * as Host26 from "../../core/host/host.js";
+import * as SDK24 from "../../core/sdk/sdk.js";
 import * as LHModel from "../lighthouse/lighthouse.js";
 
 // ../../front_end/models/ai_assistance/contexts/LighthouseContext.ts
@@ -11114,7 +11410,7 @@ __export(LighthouseContext_exports, {
   LighthouseContext: () => LighthouseContext
 });
 import * as Root5 from "../../core/root/root.js";
-import * as SDK22 from "../../core/sdk/sdk.js";
+import * as SDK23 from "../../core/sdk/sdk.js";
 var LighthouseContext = class extends ConversationContext {
   // This context was previously named AccessibilityContext. The VE context
   // keeps its original value so that logged metrics stay comparable.
@@ -11137,7 +11433,7 @@ var LighthouseContext = class extends ConversationContext {
    * @returns The security origin of the audited page.
    */
   getOrigin() {
-    return SDK22.SecurityOrigin.SecurityOrigin.create(this.#url());
+    return SDK23.SecurityOrigin.SecurityOrigin.create(this.#url());
   }
   getItem() {
     return this.#lh;
@@ -11237,6 +11533,11 @@ var RunLighthouseTool = class {
     };
   }
   async handler(params, context) {
+    if (context.getTarget()?.model(SDK24.DebuggerModel.DebuggerModel)?.isPaused()) {
+      return {
+        error: "Error: Cannot run Lighthouse because JavaScript execution is paused on a breakpoint. Do not retry; ask the user to resume execution in the Sources panel first."
+      };
+    }
     const mode = resolveMode(params);
     if (params.categoryId !== "all") {
       const supportedModes = LHModel.RunTypes.CATEGORY_SUPPORTED_MODES[params.categoryId];
@@ -11277,7 +11578,7 @@ __export(SelectTraceEventByKey_exports, {
 import * as Common5 from "../../core/common/common.js";
 import * as Host27 from "../../core/host/host.js";
 import * as i18n45 from "../../core/i18n/i18n.js";
-import * as SDK23 from "../../core/sdk/sdk.js";
+import * as SDK25 from "../../core/sdk/sdk.js";
 var UIStringsNotTranslate12 = {
   selectingTraceEvent: "Selecting trace event"
 };
@@ -11315,7 +11616,7 @@ var SelectTraceEventByKeyTool = class {
     if (!event) {
       return { error: `Could not find event with key "${params.eventKey}".` };
     }
-    const revealable = new SDK23.TraceObject.RevealableEvent(event);
+    const revealable = new SDK25.TraceObject.RevealableEvent(event);
     try {
       await Common5.Revealer.reveal(revealable);
     } catch {
@@ -11339,8 +11640,8 @@ __export(SetElementStyles_exports, {
   SetElementStylesTool: () => SetElementStylesTool
 });
 import * as Host28 from "../../core/host/host.js";
-import * as Platform9 from "../../core/platform/platform.js";
-import * as SDK24 from "../../core/sdk/sdk.js";
+import * as Platform10 from "../../core/platform/platform.js";
+import * as SDK26 from "../../core/sdk/sdk.js";
 var SetElementStylesTool = class {
   name = "setElementStyles" /* SET_ELEMENT_STYLES */;
   permissionPrompt = "never" /* NEVER */;
@@ -11415,12 +11716,12 @@ var SetElementStylesTool = class {
     if (!params.styleProperties?.length) {
       return { error: "Error: No style properties provided." };
     }
-    const styles = Platform9.StringUtilities.toKebabCaseKeys(
+    const styles = Platform10.StringUtilities.toKebabCaseKeys(
       Object.fromEntries(params.styleProperties.map((p) => [p.name, p.value]))
     );
     const maybeResolvedNodes = await Promise.all(
       params.elements.map(
-        (uid) => new SDK24.DOMModel.DeferredDOMNode(target, uid).resolvePromise()
+        (uid) => new SDK26.DOMModel.DeferredDOMNode(target, uid).resolvePromise()
       )
     );
     const resolvedNodes = [];
@@ -11470,7 +11771,7 @@ var SetElementStylesTool = class {
   async #applyStyleChangesToNode(resolvedNode, styles, changeManager) {
     const domModel = resolvedNode.domModel();
     const cssModel = domModel.cssModel();
-    const frameId = resolvedNode.frameId() ?? domModel.target().model(SDK24.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.id;
+    const frameId = resolvedNode.frameId() ?? domModel.target().model(SDK26.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.id;
     if (!frameId) {
       return { error: "Error: Main frame is not found for applying styles." };
     }
@@ -11636,7 +11937,7 @@ var AccessibilityAgent = class extends AiAgent {
   }
   async preRun() {
     const target = this.targetManager.primaryPageTarget();
-    const domModel = target?.model(SDK25.DOMModel.DOMModel);
+    const domModel = target?.model(SDK27.DOMModel.DOMModel);
     if (domModel && !domModel.existingDocument()) {
       try {
         await domModel.requestDocument();
@@ -11651,7 +11952,7 @@ var AccessibilityAgent = class extends AiAgent {
    * so that the AI has a valid $0 to start with.
    */
   #getDocumentBodyNode() {
-    const document = this.targetManager.primaryPageTarget()?.model(SDK25.DOMModel.DOMModel)?.existingDocument();
+    const document = this.targetManager.primaryPageTarget()?.model(SDK27.DOMModel.DOMModel)?.existingDocument();
     return document?.body ?? document ?? null;
   }
   async *handleContextDetails(lhr) {
@@ -11675,7 +11976,7 @@ var AccessibilityAgent = class extends AiAgent {
     if (!target) {
       return null;
     }
-    const domModel = target.model(SDK25.DOMModel.DOMModel);
+    const domModel = target.model(SDK27.DOMModel.DOMModel);
     if (!domModel) {
       return null;
     }
@@ -11925,7 +12226,7 @@ var AccessibilityAgent = class extends AiAgent {
         if (!node) {
           return { error: `Could not find the element with path: ${params.path}` };
         }
-        const accessibilityModel = node.domModel().target().model(SDK25.AccessibilityModel.AccessibilityModel);
+        const accessibilityModel = node.domModel().target().model(SDK27.AccessibilityModel.AccessibilityModel);
         if (!accessibilityModel) {
           return { error: "Accessibility model not found." };
         }
@@ -11993,7 +12294,7 @@ import * as Host30 from "../../core/host/host.js";
 import * as i18n53 from "../../core/i18n/i18n.js";
 import * as Root7 from "../../core/root/root.js";
 import * as AiUtils6 from "../ai-utils/ai-utils.js";
-import * as Logs6 from "../logs/logs.js";
+import * as Logs5 from "../logs/logs.js";
 import * as NetworkTimeCalculator3 from "../network_time_calculator/network_time_calculator.js";
 import * as Workspace5 from "../workspace/workspace.js";
 
@@ -12003,7 +12304,7 @@ __export(DOMNodeContext_exports, {
   DOMNodeContext: () => DOMNodeContext
 });
 import * as i18n49 from "../../core/i18n/i18n.js";
-import * as SDK26 from "../../core/sdk/sdk.js";
+import * as SDK28 from "../../core/sdk/sdk.js";
 var UIStringsNotTranslate13 = {
   /**
    * @description Heading text for context details of DevTools AI Agent.
@@ -12031,7 +12332,7 @@ var DOMNodeContext = class extends ConversationContext {
     const origin = this.#node.securityOrigin();
     if (!origin) {
       if (!this.#opaqueOrigin) {
-        this.#opaqueOrigin = SDK26.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
+        this.#opaqueOrigin = SDK28.SecurityOrigin.SecurityOrigin.createUniqueOpaque();
       }
       return this.#opaqueOrigin;
     }
@@ -12104,8 +12405,8 @@ ${await this.describe()}`;
 * Its selector is \`${element.simpleSelector()}\``;
     const childNodes = await element.getChildNodesPromise();
     if (childNodes) {
-      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK26.DOMModel.NodeType.TEXT_NODE);
-      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE);
+      const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK28.DOMModel.NodeType.TEXT_NODE);
+      const elementChildNodes = childNodes.filter((childNode) => childNode.nodeType() === SDK28.DOMModel.NodeType.ELEMENT_NODE);
       const formattedChildren = elementChildNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ");
       switch (elementChildNodes.length) {
         case 0:
@@ -12132,12 +12433,12 @@ ${await this.describe()}`;
       }
     }
     if (element.nextSibling) {
-      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
+      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === SDK28.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
     }
     if (element.previousSibling) {
-      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
+      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === SDK28.DOMModel.NodeType.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
     }
@@ -12149,14 +12450,14 @@ ${await this.describe()}`;
       const parentChildrenNodes = await parentNode.getChildNodesPromise();
       output += `
 * Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
-      const elementOrNodeElementNodeText = parentNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE ? "an element" : "a non element";
+      const elementOrNodeElementNodeText = parentNode.nodeType() === SDK28.DOMModel.NodeType.ELEMENT_NODE ? "an element" : "a non element";
       output += `
 * Its parent is ${elementOrNodeElementNodeText} node`;
       if (parentNode.isShadowRoot()) {
         output += "\n* Its parent is a shadow root.";
       }
       if (parentChildrenNodes) {
-        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK26.DOMModel.NodeType.ELEMENT_NODE);
+        const childElementNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK28.DOMModel.NodeType.ELEMENT_NODE);
         switch (childElementNodes.length) {
           case 0:
             break;
@@ -12168,7 +12469,7 @@ ${await this.describe()}`;
 * Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
             break;
         }
-        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK26.DOMModel.NodeType.TEXT_NODE);
+        const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === SDK28.DOMModel.NodeType.TEXT_NODE);
         switch (siblingTextNodes.length) {
           case 0:
             break;
@@ -12273,9 +12574,14 @@ var RequestContext = class extends ConversationContext {
       accessingSecurityOrigin: this.#request.initiatorSecurityOrigin()
     });
   }
+  /**
+   * Includes the request ID so the model can match this request to
+   * `listNetworkRequests` rows without calling `getNetworkRequestDetails`.
+   */
   async getPromptDetails() {
     const formatter = this.#createFormatter();
     return `# Selected network request
+Request ID: ${this.#request.requestId()}
 ${await formatter.formatNetworkRequest()}`;
   }
   async getUserFacingDetails() {
@@ -12316,7 +12622,7 @@ var StorageContext_exports = {};
 __export(StorageContext_exports, {
   StorageContext: () => StorageContext
 });
-import * as SDK27 from "../../core/sdk/sdk.js";
+import * as SDK29 from "../../core/sdk/sdk.js";
 
 // ../../front_end/models/ai_assistance/StorageItem.ts
 var StorageItem_exports = {};
@@ -12385,7 +12691,7 @@ var StorageContext = class extends ConversationContext {
    * @returns The security origin of the primary page target.
    */
   getOrigin() {
-    return SDK27.SecurityOrigin.SecurityOrigin.create(this.#item.primaryTargetOrigin);
+    return SDK29.SecurityOrigin.SecurityOrigin.create(this.#item.primaryTargetOrigin);
   }
   getItem() {
     return this.#item;
@@ -12524,7 +12830,7 @@ var ContextSelectionAgent = class _ContextSelectionAgent extends AiAgent {
   #workspace;
   constructor(opts) {
     super(opts);
-    this.#networkLog = opts.networkLog ?? Logs6.NetworkLog.NetworkLog.instance();
+    this.#networkLog = opts.networkLog ?? Logs5.NetworkLog.NetworkLog.instance();
     this.#workspace = opts.workspace ?? Workspace5.Workspace.WorkspaceImpl.instance();
     this.#performanceRecordAndReload = opts.performanceRecordAndReload;
     this.#lighthouseRecording = opts.lighthouseRecording;
@@ -13163,11 +13469,11 @@ import * as Common6 from "../../core/common/common.js";
 import * as Host33 from "../../core/host/host.js";
 import * as i18n55 from "../../core/i18n/i18n.js";
 import * as Root10 from "../../core/root/root.js";
-import * as SDK28 from "../../core/sdk/sdk.js";
+import * as SDK30 from "../../core/sdk/sdk.js";
 import * as TextUtils5 from "../../core/text_utils/text_utils.js";
 import * as Tracing3 from "../../services/tracing/tracing.js";
 import * as AiUtils7 from "../ai-utils/ai-utils.js";
-import * as Logs7 from "../logs/logs.js";
+import * as Logs6 from "../logs/logs.js";
 import * as Trace9 from "../trace/trace.js";
 var { debugLog: debugLog5 } = AiUtils7.Debug;
 var UIStringsNotTranslated = {
@@ -13310,7 +13616,7 @@ var PerformanceAgent = class extends AiAgent {
   constructor(opts) {
     super(opts);
     this.#tracker = opts.tracker ?? Tracing3.FreshRecording.Tracker.instance();
-    this.#networkLog = opts.networkLog ?? Logs7.NetworkLog.NetworkLog.instance();
+    this.#networkLog = opts.networkLog ?? Logs6.NetworkLog.NetworkLog.instance();
   }
   #formatter = null;
   #lastEventForEnhancedQuery;
@@ -13727,7 +14033,7 @@ ${result}`,
             const nodeId = lcpEvent.args.data?.nodeId;
             if (nodeId) {
               const target = this.targetManager.primaryPageTarget();
-              const domModel = target?.model(SDK28.DOMModel.DOMModel);
+              const domModel = target?.model(SDK30.DOMModel.DOMModel);
               if (domModel) {
                 const nodeMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([nodeId]));
                 const node = nodeMap?.get(nodeId);
@@ -14070,7 +14376,7 @@ ${result}`,
         if (script?.content !== void 0) {
           content = script.content;
         } else if (isFresh || isTraceApp) {
-          const resource = SDK28.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
+          const resource = SDK30.ResourceTreeModel.ResourceTreeModel.resourceForURL(this.targetManager, url);
           if (!resource) {
             return { error: "Resource not found" };
           }
@@ -14123,7 +14429,7 @@ ${result}`,
         if (!event) {
           return { error: "Invalid eventKey" };
         }
-        const revealable = new SDK28.TraceObject.RevealableEvent(event);
+        const revealable = new SDK30.TraceObject.RevealableEvent(event);
         await Common6.Revealer.reveal(revealable);
         return {
           result: { success: true },
@@ -14140,7 +14446,7 @@ ${result}`,
   }
   async #getNetworkRequestImageData(lcpRequest) {
     const target = this.targetManager.primaryPageTarget();
-    const networkManager = target?.model(SDK28.NetworkManager.NetworkManager);
+    const networkManager = target?.model(SDK30.NetworkManager.NetworkManager);
     if (!target || !networkManager) {
       return void 0;
     }
@@ -14170,7 +14476,7 @@ import * as Common7 from "../../core/common/common.js";
 import * as Host34 from "../../core/host/host.js";
 import * as i18n57 from "../../core/i18n/i18n.js";
 import * as Root11 from "../../core/root/root.js";
-import * as SDK29 from "../../core/sdk/sdk.js";
+import * as SDK31 from "../../core/sdk/sdk.js";
 var lockedString26 = i18n57.i18n.lockedString;
 var preamble6 = `You are a Senior Software Engineer specializing in state audit and storage analysis within Chrome DevTools. Your mission is to help developers debug storage-related issues faster by analyzing the evidence in LocalStorage, SessionStorage, and Cookies.
 
@@ -14222,7 +14528,7 @@ function isSamePageOrigin(target, context) {
   if (!inspectedURL) {
     return false;
   }
-  const pageOrigin = SDK29.SecurityOrigin.SecurityOrigin.create(inspectedURL);
+  const pageOrigin = SDK31.SecurityOrigin.SecurityOrigin.create(inspectedURL);
   return !pageOrigin.isOpaque() && context.isOriginAllowed(pageOrigin);
 }
 var MAX_TARGET_ORIGINS2 = 100;
@@ -14270,7 +14576,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
           return { error: "No origin available or not allowed." };
         }
         const origins = [];
-        for (const frame of SDK29.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
+        for (const frame of SDK31.ResourceTreeModel.ResourceTreeModel.frames(this.targetManager)) {
           if (!isSamePageOrigin(frame.resourceTreeModel().target().outermostTarget(), this.context)) {
             continue;
           }
@@ -14586,7 +14892,7 @@ var StorageAgent = class _StorageAgent extends AiAgent {
         if (response.getError()) {
           return { error: response.getError() || "Unknown CDP error" };
         }
-        const mainStorageKey = target.model(SDK29.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
+        const mainStorageKey = target.model(SDK31.StorageKeyManager.StorageKeyManager)?.mainStorageKey() || void 0;
         const localStorages = resolveDOMStorages2(this.context, "localStorage", origin, this.targetManager, mainStorageKey);
         const localStorageBytes = await calculateDOMStoragesUsage2(localStorages);
         const sessionStorages = resolveDOMStorages2(this.context, "sessionStorage", origin, this.targetManager, mainStorageKey);
@@ -14686,7 +14992,7 @@ ${query}`;
   }
 };
 async function getCookiesForDomain(target, origin) {
-  const cookieModel = target.model(SDK29.CookieModel.CookieModel);
+  const cookieModel = target.model(SDK31.CookieModel.CookieModel);
   if (!cookieModel) {
     return null;
   }
@@ -14697,8 +15003,8 @@ async function getCookiesForDomain(target, origin) {
   return allCookies.filter((cookie) => !cookie.httpOnly());
 }
 function findFrameForOrigin(context, origin, targetManager) {
-  const parsedOrigin = SDK29.SecurityOrigin.SecurityOrigin.create(origin);
-  for (const frame of SDK29.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
+  const parsedOrigin = SDK31.SecurityOrigin.SecurityOrigin.create(origin);
+  for (const frame of SDK31.ResourceTreeModel.ResourceTreeModel.frames(targetManager)) {
     if (frame.securityOrigin().isSameOriginWith(parsedOrigin)) {
       const target = frame.resourceTreeModel().target();
       if (isSamePageOrigin(target.outermostTarget(), context)) {
@@ -14723,7 +15029,7 @@ async function calculateDOMStoragesUsage2(storages) {
 function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
   const resolvedStorages = [];
   const isLocalStorage = type === "localStorage";
-  const domStorageModels = targetManager.models(SDK29.DOMStorageModel.DOMStorageModel);
+  const domStorageModels = targetManager.models(SDK31.DOMStorageModel.DOMStorageModel);
   for (const domStorageModel of domStorageModels) {
     if (!isSamePageOrigin(domStorageModel.target().outermostTarget(), context)) {
       continue;
@@ -14738,14 +15044,14 @@ function resolveDOMStorages2(context, type, origin, targetManager, storageKey) {
       }
       if (storageKey) {
         if (storageKey === currentStorageKey) {
-          const parsedKey2 = SDK29.StorageKeyManager.parseStorageKey(currentStorageKey);
+          const parsedKey2 = SDK31.StorageKeyManager.parseStorageKey(currentStorageKey);
           if (parsedKey2.origin === origin) {
             resolvedStorages.push(storage);
           }
         }
         continue;
       }
-      const parsedKey = SDK29.StorageKeyManager.parseStorageKey(currentStorageKey);
+      const parsedKey = SDK31.StorageKeyManager.parseStorageKey(currentStorageKey);
       if (parsedKey.origin === origin) {
         resolvedStorages.push(storage);
       }
@@ -14932,7 +15238,7 @@ __export(AiAgent2_exports, {
 });
 import * as Host36 from "../../core/host/host.js";
 import * as Root13 from "../../core/root/root.js";
-import * as SDK30 from "../../core/sdk/sdk.js";
+import * as SDK32 from "../../core/sdk/sdk.js";
 import * as AiUtils8 from "../ai-utils/ai-utils.js";
 
 // ../../front_end/models/ai_assistance/skills/SkillRegistry.ts
@@ -14959,12 +15265,12 @@ var skill = {
 // gen/front_end/models/ai_assistance/skills/network.skill.js
 var skill2 = {
   "name": "network",
-  "description": "Analyzing network traffic, network requests, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.",
+  "description": "Analyzing network traffic, network requests, request initiator chains, HTTP/HTTPS headers, status codes, payload details, timing/performance, and request sizes.",
   "allowedTools": [
     "listNetworkRequests",
     "getNetworkRequestDetails"
   ],
-  "instructions": "# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to list recorded requests initiated by the active origin as `id;url;status;duration;size` rows, where same-origin URLs omit the `origin` prefix and long query or `data:` URLs end with `...<truncated>`.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain the full untruncated URL, full headers, timing phases (DNS, initial connection, SSL, TTFB, content download), status text, and response body.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Origin Lock**: Only requests initiated by the conversation's established origin can be inspected.\n* **Recording**: DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). If `listNetworkRequests` reports that no requests have been recorded, ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
+  "instructions": "# Tools & Workflow\n\n1. **Discover Requests (`listNetworkRequests`)**:\n   - Call `listNetworkRequests` to list recorded requests initiated by the active origin as `id;url;status;duration;size` rows, where same-origin URLs omit the `origin` prefix and long query or `data:` URLs end with `...<truncated>`.\n   - Inspect the returned list for URLs, status codes, durations, transfer sizes, and unique request `id` values.\n\n2. **Inspect Request Details (`getNetworkRequestDetails`)**:\n   - Call `getNetworkRequestDetails` with the specific request `id` to obtain the full untruncated URL, full headers, timing phases (queueing, connection stalled, proxy negotiation, DNS lookup, initial connection including SSL, request sent, waiting for server response, content download, and total duration), status text, response body, and request initiator chain.\n   - If `# Selected network request` was provided in this conversation, it already contains this full output for its `Request ID`; do not call `getNetworkRequestDetails` for that same `id` unless its status was `pending`.\n\n# Considerations\n\n* **Privacy**: If the request or response payload contains sensitive personal data, authorization tokens, or API secrets, redact or generalize it in your response.\n* **Internal IDs**: `Request ID` and `id` values are internal DevTools lookup keys (distinct from HTTP `X-Request-Id` headers); refer to requests by URL in your response and never output raw `Request ID` values as text.\n* **Origin Lock**: Only requests initiated by the conversation's established origin can be inspected. Selecting a cross-origin file locks the conversation to that file's origin rather than the page origin.\n* **Recording**: DevTools only records requests made while DevTools is open and network recording is enabled (and the log has not been cleared). If `listNetworkRequests` reports that no requests have been recorded, ask the user to ensure network recording is enabled, reload the page or repeat the action that triggers the request, and try again."
 };
 
 // gen/front_end/models/ai_assistance/skills/performance.skill.js
@@ -15027,18 +15333,15 @@ var skill6 = {
 var SKILLS = {
   styling: skill6,
   network: skill2,
-  // Append compressed format descriptions here to keep a single source of truth
-  // alongside PerformanceTraceFormatter without inflating performanceSkill.description
-  // in the unloaded skills manifest.
+  // Append compressed format descriptions as facts to deduplicate across
+  // PerformanceTraceContext and learnSkills(['performance']) without inflating
+  // performanceSkill.description in the unloaded skills manifest.
   performance: {
     ...skill3,
-    instructions: `${skill3.instructions}
-
-# Data Formats
-
-${PerformanceTraceFormatter.networkDataFormatDescription.trim()}
-
-${PerformanceTraceFormatter.callFrameDataFormatDescription.trim()}`
+    facts: [
+      PerformanceTraceFormatter.networkDataFormatFact,
+      PerformanceTraceFormatter.callFrameDataFormatFact
+    ]
   },
   storage: skill5,
   sources: skill4,
@@ -15085,58 +15388,87 @@ Your role is to help web developers debug, analyze, and optimize web application
   - **Applied Live Changes**: Detail the changes you applied to the live page (including the modified CSS properties or HTML attributes), note that these live changes are temporary and will reset on page reload, and ask the user to verify the result before updating their source code. Do NOT use "**Suggestion(s)**" or "**Suggested fix**" headings when you have already modified the live page.
 
 # Follow-up Suggestions
-* At the end of your response, call the \`suggestFollowUps\` function to provide 1 to 3 relevant, concise follow-up queries or actions for the user.
+* In the same message as your final Markdown answer, call the \`suggestFollowUps\` function to provide 1 to 3 relevant, concise follow-up queries or actions for the user.
+* \`suggestFollowUps\` ends your turn immediately without another step. Never call \`suggestFollowUps\` with an empty text response or alongside other tool calls.
 * Do not write follow-up suggestions as text in your response.
 
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
 * **CRITICAL**: Do not write standalone scripts (such as Python or bash) or arbitrary code to interact with the environment. The only way to execute code in the inspected page is via the 'executeJavaScript' tool.
 * **CRITICAL**: Do not expose raw, internal system identifiers (such as database IDs, internal node paths, or event keys) directly to the user. Use descriptive names instead.`;
-var PLAIN_SUGGESTIONS_REGEX = /^(.*?)(?:^|\s)SUGGESTIONS:/;
-var FORMATTED_SUGGESTIONS_REGEX = /^(.*)(?:^|\s)[*_`]{0,3}suggestions[*_`]{0,3}:[*_`]{0,3}\s*`?(\[.*\])[*_`\s]*$/i;
-var STREAMING_SUGGESTIONS_REGEX = /^(.*?)(?:^|\s)[*_`]{0,3}suggestions[*_`]{0,3}:/i;
-var LIST_OR_HEADING_MARKER_REGEX = /^(?:[-*+]|\d+\.|#{1,6})$/;
-function removeDirectiveFromLastLine(lines, textBeforeDirective) {
-  const keptText = textBeforeDirective.trimEnd();
-  const lastLine = LIST_OR_HEADING_MARKER_REGEX.test(keptText.trim()) ? "" : keptText;
-  return [...lines.slice(0, -1), lastLine].join("\n").trimEnd();
-}
-function parseSuggestionsArray(array) {
-  try {
-    return { suggestions: sanitizeSuggestionsList(JSON.parse(array)) };
-  } catch {
-    return null;
-  }
-}
-function parseCompletedSuggestions(text) {
-  const lines = text.split("\n");
-  const lastLine = lines[lines.length - 1];
-  const formatted = lastLine.match(FORMATTED_SUGGESTIONS_REGEX);
-  const parsedArray = formatted ? parseSuggestionsArray(formatted[2]) : null;
-  if (formatted && parsedArray) {
-    const answer = removeDirectiveFromLastLine(lines, formatted[1]);
-    return parsedArray.suggestions ? { answer, suggestions: parsedArray.suggestions } : { answer };
-  }
-  const plain = lastLine.match(PLAIN_SUGGESTIONS_REGEX);
-  if (plain) {
-    return { answer: removeDirectiveFromLastLine(lines, plain[1]) };
-  }
-  return { answer: text };
-}
-function hideStreamingSuggestions(text) {
-  const lines = text.split("\n");
-  const match = lines[lines.length - 1].match(STREAMING_SUGGESTIONS_REGEX);
-  return match ? removeDirectiveFromLastLine(lines, match[1]) : text;
-}
 var AiAgent2 = class extends AiAgent {
   /**
-   * Tracks the last context details sent to the LLM to prevent resending identical
-   * large context blocks on subsequent turns in the same conversation.
+   * Tracks skills, `PromptFact` instances, and context details committed to `AiAgent.#history`.
+   * Facts are injected into append-only history rather than AIDA's wire `request.facts`
+   * field (which `FactsToText` prepends to `current_message` on every step, repeating
+   * tokens and invalidating prefix caching) or `getPromptDetails()` (which must stay
+   * deterministic across turns for `lastSentPromptDetails` deduplication).
    */
-  #lastSentPromptDetails = null;
+  #committedState = {
+    skills: /* @__PURE__ */ new Set(),
+    sentFacts: /* @__PURE__ */ new Set(),
+    lastSentPromptDetails: null
+  };
+  /**
+   * In-flight mutations during `run()` target this draft and promote to `#committedState` in `onRunCommitted()`.
+   */
+  #runDraft = null;
+  /**
+   * Routes reads and mutations to `#runDraft` during `run()`, or directly to
+   * `#committedState` when idle or when `enhanceQuery()` or `learnSkill()` is called standalone outside `run()`.
+   */
+  get #state() {
+    return this.#runDraft ?? this.#committedState;
+  }
+  /**
+   * `#commitRun()` and `#createErrorResponse()` clear `#runDraft` on committed
+   * and error paths, while `finally` rolls back uncommitted drafts on early
+   * consumer `break` or empty-query returns.
+   */
+  async *run(initialQuery, options, multimodalInput) {
+    try {
+      yield* super.run(initialQuery, options, multimodalInput);
+    } finally {
+      if (this.#runDraft) {
+        this.clearCache();
+      }
+    }
+  }
+  /**
+   * Discards the active `#runDraft` so uncommitted `skills`, `sentFacts`, and
+   * `lastSentPromptDetails` from a failed run roll back while committed state
+   * from earlier turns remains intact.
+   */
   clearCache() {
     super.clearCache();
-    this.#lastSentPromptDetails = null;
+    this.#runDraft = null;
+    this.#pendingAutoLearnedSkills = [];
+    this.#syncDeclaredFunctions();
+  }
+  /**
+   * Appends any `facts` not yet recorded in `this.#state.sentFacts` to `content` under
+   * `# References` with `## ${fact.title}` subheadings.
+   */
+  #appendUnsentFacts(content, facts = []) {
+    const { sentFacts } = this.#state;
+    const factSections = [];
+    for (const fact of facts) {
+      if (!sentFacts.has(fact)) {
+        sentFacts.add(fact);
+        factSections.push(`## ${fact.title}
+
+${fact.description.trim()}`);
+      }
+    }
+    if (factSections.length === 0) {
+      return content;
+    }
+    const references = `# References
+
+${factSections.join("\n\n")}`;
+    return content ? `${content}
+
+${references}` : references;
   }
   // TODO: The static preamble is a placeholder and will eventually live server-side.
   preamble = preamble8;
@@ -15153,6 +15485,12 @@ var AiAgent2 = class extends AiAgent {
     return {};
   }
   async preRun() {
+    this.#runDraft = {
+      skills: new Set(this.#committedState.skills),
+      sentFacts: new Set(this.#committedState.sentFacts),
+      lastSentPromptDetails: this.#committedState.lastSentPromptDetails
+    };
+    this.#syncDeclaredFunctions();
     await super.preRun();
     if (this.context && !this.context.isLoggingEnabled()) {
       this.disableServerSideLogging();
@@ -15160,7 +15498,7 @@ var AiAgent2 = class extends AiAgent {
     const target = this.targetManager.primaryPageTarget();
     const originLock = this.#originLock();
     const isTargetAllowed = target && isOriginAllowedByLock(originLock, target.inspectedSecurityOrigin());
-    const domModel = isTargetAllowed ? target.model(SDK30.DOMModel.DOMModel) : null;
+    const domModel = isTargetAllowed ? target.model(SDK32.DOMModel.DOMModel) : null;
     if (domModel) {
       if (!domModel.existingDocument()) {
         try {
@@ -15178,8 +15516,6 @@ var AiAgent2 = class extends AiAgent {
       }
     }
   }
-  #activeSkills = /* @__PURE__ */ new Set();
-  #declaredTools = /* @__PURE__ */ new Set();
   /**
    * Tracks skills auto-loaded during enhanceQuery() so handleContextDetails() can attach them to ContextResponse for telemetry without rendering a walkthrough step.
    */
@@ -15203,7 +15539,13 @@ var AiAgent2 = class extends AiAgent {
     this.#performanceRecordAndReload = opts.performanceRecordAndReload;
     this.#execJs = opts.execJs ?? executeJsCode;
     this.#originLock = opts.originLock;
-    this.#declaredTools.add("learnSkills");
+    this.#syncDeclaredFunctions();
+  }
+  /**
+   * Registers baseline functions (`learnSkills` and `suggestFollowUps`) that are
+   * always available regardless of which domain skills are loaded.
+   */
+  #declareCoreFunctions() {
     const skillsManifest = Object.entries(SKILLS).map(([name, skill7]) => `- ${name}: ${skill7.description}`).join("\n");
     this.declareFunction("learnSkills", {
       description: `Loads the specified skills to gain access to their specialized tools and instructions.
@@ -15237,18 +15579,17 @@ ${skillsManifest}`,
         };
       },
       handler: async (args) => {
-        const previouslyLoaded = new Set(this.#activeSkills);
+        const previouslyLoaded = new Set(this.activeSkills);
         const result = await this.learnSkill(args.skills);
-        const loadedSkills = [...new Set(args.skills)].filter((skill7) => !previouslyLoaded.has(skill7) && this.#activeSkills.has(skill7));
+        const loadedSkills = [...new Set(args.skills)].filter((skill7) => !previouslyLoaded.has(skill7) && this.activeSkills.has(skill7));
         return {
           result,
           loadedSkills: loadedSkills.length > 0 ? loadedSkills : void 0
         };
       }
     });
-    this.#declaredTools.add(SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
     this.declareFunction(SUGGEST_FOLLOW_UPS_FUNCTION_NAME, {
-      description: "Provides suggested follow-up queries or actions for the user at the end of the response.",
+      description: "Provides suggested follow-up queries or actions for the user. Ends the turn immediately: call this only in the same message as your final non-empty Markdown response, never alone with empty text or alongside other tool calls.",
       parameters: {
         type: Host36.AidaClient.ParametersTypes.OBJECT,
         description: "Parameters for follow-up suggestions",
@@ -15269,6 +15610,31 @@ ${skillsManifest}`,
     });
   }
   /**
+   * Rebuilds `AiAgent.#functionDeclarations` from `this.activeSkills` so declared
+   * tools match the active draft or committed skills, preserving tools shared
+   * between committed and rolled-back skills.
+   */
+  #syncDeclaredFunctions() {
+    this.clearDeclaredFunctions();
+    this.#declareCoreFunctions();
+    const toolNames = new Set([...this.activeSkills].flatMap((name) => SKILLS[name]?.allowedTools ?? []));
+    for (const toolName of toolNames) {
+      const tool = ToolRegistry.get(toolName);
+      if (tool) {
+        this.#declareTool(tool);
+      }
+    }
+  }
+  /**
+   * Promotes the completed `#runDraft` into `#committedState`.
+   */
+  onRunCommitted() {
+    if (this.#runDraft) {
+      this.#committedState = this.#runDraft;
+      this.#runDraft = null;
+    }
+  }
+  /**
    * Maps selected contexts (DOMNodeContext, RequestContext, FileContext) to their domain skill to skip a redundant step-1 learnSkills round trip.
    */
   #skillForContext(selected) {
@@ -15286,48 +15652,34 @@ ${skillsManifest}`,
   async enhanceQuery(query, selected = null, _multimodalInputType) {
     this.#pendingAutoLearnedSkills = [];
     const promptDetails = selected ? await selected.getPromptDetails() : null;
-    let enhancedQuery = query;
+    let contextDetails = "";
     if (!promptDetails) {
-      this.#lastSentPromptDetails = null;
+      this.#state.lastSentPromptDetails = null;
     } else {
-      let contextDetails;
-      if (promptDetails === this.#lastSentPromptDetails) {
-        contextDetails = UNCHANGED_CONTEXT_PROMPT_NOTICE;
-      } else {
-        contextDetails = promptDetails;
-        this.#lastSentPromptDetails = promptDetails;
-      }
-      enhancedQuery = `${contextDetails}
+      contextDetails = promptDetails === this.#state.lastSentPromptDetails ? UNCHANGED_CONTEXT_PROMPT_NOTICE : promptDetails;
+      this.#state.lastSentPromptDetails = promptDetails;
+    }
+    let autoLoadedBlock = "";
+    const mappedSkill = this.#skillForContext(selected);
+    if (mappedSkill && SKILLS[mappedSkill] && !this.activeSkills.has(mappedSkill)) {
+      autoLoadedBlock = await this.learnSkill([mappedSkill]);
+      this.#pendingAutoLearnedSkills.push(mappedSkill);
+    }
+    const contextBlock = this.#appendUnsentFacts(contextDetails, selected?.getPromptFacts());
+    const prefix = [autoLoadedBlock, contextBlock].filter(Boolean).join("\n\n");
+    return prefix ? `${prefix}
 
 # User request
 
-QUERY: ${query}`;
-    }
-    const mappedSkill = this.#skillForContext(selected);
-    if (mappedSkill && SKILLS[mappedSkill] && !this.#activeSkills.has(mappedSkill)) {
-      const autoLoadedBlock = await this.learnSkill([mappedSkill]);
-      this.#pendingAutoLearnedSkills.push(mappedSkill);
-      if (autoLoadedBlock) {
-        return `${autoLoadedBlock}
-
-${enhancedQuery}`;
-      }
-    }
-    return enhancedQuery;
+QUERY: ${query}` : query;
   }
   /**
-   * Parses a completed response. Only the last line can be the follow-up
-   * suggestions directive. See `parseCompletedSuggestions()`.
+   * `AiAgent2` receives follow-up suggestions from `suggestFollowUps` tool
+   * calls rather than text parsing. Overrides `AiAgent#parseTextResponse()` so
+   * V2 responses do not inherit V1 `parseTextResponseForSuggestions()`.
    */
   parseTextResponse(response) {
-    return parseCompletedSuggestions(response.trim());
-  }
-  /**
-   * Parses a response that is still streaming, hiding a suggestions directive
-   * on the last line. See `hideStreamingSuggestions()`.
-   */
-  parsePartialTextResponse(response) {
-    return { answer: hideStreamingSuggestions(response.trim()) };
+    return { answer: response.trim() };
   }
   async *handleContextDetails(selected) {
     const autoLearned = this.#pendingAutoLearnedSkills;
@@ -15349,34 +15701,31 @@ ${enhancedQuery}`;
     }
   }
   async learnSkill(names) {
-    let response = "";
+    const sections = [];
+    let skillsAdded = false;
     for (const name of names) {
-      if (this.#activeSkills.has(name)) {
+      if (this.activeSkills.has(name)) {
         debugLog6(`[AiAgent2] Skill '${name}' is already loaded`);
-        response += `Error: Skill '${name}' is already loaded. Call its tools directly instead of invoking learnSkills for '${name}' again.
-`;
+        sections.push(`Error: Skill '${name}' is already loaded. Call its tools directly instead of invoking learnSkills for '${name}' again.`);
         continue;
       }
       const skillObj = SKILLS[name];
       if (skillObj) {
-        this.#activeSkills.add(name);
+        this.activeSkills.add(name);
+        skillsAdded = true;
         debugLog6(`[AiAgent2] Loaded skill '${name}' with tools: [${skillObj.allowedTools.join(", ")}]`);
-        response += `Skill ${name} loaded. Instructions:
-${skillObj.instructions}
-`;
-        for (const toolName of skillObj.allowedTools) {
-          const tool = ToolRegistry.get(toolName);
-          if (tool) {
-            this.#declareTool(tool);
-          }
-        }
+        const instructions = this.#appendUnsentFacts(skillObj.instructions.trim(), skillObj.facts);
+        sections.push(`Skill ${name} loaded. Instructions:
+${instructions}`);
       } else {
         debugLog6(`[AiAgent2] Failed to load skill '${name}'`);
-        response += `Failed to load skill ${name}. Valid skills are: ${Object.keys(SKILLS).join(", ")}.
-`;
+        sections.push(`Failed to load skill ${name}. Valid skills are: ${Object.keys(SKILLS).join(", ")}.`);
       }
     }
-    return response.trim();
+    if (skillsAdded) {
+      this.#syncDeclaredFunctions();
+    }
+    return sections.join("\n\n");
   }
   #getExecutionContextNode() {
     if (this.context instanceof DOMNodeContext) {
@@ -15388,14 +15737,10 @@ ${skillObj.instructions}
     return new ExtensionScope(changes, this.sessionId, this.#getExecutionContextNode());
   }
   /**
-   * Declares a tool to be available to the agent model, verifying first that
-   * it hasn't already been declared to prevent duplicate declaration errors.
+   * Registers a tool declaration on AiAgent with the capability context.
+   * Deduplication across skills is handled by #syncDeclaredFunctions().
    */
   #declareTool(tool) {
-    if (this.#declaredTools.has(tool.name)) {
-      return;
-    }
-    this.#declaredTools.add(tool.name);
     this.declareFunction(tool.name, {
       description: tool.description,
       parameters: tool.parameters,
@@ -15443,7 +15788,7 @@ ${skillObj.instructions}
    */
   #getDocumentBodyNode() {
     const target = this.#getTarget();
-    const document = target?.model(SDK30.DOMModel.DOMModel)?.existingDocument();
+    const document = target?.model(SDK32.DOMModel.DOMModel)?.existingDocument();
     if (!document) {
       return null;
     }
@@ -15453,8 +15798,11 @@ ${skillObj.instructions}
     }
     return document.body ?? null;
   }
+  /**
+   * Returns the active draft's skills during `run()`, or `#committedState.skills` when idle.
+   */
   get activeSkills() {
-    return this.#activeSkills;
+    return this.#state.skills;
   }
 };
 
@@ -15468,16 +15816,16 @@ __export(AiConversation_exports, {
   generateContextDetailsMarkdown: () => generateContextDetailsMarkdown
 });
 import * as Host37 from "../../core/host/host.js";
-import * as Platform10 from "../../core/platform/platform.js";
+import * as Platform11 from "../../core/platform/platform.js";
 import * as Root14 from "../../core/root/root.js";
-import * as SDK31 from "../../core/sdk/sdk.js";
+import * as SDK33 from "../../core/sdk/sdk.js";
 import * as AiUtils9 from "../ai-utils/ai-utils.js";
 var NOT_FOUND_IMAGE_DATA = "";
 var CONTEXT_TITLE = "Analyzing data";
 var MAX_TITLE_LENGTH = 80;
 var ALLOWED_PAGE_NAVIGATIONS = [
-  Platform10.DevToolsPath.urlString`about:blank`,
-  Platform10.DevToolsPath.urlString`chrome://terms`
+  Platform11.DevToolsPath.urlString`about:blank`,
+  Platform11.DevToolsPath.urlString`chrome://terms`
 ];
 function generateContextDetailsMarkdown(details) {
   const detailsMarkdown = [];
@@ -15529,6 +15877,7 @@ var AiConversation = class _AiConversation {
   #aiHistoryStorage;
   #targetManager;
   #alwaysAllowedTools;
+  #serverSideLoggingAllowed;
   constructor(options) {
     const {
       type,
@@ -15543,8 +15892,9 @@ var AiConversation = class _AiConversation {
       lighthouseRecording,
       aiHistoryStorage = AiUtils9.AiHistoryStorage.AiHistoryStorage.instance(),
       // eslint-disable-next-line @devtools/no-instance-of-migrated-singletons
-      targetManager = SDK31.TargetManager.TargetManager.instance(),
-      alwaysAllowedTools
+      targetManager = SDK33.TargetManager.TargetManager.instance(),
+      alwaysAllowedTools,
+      serverSideLoggingAllowed = true
     } = options;
     this.#changeManager = changeManager;
     this.#aidaClient = aidaClient;
@@ -15555,6 +15905,7 @@ var AiConversation = class _AiConversation {
     this.#aiHistoryStorage = aiHistoryStorage;
     this.#targetManager = targetManager;
     this.#alwaysAllowedTools = alwaysAllowedTools;
+    this.#serverSideLoggingAllowed = serverSideLoggingAllowed;
     this.id = id;
     this.#isReadOnly = isReadOnly;
     this.history = this.#reconstructHistory(data);
@@ -15771,7 +16122,7 @@ ${item.text.trim()}`);
     const history = isTransitioningFromStorage ? [] : this.#filterHistoryForNewAgent();
     const baseOptions = {
       aidaClient: this.#aidaClient,
-      serverSideLoggingAllowed: isAiAssistanceServerSideLoggingAllowed(),
+      serverSideLoggingAllowed: this.#serverSideLoggingAllowed && isAiAssistanceServerSideLoggingAllowed(),
       sessionId: this.id,
       changeManager: this.#changeManager,
       performanceRecordAndReload: this.#performanceRecordAndReload,
@@ -15807,7 +16158,7 @@ ${item.text.trim()}`);
       case AiUtils9.AiHistoryStorage.ConversationType.NONE:
         return new ContextSelectionAgent(options);
       default:
-        Platform10.assertNever(type, "Unknown conversation type");
+        Platform11.assertNever(type, "Unknown conversation type");
     }
   }
   async *run(initialQuery, options = {}) {
@@ -15828,8 +16179,8 @@ ${item.text.trim()}`);
     };
     const targetManager = this.#targetManager;
     targetManager.addModelListener(
-      SDK31.ResourceTreeModel.ResourceTreeModel,
-      SDK31.ResourceTreeModel.Events.PrimaryPageChanged,
+      SDK33.ResourceTreeModel.ResourceTreeModel,
+      SDK33.ResourceTreeModel.Events.PrimaryPageChanged,
       listener,
       this
     );
@@ -15840,8 +16191,8 @@ ${item.text.trim()}`);
       yield* this.#runAgent(initialQuery, options, { isInitialCall: true });
     } finally {
       targetManager.removeModelListener(
-        SDK31.ResourceTreeModel.ResourceTreeModel,
-        SDK31.ResourceTreeModel.Events.PrimaryPageChanged,
+        SDK33.ResourceTreeModel.ResourceTreeModel,
+        SDK33.ResourceTreeModel.Events.PrimaryPageChanged,
         listener,
         this
       );
@@ -15956,12 +16307,12 @@ function isAiAssistanceServerSideLoggingAllowed() {
 }
 function getPrimaryPageSecurityOrigin(targetManager) {
   const target = targetManager.primaryPageTarget();
-  const frameOrigin = target?.model(SDK31.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.securityOrigin();
+  const frameOrigin = target?.model(SDK33.ResourceTreeModel.ResourceTreeModel)?.mainFrame?.securityOrigin();
   if (frameOrigin) {
     return frameOrigin;
   }
   const inspectedURL = target?.inspectedURL();
-  return inspectedURL ? SDK31.SecurityOrigin.SecurityOrigin.create(inspectedURL) : void 0;
+  return inspectedURL ? SDK33.SecurityOrigin.SecurityOrigin.create(inspectedURL) : void 0;
 }
 
 // ../../front_end/models/ai_assistance/AlwaysAllowedTools.ts

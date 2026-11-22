@@ -435,7 +435,14 @@ export const DEFAULT_VIEW = (input, output, target) => {
         : ''}
           ${renderCurrentPage()}
         </div>
-    `, target, { container: { listeners: { setrecording: input.onSetRecording } } });
+    `, target, {
+        container: {
+            // Visual logging attributes all interactions in the panel to this root.
+            // Panel usage metrics depend on it.
+            attributes: { jslog: `${VisualLogging.panel(RecorderPanel.panelName).track({ resize: true })}` },
+            listeners: { setrecording: input.onSetRecording },
+        },
+    });
     // clang-format on
 };
 export class RecorderPanel extends UI.Widget.VBox {
@@ -628,6 +635,10 @@ export class RecorderPanel extends UI.Widget.VBox {
         }
     }
     #extensionViewShowRequestedListener;
+    #extensionsUpdatedDescriptor;
+    #onExtensionsUpdated = (event) => {
+        this.#updateExtensions(event.data);
+    };
     #recorderSettings = new Models.RecorderSettings.RecorderSettings();
     #shortcutHelper = new Models.RecorderShortcutHelper.RecorderShortcutHelper();
     #disableRecorderImportWarningSetting = Common.Settings.Settings.instance().createSetting('disable-recorder-import-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
@@ -657,12 +668,14 @@ export class RecorderPanel extends UI.Widget.VBox {
         ]);
         const extensionManager = Extensions.ExtensionManager.ExtensionManager.instance();
         this.#updateExtensions(extensionManager.extensions());
-        extensionManager.addEventListener("extensionsUpdated" /* Extensions.ExtensionManager.Events.EXTENSIONS_UPDATED */, event => {
-            this.#updateExtensions(event.data);
-        });
     }
     wasShown() {
         super.wasShown();
+        if (!this.#extensionsUpdatedDescriptor) {
+            const extensionManager = Extensions.ExtensionManager.ExtensionManager.instance();
+            this.#extensionsUpdatedDescriptor = extensionManager.addEventListener("extensionsUpdated" /* Extensions.ExtensionManager.Events.EXTENSIONS_UPDATED */, this.#onExtensionsUpdated);
+            this.#updateExtensions(extensionManager.extensions());
+        }
         UI.Context.Context.instance().setFlavor(RecorderPanel, this);
         this.requestUpdate();
         void this.updateComplete.then(() => {
@@ -671,10 +684,18 @@ export class RecorderPanel extends UI.Widget.VBox {
     }
     willHide() {
         super.willHide();
+        if (this.#extensionsUpdatedDescriptor) {
+            Common.EventTarget.removeEventListeners([this.#extensionsUpdatedDescriptor]);
+            this.#extensionsUpdatedDescriptor = undefined;
+        }
         UI.Context.Context.instance().setFlavor(RecorderPanel, null);
     }
     onDetach() {
         super.onDetach();
+        if (this.#extensionsUpdatedDescriptor) {
+            Common.EventTarget.removeEventListeners([this.#extensionsUpdatedDescriptor]);
+            this.#extensionsUpdatedDescriptor = undefined;
+        }
         if (this.currentRecordingSession) {
             void this.currentRecordingSession.stop();
         }
@@ -685,8 +706,8 @@ export class RecorderPanel extends UI.Widget.VBox {
     }
     #updateExtensions(extensions) {
         this.extensionConverters =
-            extensions.filter(extension => extension.getCapabilities().includes('export')).map((extension, idx) => {
-                return new Converters.ExtensionConverter.ExtensionConverter(idx, extension);
+            extensions.filter(extension => extension.getCapabilities().includes('export')).map(extension => {
+                return new Converters.ExtensionConverter.ExtensionConverter(extension);
             });
         this.replayExtensions = extensions.filter(extension => extension.getCapabilities().includes('replay'));
     }

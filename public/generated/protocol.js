@@ -521,6 +521,9 @@ export var Audits;
         ElementAccessibilityIssueReason["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
         ElementAccessibilityIssueReason["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
         ElementAccessibilityIssueReason["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+        ElementAccessibilityIssueReason["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+        ElementAccessibilityIssueReason["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+        ElementAccessibilityIssueReason["TextMenuDescendant"] = "TextMenuDescendant";
     })(ElementAccessibilityIssueReason = Audits.ElementAccessibilityIssueReason || (Audits.ElementAccessibilityIssueReason = {}));
     let StyleSheetLoadingIssueReason;
     (function (StyleSheetLoadingIssueReason) {
@@ -924,7 +927,6 @@ export var DOM;
         PseudoType["SelectListbox"] = "select-listbox";
         PseudoType["PermissionIcon"] = "permission-icon";
         PseudoType["OverscrollAreaParent"] = "overscroll-area-parent";
-        PseudoType["OverscrollBackdrop"] = "overscroll-backdrop";
         PseudoType["Skeleton"] = "skeleton";
     })(PseudoType = DOM.PseudoType || (DOM.PseudoType = {}));
     /**
@@ -1866,6 +1868,7 @@ export var Network;
         DeviceBoundSessionFetchResult["AttestationCertificationError"] = "AttestationCertificationError";
         DeviceBoundSessionFetchResult["AttestationSigningError"] = "AttestationSigningError";
         DeviceBoundSessionFetchResult["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+        DeviceBoundSessionFetchResult["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
     })(DeviceBoundSessionFetchResult = Network.DeviceBoundSessionFetchResult || (Network.DeviceBoundSessionFetchResult = {}));
     let RefreshEventDetailsRefreshResult;
     (function (RefreshEventDetailsRefreshResult) {
@@ -2622,6 +2625,7 @@ export var Preload;
         PrerenderFinalStatus["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
         PrerenderFinalStatus["CrossDocumentRestart"] = "CrossDocumentRestart";
         PrerenderFinalStatus["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+        PrerenderFinalStatus["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
     })(PrerenderFinalStatus = Preload.PrerenderFinalStatus || (Preload.PrerenderFinalStatus = {}));
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

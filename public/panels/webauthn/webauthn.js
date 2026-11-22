@@ -494,6 +494,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -818,7 +821,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1064,13 +1066,13 @@ var IndexedDB;
   })(KeyPathType = IndexedDB2.KeyPathType || (IndexedDB2.KeyPathType = {}));
 })(IndexedDB || (IndexedDB = {}));
 var Input;
-((Input3) => {
+((Input2) => {
   let GestureSourceType;
   ((GestureSourceType2) => {
     GestureSourceType2["Default"] = "default";
     GestureSourceType2["Touch"] = "touch";
     GestureSourceType2["Mouse"] = "mouse";
-  })(GestureSourceType = Input3.GestureSourceType || (Input3.GestureSourceType = {}));
+  })(GestureSourceType = Input2.GestureSourceType || (Input2.GestureSourceType = {}));
   let MouseButton;
   ((MouseButton2) => {
     MouseButton2["None"] = "none";
@@ -1079,47 +1081,47 @@ var Input;
     MouseButton2["Right"] = "right";
     MouseButton2["Back"] = "back";
     MouseButton2["Forward"] = "forward";
-  })(MouseButton = Input3.MouseButton || (Input3.MouseButton = {}));
+  })(MouseButton = Input2.MouseButton || (Input2.MouseButton = {}));
   let DispatchDragEventRequestType;
   ((DispatchDragEventRequestType2) => {
     DispatchDragEventRequestType2["DragEnter"] = "dragEnter";
     DispatchDragEventRequestType2["DragOver"] = "dragOver";
     DispatchDragEventRequestType2["Drop"] = "drop";
     DispatchDragEventRequestType2["DragCancel"] = "dragCancel";
-  })(DispatchDragEventRequestType = Input3.DispatchDragEventRequestType || (Input3.DispatchDragEventRequestType = {}));
+  })(DispatchDragEventRequestType = Input2.DispatchDragEventRequestType || (Input2.DispatchDragEventRequestType = {}));
   let DispatchKeyEventRequestType;
   ((DispatchKeyEventRequestType2) => {
     DispatchKeyEventRequestType2["KeyDown"] = "keyDown";
     DispatchKeyEventRequestType2["KeyUp"] = "keyUp";
     DispatchKeyEventRequestType2["RawKeyDown"] = "rawKeyDown";
     DispatchKeyEventRequestType2["Char"] = "char";
-  })(DispatchKeyEventRequestType = Input3.DispatchKeyEventRequestType || (Input3.DispatchKeyEventRequestType = {}));
+  })(DispatchKeyEventRequestType = Input2.DispatchKeyEventRequestType || (Input2.DispatchKeyEventRequestType = {}));
   let DispatchMouseEventRequestType;
   ((DispatchMouseEventRequestType2) => {
     DispatchMouseEventRequestType2["MousePressed"] = "mousePressed";
     DispatchMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     DispatchMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     DispatchMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(DispatchMouseEventRequestType = Input3.DispatchMouseEventRequestType || (Input3.DispatchMouseEventRequestType = {}));
+  })(DispatchMouseEventRequestType = Input2.DispatchMouseEventRequestType || (Input2.DispatchMouseEventRequestType = {}));
   let DispatchMouseEventRequestPointerType;
   ((DispatchMouseEventRequestPointerType2) => {
     DispatchMouseEventRequestPointerType2["Mouse"] = "mouse";
     DispatchMouseEventRequestPointerType2["Pen"] = "pen";
-  })(DispatchMouseEventRequestPointerType = Input3.DispatchMouseEventRequestPointerType || (Input3.DispatchMouseEventRequestPointerType = {}));
+  })(DispatchMouseEventRequestPointerType = Input2.DispatchMouseEventRequestPointerType || (Input2.DispatchMouseEventRequestPointerType = {}));
   let DispatchTouchEventRequestType;
   ((DispatchTouchEventRequestType2) => {
     DispatchTouchEventRequestType2["TouchStart"] = "touchStart";
     DispatchTouchEventRequestType2["TouchEnd"] = "touchEnd";
     DispatchTouchEventRequestType2["TouchMove"] = "touchMove";
     DispatchTouchEventRequestType2["TouchCancel"] = "touchCancel";
-  })(DispatchTouchEventRequestType = Input3.DispatchTouchEventRequestType || (Input3.DispatchTouchEventRequestType = {}));
+  })(DispatchTouchEventRequestType = Input2.DispatchTouchEventRequestType || (Input2.DispatchTouchEventRequestType = {}));
   let EmulateTouchFromMouseEventRequestType;
   ((EmulateTouchFromMouseEventRequestType2) => {
     EmulateTouchFromMouseEventRequestType2["MousePressed"] = "mousePressed";
     EmulateTouchFromMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     EmulateTouchFromMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     EmulateTouchFromMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(EmulateTouchFromMouseEventRequestType = Input3.EmulateTouchFromMouseEventRequestType || (Input3.EmulateTouchFromMouseEventRequestType = {}));
+  })(EmulateTouchFromMouseEventRequestType = Input2.EmulateTouchFromMouseEventRequestType || (Input2.EmulateTouchFromMouseEventRequestType = {}));
 })(Input || (Input = {}));
 var LayerTree;
 ((LayerTree2) => {
@@ -1602,6 +1604,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2289,6 +2292,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -2859,7 +2863,6 @@ var Runtime;
 
 // ../../front_end/panels/webauthn/WebauthnPane.ts
 import * as Buttons from "../../ui/components/buttons/buttons.js";
-import * as Input2 from "../../ui/components/input/input.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
@@ -2921,8 +2924,10 @@ var webauthnPane_css_default = `/*
       margin: var(--sys-size-3) var(--sys-size-9);
     }
 
-    > input[type="checkbox"] {
-      margin: var(--sys-size-5) var(--sys-size-9);
+    > devtools-checkbox {
+      color: var(--sys-color-on-surface-subtle);
+      font: var(--sys-typescale-body5-medium);
+      margin-left: calc(var(--sys-size-4) * -1);
     }
   }
 
@@ -3327,55 +3332,51 @@ function renderNewAuthenticatorSection(options, internalTransportAvailable, onUp
           </select>
         </div>
         <div class="authenticator-option">
-          <label for="resident-key" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsResidentKeys)}
-          </label>
-          <input id="resident-key" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle("resident-key").track({ change: true })}
+          <devtools-checkbox id="resident-key" class="authenticator-option-checkbox"
+              .jslogContext=${"resident-key"}
               @change=${(e) => onUpdate({ hasResidentKey: e.target.checked })}
-              .checked=${Boolean(options.hasResidentKey && isCtap2)} .disabled=${!isCtap2}>
+              .checked=${Boolean(options.hasResidentKey && isCtap2)}
+              .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsResidentKeys)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="user-verification" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsUserVerification)}
-          </label>
-          <input id="user-verification" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle("user-verification").track({ change: true })}
+          <devtools-checkbox id="user-verification" class="authenticator-option-checkbox"
+              .jslogContext=${"user-verification"}
               @change=${(e) => onUpdate({ hasUserVerification: e.target.checked })}
               .checked=${Boolean(options.hasUserVerification && isCtap2)}
               .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsUserVerification)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="large-blob" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsLargeBlob)}
-          </label>
-          <input id="large-blob" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle("large-blob").track({ change: true })}
+          <devtools-checkbox id="large-blob" class="authenticator-option-checkbox"
+              .jslogContext=${"large-blob"}
               @change=${(e) => onUpdate({ hasLargeBlob: e.target.checked })}
               .checked=${Boolean(options.hasLargeBlob && isCtap2 && options.hasResidentKey)}
               .disabled=${!options.hasResidentKey || !isCtap2}>
+            ${i18nString(UIStrings.supportsLargeBlob)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="hmac-secret" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsHmacSecret)}
-          </label>
-          <input id="hmac-secret" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle("hmac-secret").track({ change: true })}
+          <devtools-checkbox id="hmac-secret" class="authenticator-option-checkbox"
+              .jslogContext=${"hmac-secret"}
               @change=${(e) => onUpdate({ hasHmacSecret: e.target.checked })}
               .checked=${Boolean((options.hasHmacSecret || options.hasHmacSecretMc) && isCtap2)}
               .disabled=${!isCtap2 || Boolean(options.hasHmacSecretMc)}>
+            ${i18nString(UIStrings.supportsHmacSecret)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="hmac-secret-mc" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsHmacSecretMc)}
-          </label>
-          <input id="hmac-secret-mc" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle("hmac-secret-mc").track({ change: true })}
+          <devtools-checkbox id="hmac-secret-mc" class="authenticator-option-checkbox"
+              .jslogContext=${"hmac-secret-mc"}
               @change=${(e) => {
     onUpdate(e.target.checked ? { hasHmacSecretMc: true, hasHmacSecret: true } : { hasHmacSecretMc: false });
   }}
               .checked=${Boolean(options.hasHmacSecretMc && isCtap2)}
               .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsHmacSecretMc)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
           <div class="authenticator-option-label"></div>
@@ -3516,7 +3517,6 @@ function renderAuthenticatorFields(authenticatorId, options) {
 var DEFAULT_VIEW = (input, output, target) => {
   render(
     html`
-    <style>${Input2.checkboxStyles}</style>
     <style>${webauthnPane_css_default}</style>
     <div class="webauthn-pane flex-auto ${classMap({ enabled: input.enabled })}">
       ${renderToolbar(input.enabled, input.onToggleEnabled)}

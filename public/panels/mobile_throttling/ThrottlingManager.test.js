@@ -10,11 +10,16 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { spyCall } from '../../testing/ExpectStubCall.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as PanelsCommon from '../common/common.js';
 import * as MobileThrottling from './mobile_throttling.js';
-const { CPUPerformanceTier, ThrottlingManager } = MobileThrottling.ThrottlingManager;
-const { ThrottlingPresets } = MobileThrottling.ThrottlingPresets;
+const { CPUPerformanceTier, DEFAULT_HARDWARE_CONCURRENCY_VIEW, HardwareConcurrencySelector, SaveDataOverrideSelect, ThrottlingManager, } = MobileThrottling.ThrottlingManager;
+function createSaveDataOverrideSelector() {
+    const select = document.createElement('select');
+    UI.Widget.registerWidgetConfig(select, UI.Widget.widgetConfig(SaveDataOverrideSelect));
+    return select;
+}
 describeWithEnvironment('ThrottlingManager', () => {
     describe('OfflineToolbarCheckbox', () => {
         it('has initial checked state which depends on throttling setting', () => {
@@ -57,16 +62,25 @@ describeWithEnvironment('ThrottlingManager', () => {
         });
     });
     describe('CPU throttling', () => {
-        it('listens to changes in cpu throttling setting', () => {
+        it('updates current cpu throttling option', () => {
             SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
-            const cpuThrottlingPresets = ThrottlingPresets.cpuThrottlingPresets;
             const throttlingManager = ThrottlingManager.instance({ forceNew: true });
-            const selector = throttlingManager.createCPUThrottlingSelector().control;
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
+            assert.strictEqual(throttlingManager.cpuThrottlingOption(), PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
             throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
+            assert.strictEqual(throttlingManager.cpuThrottlingOption(), PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
+            assert.strictEqual(SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate(), PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption.rate());
             throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
-            assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
+            assert.strictEqual(throttlingManager.cpuThrottlingOption(), PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
+            assert.strictEqual(SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingRate(), PanelsCommon.CPUThrottlingOption.NoThrottlingOption.rate());
+        });
+        it('updates current cpu throttling option when the rate changes in the SDK', () => {
+            SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
+            const throttlingManager = ThrottlingManager.instance({ forceNew: true });
+            const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+            cpuThrottlingManager.setCPUThrottlingRate(PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption.rate());
+            assert.strictEqual(throttlingManager.cpuThrottlingOption(), PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
+            cpuThrottlingManager.setCPUThrottlingRate(PanelsCommon.CPUThrottlingOption.NoThrottlingOption.rate());
+            assert.strictEqual(throttlingManager.cpuThrottlingOption(), PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
         });
     });
     describe('DataSaverEmulation', () => {
@@ -77,9 +91,11 @@ describeWithEnvironment('ThrottlingManager', () => {
             const emulationModel = target.model(SDK.EmulationModel.EmulationModel);
             assert.exists(emulationModel);
             const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
-            const select = ThrottlingManager.instance({ forceNew: true }).createSaveDataOverrideSelector();
+            const select = createSaveDataOverrideSelector();
             renderElementIntoDOM(select);
             await UI.Widget.Widget.allUpdatesComplete;
+            assert.strictEqual(select.title, 'Override the value reported by navigator.connection.saveData on the page');
+            assert.strictEqual(select.getAttribute('aria-label'), 'Override the value reported by navigator.connection.saveData on the page');
             const options = Array.from(select.options);
             assert.deepEqual(options.map(option => option.textContent), ['\'Save-Data\': default', '\'Save-Data\': on', '\'Save-Data\': off']);
             let emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
@@ -103,7 +119,7 @@ describeWithEnvironment('ThrottlingManager', () => {
         it('restores the selected option from setting when re-created', async () => {
             const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
             setting.set("enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
-            const select = ThrottlingManager.instance({ forceNew: true }).createSaveDataOverrideSelector();
+            const select = createSaveDataOverrideSelector();
             renderElementIntoDOM(select);
             await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(select.value, "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
@@ -111,7 +127,7 @@ describeWithEnvironment('ThrottlingManager', () => {
         });
         it('updates selection when setting changes', async () => {
             const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
-            const select = ThrottlingManager.instance({ forceNew: true }).createSaveDataOverrideSelector();
+            const select = createSaveDataOverrideSelector();
             renderElementIntoDOM(select);
             await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(select.value, "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
@@ -122,7 +138,7 @@ describeWithEnvironment('ThrottlingManager', () => {
         });
         it('stops listening to setting changes when removed from DOM', async () => {
             const setting = Common.Settings.Settings.instance().resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
-            const select = ThrottlingManager.instance({ forceNew: true }).createSaveDataOverrideSelector();
+            const select = createSaveDataOverrideSelector();
             renderElementIntoDOM(select);
             await UI.Widget.Widget.allUpdatesComplete;
             const widget = UI.Widget.Widget.get(select);
@@ -132,6 +148,167 @@ describeWithEnvironment('ThrottlingManager', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
             setting.set("enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
             sinon.assert.notCalled(requestUpdateSpy);
+        });
+    });
+    describe('HardwareConcurrencySelector view', () => {
+        function renderView(overrides = {}) {
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const noop = () => { };
+            const input = {
+                initialized: true,
+                overrideEnabled: true,
+                value: 8,
+                defaultValue: 8,
+                onToggle: noop,
+                onInput: noop,
+                onReset: noop,
+                ...overrides,
+            };
+            DEFAULT_HARDWARE_CONCURRENCY_VIEW(input, undefined, container);
+            return container;
+        }
+        it('renders disabled controls before initialization', () => {
+            const container = renderView({ initialized: false, overrideEnabled: false, value: 0, defaultValue: 0 });
+            assert.isTrue(container.classList.contains('concurrency-section'));
+            assert.isTrue(container.querySelector('devtools-checkbox')?.disabled);
+            const numInput = container.querySelector('input[type="number"]');
+            assert.isTrue(numInput?.disabled);
+            assert.strictEqual(numInput?.value, '');
+            assert.isTrue(container.querySelector('devtools-button')?.classList.contains('concurrency-hidden'));
+            assert.isTrue(container.querySelector('devtools-icon')?.classList.contains('concurrency-hidden'));
+        });
+        it('toggles reset and warning visibility based on value', () => {
+            const cases = [
+                { input: { value: 8, defaultValue: 8 }, reset: false, warning: false },
+                { input: { value: 16, defaultValue: 8 }, reset: true, warning: true },
+                { input: { value: 4, defaultValue: 8 }, reset: true, warning: false },
+                { input: { overrideEnabled: false, value: 16, defaultValue: 8 }, reset: false, warning: false },
+            ];
+            for (const { input, reset, warning } of cases) {
+                const container = renderView(input);
+                const message = JSON.stringify(input);
+                assert.strictEqual(container.querySelector('devtools-button')?.classList.contains('concurrency-hidden'), !reset, message);
+                assert.strictEqual(container.querySelector('devtools-icon')?.classList.contains('concurrency-hidden'), !warning, message);
+                container.remove();
+            }
+        });
+        it('invokes onToggle when checkbox changes', () => {
+            const onToggle = sinon.spy();
+            const checkbox = renderView({ onToggle }).querySelector('devtools-checkbox');
+            checkbox.checked = false;
+            checkbox.dispatchEvent(new Event('change'));
+            sinon.assert.calledOnceWithExactly(onToggle, false);
+        });
+        it('invokes onInput when number input changes', () => {
+            const onInput = sinon.spy();
+            const input = renderView({ onInput }).querySelector('input[type="number"]');
+            input.value = '16';
+            input.dispatchEvent(new Event('input'));
+            sinon.assert.calledOnceWithExactly(onInput, 16);
+        });
+        it('does not invoke onInput when number input is cleared', () => {
+            const onInput = sinon.spy();
+            const input = renderView({ onInput }).querySelector('input[type="number"]');
+            input.value = '';
+            input.dispatchEvent(new Event('input'));
+            sinon.assert.notCalled(onInput);
+        });
+        it('invokes onReset when reset button is clicked', () => {
+            const onReset = sinon.spy();
+            renderView({ value: 12, defaultValue: 8, onReset }).querySelector('devtools-button')?.click();
+            sinon.assert.calledOnce(onReset);
+        });
+    });
+    describe('HardwareConcurrencySelector', () => {
+        async function mountSelector(getDefaultValue = () => Promise.resolve(8)) {
+            const cpu = SDK.CPUThrottlingManager.CPUThrottlingManager.instance({ forceNew: true });
+            const getStub = sinon.stub(cpu, 'getHardwareConcurrency').callsFake(getDefaultValue);
+            const setSpy = sinon.stub(cpu, 'setHardwareConcurrency');
+            const view = createViewFunctionStub(HardwareConcurrencySelector);
+            const widget = new HardwareConcurrencySelector(undefined, view);
+            widget.markAsRoot();
+            renderElementIntoDOM(widget);
+            await view.nextInput;
+            return { getStub, setSpy, view, widget };
+        }
+        function reshow(widget) {
+            widget.detach();
+            renderElementIntoDOM(widget);
+        }
+        it('loads default hardware concurrency on mount', async () => {
+            const { view, widget } = await mountSelector();
+            assert.deepInclude(view.input, { initialized: true, overrideEnabled: false, value: 8, defaultValue: 8 });
+            widget.detach();
+        });
+        it('applies the value when enabled and the default value when disabled', async () => {
+            const { setSpy, view, widget } = await mountSelector();
+            view.input.onInput(16);
+            assert.deepInclude(await view.nextInput, { overrideEnabled: false, value: 16 });
+            sinon.assert.notCalled(setSpy);
+            view.input.onToggle(true);
+            assert.isTrue((await view.nextInput).overrideEnabled);
+            sinon.assert.calledOnceWithExactly(setSpy, 16);
+            view.input.onToggle(false);
+            assert.deepInclude(await view.nextInput, { overrideEnabled: false, value: 16 });
+            sinon.assert.calledTwice(setSpy);
+            sinon.assert.calledWithExactly(setSpy.lastCall, 8);
+            widget.detach();
+        });
+        it('applies input values and the default value on reset while enabled', async () => {
+            const { setSpy, view, widget } = await mountSelector();
+            view.input.onToggle(true);
+            await view.nextInput;
+            view.input.onInput(16);
+            assert.strictEqual((await view.nextInput).value, 16);
+            sinon.assert.calledWithExactly(setSpy.lastCall, 16);
+            view.input.onReset();
+            assert.deepInclude(await view.nextInput, { overrideEnabled: true, value: 8 });
+            sinon.assert.calledWithExactly(setSpy.lastCall, 8);
+            widget.detach();
+        });
+        it('does not apply values below 1', async () => {
+            const { setSpy, view, widget } = await mountSelector();
+            view.input.onToggle(true);
+            await view.nextInput;
+            setSpy.resetHistory();
+            view.input.onInput(0);
+            assert.strictEqual((await view.nextInput).value, 0);
+            sinon.assert.notCalled(setSpy);
+            widget.detach();
+        });
+        it('retries loading the default value when shown again after a failure', async () => {
+            const { getStub, view, widget } = await mountSelector(() => Promise.reject(new Error('Target navigated')));
+            assert.isFalse(view.input.initialized);
+            getStub.callsFake(() => Promise.resolve(8));
+            reshow(widget);
+            assert.deepInclude(await view.nextInput, { initialized: true, value: 8 });
+            sinon.assert.calledTwice(getStub);
+            widget.detach();
+        });
+        it('ignores changes and loads the default value once while loading', async () => {
+            const { promise, resolve } = Promise.withResolvers();
+            const { getStub, setSpy, view, widget } = await mountSelector(() => promise);
+            view.input.onToggle(true);
+            view.input.onInput(4);
+            sinon.assert.notCalled(setSpy);
+            reshow(widget);
+            assert.deepInclude(await view.nextInput, { initialized: false, overrideEnabled: false });
+            sinon.assert.calledOnce(getStub);
+            resolve(8);
+            assert.isTrue((await view.nextInput).initialized);
+            widget.detach();
+        });
+        it('keeps the override state when shown again', async () => {
+            const { getStub, view, widget } = await mountSelector();
+            view.input.onToggle(true);
+            await view.nextInput;
+            view.input.onInput(16);
+            await view.nextInput;
+            reshow(widget);
+            assert.deepInclude(await view.nextInput, { initialized: true, overrideEnabled: true, value: 16 });
+            sinon.assert.calledOnce(getStub);
+            widget.detach();
         });
     });
     describe('CPU Performance', () => {
@@ -148,28 +325,17 @@ describeWithEnvironment('ThrottlingManager', () => {
             const throttlingManager = ThrottlingManager.instance({ forceNew: true });
             await SDK.CPUThrottlingManager.CPUThrottlingManager.instance().updateHostDefaultCPUPerformanceTier();
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
-            const selectorWrapper = throttlingManager.createCPUThrottlingSelector();
-            const selector = selectorWrapper.control;
-            const options = ThrottlingPresets.cpuThrottlingPresets;
             // Select MidTierThrottlingOption (4x slowdown)
-            const midIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption);
-            selector.setSelectedIndex(midIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
             // Select LowTierThrottlingOption (6x slowdown)
-            const lowIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.LowTierThrottlingOption);
-            selector.setSelectedIndex(lowIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.LowTierThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
             // Select ExtraSlowThrottlingOption (20x slowdown)
-            const extraSlowIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
-            selector.setSelectedIndex(extraSlowIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.ExtraSlowThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
             // Select NoThrottlingOption (1x no throttling)
-            const noIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
-            selector.setSelectedIndex(noIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
         });
         it('synchronizes effective CPU performance tier with backend when calibration finishes with a constant slowdown factor', async () => {
@@ -187,13 +353,8 @@ describeWithEnvironment('ThrottlingManager', () => {
             const throttlingManager = ThrottlingManager.instance({ forceNew: true });
             await SDK.CPUThrottlingManager.CPUThrottlingManager.instance().updateHostDefaultCPUPerformanceTier();
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
-            const selectorWrapper = throttlingManager.createCPUThrottlingSelector();
-            const selector = selectorWrapper.control;
-            const options = ThrottlingPresets.cpuThrottlingPresets;
             // Select MidTierThrottlingOption (4x slowdown).
-            const midIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption);
-            selector.setSelectedIndex(midIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.MidTierThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
             emulationModelSpy.resetHistory();
             // Simulate calibration that yields a lower host score (actualScore: 1200).
@@ -231,23 +392,14 @@ describeWithEnvironment('ThrottlingManager', () => {
                 mid: 3.0,
                 actualScore: 3000,
             });
-            const selectorWrapper = throttlingManager.createCPUThrottlingSelector();
-            const selector = selectorWrapper.control;
-            const options = ThrottlingPresets.cpuThrottlingPresets;
             // Select CalibratedMidTierMobileThrottlingOption
-            const midIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.CalibratedMidTierMobileThrottlingOption);
-            selector.setSelectedIndex(midIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.CalibratedMidTierMobileThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
             // Select CalibratedLowTierMobileThrottlingOption
-            const lowIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.CalibratedLowTierMobileThrottlingOption);
-            selector.setSelectedIndex(lowIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.CalibratedLowTierMobileThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
             // Select NoThrottlingOption (1x no throttling)
-            const noIndex = options.indexOf(PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
-            selector.setSelectedIndex(noIndex);
-            selector.element.dispatchEvent(new Event('change'));
+            throttlingManager.setCPUThrottlingOption(PanelsCommon.CPUThrottlingOption.NoThrottlingOption);
             assert.strictEqual(throttlingManager.effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
         });
     });

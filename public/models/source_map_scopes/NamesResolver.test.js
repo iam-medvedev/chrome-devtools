@@ -34,9 +34,12 @@ describe('NameResolver', () => {
     afterEach(() => {
         Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     });
+    async function localScope(callFrame) {
+        return (await callFrame.scopeChain()).find(scope => scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */);
+    }
     /** Resolves the function name at the start of `callFrame`'s local scope, i.e. where V8 reports a function's location. */
     async function resolveFunctionNameAtScopeStart(callFrame) {
-        const scopeStart = callFrame.localScope()?.range()?.start;
+        const scopeStart = (await localScope(callFrame))?.range()?.start;
         assert.exists(scopeStart);
         return await SourceMapScopes.NamesResolver.resolveProfileFrameFunctionName(scopeStart, target, backend.universe.debuggerWorkspaceBinding);
     }
@@ -179,7 +182,7 @@ describe('NameResolver', () => {
     for (const test of tests) {
         it(test.name, async () => {
             const callFrame = await backend.createCallFrame(target, { url: URL, content: test.source }, test.scopes, { url: 'file:///dummy.map', content: dummyMapContent });
-            const parsedScopeChain = await SourceMapScopes.NamesResolver.findScopeChainForDebuggerScope(callFrame.scopeChain()[0]);
+            const parsedScopeChain = await SourceMapScopes.NamesResolver.findScopeChainForDebuggerScope((await callFrame.scopeChain())[0]);
             const scope = parsedScopeChain.pop();
             assert.exists(scope);
             const identifiers = await SourceMapScopes.NamesResolver.scopeIdentifiers(callFrame.script, scope, parsedScopeChain);
@@ -207,7 +210,7 @@ describe('NameResolver', () => {
         const scopes = '          {                     }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }, { name: 'n', value: 2 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 1 }, { name: 'par2', value: 2 }]);
@@ -226,7 +229,7 @@ describe('NameResolver', () => {
         const scopes = '          {      <                                >}';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 4 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'i', value: 4 }]);
@@ -245,7 +248,7 @@ describe('NameResolver', () => {
         const scopes = '          {                     }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }, { name: 'n', value: 2 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 1 }, { name: 'par2', value: 2 }]);
@@ -263,7 +266,7 @@ describe('NameResolver', () => {
         const scopes = '                             {                          }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 's', value: 42 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 42 }]);
@@ -284,7 +287,7 @@ describe('NameResolver', () => {
         const scopes = '              {                                          }';
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'n', value: 42 }, { name: 'o', value: 5 }, { name: 'c' }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.sameDeepMembers(namesAndValues, [{ name: 'arg1', value: 42 }, { name: 'arg2', value: 5 }, { name: 'result', value: undefined }]);
@@ -328,7 +331,7 @@ describe('NameResolver', () => {
         }
         const scopeObject = backend.createSimpleRemoteObject([{ name: 'pos', value: 10 }, { name: 'pos_1', value: 4 }]);
         const callFrame = await backend.createCallFrame(target, { url: URL, content: source.join('\n') }, scopes.join('\n'), { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+        const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
         const properties = await resolvedScopeObject.getAllProperties(false, false);
         const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
         assert.deepEqual(namesAndValues, [{ name: 'pos', value: 10 }, { name: 'pos', value: 4 }]);
@@ -603,7 +606,7 @@ function mulWithOffset(param1, param2, offset) {
             const emptyObject = backend.createSimpleRemoteObject([]);
             const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }]);
             const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [emptyObject, scopeObject], ["no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */, undefined]);
-            assert.lengthOf(callFrame.scopeChain(), 2);
+            assert.lengthOf((await callFrame.scopeChain()), 2);
             const resolvedScopeChain = await SourceMapScopes.NamesResolver.resolveScopeChain(callFrame, backend.universe.debuggerWorkspaceBinding);
             assert.lengthOf(resolvedScopeChain, 1);
             assert.strictEqual(resolvedScopeChain[0].type(), "local" /* Protocol.Debugger.ScopeType.Local */);
@@ -616,7 +619,7 @@ function mulWithOffset(param1, param2, offset) {
                 undefined,
                 "all-unavailable" /* Protocol.Debugger.ScopeEmptyReason.AllUnavailable */,
             ]);
-            assert.lengthOf(callFrame.scopeChain(), 3);
+            assert.lengthOf((await callFrame.scopeChain()), 3);
             const resolvedScopeChain = await SourceMapScopes.NamesResolver.resolveScopeChain(callFrame, backend.universe.debuggerWorkspaceBinding);
             assert.lengthOf(resolvedScopeChain, 1);
             assert.strictEqual(resolvedScopeChain[0].type(), "local" /* Protocol.Debugger.ScopeType.Local */);
@@ -625,9 +628,9 @@ function mulWithOffset(param1, param2, offset) {
             const source = 'function f() { {} }';
             const scopes = '          {   < >}';
             const callFrame = await backend.createCallFrame(target, { url: URL, content: source }, scopes, null, [], ["no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */, "no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */]);
-            assert.lengthOf(callFrame.scopeChain(), 2);
-            assert.strictEqual(callFrame.scopeChain()[0].type(), "block" /* Protocol.Debugger.ScopeType.Block */);
-            assert.strictEqual(callFrame.scopeChain()[1].type(), "local" /* Protocol.Debugger.ScopeType.Local */);
+            assert.lengthOf((await callFrame.scopeChain()), 2);
+            assert.strictEqual((await callFrame.scopeChain())[0].type(), "block" /* Protocol.Debugger.ScopeType.Block */);
+            assert.strictEqual((await callFrame.scopeChain())[1].type(), "local" /* Protocol.Debugger.ScopeType.Local */);
             const resolvedScopeChain = await SourceMapScopes.NamesResolver.resolveScopeChain(callFrame, backend.universe.debuggerWorkspaceBinding);
             assert.lengthOf(resolvedScopeChain, 1);
             assert.strictEqual(resolvedScopeChain[0].type(), "local" /* Protocol.Debugger.ScopeType.Local */);
@@ -653,7 +656,7 @@ function mulWithOffset(param1, param2, offset) {
                 createProtocolScope("module" /* Protocol.Debugger.ScopeType.Module */, "all-unavailable" /* Protocol.Debugger.ScopeEmptyReason.AllUnavailable */),
                 createProtocolScope("global" /* Protocol.Debugger.ScopeType.Global */),
             ]);
-            assert.isNull(callFrame.localScope());
+            assert.isUndefined(await localScope(callFrame));
             const resolvedScopeChain = await SourceMapScopes.NamesResolver.resolveScopeChain(callFrame, backend.universe.debuggerWorkspaceBinding);
             assert.deepEqual(resolvedScopeChain.map(scope => scope.type()), ["module" /* Protocol.Debugger.ScopeType.Module */, "global" /* Protocol.Debugger.ScopeType.Global */]);
         });
@@ -663,7 +666,7 @@ function mulWithOffset(param1, param2, offset) {
                 createProtocolScope("module" /* Protocol.Debugger.ScopeType.Module */, "no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */),
                 createProtocolScope("global" /* Protocol.Debugger.ScopeType.Global */),
             ]);
-            assert.isNotNull(callFrame.localScope());
+            assert.exists(await localScope(callFrame));
             const resolvedScopeChain = await SourceMapScopes.NamesResolver.resolveScopeChain(callFrame, backend.universe.debuggerWorkspaceBinding);
             assert.deepEqual(resolvedScopeChain.map(scope => scope.type()), ["local" /* Protocol.Debugger.ScopeType.Local */, "global" /* Protocol.Debugger.ScopeType.Global */]);
         });
@@ -1087,7 +1090,7 @@ function mulWithOffset(param1, param2, offset) {
             const scopes = '          {                     }';
             const scopeObject = backend.createSimpleRemoteObject([{ name: 'o', value: 1 }, { name: 'n', value: 2 }]);
             const callFrame = await backend.createCallFrame(target, { ...INLINE_SCRIPT, content: source }, scopes, { url: sourceMapUrl, content: sourceMapContent }, [scopeObject]);
-            const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject(callFrame.scopeChain()[0], backend.universe.debuggerWorkspaceBinding);
+            const resolvedScopeObject = await SourceMapScopes.NamesResolver.resolveScopeInObject((await callFrame.scopeChain())[0], backend.universe.debuggerWorkspaceBinding);
             const properties = await resolvedScopeObject.getAllProperties(false, false);
             const namesAndValues = properties.properties?.map(p => ({ name: p.name, value: p.value?.value })) ?? [];
             assert.sameDeepMembers(namesAndValues, [{ name: 'par1', value: 1 }, { name: 'par2', value: 2 }]);

@@ -5,25 +5,26 @@ import { assert } from 'chai';
 import { describe, it } from 'mocha';
 import { assertScreenshot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as NetworkComponents from './components.js';
-function renderEditableSpan(value, includeCommonStyles = false) {
-    const component = new NetworkComponents.EditableSpan.EditableSpan();
-    renderElementIntoDOM(component, { includeCommonStyles });
-    component.value = value;
-    assert.isNotNull(component.shadowRoot);
-    const editable = component.shadowRoot.querySelector('.editable');
+const { EditableSpan } = NetworkComponents.EditableSpan;
+async function renderEditableSpan(value, includeCommonStyles = false) {
+    const widget = new EditableSpan();
+    widget.value = value;
+    renderElementIntoDOM(widget, { includeCommonStyles });
+    await widget.updateComplete;
+    const editable = widget.contentElement.querySelector('.editable');
     assert.instanceOf(editable, HTMLSpanElement);
-    return { component, editable };
+    return { widget, editable };
 }
 describe('EditableSpan', () => {
-    it('selects all text contents of .editable span on focusin', () => {
-        const { editable } = renderEditableSpan('select-me');
+    it('selects all text contents of .editable span on focusin', async () => {
+        const { editable } = await renderEditableSpan('select-me');
         editable.focus();
         const selection = window.getSelection();
         assert.isNotNull(selection);
         assert.strictEqual(selection.toString(), 'select-me');
     });
     it('renders an editable span', async () => {
-        renderEditableSpan('example-header-value', true);
+        await renderEditableSpan('example-header-value', true);
         await assertScreenshot('network/editable_span.png');
     });
 });

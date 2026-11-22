@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
+import { expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
 describe('LazyLoadImageIssue', () => {
     setupLocaleHooks();
+    expectConsoleLogs({
+        warn: ['Lazy-loaded image issue without details received.'],
+    });
     const mockModel = new MockIssuesModel([]);
     function createProtocolIssueWithoutDetails() {
         return {

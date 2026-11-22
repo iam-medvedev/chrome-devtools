@@ -5,7 +5,7 @@ import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiUtils from '../ai-utils/ai-utils.js';
-import { AiAgent, sanitizeSuggestionsList, SUGGEST_FOLLOW_UPS_FUNCTION_NAME, } from './agents/AiAgent.js';
+import { AiAgent, SUGGEST_FOLLOW_UPS_FUNCTION_NAME, } from './agents/AiAgent.js';
 import { executeJsCode } from './agents/ExecuteJavascript.js';
 import { ChangeManager } from './ChangeManager.js';
 import { DOMNodeContext } from './contexts/DOMNodeContext.js';
@@ -56,118 +56,82 @@ Your role is to help web developers debug, analyze, and optimize web application
   - **Applied Live Changes**: Detail the changes you applied to the live page (including the modified CSS properties or HTML attributes), note that these live changes are temporary and will reset on page reload, and ask the user to verify the result before updating their source code. Do NOT use "**Suggestion(s)**" or "**Suggested fix**" headings when you have already modified the live page.
 
 # Follow-up Suggestions
-* At the end of your response, call the \`suggestFollowUps\` function to provide 1 to 3 relevant, concise follow-up queries or actions for the user.
+* In the same message as your final Markdown answer, call the \`suggestFollowUps\` function to provide 1 to 3 relevant, concise follow-up queries or actions for the user.
+* \`suggestFollowUps\` ends your turn immediately without another step. Never call \`suggestFollowUps\` with an empty text response or alongside other tool calls.
 * Do not write follow-up suggestions as text in your response.
 
 # Constraints
 * **CRITICAL**: You are a web development assistant. NEVER provide answers to questions of unrelated topics (such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non-web-development topics). If asked about these, respond with: "Sorry, I can't answer that. I'm best at questions about web development and debugging."
 * **CRITICAL**: Do not write standalone scripts (such as Python or bash) or arbitrary code to interact with the environment. The only way to execute code in the inspected page is via the 'executeJavaScript' tool.
 * **CRITICAL**: Do not expose raw, internal system identifiers (such as database IDs, internal node paths, or event keys) directly to the user. Use descriptive names instead.`;
-/**
- * Matches the follow-up suggestions directive in plain uppercase, at the start
- * of the line or after whitespace: `SUGGESTIONS: ["a"]`, `Done. SUGGESTIONS: ["a"]`.
- * It is case-sensitive, so `Suggestions:` and `DEFAULT_SUGGESTIONS:` do not match.
- * - Group 1: the text before the directive.
- */
-const PLAIN_SUGGESTIONS_REGEX = /^(.*?)(?:^|\s)SUGGESTIONS:/;
-/**
- * Matches any spelling of the follow-up suggestions directive that is followed
- * by an array ending the line, for example `**Suggestions**: ["a"]`,
- * `- suggestions: ["a"]` or `` `SUGGESTIONS`: ["a"] ``. The keyword is
- * case-insensitive, must be at the start of the line or after whitespace, and
- * can have up to three markdown characters (`*`, `_` or `` ` ``) on each side
- * of it and of the colon. Only markdown characters or whitespace can follow the
- * closing `]`, so `A few suggestions: [see docs](url)` does not match.
- * - Group 1: the text before the directive. It is greedy, so the last keyword
- *   on the line is used: `**Suggestions**: [1] Fix. SUGGESTIONS: ["a"]` keeps
- *   `**Suggestions**: [1] Fix.` as answer text.
- * - Group 2: the array, from the first `[` after the keyword to the last `]`.
- */
-const FORMATTED_SUGGESTIONS_REGEX = /^(.*)(?:^|\s)[*_`]{0,3}suggestions[*_`]{0,3}:[*_`]{0,3}\s*`?(\[.*\])[*_`\s]*$/i;
-/**
- * Matches the start of any spelling of the follow-up suggestions directive
- * while it is streaming: the keyword in any case, at the start of the line or
- * after whitespace, with optional markdown characters, followed by `:`. Nothing
- * after the colon is checked, because the array may still be arriving.
- * - Group 1: the text before the directive.
- */
-const STREAMING_SUGGESTIONS_REGEX = /^(.*?)(?:^|\s)[*_`]{0,3}suggestions[*_`]{0,3}:/i;
-/**
- * Matches a markdown list or heading marker on its own, such as `-`, `1.` or
- * `###`. The marker is dropped when the directive was the only thing after it.
- */
-const LIST_OR_HEADING_MARKER_REGEX = /^(?:[-*+]|\d+\.|#{1,6})$/;
-/**
- * Returns the answer text with the directive removed from the last line.
- * `textBeforeDirective` is what the last line contained before the directive.
- */
-function removeDirectiveFromLastLine(lines, textBeforeDirective) {
-    const keptText = textBeforeDirective.trimEnd();
-    const lastLine = LIST_OR_HEADING_MARKER_REGEX.test(keptText.trim()) ? '' : keptText;
-    return [...lines.slice(0, -1), lastLine].join('\n').trimEnd();
-}
-/**
- * Parses the JSON array of a suggestions directive. Returns `null` if `array`
- * is not valid JSON, and `{suggestions: undefined}` if it is valid but holds no
- * usable suggestions.
- */
-function parseSuggestionsArray(array) {
-    try {
-        return { suggestions: sanitizeSuggestionsList(JSON.parse(array)) };
-    }
-    catch {
-        // Invalid JSON: the caller decides whether the line is still a directive.
-        return null;
-    }
-}
-/**
- * Parses a completed response. Only the last line can be the follow-up
- * suggestions directive; every other line is always kept as answer text.
- * 1. If any spelling of the directive is followed by a valid JSON array that
- *    ends the line, it is removed and the array becomes the suggestions.
- * 2. Otherwise, if the line contains `SUGGESTIONS:` in plain uppercase, it is
- *    removed from the keyword onward even though the array is missing or not
- *    valid JSON, and no suggestions are returned.
- * 3. Otherwise, the line is kept unchanged.
- * Text before the directive on the same line is kept.
- */
-function parseCompletedSuggestions(text) {
-    const lines = text.split('\n');
-    const lastLine = lines[lines.length - 1];
-    const formatted = lastLine.match(FORMATTED_SUGGESTIONS_REGEX);
-    const parsedArray = formatted ? parseSuggestionsArray(formatted[2]) : null;
-    if (formatted && parsedArray) {
-        const answer = removeDirectiveFromLastLine(lines, formatted[1]);
-        return parsedArray.suggestions ? { answer, suggestions: parsedArray.suggestions } : { answer };
-    }
-    const plain = lastLine.match(PLAIN_SUGGESTIONS_REGEX);
-    if (plain) {
-        return { answer: removeDirectiveFromLastLine(lines, plain[1]) };
-    }
-    return { answer: text };
-}
-/**
- * Hides a follow-up suggestions directive that is still streaming on the last
- * line, from the keyword onward, without looking at its array. Hiding text by
- * mistake is temporary: the completed response is parsed again by
- * `parseCompletedSuggestions()`.
- */
-function hideStreamingSuggestions(text) {
-    const lines = text.split('\n');
-    const match = lines[lines.length - 1].match(STREAMING_SUGGESTIONS_REGEX);
-    return match ? removeDirectiveFromLastLine(lines, match[1]) : text;
-}
 export class AiAgent2 extends AiAgent {
     /**
-     * Tracks the last context details sent to the LLM to prevent resending identical
-     * large context blocks on subsequent turns in the same conversation.
+     * Tracks skills, `PromptFact` instances, and context details committed to `AiAgent.#history`.
+     * Facts are injected into append-only history rather than AIDA's wire `request.facts`
+     * field (which `FactsToText` prepends to `current_message` on every step, repeating
+     * tokens and invalidating prefix caching) or `getPromptDetails()` (which must stay
+     * deterministic across turns for `lastSentPromptDetails` deduplication).
      */
-    #lastSentPromptDetails = null;
+    #committedState = {
+        skills: new Set(),
+        sentFacts: new Set(),
+        lastSentPromptDetails: null,
+    };
+    /**
+     * In-flight mutations during `run()` target this draft and promote to `#committedState` in `onRunCommitted()`.
+     */
+    #runDraft = null;
+    /**
+     * Routes reads and mutations to `#runDraft` during `run()`, or directly to
+     * `#committedState` when idle or when `enhanceQuery()` or `learnSkill()` is called standalone outside `run()`.
+     */
+    get #state() {
+        return this.#runDraft ?? this.#committedState;
+    }
+    /**
+     * `#commitRun()` and `#createErrorResponse()` clear `#runDraft` on committed
+     * and error paths, while `finally` rolls back uncommitted drafts on early
+     * consumer `break` or empty-query returns.
+     */
+    async *run(initialQuery, options, multimodalInput) {
+        try {
+            yield* super.run(initialQuery, options, multimodalInput);
+        }
+        finally {
+            if (this.#runDraft) {
+                this.clearCache();
+            }
+        }
+    }
+    /**
+     * Discards the active `#runDraft` so uncommitted `skills`, `sentFacts`, and
+     * `lastSentPromptDetails` from a failed run roll back while committed state
+     * from earlier turns remains intact.
+     */
     clearCache() {
         super.clearCache();
-        // Reset the tracker so that if conversation history is dropped (e.g., after an
-        // abort or non-MAX_STEPS error), the full context block is safely resent on the next turn.
-        this.#lastSentPromptDetails = null;
+        this.#runDraft = null;
+        this.#pendingAutoLearnedSkills = [];
+        this.#syncDeclaredFunctions();
+    }
+    /**
+     * Appends any `facts` not yet recorded in `this.#state.sentFacts` to `content` under
+     * `# References` with `## ${fact.title}` subheadings.
+     */
+    #appendUnsentFacts(content, facts = []) {
+        const { sentFacts } = this.#state;
+        const factSections = [];
+        for (const fact of facts) {
+            if (!sentFacts.has(fact)) {
+                sentFacts.add(fact);
+                factSections.push(`## ${fact.title}\n\n${fact.description.trim()}`);
+            }
+        }
+        if (factSections.length === 0) {
+            return content;
+        }
+        const references = `# References\n\n${factSections.join('\n\n')}`;
+        return content ? `${content}\n\n${references}` : references;
     }
     // TODO: The static preamble is a placeholder and will eventually live server-side.
     preamble = preamble;
@@ -184,6 +148,13 @@ export class AiAgent2 extends AiAgent {
         return {};
     }
     async preRun() {
+        // Initialize a fresh draft from committed state to isolate mutations during this run.
+        this.#runDraft = {
+            skills: new Set(this.#committedState.skills),
+            sentFacts: new Set(this.#committedState.sentFacts),
+            lastSentPromptDetails: this.#committedState.lastSentPromptDetails,
+        };
+        this.#syncDeclaredFunctions();
         await super.preRun();
         // One-way latch: once sensitive data enters the conversation history,
         // logging must remain disabled for the lifetime of this agent instance.
@@ -218,8 +189,6 @@ export class AiAgent2 extends AiAgent {
             }
         }
     }
-    #activeSkills = new Set();
-    #declaredTools = new Set();
     /**
      * Tracks skills auto-loaded during enhanceQuery() so handleContextDetails() can attach them to ContextResponse for telemetry without rendering a walkthrough step.
      */
@@ -243,7 +212,13 @@ export class AiAgent2 extends AiAgent {
         this.#performanceRecordAndReload = opts.performanceRecordAndReload;
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#originLock = opts.originLock;
-        this.#declaredTools.add('learnSkills');
+        this.#syncDeclaredFunctions();
+    }
+    /**
+     * Registers baseline functions (`learnSkills` and `suggestFollowUps`) that are
+     * always available regardless of which domain skills are loaded.
+     */
+    #declareCoreFunctions() {
         const skillsManifest = Object.entries(SKILLS).map(([name, skill]) => `- ${name}: ${skill.description}`).join('\n');
         this.declareFunction('learnSkills', {
             description: `Loads the specified skills to gain access to their specialized tools and instructions.
@@ -277,19 +252,18 @@ ${skillsManifest}`,
                 };
             },
             handler: async (args) => {
-                const previouslyLoaded = new Set(this.#activeSkills);
+                const previouslyLoaded = new Set(this.activeSkills);
                 const result = await this.learnSkill(args.skills);
                 // The LLM may hallucinate skill names. Filter out any skills that were not newly activated.
-                const loadedSkills = [...new Set(args.skills)].filter(skill => !previouslyLoaded.has(skill) && this.#activeSkills.has(skill));
+                const loadedSkills = [...new Set(args.skills)].filter(skill => !previouslyLoaded.has(skill) && this.activeSkills.has(skill));
                 return {
                     result,
                     loadedSkills: loadedSkills.length > 0 ? loadedSkills : undefined,
                 };
             },
         });
-        this.#declaredTools.add(SUGGEST_FOLLOW_UPS_FUNCTION_NAME);
         this.declareFunction(SUGGEST_FOLLOW_UPS_FUNCTION_NAME, {
-            description: 'Provides suggested follow-up queries or actions for the user at the end of the response.',
+            description: 'Provides suggested follow-up queries or actions for the user. Ends the turn immediately: call this only in the same message as your final non-empty Markdown response, never alone with empty text or alongside other tool calls.',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: 'Parameters for follow-up suggestions',
@@ -308,6 +282,31 @@ ${skillsManifest}`,
             // Never called: AiAgent#run() and AiAgent#runFunctionCalls() intercept suggestFollowUps directly.
             handler: async () => ({ result: 'Suggestions recorded.' }),
         });
+    }
+    /**
+     * Rebuilds `AiAgent.#functionDeclarations` from `this.activeSkills` so declared
+     * tools match the active draft or committed skills, preserving tools shared
+     * between committed and rolled-back skills.
+     */
+    #syncDeclaredFunctions() {
+        this.clearDeclaredFunctions();
+        this.#declareCoreFunctions();
+        const toolNames = new Set([...this.activeSkills].flatMap(name => SKILLS[name]?.allowedTools ?? []));
+        for (const toolName of toolNames) {
+            const tool = ToolRegistry.get(toolName);
+            if (tool) {
+                this.#declareTool(tool);
+            }
+        }
+    }
+    /**
+     * Promotes the completed `#runDraft` into `#committedState`.
+     */
+    onRunCommitted() {
+        if (this.#runDraft) {
+            this.#committedState = this.#runDraft;
+            this.#runDraft = null;
+        }
     }
     /**
      * Maps selected contexts (DOMNodeContext, RequestContext, FileContext) to their domain skill to skip a redundant step-1 learnSkills round trip.
@@ -329,51 +328,37 @@ ${skillsManifest}`,
     _multimodalInputType) {
         this.#pendingAutoLearnedSkills = [];
         const promptDetails = selected ? await selected.getPromptDetails() : null;
-        let enhancedQuery = query;
+        let contextDetails = '';
         if (!promptDetails) {
             // Clear the tracker when there is no context (or an unsupported context type)
             // so that if the user later switches back to a previously sent context, it is
             // sent in full again rather than deduplicated.
-            this.#lastSentPromptDetails = null;
+            this.#state.lastSentPromptDetails = null;
         }
         else {
-            let contextDetails;
-            if (promptDetails === this.#lastSentPromptDetails) {
-                contextDetails = UNCHANGED_CONTEXT_PROMPT_NOTICE;
-            }
-            else {
-                contextDetails = promptDetails;
-                this.#lastSentPromptDetails = promptDetails;
-            }
-            enhancedQuery = `${contextDetails}
-
-# User request
-
-QUERY: ${query}`;
+            contextDetails =
+                promptDetails === this.#state.lastSentPromptDetails ? UNCHANGED_CONTEXT_PROMPT_NOTICE : promptDetails;
+            this.#state.lastSentPromptDetails = promptDetails;
         }
+        // `autoLoadedBlock` precedes the context section in the final prompt. Run `learnSkill` before
+        // appending context facts so shared facts render at the top with the skill instructions.
+        let autoLoadedBlock = '';
         const mappedSkill = this.#skillForContext(selected);
-        if (mappedSkill && SKILLS[mappedSkill] && !this.#activeSkills.has(mappedSkill)) {
-            const autoLoadedBlock = await this.learnSkill([mappedSkill]);
+        if (mappedSkill && SKILLS[mappedSkill] && !this.activeSkills.has(mappedSkill)) {
+            autoLoadedBlock = await this.learnSkill([mappedSkill]);
             this.#pendingAutoLearnedSkills.push(mappedSkill);
-            if (autoLoadedBlock) {
-                return `${autoLoadedBlock}\n\n${enhancedQuery}`;
-            }
         }
-        return enhancedQuery;
+        const contextBlock = this.#appendUnsentFacts(contextDetails, selected?.getPromptFacts());
+        const prefix = [autoLoadedBlock, contextBlock].filter(Boolean).join('\n\n');
+        return prefix ? `${prefix}\n\n# User request\n\nQUERY: ${query}` : query;
     }
     /**
-     * Parses a completed response. Only the last line can be the follow-up
-     * suggestions directive. See `parseCompletedSuggestions()`.
+     * `AiAgent2` receives follow-up suggestions from `suggestFollowUps` tool
+     * calls rather than text parsing. Overrides `AiAgent#parseTextResponse()` so
+     * V2 responses do not inherit V1 `parseTextResponseForSuggestions()`.
      */
     parseTextResponse(response) {
-        return parseCompletedSuggestions(response.trim());
-    }
-    /**
-     * Parses a response that is still streaming, hiding a suggestions directive
-     * on the last line. See `hideStreamingSuggestions()`.
-     */
-    parsePartialTextResponse(response) {
-        return { answer: hideStreamingSuggestions(response.trim()) };
+        return { answer: response.trim() };
     }
     async *handleContextDetails(selected) {
         const autoLearned = this.#pendingAutoLearnedSkills;
@@ -399,31 +384,31 @@ QUERY: ${query}`;
         }
     }
     async learnSkill(names) {
-        let response = '';
+        const sections = [];
+        let skillsAdded = false;
         for (const name of names) {
-            if (this.#activeSkills.has(name)) {
+            if (this.activeSkills.has(name)) {
                 debugLog(`[AiAgent2] Skill '${name}' is already loaded`);
-                response += `Error: Skill '${name}' is already loaded. Call its tools directly instead of invoking learnSkills for '${name}' again.\n`;
+                sections.push(`Error: Skill '${name}' is already loaded. Call its tools directly instead of invoking learnSkills for '${name}' again.`);
                 continue;
             }
             const skillObj = SKILLS[name];
             if (skillObj) {
-                this.#activeSkills.add(name);
+                this.activeSkills.add(name);
+                skillsAdded = true;
                 debugLog(`[AiAgent2] Loaded skill '${name}' with tools: [${skillObj.allowedTools.join(', ')}]`);
-                response += `Skill ${name} loaded. Instructions:\n${skillObj.instructions}\n`;
-                for (const toolName of skillObj.allowedTools) {
-                    const tool = ToolRegistry.get(toolName);
-                    if (tool) {
-                        this.#declareTool(tool);
-                    }
-                }
+                const instructions = this.#appendUnsentFacts(skillObj.instructions.trim(), skillObj.facts);
+                sections.push(`Skill ${name} loaded. Instructions:\n${instructions}`);
             }
             else {
                 debugLog(`[AiAgent2] Failed to load skill '${name}'`);
-                response += `Failed to load skill ${name}. Valid skills are: ${Object.keys(SKILLS).join(', ')}.\n`;
+                sections.push(`Failed to load skill ${name}. Valid skills are: ${Object.keys(SKILLS).join(', ')}.`);
             }
         }
-        return response.trim();
+        if (skillsAdded) {
+            this.#syncDeclaredFunctions();
+        }
+        return sections.join('\n\n');
     }
     #getExecutionContextNode() {
         if (this.context instanceof DOMNodeContext) {
@@ -435,14 +420,10 @@ QUERY: ${query}`;
         return new ExtensionScope(changes, this.sessionId, this.#getExecutionContextNode());
     }
     /**
-     * Declares a tool to be available to the agent model, verifying first that
-     * it hasn't already been declared to prevent duplicate declaration errors.
+     * Registers a tool declaration on AiAgent with the capability context.
+     * Deduplication across skills is handled by #syncDeclaredFunctions().
      */
     #declareTool(tool) {
-        if (this.#declaredTools.has(tool.name)) {
-            return;
-        }
-        this.#declaredTools.add(tool.name);
         this.declareFunction(tool.name, {
             description: tool.description,
             parameters: tool.parameters,
@@ -500,8 +481,11 @@ QUERY: ${query}`;
         }
         return document.body ?? null;
     }
+    /**
+     * Returns the active draft's skills during `run()`, or `#committedState.skills` when idle.
+     */
     get activeSkills() {
-        return this.#activeSkills;
+        return this.#state.skills;
     }
 }
 //# sourceMappingURL=AiAgent2.js.map

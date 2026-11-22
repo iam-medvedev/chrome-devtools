@@ -217,6 +217,40 @@ describe('AiConversation', () => {
         const turn2Request = aidaClient.doConversation.secondCall.firstArg;
         assert.isTrue(turn2Request.metadata?.disable_user_content_logging);
     });
+    it('disables server-side logging when initialized with serverSideLoggingAllowed: false', async () => {
+        updateHostConfig({
+            devToolsAiV2Architecture: { enabled: true },
+            aidaAvailability: { disallowLogging: false },
+        });
+        const aidaClient = mockAidaClient([
+            [{ explanation: 'Response.' }],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            aidaClient,
+            serverSideLoggingAllowed: false,
+        });
+        await Array.fromAsync(conversation.run('query'));
+        sinon.assert.calledOnce(aidaClient.doConversation);
+        assert.isTrue(aidaClient.doConversation.firstCall.firstArg.metadata?.disable_user_content_logging);
+    });
+    it('enforces global disallowLogging policy even when serverSideLoggingAllowed is true', async () => {
+        updateHostConfig({
+            devToolsAiV2Architecture: { enabled: true },
+            aidaAvailability: { disallowLogging: true },
+        });
+        const aidaClient = mockAidaClient([
+            [{ explanation: 'Response.' }],
+        ]);
+        const conversation = new AiAssistance.AiConversation.AiConversation({
+            type: "none" /* AiAssistance.AiHistoryStorage.ConversationType.NONE */,
+            aidaClient,
+            serverSideLoggingAllowed: true,
+        });
+        await Array.fromAsync(conversation.run('query'));
+        sinon.assert.calledOnce(aidaClient.doConversation);
+        assert.isTrue(aidaClient.doConversation.firstCall.firstArg.metadata?.disable_user_content_logging);
+    });
     it('should be able to switch agent type when context is removed', async () => {
         updateHostConfig({ devToolsAiAssistanceContextSelectionAgent: { enabled: true } });
         const conversation = new AiAssistance.AiConversation.AiConversation({ type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */ });

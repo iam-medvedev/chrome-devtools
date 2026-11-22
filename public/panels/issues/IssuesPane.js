@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api, @devtools/no-lit-render-outside-of-view */
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -9,6 +9,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { HiddenIssuesRow } from './HiddenIssuesRow.js';
 import { getGroupIssuesByKindSetting, IssueKindView, issueKindViewSortPriority } from './IssueKindView.js';
@@ -104,6 +105,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssuesPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const ISSUES_PANEL_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/issues';
+const { widget } = UI.Widget;
+const { bindToSetting } = UI.UIUtils;
 class IssueCategoryView extends UI.TreeOutline.TreeElement {
     #category;
     constructor(category) {
@@ -161,36 +164,44 @@ export class IssuesPane extends UI.Widget.VBox {
     #categoryViews;
     #issueViews;
     #kindViews;
-    #showThirdPartyCheckbox;
     #issuesTree;
     #hiddenIssuesRow;
-    #noIssuesMessageDiv;
     #issuesManager;
     #aggregator;
     #dirtyIssues = new Set();
+    #groupByCategorySetting = getGroupIssuesByCategorySetting();
+    #groupByKindSetting = getGroupIssuesByKindSetting();
+    #showThirdPartyIssuesSetting = IssuesManager.Issue.getShowThirdPartyIssuesSetting(Common.Settings.Settings.instance());
+    #issueCounterData;
+    #issueCounterTitle = '';
+    #showTree = false;
+    #noIssuesHeader = '';
     constructor() {
-        super({
-            jslog: `${VisualLogging.panel('issues')}`,
-            useShadowDom: true,
-        });
-        this.registerRequiredCSS(issuesPaneStyles);
-        this.contentElement.classList.add('issues-pane');
+        super({ useShadowDom: 'pure' });
         this.#categoryViews = new Map();
         this.#kindViews = new Map();
         this.#issueViews = new Map();
-        this.#showThirdPartyCheckbox = null;
-        this.#createToolbars();
+        this.#groupByCategorySetting.addChangeListener(() => {
+            this.#fullUpdate(true);
+        });
+        this.#groupByKindSetting.addChangeListener(() => {
+            this.#fullUpdate(true);
+        });
         this.#issuesTree = new UI.TreeOutline.TreeOutlineInShadow();
         this.#issuesTree.setShowSelectionOnKeyboardFocus(true);
         this.#issuesTree.contentElement.classList.add('issues');
         this.#issuesTree.registerRequiredCSS(issuesTreeStyles);
-        this.contentElement.appendChild(this.#issuesTree.element);
         this.#hiddenIssuesRow = new HiddenIssuesRow();
         this.#issuesTree.appendChild(this.#hiddenIssuesRow);
-        this.#noIssuesMessageDiv = new UI.EmptyWidget.EmptyWidget('', i18nString(UIStrings.issuesPanelDescription));
-        this.#noIssuesMessageDiv.link = ISSUES_PANEL_EXPLANATION_URL;
-        this.#noIssuesMessageDiv.show(this.contentElement);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+        this.#issueCounterData = {
+            clickHandler: () => {
+                const summary = IssueCounter.IssueCounter.getIssueCountsEnumeration(this.#issuesManager, false);
+                UI.ARIAUtils.LiveAnnouncer.alert(summary);
+            },
+            displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.SHOW_ALWAYS */,
+            issuesManager: this.#issuesManager,
+        };
         this.#aggregator = new IssuesManager.IssueAggregator.IssueAggregator(this.#issuesManager);
         this.#aggregator.addEventListener("AggregatedIssueUpdated" /* IssuesManager.IssueAggregator.Events.AGGREGATED_ISSUE_UPDATED */, event => {
             this.#dirtyIssues.add(event.data);
@@ -204,58 +215,37 @@ export class IssuesPane extends UI.Widget.VBox {
     elementsToRestoreScrollPositionsFor() {
         return [this.#issuesTree.element];
     }
-    #createToolbars() {
-        const toolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
-        toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        toolbarContainer.role = 'toolbar';
-        const leftToolbar = toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-left');
-        leftToolbar.role = 'presentation';
-        const rightToolbar = toolbarContainer.createChild('devtools-toolbar', 'issues-toolbar-right');
-        rightToolbar.role = 'presentation';
-        const groupByCategorySetting = getGroupIssuesByCategorySetting();
-        const groupByCategoryCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(groupByCategorySetting, i18nString(UIStrings.groupDisplayedIssuesUnder), i18nString(UIStrings.groupByCategory));
-        // Hide the option to toggle category grouping for now.
-        groupByCategoryCheckbox.setVisible(false);
-        rightToolbar.appendToolbarItem(groupByCategoryCheckbox);
-        groupByCategorySetting.addChangeListener(() => {
-            this.#fullUpdate(true);
-        });
-        const groupByKindSetting = getGroupIssuesByKindSetting();
-        const groupByKindSettingCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(groupByKindSetting, i18nString(UIStrings.groupDisplayedIssuesUnderKind), i18nString(UIStrings.groupByKind));
-        rightToolbar.appendToolbarItem(groupByKindSettingCheckbox);
-        groupByKindSetting.addChangeListener(() => {
-            this.#fullUpdate(true);
-        });
-        groupByKindSettingCheckbox.setVisible(true);
-        const thirdPartySetting = IssuesManager.Issue.getShowThirdPartyIssuesSetting(Common.Settings.Settings.instance());
-        this.#showThirdPartyCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(thirdPartySetting, i18nString(UIStrings.includeCookieIssuesCausedBy), i18nString(UIStrings.includeThirdpartyCookieIssues));
-        rightToolbar.appendToolbarItem(this.#showThirdPartyCheckbox);
-        rightToolbar.appendSeparator();
-        const issueCounter = new IssueCounter.IssueCounter.IssueCounter();
-        issueCounter.data = {
-            clickHandler: () => {
-                const summary = IssueCounter.IssueCounter.getIssueCountsEnumeration(IssuesManager.IssuesManager.IssuesManager.instance(), false);
-                UI.ARIAUtils.LiveAnnouncer.alert(summary);
-            },
-            tooltipCallback: () => {
-                const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(IssuesManager.IssuesManager.IssuesManager.instance(), false);
-                issueCounter.title = issueEnumeration;
-            },
-            displayMode: "ShowAlways" /* IssueCounter.IssueCounter.DisplayMode.SHOW_ALWAYS */,
-            issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
-        };
-        issueCounter.id = 'console-issues-counter';
-        issueCounter.setAttribute('jslog', `${VisualLogging.counter('issues')}`);
-        const issuesToolbarItem = new UI.Toolbar.ToolbarItem(issueCounter);
-        rightToolbar.appendToolbarItem(issuesToolbarItem);
-        return { toolbarContainer };
-    }
     async performUpdate() {
         // Snapshot and clear so new arrivals during `await` schedule a fresh update
         const issuesToUpdate = [...this.#dirtyIssues];
         this.#dirtyIssues.clear();
         await Promise.allSettled(issuesToUpdate.map(issue => this.#updateIssueView(issue)));
         this.#updateCounts();
+        // clang-format off
+        render(html `
+      <style>${issuesPaneStyles}</style>
+      <div class="issues-toolbar-container" role="toolbar" jslog=${VisualLogging.toolbar()}>
+        <devtools-toolbar class="issues-toolbar-left" role="presentation"></devtools-toolbar>
+        <devtools-toolbar class="issues-toolbar-right" role="presentation">
+          <!-- The option to toggle category grouping is hidden for now. -->
+          <devtools-checkbox hidden title=${i18nString(UIStrings.groupDisplayedIssuesUnder)}
+              ${bindToSetting(this.#groupByCategorySetting)}>${i18nString(UIStrings.groupByCategory)}</devtools-checkbox>
+          <devtools-checkbox title=${i18nString(UIStrings.groupDisplayedIssuesUnderKind)}
+              ${bindToSetting(this.#groupByKindSetting)}>${i18nString(UIStrings.groupByKind)}</devtools-checkbox>
+          <devtools-checkbox title=${i18nString(UIStrings.includeCookieIssuesCausedBy)}
+              ${bindToSetting(this.#showThirdPartyIssuesSetting)}>${i18nString(UIStrings.includeThirdpartyCookieIssues)}</devtools-checkbox>
+          <div class="toolbar-divider"></div>
+          <devtools-issue-counter id="console-issues-counter" title=${this.#issueCounterTitle}
+              .data=${this.#issueCounterData} jslog=${VisualLogging.counter('issues')}></devtools-issue-counter>
+        </devtools-toolbar>
+      </div>
+      ${this.#issuesTree.element}
+      ${this.#showTree ? nothing : widget(UI.EmptyWidget.EmptyWidget, {
+            header: this.#noIssuesHeader,
+            text: i18nString(UIStrings.issuesPanelDescription),
+            link: ISSUES_PANEL_EXPLANATION_URL,
+        })}`, this.contentElement, { container: { classes: ['issues-pane'], attributes: { jslog: `${VisualLogging.panel('issues')}` } } });
+        // clang-format on
     }
     /** Don't call directly. Use `requestUpdate` instead. */
     async #updateIssueView(issue) {
@@ -393,8 +383,9 @@ export class IssuesPane extends UI.Widget.VBox {
         }
     }
     #updateCounts() {
+        this.#issueCounterTitle = IssueCounter.IssueCounter.getIssueCountsEnumeration(this.#issuesManager, false);
         this.#showIssuesTreeOrNoIssuesDetectedMessage(this.#issuesManager.numberOfIssues(), this.#issuesManager.numberOfHiddenIssues());
-        if (getGroupIssuesByKindSetting().get()) {
+        if (this.#groupByKindSetting.get()) {
             this.#updateIssueKindViewsCount();
         }
     }
@@ -402,8 +393,8 @@ export class IssuesPane extends UI.Widget.VBox {
         if (issuesCount > 0 || hiddenIssueCount > 0) {
             this.#hiddenIssuesRow.hidden = hiddenIssueCount === 0;
             this.#hiddenIssuesRow.update(hiddenIssueCount);
+            this.#showTree = true;
             this.#issuesTree.element.hidden = false;
-            this.#noIssuesMessageDiv.hideWidget();
             const firstChild = this.#issuesTree.firstChild();
             if (firstChild) {
                 firstChild.select(/* omitFocus= */ true);
@@ -411,13 +402,13 @@ export class IssuesPane extends UI.Widget.VBox {
             }
         }
         else {
+            this.#showTree = false;
             this.#issuesTree.element.hidden = true;
             // We alreay know that issesCount is zero here.
             const hasOnlyThirdPartyIssues = this.#issuesManager.numberOfAllStoredIssues() - this.#issuesManager.numberOfThirdPartyCookiePhaseoutIssues() >
                 0;
-            this.#noIssuesMessageDiv.header =
+            this.#noIssuesHeader =
                 hasOnlyThirdPartyIssues ? i18nString(UIStrings.onlyThirdpartyCookieIssues) : i18nString(UIStrings.noIssues);
-            this.#noIssuesMessageDiv.showWidget();
         }
     }
     async reveal(issue) {

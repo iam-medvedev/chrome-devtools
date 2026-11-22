@@ -47,14 +47,6 @@ const UIStrings = {
      */
     showUrlDecoded: 'Show URL-decoded',
     /**
-     * @description Context menu item in the Application panel to start a chat with AI assistance.
-     */
-    startAChat: 'Start a chat',
-    /**
-     * @description Context menu item in the Application panel to explain a cookie with AI assistance.
-     */
-    explainCookie: 'Explain this cookie',
-    /**
      * @description Empty state header in the cookie preview of the Application panel when no cookie is selected.
      */
     noCookieSelected: 'No cookie selected',
@@ -78,6 +70,10 @@ const UIStrings = {
      * @description Tooltip text for the clear button in the cookies view of the Application panel to delete all cookies.
      */
     clearAllCookies: 'Clear all cookies',
+    /**
+     * @description Tooltip text for the cookie value.
+     */
+    cookieValue: 'Cookie value',
     /**
      * @description Screen reader announcement for the number of cookies shown in the table of the Application panel.
      * @example {5} PH1
@@ -105,7 +101,7 @@ export const DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     render(html `<style>${cookieItemsViewStyles}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
-        <span class="cookie-preview-widget-header-label">Cookie Value</span>
+        <span class="cookie-preview-widget-header-label">${i18nString(UIStrings.cookieValue)}</span>
         <devtools-checkbox
           .checked=${input.showDecoded}
           @change=${(e) => input.onShowDecodedChanged(e.target.checked)}
@@ -367,10 +363,7 @@ export class CookieItemsView extends UI.Widget.VBox {
         if (this.isAiButtonEnabled() && UI.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
             this.#updateAiAssistanceContext(cookie);
             if (UI.Context.Context.instance().flavor(AiAssistanceModel.StorageItem.StorageItem)) {
-                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId);
-                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
-                submenu.defaultSection().appendItem(i18nString(UIStrings.explainCookie), () => action.execute({ prompt: 'What is the purpose of this cookie?' }), { disabled: !action.enabled(), jslogContext: openAiAssistanceId + '.cookies' });
+                contextMenu.footerSection().appendAction(openAiAssistanceId);
             }
         }
     }

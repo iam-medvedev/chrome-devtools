@@ -398,6 +398,14 @@ const UIStringsNotTranslate = {
      */
     networkRequests: 'Network requests',
     /**
+     * @description Time cell text for a network request that is still in flight.
+     */
+    networkRequestPending: 'Pending',
+    /**
+     * @description Time cell text for a network request that has no timing data.
+     */
+    networkRequestDurationUnknown: '(unknown)',
+    /**
      * @description Accessible label for the reveal button in the network requests list widget.
      */
     revealFirstNetworkRequest: 'Reveal first network request in Network panel',
@@ -433,7 +441,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
         });
         // clang-format off
         Lit.render(html `
-      <style>${Input.textInputStyles}</style>
       <style>${chatMessageStyles}</style>
       <div class="user-query-wrapper">
         <section class=${messageClasses} jslog=${VisualLogging.section('question')}>
@@ -454,7 +461,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     });
     // clang-format off
     Lit.render(html `
-    <style>${Input.textInputStyles}</style>
+    <style>@scope to (devtools-widget > *) { ${Input.textInputStyles} }</style>
     <style>${chatMessageStyles}</style>
     <section class=${messageClasses} jslog=${VisualLogging.section('answer')}>
       ${renderWalkthroughUI(input, steps)}
@@ -1210,6 +1217,24 @@ async function makeSourceFilesListWidget(widgetData) {
     };
 }
 const expandedNetworkRequestsWidgets = new WeakSet();
+/**
+ * Formats a request's duration for the widget time column with localized units and the
+ * Network panel's "Pending" and "(unknown)" labels. Unlike the Network panel, finished
+ * requests without timing data show "(unknown)" because they will never complete.
+ */
+function formatNetworkRequestDuration(request) {
+    const state = AiAssistanceModel.ListNetworkRequests.requestDurationState(request);
+    switch (state.type) {
+        case 'value':
+            return i18n.TimeUtilities.secondsToString(state.seconds);
+        case 'pending':
+            return lockedString(UIStringsNotTranslate.networkRequestPending);
+        case 'unavailable':
+            return lockedString(UIStringsNotTranslate.networkRequestDurationUnknown);
+        default:
+            Platform.assertNever(state, 'Unknown RequestDurationState type');
+    }
+}
 // A widget with a table of the list of network requests sent to the agent.
 // Only show 15 requests maximum in collapsed version. The rest of the requests
 // will be hidden unless the user clicks "Show all".
@@ -1242,7 +1267,7 @@ async function makeNetworkRequestsListWidget(widgetData) {
               <td>${request.name()}</td>
               <td>${request.statusCode}</td>
               <td>${i18n.ByteUtilities.formatBytesToKb(request.transferSize)}</td>
-              <td>${i18n.TimeUtilities.secondsToString(request.duration)}</td>
+              <td>${formatNetworkRequestDuration(request)}</td>
             </tr>
           `)}
         </table>
@@ -1727,7 +1752,7 @@ export class ChatMessage extends UI.Widget.Widget {
     isLoading = false;
     isReadOnly = false;
     prompt = '';
-    canShowFeedbackForm = false;
+    canShowFreeFormFeedback = false;
     isLastMessage = false;
     isFirstMessage = false;
     markdownRenderer;
@@ -1767,7 +1792,7 @@ export class ChatMessage extends UI.Widget.Widget {
             message,
             isLoading: this.isLoading,
             isReadOnly: this.isReadOnly,
-            canShowFeedbackForm: this.canShowFeedbackForm,
+            canShowFreeFormFeedback: this.canShowFreeFormFeedback,
             markdownRenderer: this.markdownRenderer,
             isLastMessage: this.isLastMessage,
             isFirstMessage: this.isFirstMessage,
@@ -1862,7 +1887,7 @@ export class ChatMessage extends UI.Widget.Widget {
             return;
         }
         this.#currentRating = rating;
-        this.#isShowingFeedbackForm = this.canShowFeedbackForm;
+        this.#isShowingFeedbackForm = this.canShowFreeFormFeedback;
         if (this.message.entity === "model" /* ChatMessageEntity.MODEL */ && this.message.rpcId) {
             this.onFeedbackSubmit(this.message.rpcId, rating);
         }

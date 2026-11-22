@@ -712,6 +712,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1036,7 +1039,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1820,6 +1822,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2507,6 +2510,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3079,6 +3083,7 @@ var Runtime;
 import * as EmulationModel from "../../models/emulation/emulation.js";
 import * as LighthouseModel from "../../models/lighthouse/lighthouse.js";
 import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as Emulation2 from "../emulation/emulation.js";
 var UIStrings = {
   /**
@@ -3216,9 +3221,9 @@ var UIStrings = {
    */
   devtoolsThrottling: "DevTools throttling (advanced)",
   /**
-   * @description Tooltip text that appears when hovering over the 'Simulated Throttling' checkbox in the settings toolbar of the Lighthouse panel.
+   * @description Tooltip text that appears when hovering over the 'Throttling method' dropdown in the settings toolbar of the Lighthouse panel.
    */
-  simulateASlowerPageLoadBasedOn: "Simulated throttling simulates a slower page load based on data from an initial unthrottled load. DevTools throttling actually slows down the page.",
+  simulateASlowerPageLoadBasedOn: "Simulated throttling models a slower network and CPU from an unthrottled load. DevTools throttling slows down network and CPU in real time using Lighthouse presets (ignoring Network and Performance panel settings).",
   /**
    * @description Text of checkbox to reset storage features prior to running audits in Lighthouse.
    */
@@ -3311,6 +3316,7 @@ var LighthouseRun = class {
    */
   async setupEmulationAndProtocolConnection() {
     const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
+    const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
     this.emulationStateBefore = {
       emulation: {
         type: emulationModel.type(),
@@ -3320,7 +3326,8 @@ var LighthouseRun = class {
         device: emulationModel.device(),
         mode: emulationModel.mode()
       },
-      network: { conditions: SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions() }
+      network: { conditions: SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions() },
+      cpuThrottlingRate: cpuThrottlingManager.cpuThrottlingRate()
     };
     emulationModel.toolbarControlsEnabledSetting().set(false);
     if ("formFactor" in this.flags && this.flags.formFactor === "desktop") {
@@ -3335,6 +3342,7 @@ var LighthouseRun = class {
         }
       }
     }
+    cpuThrottlingManager.setCPUThrottlingRate(1);
     await this.protocolService.attach(this.inspectedURL);
   }
   async restoreEmulationAndProtocolConnection() {
@@ -3351,6 +3359,9 @@ var LighthouseRun = class {
       emulationModel.emulate(type, device, mode2, scale);
       SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(
         this.emulationStateBefore.network.conditions
+      );
+      SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingRate(
+        this.emulationStateBefore.cpuThrottlingRate
       );
       delete this.emulationStateBefore;
     }
@@ -3673,7 +3684,7 @@ function getPresets() {
     presets = [
       // configID maps to Lighthouse's Object.keys(config.categories)[0] value
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-perf"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catPerfSettingDescriptor),
         configID: "performance",
         title: i18nLazyString(UIStrings.performance),
         description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
@@ -3681,7 +3692,7 @@ function getPresets() {
         userMetric: Host.UserMetrics.LighthouseCategoryUsed.PERFORMANCE
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-a11y"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catA11ySettingDescriptor),
         configID: "accessibility",
         title: i18nLazyString(UIStrings.accessibility),
         description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
@@ -3689,7 +3700,9 @@ function getPresets() {
         userMetric: Host.UserMetrics.LighthouseCategoryUsed.ACCESSIBILITY
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-best-practices"),
+        setting: Common.Settings.Settings.instance().resolve(
+          SettingsUI.LighthouseSettings.catBestPracticesSettingDescriptor
+        ),
         configID: "best-practices",
         title: i18nLazyString(UIStrings.bestPractices),
         description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
@@ -3697,7 +3710,7 @@ function getPresets() {
         userMetric: Host.UserMetrics.LighthouseCategoryUsed.BEST_PRACTICES
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-seo"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catSeoSettingDescriptor),
         configID: "seo",
         title: i18nLazyString(UIStrings.seo),
         description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
@@ -3705,7 +3718,9 @@ function getPresets() {
         userMetric: Host.UserMetrics.LighthouseCategoryUsed.SEO
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.cat-agentic-browsing"),
+        setting: Common.Settings.Settings.instance().resolve(
+          SettingsUI.LighthouseSettings.catAgenticBrowsingSettingDescriptor
+        ),
         configID: "agentic-browsing",
         title: i18nLazyString(UIStrings.agenticBrowsing),
         description: i18nLazyString(UIStrings.agenticBrowsingDescription),
@@ -3721,7 +3736,7 @@ function getRuntimeSettings() {
   if (!runtimeSettings) {
     runtimeSettings = [
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.device-type"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.deviceTypeSettingDescriptor),
         title: i18nLazyString(UIStrings.applyMobileEmulation),
         description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
         setFlags: (flags, value) => {
@@ -3741,7 +3756,7 @@ function getRuntimeSettings() {
         ]
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.mode"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.modeSettingDescriptor),
         title: i18nLazyString(UIStrings.lighthouseMode),
         description: i18nLazyString(UIStrings.runLighthouseInMode),
         setFlags: (flags, value) => {
@@ -3768,10 +3783,10 @@ function getRuntimeSettings() {
       },
       {
         // This setting is disabled, but we keep it around to show in the UI.
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.throttling"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.throttlingSettingDescriptor),
         title: i18nLazyString(UIStrings.throttlingMethod),
         // We will disable this when we have a Lantern trace viewer within DevTools.
-        learnMore: "https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling",
+        learnMore: "https://github.com/GoogleChrome/lighthouse/blob/main/docs/throttling.md#devtools-lighthouse-panel-throttling",
         description: i18nLazyString(UIStrings.simulateASlowerPageLoadBasedOn),
         setFlags: (flags, value) => {
           if (typeof value === "string") {
@@ -3786,7 +3801,7 @@ function getRuntimeSettings() {
         ]
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.clear-storage"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.clearStorageSettingDescriptor),
         title: i18nLazyString(UIStrings.clearStorage),
         description: i18nLazyString(UIStrings.resetStorageLocalstorage),
         setFlags: (flags, value) => {
@@ -3794,7 +3809,7 @@ function getRuntimeSettings() {
         }
       },
       {
-        setting: Common.Settings.Settings.instance().moduleSetting("lighthouse.enable-sampling"),
+        setting: Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.enableSamplingSettingDescriptor),
         title: i18nLazyString(UIStrings.enableSampling),
         description: i18nLazyString(UIStrings.enableJavaScriptSampling),
         setFlags: (flags, value) => {
@@ -4204,6 +4219,7 @@ var ProtocolService = class {
 // ../../front_end/panels/lighthouse/LighthouseReportRenderer.ts
 var LighthouseReportRenderer_exports = {};
 __export(LighthouseReportRenderer_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   LighthouseReportRenderer: () => LighthouseReportRenderer
 });
 import * as Common3 from "../../core/common/common.js";
@@ -4219,9 +4235,182 @@ import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
 import { html, nothing, render } from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon from "../common/common.js";
+var { widget } = UI2.Widget;
 var MaxLengthForLinks = 40;
-var LighthouseReportRenderer = class _LighthouseReportRenderer {
-  static renderLighthouseReport(lhr, artifacts, opts) {
+function renderContent(input) {
+  switch (input.type) {
+    case "node":
+      return html`${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+        node: input.node,
+        options: { tooltip: input.snippet }
+      })}`;
+    case "source-location":
+      return Components.Linkifier.Linkifier.renderLinkifiedUrl(input.url, {
+        lineNumber: input.lineNumber,
+        columnNumber: input.columnNumber,
+        showColumnNumber: false,
+        maxLength: MaxLengthForLinks
+      });
+    case "report": {
+      if (!input.report) {
+        return nothing;
+      }
+      const reportEl = LighthouseReport.renderReport(input.report, {
+        disableDarkMode: true,
+        onViewTrace: input.onViewTrace,
+        onSaveFileOverride: input.onSaveFileOverride,
+        onPrintOverride: input.onPrintOverride,
+        getStandaloneReportHTML: input.getStandaloneReportHTML
+      });
+      reportEl.classList.add("lh-devtools");
+      reportEl.classList.toggle("lh-dark", input.darkMode);
+      LighthouseReportRenderer.installVisualLogging(reportEl);
+      return html`${reportEl}`;
+    }
+    default:
+      Platform.assertNever(input, "Unknown Lighthouse view input type");
+  }
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(renderContent(input), target);
+};
+var nodeLinkState = /* @__PURE__ */ new WeakMap();
+function restorePlainNode(element) {
+  const state = nodeLinkState.get(element);
+  if (!state) {
+    return;
+  }
+  nodeLinkState.delete(element);
+  const screenshotElement = element.querySelector(".lh-element-screenshot");
+  element.replaceChildren(...screenshotElement ? [screenshotElement] : [], ...state.fallbackNodes);
+  UI2.Tooltip.Tooltip.install(element, state.title);
+}
+var LighthouseReportRenderer = class _LighthouseReportRenderer extends UI2.Widget.Widget {
+  #view;
+  #report = null;
+  #artifacts;
+  #beforePrint;
+  #afterPrint;
+  #isRendered = false;
+  #linkifyController;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+  }
+  get report() {
+    return this.#report;
+  }
+  set report(report) {
+    if (this.#report === report) {
+      return;
+    }
+    this.#report = report;
+    this.#isRendered = false;
+    this.requestUpdate();
+  }
+  set artifacts(artifacts) {
+    if (this.#artifacts === artifacts) {
+      return;
+    }
+    this.#artifacts = artifacts;
+    this.#isRendered = false;
+    this.requestUpdate();
+  }
+  set beforePrint(beforePrint) {
+    if (this.#beforePrint === beforePrint) {
+      return;
+    }
+    this.#beforePrint = beforePrint;
+    this.#isRendered = false;
+    this.requestUpdate();
+  }
+  set afterPrint(afterPrint) {
+    if (this.#afterPrint === afterPrint) {
+      return;
+    }
+    this.#afterPrint = afterPrint;
+    this.#isRendered = false;
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
+    SDK3.TargetManager.TargetManager.instance().addModelListener(
+      SDK3.ResourceTreeModel.ResourceTreeModel,
+      SDK3.ResourceTreeModel.Events.Load,
+      this.#onTargetLoad
+    );
+    this.#onThemeChange();
+    if (!this.#isRendered) {
+      this.requestUpdate();
+    } else {
+      this.#linkifyNodes();
+    }
+  }
+  willHide() {
+    this.#linkifyController?.abort();
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(
+      SDK3.ResourceTreeModel.ResourceTreeModel,
+      SDK3.ResourceTreeModel.Events.Load,
+      this.#onTargetLoad
+    );
+    ThemeSupport.ThemeSupport.instance().removeEventListener(
+      ThemeSupport.ThemeChangeEvent.eventName,
+      this.#onThemeChange
+    );
+    super.willHide();
+  }
+  #onThemeChange = () => {
+    const darkMode = ThemeSupport.ThemeSupport.hasInstance() && ThemeSupport.ThemeSupport.instance().themeName() === "dark";
+    this.contentElement.querySelector(".lh-devtools")?.classList.toggle("lh-dark", darkMode);
+  };
+  #onTargetLoad = (event) => {
+    if (event.data.resourceTreeModel.target() !== SDK3.TargetManager.TargetManager.instance().primaryPageTarget()) {
+      return;
+    }
+    this.#linkifyNodes();
+  };
+  #linkifyNodes() {
+    this.#linkifyController?.abort();
+    const reportEl = this.contentElement.querySelector(".lh-devtools");
+    if (!this.#report || !reportEl) {
+      return;
+    }
+    if (!_LighthouseReportRenderer.#targetMatchesReport(this.#report)) {
+      _LighthouseReportRenderer.unlinkNodeDetails(reportEl);
+      return;
+    }
+    const controller = new AbortController();
+    this.#linkifyController = controller;
+    void _LighthouseReportRenderer.linkifyNodeDetails(reportEl, this.#view, controller.signal);
+  }
+  static #targetMatchesReport(lhr) {
+    const inspectedURL = SDK3.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
+    if (!inspectedURL) {
+      return false;
+    }
+    const targetURL = Common3.ParsedURL.ParsedURL.urlWithoutHash(inspectedURL);
+    return [lhr.finalDisplayedUrl, lhr.mainDocumentUrl, lhr.finalUrl].some(
+      (url) => url !== void 0 && url !== "" && Common3.ParsedURL.ParsedURL.urlWithoutHash(url) === targetURL
+    );
+  }
+  performUpdate() {
+    this.#isRendered = true;
+    const darkMode = ThemeSupport.ThemeSupport.hasInstance() && ThemeSupport.ThemeSupport.instance().themeName() === "dark";
+    const reportOptions = _LighthouseReportRenderer.#createReportOptions(this.#report, this.#artifacts, {
+      beforePrint: this.#beforePrint,
+      afterPrint: this.#afterPrint
+    });
+    this.#view({ type: "report", report: this.#report, darkMode, ...reportOptions }, void 0, this.contentElement);
+    const reportEl = this.contentElement.querySelector(".lh-devtools");
+    if (this.#report && reportEl) {
+      _LighthouseReportRenderer.#finalizeRenderedReport(reportEl, this.#report, this.#artifacts, this.#view);
+      if (this.isShowing()) {
+        this.#linkifyNodes();
+      }
+    }
+  }
+  static #createReportOptions(lhr, artifacts, opts) {
     let onViewTrace = void 0;
     if (artifacts) {
       onViewTrace = async () => {
@@ -4231,6 +4420,9 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       };
     }
     async function onSaveFileOverride(blob) {
+      if (!lhr) {
+        return;
+      }
       const domain = new Common3.ParsedURL.ParsedURL(lhr.finalUrl || lhr.finalDisplayedUrl).domain();
       const sanitizedDomain = domain.replace(/[^a-z0-9.-]+/gi, "_");
       const timestamp = Platform.DateUtilities.toISO8601Compact(new Date(lhr.fetchTime));
@@ -4257,7 +4449,9 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
         return;
       }
       printWindow.document.body.replaceWith(clonedReport);
-      await _LighthouseReportRenderer.linkifyNodeDetails(clonedReport);
+      if (lhr && _LighthouseReportRenderer.#targetMatchesReport(lhr)) {
+        await _LighthouseReportRenderer.linkifyNodeDetails(clonedReport);
+      }
       opts?.beforePrint?.();
       printWindow.focus();
       printWindow.print();
@@ -4267,13 +4461,18 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
     function getStandaloneReportHTML() {
       return Lighthouse.ReportGenerator.ReportGenerator.generateReportHtml(lhr);
     }
+    return { onViewTrace, onSaveFileOverride, onPrintOverride, getStandaloneReportHTML };
+  }
+  static #finalizeRenderedReport(reportEl, lhr, artifacts, view = DEFAULT_VIEW) {
+    reportEl._lighthouseResultForTesting = lhr;
+    reportEl._lighthouseArtifactsForTesting = artifacts;
+    void _LighthouseReportRenderer.linkifySourceLocationDetails(reportEl, view);
+  }
+  static renderLighthouseReport(lhr, artifacts, opts) {
+    const reportOptions = _LighthouseReportRenderer.#createReportOptions(lhr, artifacts, opts);
     const reportEl = LighthouseReport.renderReport(lhr, {
-      // Disable dark mode so we can manually adjust it.
       disableDarkMode: true,
-      onViewTrace,
-      onSaveFileOverride,
-      onPrintOverride,
-      getStandaloneReportHTML
+      ...reportOptions
     });
     reportEl.classList.add("lh-devtools");
     const updateDarkModeIfNecessary = () => {
@@ -4284,13 +4483,8 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       updateDarkModeIfNecessary
     );
     updateDarkModeIfNecessary();
-    reportEl._lighthouseResultForTesting = lhr;
-    reportEl._lighthouseArtifactsForTesting = artifacts;
     _LighthouseReportRenderer.installVisualLogging(reportEl);
-    void _LighthouseReportRenderer.waitForMainTargetLoad().then(() => {
-      void _LighthouseReportRenderer.linkifyNodeDetails(reportEl);
-      void _LighthouseReportRenderer.linkifySourceLocationDetails(reportEl);
-    });
+    _LighthouseReportRenderer.#finalizeRenderedReport(reportEl, lhr, artifacts);
     return reportEl;
   }
   /**
@@ -4318,18 +4512,12 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
     topbar?.remove();
     return reportEl;
   }
-  static async waitForMainTargetLoad() {
-    const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-    if (!mainTarget) {
-      return;
+  static unlinkNodeDetails(el) {
+    for (const origElement of el.getElementsByClassName("lh-node")) {
+      restorePlainNode(origElement);
     }
-    const resourceTreeModel = mainTarget.model(SDK3.ResourceTreeModel.ResourceTreeModel);
-    if (!resourceTreeModel) {
-      return;
-    }
-    await resourceTreeModel.once(SDK3.ResourceTreeModel.Events.Load);
   }
-  static async linkifyNodeDetails(el) {
+  static async linkifyNodeDetails(el, view = DEFAULT_VIEW, signal) {
     const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       return;
@@ -4339,48 +4527,56 @@ var LighthouseReportRenderer = class _LighthouseReportRenderer {
       return;
     }
     for (const origElement of el.getElementsByClassName("lh-node")) {
+      if (signal?.aborted) {
+        return;
+      }
       const origHTMLElement = origElement;
       const detailsItem = origHTMLElement.dataset;
       if (!detailsItem.path) {
         continue;
       }
       const nodeId = await domModel.pushNodeByPathToFrontend(detailsItem.path);
-      if (!nodeId) {
-        continue;
+      if (signal?.aborted) {
+        return;
       }
-      const node = domModel.nodeForId(nodeId);
+      const node = nodeId ? domModel.nodeForId(nodeId) : null;
       if (!node) {
+        restorePlainNode(origHTMLElement);
         continue;
       }
-      const element = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(
-        node,
-        { tooltip: detailsItem.snippet, preventKeyboardFocus: void 0 }
-      );
-      UI2.Tooltip.Tooltip.install(origHTMLElement, "");
+      const existingState = nodeLinkState.get(origHTMLElement);
+      if (existingState?.node === node) {
+        continue;
+      }
       const screenshotElement = origHTMLElement.querySelector(".lh-element-screenshot");
-      origHTMLElement.textContent = "";
-      render(html`${screenshotElement ?? nothing}${element}`, origHTMLElement);
+      const fallbackNodes = existingState ? existingState.fallbackNodes : [...origHTMLElement.childNodes].filter((child) => child !== screenshotElement);
+      const title = existingState ? existingState.title : origHTMLElement.title;
+      UI2.Tooltip.Tooltip.install(origHTMLElement, "");
+      const linkContainer = document.createElement("span");
+      origHTMLElement.replaceChildren(...screenshotElement ? [screenshotElement] : [], linkContainer);
+      nodeLinkState.set(origHTMLElement, { fallbackNodes, title, node });
+      view({ type: "node", node, snippet: detailsItem.snippet }, void 0, linkContainer);
     }
   }
-  static async linkifySourceLocationDetails(el) {
+  static async linkifySourceLocationDetails(el, view = DEFAULT_VIEW) {
     for (const origElement of el.getElementsByClassName("lh-source-location")) {
       const origHTMLElement = origElement;
       const detailsItem = origHTMLElement.dataset;
       if (!detailsItem.sourceUrl || !detailsItem.sourceLine || !detailsItem.sourceColumn) {
         continue;
       }
-      const url = detailsItem.sourceUrl;
-      const line = Number(detailsItem.sourceLine);
-      const column = Number(detailsItem.sourceColumn);
-      const element = Components.Linkifier.Linkifier.linkifyURL(url, {
-        lineNumber: line,
-        columnNumber: column,
-        showColumnNumber: false,
-        maxLength: MaxLengthForLinks
-      });
       UI2.Tooltip.Tooltip.install(origHTMLElement, "");
-      origHTMLElement.textContent = "";
-      origHTMLElement.appendChild(element);
+      origHTMLElement.replaceChildren();
+      view(
+        {
+          type: "source-location",
+          url: detailsItem.sourceUrl,
+          lineNumber: Number(detailsItem.sourceLine),
+          columnNumber: Number(detailsItem.sourceColumn)
+        },
+        void 0,
+        origHTMLElement
+      );
     }
   }
   static installVisualLogging(el) {
@@ -4628,10 +4824,14 @@ var lighthouseStartView_css_default = `/*
 .lighthouse-radio {
   display: flex;
   align-items: center;
+
+  input {
+    margin-bottom: 0;
+  }
 }
 
 .lighthouse-radio-text {
-  margin-left: 3px;
+  margin-left: var(--sys-size-2);
 }
 
 .lighthouse-start-button-container {
@@ -4668,6 +4868,10 @@ var lighthouseStartView_css_default = `/*
   }
 }
 
+.lighthouse-launcher-row devtools-checkbox {
+  margin-left: calc(-1 * var(--sys-size-3));
+}
+
 .lighthouse-launcher-row .dimmed {
   padding-left: var(--sys-size-10);
 }
@@ -4690,7 +4894,8 @@ var lighthouseStartView_css_default = `/*
 
 .lighthouse-warning-text::before {
   content: "\u26A0";
-  margin-right: 10px;
+  margin-left: var(--sys-size-2);
+  margin-right: var(--sys-size-5);
 }
 
 .lighthouse-options {
@@ -4714,80 +4919,116 @@ var lighthouseStartView_css_default = `/*
 // ../../front_end/panels/lighthouse/RadioSetting.ts
 var RadioSetting_exports = {};
 __export(RadioSetting_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RadioSetting: () => RadioSetting
 });
 import * as UI4 from "../../ui/legacy/legacy.js";
 import { Directives, html as html2, render as render2 } from "../../ui/lit/lit.js";
 var { ifDefined } = Directives;
-var RadioSetting = class {
-  setting;
-  options;
-  element;
-  radioElements;
-  ignoreChangeEvents;
-  selectedIndex;
-  constructor(options, setting, description) {
-    this.setting = setting;
-    this.options = options;
-    this.element = document.createElement("div");
-    UI4.ARIAUtils.setDescription(this.element, description);
-    UI4.ARIAUtils.markAsRadioGroup(this.element);
-    this.radioElements = [];
-    render2(
-      html2`
-        ${this.options.map((option) => {
-        const tooltip = option.tooltip?.() || description;
-        return html2`
-            <label class="lighthouse-radio">
-              <input
-                type="radio"
-                value=${option.value}
-                name=${setting.name}
-                @change=${this.valueChanged.bind(this)}
-                title=${ifDefined(description ? tooltip : void 0)}
-                ${Directives.ref(
-          (el) => {
-            this.radioElements.push(el);
-          }
-        )}
-              />
-              <span
-                class="lighthouse-radio-text"
-               title=${ifDefined(description ? tooltip : void 0)}
-                >${option.label()}</span
-              >
-            </label>
-          `;
-      })}
-      `,
-      this.element
-    );
-    this.ignoreChangeEvents = false;
-    this.selectedIndex = -1;
-    setting.addChangeListener(this.settingChanged, this);
-    this.settingChanged();
-  }
-  updateUI() {
-    this.ignoreChangeEvents = true;
-    if (this.radioElements[this.selectedIndex]) {
-      this.radioElements[this.selectedIndex].checked = true;
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render2(
+    html2`
+      ${input.options.map((option) => {
+      const tooltip = option.tooltip?.() || input.description || void 0;
+      return html2`
+          <label class="lighthouse-radio">
+            <input
+              type="radio"
+              value=${option.value}
+              name=${input.name}
+              .checked=${option.value === input.value}
+              @change=${(event) => {
+        if (event.target.checked) {
+          input.onChange(option.value);
+        }
+      }}
+              title=${ifDefined(tooltip)}
+            />
+            <span
+              class="lighthouse-radio-text"
+              title=${ifDefined(tooltip)}
+            >${option.label()}</span>
+          </label>
+        `;
+    })}
+    `,
+    target,
+    {
+      container: {
+        attributes: {
+          role: "radiogroup",
+          "aria-label": input.label,
+          "aria-description": input.description
+        }
+      }
     }
-    this.ignoreChangeEvents = false;
+  );
+};
+var RadioSetting = class extends UI4.Widget.Widget {
+  #view;
+  #options = [];
+  #setting;
+  #description = "";
+  #label;
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
   }
-  settingChanged() {
-    const value = this.setting.get();
-    this.selectedIndex = this.options.findIndex((option) => option.value === value);
-    this.updateUI();
-  }
-  valueChanged(_event) {
-    if (this.ignoreChangeEvents) {
+  set options(options) {
+    if (this.#options === options) {
       return;
     }
-    const selectedRadio = this.radioElements.find((radio) => radio.checked);
-    if (!selectedRadio) {
+    this.#options = options;
+    this.requestUpdate();
+  }
+  set setting(setting) {
+    if (this.#setting === setting) {
       return;
     }
-    this.setting.set(selectedRadio.value);
+    if (this.isShowing()) {
+      this.#setting?.removeChangeListener(this.requestUpdate, this);
+      setting?.addChangeListener(this.requestUpdate, this);
+    }
+    this.#setting = setting;
+    this.requestUpdate();
+  }
+  set description(description) {
+    if (this.#description === description) {
+      return;
+    }
+    this.#description = description;
+    this.requestUpdate();
+  }
+  set label(label) {
+    if (this.#label === label) {
+      return;
+    }
+    this.#label = label;
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.#setting?.addChangeListener(this.requestUpdate, this);
+    this.requestUpdate();
+  }
+  willHide() {
+    super.willHide();
+    this.#setting?.removeChangeListener(this.requestUpdate, this);
+  }
+  performUpdate() {
+    const setting = this.#setting;
+    if (!setting) {
+      return;
+    }
+    const input = {
+      options: this.#options,
+      name: setting.name,
+      value: setting.get(),
+      description: this.#description,
+      label: this.#label,
+      onChange: (value) => setting.set(value)
+    };
+    this.#view(input, void 0, this.contentElement);
   }
 };
 
@@ -4918,13 +5159,12 @@ var StartView = class extends UI5.Widget.Widget {
       labelEl.append(link);
     }
     parentElement.appendChild(labelEl);
-    const control = new RadioSetting(
-      runtimeSetting.options,
-      runtimeSetting.setting,
-      runtimeSetting.description()
-    );
-    parentElement.appendChild(control.element);
-    UI5.ARIAUtils.setLabel(control.element, label);
+    const control = new RadioSetting();
+    control.options = runtimeSetting.options;
+    control.setting = runtimeSetting.setting;
+    control.description = runtimeSetting.description();
+    control.label = label;
+    control.show(parentElement);
   }
   populateRuntimeSettingAsToolbarCheckbox(settingName, toolbar2) {
     const runtimeSetting = getRuntimeSettings().find((item2) => item2.setting.name === settingName);
@@ -5100,7 +5340,7 @@ var StartView = class extends UI5.Widget.Widget {
 // ../../front_end/panels/lighthouse/LighthouseStatusView.ts
 var LighthouseStatusView_exports = {};
 __export(LighthouseStatusView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   StatusPhases: () => StatusPhases,
   StatusView: () => StatusView,
   fastFactRotationInterval: () => fastFactRotationInterval,
@@ -5374,7 +5614,7 @@ var UIStrings4 = {
 var str_4 = i18n8.i18n.registerUIStrings("panels/lighthouse/LighthouseStatusView.ts", UIStrings4);
 var i18nString4 = i18n8.i18n.getLocalizedString.bind(void 0, str_4);
 var i18nLazyString2 = i18n8.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   const {
     statusHeader,
     statusText,
@@ -5478,7 +5718,7 @@ var StatusView = class {
       this.dialog.setSizeBehavior(UI6.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT);
       this.dialog.setMaxContentSize(new Geometry.Size(500, 400));
     }
-    DEFAULT_VIEW(
+    DEFAULT_VIEW3(
       {
         statusHeader: this.statusHeader,
         statusText: this.statusText,
@@ -6045,6 +6285,9 @@ var LighthousePanel = class _LighthousePanel extends UI8.Panel.Panel {
     this.updateSettingsPaneVisibility();
   }
   renderStartView() {
+    for (const reportWidget of this.cachedRenderedReports.values()) {
+      reportWidget.detach();
+    }
     this.auditResultsElement.removeChildren();
     this.statusView.hide();
     this.reportSelector.selectNewReport();
@@ -6083,34 +6326,36 @@ var LighthousePanel = class _LighthousePanel extends UI8.Panel.Panel {
     this.contentElement.classList.toggle("in-progress", false);
     this.startView.hideWidget();
     this.statusView.hide();
+    for (const reportWidget2 of this.cachedRenderedReports.values()) {
+      reportWidget2.detach();
+    }
     this.auditResultsElement.removeChildren();
     this.newButton.setEnabled(true);
     this.refreshToolbarUI();
     UI8.Context.Context.instance().setFlavor(ActiveLighthouseReport, new ActiveLighthouseReport(lighthouseResult));
-    const cachedRenderedReport = this.cachedRenderedReports.get(lighthouseResult);
-    if (cachedRenderedReport) {
-      this.auditResultsElement.appendChild(cachedRenderedReport);
-      return;
+    let reportWidget = this.cachedRenderedReports.get(lighthouseResult);
+    if (!reportWidget) {
+      reportWidget = new LighthouseReportRenderer();
+      reportWidget.report = lighthouseResult;
+      reportWidget.artifacts = artifacts;
+      reportWidget.beforePrint = this.beforePrint.bind(this);
+      reportWidget.afterPrint = this.afterPrint.bind(this);
+      this.cachedRenderedReports.set(lighthouseResult, reportWidget);
     }
-    const reportContainer = LighthouseReportRenderer.renderLighthouseReport(lighthouseResult, artifacts, {
-      beforePrint: this.beforePrint.bind(this),
-      afterPrint: this.afterPrint.bind(this)
-    });
-    this.cachedRenderedReports.set(lighthouseResult, reportContainer);
+    reportWidget.show(this.auditResultsElement);
   }
   buildReportUI(lighthouseResult, artifacts) {
     if (lighthouseResult === null) {
       return;
     }
-    const optionElement = new Item(
-      lighthouseResult,
-      () => this.renderReport(lighthouseResult, artifacts),
-      this.renderStartView.bind(this)
-    );
+    const optionElement = new Item(lighthouseResult, () => {
+      this.renderReport(lighthouseResult, artifacts);
+    }, this.renderStartView.bind(this));
     this.reportSelector.prepend(optionElement);
-    this.refreshToolbarUI();
-    this.renderReport(lighthouseResult);
-    this.auditResultsElement.querySelector(".lh-topbar__url")?.focus();
+    const reportWidget = this.cachedRenderedReports.get(lighthouseResult);
+    void reportWidget?.updateComplete.then(() => {
+      this.auditResultsElement.querySelector(".lh-topbar__url")?.focus();
+    });
   }
   handleDrop(dataTransfer) {
     const items = dataTransfer.items;

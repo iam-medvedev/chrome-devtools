@@ -153,7 +153,6 @@ describeWithEnvironment('RenderingOptions', () => {
                 showAdHighlightsSetting: null,
                 prefersContrastSetting: null,
                 prefersReducedDataSetting: null,
-                prefersReducedTransparencySetting: null,
                 jpegXlFormatDisabledSetting: null,
             });
             InspectorMain.RenderingOptions.DEFAULT_VIEW(input, undefined, target);
@@ -162,7 +161,7 @@ describeWithEnvironment('RenderingOptions', () => {
             assert.isUndefined(checkboxes.find(cb => cb.getAttribute('title') === 'Highlight ads'));
             assert.isUndefined(checkboxes.find(cb => cb.getAttribute('title') === 'Disable `JPEG XL` image format'));
             const selects = target.querySelectorAll('select');
-            assert.lengthOf(selects, 7);
+            assert.lengthOf(selects, 8);
         });
     });
     describe('ReloadActionDelegate', () => {

@@ -2,32 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
+import { afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import { createSettingsForTest } from '../../../../testing/SettingsHelpers.js';
 import * as Lit from '../../../lit/lit.js';
+import * as SettingUIRegistration from '../../../settings/settings.js';
 import * as UI from '../../legacy.js';
 import * as SettingsUI from './settings_ui.js';
 describeWithEnvironment('SettingsUI', () => {
+    afterEach(() => {
+        SettingUIRegistration.SettingUIRegistration.resetSettings();
+    });
     function setup(options = [
         { value: 'a', text: 'A', title: () => i18n.i18n.lockedString('A'), raw: true },
         { value: 'b', text: 'B', title: () => i18n.i18n.lockedString('B'), raw: true },
-    ], registrationOverrides = {}) {
-        const registration = {
-            settingName: 'test-setting',
-            settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+    ], uiOverrides = {}) {
+        const descriptor = {
+            name: 'test-setting',
+            type: "enum" /* Common.Settings.SettingType.ENUM */,
             defaultValue: 'a',
+        };
+        SettingUIRegistration.SettingUIRegistration.register(descriptor, {
             options,
             title: () => i18n.i18n.lockedString('Test Setting'),
-            ...registrationOverrides,
-        };
-        Common.Settings.registerSettingExtension(registration);
-        const settings = createSettingsForTest([registration]);
-        return settings.moduleSetting('test-setting');
+            ...uiOverrides,
+        });
+        return Common.Settings.Settings.instance().resolve(descriptor);
     }
     it('renders a setting select', () => {
         const setting = setup();
@@ -113,11 +116,11 @@ describeWithEnvironment('SettingsUI', () => {
     });
     describe('renderControlForSetting', () => {
         it('renders a checkbox for a boolean setting', () => {
-            const setting = createSettingsForTest([{
-                    settingName: 'test-boolean-setting',
-                    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-                    defaultValue: false,
-                }]).moduleSetting('test-boolean-setting');
+            const setting = Common.Settings.Settings.instance().resolve({
+                name: 'test-boolean-setting',
+                type: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+                defaultValue: false,
+            });
             const template = SettingsUI.SettingsUI.renderControlForSetting(setting);
             assert.notStrictEqual(template, Lit.nothing);
             const container = document.createElement('div');
@@ -127,16 +130,17 @@ describeWithEnvironment('SettingsUI', () => {
             assert.isNotNull(checkbox);
         });
         it('renders a select for an enum setting', () => {
-            const registration = {
-                settingName: 'test-enum-setting',
-                settingType: "enum" /* Common.Settings.SettingType.ENUM */,
+            const descriptor = {
+                name: 'test-enum-setting',
+                type: "enum" /* Common.Settings.SettingType.ENUM */,
                 defaultValue: 'a',
+            };
+            SettingUIRegistration.SettingUIRegistration.register(descriptor, {
                 options: [
                     { value: 'a', text: 'A', title: () => i18n.i18n.lockedString('A'), raw: true },
                 ],
-            };
-            Common.Settings.registerSettingExtension(registration);
-            const setting = createSettingsForTest([registration]).moduleSetting('test-enum-setting');
+            });
+            const setting = Common.Settings.Settings.instance().resolve(descriptor);
             const template = SettingsUI.SettingsUI.renderControlForSetting(setting);
             assert.notStrictEqual(template, Lit.nothing);
             const container = document.createElement('div');
@@ -146,13 +150,15 @@ describeWithEnvironment('SettingsUI', () => {
             assert.isNotNull(select);
         });
         it('returns nothing for an unsupported setting type', () => {
-            const setting = createSettingsForTest([{
-                    settingName: 'test-array-setting',
-                    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
-                    defaultValue: [],
-                }]).moduleSetting('test-array-setting');
+            const consoleErrorStub = sinon.stub(console, 'error');
+            const setting = Common.Settings.Settings.instance().resolve({
+                name: 'test-array-setting',
+                type: "array" /* Common.Settings.SettingType.ARRAY */,
+                defaultValue: [],
+            });
             const template = SettingsUI.SettingsUI.renderControlForSetting(setting);
             assert.strictEqual(template, Lit.nothing);
+            sinon.assert.calledWith(consoleErrorStub, 'Invalid setting type: array');
         });
     });
 });

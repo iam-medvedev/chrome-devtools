@@ -1,19 +1,19 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
+import '../../ui/components/adorners/adorners.js';
+import '../../ui/components/request_link_icon/request_link_icon.js';
+import '../../ui/kit/kit.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
-import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as MarkdownView from '../../ui/components/markdown_view/markdown_view.js';
-import { Icon } from '../../ui/kit/kit.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, render } from '../../ui/lit/lit.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AffectedBlockedByResponseView } from './AffectedBlockedByResponseView.js';
 import { AffectedCookiesView, AffectedRawCookieLinesView } from './AffectedCookiesView.js';
@@ -34,6 +34,8 @@ import { AffectedTrackingSitesView } from './AffectedTrackingSitesView.js';
 import * as Components from './components/components.js';
 import { CorsIssueDetailsView } from './CorsIssueDetailsView.js';
 import { GenericIssueDetailsView } from './GenericIssueDetailsView.js';
+const { ifDefined } = Directives;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Column header in the Issues panel for the resource name in the mixed content affected resources table.
@@ -83,47 +85,66 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssueView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+function renderRequestCell(request, requestResolver, onRequestClick) {
+    const data = {
+        affectedRequest: request.affectedRequest,
+        networkTab: request.networkTab,
+        requestResolver,
+        displayURL: true,
+        additionalOnClickAction: onRequestClick,
+    };
+    // clang-format off
+    return html `
+    <td class="affected-resource-cell">
+      <devtools-request-link-icon .data=${data}></devtools-request-link-icon>
+    </td>
+  `;
+    // clang-format on
+}
+export const REQUEST_ROWS_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    ${input.requests.map(request => html `
+      <tr class="affected-resource-request"
+          jslog=${VisualLogging.tableRow('affected-request')}
+          data-network-request-id=${ifDefined(request.affectedRequest.requestId)}>
+        ${renderRequestCell(request, input.requestResolver, input.onRequestClick)}
+      </tr>
+    `)}
+  `, target);
+    // clang-format on
+};
 class AffectedRequestsView extends AffectedResourcesView {
-    #appendAffectedRequests(affectedRequests) {
-        let count = 0;
-        for (const affectedRequest of affectedRequests) {
-            const element = document.createElement('tr');
-            element.classList.add('affected-resource-request');
-            element.setAttribute('jslog', `${VisualLogging.tableRow('affected-request')}`);
-            if (affectedRequest.requestId) {
-                element.setAttribute('data-network-request-id', affectedRequest.requestId);
-            }
-            const category = this.issue.getCategory();
-            const tab = issueTypeToNetworkHeaderMap.get(category) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
-            element.appendChild(this.createRequestCell(affectedRequest, {
-                networkTab: tab,
-                additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened(category, "Request" /* AffectedItem.REQUEST */);
-                },
-            }));
-            this.affectedResources.appendChild(element);
-            count++;
-        }
-        this.updateAffectedResourceCount(count);
+    #view;
+    constructor(parent, issue, jslogContext, view = REQUEST_ROWS_VIEW) {
+        super(parent, issue, jslogContext);
+        this.#view = view;
+    }
+    #renderAffectedRequests(affectedRequests) {
+        const category = this.issue.getCategory();
+        const networkTab = issueTypeToNetworkHeaderMap.get(category) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
+        const requests = Array.from(affectedRequests, affectedRequest => ({ affectedRequest, networkTab }));
+        const input = {
+            requests,
+            requestResolver: this.requestResolver,
+            onRequestClick: () => {
+                Host.userMetrics.issuesPanelResourceOpened(category, "Request" /* AffectedItem.REQUEST */);
+            },
+        };
+        this.#view(input, undefined, this.affectedResources);
+        this.updateAffectedResourceCount(requests.length);
     }
     getResourceNameWithCount(count) {
         return i18nString(UIStrings.nRequests, { n: count });
     }
     update() {
-        this.clear();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        for (const unused of this.issue.getBlockedByResponseDetails()) {
-            // If the issue has blockedByResponseDetails, the corresponding AffectedBlockedByResponseView
-            // will take care of displaying the request.
-            this.updateAffectedResourceCount(0);
-            return;
-        }
-        if (this.issue.getCategory() === "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */) {
-            // The AffectedMixedContentView takes care of displaying the resources.
-            this.updateAffectedResourceCount(0);
-            return;
-        }
-        this.#appendAffectedRequests(this.issue.requests());
+        this.requestResolver.clear();
+        // If the issue has blockedByResponseDetails, the corresponding AffectedBlockedByResponseView
+        // will take care of displaying the request.
+        const hasBlockedByResponseDetails = Array.from(this.issue.getBlockedByResponseDetails()).length > 0;
+        // The AffectedMixedContentView takes care of displaying the resources.
+        const isMixedContent = this.issue.getCategory() === "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */;
+        this.#renderAffectedRequests(hasBlockedByResponseDetails || isMixedContent ? [] : this.issue.requests());
     }
 }
 const issueTypeToNetworkHeaderMap = new Map([
@@ -140,42 +161,57 @@ const issueTypeToNetworkHeaderMap = new Map([
         "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */,
     ],
 ]);
-class AffectedMixedContentView extends AffectedResourcesView {
-    #appendAffectedMixedContentDetails(mixedContentIssues) {
-        const header = document.createElement('tr');
-        this.appendColumnTitle(header, i18nString(UIStrings.name));
-        this.appendColumnTitle(header, i18nString(UIStrings.restrictionStatus));
-        this.affectedResources.appendChild(header);
-        let count = 0;
-        for (const issue of mixedContentIssues) {
-            const details = issue.details();
-            this.appendAffectedMixedContent(details);
-            count++;
+export const MIXED_CONTENT_ROWS_VIEW = (input, _output, target) => {
+    const renderResourceCell = (row) => {
+        if (row.request) {
+            return renderRequestCell(row.request, input.requestResolver, input.onRequestClick);
         }
-        this.updateAffectedResourceCount(count);
+        return html `<td class="affected-resource-mixed-content-info" title=${row.insecureURL}>${row.shortPath}</td>`;
+    };
+    // clang-format off
+    render(html `
+    <tr>
+      <td class="affected-resource-header">${i18nString(UIStrings.name)}</td>
+      <td class="affected-resource-header">${i18nString(UIStrings.restrictionStatus)}</td>
+    </tr>
+    ${input.rows.map(row => html `
+      <tr class="affected-resource-mixed-content">
+        ${renderResourceCell(row)}
+        <td class="affected-resource-mixed-content-info">${row.status}</td>
+      </tr>
+    `)}
+  `, target);
+    // clang-format on
+};
+class AffectedMixedContentView extends AffectedResourcesView {
+    #view;
+    constructor(parent, issue, jslogContext, view = MIXED_CONTENT_ROWS_VIEW) {
+        super(parent, issue, jslogContext);
+        this.#view = view;
+    }
+    #renderAffectedMixedContentDetails(mixedContentIssues) {
+        const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
+        const rows = Array.from(mixedContentIssues, (issue) => {
+            const details = issue.details();
+            return {
+                request: details.request ? { affectedRequest: details.request, networkTab } : undefined,
+                insecureURL: details.insecureURL,
+                shortPath: extractShortPath(details.insecureURL),
+                status: AffectedMixedContentView.#translateStatus(details.resolutionStatus),
+            };
+        });
+        const input = {
+            rows,
+            requestResolver: this.requestResolver,
+            onRequestClick: () => {
+                Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */, "Request" /* AffectedItem.REQUEST */);
+            },
+        };
+        this.#view(input, undefined, this.affectedResources);
+        this.updateAffectedResourceCount(rows.length);
     }
     getResourceNameWithCount(count) {
         return i18nString(UIStrings.nResources, { n: count });
-    }
-    appendAffectedMixedContent(mixedContent) {
-        const element = document.createElement('tr');
-        element.classList.add('affected-resource-mixed-content');
-        if (mixedContent.request) {
-            const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
-            element.appendChild(this.createRequestCell(mixedContent.request, {
-                networkTab,
-                additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */, "Request" /* AffectedItem.REQUEST */);
-                },
-            }));
-        }
-        else {
-            const filename = extractShortPath(mixedContent.insecureURL);
-            const cell = this.appendIssueDetailCell(element, filename, 'affected-resource-mixed-content-info');
-            cell.title = mixedContent.insecureURL;
-        }
-        this.appendIssueDetailCell(element, AffectedMixedContentView.#translateStatus(mixedContent.resolutionStatus), 'affected-resource-mixed-content-info');
-        this.affectedResources.appendChild(element);
     }
     static #translateStatus(resolutionStatus) {
         switch (resolutionStatus) {
@@ -188,32 +224,96 @@ class AffectedMixedContentView extends AffectedResourcesView {
         }
     }
     update() {
-        this.clear();
-        this.#appendAffectedMixedContentDetails(this.issue.getMixedContentIssues());
+        this.requestResolver.clear();
+        this.#renderAffectedMixedContentDetails(this.issue.getMixedContentIssues());
     }
 }
+function renderLinks(links) {
+    // clang-format off
+    return html `
+    <ul class="link-list">
+      ${links.map(({ link, linkTitle }) => html `
+        <li>
+          <devtools-link class="link devtools-link" href=${link} jslogcontext="learn-more">${i18nString(UIStrings.learnMoreS, { PH1: linkTitle })}</devtools-link>
+        </li>
+      `)}
+    </ul>`;
+    // clang-format on
+}
+function renderIssueBodyItem(input, _output, target) {
+    switch (input.kind) {
+        case 'description':
+            render(html `<devtools-markdown-view .data=${input.markdownData}></devtools-markdown-view>`, target, {
+                container: { attributes: { 'aria-posinset': 1, 'aria-setsize': input.setSize } },
+            });
+            return;
+        case 'affected-resources':
+            render(html `${i18nString(UIStrings.affectedResources)}`, target, {
+                container: {
+                    classes: ['affected-resources-label'],
+                    attributes: { 'aria-posinset': 2, 'aria-setsize': input.setSize },
+                },
+            });
+            return;
+        case 'links':
+            render(renderLinks(input.links), target, {
+                container: { classes: ['link-wrapper'], attributes: { 'aria-posinset': 3, 'aria-setsize': 3 } },
+            });
+            return;
+        default:
+            Platform.assertNever(input, `Unhandled IssueBodyItemInput: ${JSON.stringify(input)}`);
+    }
+}
+/**
+ * A non-collapsible tree item in the issue body whose row content is rendered
+ * declaratively.
+ */
+class IssueBodyTreeElement extends UI.TreeOutline.TreeElement {
+    constructor(input, jslogContext) {
+        super(undefined, false, jslogContext);
+        this.setCollapsible(false);
+        this.selectable = false;
+        renderIssueBodyItem(input, undefined, this.listItemElement);
+    }
+}
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <div class="header">
+      <devtools-icon class="leading-issue-icon extra-large"
+                     .name=${input.iconName}
+                     title=${input.iconTitle}></devtools-icon>
+      <devtools-adorner class="aggregated-issues-count" .name=${'countWrapper'}>
+        <span>${input.aggregatedIssuesCount}</span>
+      </devtools-adorner>
+      <div class="title">${input.title}</div>
+      ${widget(Components.HideIssuesMenu.HideIssuesMenu, {
+        menuItemLabel: input.hideIssuesMenuLabel,
+        menuItemAction: input.onToggleHideIssues,
+    })}
+    </div>
+  `, target, { container: { classes: input.isHidden ? ['issue', 'hidden-issue'] : ['issue'] } });
+    // clang-format on
+};
 export class IssueView extends UI.TreeOutline.TreeElement {
     #issue;
     #description;
     toggleOnClick;
     affectedResources;
     #affectedResourceViews;
-    #aggregatedIssuesCount;
-    #issueKindIcon = null;
-    #hasBeenExpandedBefore;
+    #hasBeenExpandedBefore = false;
     #throttle;
     #needsUpdateOnExpand = true;
-    #hiddenIssuesMenu;
     #contentCreated = false;
-    constructor(issue, description) {
+    #view;
+    constructor(issue, description, view = DEFAULT_VIEW) {
         super(undefined, undefined, Platform.StringUtilities.toKebabCase(issue.getCategory()));
         this.#issue = issue;
         this.#description = description;
+        this.#view = view;
         this.#throttle = new Common.Throttler.Throttler(250);
         this.toggleOnClick = true;
-        this.listItemElement.classList.add('issue');
-        this.childrenListElement.classList.add('issue-body');
-        this.childrenListElement.classList.add(IssueView.#getBodyCSSClass(this.#issue.getKind()));
+        this.childrenListElement.classList.add('issue-body', IssueView.#getBodyCSSClass(this.#issue.getKind()));
         this.affectedResources = this.#createAffectedResources();
         this.#affectedResourceViews = [
             new AffectedCookiesView(this, this.#issue, 'affected-cookies'),
@@ -237,9 +337,6 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             new AffectedLazyLoadImagesView(this, this.#issue, 'lazy-load-image-details'),
             new AffectedSelectivePermissionsInterventionView(this, this.#issue, 'selective-permissions-intervention-details'),
         ];
-        this.#hiddenIssuesMenu = new Components.HideIssuesMenu.HideIssuesMenu();
-        this.#aggregatedIssuesCount = null;
-        this.#hasBeenExpandedBefore = false;
     }
     /**
      * Sets the issue to take the resources from. Assumes that the description
@@ -274,7 +371,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         this.update();
     }
     createContent() {
-        this.#appendHeader();
+        this.#render();
         this.#createBody();
         this.appendChild(this.affectedResources);
         const visibleAffectedResource = [];
@@ -300,28 +397,27 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             UI.ARIAUtils.setSetSize(element, visibleAffectedResource.length);
         }
     }
-    #appendHeader() {
-        const header = document.createElement('div');
-        header.classList.add('header');
-        this.#issueKindIcon = new Icon();
-        this.#issueKindIcon.classList.add('leading-issue-icon', 'extra-large');
-        this.#aggregatedIssuesCount = document.createElement('span');
-        const countAdorner = new Adorners.Adorner.Adorner();
-        countAdorner.name = 'countWrapper';
-        countAdorner.append(this.#aggregatedIssuesCount);
-        countAdorner.classList.add('aggregated-issues-count');
-        header.appendChild(this.#issueKindIcon);
-        header.appendChild(countAdorner);
-        const title = document.createElement('div');
-        title.classList.add('title');
-        title.textContent = this.#description.title;
-        header.appendChild(title);
-        if (this.#hiddenIssuesMenu) {
-            this.#hiddenIssuesMenu.show(header, undefined, /* suppressOrphanWidgetError= */ true);
-        }
-        this.#updateFromIssue();
-        this.listItemElement.appendChild(header);
+    #render() {
+        const kind = this.#issue.getKind();
+        const isHidden = this.#issue.isHidden();
+        const input = {
+            iconName: IssueCounter.IssueCounter.getIssueKindIconName(kind),
+            iconTitle: IssuesManager.Issue.getIssueKindDescription(kind),
+            aggregatedIssuesCount: this.#issue.getAggregatedIssuesCount(),
+            title: this.#description.title,
+            isHidden,
+            hideIssuesMenuLabel: isHidden ? i18nString(UIStrings.unhideIssuesLikeThis) :
+                i18nString(UIStrings.hideIssuesLikeThis),
+            onToggleHideIssues: this.#onToggleHideIssues,
+        };
+        this.#view(input, undefined, this.listItemElement);
     }
+    #onToggleHideIssues = () => {
+        const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
+        const values = setting.get();
+        values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ : "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
+        setting.set(values);
+    };
     onexpand() {
         const category = this.#issue.getCategory();
         // Handle sub type for cookie issues.
@@ -342,74 +438,36 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             }
         }
     }
-    #updateFromIssue() {
-        if (this.#issueKindIcon) {
-            const kind = this.#issue.getKind();
-            this.#issueKindIcon.name = IssueCounter.IssueCounter.getIssueKindIconName(kind);
-            this.#issueKindIcon.title = IssuesManager.Issue.getIssueKindDescription(kind);
-        }
-        if (this.#aggregatedIssuesCount) {
-            this.#aggregatedIssuesCount.textContent = `${this.#issue.getAggregatedIssuesCount()}`;
-        }
-        this.listItemElement.classList.toggle('hidden-issue', this.#issue.isHidden());
-        if (this.#hiddenIssuesMenu) {
-            this.#hiddenIssuesMenu.menuItemLabel = this.#issue.isHidden() ? i18nString(UIStrings.unhideIssuesLikeThis) :
-                i18nString(UIStrings.hideIssuesLikeThis);
-            this.#hiddenIssuesMenu.menuItemAction = () => {
-                const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
-                const values = setting.get();
-                values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ : "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
-                setting.set(values);
-            };
-        }
-    }
     updateAffectedResourceVisibility() {
         const noResources = this.#affectedResourceViews.every(view => view.isEmpty());
         this.affectedResources.hidden = noResources;
     }
+    #getBodySetSize() {
+        return this.#description.links.length === 0 ? 2 : 3;
+    }
     #createAffectedResources() {
-        const wrapper = new UI.TreeOutline.TreeElement(undefined, false, 'affected-resources');
-        wrapper.setCollapsible(false);
+        const wrapper = new IssueBodyTreeElement({ kind: 'affected-resources', setSize: this.#getBodySetSize() }, 'affected-resources');
         wrapper.setExpandable(true);
         wrapper.expand();
-        wrapper.selectable = false;
-        wrapper.listItemElement.classList.add('affected-resources-label');
-        wrapper.listItemElement.textContent = i18nString(UIStrings.affectedResources);
         wrapper.childrenListElement.classList.add('affected-resources');
-        UI.ARIAUtils.setPositionInSet(wrapper.listItemElement, 2);
-        UI.ARIAUtils.setSetSize(wrapper.listItemElement, this.#description.links.length === 0 ? 2 : 3);
         return wrapper;
     }
     #createBody() {
-        const messageElement = new UI.TreeOutline.TreeElement(undefined, false, 'issue-description');
-        messageElement.setCollapsible(false);
-        messageElement.selectable = false;
-        const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
-        markdownComponent.data = {
-            tokens: this.#description.markdown,
-            renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(this.#description.substitutions),
-        };
-        messageElement.listItemElement.appendChild(markdownComponent);
-        UI.ARIAUtils.setPositionInSet(messageElement.listItemElement, 1);
-        UI.ARIAUtils.setSetSize(messageElement.listItemElement, this.#description.links.length === 0 ? 2 : 3);
+        const messageElement = new IssueBodyTreeElement({
+            kind: 'description',
+            markdownData: {
+                tokens: this.#description.markdown,
+                renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(this.#description.substitutions),
+            },
+            setSize: this.#getBodySetSize(),
+        }, 'issue-description');
         this.appendChild(messageElement);
     }
     #createReadMoreLinks() {
         if (this.#description.links.length === 0) {
             return;
         }
-        const linkWrapper = new UI.TreeOutline.TreeElement();
-        linkWrapper.setCollapsible(false);
-        linkWrapper.listItemElement.classList.add('link-wrapper');
-        UI.ARIAUtils.setPositionInSet(linkWrapper.listItemElement, 3);
-        UI.ARIAUtils.setSetSize(linkWrapper.listItemElement, 3);
-        const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
-        for (const description of this.#description.links) {
-            const linkListItem = linkList.createChild('li');
-            // eslint-disable-next-line @devtools/no-lit-render-outside-of-view
-            render(html `<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString(UIStrings.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`, linkListItem);
-        }
-        this.appendChild(linkWrapper);
+        this.appendChild(new IssueBodyTreeElement({ kind: 'links', links: this.#description.links }));
     }
     #doUpdate() {
         if (this.expanded) {
@@ -417,7 +475,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             this.updateAffectedResourceVisibility();
         }
         this.#needsUpdateOnExpand = !this.expanded;
-        this.#updateFromIssue();
+        this.#render();
     }
     update() {
         void this.#throttle.schedule(async () => this.#doUpdate());

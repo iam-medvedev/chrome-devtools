@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { beforeEach, it } from 'mocha';
 import sinon from 'sinon';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -13,7 +13,7 @@ import * as Components from './components.js';
 const OPEN_BUTTON_SELECTOR = 'devtools-button';
 const ENABLE_BUTTON_SELECTOR = 'devtools-button[data-field-data-enable]';
 const DISABLE_BUTTON_SELECTOR = 'devtools-button[data-field-data-disable]';
-const OVERRIDE_CHECKBOX_SELECTOR = 'input[type="checkbox"]';
+const OVERRIDE_CHECKBOX_SELECTOR = 'devtools-checkbox';
 const OVERRIDE_TEXT_SELECTOR = 'input[type="text"]';
 function mockResponse() {
     return {
@@ -205,6 +205,26 @@ describeWithEnvironment('FieldSettingsDialog', () => {
         const urlOverride = view.shadowRoot.querySelector(OVERRIDE_TEXT_SELECTOR).value;
         assert.strictEqual(urlOverride, 'https://example.com');
         assert.isFalse(checked);
+    });
+    it('renders open dialog with advanced settings', async () => {
+        const widget = renderElementIntoDOM(new UI.Widget.Widget(), { includeCommonStyles: true });
+        widget.element.style.cssText =
+            'width: 600px; height: 580px; display: flex; justify-content: center; align-items: flex-start;';
+        const view = new Components.FieldSettingsDialog.FieldSettingsDialog();
+        widget.contentElement.append(view);
+        await RenderCoordinator.done();
+        const dialog = view.shadowRoot.querySelector('devtools-dialog');
+        dialog.setBoundingElementForTesting(widget.element);
+        const animated = new Promise(resolve => {
+            dialog.addEventListener('animationended', () => resolve(), { once: true });
+        });
+        view.shadowRoot.querySelector(OPEN_BUTTON_SELECTOR).click();
+        await animated;
+        const details = view.shadowRoot.querySelector('details');
+        details.open = true;
+        await RenderCoordinator.done();
+        await doubleRaf();
+        await assertScreenshot('timeline/field_settings_dialog_open.png');
     });
 });
 //# sourceMappingURL=FieldSettingsDialog.test.js.map

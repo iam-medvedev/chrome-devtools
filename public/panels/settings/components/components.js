@@ -21,6 +21,7 @@ import * as Buttons from "../../../ui/components/buttons/buttons.js";
 import * as UIHelpers from "../../../ui/helpers/helpers.js";
 import * as UI from "../../../ui/legacy/legacy.js";
 import * as Lit from "../../../ui/lit/lit.js";
+import * as SettingsUI from "../../../ui/settings/settings.js";
 import * as VisualLogging from "../../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon from "../../common/common.js";
 import * as PanelUtils from "../../utils/utils.js";
@@ -369,7 +370,7 @@ var SyncSection = class extends UI.Widget.Widget {
     super(element);
     this.#view = view;
     this.#receiveBadgesSetting = Common.Settings.Settings.instance().resolve(Badges.receiveGdpBadgesSettingDescriptor);
-    this.#syncSetting = Common.Settings.Settings.instance().moduleSetting("sync-preferences");
+    this.#syncSetting = Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor);
   }
   wasShown() {
     super.wasShown();

@@ -42,7 +42,7 @@ describeWithEnvironment('AiCodeCompletionProvider', () => {
         await originalPoll.call(Host.AidaClient.HostConfigTracker.instance());
     }
     beforeEach(async () => {
-        clock = sinon.useFakeTimers();
+        clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
         updateHostConfig({
             devToolsAiCodeCompletion: {
                 enabled: true,

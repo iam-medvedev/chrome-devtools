@@ -7,6 +7,7 @@ import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as PuppeteerService from '../../../services/puppeteer/puppeteer.js';
 import * as PuppeteerReplay from '../../../third_party/puppeteer-replay/puppeteer-replay.js';
+import { NavigationGuard } from './NavigationGuard.js';
 export var PlayRecordingSpeed;
 (function (PlayRecordingSpeed) {
     PlayRecordingSpeed["NORMAL"] = "normal";
@@ -118,7 +119,7 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
             void puppeteerConnection._createSession(targetInfo, 
             /* emulateAutoAttach= */ true);
         });
-        return { page, browser };
+        return { page, browser, connection: puppeteerConnection };
     }
     static async disconnectPuppeteer(browser) {
         try {
@@ -175,9 +176,18 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         this.breakpointIndexes = breakpointIndexes;
     }
     async play() {
-        const { page, browser } = await RecordingPlayer.connectPuppeteer();
+        const { page, browser, connection } = await RecordingPlayer.connectPuppeteer();
         this.aborted = false;
         const player = this;
+        const guard = new NavigationGuard(this.userFlow, page.url(), () => {
+            // The step in progress must not send more input, because the page can
+            // be at an origin that is not in the recording.
+            if (guard.error) {
+                connection.blockPageInput(guard.error);
+            }
+            // Stop the runner and the waits for breakpoints and for the replay speed.
+            this.abort();
+        });
         class ExtensionWithBreak extends PuppeteerReplay.PuppeteerRunnerExtension {
             #speed;
             constructor(browser, page, { timeout, speed, }) {
@@ -207,6 +217,9 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             async runStep(step, flow) {
+                if (guard.error) {
+                    return;
+                }
                 // When replaying on a DevTools target we skip setViewport and navigate steps
                 // because navigation and viewport changes are not supported there.
                 if (Common.ParsedURL.schemeIs(page?.url(), 'devtools:') &&
@@ -218,26 +231,56 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
                 }
                 // Focus the target in case it's not focused.
                 await this.page.bringToFront();
-                await super.runStep(step, flow);
+                if ('target' in step && step.target && step.target !== 'main') {
+                    // A popup opens without the guard. Enable the guard before the step
+                    // sends input to the target.
+                    const timeout = step.timeout || flow?.timeout || this.timeout;
+                    await guard.guardStepTarget(this.browser, step.target, timeout);
+                }
+                // The guard can have an error, or the user can abort the replay, while
+                // the calls above are in progress. Do not start the step then.
+                if (guard.error || player.aborted) {
+                    return;
+                }
+                // After an error of the guard, the Puppeteer connection rejects page
+                // input, but Puppeteer locators try again until the step timeout. Do
+                // not wait for the step in that case.
+                const stepPromise = super.runStep(step, flow);
+                stepPromise.catch(() => { });
+                await Promise.race([stepPromise, guard.errorOrDisposePromise]);
             }
         }
         const extension = new ExtensionWithBreak(browser, page, {
             timeout: this.timeout,
             speed: this.speed,
         });
-        this.#runner = await PuppeteerReplay.createRunner(this.userFlow, extension);
         let error;
         try {
-            await this.#runner.run();
+            // The guard checks the frames that the inspected page has now only if a
+            // step can send input to the page before the page navigates.
+            await guard.guardPage(page, /* checkExistingFrames= */ false);
+            this.#runner = await PuppeteerReplay.createRunner(this.userFlow, extension);
+            // `run()` resets the abort state of the runner.
+            if (!guard.error && !this.aborted) {
+                await this.#runner.run();
+            }
         }
         catch (err) {
             error = err;
-            console.error('Replay error', err.message);
         }
         finally {
+            await guard.dispose();
+            // A blocked navigation is the cause of the errors that follow it.
+            error = guard.error ?? error;
+            if (error) {
+                console.error('Replay error', error.message);
+            }
             await RecordingPlayer.disconnectPuppeteer(browser);
         }
-        if (this.aborted) {
+        if (guard.error) {
+            this.dispatchEventToListeners("Error" /* Events.ERROR */, guard.error);
+        }
+        else if (this.aborted) {
             this.dispatchEventToListeners("Abort" /* Events.ABORT */);
         }
         else if (error) {

@@ -214,6 +214,7 @@ export function instantiateWidget(element, widgetConfig) {
     newWidget.requestUpdate();
     return newWidget;
 }
+const trackerDetachingWidgets = new WeakSet();
 function setUpLifecycleTracking(element) {
     let tracker;
     if (element instanceof WidgetElement) {
@@ -230,8 +231,13 @@ function setUpLifecycleTracking(element) {
         }
         const widget = Widget.get(element);
         if (widget) {
-            widget.setHideOnDetach();
-            widget.detach();
+            trackerDetachingWidgets.add(widget);
+            try {
+                widget.detach();
+            }
+            finally {
+                trackerDetachingWidgets.delete(widget);
+            }
         }
     };
     tracker.onConnect = () => {
@@ -709,9 +715,6 @@ export class Widget {
             return;
         }
         this.#visible = true;
-        if (!wasVisible && this.parentIsShowing()) {
-            this.processWillShow();
-        }
         this.element.classList.remove('hidden');
         // Reparent
         if (this.element.parentNode !== parentElement) {
@@ -729,7 +732,12 @@ export class Widget {
         if (this.element.hasAttribute('autofocus') && focusedElementsCount > 1) {
             this.element.removeAttribute('autofocus');
         }
+        // Mark the parent showing only after DOM insertion: nested WidgetElement
+        // children created while detached connect and show themselves synchronously
+        // during insertion, so setting #isShowing beforehand would run their
+        // wasShown() early and then a second time in processWasShown() below.
         if (!wasVisible && this.parentIsShowing()) {
+            this.processWillShow();
             this.processWasShown();
         }
         if (this.#parentWidget && this.hasNonZeroConstraints()) {
@@ -783,7 +791,7 @@ export class Widget {
         //
         // overrideHideOnDetach will override hideOnDetach and the client takes
         // responsibility for the consequences.
-        const removeFromDOM = overrideHideOnDetach || !this.shouldHideOnDetach();
+        const removeFromDOM = Boolean(overrideHideOnDetach) || (!trackerDetachingWidgets.has(this) && !this.shouldHideOnDetach());
         if (this.#visible) {
             this.#hideWidget(removeFromDOM);
         }

@@ -310,7 +310,7 @@ describe('DebuggerModel', () => {
                 assert.notEqual('', scope.typeName());
             }
         });
-        it('attaches extra properties to the local scope even if preceded by a block scope', () => {
+        it('attaches extra properties to the local scope even if preceded by a block scope', async () => {
             const target = universe.createTarget();
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             const scriptUrl = urlString `https://script-host/script.js`;
@@ -339,12 +339,12 @@ describe('DebuggerModel', () => {
                 canBeRestarted: false,
             };
             const callFrame = new SDK.DebuggerModel.CallFrame(debuggerModel, script, payload, 0);
-            const scopes = callFrame.scopeChain();
+            const scopes = await callFrame.scopeChain();
             assert.lengthOf(scopes[0].extraProperties(), 0);
             assert.lengthOf(scopes[1].extraProperties(), 1);
             assert.strictEqual(scopes[1].extraProperties()[0].name, 'Return value');
         });
-        it('exposes emptyReason and retains empty scopes in the scope chain', () => {
+        it('exposes emptyReason and retains empty scopes in the scope chain', async () => {
             const target = universe.createTarget();
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             const scriptUrl = urlString `https://script-host/script.js`;
@@ -378,13 +378,165 @@ describe('DebuggerModel', () => {
                 canBeRestarted: false,
             };
             const callFrame = new SDK.DebuggerModel.CallFrame(debuggerModel, script, payload, 0);
-            const scopes = callFrame.scopeChain();
+            const scopes = await callFrame.scopeChain();
             assert.lengthOf(scopes, 3);
             assert.strictEqual(scopes[0].emptyReason(), "no-variables" /* Protocol.Debugger.ScopeEmptyReason.NoVariables */);
             assert.isUndefined(scopes[1].emptyReason());
             assert.strictEqual(scopes[2].emptyReason(), "all-unavailable" /* Protocol.Debugger.ScopeEmptyReason.AllUnavailable */);
             assert.deepEqual(scopes.map(scope => scope.ordinal()), [0, 1, 2]);
-            assert.strictEqual(callFrame.localScope(), scopes[1]);
+        });
+    });
+    describe('CallFrame.scopeChain', () => {
+        const scope = (objectId) => ({
+            type: "local" /* Protocol.Debugger.ScopeType.Local */,
+            object: { type: 'object', objectId },
+        });
+        function setup() {
+            const connection = new MockCDPConnection();
+            // V8 hands out new scope objects with every `Debugger.getScopeChain`.
+            const getScopeChain = sinon.stub().callsFake(({ callFrameId }) => ({ result: { scopeChain: [scope(`${callFrameId}-refetched-${getScopeChain.callCount}`)] } }));
+            connection.setHandler('Debugger.getScopeChain', getScopeChain);
+            const debuggerModel = universe.createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel);
+            const script = new SDK.Script.Script(debuggerModel, SCRIPT_ID_ONE, urlString `https://script-host/script.js`, 0, 0, 0, 0, 0, '', false, undefined, false, 0, null, null, null, null, null, null, null);
+            const callFrame = new SDK.DebuggerModel.CallFrame(debuggerModel, script, {
+                callFrameId: 'frame',
+                functionName: 'test',
+                location: { scriptId: SCRIPT_ID_ONE, lineNumber: 0, columnNumber: 0 },
+                url: 'test-url',
+                scopeChain: [scope('frame-paused')],
+                this: { type: 'object' },
+            });
+            const objectIds = async (callFrame) => (await callFrame.scopeChain()).map(scope => String(scope.object().objectId));
+            return { callFrame, getScopeChain, objectIds };
+        }
+        it('is the scope chain V8 reported with the pause as long as it is not marked stale', async () => {
+            const { callFrame, getScopeChain, objectIds } = setup();
+            assert.deepEqual(await objectIds(callFrame), ['frame-paused']);
+            assert.strictEqual(await callFrame.scopeChain(), await callFrame.scopeChain());
+            sinon.assert.notCalled(getScopeChain);
+        });
+        it('is re-fetched once after it was marked stale', async () => {
+            const { callFrame, getScopeChain, objectIds } = setup();
+            const pausedScopeChain = await callFrame.scopeChain();
+            callFrame.markScopeChainStale();
+            const [scopeChain1, scopeChain2] = await Promise.all([callFrame.scopeChain(), callFrame.scopeChain()]);
+            assert.notStrictEqual(scopeChain1, pausedScopeChain);
+            assert.strictEqual(scopeChain1, scopeChain2);
+            assert.deepEqual(await objectIds(callFrame), ['frame-refetched-1']);
+            sinon.assert.calledOnce(getScopeChain);
+            callFrame.markScopeChainStale();
+            assert.deepEqual(await objectIds(callFrame), ['frame-refetched-2']);
+            sinon.assert.calledTwice(getScopeChain);
+        });
+        it('re-fetches again if marked stale while a re-fetch is in flight', async () => {
+            const { callFrame, getScopeChain } = setup();
+            const firstRequest = Promise.withResolvers();
+            const secondRequest = Promise.withResolvers();
+            const secondRequestStarted = Promise.withResolvers();
+            getScopeChain.onFirstCall().returns(firstRequest.promise);
+            getScopeChain.onSecondCall().callsFake(() => {
+                secondRequestStarted.resolve();
+                return secondRequest.promise;
+            });
+            callFrame.markScopeChainStale();
+            const firstCaller = callFrame.scopeChain();
+            let firstCallerSettled = false;
+            void firstCaller.then(() => {
+                firstCallerSettled = true;
+            });
+            sinon.assert.calledOnce(getScopeChain);
+            // Marked stale again while the first request is still in flight; a concurrent caller also waits on it.
+            callFrame.markScopeChainStale();
+            const secondCaller = callFrame.scopeChain();
+            callFrame.markScopeChainStale();
+            sinon.assert.calledOnce(getScopeChain);
+            firstRequest.resolve({ result: { scopeChain: [scope('frame-refetched-1')] } });
+            await secondRequestStarted.promise;
+            assert.isFalse(firstCallerSettled);
+            secondRequest.resolve({ result: { scopeChain: [scope('frame-refetched-2')] } });
+            const [firstResult, secondResult] = await Promise.all([firstCaller, secondCaller]);
+            assert.strictEqual(firstResult, secondResult);
+            assert.deepEqual(firstResult.map(s => String(s.object().objectId)), ['frame-refetched-2']);
+            sinon.assert.calledTwice(getScopeChain);
+        });
+        it('is shared with virtual call frames', async () => {
+            const { callFrame, getScopeChain, objectIds } = setup();
+            // The call frame of an inlined function. It shares the payload with its physical call frame.
+            const virtualCallFrame = callFrame.createVirtualCallFrame(1, 'inlined');
+            callFrame.markScopeChainStale();
+            assert.deepEqual(await objectIds(virtualCallFrame), ['frame-refetched-1']);
+            assert.deepEqual(await objectIds(callFrame), ['frame-refetched-1']);
+            assert.strictEqual((await virtualCallFrame.scopeChain())[0].callFrame(), virtualCallFrame);
+            sinon.assert.calledOnce(getScopeChain);
+        });
+        it('stays as is if the backend does not support Debugger.getScopeChain', async () => {
+            const consoleError = sinon.stub(console, 'error');
+            const { callFrame, getScopeChain, objectIds } = setup();
+            getScopeChain.callsFake(() => ({ error: { message: '\'Debugger.getScopeChain\' wasn\'t found', code: -32601 } }));
+            callFrame.markScopeChainStale();
+            assert.deepEqual(await objectIds(callFrame), ['frame-paused']);
+            sinon.assert.calledOnceWithExactly(consoleError, sinon.match('Debugger.getScopeChain'));
+        });
+    });
+    describe('CallFrame.setReturnValue', () => {
+        function setup() {
+            const connection = new MockCDPConnection();
+            const evaluateOnCallFrame = sinon.stub().returns({
+                result: { result: { type: "number" /* Protocol.Runtime.RemoteObjectType.Number */, value: 42 } },
+            });
+            const setReturnValue = sinon.stub().returns({ result: {} });
+            connection.setHandler('Debugger.evaluateOnCallFrame', evaluateOnCallFrame);
+            connection.setHandler('Debugger.setReturnValue', setReturnValue);
+            const debuggerModel = universe.createTarget({ connection }).model(SDK.DebuggerModel.DebuggerModel);
+            const invalidateScopeChains = sinon.stub(debuggerModel, 'invalidateScopeChains');
+            const script = new SDK.Script.Script(debuggerModel, SCRIPT_ID_ONE, urlString `https://script-host/script.js`, 0, 0, 0, 0, 0, '', false, undefined, false, 0, null, null, null, null, null, null, null);
+            const callFrame = new SDK.DebuggerModel.CallFrame(debuggerModel, script, {
+                callFrameId: 'frame',
+                functionName: 'test',
+                location: { scriptId: SCRIPT_ID_ONE, lineNumber: 0, columnNumber: 0 },
+                url: 'test-url',
+                scopeChain: [],
+                this: { type: 'object' },
+                returnValue: { type: "number" /* Protocol.Runtime.RemoteObjectType.Number */, value: 1 },
+            });
+            return { callFrame, evaluateOnCallFrame, setReturnValue, invalidateScopeChains };
+        }
+        it('updates the return value before invalidating scope chains', async () => {
+            const { callFrame, invalidateScopeChains } = setup();
+            let returnValueDuringInvalidation;
+            invalidateScopeChains.callsFake(() => {
+                returnValueDuringInvalidation = callFrame.returnValue()?.value;
+            });
+            const updated = await callFrame.setReturnValue('42');
+            assert.strictEqual(updated?.value, 42);
+            assert.strictEqual(returnValueDuringInvalidation, 42);
+            sinon.assert.calledOnce(invalidateScopeChains);
+        });
+        it('invalidates scope chains even when the expression throws', async () => {
+            const { callFrame, evaluateOnCallFrame, invalidateScopeChains } = setup();
+            evaluateOnCallFrame.returns({
+                result: {
+                    result: { type: "object" /* Protocol.Runtime.RemoteObjectType.Object */ },
+                    exceptionDetails: { exceptionId: 1, text: 'Uncaught', lineNumber: 0, columnNumber: 0 },
+                },
+            });
+            assert.isNull(await callFrame.setReturnValue('x = 2, boom()'));
+            assert.strictEqual(callFrame.returnValue()?.value, 1);
+            sinon.assert.calledOnce(invalidateScopeChains);
+        });
+        it('invalidates scope chains when Debugger.setReturnValue fails after evaluation', async () => {
+            const { callFrame, setReturnValue, invalidateScopeChains } = setup();
+            setReturnValue.returns({ error: { message: 'Failed', code: -32000 } });
+            assert.isNull(await callFrame.setReturnValue('x = 2, 42'));
+            assert.strictEqual(callFrame.returnValue()?.value, 1);
+            sinon.assert.calledOnce(invalidateScopeChains);
+        });
+        it('does not invalidate scope chains on evaluation protocol error', async () => {
+            const { callFrame, evaluateOnCallFrame, invalidateScopeChains } = setup();
+            evaluateOnCallFrame.returns({ error: { message: 'Failed', code: -32000 } });
+            assert.isNull(await callFrame.setReturnValue('42'));
+            assert.strictEqual(callFrame.returnValue()?.value, 1);
+            sinon.assert.notCalled(invalidateScopeChains);
         });
     });
     describe('pause', () => {
@@ -486,6 +638,69 @@ describe('DebuggerModel', () => {
             debuggerModel.resume();
             await pause("other" /* Protocol.Debugger.PausedEventReason.Other */);
             assert.deepEqual(contexts, [null, null]);
+        });
+    });
+    describe('invalidateScopeChains', () => {
+        const callFrame = (callFrameId) => ({
+            callFrameId: callFrameId,
+            functionName: 'foo',
+            location: { scriptId: SCRIPT_ID_ONE, lineNumber: 0, columnNumber: 5 },
+            url: 'http://localhost/foo.js',
+            scopeChain: [],
+            this: { type: 'object' },
+        });
+        async function setUpTarget() {
+            const connection = new MockCDPConnection();
+            connection.setSuccessHandler('Debugger.enable', () => ({ debuggerId: 'debugger-id' }));
+            const getScopeChain = sinon.stub().returns({ scopeChain: [] });
+            connection.setSuccessHandler('Debugger.getScopeChain', getScopeChain);
+            const target = universe.createTarget({ connection });
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            assert.exists(debuggerModel);
+            if (!debuggerModel.isReadyToPause()) {
+                await debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+            }
+            connection.dispatchEvent('Debugger.scriptParsed', {
+                scriptId: SCRIPT_ID_ONE,
+                url: 'http://localhost/foo.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 1,
+                endColumn: 10,
+                executionContextId: 1,
+                hash: '',
+                buildId: '',
+                hasSourceURL: false,
+                length: 10,
+            }, target.sessionId);
+            debuggerModel.setComputeAutoStepCallback(null);
+            debuggerModel.setBeforePausedCallback(null);
+            const pause = async () => {
+                const paused = debuggerModel.once(SDK.DebuggerModel.Events.DebuggerPaused);
+                connection.dispatchEvent('Debugger.paused', { callFrames: [callFrame('top'), callFrame('caller')], reason: "other" /* Protocol.Debugger.PausedEventReason.Other */ }, target.sessionId);
+                await paused;
+                return debuggerModel.debuggerPausedDetails().callFrames;
+            };
+            const listener = sinon.stub();
+            debuggerModel.addEventListener(SDK.DebuggerModel.Events.ScopeChainsInvalidated, listener);
+            return { debuggerModel, getScopeChain, pause, listener };
+        }
+        it('marks the scope chains of all paused call frames stale and notifies listeners', async () => {
+            const { debuggerModel, getScopeChain, pause, listener } = await setUpTarget();
+            const [top, caller] = await pause();
+            debuggerModel.invalidateScopeChains();
+            sinon.assert.calledOnce(listener);
+            assert.strictEqual(listener.firstCall.args[0].data, debuggerModel);
+            // The scope chains are only re-fetched once somebody asks for them.
+            sinon.assert.notCalled(getScopeChain);
+            await top.scopeChain();
+            await caller.scopeChain();
+            assert.deepEqual(getScopeChain.getCalls().map(call => call.args[0]), [{ callFrameId: 'top' }, { callFrameId: 'caller' }]);
+        });
+        it('does nothing if the debugger is not paused', async () => {
+            const { debuggerModel, listener } = await setUpTarget();
+            debuggerModel.invalidateScopeChains();
+            sinon.assert.notCalled(listener);
         });
     });
     describe('ignoring sourcemaps', () => {

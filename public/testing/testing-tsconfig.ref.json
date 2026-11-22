@@ -54,11 +54,13 @@
     "../../../../../front_end/testing/StubIssue.ts",
     "../../../../../front_end/testing/StyleHelpers.ts",
     "../../../../../front_end/testing/TargetHelpers.ts",
+    "../../../../../front_end/testing/TestTeardown.ts",
     "../../../../../front_end/testing/TestUniverse.ts",
     "../../../../../front_end/testing/TraceHelpers.ts",
     "../../../../../front_end/testing/TraceHelpersCore.ts",
     "../../../../../front_end/testing/TraceLoader.ts",
     "../../../../../front_end/testing/TrackAsyncOperations.ts",
+    "../../../../../front_end/testing/TrackConsoleLogs.ts",
     "../../../../../front_end/testing/UISourceCodeHelpers.ts",
     "../../../../../front_end/testing/UserMetricsHelpers.ts",
     "../../../../../front_end/testing/ViewFunctionHelpers.ts",
@@ -129,6 +131,9 @@
     },
     {
       "path": "../models/crux-manager/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../models/devtools_state/bundle-tsconfig.ref.json"
     },
     {
       "path": "../models/emulation/bundle-tsconfig.ref.json"

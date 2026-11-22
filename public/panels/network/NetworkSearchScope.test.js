@@ -38,7 +38,7 @@ describe('NetworkSearchScope', () => {
         await scope.performSearch(searchConfig, new Common.Progress.Progress(), () => { }, finishedStub);
         assert.isTrue(finishedStub.calledOnceWith(true));
     });
-    it('finds requests by url', async () => {
+    it('finds requests by URL', async () => {
         const searchConfig = new Workspace.SearchConfig.SearchConfig('main', false, false);
         const results = [];
         await scope.performSearch(searchConfig, new Common.Progress.Progress(), result => results.push(result), () => { });
@@ -47,6 +47,43 @@ describe('NetworkSearchScope', () => {
         assert.strictEqual(results[0].matchesCount(), 1);
         assert.strictEqual(results[0].matchLabel(0), 'URL');
         assert.strictEqual(results[0].matchLineContent(0), 'http://example.com/main.js');
+    });
+    describe('regex search', () => {
+        it('finds matches in URLs', async () => {
+            for (const isRegex of [true, false]) {
+                const searchConfig = new Workspace.SearchConfig.SearchConfig('main[.]js$', false, isRegex);
+                const results = [];
+                await scope.performSearch(searchConfig, new Common.Progress.Progress(), result => results.push(result), () => { });
+                assert.lengthOf(results, isRegex ? 1 : 0);
+                if (isRegex) {
+                    assert.strictEqual(results[0].label(), 'main.js');
+                    assert.strictEqual(results[0].matchesCount(), 1);
+                    assert.strictEqual(results[0].matchLabel(0), 'URL');
+                    assert.strictEqual(results[0].matchLineContent(0), 'http://example.com/main.js');
+                }
+            }
+        });
+        it('finds matches in headers', async () => {
+            const searchConfig = new Workspace.SearchConfig.SearchConfig('foo(Request|Response)Header', false, true);
+            const results = [];
+            await scope.performSearch(searchConfig, new Common.Progress.Progress(), result => results.push(result), () => { });
+            assert.lengthOf(results, 1);
+            assert.strictEqual(results[0].label(), 'main.js');
+            assert.strictEqual(results[0].matchesCount(), 2);
+            assert.strictEqual(results[0].matchLabel(0), 'fooRequestHeader:');
+            assert.strictEqual(results[0].matchLabel(1), 'fooResponseHeader:');
+        });
+        for (const { query, expected } of [{ query: 'http:// f:main ^example', expected: [] },
+            { query: 'http://exa f:main \\bmple', expected: [] },
+            { query: 'http:// f:main (?<=//)example', expected: ['http://example.com/main.js'] },
+        ]) {
+            it(`finds expected matches for "${query}"`, async () => {
+                const searchConfig = new Workspace.SearchConfig.SearchConfig(query, false, true);
+                const results = [];
+                await scope.performSearch(searchConfig, new Common.Progress.Progress(), result => results.push(result), () => { });
+                assert.deepEqual(results.map(result => result.matchLineContent(0)), expected);
+            });
+        }
     });
     it('finds request header names', async () => {
         const searchConfig = new Workspace.SearchConfig.SearchConfig('fooRequest', false, false);

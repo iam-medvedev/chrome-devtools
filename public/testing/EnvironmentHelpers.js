@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { after, afterEach, before, beforeEach, describe } from 'mocha';
+import { describe } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
@@ -19,12 +19,15 @@ import * as Workspace from '../models/workspace/workspace.js';
 import { deinitializeGlobalLocaleVars, initializeGlobalLocaleVars } from './LocaleHelpers.js';
 import { cleanupRuntime, setupRuntime } from './RuntimeHelpers.js';
 import { cleanupSettings, setupSettings } from './SettingsHelpers.js';
+import { beforeEachWithTeardown } from './TestTeardown.js';
 // Don't import UI at this stage because it will fail without
 // the environment. Instead we do the import at the end of the
 // initialization phase.
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let UI;
 export { createTarget, waitForTarget } from './TargetHelpers.js';
+export { beforeEachWithTeardown, registerTestTeardown } from './TestTeardown.js';
+export { expectConsoleLogs } from './TrackConsoleLogs.js';
 export function registerActions(actions) {
     for (const action of actions) {
         UI.ActionRegistration.maybeRemoveActionExtension(action.actionId);
@@ -114,9 +117,8 @@ export function describeWithEnvironment(title, fn, opts = {
     reset: true,
 }) {
     return describe(title, function () {
-        beforeEach(async () => await initializeGlobalVars(opts));
+        beforeEachWithTeardown(async () => await initializeGlobalVars(opts), deinitializeGlobalVars);
         fn.call(this);
-        afterEach(async () => await deinitializeGlobalVars());
     });
 }
 (function (describeWithEnvironment) {
@@ -125,9 +127,8 @@ export function describeWithEnvironment(title, fn, opts = {
     }) {
         // eslint-disable-next-line mocha/no-exclusive-tests
         return describe.only(title, function () {
-            beforeEach(async () => await initializeGlobalVars(opts));
+            beforeEachWithTeardown(async () => await initializeGlobalVars(opts), deinitializeGlobalVars);
             fn.call(this);
-            afterEach(async () => await deinitializeGlobalVars());
         });
     }
     describeWithEnvironment.only = only;
@@ -141,57 +142,16 @@ export function createFakeRegExpSetting(name, defaultValue) {
     return new Common.Settings.RegExpSetting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage, Common.Console.Console.instance());
 }
 export function setupActionRegistry() {
-    beforeEach(function () {
+    beforeEachWithTeardown(() => {
         const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
         UI.ShortcutRegistry.ShortcutRegistry.instance({
             forceNew: true,
             actionRegistry,
         });
-    });
-    afterEach(function () {
+    }, () => {
         if (UI) {
             UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
             UI.ActionRegistry.ActionRegistry.removeInstance();
-        }
-    });
-}
-/** This needs to be invoked within a describe block, rather than within an it() block. **/
-export function expectConsoleLogs(expectedLogs) {
-    const { error, warn, log } = console;
-    before(() => {
-        if (expectedLogs.log) {
-            // eslint-disable-next-line no-console
-            console.log = (...data) => {
-                if (!expectedLogs.log?.includes(data.join(' '))) {
-                    log(...data);
-                }
-            };
-        }
-        if (expectedLogs.warn) {
-            console.warn = (...data) => {
-                if (!expectedLogs.warn?.includes(data.join(' '))) {
-                    warn(...data);
-                }
-            };
-        }
-        if (expectedLogs.error) {
-            console.error = (...data) => {
-                if (!expectedLogs.error?.includes(data.join(' '))) {
-                    error(...data);
-                }
-            };
-        }
-    });
-    after(() => {
-        if (expectedLogs.log) {
-            // eslint-disable-next-line no-console
-            console.log = log;
-        }
-        if (expectedLogs.warn) {
-            console.warn = warn;
-        }
-        if (expectedLogs.error) {
-            console.error = error;
         }
     });
 }

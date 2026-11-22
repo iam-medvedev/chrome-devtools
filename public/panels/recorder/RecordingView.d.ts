@@ -87,7 +87,8 @@ export declare class RecordingView extends UI.Widget.Widget {
     lastReplayResult?: Models.RecordingPlayer.ReplayResult;
     replayAllowed: boolean;
     breakpointIndexes: Set<number>;
-    extensionConverters: readonly Converters.Converter.Converter[];
+    get extensionConverters(): readonly Converters.Converter.Converter[];
+    set extensionConverters(converters: readonly Converters.Converter.Converter[]);
     replayExtensions?: Extensions.ExtensionManager.Extension[];
     extensionDescriptor?: PublicExtensions.RecorderPluginManager.ViewDescriptor;
     onPlayRecording?: (detail: PlayRecordingEvent) => void;

@@ -1320,7 +1320,7 @@ var StylesSourceMapping = class {
     }
     const styleFile = this.#styleFiles.get(header.resourceURL());
     if (styleFile) {
-      styleFile.styleSheetChanged(header);
+      styleFile.styleSheetChanged(header, event.data.edit);
     }
   }
   dispose() {
@@ -1339,6 +1339,9 @@ var StyleFile = class {
   uiSourceCode;
   #eventListeners;
   #throttler = new Common5.Throttler.Throttler(200);
+  // True once a stylesheet in this StyleFile changes without a DevTools edit;
+  // cleared when a user edit or commit from uiSourceCode updates Blink.
+  #hasPageDrivenChanges = false;
   #terminated = false;
   #isAddingRevision;
   #isUpdatingHeaders;
@@ -1380,10 +1383,13 @@ var StyleFile = class {
     this.headers.delete(header);
     NetworkProject.removeFrameAttribution(this.uiSourceCode, header.frameId);
   }
-  styleSheetChanged(header) {
+  styleSheetChanged(header, edit) {
     console.assert(this.headers.has(header));
     if (this.#isUpdatingHeaders || !this.headers.has(header)) {
       return;
+    }
+    if (!edit) {
+      this.#hasPageDrivenChanges = true;
     }
     const mirrorContentBound = this.mirrorContent.bind(
       this,
@@ -1406,7 +1412,7 @@ var StyleFile = class {
     void this.#throttler.schedule(mirrorContentBound, Common5.Throttler.Scheduling.AS_SOON_AS_POSSIBLE);
   }
   workingCopyChanged() {
-    if (this.#isAddingRevision) {
+    if (this.#isAddingRevision || this.uiSourceCode.workingCopyIsPageDriven()) {
       return;
     }
     const mirrorContentBound = this.mirrorContent.bind(
@@ -1433,9 +1439,14 @@ var StyleFile = class {
       return;
     }
     if (fromProvider !== this.uiSourceCode) {
+      const isPageDriven = this.#hasPageDrivenChanges || NetworkProject.isSourceURLSynthesized(this.uiSourceCode);
       this.#isAddingRevision = true;
-      this.uiSourceCode.setWorkingCopy(newContent);
+      this.uiSourceCode.setWorkingCopy(newContent, { isPageDriven });
       this.#isAddingRevision = false;
+      if (isPageDriven) {
+        this.styleFileSyncedForTest();
+        return;
+      }
     }
     this.#isUpdatingHeaders = true;
     const promises = [];
@@ -1447,6 +1458,9 @@ var StyleFile = class {
     }
     await Promise.all(promises);
     this.#isUpdatingHeaders = false;
+    if (fromProvider === this.uiSourceCode && (majorChange || this.uiSourceCode.isDirty())) {
+      this.#hasPageDrivenChanges = false;
+    }
     this.styleFileSyncedForTest();
   }
   styleFileSyncedForTest() {
@@ -2240,6 +2254,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -2564,7 +2581,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -3348,6 +3364,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -4035,6 +4052,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -8026,7 +8044,10 @@ var Binding2 = class {
       }
       await Promise.all(updatePromises);
     }
-    this.#uiSourceCode.addRevision(text.value());
+    const updatedContent = text.value();
+    if (updatedContent !== content) {
+      this.#uiSourceCode.addRevision(updatedContent);
+    }
   }
   addResource(resource) {
     this.resources.add(resource);

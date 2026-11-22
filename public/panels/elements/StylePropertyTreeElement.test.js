@@ -88,6 +88,10 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         node.id = 0;
         LegacyUI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
         computedStyleModel.node = node;
+        await stylesSidebarPane.updateComplete;
+    });
+    afterEach(async () => {
+        await stylesSidebarPane.updateComplete;
     });
     function addProperty(name, value, longhandProperties = []) {
         const property = new SDK.CSSProperty.CSSProperty(matchedStyles.nodeStyles()[0], matchedStyles.nodeStyles()[0].pastLastSourcePropertyIndex(), name, value, true, false, true, false, '', undefined, longhandProperties);
@@ -285,13 +289,119 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                 const matchedResult = property.parseValue(matchedStyles, new Map());
                 const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false);
                 assert.isTrue(context.nextEvaluation());
-                const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map(), null), context);
+                const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map(), null), context);
                 const colorSwatch = valueElement.querySelector('devtools-color-swatch');
                 assert.exists(colorSwatch);
                 const setColorTextCall = spyCall(colorSwatch, 'setColor');
                 assert.isTrue(await context.runAsyncEvaluations());
                 assert.strictEqual((await setColorTextCall).args[0].asString(), '#808080');
                 assert.strictEqual(valueElement.innerText, '#808080');
+            });
+            it('does not show color mix swatch when color-mix is used with multi-color arguments', () => {
+                for (const value of ['color-mix(in srgb, red blue, green)', 'color-mix(in srgb, red, green blue)']) {
+                    const stylePropertyTreeElement = getTreeElement('color', value);
+                    stylePropertyTreeElement.updateTitle();
+                    assert.exists(stylePropertyTreeElement.valueElement);
+                    assert.isNull(stylePropertyTreeElement.valueElement.querySelector('devtools-color-mix-swatch'));
+                    assert.lengthOf(stylePropertyTreeElement.valueElement.querySelectorAll('devtools-color-swatch'), 3);
+                }
+            });
+            it('supports evaluation during tracing with a light-dark argument', async () => {
+                const colorSchemeSpy = sinon.spy(Elements.StylePropertyTreeElement.LightDarkColorRenderer.prototype, 'applyColorScheme');
+                const property = addProperty('color', 'color-mix(in srgb, light-dark(red, blue), green)');
+                connection.setHandler('CSS.resolveValues', null);
+                connection.setSuccessHandler('CSS.resolveValues', (request) => ({ results: request.values.map(v => v === property.value ? 'purple' : v) }));
+                const matchedResult = property.parseValue(matchedStyles, new Map());
+                const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false);
+                assert.isTrue(context.nextEvaluation());
+                const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map(), null), context);
+                const colorSwatch = valueElement.querySelector('devtools-color-swatch');
+                assert.exists(colorSwatch);
+                const setColorCall = spyCall(colorSwatch, 'setColor');
+                assert.isTrue(await context.runAsyncEvaluations());
+                await Promise.all(colorSchemeSpy.returnValues);
+                assert.strictEqual((await setColorCall).args[0].asString(), '#800080');
+                assert.strictEqual(valueElement.innerText, '#800080');
+            });
+            it('preserves intermediate trace steps for nested color-mix with a light-dark argument', async () => {
+                const colorSchemeSpy = sinon.spy(Elements.StylePropertyTreeElement.LightDarkColorRenderer.prototype, 'applyColorScheme');
+                const innerMix = 'color-mix(in srgb, red, blue)';
+                const middleMix = `color-mix(in srgb, ${innerMix}, light-dark(red, blue))`;
+                const outerMix = `color-mix(in srgb, ${middleMix}, yellow)`;
+                const property = addProperty('color', outerMix);
+                const resolvedValues = new Map([
+                    [innerMix, 'purple'],
+                    [middleMix, 'teal'],
+                    [outerMix, 'olive'],
+                ]);
+                connection.setHandler('CSS.resolveValues', null);
+                connection.setSuccessHandler('CSS.resolveValues', (request) => ({ results: request.values.map(v => resolvedValues.get(v) ?? v) }));
+                const matchedResult = property.parseValue(matchedStyles, new Map());
+                const renderers = Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map(), null);
+                const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false);
+                assert.isTrue(context.nextEvaluation());
+                const step1 = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                assert.isTrue(await context.runAsyncEvaluations());
+                assert.strictEqual(step1.innerText, 'color-mix(in srgb, color-mix(in srgb, #800080, light-dark(red, blue)), yellow)');
+                assert.isTrue(context.nextEvaluation());
+                const step2 = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                assert.isTrue(await context.runAsyncEvaluations());
+                assert.strictEqual(step2.innerText, 'color-mix(in srgb, #008080, yellow)');
+                assert.isTrue(context.nextEvaluation());
+                const step3 = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                assert.isTrue(await context.runAsyncEvaluations());
+                assert.strictEqual(step3.innerText, '#808000');
+                assert.isFalse(context.nextEvaluation());
+                await Promise.all(colorSchemeSpy.returnValues);
+            });
+            it('supports tracing across var() substitutions', async () => {
+                mockVariableMap['--a'] = addProperty('--a', 'red');
+                const property = addProperty('color', 'color-mix(in srgb, var(--a), var(--missing, blue))');
+                connection.setHandler('CSS.resolveValues', null);
+                connection.setSuccessHandler('CSS.resolveValues', (request) => ({ results: request.values.map(v => v === 'color-mix(in srgb, red, blue)' ? 'purple' : v) }));
+                const matchedResult = property.parseValue(matchedStyles, new Map());
+                assert.exists(matchedResult);
+                const renderers = Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map(), null);
+                const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
+                assert.isTrue(context.nextSubstitution());
+                const substituted = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                assert.exists(substituted.querySelector('devtools-color-mix-swatch'));
+                assert.isFalse(context.nextSubstitution());
+                assert.isTrue(context.nextEvaluation());
+                const evaluated = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                const colorSwatch = evaluated.querySelector('devtools-color-swatch');
+                assert.exists(colorSwatch);
+                const setColorCall = spyCall(colorSwatch, 'setColor');
+                assert.isTrue(await context.runAsyncEvaluations());
+                assert.strictEqual((await setColorCall).args[0].asString(), '#800080');
+                assert.strictEqual(evaluated.innerText, '#800080');
+            });
+            it('supports tracing across attr() substitutions', async () => {
+                const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+                node.id = 1;
+                node.getAttribute.callsFake(name => name === 'data-color' ? 'red' : undefined);
+                const attrMatchedStyles = await getMatchedStylesWithBlankRule({ cssModel, connection, node });
+                const style = attrMatchedStyles.nodeStyles()[0];
+                const property = new SDK.CSSProperty.CSSProperty(style, style.pastLastSourcePropertyIndex(), 'color', 'color-mix(in srgb, attr(data-color type(<color>)), attr(data-missing type(<color>), blue))', true, false, true, false, '', undefined, []);
+                style.allProperties().push(property);
+                connection.setHandler('CSS.resolveValues', null);
+                connection.setSuccessHandler('CSS.resolveValues', (request) => ({ results: request.values.map(v => v === 'color-mix(in srgb, red, blue)' ? 'purple' : v) }));
+                const matchedResult = property.parseValue(attrMatchedStyles, new Map());
+                assert.exists(matchedResult);
+                const renderers = Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, style, stylesSidebarPane, attrMatchedStyles, null, new Map(), null);
+                const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
+                assert.isTrue(context.nextSubstitution());
+                const substituted = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                assert.exists(substituted.querySelector('devtools-color-mix-swatch'));
+                assert.isFalse(context.nextSubstitution());
+                assert.isTrue(context.nextEvaluation());
+                const evaluated = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, renderers, context);
+                const colorSwatch = evaluated.querySelector('devtools-color-swatch');
+                assert.exists(colorSwatch);
+                const setColorCall = spyCall(colorSwatch, 'setColor');
+                assert.isTrue(await context.runAsyncEvaluations());
+                assert.strictEqual((await setColorCall).args[0].asString(), '#800080');
+                assert.strictEqual(evaluated.innerText, '#800080');
             });
             it('shows a value tracing tooltip on the var function', async () => {
                 const stylePropertyTreeElement = getTreeElement('color', 'color-mix(in srgb, yellow, green)');
@@ -797,7 +907,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues
-                .map(fragment => Array.from(fragment.valueElement.querySelectorAll('devtools-link-swatch')))
+                .map(valueElement => Array.from(valueElement.querySelectorAll('devtools-link-swatch')))
                 .flat()[0];
             assert.exists(varSwatch);
             const revealPropertySpy = sinon.spy(stylesSidebarPane, 'revealProperty');
@@ -834,7 +944,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues
-                .map(fragment => Array.from(fragment.valueElement.querySelectorAll('devtools-link-swatch')))
+                .map(valueElement => Array.from(valueElement.querySelectorAll('devtools-link-swatch')))
                 .flat()[0];
             assert.exists(varSwatch);
             const jumpToPropertySpy = sinon.spy(stylesSidebarPane, 'jumpToProperty');
@@ -1040,6 +1150,63 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.notExists(stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch'));
         });
     });
+    describe('AttributeRenderer', () => {
+        async function getAttrTreeElement(value, attributes = {}) {
+            const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+            node.id = 1;
+            node.getAttribute.callsFake(name => attributes[name]);
+            const attrMatchedStyles = await getMatchedStylesWithBlankRule({ cssModel, connection, node });
+            const style = attrMatchedStyles.nodeStyles()[0];
+            const property = new SDK.CSSProperty.CSSProperty(style, style.pastLastSourcePropertyIndex(), 'color', value, true, false, true, false, '', undefined, []);
+            style.allProperties().push(property);
+            const section = new Elements.StylePropertiesSection.StylePropertiesSection(new Elements.StylesSidebarPane.StylesSidebarPane(computedStyleModel), attrMatchedStyles, property.ownerStyle, 0, null, null, null);
+            return new Elements.StylePropertyTreeElement.StylePropertyTreeElement({
+                stylesContainer: stylesSidebarPane,
+                section,
+                matchedStyles: attrMatchedStyles,
+                property,
+                isShorthand: false,
+                inherited: false,
+                overloaded: false,
+                newProperty: true,
+            });
+        }
+        it('connects nested color swatches when the fallback is taken', async () => {
+            const stylePropertyTreeElement = await getAttrTreeElement('attr(data-missing type(<color>), red)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const linkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(linkSwatch);
+            const attrSwatch = linkSwatch.parentElement;
+            assert.exists(attrSwatch);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            const outerColorSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-color-swatch');
+            assert.exists(outerColorSwatch);
+            const innerColorSwatch = attrSwatch.querySelector('devtools-color-swatch');
+            assert.exists(innerColorSwatch);
+            assert.notStrictEqual(outerColorSwatch, innerColorSwatch);
+            const color = new Common.Color.Lab(1, 0, 0, null, undefined);
+            innerColorSwatch.setColor(color);
+            assert.strictEqual(outerColorSwatch.color, color);
+        });
+        it('only connects nested color swatches if the fallback is actually taken', async () => {
+            const stylePropertyTreeElement = await getAttrTreeElement('attr(data-color type(<color>), red)', { 'data-color': 'blue' });
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const linkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
+            assert.exists(linkSwatch);
+            const attrSwatch = linkSwatch.parentElement;
+            assert.exists(attrSwatch);
+            const outerColorSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-color-swatch');
+            assert.exists(outerColorSwatch);
+            const innerColorSwatch = attrSwatch.querySelector('devtools-color-swatch');
+            assert.exists(innerColorSwatch);
+            assert.notStrictEqual(outerColorSwatch, innerColorSwatch);
+            const color = new Common.Color.Lab(1, 0, 0, null, undefined);
+            innerColorSwatch.setColor(color);
+            assert.strictEqual(outerColorSwatch.color?.asString(), 'blue');
+        });
+    });
     describe('ColorRenderer', () => {
         it('correctly renders children of the color swatch', () => {
             const value = 'rgb(255, var(--zero), var(--zero))';
@@ -1211,7 +1378,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             parseTextShadowFailure('1px 2px rgb(0, 0, 0) 2px');
             parseTextShadowFailure('hello 1px 2px');
             parseTextShadowFailure('1px 2px black 0 0 #ffffff');
-            // TODO(crbug.com/40945390) Add coverage after rolling codemirror: parseTextShadowFailure('1px2px');
+            parseTextShadowFailure('1px2px');
             parseTextShadowFailure('1px 2pxrgb(0, 0, 0)');
             parseBoxShadowSuccess('0 0');
             parseBoxShadowSuccess('1px 2px');
@@ -1238,7 +1405,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             parseBoxShadowFailure('1px 2px rgb(0, 0, 0) 2px');
             parseBoxShadowFailure('hello 1px 2px');
             parseBoxShadowFailure('1px 2px black 0 0 #ffffff');
-            // TODO(crbug.com/40945390) Add coverage after rolling codemirror: parseBoxShadowFailure('1px2px');
+            parseBoxShadowFailure('1px2px');
             parseBoxShadowFailure('1px 2pxrgb(0, 0, 0)');
         });
         it('renders the shadow swatch and color swatch', () => {
@@ -1494,10 +1661,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
                     }
                 })
                     .filter(b => !!b);
-                return {
-                    nodes: html `${nodes}`,
-                    cssControls: new Map(),
-                };
+                return html `${nodes}`;
             });
             const model = new Elements.StylePropertyTreeElement.ShadowModel("boxShadow" /* SDK.CSSPropertyParserMatchers.ShadowType.BOX_SHADOW */, properties, renderingContext);
             const container = document.createElement('div');
@@ -1789,6 +1953,7 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const lightDark = 'light-dark(red, blue)';
             const cssModel = sinon.createStubInstance(SDK.CSSModel.CSSModel);
             sinon.stub(stylesSidebarPane, 'cssModel').returns(cssModel);
+            cssModel.cachedMatchedCascadeForNode.resolves(null);
             cssModel.colorScheme.resolves(undefined);
             addProperty('color-scheme', 'light dark');
             const stylePropertyTreeElement = getTreeElement('color', lightDark);
@@ -1870,23 +2035,51 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             assert.strictEqual(swatches[1].nextElementSibling?.textContent, 'black');
         });
     });
-    describe('LinearGradientRenderer', () => {
-        it('correctly connects to an angle match', () => {
-            const stylePropertyTreeElement = getTreeElement('background', 'linear-gradient(45deg, red, var(--blue))');
+    describe('AngleRenderer', () => {
+        // Renders `value` and returns its angle swatch along with a spy on `CSSAngle.updateProperty`.
+        function renderAngle(name, value) {
+            const updatePropertySpy = sinon.spy(InlineEditor.CSSAngle.CSSAngle.prototype, 'updateProperty');
+            const stylePropertyTreeElement = getTreeElement(name, value);
             stylePropertyTreeElement.updateTitle();
-            const swatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-angle');
-            assert.exists(swatch);
-            swatch.data = {
-                angleText: '45deg',
-                containingPane: document.createElement('div'),
-            };
-            sinon.stub(swatch, 'dispatchEvent');
-            swatch.popOver();
-            const popover = swatch.querySelector('devtools-css-angle-editor');
-            assert.exists(popover);
-            const clock = popover.shadowRoot?.querySelector('.clock');
-            assert.exists(clock);
-            assert.strictEqual(clock.style.background, 'linear-gradient(45deg, red, blue)');
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const angle = stylePropertyTreeElement.valueElement.querySelector('devtools-css-angle');
+            assert.exists(angle);
+            return { angle, updatePropertySpy, valueElement: stylePropertyTreeElement.valueElement };
+        }
+        it('shows the color of an hsl() in the editor of its hue', () => {
+            const { updatePropertySpy } = renderAngle('color', 'hsl(120deg, 100%, 50%)');
+            sinon.assert.calledOnceWithExactly(updatePropertySpy, 'hsl(120deg, 100%, 50%)');
+        });
+        it('shows the color of an hsl() with the edited hue in the editor', () => {
+            const { angle, updatePropertySpy } = renderAngle('color', 'hsl(120deg, 100%, 50%)');
+            updatePropertySpy.resetHistory();
+            angle.updateAngle({ value: 240, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
+            sinon.assert.calledOnceWithExactly(updatePropertySpy, 'hsl(240deg, 100%, 50%)');
+        });
+        it('shows the color of an hsl() with a hue that was edited to 0 in the editor', () => {
+            const { angle, updatePropertySpy } = renderAngle('color', 'hsl(120deg, 100%, 50%)');
+            updatePropertySpy.resetHistory();
+            angle.updateAngle({ value: 0, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
+            sinon.assert.calledOnceWithExactly(updatePropertySpy, 'hsl(0deg, 100%, 50%)');
+        });
+        it('updates the hsl() color swatch when the hue angle is edited', () => {
+            const { angle, valueElement } = renderAngle('color', 'hsl(120deg, 100%, 50%)');
+            const colorSwatch = valueElement.querySelector('devtools-color-swatch');
+            assert.exists(colorSwatch);
+            angle.updateAngle({ value: 240, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
+            assert.strictEqual(colorSwatch.color?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(240deg 100% 50%)');
+            angle.updateAngle({ value: 0, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
+            assert.strictEqual(colorSwatch.color?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(0deg 100% 50%)');
+        });
+        it('shows the gradient in the editor of its angle', () => {
+            const { updatePropertySpy } = renderAngle('background', 'linear-gradient(45deg, red, var(--blue))');
+            sinon.assert.calledOnceWithExactly(updatePropertySpy, 'linear-gradient(45deg, red, blue)');
+        });
+        it('shows the gradient with the edited angle in the editor', () => {
+            const { angle, updatePropertySpy } = renderAngle('background', 'linear-gradient(45deg, red, var(--blue))');
+            updatePropertySpy.resetHistory();
+            angle.updateAngle({ value: 50, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
+            sinon.assert.calledOnceWithExactly(updatePropertySpy, 'linear-gradient(50deg, red, blue)');
         });
     });
     describe('CSSWideKeywordRenderer', () => {
@@ -2603,6 +2796,9 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
         treeElementWithTooltip.updateTitle();
     });
     it('does not show a variable tooltip on custom property names in function rules', async () => {
+        Common.Settings.Settings.instance()
+            .resolve(SettingsUI.ElementsSettings.showCSSPropertyDocumentationOnHoverSettingDescriptor)
+            .set(true);
         const stylePropertyTreeElement = await getTreeElementForFunctionRule('--func', 'red', '--foo');
         stylePropertyTreeElement.treeOutline = new LegacyUI.TreeOutline.TreeOutline();
         stylePropertyTreeElement.updateTitle();
@@ -3133,14 +3329,18 @@ describeWithEnvironment('StylePropertyTreeElement', () => {
             const customPropVar = completions.find(item => item.title === '--prop');
             assert.exists(redVar);
             assert.strictEqual(redVar.text, '--a)');
-            assert.exists(redVar.subtitleRenderer);
-            const swatchElement = redVar.subtitleRenderer();
+            assert.exists(redVar.subtitleTemplate);
+            const swatchContainer = document.createElement('div');
+            render(redVar.subtitleTemplate, swatchContainer);
+            const swatchElement = swatchContainer.querySelector('.suggestion-subtitle');
             assert.instanceOf(swatchElement, InlineEditor.ColorSwatch.ColorSwatch);
             assert.exists(customPropVar);
             assert.strictEqual(customPropVar.text, '--prop)');
-            assert.exists(customPropVar.subtitleRenderer);
-            const subtitleElement = customPropVar.subtitleRenderer();
-            assert.strictEqual(subtitleElement.textContent, 'customproperty');
+            assert.exists(customPropVar.subtitleTemplate);
+            const subtitleContainer = document.createElement('div');
+            render(customPropVar.subtitleTemplate, subtitleContainer);
+            const subtitleElement = subtitleContainer.querySelector('.suggestion-subtitle');
+            assert.strictEqual(subtitleElement?.textContent, 'customproperty');
         });
         it('adds and commits a new blank property in StylePropertyTreeElement', async () => {
             const existingElement = getTreeElement('color', 'red');

@@ -96,6 +96,23 @@ describe('html', () => {
     `;
         assert.deepEqual(result.strings, ['<div class=', ' id="foo">', '</div>']);
     });
+    it('should preserve literal > in text content outside of tags in multi-line templates', () => {
+        const result = html `
+      <div>
+        a > b
+      </div>
+    `.strings;
+        assert.deepEqual(result, ['<div>a > b</div>']);
+    });
+    it('should preserve > inside inline style @scope blocks in multi-line templates', () => {
+        const styles = 'div { color: red; }';
+        const result = html `
+      <style>@scope to (devtools-widget > *) { ${styles} }</style>
+      <div>Hello</div>
+    `;
+        assert.deepEqual(result.strings, ['<style>@scope to (devtools-widget > *) { ', ' }</style><div>Hello</div>']);
+        assert.deepEqual(result.values, [styles]);
+    });
     it('escapes bidi and formatting characters in interpolated string values', () => {
         const value = 'Hello \u202E World';
         const result = html `<div>${value}</div>`;

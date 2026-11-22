@@ -12,6 +12,7 @@ import { mockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as SDK from './sdk.js';
@@ -391,6 +392,7 @@ describe('ServerSentEvents', () => {
         });
         networkManager.dispatcher.responseReceived({
             requestId: '1',
+            type: "EventSource" /* Protocol.Network.ResourceType.EventSource */,
             response: {
                 url: 'https://example.com/sse',
                 mimeType: 'text/event-stream',
@@ -415,6 +417,95 @@ describe('ServerSentEvents', () => {
         assert.lengthOf(networkEvents, 2);
         assert.deepEqual(networkEvents[0], { data: 'foo', eventId: 'fooId', eventName: 'fooName', time: 21 });
         assert.deepEqual(networkEvents[1], { data: 'bar', eventId: 'barId', eventName: 'barName', time: 42 });
+    });
+    it('preserves EventSource resource type and retrieves content after loading finishes', async () => {
+        connection.setSuccessHandler('Network.getResponseBody', () => ({
+            body: 'data: hello\n\n',
+            base64Encoded: false,
+        }));
+        const getResponseBodySpy = sinon.spy(target.networkAgent(), 'invoke_getResponseBody');
+        const streamResourceContentSpy = sinon.spy(target.networkAgent(), 'invoke_streamResourceContent');
+        networkManager.dispatcher.requestWillBeSent({
+            requestId: '1',
+            request: {
+                url: 'https://example.com/resources/event-stream.asis',
+            },
+            type: "EventSource" /* Protocol.Network.ResourceType.EventSource */,
+        });
+        networkManager.dispatcher.responseReceived({
+            requestId: '1',
+            type: "EventSource" /* Protocol.Network.ResourceType.EventSource */,
+            response: {
+                url: 'https://example.com/resources/event-stream.asis',
+                mimeType: 'text/event-stream',
+            },
+        });
+        const request = networkManager.requestForId('1');
+        assert.strictEqual(request.url(), 'https://example.com/resources/event-stream.asis');
+        assert.strictEqual(request.resourceType(), Common.ResourceType.resourceTypes.EventSource);
+        assert.strictEqual(request.resourceType().name(), 'eventsource');
+        networkManager.dispatcher.eventSourceMessageReceived({
+            requestId: '1',
+            timestamp: 21,
+            data: 'hello',
+            eventId: '',
+            eventName: 'message',
+        });
+        networkManager.dispatcher.dataReceived({
+            requestId: '1',
+            dataLength: 13,
+            encodedDataLength: 13,
+            timestamp: 22,
+            data: globalThis.btoa('data: hello\n\n'),
+        });
+        // EventSource requests get messages directly via CDP rather than parsing streamed chunks.
+        await Promise.resolve();
+        sinon.assert.notCalled(streamResourceContentSpy);
+        assert.deepEqual(request.eventSourceMessages(), [
+            { data: 'hello', eventId: '', eventName: 'message', time: 21 },
+        ]);
+        networkManager.dispatcher.loadingFinished({
+            requestId: '1',
+        });
+        assert.isTrue(request.finished);
+        assert.isFalse(Boolean(request.failed));
+        const contentData = await request.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
+            assert.fail(contentData.error);
+        }
+        assert.strictEqual(contentData.text, 'data: hello\n\n');
+        assert.strictEqual(contentData.mimeType, 'text/event-stream');
+        sinon.assert.calledOnceWithExactly(getResponseBodySpy, { requestId: '1' });
+    });
+    it('returns an error when requesting content for an in-flight EventSource request with messages', async () => {
+        const getResponseBodySpy = sinon.spy(target.networkAgent(), 'invoke_getResponseBody');
+        networkManager.dispatcher.requestWillBeSent({
+            requestId: '1',
+            request: {
+                url: 'https://example.com/sse',
+            },
+            type: "EventSource" /* Protocol.Network.ResourceType.EventSource */,
+        });
+        networkManager.dispatcher.responseReceived({
+            requestId: '1',
+            type: "EventSource" /* Protocol.Network.ResourceType.EventSource */,
+            response: {
+                url: 'https://example.com/sse',
+                mimeType: 'text/event-stream',
+            },
+        });
+        networkManager.dispatcher.eventSourceMessageReceived({
+            requestId: '1',
+            timestamp: 21,
+            data: 'hello',
+            eventId: '',
+            eventName: 'message',
+        });
+        const request = networkManager.requestForId('1');
+        assert.isFalse(Boolean(request.finished));
+        const contentData = await request.requestContentData();
+        assert.deepEqual(contentData, { error: 'Content for Server-Sent Events (SSE) is currently not supported' });
+        sinon.assert.notCalled(getResponseBodySpy);
     });
     it('sends EventSourceMessageAdded events for raw text/event-stream', async () => {
         connection.setSuccessHandler('Network.streamResourceContent', () => ({
@@ -703,6 +794,141 @@ describe('requestStreamingContent', () => {
             const origin2 = request.initiatorSecurityOrigin();
             assert.strictEqual(origin1, origin2);
             assert.isTrue(origin1.isSameOriginWith(origin2));
+        });
+    });
+});
+describe('NetworkRequest name() and path()', () => {
+    setupLocaleHooks();
+    setupSettingsHooks();
+    setupRuntimeHooks();
+    const dataURL = urlString `data:text/html,<html><body><img src="data:,foobar" /></body></html>`;
+    let target;
+    let networkManager;
+    let requestCount;
+    beforeEach(() => {
+        const universe = new TestUniverse();
+        target = universe.createTarget();
+        const manager = target.model(SDK.NetworkManager.NetworkManager);
+        assert.exists(manager);
+        networkManager = manager;
+        requestCount = 0;
+        target.setInspectedURL(urlString `http://127.0.0.1/aFolder/aTest.html`);
+    });
+    function nameAndPath(url) {
+        const requestId = String(++requestCount);
+        networkManager.dispatcher.requestWillBeSent({ requestId, request: { url } });
+        const request = networkManager.requestForId(requestId);
+        assert.exists(request);
+        return {
+            name: request.name(),
+            path: request.path(),
+            inspectedURL: SDK.NetworkManager.NetworkManager.forRequest(request)?.target().inspectedURL(),
+        };
+    }
+    it('derives name and path from URLs on other hosts', () => {
+        assert.deepEqual(nameAndPath('http://www.example.com/foo/bar/baz?key=value'), {
+            name: 'baz?key=value',
+            path: 'www.example.com/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/foo/bar/?key=value'), {
+            name: 'bar/?key=value',
+            path: 'www.example.com/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/foo/bar/baz'), {
+            name: 'baz',
+            path: 'www.example.com/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/foo/bar/'), {
+            name: 'bar/',
+            path: 'www.example.com/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/baz?key=value'), {
+            name: 'baz?key=value',
+            path: 'www.example.com',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/?key=value'), {
+            name: '?key=value',
+            path: 'www.example.com',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/baz'), {
+            name: 'baz',
+            path: 'www.example.com',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://www.example.com/'), {
+            name: 'www.example.com',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+    });
+    it('omits the inspected host from the path of URLs on that host', () => {
+        assert.deepEqual(nameAndPath('http://127.0.0.1/foo/bar/baz?key=value'), {
+            name: 'baz?key=value',
+            path: '/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/foo/bar/?key=value'), {
+            name: 'bar/?key=value',
+            path: '/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/foo/bar/baz'), {
+            name: 'baz',
+            path: '/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/foo/bar/'), {
+            name: 'bar/',
+            path: '/foo/bar',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/baz?key=value'), {
+            name: 'baz?key=value',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/?key=value'), {
+            name: '?key=value',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/baz'), {
+            name: 'baz',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+        assert.deepEqual(nameAndPath('http://127.0.0.1/'), {
+            name: '127.0.0.1',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/aFolder/aTest.html',
+        });
+    });
+    it('derives name and path when the inspected URL is a data: URL', () => {
+        target.setInspectedURL(dataURL);
+        assert.deepEqual(nameAndPath('http://127.0.0.1/'), {
+            name: '127.0.0.1',
+            path: '',
+            inspectedURL: 'data:text/html,<html><body><img src="data:,foobar" /></body></html>',
+        });
+    });
+    it('derives name and path from data: URLs', () => {
+        target.setInspectedURL(dataURL);
+        assert.deepEqual(nameAndPath(dataURL), {
+            name: 'data:text/html,<htm…',
+            path: '',
+            inspectedURL: 'data:text/html,<html><body><img src="data:,foobar" /></body></html>',
+        });
+        target.setInspectedURL(urlString `http://127.0.0.1/`);
+        assert.deepEqual(nameAndPath(dataURL), {
+            name: 'data:text/html,<htm…',
+            path: '',
+            inspectedURL: 'http://127.0.0.1/',
         });
     });
 });

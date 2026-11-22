@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, describe, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -12,10 +12,11 @@ import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as StackTrace from '../../models/stack_trace/stack_trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
 import { debuggerCallFrame, protocolCallFrame, StubStackTrace } from '../../testing/StackTraceHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 function getPausedDetails() {
@@ -31,6 +32,12 @@ function getPausedDetails() {
     return { details, debuggerModel, script };
 }
 describeWithEnvironment('CallStackSidebarPane', () => {
+    const createdPanes = [];
+    function createCallStackSidebarPane(view) {
+        const pane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+        createdPanes.push(pane);
+        return pane;
+    }
     beforeEach(() => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -51,6 +58,18 @@ describeWithEnvironment('CallStackSidebarPane', () => {
             settings: Common.Settings.Settings.instance(),
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
+    });
+    afterEach(async () => {
+        const panesToClean = [...createdPanes, Sources.CallStackSidebarPane.CallStackSidebarPane.instance()];
+        createdPanes.length = 0;
+        for (const pane of panesToClean) {
+            pane.detach();
+            await pane.flavorChanged(null);
+            await pane.updateComplete;
+        }
+        await UI.Widget.Widget.allUpdatesComplete;
+        await RenderCoordinator.done();
+        Sources.CallStackSidebarPane.CallStackSidebarPane.removeInstance();
     });
     it('updates call stack sidebar pane and activates item when SourceMapAttached event fires and SourcesPanel is active', async () => {
         const { details, debuggerModel, script } = getPausedDetails();
@@ -215,7 +234,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
         it('activates pending call frame when SourcesPanel flavor is set after flavorChanged', async () => {
             const { details, debuggerModel } = getPausedDetails();
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const callStackSidebarPane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const callStackSidebarPane = createCallStackSidebarPane(view);
             UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.SourcesPanel, null);
             UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, null);
             const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
@@ -236,7 +255,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
         it('activates pending call frame when Show more is clicked while hidden before SourcesPanel becomes active', async () => {
             const { details, debuggerModel } = getPausedDetails();
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const callStackSidebarPane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const callStackSidebarPane = createCallStackSidebarPane(view);
             UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.SourcesPanel, null);
             UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, null);
             const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
@@ -272,7 +291,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
             UI.Context.Context.instance().setFlavor(Sources.SourcesPanel.QuickSourceView, null);
             const setSelectedCallFrameSpy = sinon.spy(debuggerModel, 'setSelectedCallFrame');
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const callStackSidebarPane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const callStackSidebarPane = createCallStackSidebarPane(view);
             await callStackSidebarPane.flavorChanged(details);
             await callStackSidebarPane.updateComplete;
             sinon.assert.notCalled(setSelectedCallFrameSpy);
@@ -853,8 +872,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
             assert.strictEqual(callStackSidebarPane.activeCallFrameItem()?.title, 'func3');
             const checkbox = callStackSidebarPane.contentElement.querySelector('.ignore-listed-checkbox');
             assert.exists(checkbox);
-            checkbox.checked = true;
-            checkbox.dispatchEvent(new Event('change'));
+            checkbox.click();
             await callStackSidebarPane.updateComplete;
             items = callStackSidebarPane.contentElement.querySelectorAll('.call-frame-item');
             assert.isFalse(items[1].hasAttribute('hidden'));
@@ -864,8 +882,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
             assert.strictEqual(callStackSidebarPane.activeCallFrameItem()?.title, 'func3');
             assert.isTrue(items[2].classList.contains('selected'));
             assert.strictEqual(items[2].tabIndex, 0);
-            checkbox.checked = false;
-            checkbox.dispatchEvent(new Event('change'));
+            checkbox.click();
             await callStackSidebarPane.updateComplete;
             items = callStackSidebarPane.contentElement.querySelectorAll('.call-frame-item');
             assert.isTrue(items[1].hasAttribute('hidden'));
@@ -877,11 +894,22 @@ describeWithEnvironment('CallStackSidebarPane', () => {
             assert.strictEqual(items[2].tabIndex, 0);
             callStackSidebarPane.detach();
         });
+        it('renders the ignore-listed frames checkbox', async () => {
+            const { details, url2 } = getPausedDetailsWithMultipleFrames();
+            Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url2);
+            const callStackSidebarPane = Sources.CallStackSidebarPane.CallStackSidebarPane.instance({ forceNew: true });
+            renderElementIntoDOM(callStackSidebarPane, { includeCommonStyles: true });
+            await callStackSidebarPane.flavorChanged(details);
+            await callStackSidebarPane.updateComplete;
+            await raf();
+            await assertScreenshot('sources/call-stack-sidebar-pane-ignore-listed.png');
+            callStackSidebarPane.detach();
+        });
     });
     describe('ViewInput integration', () => {
         it('passes expected view input when not paused and when paused', async () => {
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const pane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const pane = createCallStackSidebarPane(view);
             renderElementIntoDOM(pane);
             await view.nextInput;
             assert.isTrue(view.input.notPaused);
@@ -910,7 +938,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
         });
         it('populates ContextMenu when onItemContextMenu is invoked', async () => {
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const pane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const pane = createCallStackSidebarPane(view);
             renderElementIntoDOM(pane);
             await view.nextInput;
             const { details } = getPausedDetails();
@@ -925,7 +953,7 @@ describeWithEnvironment('CallStackSidebarPane', () => {
         });
         it('passes warnings in view input when debug info is missing', async () => {
             const view = createViewFunctionStub(Sources.CallStackSidebarPane.CallStackSidebarPane);
-            const pane = new Sources.CallStackSidebarPane.CallStackSidebarPane(undefined, view);
+            const pane = createCallStackSidebarPane(view);
             renderElementIntoDOM(pane);
             await view.nextInput;
             const { details } = getPausedDetails();

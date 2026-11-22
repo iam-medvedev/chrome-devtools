@@ -9,14 +9,12 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { createUISourceCode } from '../../../testing/AiAssistanceHelpers.js';
 import { setupLocaleHooks } from '../../../testing/LocaleHelpers.js';
-import { createNetworkRequest, stubInitiatorGraph } from '../../../testing/NetworkRequestHelpers.js';
 import { setupRuntimeHooks } from '../../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../../testing/SettingsHelpers.js';
 import { loadBasicSourceMapExample } from '../../../testing/SourceMapHelpers.js';
 import { TestUniverse } from '../../../testing/TestUniverse.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Formatter from '../../formatter/formatter.js';
-import * as Logs from '../../logs/logs.js';
 import * as Workspace from '../../workspace/workspace.js';
 import { FileFormatter } from '../ai_assistance.js';
 describe('FileFormatter', () => {
@@ -29,7 +27,6 @@ describe('FileFormatter', () => {
         sinon.stub(Workspace.Workspace.WorkspaceImpl, 'instance').returns(universe.workspace);
         sinon.stub(SDK.TargetManager.TargetManager, 'instance').returns(universe.targetManager);
         sinon.stub(Common.Settings.Settings, 'instance').returns(universe.settings);
-        sinon.stub(Logs.NetworkLog.NetworkLog, 'instance').returns(universe.networkLog);
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
     });
@@ -66,31 +63,6 @@ File content:
 lorem ipsum
 \`\`\``);
         });
-        it('formats file with associated request initiator chain', async () => {
-            const networkRequest = createNetworkRequest({
-                url: 'https://www.example.com/script.js',
-            });
-            stubInitiatorGraph(networkRequest);
-            const uiSourceCode = await createUISourceCode({
-                content: 'lorem ipsum',
-                requestContentData: true,
-                url: networkRequest.url(),
-            });
-            sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL')
-                .withArgs(sinon.match.any, networkRequest.url())
-                .returns({ request: networkRequest });
-            assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile(), `File name: script.js
-URL: https://www.example.com/script.js
-Request initiator chain:
-- URL: <redacted cross-origin initiator URL>
-\t- URL: https://www.example.com/script.js
-\t\t- URL: https://www.example.com/1
-\t\t- URL: https://www.example.com/2
-File content:
-\`\`\`
-lorem ipsum
-\`\`\``);
-        });
         it('formats file content of a binary file', async () => {
             const uiSourceCode = await createUISourceCode({
                 resourceType: Common.ResourceType.resourceTypes.Image,
@@ -122,7 +94,7 @@ Content truncated: showing characters 0-5000 of 10500. The next part starts at o
                 const uiSourceCode = await createUISourceCode({ content, requestContentData: true });
                 assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile({ offset: 5_000 }), `File name: script.js
 URL: http://example.test/script.js
-File content:
+File content (characters 5000-10000 of 10500):
 \`\`\`
 ${'b'.repeat(5_000)}
 \`\`\`
@@ -132,7 +104,7 @@ Content truncated: showing characters 5000-10000 of 10500. The next part starts 
                 const uiSourceCode = await createUISourceCode({ content, requestContentData: true });
                 assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile({ offset: 10_000 }), `File name: script.js
 URL: http://example.test/script.js
-File content:
+File content (characters 10000-10500 of 10500):
 \`\`\`
 ${'c'.repeat(500)}
 \`\`\``);

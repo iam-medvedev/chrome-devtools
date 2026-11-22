@@ -563,7 +563,9 @@ var MainImpl = class _MainImpl {
   #universe;
   #supportsEmulation = false;
   #veLogsTestMode = false;
+  #eventListenersAbortController = new AbortController();
   constructor(opts) {
+    _MainImpl.instanceForTest?.disposeForTest();
     _MainImpl.instanceForTest = this;
     this.#supportsEmulation = opts?.supportsEmulation ?? false;
     void this.#loaded();
@@ -882,12 +884,11 @@ var MainImpl = class _MainImpl {
     );
     this.#toolbarsPromise = inspectorView.createToolbars();
     this.#veStartPromise = this.#toolbarsPromise.then(() => this.#startVeLogging());
-    inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
+    this.#renderStatusBar();
     this.#universe.commentManager.addEventListener(
       CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED,
-      (event) => {
-        inspectorView.renderStatusBar(event.data);
-      }
+      this.#renderStatusBar,
+      this
     );
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
@@ -895,6 +896,10 @@ var MainImpl = class _MainImpl {
     window.setTimeout(this.#initializeTarget.bind(this), 0);
     await this.#toolbarsPromise;
     _MainImpl.timeEnd("Main._showAppUI");
+  }
+  #renderStatusBar() {
+    const visible = AiAssistanceModel.AiUtils.isNaturalLanguageInterfaceEnabled() || this.#universe.commentManager.isAgentAttached();
+    UI2.InspectorView.InspectorView.instance().renderStatusBar(visible);
   }
   async #initializeTarget() {
     _MainImpl.time("Main._initializeTarget");
@@ -920,7 +925,11 @@ var MainImpl = class _MainImpl {
       runtimeModel?.addEventListener(SDK2.RuntimeModel.Events.BindingCalled, (event) => {
         if (event.data.name === binding) {
           if (event.data.payload === "true" || event.data.payload === "false") {
-            VisualLogging2.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
+            const enabled = event.data.payload === "true";
+            if (enabled && UI2.DockController.DockController.instance().dockSide() === UI2.DockController.DockState.UNDOCKED) {
+              Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
+            }
+            VisualLogging2.setVeDebuggingEnabled(enabled, (query) => {
               VisualLogging2.setVeDebuggingEnabled(false);
               void runtimeModel?.defaultExecutionContext()?.evaluateWithSelectedFrameFallback(
                 {
@@ -1013,12 +1022,13 @@ var MainImpl = class _MainImpl {
     }
   }
   #addMainEventListeners(document2) {
-    document2.addEventListener("keydown", this.#postDocumentKeyDown.bind(this), false);
-    document2.addEventListener("beforecopy", this.#redispatchClipboardEvent.bind(this), true);
-    document2.addEventListener("copy", this.#redispatchClipboardEvent.bind(this), false);
-    document2.addEventListener("cut", this.#redispatchClipboardEvent.bind(this), false);
-    document2.addEventListener("paste", this.#redispatchClipboardEvent.bind(this), false);
-    document2.addEventListener("contextmenu", this.#contextMenuEventFired.bind(this), true);
+    const { signal } = this.#eventListenersAbortController;
+    document2.addEventListener("keydown", this.#postDocumentKeyDown.bind(this), { capture: false, signal });
+    document2.addEventListener("beforecopy", this.#redispatchClipboardEvent.bind(this), { capture: true, signal });
+    document2.addEventListener("copy", this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+    document2.addEventListener("cut", this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+    document2.addEventListener("paste", this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+    document2.addEventListener("contextmenu", this.#contextMenuEventFired.bind(this), { capture: true, signal });
   }
   #onSuspendStateChanged() {
     const suspended = SDK2.TargetManager.TargetManager.instance().allTargetsSuspended();
@@ -1026,6 +1036,9 @@ var MainImpl = class _MainImpl {
   }
   redispatchClipboardEventForTest(event) {
     this.#redispatchClipboardEvent(event);
+  }
+  disposeForTest() {
+    this.#eventListenersAbortController.abort();
   }
   static instanceForTest = null;
 };

@@ -4,7 +4,6 @@
 
 /**
  * This file is auto-generated, do not edit manually. *
- * Re-generate with: scripts/tools/dt.py generate-protocol-resources.
  */
 
 
@@ -1546,10 +1545,13 @@ export namespace Audits {
     InteractiveContentOptionChild = 'InteractiveContentOptionChild',
     InteractiveContentLegendChild = 'InteractiveContentLegendChild',
     InteractiveContentSummaryDescendant = 'InteractiveContentSummaryDescendant',
+    AnchorMenuDescendant = 'AnchorMenuDescendant',
+    InteractiveContentMenuDescendant = 'InteractiveContentMenuDescendant',
+    TextMenuDescendant = 'TextMenuDescendant',
   }
 
   /**
-   * This issue warns about errors in the select or summary element content model.
+   * This issue warns about errors in the select, summary, or menu element content model.
    */
   export interface ElementAccessibilityIssueDetails {
     nodeId: DOM.BackendNodeId;
@@ -2353,6 +2355,11 @@ export namespace BluetoothEmulation {
 
   export interface SimulateGATTDisconnectionRequest {
     address: string;
+  }
+
+  export interface SimulateGATTMtuChangeRequest {
+    address: string;
+    mtu: integer;
   }
 
   /**
@@ -4892,7 +4899,6 @@ export namespace DOM {
     SelectListbox = 'select-listbox',
     PermissionIcon = 'permission-icon',
     OverscrollAreaParent = 'overscroll-area-parent',
-    OverscrollBackdrop = 'overscroll-backdrop',
     Skeleton = 'skeleton',
   }
 
@@ -12245,6 +12251,7 @@ export namespace Network {
     AttestationCertificationError = 'AttestationCertificationError',
     AttestationSigningError = 'AttestationSigningError',
     FederatedRegistrationRedirected = 'FederatedRegistrationRedirected',
+    CrossSiteRefreshSessionConfig = 'CrossSiteRefreshSessionConfig',
   }
 
   /**
@@ -17520,6 +17527,7 @@ export namespace Preload {
     FormSubmitWhenPrerendering = 'FormSubmitWhenPrerendering',
     CrossDocumentRestart = 'CrossDocumentRestart',
     PrefetchFailedCrossOriginSubframe = 'PrefetchFailedCrossOriginSubframe',
+    UnexpectedMainFrameNavigation = 'UnexpectedMainFrameNavigation',
   }
 
   /**
@@ -19190,7 +19198,13 @@ export namespace Target {
     browserContextId?: Browser.BrowserContextID;
     /**
      * Provides additional details for specific target types. For example, for
-     * the type of "page", this may be set to "prerender".
+     * the type of "page", this may be set to "prerender", and for "tab", this
+     * may be set to "unloaded". An unloaded tab has a history entry, but no
+     * document for it: for example, after the tab was discarded, after
+     * session restore without load, or after the renderer crashed. The tab
+     * stays unloaded until a new document commits. A new tab that has not
+     * navigated is not unloaded. Target.targetInfoChanged reports changes of
+     * this value for tabs.
      */
     subtype?: string;
     /**
@@ -22336,11 +22350,12 @@ export namespace Runtime {
     className?: string;
     /**
      * Remote object value in case of primitive values or JSON values (if it was requested).
+     * Not set in `deep` serialization mode, see `deepSerializedValue`.
      */
     value?: any;
     /**
      * Primitive value which can not be JSON-stringified does not have `value`, but gets this
-     * property.
+     * property. Not set in `deep` serialization mode, see `deepSerializedValue`.
      */
     unserializableValue?: UnserializableValue;
     /**

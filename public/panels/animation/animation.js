@@ -522,6 +522,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -846,7 +849,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1630,6 +1632,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2317,6 +2320,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3487,6 +3491,14 @@ var UIStrings = {
    */
   clearAll: "Clear all",
   /**
+   * @description Screen reader announcement after an animation group is closed.
+   */
+  animationGroupClosed: "Animation group closed",
+  /**
+   * @description Screen reader announcement after all animation groups are cleared.
+   */
+  animationGroupsCleared: "All animation groups cleared",
+  /**
    * @description Tooltip text that appears when hovering over largeicon pause button in the animation timeline of the Animations panel.
    */
   pauseAll: "Pause all",
@@ -3628,6 +3640,11 @@ var DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
         <devtools-button
           title=${i18nString(UIStrings.clearAll)}
           aria-label=${i18nString(UIStrings.clearAll)}
+          ${Lit.Directives.ref((element) => {
+    if (element instanceof HTMLElement) {
+      output.focusClearButton = () => element.focus();
+    }
+  })}
           .iconName=${"clear"}
           .jslogContext=${"animations.clear"}
           .variant=${Buttons.Button.Variant.TOOLBAR}
@@ -3665,7 +3682,6 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #pausedStatus;
   #timelineScrubber;
   #currentTime;
-  #clearButton;
   #selectedGroup;
   #renderQueue;
   #duration;
@@ -3695,6 +3711,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   /** Container & state for rendering `toolbarView` */
   #toolbarViewContainer;
   #toolbarView;
+  #toolbarViewOutput = {};
   constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
     super({
       jslog: `${VisualLogging.panel("animations").track({ resize: true })}`,
@@ -3901,7 +3918,11 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
         allPaused: this.#allPaused,
         onClearClick: () => {
           Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupsCleared);
+          const hadAnimationGroups = this.#groupBuffer.length > 0;
           this.reset();
+          if (hadAnimationGroups) {
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.animationGroupsCleared));
+          }
         },
         onTogglePauseAllClick: () => {
           this.#allPaused = !this.#allPaused;
@@ -3919,7 +3940,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
           this.setPlaybackRate(playbackRate);
         }
       },
-      void 0,
+      this.#toolbarViewOutput,
       this.#toolbarViewContainer
     );
   }
@@ -4061,9 +4082,10 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.clearTimeline();
     this.setPlaybackRate(this.#playbackRate);
     for (const group of this.#groupBuffer) {
-      group.release();
+      group.forget();
     }
     this.#groupBuffer = [];
+    this.#collectedGroups = [];
     this.clearPreviews();
     this.renderGrid();
   }
@@ -4075,6 +4097,10 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   animationGroupUpdated({
     data: group
   }) {
+    if (!this.#previewMap.has(group)) {
+      void this.addAnimationGroup(group);
+      return;
+    }
     void this.#animationGroupUpdatedThrottler.schedule(async () => {
       const preview = this.#previewMap.get(group);
       if (preview) {
@@ -4190,9 +4216,11 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
       }
       discardGroup.detach();
       this.#previewMap.delete(g);
-      g.release();
+      g.forget();
     }
-    this.#collectedGroups.push(group);
+    if (!this.#collectedGroups.includes(group)) {
+      this.#collectedGroups.push(group);
+    }
     return this.#createPreviewForCollectedGroupsThrottler.schedule(
       () => Promise.resolve(this.createPreviewForCollectedGroups())
     );
@@ -4221,14 +4249,14 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
       previewGroup.detach();
     }
     this.#previewMap.delete(group);
-    group.release();
+    group.forget();
+    UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.animationGroupClosed));
     if (this.#selectedGroup === group) {
       this.clearTimeline();
       this.renderGrid();
     }
-    const groupLength = this.#groupBuffer.length;
-    if (groupLength === 0) {
-      this.#clearButton.element.focus();
+    if (this.#groupBuffer.length === 0) {
+      this.#toolbarViewOutput.focusClearButton?.();
       return;
     }
     const nextGroup = currentGroupIndex >= this.#groupBuffer.length ? this.#previewMap.get(this.#groupBuffer[this.#groupBuffer.length - 1]) : this.#previewMap.get(this.#groupBuffer[currentGroupIndex]);

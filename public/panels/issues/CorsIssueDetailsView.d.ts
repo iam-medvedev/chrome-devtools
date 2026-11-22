@@ -46,6 +46,7 @@ export declare const DEFAULT_VIEW: View;
 export declare class CorsIssueDetailsView extends AffectedResourcesView {
     #private;
     constructor(parent: IssueView, issue: IssuesManager.IssueAggregator.AggregatedIssue, jslogContext: string, view?: View);
+    protected getAffectedResourcesLabelClass(): string;
     protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString;
     update(): void;
 }

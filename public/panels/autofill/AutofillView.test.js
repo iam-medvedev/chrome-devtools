@@ -141,6 +141,7 @@ describeWithEnvironment('AutofillView', () => {
         assert.isEmpty(input.highlightedMatches);
     });
     it('correctly rerenders upon AddressFormFilled events', async () => {
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
         const address = 'Foo Bar';
         const filledFields = [];
         const matches = [];

@@ -18,6 +18,7 @@ export declare class MainImpl {
     };
     readyForTest(): Promise<void>;
     redispatchClipboardEventForTest(event: Event): void;
+    disposeForTest(): void;
     static instanceForTest: MainImpl | null;
 }
 export declare class ZoomActionDelegate implements UI.ActionRegistration.ActionDelegate {

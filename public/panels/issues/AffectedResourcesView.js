@@ -1,21 +1,17 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-imperative-dom-api */
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as RequestLinkIcon from '../../ui/components/request_link_icon/request_link_icon.js';
-import { Icon } from '../../ui/kit/kit.js';
-import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, nothing, render } from '../../ui/lit/lit.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
+const { classMap, ref } = Directives;
+const { widget } = UI.Widget;
 const UIStrings = {
     /**
      * @description Fallback text in the Issues panel when a frame URL is unknown in the affected resources table.
@@ -45,6 +41,20 @@ export const extractShortPath = (path) => {
     // if path ends with '/', 2nd regex returns everything between the last two '/'
     return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
 };
+export function renderElementCell(element) {
+    const { deferredNode } = element;
+    if (!deferredNode) {
+        return html `<td>${element.nodeName || i18nString(UIStrings.unavailable)}</td>`;
+    }
+    // clang-format off
+    return html `
+    <td class="affected-resource-element devtools-link">${widget(PanelsCommon.DOMLinkifier.DeferredDOMNodeLink, {
+        deferredNode,
+        options: { textContent: element.nodeName || undefined, onClick: element.onElementClick },
+    })}</td>
+  `;
+    // clang-format on
+}
 export function renderFrameCell(frame) {
     if (!frame) {
         return html `<td></td>`;
@@ -76,55 +86,73 @@ export function renderFrameCell(frame) {
   `;
     // clang-format on
 }
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const labelClasses = { 'affected-resource-label': true };
+    if (input.labelClass) {
+        labelClasses[input.labelClass] = true;
+    }
+    render(html `<div class=${classMap(labelClasses)}>${input.resourceNameWithCount}</div>`, target);
+};
+export const TABLE_VIEW = (input, _output, target) => {
+    render(html `<table class="affected-resource-list" ${ref(e => {
+        if (e instanceof HTMLTableElement) {
+            input.onTableRef(e);
+        }
+    })}></table>`, target);
+};
 /**
  * The base class for all affected resource views. It provides basic scaffolding
  * as well as machinery for resolving request and frame ids to SDK objects.
  */
 export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     #parentView;
+    #view;
     issue;
-    affectedResourcesCountElement;
     affectedResources;
-    #affectedResourcesCount;
-    #frameListeners;
-    #unresolvedFrameIds;
+    #affectedResourcesCount = 0;
+    #resourceNameWithCount = '';
+    #frameListeners = [];
+    #unresolvedFrameIds = new Set();
     requestResolver;
-    constructor(parent, issue, jslogContext) {
+    constructor(parent, issue, jslogContext, view = DEFAULT_VIEW, tableView = TABLE_VIEW) {
         super(/* title */ undefined, /* expandable */ undefined, jslogContext);
         this.#parentView = parent;
+        this.#view = view;
         this.issue = issue;
         this.toggleOnClick = true;
-        this.affectedResourcesCountElement = this.createAffectedResourcesCounter();
-        this.affectedResources = this.createAffectedResources();
-        this.#affectedResourcesCount = 0;
+        this.#render();
+        // eslint-disable-next-line @devtools/no-imperative-dom-api
+        const body = new UI.TreeOutline.TreeElement();
+        let table;
+        tableView({
+            onTableRef: el => {
+                table = el;
+            },
+        }, undefined, body.listItemElement);
+        if (!table) {
+            throw new Error('The affected resources table view did not render a table');
+        }
+        this.appendChild(body);
+        this.affectedResources = table;
         this.requestResolver = new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance());
-        this.#frameListeners = [];
-        this.#unresolvedFrameIds = new Set();
     }
-    /**
-     * Sets the issue to take the resources from. Does not
-     * trigger an update, the caller needs to do that explicitly.
-     */
     setIssue(issue) {
         this.issue = issue;
     }
-    createAffectedResourcesCounter() {
-        const counterLabel = document.createElement('div');
-        counterLabel.classList.add('affected-resource-label');
-        this.listItemElement.appendChild(counterLabel);
-        return counterLabel;
+    #render() {
+        const input = {
+            resourceNameWithCount: this.#resourceNameWithCount,
+            labelClass: this.getAffectedResourcesLabelClass(),
+        };
+        this.#view(input, undefined, this.listItemElement);
     }
-    createAffectedResources() {
-        const body = new UI.TreeOutline.TreeElement();
-        const affectedResources = document.createElement('table');
-        affectedResources.classList.add('affected-resource-list');
-        body.listItemElement.appendChild(affectedResources);
-        this.appendChild(body);
-        return affectedResources;
+    getAffectedResourcesLabelClass() {
+        return undefined;
     }
     updateAffectedResourceCount(count) {
         this.#affectedResourcesCount = count;
-        this.affectedResourcesCountElement.textContent = this.getResourceNameWithCount(count);
+        this.#resourceNameWithCount = this.getResourceNameWithCount(count);
+        this.#render();
         this.hidden = this.#affectedResourcesCount === 0;
         this.#parentView.updateAffectedResourceVisibility();
     }
@@ -132,7 +160,6 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
         return this.#affectedResourcesCount === 0;
     }
     clear() {
-        this.affectedResources.textContent = '';
         this.requestResolver.clear();
     }
     expandIfOneResource() {
@@ -199,99 +226,14 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
             },
         };
     }
-    createFrameCell(frameId, issueCategory) {
-        const frame = this.#resolveFrameId(frameId);
-        const url = frame && (frame.unreachableUrl() || frame.url) || i18nString(UIStrings.unknown);
-        const frameCell = document.createElement('td');
-        frameCell.classList.add('affected-resource-cell');
-        if (frame) {
-            const icon = new Icon();
-            icon.name = 'code-circle';
-            icon.classList.add('link', 'elements-panel', 'medium');
-            icon.onclick = async () => {
+    createElementCellData({ backendNodeId, nodeName, target }, issueCategory) {
+        return {
+            nodeName,
+            deferredNode: target ? new SDK.DOMModel.DeferredDOMNode(target, backendNodeId) : undefined,
+            onElementClick: () => {
                 Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.ELEMENT */);
-                const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
-                if (frame) {
-                    const ownerNode = await frame.getOwnerDOMNodeOrDocument();
-                    if (ownerNode) {
-                        void Common.Revealer.reveal(ownerNode);
-                    }
-                }
-            };
-            icon.title = i18nString(UIStrings.clickToRevealTheFramesDomNodeIn);
-            frameCell.appendChild(icon);
-        }
-        frameCell.appendChild(document.createTextNode(url));
-        frameCell.onmouseenter = () => {
-            const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
-            if (frame) {
-                void frame.highlight();
-            }
+            },
         };
-        frameCell.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
-        return frameCell;
-    }
-    createRequestCell(affectedRequest, options = {}) {
-        const requestCell = document.createElement('td');
-        requestCell.classList.add('affected-resource-cell');
-        const requestLinkIcon = new RequestLinkIcon.RequestLinkIcon.RequestLinkIcon();
-        requestLinkIcon.data = { ...options, affectedRequest, requestResolver: this.requestResolver, displayURL: true };
-        requestCell.appendChild(requestLinkIcon);
-        return requestCell;
-    }
-    async createElementCell({ backendNodeId, nodeName, target }, issueCategory) {
-        if (!target) {
-            const cellElement = document.createElement('td');
-            cellElement.textContent = nodeName || i18nString(UIStrings.unavailable);
-            return cellElement;
-        }
-        function sendTelemetry() {
-            Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* AffectedItem.ELEMENT */);
-        }
-        const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
-        const anchor = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(deferredDOMNode, { textContent: nodeName || undefined, onClick: sendTelemetry });
-        const cellElement = document.createElement('td');
-        cellElement.classList.add('affected-resource-element', 'devtools-link');
-        render(anchor, cellElement);
-        return cellElement;
-    }
-    appendSourceLocation(element, sourceLocation, target) {
-        const sourceCodeLocation = document.createElement('td');
-        sourceCodeLocation.classList.add('affected-source-location');
-        if (sourceLocation) {
-            const linkifier = new Components.Linkifier.Linkifier(UI.UIUtils.MaxLengthForDisplayedURLsInConsole);
-            const sourceAnchor = linkifier.linkifyScriptLocation(target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber, { columnNumber: sourceLocation.columnNumber });
-            sourceAnchor.setAttribute('jslog', `${VisualLogging.link('source-location').track({ click: true })}`);
-            sourceCodeLocation.appendChild(sourceAnchor);
-        }
-        element.appendChild(sourceCodeLocation);
-    }
-    appendColumnTitle(header, title, additionalClass = null) {
-        const info = document.createElement('td');
-        info.classList.add('affected-resource-header');
-        if (additionalClass) {
-            info.classList.add(additionalClass);
-        }
-        info.textContent = title;
-        header.appendChild(info);
-    }
-    createIssueDetailCell(textContent, additionalClass = null) {
-        const cell = document.createElement('td');
-        if (typeof textContent === 'string') {
-            cell.textContent = textContent;
-        }
-        else {
-            cell.appendChild(textContent);
-        }
-        if (additionalClass) {
-            cell.classList.add(additionalClass);
-        }
-        return cell;
-    }
-    appendIssueDetailCell(element, textContent, additionalClass = null) {
-        const cell = this.createIssueDetailCell(textContent, additionalClass);
-        element.appendChild(cell);
-        return cell;
     }
 }
 //# sourceMappingURL=AffectedResourcesView.js.map

@@ -33,6 +33,7 @@ core/host/DispatchHttpRequestClient.test.js
 core/host/GcaClient.test.js
 core/host/GdpClient.test.js
 core/host/Platform.test.js
+core/host/ResourceLoader.test.js
 core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
 core/i18n/NumberFormatter.test.js
@@ -79,6 +80,7 @@ core/sdk/DebuggerModel.test.js
 core/sdk/EmulationModel.test.js
 core/sdk/EnhancedTracesParser.test.js
 core/sdk/FrameManager.test.js
+core/sdk/IsolateManager.test.js
 core/sdk/NetworkManager.test.js
 core/sdk/NetworkRequest.test.js
 core/sdk/NetworkRequestAccess.test.js
@@ -226,6 +228,9 @@ models/comment_manager/CommentThread.test.js
 models/computed_style/ComputedStyleModel.test.js
 models/cpu_profile/CPUProfileDataModel.test.js
 models/crux-manager/CrUXManager.test.js
+models/devtools_state/StateManager.test.js
+models/devtools_state/providers/CPUThrottlingStateProvider.test.js
+models/devtools_state/providers/SettingsStateProvider.test.js
 models/elements/DOMChanges.test.js
 models/elements/StyleChanges.test.js
 models/emulation/DeviceModeModel.test.js

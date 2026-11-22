@@ -10,6 +10,7 @@ import { cleanTestDOM } from '../../testing/DOMHooks.js';
 import { createTarget, describeWithEnvironment, waitFor } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Animation from './animation.js';
 const TIME_ANIMATION_PAYLOAD = {
     id: 'animation-id',
@@ -245,6 +246,155 @@ describeWithEnvironment('AnimationTimeline', () => {
             assertControlsDisabled(false);
         });
     });
+    describe('replaying closed animation groups', () => {
+        let model;
+        let clearButton;
+        let previewsCreated;
+        let group;
+        beforeEach(async () => {
+            const animationModel = target.model(SDK.AnimationModel.AnimationModel);
+            assert.exists(animationModel);
+            model = animationModel;
+            view = new Animation.AnimationTimeline.AnimationTimeline();
+            view.markAsRoot();
+            renderElementIntoDOM(view);
+            const button = view.contentElement.querySelector('devtools-button[aria-label="Clear all"]');
+            assert.exists(button);
+            clearButton = button;
+            previewsCreated = sinon.stub(view, 'previewsCreatedForTest');
+            const previewCreated = expectCall(previewsCreated);
+            await model.animationStarted(TIME_ANIMATION_PAYLOAD);
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 1);
+            group = view.groupBuffer[0];
+        });
+        const closeGroup = async () => {
+            const preview = view.previewMap.get(group);
+            assert.exists(preview);
+            await waitFor('.animation-remove-button', preview.contentElement);
+            const removeButton = preview.contentElement.querySelector('.animation-remove-button');
+            assert.exists(removeButton);
+            removeButton.click();
+        };
+        const clearGroups = () => {
+            clearButton.click();
+        };
+        // Wait for child previews to render, then verify state and DOM agree so stale or duplicate previews cannot hide.
+        const assertPreviewCount = async (count) => {
+            assert.lengthOf(view.groupBuffer, count);
+            assert.strictEqual(view.previewMap.size, count);
+            for (const preview of view.previewMap.values()) {
+                await waitFor('.animation-buffer-preview', preview.contentElement);
+            }
+            assert.lengthOf(view.contentElement.querySelectorAll('.animation-buffer-preview'), count);
+        };
+        for (const { description, close } of [{ description: 'closing one group', close: closeGroup },
+            { description: 'clearing all groups', close: clearGroups },
+        ]) {
+            describe(description, () => {
+                it('restores the preview when a known animation runs again', async () => {
+                    const previousPreview = view.previewMap.get(group);
+                    const releaseAnimations = sinon.spy(model.agent, 'invoke_releaseAnimations');
+                    await close();
+                    await assertPreviewCount(0);
+                    assert.isFalse(model.animationGroups.has(group.id()));
+                    sinon.assert.notCalled(releaseAnimations);
+                    previewsCreated.resetHistory();
+                    const previewCreated = expectCall(previewsCreated);
+                    await model.animationUpdated({ ...TIME_ANIMATION_PAYLOAD, startTime: 100 });
+                    await previewCreated;
+                    assert.lengthOf(view.groupBuffer, 1);
+                    const restoredGroup = view.groupBuffer[0];
+                    assert.notStrictEqual(restoredGroup, group);
+                    const restoredPreview = view.previewMap.get(restoredGroup);
+                    assert.exists(restoredPreview);
+                    assert.notStrictEqual(restoredPreview, previousPreview);
+                    await assertPreviewCount(1);
+                });
+            });
+        }
+        it('restores the preview when a new animation matches the closed group', async () => {
+            await closeGroup();
+            await assertPreviewCount(0);
+            previewsCreated.resetHistory();
+            const previewCreated = expectCall(previewsCreated);
+            await model.animationStarted({ ...TIME_ANIMATION_PAYLOAD, id: 'replayed-animation-id', startTime: 100 });
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 1);
+            assert.notStrictEqual(view.groupBuffer[0], group);
+            await assertPreviewCount(1);
+        });
+        it('focuses the clear button after closing the last group', async () => {
+            await closeGroup();
+            assert.isTrue(clearButton.shadowRoot?.querySelector('button')?.hasFocus());
+        });
+        it('announces when an animation group is closed', async () => {
+            const alertSpy = sinon.spy(UI.ARIAUtils.LiveAnnouncer, 'alert');
+            await closeGroup();
+            sinon.assert.calledOnceWithExactly(alertSpy, 'Animation group closed');
+        });
+        it('announces when all animation groups are cleared', () => {
+            const alertSpy = sinon.spy(UI.ARIAUtils.LiveAnnouncer, 'alert');
+            clearGroups();
+            sinon.assert.calledOnceWithExactly(alertSpy, 'All animation groups cleared');
+        });
+        it('creates only one preview for repeated updates before rendering', async () => {
+            await closeGroup();
+            await assertPreviewCount(0);
+            previewsCreated.resetHistory();
+            const previewCreated = expectCall(previewsCreated);
+            void model.animationUpdated({ ...TIME_ANIMATION_PAYLOAD, startTime: 100 });
+            void model.animationUpdated({ ...TIME_ANIMATION_PAYLOAD, startTime: 100 });
+            sinon.assert.notCalled(previewsCreated);
+            assert.strictEqual(view.previewMap.size, 0);
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 1);
+            assert.notStrictEqual(view.groupBuffer[0], group);
+            await assertPreviewCount(1);
+        });
+        it('restores all cleared groups when they update together', async () => {
+            const secondPayload = { ...TIME_ANIMATION_PAYLOAD, id: 'second-animation-id', cssId: 'second', startTime: 100 };
+            previewsCreated.resetHistory();
+            let previewCreated = expectCall(previewsCreated);
+            await model.animationStarted(secondPayload);
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 2);
+            const groups = [...view.groupBuffer];
+            clearGroups();
+            await assertPreviewCount(0);
+            assert.strictEqual(model.animationGroups.size, 0);
+            previewsCreated.resetHistory();
+            previewCreated = expectCall(previewsCreated);
+            void model.animationUpdated({ ...TIME_ANIMATION_PAYLOAD, startTime: 200 });
+            void model.animationUpdated({ ...secondPayload, startTime: 300 });
+            sinon.assert.notCalled(previewsCreated);
+            assert.strictEqual(view.previewMap.size, 0);
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 2);
+            for (const restoredGroup of view.groupBuffer) {
+                assert.notInclude(groups, restoredGroup);
+            }
+            await assertPreviewCount(2);
+        });
+        it('discards pending previews when clearing all groups', async () => {
+            await closeGroup();
+            previewsCreated.resetHistory();
+            let previewCreated = expectCall(previewsCreated);
+            model.dispatchEventToListeners(SDK.AnimationModel.Events.AnimationGroupUpdated, group);
+            sinon.assert.notCalled(previewsCreated);
+            assert.strictEqual(view.previewMap.size, 0);
+            clearGroups();
+            await previewCreated;
+            await assertPreviewCount(0);
+            previewsCreated.resetHistory();
+            previewCreated = expectCall(previewsCreated);
+            await model.animationUpdated({ ...TIME_ANIMATION_PAYLOAD, startTime: 100 });
+            await previewCreated;
+            assert.lengthOf(view.groupBuffer, 1);
+            assert.notStrictEqual(view.groupBuffer[0], group);
+            await assertPreviewCount(1);
+        });
+    });
     describe('resizing time controls', () => {
         it('updates --timeline-controls-width and calls onResize', async () => {
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
@@ -413,7 +563,14 @@ describeWithEnvironment('AnimationTimeline', () => {
         let waitForPreviewsManualPromise;
         let waitForAnimationGroupSelectedPromise;
         let waitForScheduleRedrawAfterAnimationGroupUpdated;
-        let waitForScrubberOnFinish;
+        const finishScrubber = async () => {
+            const scrubber = view.element.shadowRoot.querySelector('.animation-scrubber');
+            assert.exists(scrubber);
+            const [scrubberPlayer] = scrubber.getAnimations();
+            assert.exists(scrubberPlayer);
+            scrubberPlayer.finish();
+            await scrubberPlayer.finished;
+        };
         let domModel;
         let animationModel;
         let contentDocument;
@@ -421,7 +578,6 @@ describeWithEnvironment('AnimationTimeline', () => {
             waitForPreviewsManualPromise = new ManualPromise();
             waitForAnimationGroupSelectedPromise = new ManualPromise();
             waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
-            waitForScrubberOnFinish = new ManualPromise();
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
             renderElementIntoDOM(view);
@@ -433,9 +589,6 @@ describeWithEnvironment('AnimationTimeline', () => {
             });
             sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
                 waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
-            });
-            sinon.stub(view, 'scrubberOnFinishForTest').callsFake(() => {
-                waitForScrubberOnFinish.resolve();
             });
             const model = target.model(SDK.AnimationModel.AnimationModel);
             assert.isNotNull(model);
@@ -480,7 +633,7 @@ describeWithEnvironment('AnimationTimeline', () => {
                 await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
                 // 3 (iterations) * 10 (iteration duration)
                 assert.strictEqual(view.duration(), 30);
-                await waitForScrubberOnFinish.wait();
+                await finishScrubber();
             });
             it('should schedule re-draw on animationGroupUpdated', async () => {
                 const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
@@ -496,7 +649,7 @@ describeWithEnvironment('AnimationTimeline', () => {
                     },
                 });
                 await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
-                await waitForScrubberOnFinish.wait();
+                await finishScrubber();
             });
         });
     });

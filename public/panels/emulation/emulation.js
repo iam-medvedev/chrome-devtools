@@ -8,18 +8,42 @@ var __export = (target, all) => {
 var AdvancedApp_exports = {};
 __export(AdvancedApp_exports, {
   AdvancedApp: () => AdvancedApp,
-  AdvancedAppProvider: () => AdvancedAppProvider
+  AdvancedAppProvider: () => AdvancedAppProvider,
+  DEFAULT_TOOLBOX_VIEW: () => DEFAULT_TOOLBOX_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4
 });
 import * as Host3 from "../../core/host/host.js";
 import * as UI5 from "../../ui/legacy/legacy.js";
 import * as ThemeSupport from "../../ui/legacy/theme_support/theme_support.js";
+import * as Lit from "../../ui/lit/lit.js";
+
+// gen/front_end/panels/emulation/advancedApp.css.js
+var advancedApp_css_default = `/*
+ * Copyright 2026 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  /* Move the resizer of the root split towards the inspected page when docked to the side. */
+  devtools-split-view[data-dock-side="right"]::part(resizer) {
+    transform: translateX(2px);
+  }
+
+  devtools-split-view[data-dock-side="left"]::part(resizer) {
+    transform: translateX(-2px);
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./advancedApp.css")} */`;
 
 // ../../front_end/panels/emulation/DeviceModeView.ts
 var DeviceModeView_exports = {};
 __export(DeviceModeView_exports, {
   ActionDelegate: () => ActionDelegate,
-  DEFAULT_DEVICE_MODE_VIEW: () => DEFAULT_DEVICE_MODE_VIEW,
+  DEFAULT_DEVICE_MODE_VIEW: () => DEFAULT_VIEW3,
   DEFAULT_RULER_VIEW: () => DEFAULT_RULER_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   DeviceModeView: () => DeviceModeView,
   Ruler: () => Ruler,
   RulerEvents: () => RulerEvents
@@ -403,28 +427,28 @@ var DEFAULT_VIEW = (input, _output, target) => {
 };
 var DeviceModeToolbar = class extends UI.Widget.Widget {
   #model;
-  showMediaInspectorSetting;
-  showRulersSetting;
-  showDeviceScaleFactorSetting;
-  showUserAgentTypeSetting;
-  autoAdjustScaleSetting;
-  lastMode;
-  emulatedDevicesList;
-  persistenceSetting;
-  view;
+  #showMediaInspectorSetting;
+  #showRulersSetting;
+  #showDeviceScaleFactorSetting;
+  #showUserAgentTypeSetting;
+  #autoAdjustScaleSetting;
+  #lastMode;
+  #emulatedDevicesList;
+  #persistenceSetting;
+  #view;
   constructor(element, view = DEFAULT_VIEW) {
     super(element);
-    this.view = view;
-    this.showMediaInspectorSetting = Common.Settings.Settings.instance().resolve(
+    this.#view = view;
+    this.#showMediaInspectorSetting = Common.Settings.Settings.instance().resolve(
       SettingsUI.EmulationSettings.showMediaQueryInspectorSettingDescriptor
     );
-    this.showRulersSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showRulersSettingDescriptor);
-    this.showDeviceScaleFactorSetting = Common.Settings.Settings.instance().createSetting("emulation.show-device-scale-factor", false);
-    this.showUserAgentTypeSetting = Common.Settings.Settings.instance().createSetting("emulation.show-user-agent-type", false);
-    this.autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting("emulation.auto-adjust-scale", true);
-    this.lastMode = /* @__PURE__ */ new Map();
-    this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
-    this.persistenceSetting = Common.Settings.Settings.instance().createSetting(
+    this.#showRulersSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.showRulersSettingDescriptor);
+    this.#showDeviceScaleFactorSetting = Common.Settings.Settings.instance().createSetting("emulation.show-device-scale-factor", false);
+    this.#showUserAgentTypeSetting = Common.Settings.Settings.instance().createSetting("emulation.show-user-agent-type", false);
+    this.#autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting("emulation.auto-adjust-scale", true);
+    this.#lastMode = /* @__PURE__ */ new Map();
+    this.#emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
+    this.#persistenceSetting = Common.Settings.Settings.instance().createSetting(
       "emulation.device-mode-value",
       { device: "", orientation: "", mode: "" }
     );
@@ -467,40 +491,40 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    this.showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
-    this.showRulersSetting.addChangeListener(this.requestUpdate, this);
-    this.showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
-    this.showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
-    this.autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
-    this.emulatedDevicesList.addEventListener(
+    this.#showMediaInspectorSetting.addChangeListener(this.requestUpdate, this);
+    this.#showRulersSetting.addChangeListener(this.requestUpdate, this);
+    this.#showDeviceScaleFactorSetting.addChangeListener(this.requestUpdate, this);
+    this.#showUserAgentTypeSetting.addChangeListener(this.requestUpdate, this);
+    this.#autoAdjustScaleSetting.addChangeListener(this.requestUpdate, this);
+    this.#emulatedDevicesList.addEventListener(
       EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
-      this.deviceListChanged,
+      this.#deviceListChanged,
       this
     );
-    this.emulatedDevicesList.addEventListener(
+    this.#emulatedDevicesList.addEventListener(
       EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
-      this.deviceListChanged,
+      this.#deviceListChanged,
       this
     );
     this.#addModelListeners();
     this.performUpdate();
-    this.restore();
+    this.#restore();
   }
   willHide() {
     super.willHide();
-    this.showMediaInspectorSetting.removeChangeListener(this.requestUpdate, this);
-    this.showRulersSetting.removeChangeListener(this.requestUpdate, this);
-    this.showDeviceScaleFactorSetting.removeChangeListener(this.requestUpdate, this);
-    this.showUserAgentTypeSetting.removeChangeListener(this.requestUpdate, this);
-    this.autoAdjustScaleSetting.removeChangeListener(this.requestUpdate, this);
-    this.emulatedDevicesList.removeEventListener(
+    this.#showMediaInspectorSetting.removeChangeListener(this.requestUpdate, this);
+    this.#showRulersSetting.removeChangeListener(this.requestUpdate, this);
+    this.#showDeviceScaleFactorSetting.removeChangeListener(this.requestUpdate, this);
+    this.#showUserAgentTypeSetting.removeChangeListener(this.requestUpdate, this);
+    this.#autoAdjustScaleSetting.removeChangeListener(this.requestUpdate, this);
+    this.#emulatedDevicesList.removeEventListener(
       EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED,
-      this.deviceListChanged,
+      this.#deviceListChanged,
       this
     );
-    this.emulatedDevicesList.removeEventListener(
+    this.#emulatedDevicesList.removeEventListener(
       EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED,
-      this.deviceListChanged,
+      this.#deviceListChanged,
       this
     );
     this.#removeModelListeners();
@@ -518,9 +542,9 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     const device = this.model.device();
     if (this.model.type() !== EmulationModel.DeviceModeModel.Type.None) {
       if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device && device) {
-        this.lastMode.set(device, this.model.mode());
+        this.#lastMode.set(device, this.model.mode());
       }
-      const value = this.persistenceSetting.get();
+      const value = this.#persistenceSetting.get();
       const currentMode = this.model.mode();
       if (device) {
         value.device = device.title;
@@ -531,7 +555,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
         value.orientation = "";
         value.mode = "";
       }
-      this.persistenceSetting.set(value);
+      this.#persistenceSetting.set(value);
     }
     let modeButtonTitle = i18nString(UIStrings.rotate);
     let modeButtonDisabled = false;
@@ -550,11 +574,11 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     }
     const showSpanButton = Boolean(device?.isDualScreen);
     const showPostureItem = Boolean(!device?.isDualScreen && device?.isFoldableScreen);
-    const deviceModeOptions = this.getDeviceModeOptions();
-    const scaleOptions = this.getScaleOptions();
-    const dprOptions = this.getDeviceScaleFactorOptions();
-    const uaOptions = this.getUserAgentOptions();
-    const postureOptions = this.getDevicePostureOptions();
+    const deviceModeOptions = this.#getDeviceModeOptions();
+    const scaleOptions = this.#getScaleOptions();
+    const dprOptions = this.#getDeviceScaleFactorOptions();
+    const uaOptions = this.#getUserAgentOptions();
+    const postureOptions = this.#getDevicePostureOptions();
     const standardOptions = deviceModeOptions.standard.flatMap((g) => g.options);
     const selectedDeviceOption = [
       deviceModeOptions.responsive,
@@ -595,10 +619,10 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       dprText,
       uaText,
       postureText,
-      onDeviceChange: this.onDeviceChange.bind(this),
+      onDeviceChange: this.#onDeviceChange.bind(this),
       onWidthChange: (event) => {
         const width = Number(event.target.value);
-        if (this.autoAdjustScaleSetting.get()) {
+        if (this.#autoAdjustScaleSetting.get()) {
           this.model?.setWidthAndScaleToFit(width);
         } else {
           this.model?.setWidth(width);
@@ -606,52 +630,52 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       },
       onHeightChange: (event) => {
         const height = Number(event.target.value);
-        if (this.autoAdjustScaleSetting.get()) {
+        if (this.#autoAdjustScaleSetting.get()) {
           this.model?.setHeightAndScaleToFit(height);
         } else {
           this.model?.setHeight(height);
         }
       },
-      onScaleChange: this.onScaleChange.bind(this),
-      onDeviceScaleChange: this.onDeviceScaleChange.bind(this),
-      onUAChange: this.onUAChange.bind(this),
-      onPostureChange: this.onPostureChange.bind(this),
-      onModeMenuClick: this.modeMenuClicked.bind(this),
-      onSpanClick: this.spanClicked.bind(this),
+      onScaleChange: this.#onScaleChange.bind(this),
+      onDeviceScaleChange: this.#onDeviceScaleChange.bind(this),
+      onUAChange: this.#onUAChange.bind(this),
+      onPostureChange: this.#onPostureChange.bind(this),
+      onModeMenuClick: this.#modeMenuClicked.bind(this),
+      onSpanClick: this.#spanClicked.bind(this),
       onMoreOptionsClick: (event) => {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        this.appendOptionsMenuItems(contextMenu);
+        this.#appendOptionsMenuItems(contextMenu);
         void contextMenu.show();
       },
-      autoAdjustScaleSetting: this.autoAdjustScaleSetting,
-      showDeviceScaleFactorSetting: this.showDeviceScaleFactorSetting,
-      showUserAgentTypeSetting: this.showUserAgentTypeSetting
+      autoAdjustScaleSetting: this.#autoAdjustScaleSetting,
+      showDeviceScaleFactorSetting: this.#showDeviceScaleFactorSetting,
+      showUserAgentTypeSetting: this.#showUserAgentTypeSetting
     };
-    this.view(input, void 0, this.contentElement);
+    this.#view(input, void 0, this.contentElement);
   }
-  getDevicePostureOptions() {
-    const currentPosture = this.currentDevicePosture();
+  #getDevicePostureOptions() {
+    const currentPosture = this.#currentDevicePosture();
     return ["Continuous", "Folded"].map((title) => ({ title, value: title, selected: currentPosture === title }));
   }
-  onPostureChange(event) {
+  #onPostureChange(event) {
     const value = event.target.value;
-    if (value !== this.currentDevicePosture()) {
-      this.spanClicked();
+    if (value !== this.#currentDevicePosture()) {
+      this.#spanClicked();
     }
   }
-  currentDevicePosture() {
+  #currentDevicePosture() {
     const mode = this.model?.mode();
     if (mode && (mode.orientation === EmulationModel.EmulatedDevices.VerticalSpanned || mode.orientation === EmulationModel.EmulatedDevices.HorizontalSpanned)) {
       return "Folded";
     }
     return "Continuous";
   }
-  getScaleOptions() {
+  #getScaleOptions() {
     if (!this.model) {
       return [];
     }
     const values = [0.5, 0.75, 1, 1.25, 1.5, 2];
-    const isAutoAdjusting = this.autoAdjustScaleSetting.get();
+    const isAutoAdjusting = this.#autoAdjustScaleSetting.get();
     const currentScale = this.model.scaleSetting().get();
     if (!isAutoAdjusting && !values.includes(currentScale)) {
       values.push(currentScale);
@@ -676,13 +700,13 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     }
     return options;
   }
-  onScaleChange(event) {
+  #onScaleChange(event) {
     if (!this.model) {
       return;
     }
     const value = Number(event.target.value);
     if (value === 0) {
-      this.autoAdjustScaleSetting.set(true);
+      this.#autoAdjustScaleSetting.set(true);
       if (this.model.type() === EmulationModel.DeviceModeModel.Type.Responsive) {
         const appliedSize = this.model.appliedDeviceSize();
         this.model.setSizeAndScaleToFit(appliedSize.width, appliedSize.height);
@@ -694,11 +718,11 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
         }
       }
     } else {
-      this.autoAdjustScaleSetting.set(false);
+      this.#autoAdjustScaleSetting.set(false);
       this.model.scaleSetting().set(value);
     }
   }
-  getDeviceScaleFactorOptions() {
+  #getDeviceScaleFactorOptions() {
     if (!this.model) {
       return [];
     }
@@ -725,11 +749,11 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       };
     });
   }
-  onDeviceScaleChange(event) {
+  #onDeviceScaleChange(event) {
     const value = Number(event.target.value);
     this.model?.deviceScaleFactorSetting().set(value);
   }
-  getUserAgentOptions() {
+  #getUserAgentOptions() {
     if (!this.model) {
       return [];
     }
@@ -747,18 +771,18 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       jslogContext: Platform.StringUtilities.toKebabCase(value)
     }));
   }
-  onUAChange(event) {
+  #onUAChange(event) {
     const value = event.target.value;
     this.model?.uaSetting().set(value);
   }
-  appendOptionsMenuItems(contextMenu) {
+  #appendOptionsMenuItems(contextMenu) {
     if (!this.model) {
       return;
     }
     const model = this.model;
     appendToggleItem(
       contextMenu.headerSection(),
-      this.showMediaInspectorSetting,
+      this.#showMediaInspectorSetting,
       i18nString(UIStrings.hideMediaQueries),
       i18nString(UIStrings.showMediaQueries),
       void 0,
@@ -766,7 +790,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     );
     appendToggleItem(
       contextMenu.headerSection(),
-      this.showRulersSetting,
+      this.#showRulersSetting,
       i18nString(UIStrings.hideRulers),
       i18nString(UIStrings.showRulers),
       void 0,
@@ -774,7 +798,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     );
     appendToggleItem(
       contextMenu.defaultSection(),
-      this.showDeviceScaleFactorSetting,
+      this.#showDeviceScaleFactorSetting,
       i18nString(UIStrings.removeDevicePixelRatio),
       i18nString(UIStrings.addDevicePixelRatio),
       void 0,
@@ -782,7 +806,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     );
     appendToggleItem(
       contextMenu.defaultSection(),
-      this.showUserAgentTypeSetting,
+      this.#showUserAgentTypeSetting,
       i18nString(UIStrings.removeDeviceType),
       i18nString(UIStrings.addDeviceType),
       void 0,
@@ -791,7 +815,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     contextMenu.appendItemsAtLocation("deviceModeMenu");
     contextMenu.footerSection().appendItem(
       i18nString(UIStrings.resetToDefaults),
-      this.reset.bind(this),
+      this.#reset.bind(this),
       { jslogContext: "reset-to-defaults" }
     );
     contextMenu.footerSection().appendItem(
@@ -814,43 +838,43 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       );
     }
   }
-  reset() {
-    this.showDeviceScaleFactorSetting.set(false);
-    this.showUserAgentTypeSetting.set(false);
-    this.showMediaInspectorSetting.set(false);
-    this.showRulersSetting.set(false);
+  #reset() {
+    this.#showDeviceScaleFactorSetting.set(false);
+    this.#showUserAgentTypeSetting.set(false);
+    this.#showMediaInspectorSetting.set(false);
+    this.#showRulersSetting.set(false);
     this.model?.reset();
   }
-  emulateDevice(device) {
+  #emulateDevice(device) {
     if (!this.model) {
       return;
     }
     this.model.emulate(
       EmulationModel.DeviceModeModel.Type.Device,
       device,
-      this.lastMode.get(device) || device.modes[0]
+      this.#lastMode.get(device) || device.modes[0]
     );
   }
-  switchToResponsive() {
+  #switchToResponsive() {
     this.model?.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
   }
-  filterDevices(devices) {
+  #filterDevices(devices) {
     devices = devices.filter(function(d) {
       return d.show();
     });
     devices.sort(EmulationModel.EmulatedDevices.EmulatedDevice.deviceComparator);
     return devices;
   }
-  standardDevices() {
-    return this.filterDevices(this.emulatedDevicesList.standard());
+  #standardDevices() {
+    return this.#filterDevices(this.#emulatedDevicesList.standard());
   }
-  customDevices() {
-    return this.filterDevices(this.emulatedDevicesList.custom());
+  #customDevices() {
+    return this.#filterDevices(this.#emulatedDevicesList.custom());
   }
-  allDevices() {
-    return this.standardDevices().concat(this.customDevices());
+  #allDevices() {
+    return this.#standardDevices().concat(this.#customDevices());
   }
-  getDeviceModeOptions() {
+  #getDeviceModeOptions() {
     if (!this.model) {
       return {
         responsive: { title: i18nString(UIStrings.responsive), selected: false, jslogContext: "responsive" },
@@ -861,7 +885,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     }
     const currentDevice = this.model.device();
     const optionsByCategory = /* @__PURE__ */ new Map();
-    for (const device of this.standardDevices()) {
+    for (const device of this.#standardDevices()) {
       const cat = EmulationModel.EmulatedDevices.deviceCategory(device);
       let list = optionsByCategory.get(cat);
       if (!list) {
@@ -889,7 +913,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
         jslogContext: "responsive"
       },
       standard: groupedStandard,
-      custom: this.customDevices().map((device) => ({
+      custom: this.#customDevices().map((device) => ({
         device,
         title: device.title,
         selected: this.model?.device() === device,
@@ -901,23 +925,23 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       }
     };
   }
-  onDeviceChange(event) {
+  #onDeviceChange(event) {
     const value = event.target.value;
     if (value === "Edit") {
-      this.emulatedDevicesList.revealCustomSetting();
+      this.#emulatedDevicesList.revealCustomSetting();
       this.requestUpdate();
     } else if (value === "Responsive") {
-      this.switchToResponsive();
+      this.#switchToResponsive();
     } else {
-      for (const device of this.allDevices()) {
+      for (const device of this.#allDevices()) {
         if (device.title === value) {
-          this.emulateDevice(device);
+          this.#emulateDevice(device);
           break;
         }
       }
     }
   }
-  deviceListChanged() {
+  #deviceListChanged() {
     this.requestUpdate();
     if (!this.model) {
       return;
@@ -926,18 +950,18 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     if (!device) {
       return;
     }
-    const devices = this.allDevices();
+    const devices = this.#allDevices();
     if (devices.indexOf(device) === -1) {
       if (devices.length) {
-        this.emulateDevice(devices[0]);
+        this.#emulateDevice(devices[0]);
       } else {
         this.model.emulate(EmulationModel.DeviceModeModel.Type.Responsive, null, null);
       }
     } else {
-      this.emulateDevice(device);
+      this.#emulateDevice(device);
     }
   }
-  spanClicked() {
+  #spanClicked() {
     if (!this.model) {
       return;
     }
@@ -945,7 +969,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     if (!device || !device.isDualScreen && !device.isFoldableScreen) {
       return;
     }
-    const scale = this.autoAdjustScaleSetting.get() ? void 0 : this.model.scaleSetting().get();
+    const scale = this.#autoAdjustScaleSetting.get() ? void 0 : this.model.scaleSetting().get();
     const mode = this.model.mode();
     if (!mode) {
       return;
@@ -957,7 +981,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     this.model.emulate(this.model.type(), device, newMode, scale);
     return;
   }
-  modeMenuClicked(event) {
+  #modeMenuClicked(event) {
     if (!this.model) {
       return;
     }
@@ -966,7 +990,7 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
     }
     const device = this.model.device();
     const model = this.model;
-    const autoAdjustScaleSetting = this.autoAdjustScaleSetting;
+    const autoAdjustScaleSetting = this.#autoAdjustScaleSetting;
     if (model.type() === EmulationModel.DeviceModeModel.Type.Responsive) {
       const appliedSize = model.appliedDeviceSize();
       if (autoAdjustScaleSetting.get()) {
@@ -1029,16 +1053,16 @@ var DeviceModeToolbar = class extends UI.Widget.Widget {
       model.emulate(model.type(), model.device(), mode, scale);
     }
   }
-  restore() {
+  #restore() {
     if (!this.model) {
       return;
     }
-    for (const device of this.allDevices()) {
-      if (device.title === this.persistenceSetting.get().device) {
+    for (const device of this.#allDevices()) {
+      if (device.title === this.#persistenceSetting.get().device) {
         for (const mode of device.modes) {
-          if (mode.orientation === this.persistenceSetting.get().orientation && mode.title === this.persistenceSetting.get().mode) {
-            this.lastMode.set(device, mode);
-            this.emulateDevice(device);
+          if (mode.orientation === this.#persistenceSetting.get().orientation && mode.title === this.#persistenceSetting.get().mode) {
+            this.#lastMode.set(device, mode);
+            this.#emulateDevice(device);
             return;
           }
         }
@@ -1765,18 +1789,18 @@ function renderLabel(expression, atLeft, leftAlign) {
   `;
 }
 var MediaQueryInspector = class extends UI3.Widget.Widget {
-  view;
+  #view;
   mediaThrottler = new Common3.Throttler.Throttler(0);
   #targetManager = SDK.TargetManager.TargetManager.instance();
   #zoomManager = UI3.ZoomManager.ZoomManager.instance();
   #getWidthCallback;
   #setWidthCallback;
   #scale;
-  cssModel;
-  cachedQueryModels;
+  #cssModel;
+  #cachedQueryModels;
   constructor(element, view = DEFAULT_VIEW2) {
     super(element, { useShadowDom: "pure" });
-    this.view = view;
+    this.#view = view;
     this.#scale = 1;
   }
   get getWidthCallback() {
@@ -1797,25 +1821,29 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     if (cssModel.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
       return;
     }
-    this.cssModel = cssModel;
-    this.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.addEventListener(SDK.CSSModel.Events.MediaQueryResultChanged, this.scheduleMediaQueriesUpdate, this);
-  }
-  modelRemoved(cssModel) {
-    if (cssModel !== this.cssModel) {
-      return;
-    }
-    this.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.scheduleMediaQueriesUpdate, this);
-    this.cssModel.removeEventListener(
+    this.#cssModel = cssModel;
+    this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.addEventListener(
       SDK.CSSModel.Events.MediaQueryResultChanged,
-      this.scheduleMediaQueriesUpdate,
+      this.#scheduleMediaQueriesUpdate,
       this
     );
-    delete this.cssModel;
+  }
+  modelRemoved(cssModel) {
+    if (cssModel !== this.#cssModel) {
+      return;
+    }
+    this.#cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.#scheduleMediaQueriesUpdate, this);
+    this.#cssModel.removeEventListener(
+      SDK.CSSModel.Events.MediaQueryResultChanged,
+      this.#scheduleMediaQueriesUpdate,
+      this
+    );
+    this.#cssModel = void 0;
   }
   get scale() {
     return this.#scale;
@@ -1827,7 +1855,7 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     this.#scale = scale;
     this.requestUpdate();
   }
-  onMediaQueryClicked(model) {
+  #onMediaQueryClicked(model) {
     const modelMaxWidth = model.maxWidthExpression();
     const modelMinWidth = model.minWidthExpression();
     if (model.section() === 0 /* MAX */) {
@@ -1845,8 +1873,8 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
       this.setWidthCallback?.(modelMaxWidth ? modelMaxWidth.computedLength() || 0 : 0);
     }
   }
-  onContextMenu(event, locations) {
-    if (!this.cssModel?.isEnabled()) {
+  #onContextMenu(event, locations) {
+    if (!this.#cssModel?.isEnabled()) {
       return;
     }
     const uiLocations = /* @__PURE__ */ new Map();
@@ -1874,28 +1902,28 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
       const title = contextMenuItems[i];
       subMenuItem.defaultSection().appendItem(
         title,
-        this.revealSourceLocation.bind(this, uiLocations.get(title)),
+        this.#revealSourceLocation.bind(this, uiLocations.get(title)),
         { jslogContext: "reveal-in-source" }
       );
     }
     void contextMenu.show();
   }
-  revealSourceLocation(location) {
+  #revealSourceLocation(location) {
     void Common3.Revealer.reveal(location);
   }
-  scheduleMediaQueriesUpdate() {
+  #scheduleMediaQueriesUpdate() {
     if (!this.isShowing()) {
       return;
     }
-    void this.mediaThrottler.schedule(this.refetchMediaQueries.bind(this));
+    void this.mediaThrottler.schedule(this.#refetchMediaQueries.bind(this));
   }
-  refetchMediaQueries() {
-    if (!this.isShowing() || !this.cssModel) {
+  #refetchMediaQueries() {
+    if (!this.isShowing() || !this.#cssModel) {
       return Promise.resolve();
     }
-    return this.cssModel.getMediaQueries().then(this.rebuildMediaQueries.bind(this));
+    return this.#cssModel.getMediaQueries().then(this.#rebuildMediaQueries.bind(this));
   }
-  squashAdjacentEqual(models) {
+  #squashAdjacentEqual(models) {
     const filtered = [];
     for (let i = 0; i < models.length; ++i) {
       const last = filtered[filtered.length - 1];
@@ -1905,7 +1933,7 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     }
     return filtered;
   }
-  rebuildMediaQueries(cssMedias) {
+  #rebuildMediaQueries(cssMedias) {
     let queryModels = [];
     for (let i = 0; i < cssMedias.length; ++i) {
       const cssMedia = cssMedias[i];
@@ -1921,27 +1949,27 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
       }
     }
     queryModels.sort(compareModels);
-    queryModels = this.squashAdjacentEqual(queryModels);
-    let allEqual = this.cachedQueryModels && this.cachedQueryModels.length === queryModels.length;
+    queryModels = this.#squashAdjacentEqual(queryModels);
+    let allEqual = this.#cachedQueryModels && this.#cachedQueryModels.length === queryModels.length;
     for (let i = 0; allEqual && i < queryModels.length; ++i) {
-      allEqual = allEqual && this.cachedQueryModels?.[i].equals(queryModels[i]);
+      allEqual = allEqual && this.#cachedQueryModels?.[i].equals(queryModels[i]);
     }
     if (allEqual) {
       return;
     }
-    this.cachedQueryModels = queryModels;
+    this.#cachedQueryModels = queryModels;
     this.requestUpdate();
     function compareModels(model1, model2) {
       return model1.compareTo(model2);
     }
   }
-  buildMediaQueryMarkers() {
-    if (!this.cachedQueryModels) {
+  #buildMediaQueryMarkers() {
+    if (!this.#cachedQueryModels) {
       return [];
     }
     const markers = [];
     let lastMarker = null;
-    for (const model of this.cachedQueryModels) {
+    for (const model of this.#cachedQueryModels) {
       if (lastMarker?.model.dimensionsEqual(model)) {
         lastMarker.active = lastMarker.active || model.active();
       } else {
@@ -1959,21 +1987,21 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     }
     return markers;
   }
-  zoomFactor() {
+  #zoomFactor() {
     return UI3.ZoomManager.ZoomManager.instance().zoomFactor() / this.#scale;
   }
   wasShown() {
     super.wasShown();
     this.#targetManager.observeModels(SDK.CSSModel.CSSModel, this);
     this.#zoomManager.addEventListener(UI3.ZoomManager.Events.ZOOM_CHANGED, this.requestUpdate, this);
-    this.scheduleMediaQueriesUpdate();
+    this.#scheduleMediaQueriesUpdate();
     this.performUpdate();
   }
   willHide() {
     super.willHide();
     this.#targetManager.unobserveModels(SDK.CSSModel.CSSModel, this);
-    if (this.cssModel) {
-      this.modelRemoved(this.cssModel);
+    if (this.#cssModel) {
+      this.modelRemoved(this.#cssModel);
     }
     this.#zoomManager.removeEventListener(UI3.ZoomManager.Events.ZOOM_CHANGED, this.requestUpdate, this);
   }
@@ -1981,13 +2009,13 @@ var MediaQueryInspector = class extends UI3.Widget.Widget {
     if (!this.isShowing() || !this.getWidthCallback || !this.setWidthCallback) {
       return;
     }
-    const markers = Map.groupBy(this.buildMediaQueryMarkers(), (marker) => marker.model.section());
-    this.view(
+    const markers = Map.groupBy(this.#buildMediaQueryMarkers(), (marker) => marker.model.section());
+    this.#view(
       {
-        zoomFactor: this.zoomFactor(),
+        zoomFactor: this.#zoomFactor(),
         markers,
-        onMediaQueryClicked: this.onMediaQueryClicked.bind(this),
-        onContextMenu: this.onContextMenu.bind(this)
+        onMediaQueryClicked: this.#onMediaQueryClicked.bind(this),
+        onContextMenu: this.#onContextMenu.bind(this)
       },
       void 0,
       this.contentElement
@@ -2001,14 +2029,14 @@ var Section = /* @__PURE__ */ ((Section2) => {
   return Section2;
 })(Section || {});
 var MediaQueryUIModel = class _MediaQueryUIModel {
-  cssMedia;
+  #cssMedia;
   #minWidthExpression;
   #maxWidthExpression;
   #active;
   #section;
   #rawLocation;
   constructor(cssMedia, minWidthExpression, maxWidthExpression, active) {
-    this.cssMedia = cssMedia;
+    this.#cssMedia = cssMedia;
     this.#minWidthExpression = minWidthExpression;
     this.#maxWidthExpression = maxWidthExpression;
     this.#active = active;
@@ -2106,11 +2134,11 @@ var MediaQueryUIModel = class _MediaQueryUIModel {
     return this.#section;
   }
   mediaText() {
-    return this.cssMedia.text || "";
+    return this.#cssMedia.text || "";
   }
   rawLocation() {
     if (!this.#rawLocation) {
-      this.#rawLocation = this.cssMedia.rawLocation();
+      this.#rawLocation = this.#cssMedia.rawLocation();
     }
     return this.#rawLocation;
   }
@@ -2207,7 +2235,7 @@ function resizerRef(resizer, onConnect) {
     }
   };
 }
-var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, output, target) => {
   const sizes = [320, 375, 425, 768, 1024, 1440, 2560];
   const titles = [
     i18nString3(UIStrings3.mobileS),
@@ -2234,7 +2262,10 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
               <div class="device-mode-preset-bar"
                    style="width: ${size * input.scale}px;"
                    jslog=${VisualLogging3.action().track({ click: true }).context(`device-mode-preset-${size}px`)}
-                   @click=${(e) => input.onApplyPresetSize(size, e)}>
+                   @click=${(e) => {
+      input.onApplyPresetSize(size);
+      e.consume();
+    }}>
                 <span>${i18nString3(UIStrings3.presetSize, { PH1: titles[idx], PH2: size })}</span>
               </div>
             </div>
@@ -2244,8 +2275,8 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
       <div class="device-mode-media-container">
         ${input.showMediaInspector ? widget2(MediaQueryInspector, {
       scale: input.scale,
-      getWidthCallback: () => input.model.appliedDeviceSize().width,
-      setWidthCallback: input.model.setWidth.bind(input.model)
+      getWidthCallback: input.getAppliedDeviceWidth,
+      setWidthCallback: input.onSetWidth
     }) : nothing2}
       </div>
       <div class="device-mode-content-area">
@@ -2305,7 +2336,7 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
       scale: input.scale,
       horizontal: true
     })}
-              @device-mode-ruler-marker-selected=${(e) => input.model.setWidthAndScaleToFit(e.detail)}>
+              @device-mode-ruler-marker-selected=${(e) => input.onWidthMarkerSelected(e.detail)}>
           </devtools-widget>
           <devtools-widget class="device-mode-ruler-left device-mode-ruler"
               style=${styleMap({ left: `${input.cachedCssScreenRect?.left ?? 0}px`, top: `${input.cachedCssScreenRect?.top ?? 0}px` })}
@@ -2313,7 +2344,7 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
       scale: input.scale,
       horizontal: false
     })}
-              @device-mode-ruler-marker-selected=${(e) => input.model.setHeightAndScaleToFit(e.detail)}>
+              @device-mode-ruler-marker-selected=${(e) => input.onHeightMarkerSelected(e.detail)}>
           </devtools-widget>
         ` : nothing2}
       </div>
@@ -2326,6 +2357,17 @@ var DEFAULT_DEVICE_MODE_VIEW = (input, _output, target) => {
       }
     }
   );
+  output.measureContentArea = () => {
+    const contentArea = target.querySelector(".device-mode-content-area");
+    if (!contentArea) {
+      return null;
+    }
+    return {
+      rect: contentArea.getBoundingClientRect(),
+      handleWidth: target.querySelector(".device-mode-right-resizer")?.offsetWidth || 20,
+      handleHeight: target.querySelector(".device-mode-bottom-resizer")?.offsetHeight || 20
+    };
+  };
 };
 var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
   wrapperInstance;
@@ -2352,7 +2394,8 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
   #toggleDeviceModeAction;
   #showDeviceModeSetting;
   #view;
-  constructor(element, view = DEFAULT_DEVICE_MODE_VIEW) {
+  #viewOutput = {};
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.setMinimumSize(150, 150);
@@ -2402,24 +2445,20 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
     const input = {
       model: this.model,
       showDeviceMode: this.#showDeviceModeSetting.get(),
-      showMediaInspectorSetting: this.showMediaInspectorSetting,
-      showRulersSetting: this.showRulersSetting,
       resizable: this.model.type() === EmulationModel2.DeviceModeModel.Type.Responsive,
       showRulers: this.showRulersSetting.get() && this.model.type() !== EmulationModel2.DeviceModeModel.Type.None,
       showMediaInspector: this.showMediaInspectorSetting.get() && this.model.type() !== EmulationModel2.DeviceModeModel.Type.None,
       scale: this.model.scale(),
       cachedCssScreenRect: this.cachedCssScreenRect,
       cachedCssVisiblePageRect: this.cachedCssVisiblePageRect,
-      onApplyPresetSize: (width, e) => {
+      getAppliedDeviceWidth: () => this.model.appliedDeviceSize().width,
+      onSetWidth: (width) => this.model.setWidth(width),
+      onApplyPresetSize: (width) => {
         this.model.emulate(EmulationModel2.DeviceModeModel.Type.Responsive, null, null);
         this.model.setWidthAndScaleToFit(width);
-        e.consume();
       },
-      bottomRightResizer: this.bottomRightResizer,
-      bottomLeftResizer: this.bottomLeftResizer,
-      rightResizer: this.rightResizer,
-      leftResizer: this.leftResizer,
-      bottomResizer: this.bottomResizer,
+      onWidthMarkerSelected: (width) => this.model.setWidthAndScaleToFit(width),
+      onHeightMarkerSelected: (height) => this.model.setHeightAndScaleToFit(height),
       bottomRightResizerRef: this.bottomRightResizerRef,
       bottomLeftResizerRef: this.bottomLeftResizerRef,
       rightResizerRef: this.rightResizerRef,
@@ -2427,7 +2466,7 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
       bottomResizerRef: this.bottomResizerRef,
       onDoubleclickBottomResizer: () => this.model.setHeight(0)
     };
-    this.#view(input, void 0, this.contentElement);
+    this.#view(input, this.#viewOutput, this.contentElement);
   }
   static #setNonEmulatedAvailableSize() {
     const model = EmulationModel2.DeviceModeModel.DeviceModeModel.instance();
@@ -2567,14 +2606,12 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
     });
   }
   contentAreaResized() {
-    const contentArea = this.contentElement.querySelector(".device-mode-content-area");
-    if (!contentArea) {
+    const measurements = this.#viewOutput.measureContentArea?.();
+    if (!measurements) {
       return;
     }
-    const rect = contentArea.getBoundingClientRect();
+    const { rect, handleWidth, handleHeight } = measurements;
     const zoomFactor = UI4.ZoomManager.ZoomManager.instance().zoomFactor();
-    const handleWidth = this.contentElement.querySelector(".device-mode-right-resizer")?.offsetWidth || 20;
-    const handleHeight = this.contentElement.querySelector(".device-mode-bottom-resizer")?.offsetHeight || 20;
     const availableSize = new Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
     const preferredSize = new Geometry.Size(
       Math.max((rect.width - 2 * handleWidth) * zoomFactor, 1),
@@ -2610,7 +2647,7 @@ var DeviceModeView = class _DeviceModeView extends UI4.Widget.VBox {
   }
 };
 var DEFAULT_RULER_VIEW = (input, output, target) => {
-  const zoomFactor = UI4.ZoomManager.ZoomManager.instance().zoomFactor();
+  const zoomFactor = input.zoomFactor;
   const size = input.horizontal ? target.offsetWidth : target.offsetHeight;
   const dipSize = input.scale > 0 ? size * zoomFactor / input.scale : 0;
   const count = Math.ceil(dipSize / 5);
@@ -2668,7 +2705,7 @@ var DEFAULT_RULER_VIEW = (input, output, target) => {
   );
 };
 var RulerEvents = /* @__PURE__ */ ((RulerEvents2) => {
-  RulerEvents2["MARKER_SELECTED"] = "MarkerSelected";
+  RulerEvents2["MARKER_SELECTED"] = "device-mode-ruler-marker-selected";
   return RulerEvents2;
 })(RulerEvents || {});
 var RulerBase = Common4.ObjectWrapper.eventMixin(
@@ -2711,7 +2748,7 @@ var Ruler = class extends RulerBase {
     this.requestUpdate();
   }
   #onMarkerClick = (size) => {
-    this.dispatchEventToListeners("MarkerSelected" /* MARKER_SELECTED */, size);
+    this.dispatchEventToListeners("device-mode-ruler-marker-selected" /* MARKER_SELECTED */, size);
   };
   performUpdate() {
     if (!this.isShowing()) {
@@ -2720,6 +2757,7 @@ var Ruler = class extends RulerBase {
     const viewInput = {
       horizontal: this.#horizontal,
       scale: this.#scale,
+      zoomFactor: UI4.ZoomManager.ZoomManager.instance().zoomFactor(),
       onMarkerClick: this.#onMarkerClick
     };
     this.#view(viewInput, void 0, this.contentElement);
@@ -2833,20 +2871,72 @@ function getQuadBoundingBox(quad) {
 }
 
 // ../../front_end/panels/emulation/AdvancedApp.ts
+var { html: html4, render: render4 } = Lit;
+var { widget: widget3, widgetRef } = UI5.Widget;
 var appInstance = null;
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  let rootSplitWidget;
+  let inspectorView;
+  render4(html4`
+    <style>${advancedApp_css_default}</style>
+    <devtools-split-view
+        autofocus
+        data-dock-side=${input.dockSide}
+        direction=${input.direction}
+        sidebar-position=${input.sidebarPosition}
+        name="inspector-view.split-view-state"
+        sidebar-initial-width="555"
+        sidebar-initial-height="300"
+        constraints-in-dip
+        show=${input.show}
+        ${widgetRef(UI5.SplitWidget.SplitWidget, (splitWidget) => {
+    rootSplitWidget = splitWidget;
+  })}>
+      <devtools-widget
+          slot="main"
+          ${widget3(UI5.Widget.WrapperWidget, { widget: input.deviceModeView })}>
+      </devtools-widget>
+      <devtools-widget
+          slot="sidebar"
+          autofocus
+          ${widget3((element) => UI5.InspectorView.InspectorView.instance({ element }))}
+          ${widgetRef(UI5.InspectorView.InspectorView, (widget4) => {
+    inspectorView = widget4;
+  })}>
+      </devtools-widget>
+    </devtools-split-view>
+  `, target);
+  if (rootSplitWidget && inspectorView) {
+    rootSplitWidget.toggleResizer(inspectorView.topResizerElement(), input.topResizerEnabled);
+  }
+};
+var DEFAULT_TOOLBOX_VIEW = (input, _output, target) => {
+  render4(html4`
+    ${widget3(UI5.Widget.WrapperWidget, { widget: input.deviceModeView })}
+  `, target);
+};
 var AdvancedApp = class _AdvancedApp {
-  rootSplitWidget;
-  deviceModeView;
-  inspectedPagePlaceholder;
-  toolboxWindow;
-  toolboxRootView;
-  changingDockSide;
   #universe;
-  constructor(universe) {
+  #view;
+  #toolboxView;
+  #rootView;
+  #deviceModeView;
+  #inspectedPagePlaceholder;
+  #toolboxWindow;
+  #toolboxRootView;
+  #changingDockSide = false;
+  #direction = "row";
+  #sidebarPosition = "second";
+  #show = "both";
+  #dockSide = UI5.DockController.DockState.BOTTOM;
+  #topResizerEnabled = false;
+  constructor(universe, view = DEFAULT_VIEW4, toolboxView = DEFAULT_TOOLBOX_VIEW) {
     this.#universe = universe;
+    this.#view = view;
+    this.#toolboxView = toolboxView;
     UI5.DockController.DockController.instance().addEventListener(
       UI5.DockController.Events.BEFORE_DOCK_SIDE_CHANGED,
-      this.openToolboxWindow,
+      this.#openToolboxWindow,
       this
     );
   }
@@ -2866,45 +2956,40 @@ var AdvancedApp = class _AdvancedApp {
     appInstance = null;
   }
   presentUI(document2) {
-    const rootView = new UI5.RootView.RootView(this.#universe);
-    this.rootSplitWidget = new UI5.SplitWidget.SplitWidget(false, true, "inspector-view.split-view-state", 555, 300, true);
-    this.rootSplitWidget.show(rootView.element);
-    this.rootSplitWidget.setSidebarWidget(UI5.InspectorView.InspectorView.instance());
-    this.rootSplitWidget.setDefaultFocusedChild(UI5.InspectorView.InspectorView.instance());
-    UI5.InspectorView.InspectorView.instance().setOwnerSplit(this.rootSplitWidget);
-    this.inspectedPagePlaceholder = InspectedPagePlaceholder.instance();
-    this.inspectedPagePlaceholder.addEventListener("Update" /* UPDATE */, this.onSetInspectedPageBounds.bind(this), this);
-    this.deviceModeView = new DeviceModeView();
+    this.#rootView = new UI5.RootView.RootView(this.#universe);
+    this.#inspectedPagePlaceholder = InspectedPagePlaceholder.instance();
+    this.#inspectedPagePlaceholder.addEventListener("Update" /* UPDATE */, this.#onSetInspectedPageBounds, this);
+    this.#deviceModeView = new DeviceModeView();
     UI5.DockController.DockController.instance().addEventListener(
       UI5.DockController.Events.BEFORE_DOCK_SIDE_CHANGED,
-      this.onBeforeDockSideChange,
+      this.#onBeforeDockSideChange,
       this
     );
     UI5.DockController.DockController.instance().addEventListener(
       UI5.DockController.Events.DOCK_SIDE_CHANGED,
-      this.onDockSideChange,
+      this.#onDockSideChange,
       this
     );
     UI5.DockController.DockController.instance().addEventListener(
       UI5.DockController.Events.AFTER_DOCK_SIDE_CHANGED,
-      this.onAfterDockSideChange,
+      this.#onAfterDockSideChange,
       this
     );
-    this.onDockSideChange();
+    this.#onDockSideChange();
     console.timeStamp("AdvancedApp.attachToBody");
-    rootView.attachToDocument(document2);
-    rootView.focus();
-    this.inspectedPagePlaceholder.update();
+    this.#rootView.attachToDocument(document2);
+    this.#rootView.focus();
+    this.#inspectedPagePlaceholder.update();
   }
-  openToolboxWindow(event) {
+  #openToolboxWindow(event) {
     if (event.data.to !== UI5.DockController.DockState.UNDOCKED) {
       return;
     }
-    if (this.toolboxWindow) {
+    if (this.#toolboxWindow) {
       return;
     }
     const url = window.location.href.replace("devtools_app.html", "device_mode_emulation_frame.html");
-    this.toolboxWindow = window.open(url, void 0);
+    this.#toolboxWindow = window.open(url, void 0);
   }
   deviceModeEmulationFrameLoaded(toolboxDocument) {
     ThemeSupport.ThemeSupport.instance().addDocumentToTheme(toolboxDocument);
@@ -2912,81 +2997,97 @@ var AdvancedApp = class _AdvancedApp {
     UI5.UIUtils.addPlatformClass(toolboxDocument.documentElement);
     UI5.UIUtils.installComponentRootStyles(toolboxDocument.body);
     UI5.ContextMenu.ContextMenu.installHandler(toolboxDocument);
-    this.toolboxRootView = new UI5.RootView.RootView(this.#universe);
-    this.toolboxRootView.attachToDocument(toolboxDocument);
-    this.updateDeviceModeView();
+    this.#toolboxRootView = new UI5.RootView.RootView(this.#universe);
+    this.#toolboxRootView.attachToDocument(toolboxDocument);
+    this.#performUpdate();
   }
-  updateDeviceModeView() {
-    if (this.isDocked()) {
-      this.rootSplitWidget.setMainWidget(this.deviceModeView);
-    } else if (this.toolboxRootView) {
-      this.deviceModeView.show(this.toolboxRootView.element);
+  /**
+   * Renders synchronously, because the dock side change handlers measure the
+   * inspected page placeholder right after changing the layout.
+   */
+  #performUpdate() {
+    if (!this.#rootView || !this.#deviceModeView) {
+      return;
+    }
+    const docked = this.#isDocked();
+    const viewInput = {
+      direction: this.#direction,
+      sidebarPosition: this.#sidebarPosition,
+      show: this.#show,
+      dockSide: this.#dockSide,
+      topResizerEnabled: this.#topResizerEnabled,
+      deviceModeView: docked ? this.#deviceModeView : null
+    };
+    if (docked) {
+      if (this.#toolboxRootView) {
+        this.#toolboxView({ deviceModeView: null }, void 0, this.#toolboxRootView.contentElement);
+      }
+      this.#view(viewInput, void 0, this.#rootView.contentElement);
+    } else {
+      this.#view(viewInput, void 0, this.#rootView.contentElement);
+      if (this.#toolboxRootView) {
+        this.#toolboxView({ deviceModeView: this.#deviceModeView }, void 0, this.#toolboxRootView.contentElement);
+      }
     }
   }
-  onBeforeDockSideChange(event) {
-    if (event.data.to === UI5.DockController.DockState.UNDOCKED && this.toolboxRootView) {
-      this.rootSplitWidget.hideSidebar();
-      this.inspectedPagePlaceholder.update();
+  #onBeforeDockSideChange(event) {
+    if (event.data.to === UI5.DockController.DockState.UNDOCKED && this.#toolboxRootView) {
+      this.#show = "main";
+      this.#performUpdate();
+      this.#inspectedPagePlaceholder?.update();
     }
-    this.changingDockSide = true;
+    this.#changingDockSide = true;
   }
-  onDockSideChange(event) {
-    this.updateDeviceModeView();
+  #onDockSideChange(event) {
     const toDockSide = event ? event.data.to : UI5.DockController.DockController.instance().dockSide();
     if (toDockSide === void 0) {
       throw new Error("Got onDockSideChange event with unexpected undefined for dockSide()");
     }
     if (toDockSide === UI5.DockController.DockState.UNDOCKED) {
-      this.updateForUndocked();
-    } else if (this.toolboxRootView && event && event.data.from === UI5.DockController.DockState.UNDOCKED) {
-      this.rootSplitWidget.hideSidebar();
+      this.#updateForUndocked();
+    } else if (this.#toolboxRootView && event && event.data.from === UI5.DockController.DockState.UNDOCKED) {
+      this.#show = "main";
     } else {
-      this.updateForDocked(toDockSide);
+      this.#updateForDocked(toDockSide);
     }
+    this.#performUpdate();
   }
-  onAfterDockSideChange(event) {
-    if (!this.changingDockSide) {
+  #onAfterDockSideChange(event) {
+    if (!this.#changingDockSide) {
       return;
     }
     if (event.data.from && event.data.from === UI5.DockController.DockState.UNDOCKED) {
-      this.updateForDocked(event.data.to);
+      this.#updateForDocked(event.data.to);
+      this.#performUpdate();
     }
-    this.changingDockSide = false;
-    this.inspectedPagePlaceholder.update();
+    this.#changingDockSide = false;
+    this.#inspectedPagePlaceholder?.update();
   }
-  updateForDocked(dockSide) {
-    const resizerElement = this.rootSplitWidget.resizerElement();
-    resizerElement.style.transform = dockSide === UI5.DockController.DockState.RIGHT ? "translateX(2px)" : dockSide === UI5.DockController.DockState.LEFT ? "translateX(-2px)" : "";
-    this.rootSplitWidget.setVertical(
-      dockSide === UI5.DockController.DockState.RIGHT || dockSide === UI5.DockController.DockState.LEFT
-    );
-    this.rootSplitWidget.setSecondIsSidebar(
-      dockSide === UI5.DockController.DockState.RIGHT || dockSide === UI5.DockController.DockState.BOTTOM
-    );
-    this.rootSplitWidget.toggleResizer(this.rootSplitWidget.resizerElement(), true);
-    this.rootSplitWidget.toggleResizer(
-      UI5.InspectorView.InspectorView.instance().topResizerElement(),
-      dockSide === UI5.DockController.DockState.BOTTOM
-    );
-    this.rootSplitWidget.showBoth();
+  #updateForDocked(dockSide) {
+    const isVertical = dockSide === UI5.DockController.DockState.RIGHT || dockSide === UI5.DockController.DockState.LEFT;
+    const isSidebarSecond = dockSide === UI5.DockController.DockState.RIGHT || dockSide === UI5.DockController.DockState.BOTTOM;
+    this.#direction = isVertical ? "column" : "row";
+    this.#sidebarPosition = isSidebarSecond ? "second" : "first";
+    this.#show = "both";
+    this.#dockSide = dockSide;
+    this.#topResizerEnabled = dockSide === UI5.DockController.DockState.BOTTOM;
   }
-  updateForUndocked() {
-    this.rootSplitWidget.toggleResizer(this.rootSplitWidget.resizerElement(), false);
-    this.rootSplitWidget.toggleResizer(UI5.InspectorView.InspectorView.instance().topResizerElement(), false);
-    this.rootSplitWidget.hideMain();
+  #updateForUndocked() {
+    this.#show = "sidebar";
+    this.#topResizerEnabled = false;
   }
-  isDocked() {
+  #isDocked() {
     return UI5.DockController.DockController.instance().dockSide() !== UI5.DockController.DockState.UNDOCKED;
   }
-  onSetInspectedPageBounds(event) {
-    if (this.changingDockSide) {
+  #onSetInspectedPageBounds(event) {
+    if (this.#changingDockSide || !this.#inspectedPagePlaceholder) {
       return;
     }
-    const window2 = this.inspectedPagePlaceholder.element.window();
+    const window2 = this.#inspectedPagePlaceholder.element.window();
     if (!window2.innerWidth || !window2.innerHeight) {
       return;
     }
-    if (!this.inspectedPagePlaceholder.isShowing()) {
+    if (!this.#inspectedPagePlaceholder.isShowing()) {
       return;
     }
     const bounds = event.data;

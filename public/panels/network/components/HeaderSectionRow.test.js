@@ -12,6 +12,13 @@ import { setupUserMetricHooks } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components.js';
+function getEditableSpanWidget(shadowRoot, selector) {
+    const widgetElement = shadowRoot.querySelector(selector);
+    assert.instanceOf(widgetElement, HTMLElement);
+    const widget = UI.Widget.Widget.get(widgetElement);
+    assert.instanceOf(widget, NetworkComponents.EditableSpan.EditableSpan);
+    return widget;
+}
 async function renderHeaderSectionRow(header) {
     const component = new NetworkComponents.HeaderSectionRow.HeaderSectionRow();
     const scrollIntoViewSpy = sinon.spy(component, 'scrollIntoView');
@@ -19,21 +26,20 @@ async function renderHeaderSectionRow(header) {
     sinon.assert.notCalled(scrollIntoViewSpy);
     component.data = { header };
     await RenderCoordinator.done();
+    await UI.Widget.Widget.allUpdatesComplete;
     assert.isNotNull(component.shadowRoot);
     let nameEditable = null;
-    const nameEditableComponent = component.shadowRoot.querySelector('.header-name devtools-editable-span');
+    const nameEditableComponent = component.shadowRoot.querySelector('.header-name devtools-widget');
     if (nameEditableComponent) {
         assert.instanceOf(nameEditableComponent, HTMLElement);
-        assert.isNotNull(nameEditableComponent.shadowRoot);
-        nameEditable = nameEditableComponent.shadowRoot.querySelector('.editable');
+        nameEditable = nameEditableComponent.querySelector('.editable');
         assert.instanceOf(nameEditable, HTMLSpanElement);
     }
     let valueEditable = null;
-    const valueEditableComponent = component.shadowRoot.querySelector('.header-value devtools-editable-span');
+    const valueEditableComponent = component.shadowRoot.querySelector('.header-value devtools-widget');
     if (valueEditableComponent) {
         assert.instanceOf(valueEditableComponent, HTMLElement);
-        assert.isNotNull(valueEditableComponent.shadowRoot);
-        valueEditable = valueEditableComponent.shadowRoot.querySelector('.editable');
+        valueEditable = valueEditableComponent.querySelector('.editable');
         assert.instanceOf(valueEditable, HTMLSpanElement);
     }
     return { component, nameEditable, valueEditable, scrollIntoViewSpy };
@@ -226,6 +232,7 @@ Learn more`);
         nameEditable.innerText = '';
         dispatchInputEvent(nameEditable, { inputType: 'insertText', data: '', bubbles: true, composed: true });
         nameEditable.blur();
+        await UI.Widget.Widget.allUpdatesComplete;
         assert.strictEqual(headerEditedEventCount, 0);
         assert.strictEqual(nameEditable.innerText, 'Some-Header-Name');
     });
@@ -249,6 +256,8 @@ Learn more`);
         valueEditable.innerText = 'new value for header';
         dispatchInputEvent(valueEditable, { inputType: 'insertText', data: 'new value for header', bubbles: true, composed: true });
         dispatchKeyDownEvent(valueEditable, { key: 'Escape', bubbles: true, composed: true });
+        await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         assert.strictEqual(eventCount, 0);
         assert.strictEqual(valueEditable.innerText, originalHeaderValue);
         const row = component.shadowRoot.querySelector('.row');
@@ -389,8 +398,8 @@ Learn more`);
         assert.strictEqual(headerNameFromEvent, 'permissions-policy');
         assert.strictEqual(headerValueFromEvent, 'unload=(https://xyz.com)');
         // final value on UI
-        const nameEl = component.shadowRoot.querySelector('.header-name devtools-editable-span');
-        const valueEl = component.shadowRoot.querySelector('.header-value devtools-editable-span');
+        const nameEl = getEditableSpanWidget(component.shadowRoot, '.header-name devtools-widget');
+        const valueEl = getEditableSpanWidget(component.shadowRoot, '.header-value devtools-widget');
         assert.strictEqual(nameEl.value, 'permissions-policy');
         assert.strictEqual(valueEl.value, 'unload=(https://xyz.com)');
     });
@@ -416,8 +425,8 @@ Learn more`);
         dt.setData('text/plain', editedHeaderName);
         nameEditable.focus();
         dispatchPasteEvent(nameEditable, { clipboardData: dt, bubbles: true, composed: true });
-        const nameEl = component.shadowRoot.querySelector('.header-name devtools-editable-span');
-        const valueEl = component.shadowRoot.querySelector('.header-value devtools-editable-span');
+        const nameEl = getEditableSpanWidget(component.shadowRoot, '.header-name devtools-widget');
+        const valueEl = getEditableSpanWidget(component.shadowRoot, '.header-value devtools-widget');
         await RenderCoordinator.done();
         assert.strictEqual(nameEl.value, ':abc');
         assert.strictEqual(valueEl.value, originalHeaderValue);
@@ -448,8 +457,8 @@ Learn more`);
         dt.setData('text/plain', editedHeaderName);
         nameEditable.focus();
         dispatchPasteEvent(nameEditable, { clipboardData: dt, bubbles: true, composed: true });
-        const nameEl = component.shadowRoot.querySelector('.header-name devtools-editable-span');
-        const valueEl = component.shadowRoot.querySelector('.header-value devtools-editable-span');
+        const nameEl = getEditableSpanWidget(component.shadowRoot, '.header-name devtools-widget');
+        const valueEl = getEditableSpanWidget(component.shadowRoot, '.header-value devtools-widget');
         await RenderCoordinator.done();
         assert.strictEqual(nameEl.value, 'permissions-Policy');
         assert.strictEqual(valueEl.value, 'unload=(https://xyz.com)');

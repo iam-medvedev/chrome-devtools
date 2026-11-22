@@ -2,9 +2,10 @@ import * as AffectedDescendantsWithinSelectElementView from './AffectedDescendan
 import * as AffectedElementsView from './AffectedElementsView.js';
 import * as AffectedLazyLoadImagesView from './AffectedLazyLoadImagesView.js';
 import * as AffectedMetadataAllowedSitesView from './AffectedMetadataAllowedSitesView.js';
+import * as AffectedResourcesView from './AffectedResourcesView.js';
 import * as AffectedSelectivePermissionsInterventionView from './AffectedSelectivePermissionsInterventionView.js';
 import * as GenericIssueDetailsView from './GenericIssueDetailsView.js';
 import * as IssueRevealer from './IssueRevealer.js';
 import * as IssuesPane from './IssuesPane.js';
 import * as IssueView from './IssueView.js';
-export { AffectedDescendantsWithinSelectElementView, AffectedElementsView, AffectedLazyLoadImagesView, AffectedMetadataAllowedSitesView, AffectedSelectivePermissionsInterventionView, GenericIssueDetailsView, IssueRevealer, IssuesPane, IssueView, };
+export { AffectedDescendantsWithinSelectElementView, AffectedElementsView, AffectedLazyLoadImagesView, AffectedMetadataAllowedSitesView, AffectedResourcesView, AffectedSelectivePermissionsInterventionView, GenericIssueDetailsView, IssueRevealer, IssuesPane, IssueView, };

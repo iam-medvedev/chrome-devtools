@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { afterEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
-import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -13,6 +13,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Converters from './converters/converters.js';
 import * as Models from './models/models.js';
 import { RecordingView, StepView } from './recorder.js';
+import { TestExtension } from './testing/RecorderHelpers.js';
 describeWithEnvironment('RecordingView', () => {
     setupActionRegistry();
     const step = { type: Models.Schema.StepType.Scroll };
@@ -22,11 +23,13 @@ describeWithEnvironment('RecordingView', () => {
         preferredCopyFormat: "json" /* Models.ConverterIds.ConverterIds.JSON */,
     };
     const views = [];
-    afterEach(() => {
+    afterEach(async () => {
+        recorderSettingsMock.preferredCopyFormat = "json" /* Models.ConverterIds.ConverterIds.JSON */;
         // Unregister global listeners in willHide to prevent leaks.
         for (const view of views) {
             view.willHide();
         }
+        await doubleRaf();
     });
     async function createView(output) {
         const view = createViewFunctionStub(RecordingView.RecordingView, output);
@@ -73,6 +76,7 @@ describeWithEnvironment('RecordingView', () => {
         assert.strictEqual(line, 3);
         assert.strictEqual(length, 3);
         assert.isFalse(scroll);
+        await doubleRaf();
     });
     it('should close code view', async () => {
         const [view] = await createView();
@@ -161,6 +165,52 @@ describeWithEnvironment('RecordingView', () => {
             assert.strictEqual(recorderSettingsMock.preferredCopyFormat, "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
         }
     });
+    it('uses the saved extension converter ID even when extension converters are reordered', async () => {
+        const converterA = new Converters.ExtensionConverter.ExtensionConverter(new TestExtension('Export A', 'chrome-extension://ext-a'));
+        const converterB = new Converters.ExtensionConverter.ExtensionConverter(new TestExtension('Export B', 'chrome-extension://ext-b'));
+        const [view, component] = await createView();
+        component.extensionConverters = [converterA, converterB];
+        await view.nextInput;
+        view.input.showCodeToggle();
+        await view.nextInput;
+        view.input.onCodeFormatChange(converterB.getId());
+        {
+            const input = await view.nextInput;
+            assert.strictEqual(recorderSettingsMock.preferredCopyFormat, 'extension_chrome-extension://ext-b_Export B');
+            assert.strictEqual(input.editorState?.doc.toString(), `Export B:${JSON.stringify(userFlow)}`);
+        }
+        component.extensionConverters = [converterB, converterA];
+        {
+            const input = await view.nextInput;
+            assert.strictEqual(input.converterId, 'extension_chrome-extension://ext-b_Export B');
+            assert.strictEqual(input.editorState?.doc.toString(), `Export B:${JSON.stringify(userFlow)}`);
+        }
+    });
+    it('does not reconvert code when converter or settings references are unchanged', async () => {
+        const converter = new Converters.ExtensionConverter.ExtensionConverter(new TestExtension('Export A', 'chrome-extension://ext-a'));
+        const stringifySpy = sinon.spy(converter, 'stringify');
+        const [view, component] = await createView();
+        const converters = [converter];
+        component.extensionConverters = converters;
+        await view.nextInput;
+        view.input.onCodeFormatChange(converter.getId());
+        const input = await view.nextInput;
+        assert.strictEqual(input.editorState?.doc.toString(), `Export A:${JSON.stringify(userFlow)}`);
+        await doubleRaf();
+        sinon.assert.callCount(stringifySpy, 1);
+        const builtInConverters = component.builtInConverters;
+        const recorderSettings = component.recorderSettings;
+        const viewCallCount = view.callCount;
+        component.extensionConverters = converters;
+        component.builtInConverters = builtInConverters;
+        component.recorderSettings = recorderSettings;
+        await doubleRaf();
+        sinon.assert.callCount(stringifySpy, 1);
+        sinon.assert.callCount(view, viewCallCount);
+        component.extensionConverters = [converter];
+        await view.nextInput;
+        sinon.assert.callCount(stringifySpy, 2);
+    });
     it('should select the step that starts a section when the section is clicked', async () => {
         const [view] = await createView();
         const causingStep = { type: Models.Schema.StepType.Click, selectors: ['#link'], offsetX: 1, offsetY: 1 };
@@ -224,12 +274,12 @@ describeWithEnvironment('RecordingView', () => {
         async function renderRecordingView(width, options = {}) {
             const steps = makeSteps();
             const sections = Models.Section.buildSections(steps);
-            sections[0].screenshot = screenshot;
+            sections[0].screenshot = options.screenshot ?? screenshot;
             const component = new RecordingView.RecordingView();
             Object.assign(component, {
                 recording: { title: 'Recording', steps },
                 sections,
-                currentStep: options.currentError ? steps[2] : undefined,
+                currentStep: options.currentError ? steps[options.errorStepIndex ?? 2] : undefined,
                 currentError: options.currentError,
                 settings: options.withSettings ? {
                     viewportSettings: {
@@ -331,6 +381,46 @@ describeWithEnvironment('RecordingView', () => {
         it('draws the timeline after a failed step as an error', async () => {
             await renderRecordingView(600, { currentError: new Error('Timed out') });
             await assertScreenshot('recorder/RecordingView_error.png');
+        });
+        describe('with a screenshot that is taller than the steps of its section', () => {
+            const tallScreenshot = ('data:image/svg+xml,' +
+                encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="600">' +
+                    '<rect width="200" height="600" fill="#4285f4"/></svg>'));
+            /**
+             * Returns the first section, its steps container and its timeline filler.
+             */
+            function getTimelineParts(component) {
+                const section = component.contentElement.querySelector('.section');
+                assert.exists(section);
+                const steps = section.querySelector('.steps');
+                assert.exists(steps);
+                const filler = section.querySelector('.timeline-filler');
+                assert.exists(filler);
+                return { section, steps, filler };
+            }
+            it('continues the timeline from the last step to the next section', async () => {
+                const component = await renderRecordingView(600, { height: 800, screenshot: tallScreenshot });
+                const { section, steps, filler } = getTimelineParts(component);
+                const sectionRect = section.getBoundingClientRect();
+                const stepsRect = steps.getBoundingClientRect();
+                const fillerRect = filler.getBoundingClientRect();
+                // The steps are shorter than the screenshot.
+                assert.isBelow(stepsRect.bottom, sectionRect.bottom);
+                assert.strictEqual(fillerRect.top, stepsRect.bottom);
+                assert.strictEqual(fillerRect.bottom, sectionRect.bottom);
+                // The filler is a 2px line in the center of the 16px timeline column. The column starts after the 104px
+                // inset that the section reserves for the screenshot.
+                assert.strictEqual(fillerRect.left - sectionRect.left, 104 + 7);
+                assert.strictEqual(fillerRect.width, 2);
+                assert.isFalse(filler.classList.contains('is-error'));
+                // The timeline ends at the last step of the recording.
+                assert.lengthOf(component.contentElement.querySelectorAll('.timeline-filler'), 1);
+            });
+            it('draws the timeline after a failed last step of the section as an error', async () => {
+                const component = await renderRecordingView(600, { height: 800, screenshot: tallScreenshot, currentError: new Error('Timed out'), errorStepIndex: 3 });
+                const { filler } = getTimelineParts(component);
+                assert.isTrue(filler.classList.contains('is-error'));
+            });
         });
         it('only selects sections that are started by the selected step', () => {
             const steps = makeSteps();

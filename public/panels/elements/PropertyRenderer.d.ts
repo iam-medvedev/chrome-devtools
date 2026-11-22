@@ -1,6 +1,8 @@
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import type * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
 export declare function precedingSpace(node: CodeMirror.SyntaxNode, ast: SDK.CSSPropertyParser.SyntaxTree, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching): string;
@@ -17,7 +19,10 @@ export declare function rendererBase<MatchT extends SDK.CSSPropertyParser.Match>
 export declare class Highlighting {
     #private;
     static readonly REGISTRY_NAME = "css-value-tracing";
+    readonly onEnter: (e: Event) => void;
+    readonly onExit: (e: Event) => void;
     constructor();
+    registerMatchElement(match: SDK.CSSPropertyParser.Match, element: HTMLElement): void;
     addMatch(match: SDK.CSSPropertyParser.Match, nodes: Node[]): void;
 }
 /**
@@ -39,6 +44,12 @@ export declare class TracingContext {
     #private;
     readonly expandPercentagesInShorthands: boolean;
     constructor(highlighting: Highlighting, expandPercentagesInShorthands: boolean, initialLonghandOffset?: number, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
+    enableAutofocusOnFirstMatch(): void;
+    beginMatch(): void;
+    endMatch(hasOutput: boolean): {
+        substituted: boolean;
+        autofocus: boolean;
+    };
     get highlighting(): Highlighting;
     get root(): {
         match: SDK.CSSPropertyParser.Match;
@@ -64,8 +75,23 @@ export declare class TracingContext {
     cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty | SDK.CSSMatchedStyles.CSSRegisteredProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
     runAsyncEvaluations(): Promise<boolean>;
 }
-export declare const CSSControlMap: MapConstructor;
-export type CSSControlMap = Map<string, HTMLElement[]>;
+/**
+ * Callbacks passed by a parent renderer to `Renderer.render` to observe values reported by its direct children.
+ * Callbacks are not forwarded automatically into nested `Renderer.render` calls.
+ */
+export interface RenderingCallbacks {
+    /**
+     * Called by a child color renderer during initial render and whenever the color changes. Receives a CSS color
+     * string when the child does not resolve to a `Common.Color.Color` (for example, `color-mix()`), or `null` when
+     * the color is not yet resolved during initial render (for example, `light-dark()`). `origin` identifies the
+     * child match reporting the color.
+     */
+    onColor?: (color: Common.Color.Color | string | null, origin: SDK.CSSPropertyParser.Match) => void;
+    /**
+     * Called by a child angle renderer whenever the angle changes.
+     */
+    onAngle?: (angle: InlineEditor.CSSAngleUtils.Angle) => void;
+}
 /**
  * Tracks the changes that renderers make to the text of the value of a declaration, e.g. because the user picked a
  * color, and puts the text of the value together from them. It wraps a `ComputedText` over the authored text of the
@@ -83,11 +109,12 @@ export declare class ValueEditEvent extends CustomEvent<string> {
     static readonly eventName = "valueedit";
     constructor(value: string);
 }
-interface EditableContentViewInput {
+export interface ViewInput {
     editedValue: string | null;
-    onValueEdit: (event: ValueEditEvent) => void;
+    onValueEdit: (value: string) => void;
 }
-type EditableContentView = (input: EditableContentViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+export type View = (input: ViewInput, output: undefined, target: HTMLElement | DocumentFragment) => void;
+export declare const DEFAULT_VIEW: View;
 /**
  * Hosts a value part that can be edited through an inline swatch or icon.
  *
@@ -97,7 +124,7 @@ type EditableContentView = (input: EditableContentViewInput, output: undefined, 
  **/
 export declare class EditableContent extends UI.Widget.Widget<DocumentFragment> {
     #private;
-    constructor(element?: HTMLElement, view?: EditableContentView);
+    constructor(element?: HTMLElement, view?: View);
     performUpdate(): void;
 }
 export declare class RenderingContext {
@@ -105,30 +132,26 @@ export declare class RenderingContext {
     readonly property: SDK.CSSProperty.CSSProperty | null;
     readonly renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>;
     readonly matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching;
-    readonly cssControls?: CSSControlMap | undefined;
     readonly options: {
         readonly?: boolean;
     };
     readonly tracing?: TracingContext | undefined;
     readonly signal?: AbortSignal | undefined;
     readonly edits?: ValueUpdateTracking | undefined;
-    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls?: CSSControlMap | undefined, options?: {
+    readonly callbacks: RenderingCallbacks;
+    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, options?: {
         readonly?: boolean;
-    }, tracing?: TracingContext | undefined, signal?: AbortSignal | undefined, edits?: ValueUpdateTracking | undefined);
+    }, tracing?: TracingContext | undefined, signal?: AbortSignal | undefined, edits?: ValueUpdateTracking | undefined, callbacks?: RenderingCallbacks);
     recordEdit(match: SDK.CSSPropertyParser.Match, value: string | (() => string)): void;
-    addControl(cssType: string, control: HTMLElement): void;
     getComputedLonghandName(node: CodeMirror.SyntaxNode): string | null;
     findParent<MatchT extends SDK.CSSPropertyParser.Match>(node: CodeMirror.SyntaxNode | null, matchType: Platform.Constructor.Constructor<MatchT>): MatchT | null;
 }
 export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #private;
-    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls: CSSControlMap, options: {
+    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, options: {
         readonly?: boolean;
-    }, tracing: TracingContext | undefined, signal: AbortSignal | undefined, edits: ValueUpdateTracking | undefined);
-    static render(nodeOrNodes: CodeMirror.SyntaxNode | CodeMirror.SyntaxNode[], context: RenderingContext): {
-        nodes: LitTemplate;
-        cssControls: CSSControlMap;
-    };
+    }, tracing: TracingContext | undefined, signal: AbortSignal | undefined, edits: ValueUpdateTracking | undefined, callbacks: RenderingCallbacks | undefined);
+    static render(nodeOrNodes: CodeMirror.SyntaxNode | CodeMirror.SyntaxNode[], context: RenderingContext, callbacks?: RenderingCallbacks): LitTemplate;
     renderedMatchForTest(_nodes: LitTemplate, _match: SDK.CSSPropertyParser.Match): void;
     protected enter({ node }: SDK.CSSPropertyParser.SyntaxNodeRef): boolean;
     static renderNameElement(name: string): HTMLElement;
@@ -136,29 +159,19 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     static renderValueElement(property: SDK.CSSProperty.CSSProperty | {
         name: string;
         value: string;
-    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): {
-        valueElement: HTMLElement;
-        cssControls: CSSControlMap;
-    };
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): HTMLElement;
     static valueTemplate(property: SDK.CSSProperty.CSSProperty | {
         name: string;
         value: string;
-    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): {
-        template: LitTemplate;
-        cssControls: CSSControlMap;
-    };
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): LitTemplate;
     static renderValueNodes(property: SDK.CSSProperty.CSSProperty | {
         name: string;
         value: string;
-    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking): {
-        nodes: LitTemplate;
-        cssControls: CSSControlMap;
-    };
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext, signal?: AbortSignal, edits?: ValueUpdateTracking, callbacks?: RenderingCallbacks): LitTemplate;
 }
 declare const URLRendererBase: RendererBase<SDK.CSSPropertyParserMatchers.URLMatch>;
 export declare class URLRenderer extends URLRendererBase {
-    private readonly rule;
-    private readonly node;
+    #private;
     constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null);
     render(match: SDK.CSSPropertyParserMatchers.URLMatch): LitTemplate;
 }

@@ -11,7 +11,7 @@ import * as MarkdownView from './markdown_view.js';
 describeWithEnvironment('CodeBlock', () => {
     let clock;
     beforeEach(() => {
-        clock = sinon.useFakeTimers();
+        clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
     });
     it('copies the code to clipboard', async () => {
         const component = new MarkdownView.CodeBlock.CodeBlock();

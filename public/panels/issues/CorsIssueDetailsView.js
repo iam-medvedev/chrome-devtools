@@ -425,7 +425,9 @@ export class CorsIssueDetailsView extends AffectedResourcesView {
     constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
         super(parent, issue, jslogContext);
         this.#view = view;
-        this.affectedResourcesCountElement.classList.add('cors-issue-affected-resource-label');
+    }
+    getAffectedResourcesLabelClass() {
+        return 'cors-issue-affected-resource-label';
     }
     getResourceNameWithCount(count) {
         return i18nString(UIStrings.nRequests, { n: count });

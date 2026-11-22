@@ -1066,6 +1066,9 @@ export class CheckboxLabel extends HTMLElement {
         return this.#checkboxElement.checked;
     }
     set checked(checked) {
+        // The attribute does not change when the user toggles the checkbox. So the
+        // attribute can already have the new value when the checkbox does not.
+        this.#checkboxElement.checked = Boolean(checked);
         // Coerce explicitly: `toggleAttribute(name, undefined)` toggles the
         // attribute instead of removing it, which would flip the state when a
         // Lit `.checked=${...}` binding receives `undefined`.
@@ -1084,7 +1087,10 @@ export class CheckboxLabel extends HTMLElement {
         return this.#checkboxElement.disabled;
     }
     set indeterminate(indeterminate) {
-        this.toggleAttribute('indeterminate', indeterminate);
+        // The attribute does not change when the user clicks the checkbox. So the
+        // attribute can already have the new value when the checkbox does not.
+        this.#checkboxElement.indeterminate = Boolean(indeterminate);
+        this.toggleAttribute('indeterminate', Boolean(indeterminate));
     }
     get indeterminate() {
         return this.#checkboxElement.indeterminate;
@@ -1180,6 +1186,9 @@ export class DevToolsCloseButton extends HTMLElement {
     setSize(size) {
         this.#button.size = size;
     }
+    set size(size) {
+        this.setSize(size);
+    }
     setTabbable(tabbable) {
         if (tabbable) {
             this.#button.tabIndex = 0;
@@ -1187,6 +1196,9 @@ export class DevToolsCloseButton extends HTMLElement {
         else {
             this.#button.tabIndex = -1;
         }
+    }
+    set tabbable(tabbable) {
+        this.setTabbable(tabbable);
     }
     focus() {
         this.#button.focus();
@@ -1448,11 +1460,14 @@ export const deepElementFromPoint = (document, x, y) => {
 };
 export const deepElementFromEvent = (ev) => {
     const event = ev;
-    // Some synthetic events have zero coordinates which lead to a wrong element.
-    // Better return nothing in this case.
-    if (!event.which && !event.pageX && !event.pageY && !event.clientX && !event.clientY && !event.movementX &&
-        !event.movementY) {
-        return null;
+    // Synthetic and keyboard-triggered MouseEvents still report `which === 1`
+    // (`button === 0`) alongside zero coordinates, where `elementFromPoint(0, 0)`
+    // would hit an unrelated element at the viewport origin.
+    if (!event.pageX && !event.pageY && !event.clientX && !event.clientY && !event.movementX && !event.movementY) {
+        if (typeof ev.composedPath !== 'function') {
+            return null;
+        }
+        return ev.composedPath().find((node) => node instanceof Element) ?? null;
     }
     const root = event.target && event.target.getComponentRoot();
     return root ? deepElementFromPoint(root, event.pageX, event.pageY) : null;
@@ -2188,10 +2203,7 @@ export const bindCheckboxImpl = function (input, apply, metric) {
         },
     };
 };
-export const bindToSetting = (settingOrName, optionsOrValidator) => {
-    const setting = typeof settingOrName === 'string' ?
-        Common.Settings.Settings.instance().moduleSetting(settingOrName) :
-        settingOrName;
+export const bindToSetting = (setting, optionsOrValidator) => {
     let stringValidator;
     let jslog = true;
     if (typeof optionsOrValidator === 'function') {

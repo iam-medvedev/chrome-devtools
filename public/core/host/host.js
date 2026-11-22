@@ -236,6 +236,7 @@ __export(InspectorFrontendHostAPI_exports, {
 var Events = /* @__PURE__ */ ((Events3) => {
   Events3["AppendedToURL"] = "appendedToURL";
   Events3["CanceledSaveURL"] = "canceledSaveURL";
+  Events3["CaretBlinkIntervalChanged"] = "caretBlinkIntervalChanged";
   Events3["ColorThemeChanged"] = "colorThemeChanged";
   Events3["ContextMenuCleared"] = "contextMenuCleared";
   Events3["ContextMenuItemSelected"] = "contextMenuItemSelected";
@@ -267,6 +268,7 @@ var Events = /* @__PURE__ */ ((Events3) => {
 var EventDescriptors = [
   ["appendedToURL" /* AppendedToURL */, ["url"]],
   ["canceledSaveURL" /* CanceledSaveURL */, ["url"]],
+  ["caretBlinkIntervalChanged" /* CaretBlinkIntervalChanged */, ["caretBlinkInterval"]],
   ["colorThemeChanged" /* ColorThemeChanged */, ["colorSource"]],
   ["contextMenuCleared" /* ContextMenuCleared */, []],
   ["contextMenuItemSelected" /* ContextMenuItemSelected */, ["id"]],
@@ -1720,7 +1722,10 @@ var IssueCreated = /* @__PURE__ */ ((IssueCreated3) => {
   IssueCreated3[IssueCreated3["GenericIssue::ManualTextPolicyControlledFeatureInfo"] = 116] = "GenericIssue::ManualTextPolicyControlledFeatureInfo";
   IssueCreated3[IssueCreated3["GenericIssue::GeolocationPromptWithoutUserGesture"] = 117] = "GenericIssue::GeolocationPromptWithoutUserGesture";
   IssueCreated3[IssueCreated3["CorsIssue::InvalidLocalNetworkAccess"] = 118] = "CorsIssue::InvalidLocalNetworkAccess";
-  IssueCreated3[IssueCreated3["MAX_VALUE"] = 119] = "MAX_VALUE";
+  IssueCreated3[IssueCreated3["ElementAccessibilityIssue::AnchorMenuDescendant"] = 119] = "ElementAccessibilityIssue::AnchorMenuDescendant";
+  IssueCreated3[IssueCreated3["ElementAccessibilityIssue::InteractiveContentMenuDescendant"] = 120] = "ElementAccessibilityIssue::InteractiveContentMenuDescendant";
+  IssueCreated3[IssueCreated3["ElementAccessibilityIssue::TextMenuDescendant"] = 121] = "ElementAccessibilityIssue::TextMenuDescendant";
+  IssueCreated3[IssueCreated3["MAX_VALUE"] = 122] = "MAX_VALUE";
   return IssueCreated3;
 })(IssueCreated || {});
 var DeveloperResourceLoaded = /* @__PURE__ */ ((DeveloperResourceLoaded3) => {
@@ -3057,9 +3062,6 @@ function mapCommonAidaRequestFields(aidaRequest, gcaRequest) {
       temperature: aidaRequest.options.temperature
     };
   }
-  if (aidaRequest.metadata?.string_session_id) {
-    gcaRequest.sessionId = aidaRequest.metadata.string_session_id;
-  }
 }
 function gcaResponseToAidaDoConversationResponse(response) {
   const functionCalls = [];
@@ -3474,6 +3476,9 @@ function gcaChunkResponseToAidaChunkResponse(response) {
     if (finishReason && BLOCKING_FINISH_REASONS.has(finishReason)) {
       return [blockedChunk(metadata, `GCA response blocked: ${finishReason}`)];
     }
+    if (finishReason && finishReason !== "STOP" && finishReason !== "FINISH_REASON_UNSPECIFIED" && finishReason !== "MAX_TOKENS") {
+      return [{ error: { status: finishReason, message: `GCA response finished with ${finishReason}` } }];
+    }
     const chunks = parts.length === 0 ? [{ metadata }] : parts.map((part) => {
       const aidaChunkResponse = { metadata };
       if (part.text && !part.thought) {
@@ -3500,6 +3505,9 @@ function gcaChunkResponseToAidaChunkResponse(response) {
       }
       return aidaChunkResponse;
     });
+    if (finishReason === "MAX_TOKENS") {
+      chunks[0].finishReason = finishReason;
+    }
     debugLog("Translation succeeded:", JSON.stringify(response), JSON.stringify(chunks));
     return chunks;
   } catch (e) {
@@ -3786,11 +3794,13 @@ var AidaClient = class {
     let inCodeChunk = false;
     const functionCalls = [];
     let metadata = { rpcGlobalId: 0 };
+    let finishReason;
     while (chunk = await stream.read()) {
       debugLog("doConversation stream chunk:", chunk);
       let textUpdated = false;
       const results = this.#parseAndTranslate(chunk);
       for (const result of results) {
+        finishReason = result.finishReason ?? finishReason;
         if (result.metadata) {
           metadata = {
             ...metadata,
@@ -3834,6 +3844,9 @@ var AidaClient = class {
           completed: false
         };
       }
+    }
+    if (finishReason && !text.length && !functionCalls.length) {
+      throw mapError({ status: finishReason, message: `GCA response finished with ${finishReason}` });
     }
     yield {
       explanation: text.join("") + (inCodeChunk ? CODE_CHUNK_SEPARATOR() : ""),

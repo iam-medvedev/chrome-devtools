@@ -37,7 +37,7 @@ export default `/*
 
 .panel-section-separator {
   height: var(--sys-size-1);
-  margin-bottom: 10px;
+  margin-bottom: var(--sys-size-6);
   background: var(--sys-color-divider);
 }
 /* Disable cache */
@@ -61,7 +61,7 @@ export default `/*
 .network-config-throttling {
   select {
     width: 100%;
-    max-width: 250px;
+    max-width: var(--sys-size-28);
   }
 
   .network-config-fields {
@@ -91,7 +91,7 @@ export default `/*
 
 .network-config-ua select {
   width: calc(100% - var(--sys-size-9));
-  max-width: 250px;
+  max-width: var(--sys-size-28);
 }
 
 .network-config-ua-custom {

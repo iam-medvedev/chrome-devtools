@@ -5,6 +5,7 @@ import { assert } from 'chai';
 import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
+import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as SDK from './sdk.js';
@@ -130,6 +131,24 @@ describe('EmulationModel', () => {
         const dataSaverSetting = universe.settings.resolve(SDK.SDKSettings.dataSaverSettingDescriptor);
         dataSaverSetting.set("disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
         sinon.assert.notCalled(spySetDataSaverOverride);
+    });
+    it('does not emulate vision deficiency on startup when set to none, and forwards changes', () => {
+        const universe = new TestUniverse();
+        universe.settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor)
+            .set("none" /* Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType.None */);
+        const connection = new MockCDPConnection();
+        const sendSpy = sinon.spy(connection, 'send');
+        const parentTarget = universe.createTarget({ connection });
+        const target = universe.createTarget({ parentTarget });
+        target.model(SDK.EmulationModel.EmulationModel);
+        assert.isFalse(sendSpy.getCalls().some(call => call.args[0] === 'Emulation.setEmulatedVisionDeficiency'));
+        const spySetVisionDeficiency = sinon.stub(target.emulationAgent(), 'invoke_setEmulatedVisionDeficiency');
+        universe.settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor)
+            .set("blurredVision" /* Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType.BlurredVision */);
+        sinon.assert.calledOnceWithExactly(spySetVisionDeficiency, { type: "blurredVision" /* Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType.BlurredVision */ });
+        universe.settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor)
+            .set("none" /* Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType.None */);
+        sinon.assert.calledWithExactly(spySetVisionDeficiency, { type: "none" /* Protocol.Emulation.SetEmulatedVisionDeficiencyRequestType.None */ });
     });
 });
 //# sourceMappingURL=EmulationModel.test.js.map

@@ -171,12 +171,6 @@ const supportsPrefersReducedData = () => {
     const query = 'not all and (prefers-reduced-data), (prefers-reduced-data)';
     return window.matchMedia(query).matches;
 };
-// TODO(1424879): remove this feature detection and expose the UI
-// unconditionally once prefers-reduced-transparency ships unflagged.
-const supportsPrefersReducedTransparency = () => {
-    const query = 'not all and (prefers-reduced-transparency), (prefers-reduced-transparency)';
-    return window.matchMedia(query).matches;
-};
 const supportsPrefersContrast = () => {
     const query = 'not all and (prefers-contrast), (prefers-contrast)';
     return window.matchMedia(query).matches;
@@ -217,7 +211,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         ${input.prefersContrastSetting ? renderControlForSetting(input.prefersContrastSetting, i18nString(UIStrings.forcesCssPreferscontrastMedia)) : nothing}
         ${renderControlForSetting(input.prefersReducedMotionSetting, i18nString(UIStrings.forcesCssPrefersreducedmotion))}
         ${input.prefersReducedDataSetting ? renderControlForSetting(input.prefersReducedDataSetting, i18nString(UIStrings.forcesCssPrefersreduceddataMedia)) : nothing}
-        ${input.prefersReducedTransparencySetting ? renderControlForSetting(input.prefersReducedTransparencySetting, i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia)) : nothing}
+        ${renderControlForSetting(input.prefersReducedTransparencySetting, i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia))}
         ${renderControlForSetting(input.colorGamutSetting, i18nString(UIStrings.forcesCssColorgamutMediaFeature))}
         <div class="panel-section-separator"></div>
         ${renderControlForSetting(input.visionDeficiencySetting, i18nString(UIStrings.forcesVisionDeficiencyEmulation))}
@@ -278,9 +272,7 @@ export class RenderingOptionsView extends UI.Widget.VBox {
             prefersReducedDataSetting: supportsPrefersReducedData() ?
                 settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor) :
                 null,
-            prefersReducedTransparencySetting: supportsPrefersReducedTransparency() ?
-                settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor) :
-                null,
+            prefersReducedTransparencySetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor),
             colorGamutSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor),
             visionDeficiencySetting: settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor),
             osTextScaleSetting: settings.resolve(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor),

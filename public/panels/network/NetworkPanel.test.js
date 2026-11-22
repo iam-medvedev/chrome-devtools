@@ -34,7 +34,7 @@ describeWithEnvironment('NetworkPanel', () => {
     const tracingTests = (inScope) => () => {
         it('starts recording on page reload', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
-            Common.Settings.Settings.instance().moduleSetting('network-record-film-strip-setting').set(true);
+            Common.Settings.Settings.instance().createSetting('network-record-film-strip-setting', false).set(true);
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             assert.exists(resourceTreeModel);
             const tracingManager = target.model(Tracing.TracingManager.TracingManager);
@@ -45,7 +45,7 @@ describeWithEnvironment('NetworkPanel', () => {
         });
         it('stops recording on page load', async () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-            Common.Settings.Settings.instance().moduleSetting('network-record-film-strip-setting').set(true);
+            Common.Settings.Settings.instance().createSetting('network-record-film-strip-setting', false).set(true);
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             assert.exists(resourceTreeModel);
             const tracingManager = target.model(Tracing.TracingManager.TracingManager);
@@ -61,7 +61,7 @@ describeWithEnvironment('NetworkPanel', () => {
     describe('in scope', tracingTests(true));
     describe('out of scpe', tracingTests(false));
     it('filters network log when a film strip frame is selected', async () => {
-        Common.Settings.Settings.instance().moduleSetting('network-record-film-strip-setting').set(true);
+        Common.Settings.Settings.instance().createSetting('network-record-film-strip-setting', false).set(true);
         const filmStripElement = networkPanel.element.querySelector('.network-film-strip');
         assert.instanceOf(filmStripElement, HTMLElement);
         const filmStripView = UI.Widget.Widget.get(filmStripElement);
@@ -85,6 +85,55 @@ describeWithEnvironment('NetworkPanel', () => {
         button.click();
         await RenderCoordinator.done({ waitForWork: true });
         sinon.assert.called(networkLogResetSpy);
+    });
+    it('renders checkboxes and file input in DEFAULT_SETTINGS_PANE_VIEW', () => {
+        const target = document.createElement('div');
+        const output = {};
+        const setting = Common.Settings.Settings.instance().createSetting('network-view-test', true);
+        const onLoadFromFile = sinon.spy();
+        Network.NetworkPanel.DEFAULT_SETTINGS_PANE_VIEW({
+            showSettingsPane: true,
+            largeRowsSetting: setting,
+            groupByFrameSetting: setting,
+            showOverviewSetting: setting,
+            recordFilmStripSetting: setting,
+            onLoadFromFile,
+        }, output, target);
+        const pane = target.querySelector('.network-settings-pane');
+        assert.isNotNull(pane);
+        assert.isFalse(pane.hidden);
+        assert.lengthOf(pane.querySelectorAll('devtools-checkbox'), 4);
+        assert.isFunction(output.openFileSelector);
+    });
+    it('toggles overview pane visibility independently of film strip view', () => {
+        const showOverviewSetting = Common.Settings.Settings.instance().createSetting('network-log-show-overview', true);
+        const showFilmstripSetting = Common.Settings.Settings.instance().createSetting('network-record-film-strip-setting', false);
+        const isOverviewShowing = () => {
+            const overviewElement = networkPanel.element.querySelector('#network-overview-pane');
+            const widget = overviewElement ? UI.Widget.Widget.get(overviewElement) : undefined;
+            return widget instanceof PerfUI.TimelineOverviewPane.TimelineOverviewPane && widget.isShowing();
+        };
+        const isFilmstripShowing = () => {
+            const filmStripElement = networkPanel.element.querySelector('.network-film-strip');
+            const widget = filmStripElement ? UI.Widget.Widget.get(filmStripElement) : undefined;
+            return widget instanceof PerfUI.FilmStripView.FilmStripView && widget.isShowing();
+        };
+        showOverviewSetting.set(false);
+        showFilmstripSetting.set(false);
+        assert.isFalse(isOverviewShowing());
+        assert.isFalse(isFilmstripShowing());
+        showOverviewSetting.set(true);
+        showFilmstripSetting.set(false);
+        assert.isTrue(isOverviewShowing());
+        assert.isFalse(isFilmstripShowing());
+        showOverviewSetting.set(false);
+        showFilmstripSetting.set(true);
+        assert.isFalse(isOverviewShowing());
+        assert.isTrue(isFilmstripShowing());
+        showOverviewSetting.set(true);
+        showFilmstripSetting.set(true);
+        assert.isTrue(isOverviewShowing());
+        assert.isTrue(isFilmstripShowing());
     });
 });
 describeWithEnvironment('BackendLinking', () => {

@@ -12,6 +12,7 @@ import * as TextUtils from '../../../core/text_utils/text_utils.js';
 import * as AIAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { assertScreenshot, doubleRaf, querySelectorErrorOnMissing, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig, waitFor, } from '../../../testing/EnvironmentHelpers.js';
+import { createNetworkRequest } from '../../../testing/NetworkRequestHelpers.js';
 import { getBaseTraceHandlerData, makeFakeParsedTrace, microsecondsTraceWindow, } from '../../../testing/TraceHelpers.js';
 import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../../ui/components/snackbars/snackbars.js';
@@ -36,7 +37,7 @@ describeWithEnvironment('ChatMessage', () => {
             isFirstMessage: false,
             prompt: 'test prompt',
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
-            canShowFeedbackForm: true,
+            canShowFreeFormFeedback: true,
             onSuggestionClick: sinon.stub(),
             onCopyResponseClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
@@ -80,7 +81,7 @@ describeWithEnvironment('ChatMessage', () => {
             },
             isLoading: false,
             isReadOnly: false,
-            canShowFeedbackForm: false,
+            canShowFreeFormFeedback: false,
             markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
             currentRating: undefined,
             suggestions: props.suggestions,
@@ -366,9 +367,9 @@ describeWithEnvironment('ChatMessage', () => {
             });
         });
     });
-    it('should show the feedback form when canShowFeedbackForm is true', async () => {
+    it('should show the feedback form when canShowFreeFormFeedback is true', async () => {
         const [view] = createComponent({
-            canShowFeedbackForm: true,
+            canShowFreeFormFeedback: true,
         });
         sinon.assert.callCount(view, 1);
         {
@@ -381,9 +382,9 @@ describeWithEnvironment('ChatMessage', () => {
             assert.isTrue(view.input.isShowingFeedbackForm);
         }
     });
-    it('should not show the feedback form when canShowFeedbackForm is false', async () => {
+    it('should not show the feedback form when canShowFreeFormFeedback is false', async () => {
         const [view] = createComponent({
-            canShowFeedbackForm: false,
+            canShowFreeFormFeedback: false,
         });
         sinon.assert.callCount(view, 1);
         {
@@ -1191,7 +1192,7 @@ describeWithEnvironment('ChatMessage', () => {
                 },
                 isLoading: false,
                 isReadOnly: false,
-                canShowFeedbackForm: true,
+                canShowFreeFormFeedback: true,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
@@ -1226,7 +1227,7 @@ describeWithEnvironment('ChatMessage', () => {
                 },
                 isLoading: false,
                 isReadOnly: false,
-                canShowFeedbackForm: false,
+                canShowFreeFormFeedback: false,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
@@ -1260,7 +1261,7 @@ describeWithEnvironment('ChatMessage', () => {
                 },
                 isLoading: false,
                 isReadOnly: false,
-                canShowFeedbackForm: false,
+                canShowFreeFormFeedback: false,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
@@ -1293,7 +1294,7 @@ describeWithEnvironment('ChatMessage', () => {
                 },
                 isLoading: false,
                 isReadOnly: false,
-                canShowFeedbackForm: false,
+                canShowFreeFormFeedback: false,
                 markdownRenderer: new AiAssistance.MarkdownRendererWithCodeBlock(),
                 currentRating: undefined,
                 walkthrough: { ...DEFAULT_WALKTHROUGH },
@@ -1491,6 +1492,53 @@ describeWithEnvironment('ChatMessage', () => {
             // Verify that the expand button exists and has the correct text
             const expandButton = querySelectorErrorOnMissing(widgetContainer, 'button.show-all-widget-requests-button');
             assert.strictEqual(expandButton.textContent?.trim(), 'Show all 17 network requests');
+        });
+        it('renders pending and unknown durations in the NETWORK_REQUESTS_LIST widget time column', async () => {
+            const inflight = createNetworkRequest({
+                requestId: 'req1',
+                url: 'https://example.com/inflight',
+            });
+            inflight.setIssueTime(1, 1);
+            const finishedWithoutTiming = createNetworkRequest({
+                requestId: 'req2',
+                url: 'https://example.com/finished-no-timing',
+                finished: true,
+            });
+            const preserved = createNetworkRequest({
+                requestId: 'req3',
+                url: 'https://example.com/preserved',
+            });
+            preserved.setIssueTime(1, 1);
+            preserved.preserved = true;
+            const completed = createNetworkRequest({
+                requestId: 'req4',
+                url: 'https://example.com/completed',
+                finished: true,
+            });
+            completed.setIssueTime(1, 1);
+            completed.endTime = 2;
+            const widget = {
+                name: 'NETWORK_REQUESTS_LIST',
+                data: {
+                    requests: [inflight, finishedWithoutTiming, preserved, completed],
+                },
+            };
+            const message = {
+                entity: "model" /* AiAssistance.ChatMessage.ChatMessageEntity.MODEL */,
+                parts: [
+                    {
+                        type: 'widget',
+                        widgets: [widget],
+                    },
+                ],
+                rpcId: 99,
+                id: '1',
+            };
+            const targetElement = renderView({ message });
+            const widgetContainer = await waitFor('.network-requests-widget', targetElement);
+            assert.isNotNull(widgetContainer);
+            const timeCells = Array.from(widgetContainer.querySelectorAll('table tr td:nth-child(4)')).map(td => td.textContent);
+            assert.deepEqual(timeCells, ['Pending', '(unknown)', '(unknown)', '1.00\xA0s']);
         });
         it('shows a snackbar with the error message when reveal fails', async () => {
             const root = sinon.createStubInstance(SDK.DOMModel.DOMNodeSnapshot);

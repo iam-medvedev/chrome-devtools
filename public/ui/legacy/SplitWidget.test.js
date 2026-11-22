@@ -6,8 +6,9 @@ import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { html, nothing, render } from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as UI from './legacy.js';
+const { ifDefined } = Directives;
 const widgetRef = UI.Widget.widgetRef;
 const SplitWidget = UI.SplitWidget.SplitWidget;
 describeWithEnvironment('SplitWidget', () => {
@@ -40,6 +41,33 @@ describeWithEnvironment('SplitWidget', () => {
     it('sets jslog attribute with drag tracking on the resizer element', () => {
         const widget = new SplitWidget(true, false);
         assert.strictEqual(widget.resizerElement().getAttribute('jslog'), 'Resizer; track: drag');
+    });
+    it('exposes the resizer element as a CSS part', () => {
+        const widget = new SplitWidget(true, false);
+        assert.strictEqual(widget.resizerElement().getAttribute('part'), 'resizer');
+    });
+    it('styles only its own resizer through ::part(resizer)', async () => {
+        const container = renderElementIntoDOM(new UI.Widget.VBox());
+        let outerSplitWidget;
+        let innerSplitWidget;
+        // clang-format off
+        render(html `
+      <style>.outer::part(resizer) { transform: translateX(2px); }</style>
+      <devtools-split-view class="outer" direction="column"
+                           ${widgetRef(SplitWidget, e => { outerSplitWidget = e; })}>
+        <devtools-split-view slot="main" direction="row"
+                             ${widgetRef(SplitWidget, e => { innerSplitWidget = e; })}>
+          <div slot="main">Inner main content</div>
+          <div slot="sidebar">Inner sidebar content</div>
+        </devtools-split-view>
+        <div slot="sidebar">Sidebar content</div>
+      </devtools-split-view>`, container.contentElement);
+        // clang-format on
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.exists(outerSplitWidget);
+        assert.exists(innerSplitWidget);
+        assert.strictEqual(getComputedStyle(outerSplitWidget.resizerElement()).transform, 'matrix(1, 0, 0, 1, 2, 0)');
+        assert.strictEqual(getComputedStyle(innerSplitWidget.resizerElement()).transform, 'none');
     });
     it('stacks the widgets when an auto-oriented split widget is narrow', () => {
         const container = document.createElement('div');
@@ -204,6 +232,316 @@ describeWithEnvironment('SplitWidget', () => {
         assert.isTrue(splitWidget.mainWidget()?.isShowing());
         assert.isFalse(splitWidget.sidebarWidget()?.isShowing());
         splitWidget.detach();
+    });
+    it('enforces size constraints across nested split widgets', () => {
+        function showRootSplitWidget(splitWidget) {
+            splitWidget.element.style.position = 'absolute';
+            splitWidget.element.style.top = '0';
+            splitWidget.element.style.left = '0';
+            splitWidget.element.style.height = '500px';
+            splitWidget.element.style.width = '500px';
+            renderElementIntoDOM(splitWidget, { includeCommonStyles: true });
+            return splitWidget;
+        }
+        function getBoundingBoxes(widgets) {
+            return Object.fromEntries(Object.entries(widgets).map(([name, widget]) => {
+                const { left, right, top, bottom } = widget.element.getBoundingClientRect();
+                return [name, { left, right, top, bottom }];
+            }));
+        }
+        // Create the initial split widget hierarchy.
+        const splitWidget = new SplitWidget(true, true, 'splitWidgetStateSettingName.splitWidget', 250, 250);
+        showRootSplitWidget(splitWidget);
+        const mainWidget = new UI.Widget.Widget();
+        mainWidget.setMinimumSize(100, 80);
+        splitWidget.setMainWidget(mainWidget);
+        const firstSidebarWidget = new UI.Widget.Widget();
+        firstSidebarWidget.setMinimumSize(40, 70);
+        splitWidget.setSidebarWidget(firstSidebarWidget);
+        const widgets = {
+            splitWidget,
+            mainWidget,
+            sidebarWidget: firstSidebarWidget,
+        };
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 250, top: 0, bottom: 500 },
+            sidebarWidget: { left: 251, right: 500, top: 0, bottom: 500 },
+        });
+        // Resize the sidebar below its minimum width.
+        splitWidget.setSidebarSize(30);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 459, top: 0, bottom: 500 },
+            sidebarWidget: { left: 460, right: 500, top: 0, bottom: 500 },
+        });
+        // Increase the sidebar widget minimum width.
+        firstSidebarWidget.setMinimumSize(90, 70);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 409, top: 0, bottom: 500 },
+            sidebarWidget: { left: 410, right: 500, top: 0, bottom: 500 },
+        });
+        // Switch the split widget orientation to horizontal.
+        splitWidget.setVertical(false);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 250 },
+            sidebarWidget: { left: 0, right: 500, top: 251, bottom: 500 },
+        });
+        // Increase the main widget minimum size.
+        mainWidget.setMinimumSize(450, 450);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 450 },
+            sidebarWidget: { left: 0, right: 500, top: 451, bottom: 500 },
+        });
+        // Restore the main widget minimum size and resize the sidebar.
+        mainWidget.setMinimumSize(100, 80);
+        splitWidget.setSidebarSize(450);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 81, bottom: 500 },
+        });
+        // Wrap the main widget inside a nested split widget with a hidden sidebar.
+        const childSplitWidget = new SplitWidget(false, true, 'splitWidgetStateSettingName.childsplitWidget', 100, 100);
+        childSplitWidget.hideSidebar();
+        childSplitWidget.setMainWidget(mainWidget);
+        splitWidget.setMainWidget(childSplitWidget);
+        widgets['childSplitWidget'] = childSplitWidget;
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 81, bottom: 500 },
+            childSplitWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+        });
+        // Attach a sidebar widget while the nested sidebar is hidden.
+        const secondSidebarWidget = new UI.Widget.Widget();
+        secondSidebarWidget.setMinimumSize(60, 60);
+        childSplitWidget.setSidebarWidget(secondSidebarWidget);
+        widgets['secondSidebarWidget'] = secondSidebarWidget;
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 81, bottom: 500 },
+            childSplitWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            secondSidebarWidget: { left: 0, right: 0, top: 0, bottom: 0 },
+        });
+        // Show both panes of the nested split widget.
+        childSplitWidget.showBoth();
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 142, bottom: 500 },
+            childSplitWidget: { left: 0, right: 500, top: 0, bottom: 141 },
+            secondSidebarWidget: { left: 0, right: 500, top: 81, bottom: 141 },
+        });
+        // Detach the nested sidebar widget.
+        secondSidebarWidget.detach();
+        delete widgets['secondSidebarWidget'];
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 102, bottom: 500 },
+            childSplitWidget: { left: 0, right: 500, top: 0, bottom: 101 },
+        });
+        // Attach another sidebar widget to the nested split widget.
+        const thirdSidebarWidget = new UI.Widget.Widget();
+        thirdSidebarWidget.setMinimumSize(80, 80);
+        childSplitWidget.setSidebarWidget(thirdSidebarWidget);
+        widgets['thirdSidebarWidget'] = thirdSidebarWidget;
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            sidebarWidget: { left: 0, right: 500, top: 162, bottom: 500 },
+            childSplitWidget: { left: 0, right: 500, top: 0, bottom: 161 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 81, bottom: 161 },
+        });
+        // Swap main and sidebar positions in the root split widget.
+        splitWidget.setSecondIsSidebar(false);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 339, bottom: 419 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 338 },
+            childSplitWidget: { left: 0, right: 500, top: 339, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 420, bottom: 500 },
+        });
+        // Set minimum and preferred sizes across the hierarchy.
+        firstSidebarWidget.setMinimumAndPreferredSizes(50, 50, 100, 100);
+        mainWidget.setMinimumAndPreferredSizes(50, 50, 200, 200);
+        thirdSidebarWidget.setMinimumAndPreferredSizes(49, 49, 99, 99);
+        splitWidget.setSidebarSize(260);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 260, bottom: 420 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 259 },
+            childSplitWidget: { left: 0, right: 500, top: 260, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 421, bottom: 500 },
+        });
+        // Resize the sidebar below its preferred size.
+        splitWidget.setSidebarSize(80);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 81, bottom: 400 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 80 },
+            childSplitWidget: { left: 0, right: 500, top: 81, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 401, bottom: 500 },
+        });
+        // Shrink the nested split widget proportionally between minimum and preferred sizes.
+        splitWidget.setSidebarSize(320);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 320, bottom: 440 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 319 },
+            childSplitWidget: { left: 0, right: 500, top: 320, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 441, bottom: 500 },
+        });
+        // Resize the sidebar inside the nested split widget to 50px.
+        childSplitWidget.setSidebarSize(50);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 320, bottom: 449 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 319 },
+            childSplitWidget: { left: 0, right: 500, top: 320, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 450, bottom: 500 },
+        });
+        // Resize the sidebar inside the nested split widget to 120px.
+        childSplitWidget.setSidebarSize(120);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 320, bottom: 380 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 319 },
+            childSplitWidget: { left: 0, right: 500, top: 320, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 381, bottom: 500 },
+        });
+        // Give the nested split widget more space.
+        splitWidget.setSidebarSize(170);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 170, bottom: 380 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 169 },
+            childSplitWidget: { left: 0, right: 500, top: 170, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 381, bottom: 500 },
+        });
+        // Give the nested split widget less space.
+        splitWidget.setSidebarSize(360);
+        assert.deepEqual(getBoundingBoxes(widgets), {
+            splitWidget: { left: 0, right: 500, top: 0, bottom: 500 },
+            mainWidget: { left: 0, right: 500, top: 360, bottom: 451 },
+            sidebarWidget: { left: 0, right: 500, top: 0, bottom: 359 },
+            childSplitWidget: { left: 0, right: 500, top: 360, bottom: 500 },
+            thirdSidebarWidget: { left: 0, right: 500, top: 452, bottom: 500 },
+        });
+        splitWidget.detach();
+    });
+    describe('devtools-split-view construction attributes', () => {
+        async function renderSplitView(options, size = 1000) {
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.width = `${size}px`;
+            container.style.height = `${size}px`;
+            renderElementIntoDOM(container, { includeCommonStyles: true, allowMultipleChildren: true });
+            let widget;
+            // clang-format off
+            render(html `
+        <devtools-split-view direction=${options.direction ?? 'column'} sidebar-position="second"
+                             name=${ifDefined(options.name)} show=${ifDefined(options.show)}
+                             sidebar-initial-size=${ifDefined(options.sidebarInitialSize)}
+                             sidebar-initial-width=${ifDefined(options.sidebarInitialWidth)}
+                             sidebar-initial-height=${ifDefined(options.sidebarInitialHeight)}
+                             ?constraints-in-dip=${Boolean(options.constraintsInDip)}
+                             ${widgetRef(SplitWidget, e => { widget = e; })}>
+          <div slot="main">Main content</div>
+          <div slot="sidebar">Sidebar content</div>
+        </devtools-split-view>`, container);
+            // clang-format on
+            assert.exists(widget);
+            await widget.updateComplete;
+            return widget;
+        }
+        it('uses sidebar-initial-width for column splits', async () => {
+            const widget = await renderSplitView({ direction: 'column', sidebarInitialWidth: '555', sidebarInitialHeight: '300' });
+            assert.isTrue(widget.isVertical());
+            assert.strictEqual(widget.sidebarSize(), 555);
+            widget.detach();
+        });
+        it('uses sidebar-initial-height for row splits', async () => {
+            const widget = await renderSplitView({ direction: 'row', sidebarInitialWidth: '555', sidebarInitialHeight: '300' });
+            assert.isFalse(widget.isVertical());
+            assert.strictEqual(widget.sidebarSize(), 300);
+            widget.detach();
+        });
+        it('falls back to sidebar-initial-size per orientation', async () => {
+            const rowWidget = await renderSplitView({ direction: 'row', sidebarInitialSize: '150', sidebarInitialWidth: '555' });
+            assert.strictEqual(rowWidget.sidebarSize(), 150);
+            rowWidget.detach();
+            const columnWidget = await renderSplitView({ direction: 'column', sidebarInitialSize: '150' });
+            assert.strictEqual(columnWidget.sidebarSize(), 150);
+            columnWidget.detach();
+        });
+        it('supports sidebar-initial-size="minimized"', async () => {
+            const widget = await renderSplitView({ direction: 'column', sidebarInitialSize: 'minimized' });
+            assert.isTrue(widget.isSidebarMinimized());
+            widget.detach();
+        });
+        it('defaults height to 200 when only sidebar-initial-width is set', async () => {
+            const widget = await renderSplitView({ direction: 'row', sidebarInitialWidth: '555' });
+            assert.isFalse(widget.isVertical());
+            assert.strictEqual(widget.sidebarSize(), 200);
+            widget.detach();
+        });
+        it('defaults width to 200 when only sidebar-initial-height is set', async () => {
+            const widget = await renderSplitView({ direction: 'column', sidebarInitialHeight: '300' });
+            assert.isTrue(widget.isVertical());
+            assert.strictEqual(widget.sidebarSize(), 200);
+            widget.detach();
+        });
+        it('applies constraints in DIP when constraints-in-dip attribute is set', async () => {
+            // Stubbing zoomFactor() only affects #applyConstraints(); cssToDIP()/dipToCSS()
+            // keep using the real zoom factor (1). So the minimum of 100 plus the 1px
+            // splitter border is scaled by 2 (202), unless constraints-in-dip is set (101).
+            sinon.stub(UI.ZoomManager.ZoomManager.instance(), 'zoomFactor').returns(2);
+            const cssWidget = await renderSplitView({ sidebarInitialSize: '50' }, 500);
+            const cssSidebar = cssWidget.sidebarWidget();
+            assert.exists(cssSidebar);
+            cssSidebar.setMinimumSize(100, 0);
+            assert.strictEqual(cssWidget.sidebarSize(), 202);
+            cssWidget.detach();
+            const dipWidget = await renderSplitView({ sidebarInitialSize: '50', constraintsInDip: true }, 500);
+            const dipSidebar = dipWidget.sidebarWidget();
+            assert.exists(dipSidebar);
+            dipSidebar.setMinimumSize(100, 0);
+            assert.strictEqual(dipWidget.sidebarSize(), 101);
+            dipWidget.detach();
+        });
+    });
+    it('does not invoke show-mode methods redundantly when show attribute matches current showMode', async () => {
+        const container = renderElementIntoDOM(new UI.Widget.VBox());
+        let splitWidget;
+        const renderWithShow = (show) => {
+            render(html `<devtools-split-view direction="column" show=${show} ${widgetRef(SplitWidget, w => {
+                splitWidget = w;
+            })}></devtools-split-view>`, container.contentElement);
+        };
+        renderWithShow('main');
+        assert.exists(splitWidget);
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.strictEqual(splitWidget.showMode(), "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */);
+        const hideSidebarSpy = sinon.spy(splitWidget, 'hideSidebar');
+        const hideMainSpy = sinon.spy(splitWidget, 'hideMain');
+        const showBothSpy = sinon.spy(splitWidget, 'showBoth');
+        // Re-rendering with the already-active showMode does not snap/re-invoke hideSidebar.
+        renderWithShow('main');
+        sinon.assert.notCalled(hideSidebarSpy);
+        // Transitioning to 'sidebar', then re-rendering 'sidebar' calls hideMain once.
+        renderWithShow('sidebar');
+        renderWithShow('sidebar');
+        sinon.assert.calledOnce(hideMainSpy);
+        // Transitioning to 'both', then re-rendering 'both' calls showBoth once.
+        renderWithShow('both');
+        renderWithShow('both');
+        sinon.assert.calledOnce(showBothSpy);
     });
 });
 //# sourceMappingURL=SplitWidget.test.js.map

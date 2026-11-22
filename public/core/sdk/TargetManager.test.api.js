@@ -41,5 +41,73 @@ describe('TargetManager API Test', () => {
         assert.strictEqual(suspendStateChangedEventsCount, 2, 'Suspend state changed event should have fired twice');
         universe.targetManager.removeEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, listener);
     });
+    it('detaches workers on navigation', async ({ inspectedPage, universe }) => {
+        const primaryTarget = universe.targetManager.primaryPageTarget();
+        assert.isNotNull(primaryTarget, 'Primary page target should exist');
+        // ChildTargetManager.install() does not run in TargetUniverse, so instantiate it on primaryTarget
+        // and ensure Target.setAutoAttach is processed on this CDP session before spawning a worker.
+        const childTargetManager = new SDK.ChildTargetManager.ChildTargetManager(primaryTarget);
+        await childTargetManager.getTargetInfo();
+        const events = [];
+        let workerTargetId;
+        let navigated = false;
+        const { promise: initialWorkerAdded, resolve: initialWorkerAddedCallback } = Promise.withResolvers();
+        const { promise: workerRemoved, resolve: workerRemovedCallback } = Promise.withResolvers();
+        const { promise: reloadedWorkerAdded, resolve: reloadedWorkerAddedCallback } = Promise.withResolvers();
+        const observer = {
+            targetAdded(target) {
+                if (target.type() !== SDK.Target.Type.Worker) {
+                    return;
+                }
+                events.push('Worker added');
+                workerTargetId = target.id();
+                if (navigated) {
+                    reloadedWorkerAddedCallback();
+                }
+                else {
+                    initialWorkerAddedCallback();
+                }
+            },
+            targetRemoved(target) {
+                if (target.type() !== SDK.Target.Type.Worker) {
+                    return;
+                }
+                if (target.id() === workerTargetId) {
+                    events.push('Worker removed');
+                    workerTargetId = '';
+                    workerRemovedCallback();
+                }
+                else {
+                    events.push('Unknown worker removed');
+                }
+            },
+        };
+        const startWorker = () => inspectedPage.evaluate(() => window.startWorker());
+        universe.targetManager.observeTargets(observer);
+        try {
+            await inspectedPage.goToResource('pages/workers-on-navigation/index.html');
+            await Promise.all([
+                startWorker(),
+                initialWorkerAdded,
+            ]);
+            assert.isNotEmpty(workerTargetId);
+            assert.deepEqual(events, ['Worker added']);
+            await inspectedPage.reload();
+            await workerRemoved;
+            assert.strictEqual(workerTargetId, '');
+            assert.deepEqual(events, ['Worker added', 'Worker removed']);
+            navigated = true;
+            await Promise.all([
+                startWorker(),
+                reloadedWorkerAdded,
+            ]);
+            assert.isNotEmpty(workerTargetId);
+            assert.deepEqual(events, ['Worker added', 'Worker removed', 'Worker added']);
+        }
+        finally {
+            universe.targetManager.unobserveTargets(observer);
+            childTargetManager.dispose();
+        }
+    });
 });
 //# sourceMappingURL=TargetManager.test.api.js.map

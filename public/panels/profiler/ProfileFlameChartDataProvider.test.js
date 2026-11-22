@@ -11,6 +11,13 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Profiler from './profiler.js';
 class TestProfileFlameChartDataProvider extends Profiler.ProfileFlameChart.ProfileFlameChartDataProvider {
+    constructor() {
+        super();
+        this.entryNodes = [
+            { functionName: 'apple', scriptId: '1', url: 'a.js' },
+            { functionName: 'banana', scriptId: '2', url: 'b.js' },
+        ];
+    }
     minimumBoundary() {
         return 0;
     }

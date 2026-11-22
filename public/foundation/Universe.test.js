@@ -7,6 +7,7 @@ import sinon from 'sinon';
 import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as SDK from '../core/sdk/sdk.js';
+import * as DevToolsState from '../models/devtools_state/devtools_state.js';
 import { MockCDPConnection } from '../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../testing/RuntimeHelpers.js';
 import { DEFAULT_SETTING_REGISTRATIONS_FOR_TEST } from '../testing/SettingsHelpers.js';
@@ -231,6 +232,48 @@ describe('Universe', () => {
         const disposeSpy = sinon.spy(universe.targetManager, 'dispose');
         universe.dispose();
         sinon.assert.calledOnce(disposeSpy);
+    });
+    it('wires StateManager to settings changes', () => {
+        const universe = new Foundation.Universe.Universe({
+            settingsCreationOptions: createSettingsCreationOptions(),
+            hostConfig: {},
+            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            supportsEmulation: false,
+        });
+        const listener = sinon.spy();
+        universe.stateManager.addEventListener("StateChanged" /* DevToolsState.State.Events.STATE_CHANGED */, listener);
+        universe.settings.resolve(SDK.SDKSettings.cacheDisabledSettingDescriptor).set(true);
+        sinon.assert.calledOnce(listener);
+        assert.deepEqual(universe.stateManager.nonDefaultStates(), [
+            { kind: "cache-disabled" /* DevToolsState.State.StateKind.CACHE_DISABLED */, value: true, isDefault: false },
+        ]);
+        universe.stateManager.reset("cache-disabled" /* DevToolsState.State.StateKind.CACHE_DISABLED */);
+        assert.deepEqual(universe.stateManager.nonDefaultStates(), []);
+        universe.dispose();
+        listener.resetHistory();
+        universe.settings.resolve(SDK.SDKSettings.cacheDisabledSettingDescriptor).set(true);
+        sinon.assert.notCalled(listener);
+    });
+    it('wires StateManager to CPU throttling changes', () => {
+        const universe = new Foundation.Universe.Universe({
+            settingsCreationOptions: createSettingsCreationOptions(),
+            hostConfig: {},
+            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            supportsEmulation: false,
+        });
+        const listener = sinon.spy();
+        universe.stateManager.addEventListener("StateChanged" /* DevToolsState.State.Events.STATE_CHANGED */, listener);
+        universe.cpuThrottlingManager.setCPUThrottlingRate(4);
+        sinon.assert.calledOnce(listener);
+        assert.deepEqual(universe.stateManager.nonDefaultStates(), [
+            { kind: "cpu-throttling" /* DevToolsState.State.StateKind.CPU_THROTTLING */, value: 4, isDefault: false },
+        ]);
+        universe.stateManager.reset("cpu-throttling" /* DevToolsState.State.StateKind.CPU_THROTTLING */);
+        assert.deepEqual(universe.stateManager.nonDefaultStates(), []);
+        universe.dispose();
+        listener.resetHistory();
+        universe.cpuThrottlingManager.setCPUThrottlingRate(4);
+        sinon.assert.notCalled(listener);
     });
 });
 //# sourceMappingURL=Universe.test.js.map

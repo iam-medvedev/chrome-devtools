@@ -8,7 +8,6 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as Input from '../../ui/components/input/input.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -290,50 +289,44 @@ function renderNewAuthenticatorSection(options, internalTransportAvailable, onUp
           </select>
         </div>
         <div class="authenticator-option">
-          <label for="resident-key" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsResidentKeys)}
-          </label>
-          <input id="resident-key" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle('resident-key').track({ change: true })}
+          <devtools-checkbox id="resident-key" class="authenticator-option-checkbox"
+              .jslogContext=${'resident-key'}
               @change=${(e) => onUpdate({ hasResidentKey: e.target.checked })}
-              .checked=${Boolean(options.hasResidentKey && isCtap2)} .disabled=${!isCtap2}>
+              .checked=${Boolean(options.hasResidentKey && isCtap2)}
+              .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsResidentKeys)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="user-verification" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsUserVerification)}
-          </label>
-          <input id="user-verification" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle('user-verification').track({ change: true })}
+          <devtools-checkbox id="user-verification" class="authenticator-option-checkbox"
+              .jslogContext=${'user-verification'}
               @change=${(e) => onUpdate({ hasUserVerification: e.target.checked })}
               .checked=${Boolean(options.hasUserVerification && isCtap2)}
               .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsUserVerification)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="large-blob" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsLargeBlob)}
-          </label>
-          <input id="large-blob" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle('large-blob').track({ change: true })}
+          <devtools-checkbox id="large-blob" class="authenticator-option-checkbox"
+              .jslogContext=${'large-blob'}
               @change=${(e) => onUpdate({ hasLargeBlob: e.target.checked })}
               .checked=${Boolean(options.hasLargeBlob && isCtap2 && options.hasResidentKey)}
               .disabled=${!options.hasResidentKey || !isCtap2}>
+            ${i18nString(UIStrings.supportsLargeBlob)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="hmac-secret" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsHmacSecret)}
-          </label>
-          <input id="hmac-secret" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle('hmac-secret').track({ change: true })}
+          <devtools-checkbox id="hmac-secret" class="authenticator-option-checkbox"
+              .jslogContext=${'hmac-secret'}
               @change=${(e) => onUpdate({ hasHmacSecret: e.target.checked })}
               .checked=${Boolean((options.hasHmacSecret || options.hasHmacSecretMc) && isCtap2)}
               .disabled=${!isCtap2 || Boolean(options.hasHmacSecretMc)}>
+            ${i18nString(UIStrings.supportsHmacSecret)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
-          <label for="hmac-secret-mc" class="authenticator-option-label">
-            ${i18nString(UIStrings.supportsHmacSecretMc)}
-          </label>
-          <input id="hmac-secret-mc" class="authenticator-option-checkbox" type="checkbox"
-              jslog=${VisualLogging.toggle('hmac-secret-mc').track({ change: true })}
+          <devtools-checkbox id="hmac-secret-mc" class="authenticator-option-checkbox"
+              .jslogContext=${'hmac-secret-mc'}
               @change=${(e) => {
         onUpdate(e.target.checked
             ? { hasHmacSecretMc: true, hasHmacSecret: true }
@@ -341,6 +334,8 @@ function renderNewAuthenticatorSection(options, internalTransportAvailable, onUp
     }}
               .checked=${Boolean(options.hasHmacSecretMc && isCtap2)}
               .disabled=${!isCtap2}>
+            ${i18nString(UIStrings.supportsHmacSecretMc)}
+          </devtools-checkbox>
         </div>
         <div class="authenticator-option">
           <div class="authenticator-option-label"></div>
@@ -482,7 +477,6 @@ function renderAuthenticatorFields(authenticatorId, options) {
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <style>${Input.checkboxStyles}</style>
     <style>${webauthnPaneStyles}</style>
     <div class="webauthn-pane flex-auto ${classMap({ enabled: input.enabled })}">
       ${renderToolbar(input.enabled, input.onToggleEnabled)}

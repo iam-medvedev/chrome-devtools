@@ -16,14 +16,12 @@ __export(ExtensionConverter_exports, {
 import * as PuppeteerReplay from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
 var EXTENSION_PREFIX = "extension_";
 var ExtensionConverter = class {
-  #idx;
   #extension;
-  constructor(idx, extension) {
-    this.#idx = idx;
+  constructor(extension) {
     this.#extension = extension;
   }
   getId() {
-    return EXTENSION_PREFIX + this.#idx;
+    return `${EXTENSION_PREFIX}${this.#extension.getOrigin()}_${this.#extension.getName()}`;
   }
   getFormatName() {
     return this.#extension.getName();

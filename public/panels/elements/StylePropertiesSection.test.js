@@ -1127,7 +1127,8 @@ describeWithEnvironment('StylesPropertySection', () => {
             },
         }));
         const header = cssModel.styleSheetHeaderForId(styleSheetId);
-        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, matchedStyles.nodeStyles()[0].range, matchedStyles.nodeStyles()[0], 1);
+        const insertRange = new TextUtils.TextRange.TextRange(1, 0, 1, 0);
+        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, insertRange, matchedStyles.nodeStyles()[0], 1);
         const container = document.createElement('div');
         container.appendChild(blankSection.element);
         const moveSpy = sinon.spy(blankSection, 'moveEditorFromSelector');
@@ -1494,22 +1495,25 @@ describeWithEnvironment('StylesPropertySection', () => {
         await cssModel.resumeModel();
         const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
         const styleSheetId = '0';
-        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        const selectorRange = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 3 };
+        const styleRange = { startLine: 0, startColumn: 4, endLine: 0, endColumn: 10 };
         const baseRule = {
             rule: {
-                selectorList: { selectors: [{ text: 'div', range }], text: 'div' },
+                selectorList: { selectors: [{ text: 'div', range: selectorRange }], text: 'div' },
                 origin,
                 styleSheetId,
-                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range },
+                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range: styleRange },
             },
             matchingSelectors: [0],
         };
+        const addedRuleSelectorRange = { startLine: 1, startColumn: 0, endLine: 1, endColumn: 10 };
+        const addedRuleStyleRange = { startLine: 1, startColumn: 11, endLine: 1, endColumn: 20 };
         const addedRuleMatch = {
             rule: {
-                selectorList: { selectors: [{ text: '.undo-rule', range }], text: '.undo-rule' },
+                selectorList: { selectors: [{ text: '.undo-rule', range: addedRuleSelectorRange }], text: '.undo-rule' },
                 origin,
                 styleSheetId,
-                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range },
+                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range: addedRuleStyleRange },
             },
             matchingSelectors: [0],
         };
@@ -1550,7 +1554,8 @@ describeWithEnvironment('StylesPropertySection', () => {
         await stylesSidebarPane.updateComplete;
         assert.lengthOf(stylesSidebarPane.allSections(), 1);
         const header = cssModel.styleSheetHeaderForId(styleSheetId);
-        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, matchedStyles.nodeStyles()[0].range, matchedStyles.nodeStyles()[0], 1);
+        const insertRange = new TextUtils.TextRange.TextRange(1, 0, 1, 0);
+        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, insertRange, matchedStyles.nodeStyles()[0], 1);
         stylesSidebarPane.sectionBlocks[0].sections.push(blankSection);
         blankSection.editingSelectorCommitted(blankSection.element, '.undo-rule', 'div', undefined, '');
         await new Promise(resolve => setTimeout(resolve, 0));
@@ -1572,13 +1577,14 @@ describeWithEnvironment('StylesPropertySection', () => {
         await cssModel.resumeModel();
         const origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
         const styleSheetId = '0';
-        const range = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 10 };
+        const selectorRange = { startLine: 0, startColumn: 0, endLine: 0, endColumn: 3 };
+        const styleRange = { startLine: 0, startColumn: 4, endLine: 0, endColumn: 10 };
         const baseRule = {
             rule: {
-                selectorList: { selectors: [{ text: 'div', range }], text: 'div' },
+                selectorList: { selectors: [{ text: 'div', range: selectorRange }], text: 'div' },
                 origin,
                 styleSheetId,
-                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range },
+                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range: styleRange },
             },
             matchingSelectors: [0],
         };
@@ -1598,12 +1604,14 @@ describeWithEnvironment('StylesPropertySection', () => {
         connection.setSuccessHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: [], extraFields: { isAppearanceBase: false } }));
         connection.setSuccessHandler('CSS.getBackgroundColors', () => ({}));
         connection.setSuccessHandler('CSS.getMatchedStylesForNode', () => ({ matchedCSSRules: [baseRule] }));
+        const addedRuleSelectorRange = { startLine: 1, startColumn: 0, endLine: 1, endColumn: 10 };
+        const addedRuleStyleRange = { startLine: 1, startColumn: 11, endLine: 1, endColumn: 20 };
         connection.setSuccessHandler('CSS.addRule', () => ({
             rule: {
-                selectorList: { selectors: [{ text: '.no-crash', range }], text: '.no-crash' },
+                selectorList: { selectors: [{ text: '.no-crash', range: addedRuleSelectorRange }], text: '.no-crash' },
                 origin,
                 styleSheetId,
-                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range },
+                style: { cssProperties: [], shorthandEntries: [], styleSheetId, range: addedRuleStyleRange },
             },
         }));
         connection.setSuccessHandler('DOM.undo', () => {
@@ -1614,7 +1622,8 @@ describeWithEnvironment('StylesPropertySection', () => {
         await stylesSidebarPane.updateComplete;
         assert.lengthOf(stylesSidebarPane.allSections(), 1);
         const header = cssModel.styleSheetHeaderForId(styleSheetId);
-        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, matchedStyles.nodeStyles()[0].range, matchedStyles.nodeStyles()[0], 1);
+        const insertRange = new TextUtils.TextRange.TextRange(1, 0, 1, 0);
+        const blankSection = new Elements.StylePropertiesSection.BlankStylePropertiesSection(stylesSidebarPane, matchedStyles, 'div', header, insertRange, matchedStyles.nodeStyles()[0], 1);
         blankSection.editingSelectorCommitted(blankSection.element, '.no-crash', 'div', undefined, '');
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.stub(stylesSidebarPane, 'node').returns(null);

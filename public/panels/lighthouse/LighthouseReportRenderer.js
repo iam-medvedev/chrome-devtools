@@ -1,7 +1,6 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -15,9 +14,170 @@ import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
+const { widget } = UI.Widget;
 const MaxLengthForLinks = 40;
-export class LighthouseReportRenderer {
-    static renderLighthouseReport(lhr, artifacts, opts) {
+function renderContent(input) {
+    switch (input.type) {
+        case 'node':
+            return html `${widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+                node: input.node,
+                options: { tooltip: input.snippet },
+            })}`;
+        case 'source-location':
+            return Components.Linkifier.Linkifier.renderLinkifiedUrl(input.url, {
+                lineNumber: input.lineNumber,
+                columnNumber: input.columnNumber,
+                showColumnNumber: false,
+                maxLength: MaxLengthForLinks,
+            });
+        case 'report': {
+            if (!input.report) {
+                return nothing;
+            }
+            const reportEl = LighthouseReport.renderReport(input.report, {
+                disableDarkMode: true,
+                onViewTrace: input.onViewTrace,
+                onSaveFileOverride: input.onSaveFileOverride,
+                onPrintOverride: input.onPrintOverride,
+                getStandaloneReportHTML: input.getStandaloneReportHTML,
+            });
+            reportEl.classList.add('lh-devtools');
+            reportEl.classList.toggle('lh-dark', input.darkMode);
+            LighthouseReportRenderer.installVisualLogging(reportEl);
+            return html `${reportEl}`;
+        }
+        default:
+            Platform.assertNever(input, 'Unknown Lighthouse view input type');
+    }
+}
+export const DEFAULT_VIEW = (input, _output, target) => {
+    render(renderContent(input), target);
+};
+const nodeLinkState = new WeakMap();
+function restorePlainNode(element) {
+    const state = nodeLinkState.get(element);
+    if (!state) {
+        return;
+    }
+    nodeLinkState.delete(element);
+    const screenshotElement = element.querySelector('.lh-element-screenshot');
+    element.replaceChildren(...(screenshotElement ? [screenshotElement] : []), ...state.fallbackNodes);
+    UI.Tooltip.Tooltip.install(element, state.title);
+}
+export class LighthouseReportRenderer extends UI.Widget.Widget {
+    #view;
+    #report = null;
+    #artifacts;
+    #beforePrint;
+    #afterPrint;
+    #isRendered = false;
+    #linkifyController;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element);
+        this.#view = view;
+    }
+    get report() {
+        return this.#report;
+    }
+    set report(report) {
+        if (this.#report === report) {
+            return;
+        }
+        this.#report = report;
+        this.#isRendered = false;
+        this.requestUpdate();
+    }
+    set artifacts(artifacts) {
+        if (this.#artifacts === artifacts) {
+            return;
+        }
+        this.#artifacts = artifacts;
+        this.#isRendered = false;
+        this.requestUpdate();
+    }
+    set beforePrint(beforePrint) {
+        if (this.#beforePrint === beforePrint) {
+            return;
+        }
+        this.#beforePrint = beforePrint;
+        this.#isRendered = false;
+        this.requestUpdate();
+    }
+    set afterPrint(afterPrint) {
+        if (this.#afterPrint === afterPrint) {
+            return;
+        }
+        this.#afterPrint = afterPrint;
+        this.#isRendered = false;
+        this.requestUpdate();
+    }
+    wasShown() {
+        super.wasShown();
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.#onTargetLoad);
+        this.#onThemeChange();
+        if (!this.#isRendered) {
+            this.requestUpdate();
+        }
+        else {
+            this.#linkifyNodes();
+        }
+    }
+    willHide() {
+        this.#linkifyController?.abort();
+        SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.#onTargetLoad);
+        ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
+        super.willHide();
+    }
+    #onThemeChange = () => {
+        const darkMode = ThemeSupport.ThemeSupport.hasInstance() && ThemeSupport.ThemeSupport.instance().themeName() === 'dark';
+        this.contentElement.querySelector('.lh-devtools')?.classList.toggle('lh-dark', darkMode);
+    };
+    #onTargetLoad = (event) => {
+        if (event.data.resourceTreeModel.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
+            return;
+        }
+        this.#linkifyNodes();
+    };
+    #linkifyNodes() {
+        this.#linkifyController?.abort();
+        const reportEl = this.contentElement.querySelector('.lh-devtools');
+        if (!this.#report || !reportEl) {
+            return;
+        }
+        if (!LighthouseReportRenderer.#targetMatchesReport(this.#report)) {
+            LighthouseReportRenderer.unlinkNodeDetails(reportEl);
+            return;
+        }
+        const controller = new AbortController();
+        this.#linkifyController = controller;
+        void LighthouseReportRenderer.linkifyNodeDetails(reportEl, this.#view, controller.signal);
+    }
+    static #targetMatchesReport(lhr) {
+        const inspectedURL = SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
+        if (!inspectedURL) {
+            return false;
+        }
+        const targetURL = Common.ParsedURL.ParsedURL.urlWithoutHash(inspectedURL);
+        return [lhr.finalDisplayedUrl, lhr.mainDocumentUrl, lhr.finalUrl].some(url => url !== undefined && url !== '' && Common.ParsedURL.ParsedURL.urlWithoutHash(url) === targetURL);
+    }
+    performUpdate() {
+        this.#isRendered = true;
+        const darkMode = ThemeSupport.ThemeSupport.hasInstance() && ThemeSupport.ThemeSupport.instance().themeName() === 'dark';
+        const reportOptions = LighthouseReportRenderer.#createReportOptions(this.#report, this.#artifacts, {
+            beforePrint: this.#beforePrint,
+            afterPrint: this.#afterPrint,
+        });
+        this.#view({ type: 'report', report: this.#report, darkMode, ...reportOptions }, undefined, this.contentElement);
+        const reportEl = this.contentElement.querySelector('.lh-devtools');
+        if (this.#report && reportEl) {
+            LighthouseReportRenderer.#finalizeRenderedReport(reportEl, this.#report, this.#artifacts, this.#view);
+            if (this.isShowing()) {
+                this.#linkifyNodes();
+            }
+        }
+    }
+    static #createReportOptions(lhr, artifacts, opts) {
         let onViewTrace = undefined;
         if (artifacts) {
             onViewTrace = async () => {
@@ -27,6 +187,9 @@ export class LighthouseReportRenderer {
             };
         }
         async function onSaveFileOverride(blob) {
+            if (!lhr) {
+                return;
+            }
             const domain = new Common.ParsedURL.ParsedURL(lhr.finalUrl || lhr.finalDisplayedUrl).domain();
             const sanitizedDomain = domain.replace(/[^a-z0-9.-]+/gi, '_');
             const timestamp = Platform.DateUtilities.toISO8601Compact(new Date(lhr.fetchTime));
@@ -44,8 +207,9 @@ export class LighthouseReportRenderer {
                 return;
             }
             printWindow.document.body.replaceWith(clonedReport);
-            // Linkified nodes are shadow elements, which aren't exposed via `cloneNode`.
-            await LighthouseReportRenderer.linkifyNodeDetails(clonedReport);
+            if (lhr && LighthouseReportRenderer.#targetMatchesReport(lhr)) {
+                await LighthouseReportRenderer.linkifyNodeDetails(clonedReport);
+            }
             opts?.beforePrint?.();
             printWindow.focus();
             printWindow.print();
@@ -56,13 +220,20 @@ export class LighthouseReportRenderer {
             // @ts-expect-error https://github.com/GoogleChrome/lighthouse/issues/11628
             return Lighthouse.ReportGenerator.ReportGenerator.generateReportHtml(lhr);
         }
+        return { onViewTrace, onSaveFileOverride, onPrintOverride, getStandaloneReportHTML };
+    }
+    static #finalizeRenderedReport(reportEl, lhr, artifacts, view = DEFAULT_VIEW) {
+        // @ts-expect-error Expose LHR on DOM for e2e tests
+        reportEl._lighthouseResultForTesting = lhr;
+        // @ts-expect-error Expose Artifacts on DOM for e2e tests
+        reportEl._lighthouseArtifactsForTesting = artifacts;
+        void LighthouseReportRenderer.linkifySourceLocationDetails(reportEl, view);
+    }
+    static renderLighthouseReport(lhr, artifacts, opts) {
+        const reportOptions = LighthouseReportRenderer.#createReportOptions(lhr, artifacts, opts);
         const reportEl = LighthouseReport.renderReport(lhr, {
-            // Disable dark mode so we can manually adjust it.
             disableDarkMode: true,
-            onViewTrace,
-            onSaveFileOverride,
-            onPrintOverride,
-            getStandaloneReportHTML,
+            ...reportOptions,
         });
         reportEl.classList.add('lh-devtools');
         const updateDarkModeIfNecessary = () => {
@@ -70,20 +241,8 @@ export class LighthouseReportRenderer {
         };
         ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, updateDarkModeIfNecessary);
         updateDarkModeIfNecessary();
-        // @ts-expect-error Expose LHR on DOM for e2e tests
-        reportEl._lighthouseResultForTesting = lhr;
-        // @ts-expect-error Expose Artifacts on DOM for e2e tests
-        reportEl._lighthouseArtifactsForTesting = artifacts;
-        // This should block the report rendering as we need visual logging ready
-        // before the user starts interacting with the report.
         LighthouseReportRenderer.installVisualLogging(reportEl);
-        // Linkifying requires the target be loaded. Do not block the report
-        // from rendering, as this is just an embellishment and the main target
-        // could take awhile to load.
-        void LighthouseReportRenderer.waitForMainTargetLoad().then(() => {
-            void LighthouseReportRenderer.linkifyNodeDetails(reportEl);
-            void LighthouseReportRenderer.linkifySourceLocationDetails(reportEl);
-        });
+        LighthouseReportRenderer.#finalizeRenderedReport(reportEl, lhr, artifacts);
         return reportEl;
     }
     /**
@@ -114,18 +273,12 @@ export class LighthouseReportRenderer {
         topbar?.remove();
         return reportEl;
     }
-    static async waitForMainTargetLoad() {
-        const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        if (!mainTarget) {
-            return;
+    static unlinkNodeDetails(el) {
+        for (const origElement of el.getElementsByClassName('lh-node')) {
+            restorePlainNode(origElement);
         }
-        const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        if (!resourceTreeModel) {
-            return;
-        }
-        await resourceTreeModel.once(SDK.ResourceTreeModel.Events.Load);
     }
-    static async linkifyNodeDetails(el) {
+    static async linkifyNodeDetails(el, view = DEFAULT_VIEW, signal) {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!mainTarget) {
             return;
@@ -135,45 +288,54 @@ export class LighthouseReportRenderer {
             return;
         }
         for (const origElement of el.getElementsByClassName('lh-node')) {
+            if (signal?.aborted) {
+                return;
+            }
             const origHTMLElement = origElement;
             const detailsItem = origHTMLElement.dataset;
             if (!detailsItem.path) {
                 continue;
             }
             const nodeId = await domModel.pushNodeByPathToFrontend(detailsItem.path);
-            if (!nodeId) {
-                continue;
+            if (signal?.aborted) {
+                return;
             }
-            const node = domModel.nodeForId(nodeId);
+            const node = nodeId ? domModel.nodeForId(nodeId) : null;
             if (!node) {
+                restorePlainNode(origHTMLElement);
                 continue;
             }
-            const element = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { tooltip: detailsItem.snippet, preventKeyboardFocus: undefined });
-            UI.Tooltip.Tooltip.install(origHTMLElement, '');
+            const existingState = nodeLinkState.get(origHTMLElement);
+            if (existingState?.node === node) {
+                continue;
+            }
             const screenshotElement = origHTMLElement.querySelector('.lh-element-screenshot');
-            origHTMLElement.textContent = '';
-            render(html `${screenshotElement ?? nothing}${element}`, origHTMLElement);
+            const fallbackNodes = existingState ?
+                existingState.fallbackNodes :
+                [...origHTMLElement.childNodes].filter(child => child !== screenshotElement);
+            const title = existingState ? existingState.title : origHTMLElement.title;
+            UI.Tooltip.Tooltip.install(origHTMLElement, '');
+            const linkContainer = document.createElement('span');
+            origHTMLElement.replaceChildren(...(screenshotElement ? [screenshotElement] : []), linkContainer);
+            nodeLinkState.set(origHTMLElement, { fallbackNodes, title, node });
+            view({ type: 'node', node, snippet: detailsItem.snippet }, undefined, linkContainer);
         }
     }
-    static async linkifySourceLocationDetails(el) {
+    static async linkifySourceLocationDetails(el, view = DEFAULT_VIEW) {
         for (const origElement of el.getElementsByClassName('lh-source-location')) {
             const origHTMLElement = origElement;
             const detailsItem = origHTMLElement.dataset;
             if (!detailsItem.sourceUrl || !detailsItem.sourceLine || !detailsItem.sourceColumn) {
                 continue;
             }
-            const url = detailsItem.sourceUrl;
-            const line = Number(detailsItem.sourceLine);
-            const column = Number(detailsItem.sourceColumn);
-            const element = Components.Linkifier.Linkifier.linkifyURL(url, {
-                lineNumber: line,
-                columnNumber: column,
-                showColumnNumber: false,
-                maxLength: MaxLengthForLinks,
-            });
             UI.Tooltip.Tooltip.install(origHTMLElement, '');
-            origHTMLElement.textContent = '';
-            origHTMLElement.appendChild(element);
+            origHTMLElement.replaceChildren();
+            view({
+                type: 'source-location',
+                url: detailsItem.sourceUrl,
+                lineNumber: Number(detailsItem.sourceLine),
+                columnNumber: Number(detailsItem.sourceColumn),
+            }, undefined, origHTMLElement);
         }
     }
     static installVisualLogging(el) {

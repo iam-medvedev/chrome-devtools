@@ -1,4 +1,5 @@
 import * as Common from '../../../core/common/common.js';
+import * as PuppeteerService from '../../../services/puppeteer/puppeteer.js';
 import type * as puppeteer from '../../../third_party/puppeteer/puppeteer.js';
 import type { Step, UserFlow } from './Schema.js';
 export declare const enum PlayRecordingSpeed {
@@ -27,6 +28,7 @@ export declare class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper<
     static connectPuppeteer(): Promise<{
         page: puppeteer.Page;
         browser: puppeteer.Browser;
+        connection: Pick<PuppeteerService.PuppeteerConnection.PuppeteerConnectionAdapter, 'blockPageInput'>;
     }>;
     static disconnectPuppeteer(browser: puppeteer.Browser): Promise<void>;
     stop(): Promise<void>;

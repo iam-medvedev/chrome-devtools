@@ -88,6 +88,36 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
         assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         widget.detach();
     });
+    it('ignores non-http(s) and invalid citation URLs', async () => {
+        const { view, widget } = await createToolbar();
+        widget.updateCitations([
+            'devtools://devtools/bundled/devtools_app.html',
+            'file:///etc/passwd',
+            'data:text/plain,hi',
+            'blob:https://example.com/id',
+            'javascript:void(0)',
+            'not-a-url',
+            'http://example.com/http',
+            'https://example.com/https',
+        ]);
+        await view.nextInput;
+        assert.deepEqual(view.input.citations, new Set(['http://example.com/http', 'https://example.com/https']));
+        widget.detach();
+    });
+    it('renders nothing when both disclaimer and citations are absent', () => {
+        const target = document.createElement('div');
+        renderElementIntoDOM(target);
+        Common.AiCodeCompletionSummaryToolbar.DEFAULT_SUMMARY_TOOLBAR_VIEW({
+            citationsTooltipId: 'citations-tooltip',
+            disclaimerTooltipId: undefined,
+            spinnerTooltipId: undefined,
+            hasTopBorder: false,
+            citations: new Set(),
+            loading: false,
+            aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+        }, undefined, target);
+        assert.isNull(target.querySelector('.ai-code-completion-summary-toolbar'));
+    });
     describe('screenshots', () => {
         beforeEach(() => {
         });

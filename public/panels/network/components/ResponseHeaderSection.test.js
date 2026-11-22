@@ -18,6 +18,7 @@ import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/Over
 import { TestUniverse } from '../../../testing/TestUniverse.js';
 import { recordedMetricsContain, resetRecordedMetrics, setupUserMetricHooks, } from '../../../testing/UserMetricsHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
@@ -35,6 +36,7 @@ async function renderResponseHeaderSection(request) {
         toReveal: { section: "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.RESPONSE */, header: 'highlighted-header' },
     };
     await RenderCoordinator.done();
+    await UI.Widget.Widget.allUpdatesComplete;
     assert.instanceOf(component, HTMLElement);
     assert.isNotNull(component.shadowRoot);
     return component;
@@ -46,16 +48,16 @@ async function editHeaderRow(component, index, headerAttribute, newValue) {
     const row = rows[index];
     assert.isNotNull(row.shadowRoot);
     const selector = headerAttribute === "HeaderName" /* HeaderAttribute.HEADER_NAME */ ? '.header-name' : '.header-value';
-    const editableComponent = row.shadowRoot.querySelector(`${selector} devtools-editable-span`);
+    const editableComponent = row.shadowRoot.querySelector(`${selector} devtools-widget`);
     assert.instanceOf(editableComponent, HTMLElement);
-    assert.isNotNull(editableComponent.shadowRoot);
-    const editable = editableComponent.shadowRoot.querySelector('.editable');
+    const editable = editableComponent.querySelector('.editable');
     assert.instanceOf(editable, HTMLSpanElement);
     editable.focus();
     editable.innerText = newValue;
     dispatchInputEvent(editable, { inputType: 'insertText', data: newValue, bubbles: true, composed: true });
     editable.blur();
     await RenderCoordinator.done();
+    await UI.Widget.Widget.allUpdatesComplete;
 }
 async function removeHeaderRow(component, index) {
     assert.isNotNull(component.shadowRoot);
@@ -66,6 +68,7 @@ async function removeHeaderRow(component, index) {
     assert.instanceOf(button, HTMLElement);
     button.click();
     await RenderCoordinator.done();
+    await UI.Widget.Widget.allUpdatesComplete;
 }
 async function setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders) {
     const request = {
@@ -106,24 +109,21 @@ function checkHeaderSectionRow(row, headerName, headerValue, isOverride, isNameE
     assert.strictEqual(rowElement?.classList.contains('header-overridden'), isOverride);
     assert.strictEqual(rowElement?.classList.contains('header-highlight'), isHighlighted);
     assert.strictEqual(rowElement?.classList.contains('header-deleted'), isDeleted);
-    const nameEditableComponent = row.shadowRoot.querySelector('.header-name devtools-editable-span');
+    const nameEditableComponent = row.shadowRoot.querySelector('.header-name devtools-widget');
     if (isNameEditable) {
         assert.instanceOf(nameEditableComponent, HTMLElement);
-        assert.isNotNull(nameEditableComponent.shadowRoot);
-        const nameEditable = nameEditableComponent.shadowRoot.querySelector('.editable');
+        const nameEditable = nameEditableComponent.querySelector('.editable');
         assert.instanceOf(nameEditable, HTMLSpanElement);
-        const textContent = nameEditable.textContent?.trim() + (row.shadowRoot.querySelector('.header-name')?.textContent || '').trim();
-        assert.strictEqual(textContent, headerName);
+        assert.strictEqual(nameEditable.textContent?.trim(), headerName);
     }
     else {
         assert.isNull(nameEditableComponent);
         assert.strictEqual(row.shadowRoot.querySelector('.header-name')?.textContent?.trim(), headerName);
     }
-    const valueEditableComponent = row.shadowRoot.querySelector('.header-value devtools-editable-span');
+    const valueEditableComponent = row.shadowRoot.querySelector('.header-value devtools-widget');
     if (isValueEditable) {
         assert.instanceOf(valueEditableComponent, HTMLElement);
-        assert.isNotNull(valueEditableComponent.shadowRoot);
-        const valueEditable = valueEditableComponent.shadowRoot.querySelector('.editable');
+        const valueEditable = valueEditableComponent.querySelector('.editable');
         assert.instanceOf(valueEditable, HTMLSpanElement);
         assert.strictEqual(valueEditable.textContent?.trim(), headerValue);
     }
@@ -334,6 +334,7 @@ Learn more`);
             .set(false);
         component.data = { request };
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         checkHeaderSectionRow(rows[0], 'cache-control', 'max-age=600', false, false, false);
         checkHeaderSectionRow(rows[1], 'server', 'overridden server', true, false, false);
         Common.Settings.Settings.instance()
@@ -654,6 +655,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         let expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -718,6 +720,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         sinon.assert.callCount(spy, 1);
         await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'valid');
         sinon.assert.callCount(spy, 2);
@@ -734,6 +737,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         const expected = [{
                 applyTo: 'index.html',
                 headers: [
@@ -769,6 +773,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         let rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 2);
         checkHeaderSectionRow(rows[0], 'server', 'overridden server', true, false, true);
@@ -971,6 +976,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'unit test');
         await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'foo');
         await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar');
@@ -1017,6 +1023,7 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         await raf();
         assert.isFalse(isRowFocused(component, 0));
         assert.isTrue(isRowFocused(component, 1));
@@ -1047,10 +1054,12 @@ Learn more`);
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'unit test');
         sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').callsFake(() => null);
         component.data = { request };
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 1);
         checkHeaderSectionRow(rows[0], 'server', 'overridden server', true, false, false);

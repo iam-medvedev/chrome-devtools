@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 describeWithEnvironment('WebAuthn pane', () => {
@@ -46,6 +46,28 @@ describeWithEnvironment('WebAuthn pane', () => {
         await panel.updateComplete;
         assert.isTrue(largeBlob.disabled);
         assert.isFalse(largeBlob.checked);
+    });
+    it('checks and disables hmac-secret when hmac-secret-mc is enabled', async () => {
+        const panel = new Webauthn.WebauthnPane.WebauthnPaneImpl();
+        renderElementIntoDOM(panel);
+        const hmacSecret = panel.contentElement.querySelector('#hmac-secret');
+        const hmacSecretMc = panel.contentElement.querySelector('#hmac-secret-mc');
+        if (!hmacSecret || !hmacSecretMc) {
+            assert.fail('Required checkbox not found');
+        }
+        assert.isFalse(hmacSecret.checked);
+        assert.isFalse(hmacSecret.disabled);
+        assert.isFalse(hmacSecretMc.checked);
+        hmacSecretMc.click();
+        await panel.updateComplete;
+        assert.isTrue(hmacSecretMc.checked);
+        assert.isTrue(hmacSecret.checked);
+        assert.isTrue(hmacSecret.disabled);
+        hmacSecretMc.click();
+        await panel.updateComplete;
+        assert.isFalse(hmacSecretMc.checked);
+        assert.isTrue(hmacSecret.checked);
+        assert.isFalse(hmacSecret.disabled);
     });
     let target;
     let model;
@@ -344,6 +366,17 @@ describeWithEnvironment('WebAuthn pane', () => {
             assert.isFalse(model.hasEventListeners("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */));
             assert.isFalse(model.hasEventListeners("CredentialUpdated" /* SDK.WebAuthnModel.Events.CREDENTIAL_UPDATED */));
             assert.isFalse(model.hasEventListeners("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */));
+        });
+        it('renders the panel when the virtual authenticator environment is enabled', async () => {
+            renderElementIntoDOM(panel, { includeCommonStyles: true, width: 800, height: 600 });
+            const setVirtualAuthEnvEnabled = sinon.stub(model, 'setVirtualAuthEnvEnabled').resolves();
+            const enableCheckbox = panel.contentElement.querySelector('devtools-checkbox');
+            assert.isOk(enableCheckbox);
+            enableCheckbox.click();
+            await expectCalled(setVirtualAuthEnvEnabled);
+            await doubleRaf();
+            await panel.updateComplete;
+            await assertScreenshot('webauthn/webauthn_pane.png');
         });
     });
     describe('out of scope', () => tests(false));

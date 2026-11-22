@@ -228,6 +228,16 @@ describeWithEnvironment('ApplicationPanelSidebar', () => {
         sinon.assert.calledWith(fetchSchemefulSiteStub, { origin: 'https://example.device-bound-sessions.com' });
         sinon.assert.calledWith(addVisibleSiteSpy, 'https://device-bound-sessions.com');
     });
+    it('shows an EmptyWidget for storage category views', () => {
+        const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
+        const link = urlString `https://developer.chrome.com/docs/devtools/storage/localstorage/`;
+        panel.showCategoryView('Local storage', 'No local storage', 'Local storage description', link);
+        assert.instanceOf(panel.visibleView, UI.EmptyWidget.EmptyWidget);
+        assert.isTrue(panel.visibleView.element.classList.contains('storage-view'));
+        assert.strictEqual(panel.visibleView.header, 'No local storage');
+        assert.strictEqual(panel.visibleView.text, 'Local storage description');
+        assert.strictEqual(panel.visibleView.link, link);
+    });
 });
 describeWithEnvironment('IDBDatabaseTreeElement', () => {
     let target;
@@ -693,7 +703,7 @@ describe('Storage Agent Context Menu', () => {
         const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
     });
-    it('populates context menu with Debug with AI submenu and expected items for DOMStorageTreeElement', () => {
+    it('populates context menu with Debug with AI item for DOMStorageTreeElement', () => {
         const domStorageModel = target.model(SDK.DOMStorageModel.DOMStorageModel);
         assert.exists(domStorageModel);
         const domStorage = new SDK.DOMStorageModel.DOMStorage(domStorageModel, 'http://example.com/', true);
@@ -705,17 +715,16 @@ describe('Storage Agent Context Menu', () => {
         assert.exists(debugWithAiItemInFooter, 'Expected Debug with AI context menu item in footer section');
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
-        assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Explain storage']);
-        // Test primary action execution (Start a chat)
-        const startChatSubItem = debugWithAiItem.subItems?.find(item => item.label === 'Start a chat');
-        assert.exists(startChatSubItem?.id);
-        contextMenu.invokeHandler(startChatSubItem.id);
+        assert.isUndefined(debugWithAiItem.subItems);
+        // Test primary action execution
+        assert.exists(debugWithAiItem.id);
+        contextMenu.invokeHandler(debugWithAiItem.id);
         const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
         assert.exists(flavor);
         assert.instanceOf(flavor, AiAssistance.StorageItem.DOMStorageItem);
         assert.strictEqual(flavor.type, 'localStorage');
     });
-    it('populates context menu with Debug with AI submenu and expected items for CookieTreeElement', () => {
+    it('populates context menu with Debug with AI item for CookieTreeElement', () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
         const frame = sinon.createStubInstance(SDK.ResourceTreeModel.ResourceTreeFrame);
@@ -729,11 +738,10 @@ describe('Storage Agent Context Menu', () => {
         assert.exists(debugWithAiItemInFooter, 'Expected Debug with AI context menu item in footer section');
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
-        assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Explain cookies']);
-        // Test secondary action execution (Explain cookies)
-        const explainCookiesSubItem = debugWithAiItem.subItems?.find(item => item.label === 'Explain cookies');
-        assert.exists(explainCookiesSubItem?.id);
-        contextMenu.invokeHandler(explainCookiesSubItem.id);
+        assert.isUndefined(debugWithAiItem.subItems);
+        // Test primary action execution
+        assert.exists(debugWithAiItem.id);
+        contextMenu.invokeHandler(debugWithAiItem.id);
         const flavor = UI.Context.Context.instance().flavor(AiAssistance.StorageItem.StorageItem);
         assert.exists(flavor);
         assert.instanceOf(flavor, AiAssistance.StorageItem.CookieItem);

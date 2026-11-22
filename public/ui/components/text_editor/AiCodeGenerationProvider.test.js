@@ -47,7 +47,7 @@ describeWithEnvironment('AiCodeGenerationProvider', () => {
     let clock;
     let generateCodeStub;
     beforeEach(() => {
-        clock = sinon.useFakeTimers();
+        clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
         updateHostConfig({
             devToolsAiCodeGeneration: {
                 enabled: true,

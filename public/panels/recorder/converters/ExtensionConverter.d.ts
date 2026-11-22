@@ -5,7 +5,7 @@ import type { Converter } from './Converter.js';
 export declare const EXTENSION_PREFIX = "extension_";
 export declare class ExtensionConverter implements Converter {
     #private;
-    constructor(idx: number, extension: Extension.ExtensionManager.Extension);
+    constructor(extension: Extension.ExtensionManager.Extension);
     getId(): string;
     getFormatName(): string;
     getMediaType(): string | undefined;

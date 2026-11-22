@@ -33,6 +33,7 @@ core/host/DispatchHttpRequestClient.test.js
 core/host/GcaClient.test.js
 core/host/GdpClient.test.js
 core/host/Platform.test.js
+core/host/ResourceLoader.test.js
 core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
 core/i18n/NumberFormatter.test.js
@@ -79,6 +80,7 @@ core/sdk/DebuggerModel.test.js
 core/sdk/EmulationModel.test.js
 core/sdk/EnhancedTracesParser.test.js
 core/sdk/FrameManager.test.js
+core/sdk/IsolateManager.test.js
 core/sdk/NetworkManager.test.js
 core/sdk/NetworkRequest.test.js
 core/sdk/NetworkRequestAccess.test.js
@@ -226,6 +228,9 @@ models/comment_manager/CommentThread.test.js
 models/computed_style/ComputedStyleModel.test.js
 models/cpu_profile/CPUProfileDataModel.test.js
 models/crux-manager/CrUXManager.test.js
+models/devtools_state/StateManager.test.js
+models/devtools_state/providers/CPUThrottlingStateProvider.test.js
+models/devtools_state/providers/SettingsStateProvider.test.js
 models/elements/DOMChanges.test.js
 models/elements/StyleChanges.test.js
 models/emulation/DeviceModeModel.test.js
@@ -389,6 +394,7 @@ entrypoints/node_app/app/NodeMain.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/ai-utils/BuiltInAi.test.js
 models/ai_assistance/DOMHelpers.test.js
+models/extensions/ExtensionAPI.test.js
 panels/accessibility/ARIAAttributesView.test.js
 panels/accessibility/AccessibilityAnnouncementRecordingListView.test.js
 panels/accessibility/AccessibilityAnnouncementRecordingView.test.js
@@ -480,6 +486,7 @@ panels/common/DOMLinkifier.test.js
 panels/common/ExtensionPanel.test.js
 panels/common/ExtensionServer.test.js
 panels/common/GdpSignUpDialog.test.js
+panels/common/StateChangesStatusBarPills.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsoleInsightTeaser.test.js
@@ -553,6 +560,7 @@ panels/explain/components/ConsoleInsight.test.js
 panels/issues/AffectedDescendantsWithinSelectElementView.test.js
 panels/issues/AffectedLazyLoadImagesView.test.js
 panels/issues/AffectedMetadataAllowedSitesView.test.js
+panels/issues/AffectedResourcesView.test.js
 panels/issues/AffectedSelectivePermissionsInterventionView.test.js
 panels/issues/GenericIssueDetailsView.test.js
 panels/issues/IssueView.test.js
@@ -628,6 +636,7 @@ panels/profiler/HeapSnapshotView.test.js
 panels/profiler/HeapTimelineOverview.test.js
 panels/profiler/IsolateSelector.test.js
 panels/profiler/ProfileFlameChartDataProvider.test.js
+panels/profiler/ProfileSidebarTreeElement.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
 panels/recorder/CreateRecordingView.test.js
@@ -638,10 +647,12 @@ panels/recorder/ReplaySection.test.js
 panels/recorder/StepEditor.test.js
 panels/recorder/StepView.test.js
 panels/recorder/injected.test.js
+panels/recorder/converters/ExtensionConverter.test.js
 panels/recorder/converters/LighthouseConverter.test.js
 panels/recorder/converters/PuppeteerConverter.test.js
 panels/recorder/converters/PuppeteerReplayConverter.test.js
 panels/recorder/injected/selectors/CSSSelector.test.js
+panels/recorder/models/NavigationGuard.test.js
 panels/recorder/models/RecorderSettings.test.js
 panels/recorder/models/RecorderShortcutHelper.test.js
 panels/recorder/models/RecordingPlayer.test.js
@@ -663,6 +674,7 @@ panels/settings/AISettingsTab.test.js
 panels/settings/BackendLinkingSettingsTab.test.js
 panels/settings/EditFileSystemView.test.js
 panels/settings/FrameworkIgnoreListSettingsTab.test.js
+panels/settings/KeybindsSettingsTab.test.js
 panels/settings/SettingsScreen.test.js
 panels/settings/WorkspaceSettingsTab.test.js
 panels/settings/components/SyncSection.test.js
@@ -702,6 +714,7 @@ panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/CountersGraph.test.js
 panels/timeline/EntriesFilter.test.js
+panels/timeline/EventsTimelineTreeView.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
 panels/timeline/RecordingMetadata.test.js
@@ -717,12 +730,15 @@ panels/timeline/TimelineFlameChartNetworkDataProvider.test.js
 panels/timeline/TimelineFlameChartView.test.js
 panels/timeline/TimelineHistoryManager.test.js
 panels/timeline/TimelineInvariants.test.js
+panels/timeline/TimelineLandingPage.test.js
 panels/timeline/TimelineLoader.test.js
 panels/timeline/TimelineMiniMap.test.js
+panels/timeline/TimelinePaintProfilerView.test.js
 panels/timeline/TimelinePanel.test.js
 panels/timeline/TimelineSelection.test.js
 panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
+panels/timeline/TraceSnapshotSerializer.test.js
 panels/timeline/TrackConfigBanner.test.js
 panels/timeline/TrackConfiguration.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
@@ -782,12 +798,15 @@ services/puppeteer/PuppeteerConnection.test.js
 services/trace_bounds/TraceBounds.test.js
 services/tracing/FreshRecording.test.js
 services/tracing/TracingManager.test.js
+testing/ConsoleHelpers.test.js
 testing/MockCDPConnection.test.js
 testing/MockScopeChain.test.js
 testing/MutationHelpers.test.js
 testing/SnapshotTester.test.js
 testing/SourceMapEncoder.test.js
+testing/TestTeardown.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
+third_party/diff/DiffWrapper.test.js
 third_party/i18n/i18n.test.js
 ui/comments/CommentAnchorResolver.test.js
 ui/comments/CommentOverlayManager.test.js
@@ -797,6 +816,7 @@ ui/components/code_highlighter/CodeHighlighter.test.js
 ui/components/dialogs/ButtonDialog.test.js
 ui/components/dialogs/Dialog.test.js
 ui/components/dialogs/ShortcutDialog.test.js
+ui/components/dialogs/TypeToAllowDialog.test.js
 ui/components/diff_view/DiffView.test.js
 ui/components/expandable_list/ExpandableList.test.js
 ui/components/helpers/helpers.test.js
@@ -863,6 +883,7 @@ ui/legacy/ListControl.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
 ui/legacy/PlusButton.test.js
+ui/legacy/ProgressIndicator.test.js
 ui/legacy/SearchableView.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SoftContextMenu.test.js
@@ -912,6 +933,7 @@ ui/legacy/components/perf_ui/LineLevelProfile.test.js
 ui/legacy/components/perf_ui/PieChart.test.js
 ui/legacy/components/perf_ui/TimelineGrid.test.js
 ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
+ui/legacy/components/perf_ui/TimelineOverviewPane.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
 ui/legacy/components/quick_open/FilteredListWidget.test.js
 ui/legacy/components/quick_open/QuickOpen.test.js
@@ -922,7 +944,6 @@ ui/legacy/components/source_frame/ImageView.test.js
 ui/legacy/components/source_frame/JSONView.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js
-ui/legacy/components/source_frame/StreamingContentHexView.test.js
 ui/legacy/components/source_frame/XMLView.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js

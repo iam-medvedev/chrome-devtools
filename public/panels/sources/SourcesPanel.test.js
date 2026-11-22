@@ -49,6 +49,7 @@ describeWithEnvironment('SourcesPanel', () => {
             .returns(networkPersistenceManager);
         sinon.stub(UI.ViewManager.ViewManager.instance(), 'view')
             .callsFake(() => sinon.createStubInstance(UI.View.SimpleView));
+        sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
     }
     function createStubUISourceCode() {
         const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
@@ -58,7 +59,7 @@ describeWithEnvironment('SourcesPanel', () => {
         stubProject.isServiceProject.returns(true);
         return uiSourceCode;
     }
-    it('Shows Debug with Ai menu and submenu items', () => {
+    it('shows Debug with AI item in context menu', () => {
         registerActions([{
                 actionId: 'drjones.sources-panel-context',
                 title: () => 'Debug with AI',
@@ -73,7 +74,19 @@ describeWithEnvironment('SourcesPanel', () => {
         sources.appendApplicableItems(event, contextMenu, uiSourceCode);
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
-        assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Assess performance', 'Explain this script', 'Explain input handling']);
+        assert.isUndefined(debugWithAiItem.subItems);
+        assert.strictEqual(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode), uiSourceCode);
+    });
+    it('omits Debug with AI item when action is not registered', () => {
+        setUpEnvironment();
+        const sources = new Sources.SourcesPanel.SourcesPanel();
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        const uiSourceCode = createStubUISourceCode();
+        sources.appendApplicableItems(event, contextMenu, uiSourceCode);
+        const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
+        assert.isUndefined(debugWithAiItem);
     });
     it('notifies ViewManager when debugger sidebar is toggled', () => {
         setUpEnvironment();
@@ -169,7 +182,7 @@ describeWithEnvironment('SourcesPanel', () => {
             sinon.stub(workspace, 'uiSourceCodesForProjectType')
                 .withArgs(Workspace.Workspace.projectTypes.FileSystem)
                 .returns([dirtyFileSystemCode, cleanFileSystemCode]);
-            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const showViewStub = UI.ViewManager.ViewManager.instance().showView;
             const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
             const sources = new Sources.SourcesPanel.SourcesPanel();
             const event = createBeforeUnloadEvent();
@@ -192,7 +205,7 @@ describeWithEnvironment('SourcesPanel', () => {
                 mimeType: 'text/javascript',
             });
             assert.isFalse(cleanFileSystemCode.isDirty());
-            const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
+            const showViewStub = UI.ViewManager.ViewManager.instance().showView;
             const revealStub = sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal').resolves();
             const sources = new Sources.SourcesPanel.SourcesPanel();
             const event = createBeforeUnloadEvent();
@@ -262,7 +275,9 @@ describeWithEnvironment('SourcesPanel', () => {
         debuggerModel.runtimeModel.returns(runtimeModel);
         debuggerModel.target.returns(target);
         debuggerModel.isPaused.returns(true);
-        debuggerModel.debuggerPausedDetails.returns(sinon.createStubInstance(SDK.DebuggerModel.DebuggerPausedDetails));
+        const pausedDetails = sinon.createStubInstance(SDK.DebuggerModel.DebuggerPausedDetails);
+        pausedDetails.debuggerModel = debuggerModel;
+        debuggerModel.debuggerPausedDetails.returns(pausedDetails);
         target.model.withArgs(SDK.DebuggerModel.DebuggerModel).returns(debuggerModel);
         UI.Context.Context.instance().setFlavor(SDK.Target.Target, target);
         view.input.onLongResume();

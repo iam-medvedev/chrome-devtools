@@ -8,7 +8,6 @@ import * as Root from "../../core/root/root.js";
 import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
 import * as Marked from "../../third_party/marked/marked.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
-import * as Input from "../../ui/components/input/input.js";
 import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
@@ -622,9 +621,6 @@ var markedExtension = {
   },
   renderer: () => ""
 };
-function isSearchRagResponse(metadata) {
-  return Boolean(metadata.factualityMetadata?.facts.length);
-}
 var blockPropagation = (e) => e.stopPropagation();
 function renderSearchButton(onSearch) {
   return html`<devtools-button
@@ -720,7 +716,7 @@ function renderInsight(insight, { renderer, disableAnimations, areReferenceDetai
             .data=${{ tokens: insight.tokens, renderer, animationEnabled: !disableAnimations }}>
           </devtools-markdown-view>` : insight.explanation}
         ${insight.timedOut ? html`<p class="error-message">${i18nString(UIStrings.timedOut)}</p>` : Lit.nothing}
-        ${isSearchRagResponse(insight.metadata) ? html`
+        ${insight.directCitationUrls.length > 0 || insight.relatedUrls.length > 0 ? html`
           <details
             class="references"
             ?open=${areReferenceDetailsOpen}
@@ -985,7 +981,6 @@ var DEFAULT_VIEW = (input, output, target) => {
   }
   render(html`
     <style>${consoleInsight_css_default}</style>
-    <style>${Input.checkboxStyles}</style>
     <div
       class=${Directives.classMap({ wrapper: true, closing: input.closing })}
       jslog=${VisualLogging.pane("console-insights").track({ resize: true })}
@@ -1267,13 +1262,17 @@ var ConsoleInsight = class _ConsoleInsight extends UI.Widget.Widget {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsReminderTeaserConfirmed);
     await this.#generateInsight();
   }
+  /**
+   * Injects numbered `[^1]`, `[^2]` footnote markers into the explanation text
+   * for HTTP(S) `WORLD_FACTS` citations and returns the ordered URLs.
+   */
   #insertCitations(explanation, metadata) {
     const directCitationUrls = [];
-    if (!isSearchRagResponse(metadata) || !metadata.attributionMetadata) {
+    if (!metadata.factualityMetadata?.facts.length || !metadata.attributionMetadata) {
       return { explanationWithCitations: explanation, directCitationUrls };
     }
     const { attributionMetadata } = metadata;
-    const sortedCitations = attributionMetadata.citations.filter((citation) => citation.sourceType === Host.AidaClient.CitationSourceType.WORLD_FACTS).sort((a, b) => (b.endIndex || 0) - (a.endIndex || 0));
+    const sortedCitations = attributionMetadata.citations.filter((citation) => citation.sourceType === Host.AidaClient.CitationSourceType.WORLD_FACTS && Boolean(citation.uri && this.#renderer.sanitizeUrl(citation.uri))).sort((a, b) => (b.endIndex || 0) - (a.endIndex || 0));
     let explanationWithCitations = explanation;
     for (const [index, citation] of sortedCitations.entries()) {
       const myRegex = /[.,:;!?]*\s/g;
@@ -1305,16 +1304,36 @@ var ConsoleInsight = class _ConsoleInsight extends UI.Widget.Widget {
       }
     }
   }
+  /**
+   * Collects HTTP(S) reference URLs not already cited inline in the explanation:
+   * Search RAG web sources (`factualityMetadata.facts`) and open-source code
+   * recitation sources (`TRAINING_DATA` citations, falling back to the cited
+   * GitHub repository when `citation.uri` is missing or non-HTTP(S)).
+   */
   #deriveRelatedUrls(directCitationUrls, metadata) {
     if (!metadata.factualityMetadata?.facts.length) {
       return [];
     }
-    const relatedUrls = metadata.factualityMetadata.facts.filter((fact) => fact.sourceUri && !directCitationUrls.includes(fact.sourceUri)).map((fact) => fact.sourceUri) || [];
-    const trainingDataUrls = metadata.attributionMetadata?.citations.filter(
-      (citation) => citation.sourceType === Host.AidaClient.CitationSourceType.TRAINING_DATA && (citation.uri || citation.repository)
-    ).map((citation) => citation.uri || `https://www.github.com/${citation.repository}`) || [];
-    const dedupedTrainingDataUrls = [...new Set(trainingDataUrls.filter((url) => !relatedUrls.includes(url) && !directCitationUrls.includes(url)))];
-    relatedUrls.push(...dedupedTrainingDataUrls);
+    const seen = new Set(directCitationUrls);
+    const relatedUrls = [];
+    const addIfValid = (maybeUrl) => {
+      if (!maybeUrl || !this.#renderer.sanitizeUrl(maybeUrl)) {
+        return false;
+      }
+      if (!seen.has(maybeUrl)) {
+        seen.add(maybeUrl);
+        relatedUrls.push(maybeUrl);
+      }
+      return true;
+    };
+    for (const fact of metadata.factualityMetadata.facts) {
+      addIfValid(fact.sourceUri);
+    }
+    for (const citation of metadata.attributionMetadata?.citations ?? []) {
+      if (citation.sourceType === Host.AidaClient.CitationSourceType.TRAINING_DATA && !addIfValid(citation.uri) && citation.repository) {
+        addIfValid(`https://www.github.com/${citation.repository}`);
+      }
+    }
     return relatedUrls;
   }
   async #generateInsight() {

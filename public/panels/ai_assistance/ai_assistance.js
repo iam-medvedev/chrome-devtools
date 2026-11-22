@@ -451,7 +451,7 @@ import * as Workspace from "../../models/workspace/workspace.js";
 import * as PanelsCommon3 from "../common/common.js";
 import * as TraceBounds from "../../services/trace_bounds/trace_bounds.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
-import * as Input2 from "../../ui/components/input/input.js";
+import * as Input from "../../ui/components/input/input.js";
 import * as MarkdownView5 from "../../ui/components/markdown_view/markdown_view.js";
 import * as Snackbars from "../../ui/components/snackbars/snackbars.js";
 import * as UIHelpers from "../../ui/helpers/helpers.js";
@@ -1134,7 +1134,6 @@ __export(WalkthroughView_exports, {
 import * as i18n from "../../core/i18n/i18n.js";
 import * as AiAssistanceModel3 from "../../models/ai_assistance/ai_assistance.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
-import * as Input from "../../ui/components/input/input.js";
 import * as UI from "../../ui/legacy/legacy.js";
 import * as Lit4 from "../../ui/lit/lit.js";
 import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
@@ -1503,11 +1502,8 @@ var DEFAULT_VIEW = (input, output, target) => {
     </div>
   ` : Lit4.nothing;
   render(html4`
-    <style>
-      ${Input.textInputStyles}
-      ${chatMessage_css_default}
-      ${walkthroughView_css_default}
-    </style>
+    <style>${chatMessage_css_default}</style>
+    <style>${walkthroughView_css_default}</style>
     ${input.isInlined ? renderInlineWalkthrough(input, stepsOutput, allSteps) : renderSidebarWalkthrough(input, stepsOutput, renderableSteps.length)}`, target);
 };
 var WalkthroughView = class extends UI.Widget.Widget {
@@ -2017,6 +2013,14 @@ var UIStringsNotTranslate = {
    */
   networkRequests: "Network requests",
   /**
+   * @description Time cell text for a network request that is still in flight.
+   */
+  networkRequestPending: "Pending",
+  /**
+   * @description Time cell text for a network request that has no timing data.
+   */
+  networkRequestDurationUnknown: "(unknown)",
+  /**
    * @description Accessible label for the reveal button in the network requests list widget.
    */
   revealFirstNetworkRequest: "Reveal first network request in Network panel",
@@ -2049,7 +2053,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
       "is-first-message": input.isFirstMessage
     });
     Lit5.render(html5`
-      <style>${Input2.textInputStyles}</style>
       <style>${chatMessage_css_default}</style>
       <div class="user-query-wrapper">
         <section class=${messageClasses2} jslog=${VisualLogging2.section("question")}>
@@ -2068,7 +2071,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     "is-first-message": input.isFirstMessage
   });
   Lit5.render(html5`
-    <style>${Input2.textInputStyles}</style>
+    <style>@scope to (devtools-widget > *) { ${Input.textInputStyles} }</style>
     <style>${chatMessage_css_default}</style>
     <section class=${messageClasses} jslog=${VisualLogging2.section("answer")}>
       ${renderWalkthroughUI(input, steps)}
@@ -2769,6 +2772,19 @@ async function makeSourceFilesListWidget(widgetData) {
   };
 }
 var expandedNetworkRequestsWidgets = /* @__PURE__ */ new WeakSet();
+function formatNetworkRequestDuration(request) {
+  const state = AiAssistanceModel4.ListNetworkRequests.requestDurationState(request);
+  switch (state.type) {
+    case "value":
+      return i18n3.TimeUtilities.secondsToString(state.seconds);
+    case "pending":
+      return lockedString2(UIStringsNotTranslate.networkRequestPending);
+    case "unavailable":
+      return lockedString2(UIStringsNotTranslate.networkRequestDurationUnknown);
+    default:
+      Platform3.assertNever(state, "Unknown RequestDurationState type");
+  }
+}
 async function makeNetworkRequestsListWidget(widgetData) {
   const requests = widgetData.data.requests;
   if (requests.length === 0) {
@@ -2794,7 +2810,7 @@ async function makeNetworkRequestsListWidget(widgetData) {
               <td>${request.name()}</td>
               <td>${request.statusCode}</td>
               <td>${i18n3.ByteUtilities.formatBytesToKb(request.transferSize)}</td>
-              <td>${i18n3.TimeUtilities.secondsToString(request.duration)}</td>
+              <td>${formatNetworkRequestDuration(request)}</td>
             </tr>
           `)}
         </table>
@@ -3249,7 +3265,7 @@ var ChatMessage = class extends UI2.Widget.Widget {
   isLoading = false;
   isReadOnly = false;
   prompt = "";
-  canShowFeedbackForm = false;
+  canShowFreeFormFeedback = false;
   isLastMessage = false;
   isFirstMessage = false;
   markdownRenderer;
@@ -3296,7 +3312,7 @@ var ChatMessage = class extends UI2.Widget.Widget {
         message,
         isLoading: this.isLoading,
         isReadOnly: this.isReadOnly,
-        canShowFeedbackForm: this.canShowFeedbackForm,
+        canShowFreeFormFeedback: this.canShowFreeFormFeedback,
         markdownRenderer: this.markdownRenderer,
         isLastMessage: this.isLastMessage,
         isFirstMessage: this.isFirstMessage,
@@ -3387,7 +3403,7 @@ var ChatMessage = class extends UI2.Widget.Widget {
       return;
     }
     this.#currentRating = rating;
-    this.#isShowingFeedbackForm = this.canShowFeedbackForm;
+    this.#isShowingFeedbackForm = this.canShowFreeFormFeedback;
     if (this.message.entity === "model" /* MODEL */ && this.message.rpcId) {
       this.onFeedbackSubmit(this.message.rpcId, rating);
     }
@@ -4052,6 +4068,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -4376,7 +4395,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -4621,14 +4639,14 @@ var IndexedDB;
     KeyPathType2["Array"] = "array";
   })(KeyPathType = IndexedDB2.KeyPathType || (IndexedDB2.KeyPathType = {}));
 })(IndexedDB || (IndexedDB = {}));
-var Input3;
-((Input5) => {
+var Input2;
+((Input4) => {
   let GestureSourceType;
   ((GestureSourceType2) => {
     GestureSourceType2["Default"] = "default";
     GestureSourceType2["Touch"] = "touch";
     GestureSourceType2["Mouse"] = "mouse";
-  })(GestureSourceType = Input5.GestureSourceType || (Input5.GestureSourceType = {}));
+  })(GestureSourceType = Input4.GestureSourceType || (Input4.GestureSourceType = {}));
   let MouseButton;
   ((MouseButton2) => {
     MouseButton2["None"] = "none";
@@ -4637,48 +4655,48 @@ var Input3;
     MouseButton2["Right"] = "right";
     MouseButton2["Back"] = "back";
     MouseButton2["Forward"] = "forward";
-  })(MouseButton = Input5.MouseButton || (Input5.MouseButton = {}));
+  })(MouseButton = Input4.MouseButton || (Input4.MouseButton = {}));
   let DispatchDragEventRequestType;
   ((DispatchDragEventRequestType2) => {
     DispatchDragEventRequestType2["DragEnter"] = "dragEnter";
     DispatchDragEventRequestType2["DragOver"] = "dragOver";
     DispatchDragEventRequestType2["Drop"] = "drop";
     DispatchDragEventRequestType2["DragCancel"] = "dragCancel";
-  })(DispatchDragEventRequestType = Input5.DispatchDragEventRequestType || (Input5.DispatchDragEventRequestType = {}));
+  })(DispatchDragEventRequestType = Input4.DispatchDragEventRequestType || (Input4.DispatchDragEventRequestType = {}));
   let DispatchKeyEventRequestType;
   ((DispatchKeyEventRequestType2) => {
     DispatchKeyEventRequestType2["KeyDown"] = "keyDown";
     DispatchKeyEventRequestType2["KeyUp"] = "keyUp";
     DispatchKeyEventRequestType2["RawKeyDown"] = "rawKeyDown";
     DispatchKeyEventRequestType2["Char"] = "char";
-  })(DispatchKeyEventRequestType = Input5.DispatchKeyEventRequestType || (Input5.DispatchKeyEventRequestType = {}));
+  })(DispatchKeyEventRequestType = Input4.DispatchKeyEventRequestType || (Input4.DispatchKeyEventRequestType = {}));
   let DispatchMouseEventRequestType;
   ((DispatchMouseEventRequestType2) => {
     DispatchMouseEventRequestType2["MousePressed"] = "mousePressed";
     DispatchMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     DispatchMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     DispatchMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(DispatchMouseEventRequestType = Input5.DispatchMouseEventRequestType || (Input5.DispatchMouseEventRequestType = {}));
+  })(DispatchMouseEventRequestType = Input4.DispatchMouseEventRequestType || (Input4.DispatchMouseEventRequestType = {}));
   let DispatchMouseEventRequestPointerType;
   ((DispatchMouseEventRequestPointerType2) => {
     DispatchMouseEventRequestPointerType2["Mouse"] = "mouse";
     DispatchMouseEventRequestPointerType2["Pen"] = "pen";
-  })(DispatchMouseEventRequestPointerType = Input5.DispatchMouseEventRequestPointerType || (Input5.DispatchMouseEventRequestPointerType = {}));
+  })(DispatchMouseEventRequestPointerType = Input4.DispatchMouseEventRequestPointerType || (Input4.DispatchMouseEventRequestPointerType = {}));
   let DispatchTouchEventRequestType;
   ((DispatchTouchEventRequestType2) => {
     DispatchTouchEventRequestType2["TouchStart"] = "touchStart";
     DispatchTouchEventRequestType2["TouchEnd"] = "touchEnd";
     DispatchTouchEventRequestType2["TouchMove"] = "touchMove";
     DispatchTouchEventRequestType2["TouchCancel"] = "touchCancel";
-  })(DispatchTouchEventRequestType = Input5.DispatchTouchEventRequestType || (Input5.DispatchTouchEventRequestType = {}));
+  })(DispatchTouchEventRequestType = Input4.DispatchTouchEventRequestType || (Input4.DispatchTouchEventRequestType = {}));
   let EmulateTouchFromMouseEventRequestType;
   ((EmulateTouchFromMouseEventRequestType2) => {
     EmulateTouchFromMouseEventRequestType2["MousePressed"] = "mousePressed";
     EmulateTouchFromMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     EmulateTouchFromMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     EmulateTouchFromMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(EmulateTouchFromMouseEventRequestType = Input5.EmulateTouchFromMouseEventRequestType || (Input5.EmulateTouchFromMouseEventRequestType = {}));
-})(Input3 || (Input3 = {}));
+  })(EmulateTouchFromMouseEventRequestType = Input4.EmulateTouchFromMouseEventRequestType || (Input4.EmulateTouchFromMouseEventRequestType = {}));
+})(Input2 || (Input2 = {}));
 var LayerTree;
 ((LayerTree2) => {
   let ScrollRectType;
@@ -5160,6 +5178,7 @@ var Network2;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network3.DeviceBoundSessionFetchResult || (Network3.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -5847,6 +5866,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -6252,13 +6272,13 @@ var Debugger;
   })(PausedEventReason = Debugger2.PausedEventReason || (Debugger2.PausedEventReason = {}));
 })(Debugger || (Debugger = {}));
 var Runtime;
-((Runtime7) => {
+((Runtime6) => {
   let SerializationOptionsSerialization;
   ((SerializationOptionsSerialization2) => {
     SerializationOptionsSerialization2["Deep"] = "deep";
     SerializationOptionsSerialization2["Json"] = "json";
     SerializationOptionsSerialization2["IdOnly"] = "idOnly";
-  })(SerializationOptionsSerialization = Runtime7.SerializationOptionsSerialization || (Runtime7.SerializationOptionsSerialization = {}));
+  })(SerializationOptionsSerialization = Runtime6.SerializationOptionsSerialization || (Runtime6.SerializationOptionsSerialization = {}));
   let DeepSerializedValueType;
   ((DeepSerializedValueType2) => {
     DeepSerializedValueType2["Undefined"] = "undefined";
@@ -6285,7 +6305,7 @@ var Runtime;
     DeepSerializedValueType2["Node"] = "node";
     DeepSerializedValueType2["Window"] = "window";
     DeepSerializedValueType2["Generator"] = "generator";
-  })(DeepSerializedValueType = Runtime7.DeepSerializedValueType || (Runtime7.DeepSerializedValueType = {}));
+  })(DeepSerializedValueType = Runtime6.DeepSerializedValueType || (Runtime6.DeepSerializedValueType = {}));
   let RemoteObjectType;
   ((RemoteObjectType2) => {
     RemoteObjectType2["Object"] = "object";
@@ -6296,7 +6316,7 @@ var Runtime;
     RemoteObjectType2["Boolean"] = "boolean";
     RemoteObjectType2["Symbol"] = "symbol";
     RemoteObjectType2["Bigint"] = "bigint";
-  })(RemoteObjectType = Runtime7.RemoteObjectType || (Runtime7.RemoteObjectType = {}));
+  })(RemoteObjectType = Runtime6.RemoteObjectType || (Runtime6.RemoteObjectType = {}));
   let RemoteObjectSubtype;
   ((RemoteObjectSubtype2) => {
     RemoteObjectSubtype2["Array"] = "array";
@@ -6320,7 +6340,7 @@ var Runtime;
     RemoteObjectSubtype2["Wasmvalue"] = "wasmvalue";
     RemoteObjectSubtype2["Deferredmodule"] = "deferredmodule";
     RemoteObjectSubtype2["Trustedtype"] = "trustedtype";
-  })(RemoteObjectSubtype = Runtime7.RemoteObjectSubtype || (Runtime7.RemoteObjectSubtype = {}));
+  })(RemoteObjectSubtype = Runtime6.RemoteObjectSubtype || (Runtime6.RemoteObjectSubtype = {}));
   let ObjectPreviewType;
   ((ObjectPreviewType2) => {
     ObjectPreviewType2["Object"] = "object";
@@ -6331,7 +6351,7 @@ var Runtime;
     ObjectPreviewType2["Boolean"] = "boolean";
     ObjectPreviewType2["Symbol"] = "symbol";
     ObjectPreviewType2["Bigint"] = "bigint";
-  })(ObjectPreviewType = Runtime7.ObjectPreviewType || (Runtime7.ObjectPreviewType = {}));
+  })(ObjectPreviewType = Runtime6.ObjectPreviewType || (Runtime6.ObjectPreviewType = {}));
   let ObjectPreviewSubtype;
   ((ObjectPreviewSubtype2) => {
     ObjectPreviewSubtype2["Array"] = "array";
@@ -6355,7 +6375,7 @@ var Runtime;
     ObjectPreviewSubtype2["Wasmvalue"] = "wasmvalue";
     ObjectPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     ObjectPreviewSubtype2["Trustedtype"] = "trustedtype";
-  })(ObjectPreviewSubtype = Runtime7.ObjectPreviewSubtype || (Runtime7.ObjectPreviewSubtype = {}));
+  })(ObjectPreviewSubtype = Runtime6.ObjectPreviewSubtype || (Runtime6.ObjectPreviewSubtype = {}));
   let PropertyPreviewType;
   ((PropertyPreviewType2) => {
     PropertyPreviewType2["Object"] = "object";
@@ -6367,7 +6387,7 @@ var Runtime;
     PropertyPreviewType2["Symbol"] = "symbol";
     PropertyPreviewType2["Accessor"] = "accessor";
     PropertyPreviewType2["Bigint"] = "bigint";
-  })(PropertyPreviewType = Runtime7.PropertyPreviewType || (Runtime7.PropertyPreviewType = {}));
+  })(PropertyPreviewType = Runtime6.PropertyPreviewType || (Runtime6.PropertyPreviewType = {}));
   let PropertyPreviewSubtype;
   ((PropertyPreviewSubtype2) => {
     PropertyPreviewSubtype2["Array"] = "array";
@@ -6391,7 +6411,7 @@ var Runtime;
     PropertyPreviewSubtype2["Wasmvalue"] = "wasmvalue";
     PropertyPreviewSubtype2["Deferredmodule"] = "deferredmodule";
     PropertyPreviewSubtype2["Trustedtype"] = "trustedtype";
-  })(PropertyPreviewSubtype = Runtime7.PropertyPreviewSubtype || (Runtime7.PropertyPreviewSubtype = {}));
+  })(PropertyPreviewSubtype = Runtime6.PropertyPreviewSubtype || (Runtime6.PropertyPreviewSubtype = {}));
   let ConsoleAPICalledEventType;
   ((ConsoleAPICalledEventType2) => {
     ConsoleAPICalledEventType2["Log"] = "log";
@@ -6412,7 +6432,7 @@ var Runtime;
     ConsoleAPICalledEventType2["ProfileEnd"] = "profileEnd";
     ConsoleAPICalledEventType2["Count"] = "count";
     ConsoleAPICalledEventType2["TimeEnd"] = "timeEnd";
-  })(ConsoleAPICalledEventType = Runtime7.ConsoleAPICalledEventType || (Runtime7.ConsoleAPICalledEventType = {}));
+  })(ConsoleAPICalledEventType = Runtime6.ConsoleAPICalledEventType || (Runtime6.ConsoleAPICalledEventType = {}));
 })(Runtime || (Runtime = {}));
 
 // ../../front_end/panels/ai_assistance/components/ChatInput.ts
@@ -6420,7 +6440,7 @@ import * as AiAssistanceModel5 from "../../models/ai_assistance/ai_assistance.js
 import * as PanelsCommon4 from "../common/common.js";
 import * as PanelUtils2 from "../utils/utils.js";
 import * as Buttons3 from "../../ui/components/buttons/buttons.js";
-import * as Input4 from "../../ui/components/input/input.js";
+import * as Input3 from "../../ui/components/input/input.js";
 import * as Snackbars2 from "../../ui/components/snackbars/snackbars.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
 import * as Lit7 from "../../ui/lit/lit.js";
@@ -7064,7 +7084,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     return html7`<div class=${classes}>${renderRelevantDataDisclaimer(tooltipId, input.disclaimerText)}</div>`;
   };
   Lit7.render(html7`
-    <style>${Input4.textInputStyles}</style>
+    <style>${Input3.textInputStyles}</style>
     <style>${chatInput_css_default}</style>
     ${input.isReadOnly ? html7`
         <div
@@ -8324,7 +8344,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
       message,
       isLoading: input.isLoading && index === input.messages.length - 1,
       isReadOnly: input.isReadOnly,
-      canShowFeedbackForm: input.canShowFeedbackForm,
+      canShowFreeFormFeedback: input.canShowFreeFormFeedback,
       markdownRenderer: input.markdownRenderer,
       isLastMessage: index === input.messages.length - 1,
       isFirstMessage: index === 0,
@@ -9840,7 +9860,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI10.Panel.Panel {
           conversationType: this.#conversation.type,
           isReadOnly: this.#conversation.isReadOnly ?? false,
           inspectElementToggled: this.#toggleSearchElementAction?.toggled() ?? false,
-          canShowFeedbackForm: this.#serverSideLoggingEnabled,
+          // TODO(b/587704208): Re-enable the written feedback form once supported.
+          canShowFreeFormFeedback: false,
           multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() && this.#conversation.type === AiAssistanceModel8.AiHistoryStorage.ConversationType.STYLING,
           isTextInputDisabled: this.#isTextInputDisabled(),
           emptyStateSuggestions,
@@ -11174,11 +11195,11 @@ __export(ExternalHandler_exports, {
   handleExternalAIRequest: () => handleExternalAIRequest
 });
 import * as Host6 from "../../core/host/host.js";
-import * as Root5 from "../../core/root/root.js";
 import * as SDK7 from "../../core/sdk/sdk.js";
 import * as AiAssistanceModel9 from "../../models/ai_assistance/ai_assistance.js";
 import * as NetworkTimeCalculator from "../../models/network_time_calculator/network_time_calculator.js";
 import * as UI11 from "../../ui/legacy/legacy.js";
+import * as LighthousePanel4 from "../lighthouse/lighthouse.js";
 import * as TimelinePanel4 from "../timeline/timeline.js";
 function resolveConversationType(contextType) {
   switch (contextType) {
@@ -11216,7 +11237,12 @@ async function handleExternalAIRequest(options) {
     data: [],
     isReadOnly: false,
     aidaClient,
-    performanceRecordAndReload: Root5.Runtime.hostConfig.devToolsAiV2Architecture?.enabled ? () => TimelinePanel4.TimelinePanel.TimelinePanel.executeRecordAndReload() : void 0
+    // Disable AIDA content logging so test/ai_evals runs do not pollute production logs.
+    serverSideLoggingAllowed: false,
+    performanceRecordAndReload: () => TimelinePanel4.TimelinePanel.TimelinePanel.executeRecordAndReload(),
+    lighthouseRecording: (overrides) => LighthousePanel4.LighthousePanel.LighthousePanel.executeLighthouseRecording(
+      { isAIControlled: true, ...overrides }
+    )
   });
   const resolvedContext = getMatchingFlavorContext(options.context);
   if (resolvedContext) {

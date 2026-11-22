@@ -11,7 +11,8 @@ export default `/*
 
 @scope to (devtools-widget > *) {
   button.soft-dropdown {
-    height: var(--sys-size-11);
+    height: var(--sys-size-9);
+    max-width: var(--sys-size-21);
     text-align: left;
     position: relative;
     border: none;
@@ -39,7 +40,7 @@ export default `/*
 
     & > .title {
       padding-right: var(--sys-size-2);
-      width: 120px;
+      flex: 0 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

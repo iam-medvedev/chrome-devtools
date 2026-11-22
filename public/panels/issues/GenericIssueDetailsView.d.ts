@@ -1,14 +1,8 @@
 import type * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import { AffectedResourcesView, type FrameCellData } from './AffectedResourcesView.js';
+import { AffectedResourcesView, type ElementCellData, type FrameCellData } from './AffectedResourcesView.js';
 import type { IssueView } from './IssueView.js';
-export type { FrameCellData };
-export interface ElementCellData {
-    nodeName: string;
-    deferredNode?: SDK.DOMModel.DeferredDOMNode;
-    onElementClick: () => void;
-}
+export type { ElementCellData, FrameCellData };
 export interface GenericIssueRow {
     frame?: FrameCellData;
     element?: ElementCellData;

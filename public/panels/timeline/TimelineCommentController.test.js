@@ -10,6 +10,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as CommentManager from '../../models/comment_manager/comment_manager.js';
 import * as Trace from '../../models/trace/trace.js';
 import { raf } from '../../testing/DOMHelpers.js';
+import { registerTestTeardown } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -20,6 +21,7 @@ import * as Comments from '../../ui/comments/comments.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as Overlays from './overlays/overlays.js';
 import * as Timeline from './timeline.js';
 class MockViewDelegate {
     select(_selection) {
@@ -34,15 +36,17 @@ class MockViewDelegate {
     }
     element = document.createElement('div');
 }
+const activeFlameChartViews = [];
 async function setupFlameChartView(context) {
     const parsedTrace = await TraceLoader.traceEngine(context, 'web-dev-with-commit.json.gz', { withModificationsManager: true });
     const commentManager = new CommentManager.CommentManager.CommentManager();
     const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(new MockViewDelegate(), commentManager);
+    activeFlameChartViews.push(flameChartView);
     renderWidgetInVbox(flameChartView, { width: 1500, height: 2000 });
     flameChartView.setModel(parsedTrace, new Map());
     // Matches the trace ID format that TimelineCommentController stores on anchors.
     const { min, max } = parsedTrace.data.Meta.traceBounds;
-    return { commentManager, flameChartView, traceId: `trace-${min}-${max}` };
+    return { commentManager, flameChartView, parsedTrace, traceId: `trace-${min}-${max}` };
 }
 /**
  * Returns client coordinates two pixels inside the top-left corner of the
@@ -111,6 +115,7 @@ describe('TimelineCommentController', function () {
             win: window,
             frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
         });
+        registerTestTeardown(() => UI.ZoomManager.ZoomManager.removeInstance());
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
@@ -120,7 +125,11 @@ describe('TimelineCommentController', function () {
         movedListener = sinon.spy();
         Comments.CommentAnchorResolver.addCustomAnchorsMovedListener(movedListener);
     });
-    afterEach(() => {
+    afterEach(async () => {
+        for (const view of activeFlameChartViews.splice(0)) {
+            view.detach();
+        }
+        await UI.Widget.Widget.allUpdatesComplete;
         // The browser autofocuses the flame chart canvas, which scrolls <body> (the
         // scroll container in tests). Reset it while the test container is still
         // in the DOM; otherwise the offset leaks into later screenshot tests.
@@ -133,7 +142,6 @@ describe('TimelineCommentController', function () {
         Common.Settings.Settings.instance()
             .createSetting('timeline-persisted-network-flamechart-track-config', null)
             .set(null);
-        UI.ZoomManager.ZoomManager.removeInstance();
     });
     describe('anchor resolution', () => {
         it('uses one anchor resolver for the main and network flame chart canvases', async function () {
@@ -359,6 +367,62 @@ describe('TimelineCommentController', function () {
             const pins = commentPins(setup.flameChartView);
             assert.lengthOf(pins, 1);
             assert.strictEqual(pins[0].entry, childEvent);
+        });
+        it('removes comment pin overlays and notifies when the parsed trace is cleared', async function () {
+            const setup = await setupFlameChartView(this);
+            const { flameChartView, parsedTrace } = setup;
+            // renderWidgetInVbox() attaches flameChartView's private controller to
+            // its canvases and Overlays instance. Clear that resolver and use a
+            // separate Overlays instance so only the standalone controller below
+            // handles resolution and moved notifications.
+            Comments.CommentAnchorResolver.clearCustomAnchorResolversForTest();
+            const overlays = new Overlays.Overlays.Overlays({
+                container: document.createElement('div'),
+                flameChartsContainers: {
+                    main: flameChartView.getMainFlameChart().element,
+                    network: flameChartView.getNetworkFlameChart().element,
+                },
+                charts: {
+                    mainChart: flameChartView.getMainFlameChart(),
+                    mainProvider: flameChartView.getMainDataProvider(),
+                    networkChart: flameChartView.getNetworkFlameChart(),
+                    networkProvider: flameChartView.getNetworkDataProvider(),
+                },
+                entryQueries: {
+                    parsedTrace: () => null,
+                    isEntryCollapsedByUser: () => false,
+                    firstVisibleParentForEntry: () => null,
+                },
+            });
+            const commentManager = new CommentManager.CommentManager.CommentManager();
+            const controller = new Timeline.TimelineCommentController.TimelineCommentController({
+                mainFlameChart: flameChartView.getMainFlameChart(),
+                networkFlameChart: flameChartView.getNetworkFlameChart(),
+                mainDataProvider: flameChartView.getMainDataProvider(),
+                networkDataProvider: flameChartView.getNetworkDataProvider(),
+                overlays,
+                eventsSerializer: new Trace.EventsSerializer.EventsSerializer(),
+            }, commentManager);
+            controller.wasShown();
+            try {
+                controller.setParsedTrace(parsedTrace);
+                const thread = commentManager.createCommentThread(anchorForMainEntry(setup, 0), 'Comment');
+                assert.lengthOf(overlays.overlaysOfType('COMMENT_PIN'), 1);
+                assert.isNotNull(Comments.CommentAnchorResolver.getCustomAnchorElement(thread.anchor));
+                movedListener.resetHistory();
+                controller.setParsedTrace(null);
+                assert.isEmpty(overlays.overlaysOfType('COMMENT_PIN'));
+                assert.isNull(Comments.CommentAnchorResolver.getCustomAnchorElement(thread.anchor));
+                sinon.assert.calledOnce(movedListener);
+                const mainFlameChart = flameChartView.getMainFlameChart();
+                const canvas = mainFlameChart.getCanvas();
+                const coordinates = clientCoordinatesForEntry(mainFlameChart, 0);
+                assert.isNull(resolverFor(canvas).resolve(canvas, coordinates));
+                assert.isNull(resolverFor(canvas).resolve(canvas, { ...coordinates, forHover: true }));
+            }
+            finally {
+                controller.willHide();
+            }
         });
     });
     describe('moved notifications', () => {

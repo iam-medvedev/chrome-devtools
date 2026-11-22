@@ -2,184 +2,259 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { beforeEach, it } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { raf } from '../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
-import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Issues from './issues.js';
-describeWithEnvironment('AffectedSelectivePermissionsInterventionView', () => {
-    setupLocaleHooks();
-    const mockModel = new MockIssuesModel([]);
-    let target;
-    beforeEach(() => {
-        // Initialize the workspace and bindings
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping: new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace),
-            targetManager,
-            ignoreListManager,
-            workspace,
-        });
-        target = createTarget();
-        mockModel.target = () => target;
-    });
-    function createProtocolIssueWithDetails(selectivePermissionsInterventionIssueDetails) {
-        return {
-            code: "SelectivePermissionsInterventionIssue" /* Protocol.Audits.InspectorIssueCode.SelectivePermissionsInterventionIssue */,
-            details: { selectivePermissionsInterventionIssueDetails },
-        };
-    }
-    const issueDetails = {
-        apiName: 'geolocation',
-        stackTrace: {
-            callFrames: [
-                {
-                    functionName: 'foo',
-                    scriptId: '1',
-                    url: 'https://example.com/foo.js',
-                    lineNumber: 10,
-                    columnNumber: 5,
-                },
-            ],
-        },
-        adAncestry: {
-            ancestryChain: [
-                {
-                    scriptId: '2',
-                    debuggerId: '',
-                    name: '',
-                },
-            ],
-            rootScriptFilterlistRule: '||ads.com^',
-        },
+const { AffectedSelectivePermissionsInterventionView, DEFAULT_VIEW } = Issues.AffectedSelectivePermissionsInterventionView;
+const AGGREGATION_KEY = {
+    toString: () => 'key',
+    aggregationKeyTag: undefined,
+};
+function createProtocolIssueWithDetails(selectivePermissionsInterventionIssueDetails) {
+    return {
+        code: "SelectivePermissionsInterventionIssue" /* Protocol.Audits.InspectorIssueCode.SelectivePermissionsInterventionIssue */,
+        details: { selectivePermissionsInterventionIssueDetails },
     };
-    it('appends details correctly', async () => {
-        const scriptParsedEvent = {
-            scriptId: '2',
-            url: 'https://ads.com/ad.js',
-            startLine: 0,
-            startColumn: 0,
-            endLine: 10,
-            endColumn: 10,
-            executionContextId: 1234,
-            hash: '',
-            buildId: '',
-        };
-        dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent);
-        const issue = createProtocolIssueWithDetails(issueDetails);
-        const interventionIssues = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(mockModel, issue);
-        assert.lengthOf(interventionIssues, 1);
-        const interventionIssue = interventionIssues[0];
-        const aggregationKey = 'key';
-        const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue(interventionIssue.code(), aggregationKey);
-        aggregatedIssue.addInstance(interventionIssue);
-        const mockIssueView = {
-            updateAffectedResourceVisibility: () => { },
-        };
-        const view = new Issues.AffectedSelectivePermissionsInterventionView.AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'js-log-context');
-        const treeOutline = new UI.TreeOutline.TreeOutline();
-        treeOutline.appendChild(view);
-        view.update();
-        // Wait for the Linkifier to asynchronously resolve and render the script URL.
-        await raf();
-        const resourceRows = view.affectedResources.querySelectorAll('.affected-resource-directive');
-        assert.lengthOf(resourceRows, 1);
-        const row = resourceRows[0];
-        assert.strictEqual(row.cells[0].textContent, 'geolocation');
-        assert.include(row.cells[2].textContent || '', 'ad.js:1');
-        assert.include(row.cells[2].textContent || '', 'Rule: ||ads.com^');
-    });
-    it('handles issues with missing ad ancestry rule', () => {
-        const issueDetailsMinimal = {
-            apiName: 'geolocation',
-            adAncestry: {
-                ancestryChain: [],
+}
+const SAMPLE_ISSUE_DETAILS = {
+    apiName: 'geolocation',
+    stackTrace: {
+        callFrames: [
+            {
+                functionName: 'foo',
+                scriptId: '1',
+                url: 'https://example.com/foo.js',
+                lineNumber: 10,
+                columnNumber: 5,
             },
-        };
-        const issue = createProtocolIssueWithDetails(issueDetailsMinimal);
-        const interventionIssues = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(mockModel, issue);
-        assert.lengthOf(interventionIssues, 1);
-        const interventionIssue = interventionIssues[0];
-        const aggregationKey = 'key';
-        const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue(interventionIssue.code(), aggregationKey);
-        aggregatedIssue.addInstance(interventionIssue);
-        const mockIssueView = {
-            updateAffectedResourceVisibility: () => { },
-        };
-        const view = new Issues.AffectedSelectivePermissionsInterventionView.AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'js-log-context');
-        const treeOutline = new UI.TreeOutline.TreeOutline();
-        treeOutline.appendChild(view);
-        view.update();
-        const resourceRows = view.affectedResources.querySelectorAll('.affected-resource-directive');
-        assert.lengthOf(resourceRows, 1);
-        const row = resourceRows[0];
-        assert.strictEqual(row.cells[0].textContent, 'geolocation');
-        assert.isEmpty(row.cells[2].textContent);
-    });
-    it('handles issues with empty stack trace', () => {
-        const issueDetailsWithEmptyStack = {
-            apiName: 'geolocation',
-            stackTrace: {
-                callFrames: [],
+        ],
+    },
+    adAncestry: {
+        ancestryChain: [
+            {
+                scriptId: '2',
+                debuggerId: '',
+                name: '',
             },
-            adAncestry: {
-                ancestryChain: [],
-            },
-        };
-        const issue = createProtocolIssueWithDetails(issueDetailsWithEmptyStack);
-        const interventionIssues = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(mockModel, issue);
-        assert.lengthOf(interventionIssues, 1);
-        const interventionIssue = interventionIssues[0];
-        const aggregationKey = 'key';
-        const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue(interventionIssue.code(), aggregationKey);
-        aggregatedIssue.addInstance(interventionIssue);
-        const mockIssueView = {
-            updateAffectedResourceVisibility: () => { },
-        };
-        const view = new Issues.AffectedSelectivePermissionsInterventionView.AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'js-log-context');
-        const treeOutline = new UI.TreeOutline.TreeOutline();
-        treeOutline.appendChild(view);
-        view.update();
-        const resourceRows = view.affectedResources.querySelectorAll('.affected-resource-directive');
-        assert.lengthOf(resourceRows, 1);
-        const row = resourceRows[0];
-        assert.strictEqual(row.cells[0].textContent, 'geolocation');
-        assert.exists(row.cells[1]);
+        ],
+        rootScriptFilterlistRule: '||ads.com^',
+    },
+};
+function setupDebuggerBindings() {
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+    const targetManager = SDK.TargetManager.TargetManager.instance();
+    const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        forceNew: true,
+        resourceMapping: new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace),
+        targetManager,
+        ignoreListManager,
+        workspace,
     });
-    it('re-renders correctly on multiple updates', () => {
-        const issue = createProtocolIssueWithDetails(issueDetails);
-        const interventionIssues = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(mockModel, issue);
-        const interventionIssue = interventionIssues[0];
-        const aggregationKey = 'key';
-        const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue(interventionIssue.code(), aggregationKey);
-        aggregatedIssue.addInstance(interventionIssue);
-        const mockIssueView = {
-            updateAffectedResourceVisibility: () => { },
-        };
-        const view = new Issues.AffectedSelectivePermissionsInterventionView.AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'js-log-context');
-        const treeOutline = new UI.TreeOutline.TreeOutline();
-        treeOutline.appendChild(view);
-        // First update
-        view.update();
-        let resourceRows = view.affectedResources.querySelectorAll('.affected-resource-directive');
-        assert.lengthOf(resourceRows, 1);
-        // Second update
-        view.update();
-        resourceRows = view.affectedResources.querySelectorAll('.affected-resource-directive');
-        // Should still have exactly 1 row (not 0, and not 2 if it was appending instead of replacing)
-        assert.lengthOf(resourceRows, 1);
-        const row = resourceRows[0];
-        assert.strictEqual(row.cells[0].textContent, 'geolocation');
+}
+function tearDownDebuggerBindings() {
+    Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
+    Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
+    Workspace.Workspace.WorkspaceImpl.removeInstance();
+}
+describe('AffectedSelectivePermissionsInterventionView', () => {
+    describe('DEFAULT_VIEW', () => {
+        setupLocaleHooks();
+        function renderView(input) {
+            const target = document.createElement('table');
+            renderElementIntoDOM(target);
+            DEFAULT_VIEW(input, undefined, target);
+            return target;
+        }
+        it('renders column headers and unknown or loading script states', () => {
+            const target = renderView({
+                rows: [
+                    {
+                        apiName: 'geolocation',
+                        script: { status: 'unknown' },
+                        adAncestryScripts: [],
+                        rootScriptFilterlistRule: '||ads.com^',
+                    },
+                    {
+                        apiName: 'camera',
+                        script: { status: 'loading' },
+                        adAncestryScripts: [],
+                    },
+                ],
+            });
+            const headers = target.querySelectorAll('td.affected-resource-header');
+            assert.lengthOf(headers, 3);
+            assert.strictEqual(headers[0].textContent, 'API');
+            assert.strictEqual(headers[1].textContent, 'Script');
+            assert.strictEqual(headers[2].textContent, 'Ad ancestry');
+            const rows = target.querySelectorAll('tr.affected-resource-directive');
+            assert.lengthOf(rows, 2);
+            assert.strictEqual(rows[0].cells[0].textContent, 'geolocation');
+            assert.strictEqual(rows[0].cells[1].textContent, 'Unknown');
+            assert.strictEqual(rows[0].cells[2].textContent, 'Rule: ||ads.com^');
+            assert.strictEqual(rows[1].cells[0].textContent, 'camera');
+            assert.strictEqual(rows[1].cells[1].textContent, 'Loading…');
+            assert.strictEqual(rows[1].cells[2].textContent, '');
+        });
+        it('re-renders without duplicating rows', () => {
+            const target = renderView({
+                rows: [{
+                        apiName: 'geolocation',
+                        script: { status: 'unknown' },
+                        adAncestryScripts: [],
+                    }],
+            });
+            assert.lengthOf(target.querySelectorAll('tr.affected-resource-directive'), 1);
+            DEFAULT_VIEW({
+                rows: [{
+                        apiName: 'microphone',
+                        script: { status: 'unknown' },
+                        adAncestryScripts: [],
+                    }],
+            }, undefined, target);
+            const rows = target.querySelectorAll('tr.affected-resource-directive');
+            assert.lengthOf(rows, 1);
+            assert.strictEqual(rows[0].cells[0].textContent, 'microphone');
+        });
+    });
+    describeWithEnvironment('presenter', () => {
+        setupLocaleHooks();
+        let target;
+        let issuesModel;
+        beforeEach(() => {
+            setupDebuggerBindings();
+            target = createTarget();
+            const model = target.model(SDK.IssuesModel.IssuesModel);
+            assert.isNotNull(model);
+            issuesModel = model;
+        });
+        afterEach(() => {
+            tearDownDebuggerBindings();
+        });
+        function createPresenter(issues) {
+            const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue("SelectivePermissionsInterventionIssue" /* Protocol.Audits.InspectorIssueCode.SelectivePermissionsInterventionIssue */, AGGREGATION_KEY);
+            for (const issue of issues) {
+                aggregatedIssue.addInstance(issue);
+            }
+            const mockIssueView = sinon.createStubInstance(Issues.IssueView.IssueView);
+            const view = sinon.stub();
+            const presenter = new AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'selective-permissions-intervention-details', view);
+            return { presenter, view };
+        }
+        function getCounterText(presenter) {
+            return presenter.listItemElement.querySelector('.affected-resource-label')?.textContent ?? '';
+        }
+        it('transitions script state from loading to ready and updates violation count', async () => {
+            const [issue] = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(issuesModel, createProtocolIssueWithDetails(SAMPLE_ISSUE_DETAILS));
+            assert.isOk(issue);
+            const { presenter, view } = createPresenter([issue]);
+            presenter.update();
+            sinon.assert.calledOnce(view);
+            assert.deepEqual(view.firstCall.args[0], {
+                rows: [{
+                        apiName: 'geolocation',
+                        script: { status: 'loading' },
+                        adAncestryScripts: [{ target, scriptId: '2' }],
+                        rootScriptFilterlistRule: '||ads.com^',
+                    }],
+            });
+            assert.strictEqual(getCounterText(presenter), '1 violation');
+            assert.isFalse(presenter.hidden);
+            await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
+            sinon.assert.calledTwice(view);
+            const resolvedRow = view.lastCall.args[0].rows[0];
+            if (resolvedRow.script.status !== 'ready') {
+                assert.fail(`Expected ready script state, got ${resolvedRow.script.status}`);
+            }
+            assert.lengthOf(resolvedRow.script.stackTrace.syncFragment.frames, 1);
+            assert.strictEqual(resolvedRow.script.stackTrace.syncFragment.frames[0].name, 'foo');
+        });
+        it('passes unknown script state when stack trace or model is missing', () => {
+            const detailsWithoutStack = {
+                apiName: 'geolocation',
+                adAncestry: { ancestryChain: [] },
+            };
+            const [issueWithoutStack] = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(issuesModel, createProtocolIssueWithDetails(detailsWithoutStack));
+            const issueWithoutModel = new IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue(SAMPLE_ISSUE_DETAILS, null);
+            assert.isOk(issueWithoutStack);
+            const { presenter, view } = createPresenter([issueWithoutStack, issueWithoutModel]);
+            presenter.update();
+            sinon.assert.calledOnce(view);
+            const { rows } = view.lastCall.args[0];
+            assert.lengthOf(rows, 2);
+            assert.deepEqual(rows[0].script, { status: 'unknown' });
+            assert.deepEqual(rows[1].script, { status: 'unknown' });
+            assert.strictEqual(getCounterText(presenter), '2 violations');
+        });
+        it('ignores stale stack trace resolutions after clear', async () => {
+            const [issue] = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(issuesModel, createProtocolIssueWithDetails(SAMPLE_ISSUE_DETAILS));
+            assert.isOk(issue);
+            const realBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+            const realStackTrace = await realBinding.createStackTraceFromProtocolRuntime(SAMPLE_ISSUE_DETAILS.stackTrace, target);
+            const { promise, resolve } = Promise.withResolvers();
+            sinon.stub(realBinding, 'createStackTraceFromProtocolRuntime').returns(promise);
+            const { presenter, view } = createPresenter([issue]);
+            presenter.update();
+            presenter.clear();
+            resolve(realStackTrace);
+            await promise;
+            await new Promise(resolve => queueMicrotask(resolve));
+            assert.deepEqual(view.lastCall.args[0], { rows: [] });
+        });
+        it('is hidden when there are no violations', () => {
+            const { presenter, view } = createPresenter([]);
+            presenter.update();
+            assert.deepEqual(view.lastCall.args[0], { rows: [] });
+            assert.isTrue(presenter.isEmpty());
+            assert.isTrue(presenter.hidden);
+        });
+        it('renders resolved stack trace and ad ancestry links end-to-end', async () => {
+            const scriptParsedEvent = {
+                scriptId: '2',
+                url: 'https://ads.com/ad.js',
+                startLine: 0,
+                startColumn: 0,
+                endLine: 10,
+                endColumn: 10,
+                executionContextId: 1234,
+                hash: '',
+                buildId: '',
+            };
+            dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent);
+            const [interventionIssue] = IssuesManager.SelectivePermissionsInterventionIssue.SelectivePermissionsInterventionIssue.fromInspectorIssue(issuesModel, createProtocolIssueWithDetails(SAMPLE_ISSUE_DETAILS));
+            assert.isOk(interventionIssue);
+            const aggregatedIssue = new IssuesManager.IssueAggregator.AggregatedIssue(interventionIssue.code(), AGGREGATION_KEY);
+            aggregatedIssue.addInstance(interventionIssue);
+            const mockIssueView = sinon.createStubInstance(Issues.IssueView.IssueView);
+            const view = new AffectedSelectivePermissionsInterventionView(mockIssueView, aggregatedIssue, 'selective-permissions-intervention-details');
+            const treeOutline = new UI.TreeOutline.TreeOutline();
+            renderElementIntoDOM(treeOutline.element);
+            treeOutline.appendChild(view);
+            view.update();
+            await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
+            await raf();
+            const resourceRows = view.childrenListElement.querySelectorAll('.affected-resource-directive');
+            assert.lengthOf(resourceRows, 1);
+            const row = resourceRows[0];
+            assert.strictEqual(row.cells[0].textContent, 'geolocation');
+            const stackPreviewElement = row.cells[1].querySelector('devtools-widget');
+            assert.isOk(stackPreviewElement);
+            const stackPreviewWidget = UI.Widget.Widget.get(stackPreviewElement);
+            assert.instanceOf(stackPreviewWidget, Components.JSPresentationUtils.StackTracePreviewContent);
+            assert.isTrue(stackPreviewWidget.hasContent());
+            assert.include(row.cells[2].textContent ?? '', 'ad.js:1');
+            assert.include(row.cells[2].textContent ?? '', 'Rule: ||ads.com^');
+        });
     });
 });
 //# sourceMappingURL=AffectedSelectivePermissionsInterventionView.test.js.map

@@ -14,6 +14,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { assertScreenshot, dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { registerTestTeardown } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
@@ -65,6 +66,7 @@ describe('TimelineFlameChartView', function () {
     setupSettingsHooks();
     setupRuntimeHooks();
     let universe;
+    const activeWidgets = [];
     beforeEach(() => {
         universe = new TestUniverse();
         UI.ZoomManager.ZoomManager.instance({
@@ -72,6 +74,7 @@ describe('TimelineFlameChartView', function () {
             win: window,
             frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
         });
+        registerTestTeardown(() => UI.ZoomManager.ZoomManager.removeInstance());
         sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
             .returns(universe.debuggerWorkspaceBinding);
         sinon.stub(Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding, 'instance').returns(universe.cssWorkspaceBinding);
@@ -79,10 +82,13 @@ describe('TimelineFlameChartView', function () {
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     });
-    afterEach(() => {
+    afterEach(async () => {
+        for (const widget of activeWidgets.splice(0)) {
+            widget.detach(/* overrideHideOnDetach= */ true);
+        }
+        await UI.Widget.Widget.allUpdatesComplete;
         // Avoid any group expansion state leaking across tests.
         clearPersistTrackConfigSettings();
-        UI.ZoomManager.ZoomManager.removeInstance();
     });
     describe('rendering', () => {
         beforeEach(() => {
@@ -109,6 +115,7 @@ describe('TimelineFlameChartView', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', { withModificationsManager: true });
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+            activeWidgets.push(flameChartView);
             flameChartView.updateCountersGraphToggle(false); // don't care about the memory view in this test
             renderWidgetInVbox(flameChartView, { width: 1500, height: 2000 });
             // IMPORTANT: order is important; for the flame chart view to render properly
@@ -143,6 +150,7 @@ describe('TimelineFlameChartView', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz', { withModificationsManager: true });
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+            activeWidgets.push(flameChartView);
             renderWidgetInVbox(flameChartView, { width: 1500, height: 2000 });
             flameChartView.setModel(parsedTrace, new Map());
             await raf();
@@ -161,6 +169,7 @@ describe('TimelineFlameChartView', function () {
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
             const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
+            activeWidgets.push(searchableView);
             searchableView.setMinimumSize(0, 100);
             searchableView.hideWidget();
             flameChartView.setSearchableView(searchableView);
@@ -200,6 +209,7 @@ describe('TimelineFlameChartView', function () {
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
             const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
+            activeWidgets.push(searchableView);
             searchableView.setMinimumSize(0, 100);
             searchableView.hideWidget();
             flameChartView.setSearchableView(searchableView);
@@ -317,27 +327,17 @@ describe('TimelineFlameChartView', function () {
         };
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         flameChartView.setModel({ ...parsedTrace, metadata }, new Map());
         const metadataInSetting = flameChartView.getPersistedConfigMetadata();
         assert.deepEqual(metadataInSetting, { main: null, network: [USER_VISUAL_CONFIG_NETWORK] });
-    });
-    it('creates an entry label annotation when the data provider sends an entry label annotation created event', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-modifications.json.gz', { withModificationsManager: true });
-        const mockViewDelegate = new MockViewDelegate();
-        const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
-        flameChartView.setModel(parsedTrace, new Map());
-        const modifications = Timeline.ModificationsManager.ModificationsManager.activeManager();
-        assert.exists(modifications);
-        const stub = sinon.stub(modifications, 'createAnnotation');
-        flameChartView.getMainDataProvider().dispatchEventToListeners("EntryLabelAnnotationAdded" /* Timeline.TimelineFlameChartDataProvider.Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: 0, withLinkCreationButton: false });
-        await doubleRaf();
-        sinon.assert.calledOnce(stub);
     });
     it('fires an event when an entry label overlay is clicked', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-modifications.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
         const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
+        activeWidgets.push(searchableView);
         searchableView.setMinimumSize(0, 100);
         searchableView.hideWidget();
         flameChartView.setSearchableView(searchableView);
@@ -371,6 +371,7 @@ describe('TimelineFlameChartView', function () {
     it('coalesces overlay updates when main and network flame charts redraw in the same turn', async () => {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         const updateSpy = sinon.spy(flameChartView.overlays(), 'update');
         const updateDimensionsSpy = sinon.spy(flameChartView.overlays(), 'updateChartDimensions');
         const mainDimensions = {
@@ -439,6 +440,7 @@ describe('TimelineFlameChartView', function () {
         // of this delegate every time an event has matched on a search.
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
         flameChartView.setSearchableView(searchableView);
         flameChartView.setModel(parsedTrace, new Map());
@@ -463,7 +465,6 @@ describe('TimelineFlameChartView', function () {
             }
             assert.strictEqual(selection.event.name, name);
         }
-        flameChartView.detach();
     });
     it('can search across both flame charts for events', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', { withModificationsManager: true });
@@ -471,6 +472,7 @@ describe('TimelineFlameChartView', function () {
         // of this delegate every time an event has matched on a search.
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
         flameChartView.setSearchableView(searchableView);
         flameChartView.setModel(parsedTrace, new Map());
@@ -483,12 +485,12 @@ describe('TimelineFlameChartView', function () {
         assert.lengthOf(results, 9);
         assert.lengthOf(results.filter(r => r.provider === 'main'), 8);
         assert.lengthOf(results.filter(r => r.provider === 'network'), 1);
-        flameChartView.detach();
     });
     it('can search for extension track entries by their tooltip text', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
         flameChartView.setSearchableView(searchableView);
         flameChartView.setModel(parsedTrace, new Map());
@@ -506,12 +508,12 @@ describe('TimelineFlameChartView', function () {
             assert.isOk(event);
             assert.isTrue(Trace.Types.Extensions.isSyntheticExtensionEntry(event));
         }
-        flameChartView.detach();
     });
     it('Adds Hidden Descendants Arrow as a decoration when a Context Menu action is applied on a node', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         flameChartView.setModel(parsedTrace, new Map());
         // Find the main track to later collapse entries of
         const mainTrack = flameChartView.getMainFlameChart().timelineData()?.groups.find(group => {
@@ -541,12 +543,12 @@ describe('TimelineFlameChartView', function () {
                 type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */,
             },
         ]);
-        flameChartView.detach();
     });
     it('Adds Hidden Descendants Arrow as a decoration when a Context Menu action is applied on a selected node with a key shortcut event', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         flameChartView.setModel(parsedTrace, new Map());
         // Find the main track to later collapse entries of
         const mainTrack = flameChartView.getMainFlameChart().timelineData()?.groups.find(group => {
@@ -577,12 +579,12 @@ describe('TimelineFlameChartView', function () {
                 type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */,
             },
         ]);
-        flameChartView.detach();
     });
     it('Removes Hidden Descendants Arrow as a decoration when Reset Children action is applied on a node', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         flameChartView.setModel(parsedTrace, new Map());
         Timeline.ModificationsManager.ModificationsManager.activeManager();
         // Find the main track to later collapse entries of
@@ -625,12 +627,12 @@ describe('TimelineFlameChartView', function () {
         // No decorations should exist on the node
         decorationsForEntry = flameChartView.getMainFlameChart().timelineData()?.entryDecorations[node?.id];
         assert.isUndefined(decorationsForEntry);
-        flameChartView.detach();
     });
     it('renders metrics as marker overlays w/ tooltips', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'crux.json.gz', { withModificationsManager: true });
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
         flameChartView.setModel(parsedTrace, new Map());
         const tooltips = [...flameChartView.element.querySelectorAll('.overlay-type-TIMINGS_MARKER .marker-title')].map(el => {
             el?.dispatchEvent(new MouseEvent('mousemove', {
@@ -647,7 +649,6 @@ describe('TimelineFlameChartView', function () {
             '75.90 msLCP - Local936.00 msLCP - Field (URL)',
             '43.75 msDCL',
         ]);
-        flameChartView.detach();
     });
     describe('Context Menu', function () {
         let flameChartView;
@@ -658,6 +659,7 @@ describe('TimelineFlameChartView', function () {
                 await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz', { withModificationsManager: true });
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+            activeWidgets.push(flameChartView);
             // If we run these tests with animations disabled, they hide some flakes
             // where the animations are not correctly cancelled when the component is
             // destroyed.
@@ -674,9 +676,6 @@ describe('TimelineFlameChartView', function () {
             flameChartView.show(flameChartContainer);
             Timeline.ModificationsManager.ModificationsManager.activeManager();
             sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
-        });
-        afterEach(() => {
-            flameChartView.detach();
         });
         function getContextMenuItems(menu) {
             return menu.defaultSection()
@@ -1083,6 +1082,7 @@ describe('TimelineFlameChartView', function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', { withModificationsManager: true });
             const mockViewDelegate = new MockViewDelegate();
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+            renderElementIntoDOM(flameChartView);
             flameChartView.setModel(parsedTrace, new Map());
             // Find some task in the main thread that we can build an AI Call Tree from
             const task = allThreadEntriesInTrace(parsedTrace).find(event => {
@@ -1106,6 +1106,7 @@ describe('TimelineFlameChartView', function () {
                 await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz', { withModificationsManager: true });
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+            renderElementIntoDOM(flameChartView);
             flameChartView.setModel(parsedTrace, new Map());
             Timeline.ModificationsManager.ModificationsManager.activeManager();
         });
@@ -1169,6 +1170,29 @@ describe('TimelineFlameChartView', function () {
             assert.strictEqual(entriesLink.entryFrom, entryTo);
             assert.strictEqual(entriesLink.entryTo, entryFrom);
         });
+    });
+    it('cancels debounced search updates on detach and refreshes on show', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz', { withModificationsManager: true });
+        const mockViewDelegate = new MockViewDelegate();
+        const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate, new CommentManager.CommentManager.CommentManager());
+        renderElementIntoDOM(flameChartView);
+        const searchableView = new UI.SearchableView.SearchableView(flameChartView, null);
+        flameChartView.setSearchableView(searchableView);
+        flameChartView.setModel(parsedTrace, new Map());
+        const searchConfig = new UI.SearchableView.SearchConfig('app.js', false, false, false);
+        flameChartView.performSearch(searchConfig, false);
+        const updateMatchesSpy = sinon.spy(searchableView, 'updateSearchMatchesCount');
+        const clock = sinon.useFakeTimers();
+        const { min, max } = parsedTrace.data.Meta.traceBounds;
+        const subBounds = microsecondsTraceWindow(min, Trace.Types.Timing.Micro(max - 2_000));
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(subBounds);
+        flameChartView.detach(/* overrideHideOnDetach= */ true);
+        await clock.tickAsync(150);
+        sinon.assert.notCalled(updateMatchesSpy);
+        clock.restore();
+        renderElementIntoDOM(flameChartView);
+        sinon.assert.calledOnce(updateMatchesSpy);
+        flameChartView.detach(/* overrideHideOnDetach= */ true);
     });
 });
 //# sourceMappingURL=TimelineFlameChartView.test.js.map

@@ -126,7 +126,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
     Lit.render(html `
       <style>${createRecordingViewStyles}</style>
       <style>${Input.textInputStyles}</style>
-      <style>${Input.checkboxStyles}</style>
       <div class="wrapper" jslog=${VisualLogging.section('create-recording-view')}>
         <div class="header-wrapper">
           <h1>${i18nString(UIStrings.createRecording)}</h1>
@@ -188,20 +187,16 @@ export const DEFAULT_VIEW = (input, output, target) => {
         <div class="checkbox-container">
           ${repeat(selectorTypes, item => {
         return html `
-              <label class="checkbox-label selector-type">
-                <input
-                  @keydown=${onKeyDown}
-                  .value=${item.selectorType}
-                  jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item.selectorType}`)}
-                  .checked=${item.checked}
-                  type="checkbox"
-                  @change=${(e) => onUpdate({
+              <devtools-checkbox
+                class="selector-type"
+                @keydown=${onKeyDown}
+                jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item.selectorType}`)}
+                .checked=${item.checked}
+                @change=${(e) => onUpdate({
             selectorType: item.selectorType,
             checked: e.target.checked,
         })}
-                />
-                ${selectorTypeToLabel.get(item.selectorType) || item.selectorType}
-              </label>
+              >${selectorTypeToLabel.get(item.selectorType) || item.selectorType}</devtools-checkbox>
             `;
     })}
         </div>

@@ -378,6 +378,7 @@
       <include file="models/computed_style/computed_style.js" name="MODELS_COMPUTED_STYLE_COMPUTED_STYLE_JS" resource_path="models/computed_style/computed_style.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
       <include file="models/crux-manager/crux-manager.js" name="MODELS_CRUX_MANAGER_CRUX_MANAGER_JS" resource_path="models/crux-manager/crux-manager.js" type="BINDATA" compress="false"/>
+      <include file="models/devtools_state/devtools_state.js" name="MODELS_DEVTOOLS_STATE_DEVTOOLS_STATE_JS" resource_path="models/devtools_state/devtools_state.js" type="BINDATA" compress="false"/>
       <include file="models/elements/elements.js" name="MODELS_ELEMENTS_ELEMENTS_JS" resource_path="models/elements/elements.js" type="BINDATA" compress="false"/>
       <include file="models/emulation/emulation.js" name="MODELS_EMULATION_EMULATION_JS" resource_path="models/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>

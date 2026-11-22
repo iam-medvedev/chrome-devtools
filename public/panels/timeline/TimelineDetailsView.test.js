@@ -215,14 +215,16 @@ describe('TimelineDetailsView', function () {
         await detailsView.setSelection(initialSelection);
         await raf();
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
-        const summaryWidget = UI.Widget.Widget.get(detailsContentElement);
-        assert.isDefined(summaryWidget);
+        const rangeSummaryElement = detailsContentElement.querySelector('devtools-widget');
+        assert.isNotNull(rangeSummaryElement);
+        const rangeSummaryWidget = UI.Widget.Widget.get(rangeSummaryElement);
+        assert.isDefined(rangeSummaryWidget);
         // Switch to the Bottom-up tab.
         const bottomUpTab = detailsView.headerElement().querySelector('#tab-bottom-up');
         assert.isNotNull(bottomUpTab);
         bottomUpTab.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true }));
         await raf();
-        const requestUpdateSpy = sinon.spy(summaryWidget, 'requestUpdate');
+        const requestUpdateSpy = sinon.spy(rangeSummaryWidget, 'requestUpdate');
         // Update the range selection while Bottom-up is active.
         const subRangeSelection = Timeline.TimelineSelection.selectionFromRangeMilliSeconds(bounds.min, Trace.Types.Timing.Milli(bounds.min + 1000));
         await detailsView.setSelection(subRangeSelection);
@@ -235,7 +237,7 @@ describe('TimelineDetailsView', function () {
         summaryTab.dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true }));
         await raf();
         // Summary view now requests an update when the tab becomes active.
-        sinon.assert.calledOnce(requestUpdateSpy);
+        sinon.assert.called(requestUpdateSpy);
         detailsView.detach();
     });
     it('switches to Bottom-up grouped by third parties and expands matching entity from selectTab', async function () {
@@ -310,6 +312,143 @@ describe('TimelineDetailsView', function () {
             await assertScreenshot('timeline/timeline_details_warning_dark.png');
             detailsView.detach();
         });
+    });
+    it('forwards heaviest stack row hover once from AggregatedTimelineTreeView', async () => {
+        const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
+        renderElementIntoDOM(detailsView);
+        const hoverSpy = sinon.spy();
+        detailsView.addEventListener("TreeRowHovered" /* Timeline.TimelineTreeView.TimelineTreeView.Events.TREE_ROW_HOVERED */, hoverSpy);
+        detailsView.selectTab(Timeline.TimelineDetailsView.Tab.BottomUp, null);
+        await detailsView.updateComplete;
+        const treeEl = detailsView.element.querySelector('.timeline-tree-view');
+        assert.isNotNull(treeEl);
+        const bottomUp = UI.Widget.Widget.get(treeEl);
+        assert.instanceOf(bottomUp, Timeline.TimelineTreeView.BottomUpTimelineTreeView);
+        bottomUp.stackView.dispatchEventToListeners("TreeRowHovered" /* Timeline.TimelineTreeView.TimelineStackView.Events.TREE_ROW_HOVERED */, null);
+        sinon.assert.calledOnce(hoverSpy);
+        detailsView.detach();
+    });
+    it('renders the summary container with id #details', () => {
+        const target = document.createElement('div');
+        Timeline.TimelineDetailsView.SUMMARY_TAB_VIEW({
+            summary: {
+                selectedEvent: null,
+                eventToRelatedInsightsMap: null,
+                parsedTrace: null,
+                entityMapper: null,
+                target: null,
+                linkifier: null,
+                filmStrip: null,
+                selectedRange: null,
+            },
+            onTreeRowHovered: () => { },
+            onTreeRowClicked: () => { },
+            onBottomUpButtonClicked: () => { },
+        }, undefined, target);
+        const summaryElement = target.querySelector('#details');
+        assert.isNotNull(summaryElement);
+        assert.isTrue(summaryElement.classList.contains('timeline-details-view-body'));
+    });
+    it('keeps the Summary tab scroll position when switching tabs', async () => {
+        const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
+        renderElementIntoDOM(detailsView);
+        await detailsView.updateComplete;
+        const summaryElement = detailsView.getDetailsContentElementForTest();
+        summaryElement.style.height = '100px';
+        const tallContent = document.createElement('div');
+        tallContent.style.height = '1000px';
+        summaryElement.appendChild(tallContent);
+        summaryElement.scrollTop = 50;
+        detailsView.selectTab(Timeline.TimelineDetailsView.Tab.BottomUp, null);
+        await detailsView.updateComplete;
+        detailsView.selectTab(Timeline.TimelineDetailsView.Tab.Details, null);
+        await detailsView.updateComplete;
+        assert.strictEqual(detailsView.getDetailsContentElementForTest().scrollTop, 50);
+        detailsView.detach();
+    });
+    it('populates range tree model only on the active range tab when selected', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
+        renderElementIntoDOM(detailsView);
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: allThreadEntriesInTrace(parsedTrace),
+            eventToRelatedInsightsMap: null,
+            entityMapper: null,
+        });
+        detailsView.selectTab(Timeline.TimelineDetailsView.Tab.CallTree, null);
+        await detailsView.updateComplete;
+        const callTreeTab = detailsView.headerElement().querySelector('#tab-call-tree');
+        assert.isOk(callTreeTab);
+        assert.isTrue(callTreeTab.classList.contains('selected'));
+        const tabbedPane = UI.Widget.Widget.get(detailsView.element.querySelector('.tabbed-pane'));
+        assert.exists(tabbedPane);
+        const callTreeView = tabbedPane.tabView(Timeline.TimelineDetailsView.Tab.CallTree);
+        const bottomUpView = tabbedPane.tabView(Timeline.TimelineDetailsView.Tab.BottomUp);
+        const eventLogView = tabbedPane.tabView(Timeline.TimelineDetailsView.Tab.EventLog);
+        assert.instanceOf(callTreeView, Timeline.TimelineTreeView.CallTreeTimelineTreeView);
+        assert.isAbove(callTreeView.dataGrid.rootNode().children.length, 0);
+        assert.instanceOf(bottomUpView, Timeline.TimelineTreeView.BottomUpTimelineTreeView);
+        assert.lengthOf(bottomUpView.dataGrid.rootNode().children, 0);
+        assert.instanceOf(eventLogView, Timeline.EventsTimelineTreeView.EventsTimelineTreeView);
+        assert.lengthOf(eventLogView.dataGrid.rootNode().children, 0);
+        detailsView.detach();
+    });
+    it('preserves pending window update across detach until shown again', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
+        renderElementIntoDOM(detailsView);
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: allThreadEntriesInTrace(parsedTrace),
+            eventToRelatedInsightsMap: null,
+            entityMapper: null,
+        });
+        await detailsView.updateComplete;
+        const clock = sinon.useFakeTimers();
+        const requestUpdateSpy = sinon.spy(detailsView, 'requestUpdate');
+        const { min, max } = parsedTrace.data.Meta.traceBounds;
+        const subBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, Trace.Types.Timing.Micro(max - 2_000));
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(subBounds);
+        detailsView.detach(/* overrideHideOnDetach= */ true);
+        await clock.tickAsync(150);
+        sinon.assert.notCalled(requestUpdateSpy);
+        renderElementIntoDOM(detailsView);
+        await clock.tickAsync(150);
+        sinon.assert.calledOnce(requestUpdateSpy);
+        clock.restore();
+        detailsView.detach(/* overrideHideOnDetach= */ true);
+    });
+    it('cancels pending window update when selecting a range', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
+        renderElementIntoDOM(detailsView);
+        await detailsView.setModel({
+            parsedTrace,
+            selectedEvents: allThreadEntriesInTrace(parsedTrace),
+            eventToRelatedInsightsMap: null,
+            entityMapper: null,
+        });
+        await detailsView.updateComplete;
+        const clock = sinon.useFakeTimers();
+        const requestUpdateSpy = sinon.spy(detailsView, 'requestUpdate');
+        const { min, max } = parsedTrace.data.Meta.traceBounds;
+        const windowBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, Trace.Types.Timing.Micro(max - 2_000));
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(windowBounds);
+        const rangeBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, Trace.Types.Timing.Micro(min + 5_000));
+        const setSelectionPromise = detailsView.setSelection(Timeline.TimelineSelection.selectionFromRangeMicroSeconds(rangeBounds.min, rangeBounds.max));
+        await clock.tickAsync(20);
+        await setSelectionPromise;
+        sinon.assert.calledOnce(requestUpdateSpy);
+        await clock.tickAsync(150);
+        sinon.assert.calledOnce(requestUpdateSpy);
+        // Re-showing with unchanged bounds must not re-run a stale pending window update.
+        detailsView.detach(/* overrideHideOnDetach= */ true);
+        renderElementIntoDOM(detailsView);
+        await clock.tickAsync(150);
+        sinon.assert.calledOnce(requestUpdateSpy);
+        clock.restore();
+        detailsView.detach(/* overrideHideOnDetach= */ true);
     });
 });
 //# sourceMappingURL=TimelineDetailsView.test.js.map

@@ -12,21 +12,13 @@ export default `/*
 .drop-down {
   box-shadow: var(--drop-shadow);
   background: var(--sys-color-cdt-base-container);
+  color: var(--sys-color-on-surface);
 }
 
 .preview-item {
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
-
-  &:first-child {
-    border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  }
-
   padding: var(--sys-size-4) var(--sys-size-5);
   position: relative;
-
-  .metadata {
-    margin-left: 3px;
-  }
 
   /* done this way because if we have a border it
    * awkwardly merges in a diagonal with the top and

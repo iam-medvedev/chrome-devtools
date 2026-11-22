@@ -31,6 +31,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+// Registers <devtools-icon> and legacy custom elements used in Lit templates.
+import '../../ui/kit/kit.js';
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -45,14 +47,14 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as ChangeTracker from '../../models/change_tracker/change_tracker.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
-import { createIcon, Icon } from '../../ui/kit/kit.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { render } from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as PanelsCommon from '../common/common.js';
+import * as PanelUtils from '../utils/utils.js';
 import * as ElementsComponents from './components/components.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
@@ -186,6 +188,97 @@ const HIGHLIGHTABLE_PROPERTIES = [
 const DISCLAIMER_TOOLTIP_ID = 'styles-ai-code-completion-disclaimer-tooltip';
 const SPINNER_TOOLTIP_ID = 'styles-ai-code-completion-spinner-tooltip';
 const CITATIONS_TOOLTIP_ID = 'styles-ai-code-completion-citations-tooltip';
+const TOOLBAR_PANE_SLIDE_IN_ANIMATION = 'styles-element-state-pane-slidein';
+const TOOLBAR_PANE_SLIDE_OUT_ANIMATION = 'styles-element-state-pane-slideout';
+const { ref, styleMap } = Directives;
+const { widget } = UI.Widget;
+function sectionBlockTitleClasses(block) {
+    const classes = ['sidebar-separator'];
+    if (block.title?.layerName !== undefined) {
+        classes.push('layer-separator');
+    }
+    if (block.expandable && !block.expanded) {
+        classes.push('empty-section');
+    }
+    return classes;
+}
+function renderSectionBlockTitleContent(block, onRevealLayer) {
+    const title = block.title;
+    if (!title) {
+        return nothing;
+    }
+    // clang-format off
+    if (title.layerName !== undefined) {
+        return html `
+      <div>${title.text}</div>
+      ${title.canRevealLayer ? html `
+        <button class="link" title=${i18nString(UIStrings.clickToRevealLayer)}
+            jslog=${VisualLogging.action('css-layers').track({ click: true })}
+            @click=${() => onRevealLayer(title.layerName ?? '')}>
+          ${title.layerName}
+        </button>
+      ` : html `
+        <div>${title.layerName}</div>
+      `}
+    `;
+    }
+    return html `
+    ${block.expandable ? html `
+      <devtools-icon class="section-block-expand-icon"
+          name=${block.expanded ? 'triangle-down' : 'triangle-right'}>
+      </devtools-icon>
+    ` : nothing}
+    ${title.text}
+    ${title.node ? widget(PanelsCommon.DOMLinkifier.DOMNodeLink, {
+        node: title.node,
+        options: { preventKeyboardFocus: true },
+    }) : nothing}
+  `;
+    // clang-format on
+}
+const initializedToolbarLocations = new WeakMap();
+function renderToolbarAndEmptyState(input) {
+    // The sticky toolbar container is marked as `data-sticky-occluder`: comment overlays for rules scrolled
+    // under it are clipped (see CommentAnchorResolver).
+    // clang-format off
+    return html `
+    <div class="styles-sidebar-pane-toolbar-container" role="toolbar" data-sticky-occluder>
+      <div class="hbox styles-sidebar-pane-toolbar">
+        <devtools-toolbar class="styles-pane-toolbar" role="presentation" ${ref(element => {
+        if (element instanceof UI.Toolbar.Toolbar) {
+            if (input.toolbarItemsLocation && initializedToolbarLocations.get(element) !== input.toolbarItemsLocation) {
+                initializedToolbarLocations.set(element, input.toolbarItemsLocation);
+                void element.appendItemsAtLocation(input.toolbarItemsLocation);
+            }
+            for (const item of input.toolbarItems) {
+                if (!element.hasItem(item)) {
+                    element.appendToolbarItem(item);
+                }
+            }
+        }
+    })}>
+          <devtools-toolbar-input type="filter" regex style="flex-grow: 1; flex-shrink: 1;"
+              @change=${(event) => input.onFilterChanged(event.detail)}
+              @regextoggle=${(event) => input.onRegexToggled(event.detail)}>
+          </devtools-toolbar-input>
+        </devtools-toolbar>
+      </div>
+      <div class="styles-sidebar-toolbar-pane-container">
+        <div class="styles-sidebar-toolbar-pane"
+            style=${styleMap({ 'animation-name': input.toolbarPaneAnimation ?? undefined })}
+            @animationend=${(event) => input.onToolbarPaneAnimationEnd(event.animationName)}>
+          ${widget(UI.Widget.WrapperWidget, { widget: input.toolbarPane })}
+        </div>
+      </div>
+    </div>
+    <div class="gray-info-message" ?hidden=${!input.showNoMatches}>
+      ${input.showNoMatches ? i18nString(UIStrings.noMatchingSelectorOrStyle) : nothing}
+    </div>`;
+    // clang-format on
+}
+export const DEFAULT_HEADER_VIEW = (input, _output, target) => {
+    render(renderToolbarAndEmptyState(input), target);
+};
 const StylesSidebarPaneBase = Common.ObjectWrapper.eventMixin(ElementsSidebarPane);
 export class StylesSidebarPane extends StylesSidebarPaneBase {
     matchedStyles = null;
@@ -193,11 +286,13 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
     animatedToolbarPane = null;
     pendingWidget = null;
     pendingWidgetToggle = null;
-    toolbar = null;
-    toolbarPaneElement;
+    #toolbarPaneAnimation = null;
     lastFilterChange = null;
     visibleSections = null;
-    noMatchesElement;
+    #showNoMatches = false;
+    #headerContainer = document.createElement('div');
+    #toolbarItems = [];
+    #blockTitleContainers = new WeakMap();
     sectionsContainer;
     sectionByElement = new WeakMap();
     #swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
@@ -240,9 +335,11 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
     #elementsForSyncViewportCheck = [];
     #updateId = 0;
     #changeTracker;
-    constructor(computedStyleModel, changeTracker) {
+    #headerView;
+    constructor(computedStyleModel, changeTracker, headerView = DEFAULT_HEADER_VIEW) {
         super(computedStyleModel, { delegatesFocus: true, useShadowDom: true, classes: ['flex-none'] });
         this.#changeTracker = changeTracker;
+        this.#headerView = headerView;
         this.setMinimumSize(96, 26);
         this.registerRequiredCSS(stylesSidebarPaneStyles);
         Common.Settings.Settings.instance()
@@ -254,13 +351,16 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         Common.Settings.Settings.instance()
             .resolve(SettingsUI.ElementsSettings.showInactiveCSSRulesSettingDescriptor)
             .addChangeListener(this.requestUpdate, this);
-        this.toolbarPaneElement = this.createStylesSidebarToolbar();
-        this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
-        this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
+        this.#headerContainer.style.display = 'contents';
+        this.contentElement.appendChild(this.#headerContainer);
         this.sectionsContainer = new UI.Widget.VBox();
         this.sectionsContainer.show(this.contentElement);
         UI.ARIAUtils.markAsList(this.sectionsContainer.contentElement);
-        this.sectionsContainer.contentElement.addEventListener('keydown', this.sectionsContainerKeyDown.bind(this), false);
+        this.sectionsContainer.contentElement.addEventListener('keydown', event => {
+            if (!event.isComposing && this.#navigateSectionByKey(event.key)) {
+                event.consume(true);
+            }
+        }, false);
         this.sectionsContainer.contentElement.addEventListener('focusin', this.sectionsContainerFocusChanged.bind(this), false);
         this.sectionsContainer.contentElement.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
         this.#swatchPopoverHelper.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
@@ -307,6 +407,19 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             this.aiCodeCompletionProvider =
                 StylesAiCodeCompletionProvider.StylesAiCodeCompletionProvider.createInstance(this.aiCodeCompletionConfig);
         }
+        this.#renderHeader();
+    }
+    #renderHeader() {
+        this.#headerView({
+            showNoMatches: this.#showNoMatches,
+            toolbarItems: this.#toolbarItems,
+            toolbarItemsLocation: 'styles-sidebarpane-toolbar',
+            toolbarPane: this.currentToolbarPane ?? this.animatedToolbarPane,
+            toolbarPaneAnimation: this.#toolbarPaneAnimation,
+            onFilterChanged: text => this.onFilterChanged({ data: text }),
+            onRegexToggled: this.onRegexToggled.bind(this),
+            onToolbarPaneAnimationEnd: this.#onToolbarPaneAnimationEnd.bind(this),
+        }, undefined, this.#headerContainer);
     }
     #onLiveLocationUpdated() {
         if (!this.filterRegex() || this.#filterUpdateScheduled) {
@@ -395,18 +508,18 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             section.updateCollapsedState();
         }
     }
-    sectionsContainerKeyDown(event) {
-        const activeElement = UI.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
+    #navigateSectionByKey(key) {
+        const activeElement = UI.DOMUtilities.deepActiveElement(this.contentElement.ownerDocument);
         if (!activeElement) {
-            return;
+            return false;
         }
         const section = this.sectionByElement.get(activeElement);
         if (!section) {
-            return;
+            return false;
         }
         let sectionToFocus = null;
         let willIterateForward = false;
-        switch (event.key) {
+        switch (key) {
             case 'ArrowUp':
             case 'ArrowLeft': {
                 sectionToFocus = section.previousSibling() || section.lastSibling();
@@ -435,8 +548,9 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         }
         if (sectionToFocus) {
             sectionToFocus.element.focus();
-            event.consume(true);
+            return true;
         }
+        return false;
     }
     sectionsContainerFocusChanged() {
         this.resetFocus();
@@ -444,7 +558,7 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
     resetFocus() {
         // When a styles section is focused, shift+tab should leave the section.
         // Leaving tabIndex = 0 on the first element would cause it to be focused instead.
-        if (!this.noMatchesElement.classList.contains('hidden')) {
+        if (this.#showNoMatches) {
             return;
         }
         if (this.sectionBlocks[0]?.sections[0]) {
@@ -499,8 +613,8 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         this.#filterText = event.data;
         this.setFilter(this.#buildFilterRegex(event.data));
     }
-    onRegexToggled() {
-        this.#isRegex = !this.#isRegex;
+    onRegexToggled(toggled) {
+        this.#isRegex = toggled;
         this.setFilter(this.#buildFilterRegex(this.#filterText));
     }
     setFilter(regex) {
@@ -911,7 +1025,8 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             this.sectionBlocks = [];
             this.sectionsContainer.detachChildWidgets();
             this.sectionsContainer.contentElement.removeChildren();
-            this.noMatchesElement.classList.remove('hidden');
+            this.#showNoMatches = true;
+            this.#renderHeader();
             return;
         }
         const blocks = await this.rebuildSectionsForMatchedStyleRules(signal, matchedStyles, computedStyles, parentsComputedStyles, computedStyleExtraFields);
@@ -937,9 +1052,9 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         let index = 0;
         let elementToFocus = null;
         for (const block of this.sectionBlocks) {
-            const titleElement = block.titleElement();
-            if (titleElement) {
-                fragment.appendChild(titleElement);
+            if (block.title) {
+                const container = this.#renderBlockTitleContainer(block);
+                fragment.appendChild(container);
             }
             for (const section of block.sections) {
                 fragment.appendChild(section.element);
@@ -962,7 +1077,8 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             this.updateFilter();
         }
         else {
-            this.noMatchesElement.classList.toggle('hidden', this.sectionBlocks.length > 0);
+            this.#showNoMatches = this.sectionBlocks.length === 0;
+            this.#renderHeader();
         }
         if (this.lastRevealedProperty) {
             void this.decorator.highlightProperty(this.lastRevealedProperty);
@@ -1334,8 +1450,14 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             visibleSections += block.updateFilter();
             hasAnyVisibleBlock = Boolean(visibleSections) || hasAnyVisibleBlock;
         }
-        this.noMatchesElement.classList.toggle('hidden', Boolean(hasAnyVisibleBlock));
+        this.#showNoMatches = !hasAnyVisibleBlock;
         this.visibleSections = visibleSections;
+        for (const block of this.sectionBlocks) {
+            if (block.title) {
+                this.#renderBlockTitleContainer(block);
+            }
+        }
+        this.#renderHeader();
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(StylesSidebarPane, this);
@@ -1358,7 +1480,45 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         }
     }
     getSectionBlockByName(name) {
-        return this.sectionBlocks.find(block => block.titleElement()?.textContent === name);
+        return this.sectionBlocks.find(block => block.titleText() === name);
+    }
+    highlightSectionBlock(block) {
+        const el = this.#blockTitleContainers.get(block);
+        if (el) {
+            PanelUtils.PanelUtils.highlightElement(el);
+        }
+    }
+    #renderBlockTitleContainer(block) {
+        let container = this.#blockTitleContainers.get(block);
+        if (!container) {
+            container = document.createElement('div');
+            this.#blockTitleContainers.set(block, container);
+            block.onExpandedChanged = () => this.#renderBlockTitleContainer(block);
+        }
+        const jslog = block.title?.jslogContext ? VisualLogging.sectionHeader(block.title.jslogContext) : undefined;
+        render(renderSectionBlockTitleContent(block, name => LayersWidget.LayersWidget.instance().revealLayer(name)), container, {
+            container: {
+                classes: sectionBlockTitleClasses(block),
+                attributes: {
+                    hidden: block.isHidden(),
+                    jslog,
+                    role: block.expandable ? 'button' : undefined,
+                    tabindex: block.expandable ? '0' : undefined,
+                    'aria-expanded': block.expandable ? String(block.expanded) : undefined,
+                },
+                listeners: block.expandable ? {
+                    click: () => block.expand(!block.expanded),
+                    keydown: (e) => {
+                        if (e instanceof KeyboardEvent && !e.isComposing && Platform.KeyboardUtilities.isEnterOrSpaceKey(e)) {
+                            e.consume(true);
+                            block.expand(!block.expanded);
+                        }
+                    },
+                } :
+                    undefined,
+            },
+        });
+        return container;
     }
     allSections() {
         let sections = [];
@@ -1369,24 +1529,6 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
     }
     clipboardCopy(_event) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleCopied);
-    }
-    createStylesSidebarToolbar() {
-        const container = this.contentElement.createChild('div', 'styles-sidebar-pane-toolbar-container');
-        // Sticky toolbar: comment overlays for rules scrolled under it are clipped (see CommentAnchorResolver).
-        container.setAttribute('data-sticky-occluder', '');
-        container.role = 'toolbar';
-        const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
-        const toolbar = hbox.createChild('devtools-toolbar', 'styles-pane-toolbar');
-        toolbar.role = 'presentation';
-        const filterInput = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, undefined, undefined, false, undefined, undefined, 
-        /* showRegexToggle=*/ true, this.onRegexToggled.bind(this));
-        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onFilterChanged, this);
-        toolbar.appendToolbarItem(filterInput);
-        void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
-        this.toolbar = toolbar;
-        const toolbarPaneContainer = container.createChild('div', 'styles-sidebar-toolbar-pane-container');
-        const toolbarPaneContent = toolbarPaneContainer.createChild('div', 'styles-sidebar-toolbar-pane');
-        return toolbarPaneContent;
     }
     showToolbarPane(widget, toggle) {
         if (this.pendingWidgetToggle) {
@@ -1404,9 +1546,8 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
         }
     }
     appendToolbarItem(item) {
-        if (this.toolbar) {
-            this.toolbar.appendToolbarItem(item);
-        }
+        this.#toolbarItems.push(item);
+        this.#renderHeader();
     }
     addStyleUpdateListener(listener) {
         this.addEventListener("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, listener);
@@ -1419,39 +1560,36 @@ export class StylesSidebarPane extends StylesSidebarPaneBase {
             return;
         }
         if (widget && this.currentToolbarPane) {
-            this.currentToolbarPane.detach();
-            widget.show(this.toolbarPaneElement);
             this.currentToolbarPane = widget;
+            this.#toolbarPaneAnimation = null;
+            this.#renderHeader();
             this.currentToolbarPane.focus();
             return;
         }
         this.animatedToolbarPane = widget;
         if (this.currentToolbarPane) {
-            this.toolbarPaneElement.style.animationName = 'styles-element-state-pane-slideout';
+            this.#toolbarPaneAnimation = TOOLBAR_PANE_SLIDE_OUT_ANIMATION;
         }
         else if (widget) {
-            this.toolbarPaneElement.style.animationName = 'styles-element-state-pane-slidein';
+            this.#toolbarPaneAnimation = TOOLBAR_PANE_SLIDE_IN_ANIMATION;
         }
-        if (widget) {
-            widget.show(this.toolbarPaneElement);
+        this.#renderHeader();
+    }
+    #onToolbarPaneAnimationEnd(animationName) {
+        if (!this.#toolbarPaneAnimation || animationName !== this.#toolbarPaneAnimation) {
+            return;
         }
-        const listener = onAnimationEnd.bind(this);
-        this.toolbarPaneElement.addEventListener('animationend', listener, false);
-        function onAnimationEnd() {
-            this.toolbarPaneElement.style.removeProperty('animation-name');
-            this.toolbarPaneElement.removeEventListener('animationend', listener, false);
-            if (this.currentToolbarPane) {
-                this.currentToolbarPane.detach();
-            }
-            this.currentToolbarPane = this.animatedToolbarPane;
-            if (this.currentToolbarPane) {
-                this.currentToolbarPane.focus();
-            }
-            this.animatedToolbarPane = null;
-            if (this.pendingWidget) {
-                this.startToolbarPaneAnimation(this.pendingWidget);
-                this.pendingWidget = null;
-            }
+        this.#toolbarPaneAnimation = null;
+        this.currentToolbarPane = this.animatedToolbarPane;
+        this.animatedToolbarPane = null;
+        this.#renderHeader();
+        if (this.currentToolbarPane) {
+            this.currentToolbarPane.focus();
+        }
+        if (this.pendingWidget) {
+            const pendingWidget = this.pendingWidget;
+            this.pendingWidget = null;
+            this.startToolbarPaneAnimation(pendingWidget);
         }
     }
     createRenderingShortcuts() {
@@ -1608,121 +1746,73 @@ export var Events;
 const MAX_LINK_LENGTH = 23;
 export class SectionBlock {
     id;
-    #titleElement;
+    title;
+    expandable;
     sections;
     childBlocks = [];
+    /** Called when the block is expanded or collapsed, so that the owner can re-render its title. */
+    onExpandedChanged;
     #expanded = false;
-    #icon;
-    constructor(titleElement, expandable, expandedByDefault, id = 'main') {
+    #hidden = false;
+    constructor(title, expandable, expandedByDefault, id = 'main') {
         this.id = id;
-        this.#titleElement = titleElement;
+        this.title = title;
+        this.expandable = Boolean(expandable && title);
         this.sections = [];
         this.#expanded = expandedByDefault ?? false;
-        if (expandable && titleElement instanceof HTMLElement) {
-            this.#icon = createIcon(this.#expanded ? 'triangle-down' : 'triangle-right', 'section-block-expand-icon');
-            titleElement.classList.toggle('empty-section', !this.#expanded);
-            UI.ARIAUtils.setExpanded(titleElement, this.#expanded);
-            titleElement.appendChild(this.#icon);
-            // Intercept focus to avoid highlight on click.
-            titleElement.tabIndex = -1;
-            titleElement.addEventListener('click', () => this.expand(!this.#expanded), false);
-        }
+    }
+    get expanded() {
+        return this.#expanded;
     }
     expand(expand) {
-        if (!this.#titleElement || !this.#icon) {
+        if (!this.expandable) {
             return;
         }
-        this.#titleElement.classList.toggle('empty-section', !expand);
-        this.#icon.name = expand ? 'triangle-down' : 'triangle-right';
-        UI.ARIAUtils.setExpanded(this.#titleElement, expand);
         this.#expanded = expand;
         this.sections.forEach(section => section.element.classList.toggle('hidden', !expand));
+        this.onExpandedChanged?.();
     }
     static createPseudoTypeBlock(pseudoType, pseudoArgument) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('pseudotype')}`);
         const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
         const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
-        separatorElement.textContent = i18nString(UIStrings.pseudoSElement, { PH1: pseudoTypeString });
-        return new SectionBlock(separatorElement, false, false, `pseudo:${pseudoType}:${pseudoArgument ?? ''}`);
+        return new SectionBlock({ text: i18nString(UIStrings.pseudoSElement, { PH1: pseudoTypeString }), jslogContext: 'pseudotype' }, false, false, `pseudo:${pseudoType}:${pseudoArgument ?? ''}`);
     }
     static async createInheritedPseudoTypeBlock(pseudoType, pseudoArgument, node) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('inherited-pseudotype')}`);
         const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
         const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
-        UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
-        const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, { preventKeyboardFocus: true });
-        render(link, separatorElement);
-        return new SectionBlock(separatorElement, false, false, `inherited-pseudo:${pseudoType}:${pseudoArgument ?? ''}:${node.id}`);
+        return new SectionBlock({
+            text: i18nString(UIStrings.inheritedFromSPseudoOf, { PH1: pseudoTypeString }),
+            jslogContext: 'inherited-pseudotype',
+            node,
+        }, false, false, `inherited-pseudo:${pseudoType}:${pseudoArgument ?? ''}:${node.id}`);
     }
     static createRegisteredPropertiesBlock(expandedByDefault) {
-        const separatorElement = document.createElement('div');
-        const block = new SectionBlock(separatorElement, true, expandedByDefault, 'registered-properties');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.appendChild(document.createTextNode(REGISTERED_PROPERTY_SECTION_NAME));
-        return block;
+        return new SectionBlock({ text: REGISTERED_PROPERTY_SECTION_NAME }, true, expandedByDefault, 'registered-properties');
     }
     static createFunctionBlock(expandedByDefault) {
-        const separatorElement = document.createElement('div');
-        const block = new SectionBlock(separatorElement, true, expandedByDefault, 'functions');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.appendChild(document.createTextNode(FUNCTION_SECTION_NAME));
-        return block;
+        return new SectionBlock({ text: FUNCTION_SECTION_NAME }, true, expandedByDefault, 'functions');
     }
     static createKeyframesBlock(keyframesName) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('keyframes')}`);
-        separatorElement.textContent = `@keyframes ${keyframesName}`;
-        return new SectionBlock(separatorElement, false, false, `keyframes:${keyframesName}`);
+        return new SectionBlock({ text: `@keyframes ${keyframesName}`, jslogContext: 'keyframes' }, false, false, `keyframes:${keyframesName}`);
     }
     static createAtRuleBlock(expandedByDefault) {
-        const separatorElement = document.createElement('div');
-        const block = new SectionBlock(separatorElement, true, expandedByDefault, 'at-rules');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.appendChild(document.createTextNode(i18nString(UIStrings.atRuleSection)));
-        return block;
+        return new SectionBlock({ text: i18nString(UIStrings.atRuleSection) }, true, expandedByDefault, 'at-rules');
     }
     static createPositionTryBlock(positionTryName) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('position-try')}`);
-        separatorElement.textContent = `@position-try ${positionTryName}`;
-        return new SectionBlock(separatorElement, false, false, `position-try:${positionTryName}`);
+        return new SectionBlock({ text: `@position-try ${positionTryName}`, jslogContext: 'position-try' }, false, false, `position-try:${positionTryName}`);
     }
     static async createInheritedNodeBlock(node) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('inherited')}`);
-        UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFroms));
-        const link = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(node, {
-            preventKeyboardFocus: true,
-        });
-        render(link, separatorElement);
-        return new SectionBlock(separatorElement, false, false, `inherited-node:${node.id}`);
+        return new SectionBlock({ text: i18nString(UIStrings.inheritedFroms), jslogContext: 'inherited', node }, false, false, `inherited-node:${node.id}`);
     }
     static createLayerBlock(rule, parentBlockId = 'main') {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator layer-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('layer')}`);
-        UI.UIUtils.createTextChild(separatorElement.createChild('div'), i18nString(UIStrings.layer));
         const layers = rule.layers;
         if (!layers.length && rule.origin === "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */) {
             const name = rule.origin === "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */ ? '\xa0user\xa0agent\xa0stylesheet' :
                 '\xa0implicit\xa0outer\xa0layer';
-            UI.UIUtils.createTextChild(separatorElement.createChild('div'), name);
-            return new SectionBlock(separatorElement, false, false, `layer:${parentBlockId}:${name}`);
+            return new SectionBlock({ text: i18nString(UIStrings.layer), jslogContext: 'layer', layerName: name, canRevealLayer: false }, false, false, `layer:${parentBlockId}:${name}`);
         }
-        const layerLink = separatorElement.createChild('button');
-        layerLink.className = 'link';
-        layerLink.title = i18nString(UIStrings.clickToRevealLayer);
         const name = layers.map(layer => SDK.CSSModel.CSSModel.readableLayerName(layer.text)).join('.');
-        layerLink.textContent = name;
-        layerLink.onclick = () => LayersWidget.LayersWidget.instance().revealLayer(name);
-        return new SectionBlock(separatorElement, false, false, `layer:${parentBlockId}:${name}`);
+        return new SectionBlock({ text: i18nString(UIStrings.layer), jslogContext: 'layer', layerName: name, canRevealLayer: true }, false, false, `layer:${parentBlockId}:${name}`);
     }
     updateFilter() {
         let numVisibleSections = 0;
@@ -1732,13 +1822,25 @@ export class SectionBlock {
         for (const section of this.sections) {
             numVisibleSections += section.updateFilter() ? 1 : 0;
         }
-        if (this.#titleElement) {
-            this.#titleElement.classList.toggle('hidden', numVisibleSections === 0);
+        if (this.title) {
+            this.#hidden = numVisibleSections === 0;
         }
         return numVisibleSections;
     }
-    titleElement() {
-        return this.#titleElement;
+    /**
+     * Whether the title of this block is hidden because none of its sections match the current filter.
+     */
+    isHidden() {
+        return this.#hidden;
+    }
+    /**
+     * The text content of the rendered title, or `null` if the block has no title.
+     */
+    titleText() {
+        if (!this.title) {
+            return null;
+        }
+        return `${this.title.text}${this.title.layerName ?? ''}`;
     }
 }
 export class IdleCallbackManager {
@@ -2083,13 +2185,11 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             if (!iconInfo) {
                 continue;
             }
-            const icon = new Icon();
-            icon.name = iconInfo.iconName;
-            icon.classList.add('extra-small');
-            icon.style.transform = `rotate(${iconInfo.rotate}deg) scale(${iconInfo.scaleX * 1.1}, ${iconInfo.scaleY * 1.1})`;
-            icon.style.maxHeight = 'var(--sys-size-6)';
-            icon.style.maxWidth = 'var(--sys-size-6)';
-            result.iconElement = icon;
+            result.iconTemplate = html `<devtools-icon class="extra-small" name=${iconInfo.iconName} style=${styleMap({
+                transform: `rotate(${iconInfo.rotate}deg) scale(${iconInfo.scaleX * 1.1}, ${iconInfo.scaleY * 1.1})`,
+                'max-height': 'var(--sys-size-6)',
+                'max-width': 'var(--sys-size-6)',
+            })}></devtools-icon>`;
         }
         if (this.isColorAware && !this.isEditingName) {
             results.sort((a, b) => {
@@ -2111,11 +2211,13 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                 if (computedValue) {
                     const color = Common.Color.parse(computedValue.value);
                     if (color) {
-                        result.subtitleRenderer = colorSwatchRenderer.bind(null, color);
+                        result.subtitleTemplate = html `<devtools-color-swatch class="suggestion-subtitle"
+                style="pointer-events: none;" .color=${color}></devtools-color-swatch>`;
                         result.isCSSVariableColor = true;
                     }
                     else {
-                        result.subtitleRenderer = computedValueSubtitleRenderer.bind(null, computedValue.value);
+                        result.subtitleTemplate = html `<span class="suggestion-subtitle" style="max-width: 100px;"
+                title=${computedValue.value}>${computedValue.value}</span>`;
                     }
                 }
             }
@@ -2129,20 +2231,6 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             else if (index > -1) {
                 anywhereResults.push(result);
             }
-        }
-        function colorSwatchRenderer(color) {
-            const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
-            swatch.renderColor(color);
-            swatch.style.pointerEvents = 'none';
-            return swatch;
-        }
-        function computedValueSubtitleRenderer(computedValue) {
-            const subtitleElement = document.createElement('span');
-            subtitleElement.className = 'suggestion-subtitle';
-            subtitleElement.textContent = `${computedValue}`;
-            subtitleElement.style.maxWidth = '100px';
-            subtitleElement.title = `${computedValue}`;
-            return subtitleElement;
         }
     }
     #updateAiCodeSuggestion() {
@@ -2416,7 +2504,10 @@ let buttonProviderInstance;
 export class ButtonProvider {
     button;
     constructor() {
-        this.button = UI.Toolbar.Toolbar.createActionButton('elements.new-style-rule');
+        // Toolbar providers hand out toolbar items rather than rendering them, so create the button from the
+        // registered action.
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.new-style-rule');
+        this.button = UI.Toolbar.Toolbar.createActionButton(action);
         this.button.setLongClickable(true);
         new UI.UIUtils.LongClickController(this.button.element, this.longClicked.bind(this));
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, onNodeChanged.bind(this));

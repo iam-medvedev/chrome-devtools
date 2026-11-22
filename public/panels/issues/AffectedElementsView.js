@@ -56,7 +56,7 @@ export class AffectedElementsView extends AffectedResourcesView {
         super(parent, issue, jslogContext);
         this.#view = view;
     }
-    #appendAffectedElements(affectedElements) {
+    appendAffectedElements(affectedElements) {
         const rows = Array.from(affectedElements, element => this.#createAffectedElementRow(element));
         this.#view({ rows }, undefined, this.affectedResources);
         this.updateAffectedResourceCount(rows.length);
@@ -79,7 +79,7 @@ export class AffectedElementsView extends AffectedResourcesView {
     }
     update() {
         this.requestResolver.clear();
-        this.#appendAffectedElements(this.issue.elements());
+        this.appendAffectedElements(this.issue.elements());
     }
 }
 //# sourceMappingURL=AffectedElementsView.js.map

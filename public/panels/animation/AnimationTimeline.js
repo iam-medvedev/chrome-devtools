@@ -34,6 +34,14 @@ const UIStrings = {
      */
     clearAll: 'Clear all',
     /**
+     * @description Screen reader announcement after an animation group is closed.
+     */
+    animationGroupClosed: 'Animation group closed',
+    /**
+     * @description Screen reader announcement after all animation groups are cleared.
+     */
+    animationGroupsCleared: 'All animation groups cleared',
+    /**
      * @description Tooltip text that appears when hovering over largeicon pause button in the animation timeline of the Animations panel.
      */
     pauseAll: 'Pause all',
@@ -172,6 +180,11 @@ const DEFAULT_TOOLBAR_VIEW = (input, output, target) => {
         <devtools-button
           title=${i18nString(UIStrings.clearAll)}
           aria-label=${i18nString(UIStrings.clearAll)}
+          ${Lit.Directives.ref(element => {
+        if (element instanceof HTMLElement) {
+            output.focusClearButton = () => element.focus();
+        }
+    })}
           .iconName=${'clear'}
           .jslogContext=${'animations.clear'}
           .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
@@ -211,7 +224,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #pausedStatus;
     #timelineScrubber;
     #currentTime;
-    #clearButton;
     #selectedGroup;
     #renderQueue;
     #duration;
@@ -241,6 +253,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
     /** Container & state for rendering `toolbarView` */
     #toolbarViewContainer;
     #toolbarView;
+    #toolbarViewOutput = {};
     constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
         super({
             jslog: `${VisualLogging.panel('animations').track({ resize: true })}`,
@@ -407,7 +420,11 @@ export class AnimationTimeline extends UI.Widget.VBox {
             allPaused: this.#allPaused,
             onClearClick: () => {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AnimationGroupsCleared);
+                const hadAnimationGroups = this.#groupBuffer.length > 0;
                 this.reset();
+                if (hadAnimationGroups) {
+                    UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.animationGroupsCleared));
+                }
             },
             onTogglePauseAllClick: () => {
                 this.#allPaused = !this.#allPaused;
@@ -420,7 +437,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             onSetPlaybackRateClick: (playbackRate) => {
                 this.setPlaybackRate(playbackRate);
             },
-        }, undefined, this.#toolbarViewContainer);
+        }, this.#toolbarViewOutput, this.#toolbarViewContainer);
     }
     createHeader() {
         this.#previewContainer = this.contentElement.createChild('div', 'animation-timeline-buffer');
@@ -549,9 +566,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.clearTimeline();
         this.setPlaybackRate(this.#playbackRate);
         for (const group of this.#groupBuffer) {
-            group.release();
+            group.forget();
         }
         this.#groupBuffer = [];
+        this.#collectedGroups = [];
         this.clearPreviews();
         this.renderGrid();
     }
@@ -561,6 +579,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
     scheduledRedrawAfterAnimationGroupUpdatedForTest() {
     }
     animationGroupUpdated({ data: group, }) {
+        if (!this.#previewMap.has(group)) {
+            void this.addAnimationGroup(group);
+            return;
+        }
         void this.#animationGroupUpdatedThrottler.schedule(async () => {
             const preview = this.#previewMap.get(group);
             if (preview) {
@@ -685,11 +707,13 @@ export class AnimationTimeline extends UI.Widget.VBox {
             }
             discardGroup.detach();
             this.#previewMap.delete(g);
-            g.release();
+            g.forget();
         }
         // Batch creating preview for arrivals happening closely together to ensure
         // stable UI sorting in the preview container.
-        this.#collectedGroups.push(group);
+        if (!this.#collectedGroups.includes(group)) {
+            this.#collectedGroups.push(group);
+        }
         return this.#createPreviewForCollectedGroupsThrottler.schedule(() => Promise.resolve(this.createPreviewForCollectedGroups()));
     }
     focusNextGroup(group, focusPrevious) {
@@ -716,14 +740,14 @@ export class AnimationTimeline extends UI.Widget.VBox {
             previewGroup.detach();
         }
         this.#previewMap.delete(group);
-        group.release();
+        group.forget();
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.animationGroupClosed));
         if (this.#selectedGroup === group) {
             this.clearTimeline();
             this.renderGrid();
         }
-        const groupLength = this.#groupBuffer.length;
-        if (groupLength === 0) {
-            this.#clearButton.element.focus();
+        if (this.#groupBuffer.length === 0) {
+            this.#toolbarViewOutput.focusClearButton?.();
             return;
         }
         const nextGroup = currentGroupIndex >= this.#groupBuffer.length ?

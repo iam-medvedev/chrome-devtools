@@ -59,8 +59,10 @@ export default `/*
       margin: var(--sys-size-3) var(--sys-size-9);
     }
 
-    > input[type="checkbox"] {
-      margin: var(--sys-size-5) var(--sys-size-9);
+    > devtools-checkbox {
+      color: var(--sys-color-on-surface-subtle);
+      font: var(--sys-typescale-body5-medium);
+      margin-left: calc(var(--sys-size-4) * -1);
     }
   }
 

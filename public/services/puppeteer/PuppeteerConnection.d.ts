@@ -14,6 +14,12 @@ import * as puppeteer from '../../third_party/puppeteer/puppeteer.js';
 export declare class PuppeteerConnectionAdapter extends puppeteer.Connection implements ProtocolClient.CDPConnection.CDPConnectionObserver {
     #private;
     constructor(connection: ProtocolClient.CDPConnection.CDPConnection, sessionId: Protocol.Target.SessionID);
+    /**
+     * Rejects with `error` all later commands that send input to a page, run
+     * script in a page, or navigate a page. Other commands, for example the
+     * commands that disable CDP domains, continue to work.
+     */
+    blockPageInput(error: Error): void;
     _rawSend(_callbacks: unknown, method: string | number | symbol, params: unknown, sessionId?: string, _options?: unknown): Promise<any>;
     onEvent<T extends keyof ProtocolMapping.Events>(event: ProtocolClient.CDPConnection.CDPEvent<T>): void;
     onDisconnect(): void;
@@ -28,6 +34,6 @@ export declare class PuppeteerConnectionHelper {
     }): Promise<{
         page: puppeteer.Page | null;
         browser: puppeteer.Browser;
-        puppeteerConnection: puppeteer.Connection;
+        puppeteerConnection: PuppeteerConnectionAdapter;
     }>;
 }

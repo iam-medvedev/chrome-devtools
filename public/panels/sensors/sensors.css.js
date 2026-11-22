@@ -40,22 +40,6 @@ export default `/*
   max-width: 120px;
 }
 
-.concurrency-details {
-  margin: var(--sys-size-5) var(--sys-size-10);
-  display: flex;
-  align-items: center;
-}
-
-.concurrency-details input {
-  width: 50px;
-  /* Clear out unexpected margin applied to \\'.sensors-view input\\' */
-  margin: 0;
-}
-
-.concurrency-hidden {
-  visibility: hidden;
-}
-
 .sensors-view input:focus::-webkit-input-placeholder {
   color: transparent !important; /* stylelint-disable-line declaration-no-important */
 }
@@ -121,6 +105,7 @@ export default `/*
   transition: 0.2s ease opacity, 0.2s ease filter;
   overflow: hidden;
   margin-bottom: 10px;
+  cursor: grab;
 }
 
 .theme-with-dark-background .orientation-stage,

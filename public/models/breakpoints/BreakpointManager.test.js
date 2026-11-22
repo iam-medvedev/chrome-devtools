@@ -9,7 +9,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
-import { expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { TestPlugin } from '../../testing/LanguagePluginHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
@@ -204,6 +203,12 @@ describe('BreakpointManager', () => {
         it('can select the closest resolved location', async () => {
             const { uiSourceCode } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' });
             // Create a breakpoint at line 10, column 5.
+            void backend.responderToBreakpointByUrlRequest(URL, 10)({
+                result: {
+                    breakpointId: 'DUMMY_BREAKPOINT',
+                    locations: [],
+                },
+            });
             const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 10, 5, ...DEFAULT_BREAKPOINT);
             assert.exists(breakpoint);
             // If no locations are bound, it should return null.
@@ -238,6 +243,12 @@ describe('BreakpointManager', () => {
         it('can select closest location based on column when lines are equal', async () => {
             const { uiSourceCode } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' });
             // Create a breakpoint at line 10, column 5.
+            void backend.responderToBreakpointByUrlRequest(URL, 10)({
+                result: {
+                    breakpointId: 'DUMMY_BREAKPOINT',
+                    locations: [],
+                },
+            });
             const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 10, 5, ...DEFAULT_BREAKPOINT);
             assert.exists(breakpoint);
             const loc1 = new Workspace.UISourceCode.UILocation(uiSourceCode, 10, 2); // diff 3
@@ -257,6 +268,12 @@ describe('BreakpointManager', () => {
         it('defaults column to 0 if undefined when calculating distance', async () => {
             const { uiSourceCode } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript' });
             // Create a breakpoint at line 10, column 5.
+            void backend.responderToBreakpointByUrlRequest(URL, 10)({
+                result: {
+                    breakpointId: 'DUMMY_BREAKPOINT',
+                    locations: [],
+                },
+            });
             const breakpoint = await breakpointManager.setBreakpoint(uiSourceCode, 10, 5, ...DEFAULT_BREAKPOINT);
             assert.exists(breakpoint);
             // UILocation with undefined column. It should be treated as column 0.
@@ -285,13 +302,14 @@ describe('BreakpointManager', () => {
                 enabled: true,
                 isLogpoint,
             };
+            void backend.responderToBreakpointByUrlRequest(URL, 5)({
+                result: {
+                    breakpointId: 'DUMMY_BREAKPOINT',
+                    locations: [],
+                },
+            });
             return new Breakpoints.BreakpointManager.Breakpoint(breakpointManager, uiSourceCode, storageState, "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */);
         }
-        expectConsoleLogs({
-            error: [
-                'Unexpected setBreakpointByUrl request [object Object]',
-            ],
-        });
         it('wraps logpoints in console.log', () => {
             const breakpoint = createBreakpoint('x', /* isLogpoint */ true);
             assert.include(breakpoint.backendCondition(), 'console.log(x)');

@@ -801,7 +801,6 @@ import * as TextUtils from "../../core/text_utils/text_utils.js";
 import * as Bindings from "../../models/bindings/bindings.js";
 import * as Breakpoints from "../../models/breakpoints/breakpoints.js";
 import * as Workspace from "../../models/workspace/workspace.js";
-import * as Input from "../../ui/components/input/input.js";
 import * as RenderCoordinator from "../../ui/components/render_coordinator/render_coordinator.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
 import * as Lit from "../../ui/lit/lit.js";
@@ -829,13 +828,6 @@ var breakpointsView_css_default = `/*
   .code-snippet:hover {
     color: var(--sys-color-on-surface);
     text-decoration: underline;
-  }
-
-  input {
-    height: var(--sys-size-6);
-    width: var(--sys-size-6);
-    flex-shrink: 0;
-    margin: var(--sys-size-3) 0;
   }
 
   details {
@@ -976,20 +968,15 @@ var breakpointsView_css_default = `/*
     background-color: var(--sys-color-tonal-container);
   }
 
-  .breakpoint-item.logpoint > label > .type-indicator {
+  .breakpoint-item.logpoint > .type-indicator {
     border-color: var(--sys-color-pink-bright);
   }
 
-  .breakpoint-item.conditional-breakpoint > label > .type-indicator {
+  .breakpoint-item.conditional-breakpoint > .type-indicator {
     border-color: var(--sys-color-orange-bright);
   }
 
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-  }
-
-  .checkbox-label > input {
+  .breakpoint-item > devtools-checkbox {
     margin-left: var(--sys-size-8);
     margin-right: var(--sys-size-4);
   }
@@ -1004,7 +991,7 @@ var breakpointsView_css_default = `/*
     }
   }
 
-  input.group-checkbox {
+  devtools-checkbox.group-checkbox {
     margin: 0;
     display: none;
   }
@@ -1031,25 +1018,15 @@ var breakpointsView_css_default = `/*
     margin-bottom: var(--sys-size-2);
   }
 
-  .pause-on-caught-exceptions > .checkbox-label > input,
-  .pause-on-uncaught-exceptions > .checkbox-label > input {
+  .pause-on-caught-exceptions > devtools-checkbox,
+  .pause-on-uncaught-exceptions > devtools-checkbox {
     margin-left: var(--sys-size-4);
-  }
-
-  .pause-on-caught-exceptions > .checkbox-label > span,
-  .pause-on-uncaught-exceptions > .checkbox-label > span {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
+    max-width: calc(100% - var(--sys-size-4));
   }
 
   .pause-on-uncaught-exceptions,
   .pause-on-caught-exceptions {
     padding-right: var(--sys-size-5);
-
-    & > label {
-      width: fit-content;
-    }
   }
 
   details > summary:focus,
@@ -1678,7 +1655,6 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
 };
 var DEFAULT_VIEW3 = (input, _output, target) => {
   render3(html4`
-    <style>${Input.checkboxStyles}</style>
     <style>${breakpointsView_css_default}</style>
     <div jslog=${VisualLogging3.section("sources.js-breakpoints")} id="devtools-breakpoint-view">
       <div class='pause-on-uncaught-exceptions'
@@ -1688,10 +1664,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
           role='checkbox'
           aria-checked=${input.pauseOnUncaughtExceptions}
           data-first-pause>
-        <label class='checkbox-label'>
-          <input type='checkbox' tabindex=-1 class="small" .checked=${input.pauseOnUncaughtExceptions} @change=${input.onPauseOnUncaughtExceptionsStateChanged} jslog=${VisualLogging3.toggle("pause-uncaught").track({ change: true })}>
-          <span>${i18nString3(UIStrings3.pauseOnUncaughtExceptions)}</span>
-        </label>
+        <devtools-checkbox class='small' tabindex=-1 .checked=${input.pauseOnUncaughtExceptions} @change=${input.onPauseOnUncaughtExceptionsStateChanged} jslog=${VisualLogging3.toggle("pause-uncaught").track({ change: true })}>${i18nString3(UIStrings3.pauseOnUncaughtExceptions)}</devtools-checkbox>
       </div>
       <div class='pause-on-caught-exceptions'
             tabindex='-1'
@@ -1700,10 +1673,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
             role='checkbox'
             aria-checked=${input.pauseOnCaughtExceptions}
             data-last-pause>
-          <label class='checkbox-label'>
-            <input data-pause-on-caught-checkbox type='checkbox' class="small" tabindex=-1 .checked=${input.pauseOnCaughtExceptions} @change=${input.onPauseOnCaughtExceptionsStateChanged.bind(void 0)} jslog=${VisualLogging3.toggle("pause-on-caught-exception").track({ change: true })}>
-            <span>${i18nString3(UIStrings3.pauseOnCaughtExceptions)}</span>
-          </label>
+        <devtools-checkbox data-pause-on-caught-checkbox class='small' tabindex=-1 .checked=${input.pauseOnCaughtExceptions} @change=${input.onPauseOnCaughtExceptionsStateChanged} jslog=${VisualLogging3.toggle("pause-on-caught-exception").track({ change: true })}>${i18nString3(UIStrings3.pauseOnCaughtExceptions)}</devtools-checkbox>
       </div>
       <div role=tree>
         ${repeat(
@@ -1725,12 +1695,12 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                 <span class='group-header' aria-hidden=true>
                   <span class='group-icon-or-disable'>
                     <devtools-icon name="file-script"></devtools-icon>
-                    <input class='group-checkbox small' type='checkbox'
+                    <devtools-checkbox class='group-checkbox small'
                           aria-label=''
                           .checked=${group.breakpointItems.some((item2) => item2.status === "ENABLED" /* ENABLED */)}
                           @change=${input.groupCheckboxToggled.bind(void 0, group)}
                           tabindex=-1
-                          jslog=${VisualLogging3.toggle("breakpoint-group").track({ change: true })}>
+                          jslog=${VisualLogging3.toggle("breakpoint-group").track({ change: true })}></devtools-checkbox>
                   </span>
                   <span class='group-header-title' title=${group.url}>
                     ${group.name}
@@ -1767,17 +1737,15 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
                     @contextmenu=${input.itemContextMenuHandler.bind(void 0, item2, group.editable)}
                     @click=${input.itemClickHandler}
                     @keydown=${input.keyDownHandler}>
-                  <label class='checkbox-label'>
-                    <span class='type-indicator'></span>
-                    <input type='checkbox'
-                          aria-label=${item2.location}
-                          class='small'
-                          ?indeterminate=${item2.status === "INDETERMINATE" /* INDETERMINATE */}
-                          .checked=${item2.status === "ENABLED" /* ENABLED */}
-                          @change=${input.itemCheckboxToggled.bind(void 0, item2)}
-                          tabindex=-1
-                          jslog=${VisualLogging3.toggle("breakpoint").track({ change: true })}>
-                  </label>
+                  <span class='type-indicator'></span>
+                  <devtools-checkbox
+                        aria-label=${item2.location}
+                        class='small'
+                        ?indeterminate=${item2.status === "INDETERMINATE" /* INDETERMINATE */}
+                        .checked=${item2.status === "ENABLED" /* ENABLED */}
+                        @change=${input.itemCheckboxToggled.bind(void 0, item2)}
+                        tabindex=-1
+                        jslog=${VisualLogging3.toggle("breakpoint").track({ change: true })}></devtools-checkbox>
                   <span class='code-snippet' @click=${input.itemSnippetClickHandler.bind(void 0, item2)}
                           title=${ifDefined(input.itemDetails.get(item2.id)?.codeSnippetTooltip)}
                           jslog=${VisualLogging3.action("sources.jump-to-breakpoint").track({ click: true })}>${input.itemDetails.get(item2.id)?.codeSnippet}</span>
@@ -1955,9 +1923,9 @@ var BreakpointsView = class _BreakpointsView extends UI4.Widget.VBox {
     if (Platform2.KeyboardUtilities.isEnterOrSpaceKey(event)) {
       const currentTarget = event.currentTarget;
       await this.#setSelected(currentTarget);
-      const input = currentTarget.querySelector("input");
-      if (input) {
-        input.click();
+      const checkbox = currentTarget.querySelector("devtools-checkbox");
+      if (checkbox) {
+        checkbox.click();
       }
       event.consume();
     }
@@ -2157,7 +2125,6 @@ import * as Bindings11 from "../../models/bindings/bindings.js";
 import * as Persistence11 from "../../models/persistence/persistence.js";
 import * as StackTrace5 from "../../models/stack_trace/stack_trace.js";
 import * as Workspace25 from "../../models/workspace/workspace.js";
-import * as Input3 from "../../ui/components/input/input.js";
 import * as UI18 from "../../ui/legacy/legacy.js";
 import { Directives as Directives5, html as html19, nothing as nothing12, render as render15 } from "../../ui/lit/lit.js";
 import * as VisualLogging13 from "../../ui/visual_logging/visual_logging.js";
@@ -2181,10 +2148,10 @@ var callStackSidebarPane_css_default = `/*
   padding: var(--sys-size-1);
 }
 
-.ignore-listed-message-label {
+.ignore-listed-checkbox {
   color: var(--sys-color-token-subtle);
-  align-items: center;
   display: flex;
+  max-width: 100%;
 }
 
 .show-more-message > .link {
@@ -2242,10 +2209,6 @@ var callStackSidebarPane_css_default = `/*
 .call-frame-item:focus-visible,
 .call-frame-item.async-header:focus-visible .call-frame-item-title {
   background-color: var(--sys-color-tonal-container);
-}
-
-.ignore-listed-checkbox:focus-visible {
-  outline-width: unset;
 }
 
 .call-frame-item:not(.async-header):hover {
@@ -2807,6 +2770,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -3131,7 +3097,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -3376,14 +3341,14 @@ var IndexedDB;
     KeyPathType2["Array"] = "array";
   })(KeyPathType = IndexedDB2.KeyPathType || (IndexedDB2.KeyPathType = {}));
 })(IndexedDB || (IndexedDB = {}));
-var Input2;
-((Input4) => {
+var Input;
+((Input2) => {
   let GestureSourceType;
   ((GestureSourceType2) => {
     GestureSourceType2["Default"] = "default";
     GestureSourceType2["Touch"] = "touch";
     GestureSourceType2["Mouse"] = "mouse";
-  })(GestureSourceType = Input4.GestureSourceType || (Input4.GestureSourceType = {}));
+  })(GestureSourceType = Input2.GestureSourceType || (Input2.GestureSourceType = {}));
   let MouseButton;
   ((MouseButton2) => {
     MouseButton2["None"] = "none";
@@ -3392,48 +3357,48 @@ var Input2;
     MouseButton2["Right"] = "right";
     MouseButton2["Back"] = "back";
     MouseButton2["Forward"] = "forward";
-  })(MouseButton = Input4.MouseButton || (Input4.MouseButton = {}));
+  })(MouseButton = Input2.MouseButton || (Input2.MouseButton = {}));
   let DispatchDragEventRequestType;
   ((DispatchDragEventRequestType2) => {
     DispatchDragEventRequestType2["DragEnter"] = "dragEnter";
     DispatchDragEventRequestType2["DragOver"] = "dragOver";
     DispatchDragEventRequestType2["Drop"] = "drop";
     DispatchDragEventRequestType2["DragCancel"] = "dragCancel";
-  })(DispatchDragEventRequestType = Input4.DispatchDragEventRequestType || (Input4.DispatchDragEventRequestType = {}));
+  })(DispatchDragEventRequestType = Input2.DispatchDragEventRequestType || (Input2.DispatchDragEventRequestType = {}));
   let DispatchKeyEventRequestType;
   ((DispatchKeyEventRequestType2) => {
     DispatchKeyEventRequestType2["KeyDown"] = "keyDown";
     DispatchKeyEventRequestType2["KeyUp"] = "keyUp";
     DispatchKeyEventRequestType2["RawKeyDown"] = "rawKeyDown";
     DispatchKeyEventRequestType2["Char"] = "char";
-  })(DispatchKeyEventRequestType = Input4.DispatchKeyEventRequestType || (Input4.DispatchKeyEventRequestType = {}));
+  })(DispatchKeyEventRequestType = Input2.DispatchKeyEventRequestType || (Input2.DispatchKeyEventRequestType = {}));
   let DispatchMouseEventRequestType;
   ((DispatchMouseEventRequestType2) => {
     DispatchMouseEventRequestType2["MousePressed"] = "mousePressed";
     DispatchMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     DispatchMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     DispatchMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(DispatchMouseEventRequestType = Input4.DispatchMouseEventRequestType || (Input4.DispatchMouseEventRequestType = {}));
+  })(DispatchMouseEventRequestType = Input2.DispatchMouseEventRequestType || (Input2.DispatchMouseEventRequestType = {}));
   let DispatchMouseEventRequestPointerType;
   ((DispatchMouseEventRequestPointerType2) => {
     DispatchMouseEventRequestPointerType2["Mouse"] = "mouse";
     DispatchMouseEventRequestPointerType2["Pen"] = "pen";
-  })(DispatchMouseEventRequestPointerType = Input4.DispatchMouseEventRequestPointerType || (Input4.DispatchMouseEventRequestPointerType = {}));
+  })(DispatchMouseEventRequestPointerType = Input2.DispatchMouseEventRequestPointerType || (Input2.DispatchMouseEventRequestPointerType = {}));
   let DispatchTouchEventRequestType;
   ((DispatchTouchEventRequestType2) => {
     DispatchTouchEventRequestType2["TouchStart"] = "touchStart";
     DispatchTouchEventRequestType2["TouchEnd"] = "touchEnd";
     DispatchTouchEventRequestType2["TouchMove"] = "touchMove";
     DispatchTouchEventRequestType2["TouchCancel"] = "touchCancel";
-  })(DispatchTouchEventRequestType = Input4.DispatchTouchEventRequestType || (Input4.DispatchTouchEventRequestType = {}));
+  })(DispatchTouchEventRequestType = Input2.DispatchTouchEventRequestType || (Input2.DispatchTouchEventRequestType = {}));
   let EmulateTouchFromMouseEventRequestType;
   ((EmulateTouchFromMouseEventRequestType2) => {
     EmulateTouchFromMouseEventRequestType2["MousePressed"] = "mousePressed";
     EmulateTouchFromMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     EmulateTouchFromMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     EmulateTouchFromMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(EmulateTouchFromMouseEventRequestType = Input4.EmulateTouchFromMouseEventRequestType || (Input4.EmulateTouchFromMouseEventRequestType = {}));
-})(Input2 || (Input2 = {}));
+  })(EmulateTouchFromMouseEventRequestType = Input2.EmulateTouchFromMouseEventRequestType || (Input2.EmulateTouchFromMouseEventRequestType = {}));
+})(Input || (Input = {}));
 var LayerTree;
 ((LayerTree2) => {
   let ScrollRectType;
@@ -3915,6 +3880,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -4602,6 +4568,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -5914,25 +5881,6 @@ var navigatorTree_css_default = `/*
 
 .navigator-file-tree-item:hover .ai-button-container {
   display: inline-flex;
-}
-
-.navigator-file-tree-item devtools-icon.dot::before {
-  width: 7px;
-  height: 7px;
-  top: var(--sys-size-6);
-  left: 11px;
-}
-
-.navigator-file-tree-item:hover:not(.force-white-icons) devtools-icon.dot::before {
-  outline-color: var(--icon-gap-hover);
-}
-
-.navigator-file-tree-item.selected:not(.force-white-icons) devtools-icon.dot::before {
-  outline-color: var(--icon-gap-inactive);
-}
-
-.navigator-file-tree-item.selected.force-white-icons devtools-icon.dot::before {
-  outline-color: var(--icon-gap-focus-selected);
 }
 
 .navigator-sm-stylesheet-tree-item devtools-icon,
@@ -10620,6 +10568,12 @@ var DebuggerPlugin = class extends Plugin {
       this.callFrameChanged,
       this
     );
+    this.#scopeChainResolver = SourceMapScopes.ScopeChainResolver.ScopeChainResolver.instance();
+    this.#scopeChainResolver.addEventListener(
+      SourceMapScopes.ScopeChainResolver.Events.SCOPE_CHAIN_INVALIDATED,
+      this.#scopeChainInvalidated,
+      this
+    );
     this.updateScriptFiles();
     this.muted = this.uiSourceCode.isDirty();
     this.initializedMuted = this.muted;
@@ -10662,9 +10616,11 @@ var DebuggerPlugin = class extends Plugin {
   #activeBreakpointEditRequest = void 0;
   #scheduledFinishingActiveDialog = false;
   missingDebugInfoBar = null;
+  #infobarContainers = /* @__PURE__ */ new WeakMap();
   #sourcesPanelDebuggedMetricsRecorded = false;
   loader;
   ignoreListCallback;
+  #scopeChainResolver;
   editorExtension() {
     const handlers = this.shortcutHandlers();
     return [
@@ -10815,13 +10771,36 @@ var DebuggerPlugin = class extends Plugin {
     this.attachInfobar(this.ignoreListInfobar);
   }
   attachInfobar(bar) {
-    if (this.editor) {
-      this.editor.dispatch({ effects: SourceFrame5.SourceFrame.addSourceFrameInfobar.of({ element: bar.element }) });
+    if (!this.editor) {
+      return;
     }
+    const existing = this.#infobarContainers.get(bar);
+    if (existing?.editor === this.editor && bar.isShowing() && existing.container.isConnected) {
+      return;
+    }
+    if (existing) {
+      bar.detach();
+      existing.editor.dispatch(
+        { effects: SourceFrame5.SourceFrame.removeSourceFrameInfobar.of({ element: existing.container }) }
+      );
+      this.#infobarContainers.delete(bar);
+    }
+    const container = this.editor.editor.dom.ownerDocument.createElement("div");
+    bar.show(container, void 0, true);
+    this.#infobarContainers.set(bar, { container, editor: this.editor });
+    this.editor.dispatch({ effects: SourceFrame5.SourceFrame.addSourceFrameInfobar.of({ element: container }) });
   }
   removeInfobar(bar) {
-    if (this.editor && bar) {
-      this.editor.dispatch({ effects: SourceFrame5.SourceFrame.removeSourceFrameInfobar.of({ element: bar.element }) });
+    if (!bar) {
+      return;
+    }
+    const existing = this.#infobarContainers.get(bar);
+    this.#infobarContainers.delete(bar);
+    bar.detach();
+    if (existing) {
+      existing.editor.dispatch(
+        { effects: SourceFrame5.SourceFrame.removeSourceFrameInfobar.of({ element: existing.container }) }
+      );
     }
   }
   hideIgnoreListInfobar() {
@@ -11352,7 +11331,7 @@ var DebuggerPlugin = class extends Plugin {
     const callFrame = debuggableFrame.sdkFrame;
     const url = this.uiSourceCode.url();
     const uiPositionToEditorOffset = (lineNumber, columnNumber) => this.editor?.toOffset(this.transformer.uiLocationToEditorLocation(lineNumber, columnNumber)) ?? null;
-    const scopeChain = await SourceMapScopes.ScopeChainResolver.ScopeChainResolver.instance().resolveScopeChain(callFrame);
+    const scopeChain = await this.#scopeChainResolver.resolveScopeChain(callFrame);
     const localOriginalScope = scopeChain.find((s) => s instanceof SDK9.SourceMapScopeChainEntry.SourceMapScopeChainEntry && s.type() === Debugger.ScopeType.Local)?.originalScope();
     const functionOffsetPromise = localOriginalScope ? Promise.resolve(uiPositionToEditorOffset(localOriginalScope.start.line, localOriginalScope.start.column)) : this.#rawLocationToEditorOffset(callFrame.functionLocation(), url);
     const executionOffsetPromise = this.#rawLocationToEditorOffset(callFrame.location(), url);
@@ -11990,6 +11969,18 @@ var DebuggerPlugin = class extends Plugin {
       this.setExecutionLocation(null);
     }
   }
+  /**
+   * The scope mappings are derived from the resolved scope chain of the selected call frame. Once that is
+   * invalidated (e.g. a console evaluation assigned to a variable), recompute them and the inline values.
+   */
+  #scopeChainInvalidated(event) {
+    const frameFlavor = UI11.Context.Context.instance().flavor(StackTrace.StackTrace.DebuggableFrameFlavor);
+    if (frameFlavor?.sdkFrame.script !== event.data) {
+      return;
+    }
+    this.#scopeMappingsCache.clear();
+    void this.updateValueDecorations();
+  }
   setExecutionLocation(executionLocation) {
     if (this.executionLocation === executionLocation || !this.editor) {
       return;
@@ -12019,6 +12010,9 @@ var DebuggerPlugin = class extends Plugin {
   }
   dispose() {
     this.hideIgnoreListInfobar();
+    if (this.missingDebugInfoBar) {
+      this.missingDebugInfoBar.dispose();
+    }
     if (this.sourceMapInfobar) {
       this.sourceMapInfobar.dispose();
     }
@@ -12055,6 +12049,11 @@ var DebuggerPlugin = class extends Plugin {
     UI11.Context.Context.instance().removeFlavorChangeListener(
       StackTrace.StackTrace.DebuggableFrameFlavor,
       this.callFrameChanged,
+      this
+    );
+    this.#scopeChainResolver.removeEventListener(
+      SourceMapScopes.ScopeChainResolver.Events.SCOPE_CHAIN_INVALIDATED,
+      this.#scopeChainInvalidated,
       this
     );
   }
@@ -15706,23 +15705,6 @@ var UIStrings18 = {
    */
   openInSourcesPanel: "Open in Sources panel",
   /**
-   * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
-   */
-  startAChat: "Start a chat",
-  /**
-   * @description Text of a context menu item to redirect to the AI assistance panel and directly execute
-   * a prompt to assess the performance of a script.
-   */
-  assessPerformance: "Assess performance",
-  /**
-   * @description Context menu item in Sources panel to explain a script via AI.
-   */
-  explainThisScript: "Explain this script",
-  /**
-   * @description Context menu item in Sources panel to explain input handling in a script via AI.
-   */
-  explainInputHandling: "Explain input handling",
-  /**
    * @description Screen reader announcement when the navigator sidebar is shown in the Sources panel.
    */
   navigatorShown: "Navigator sidebar shown",
@@ -16566,41 +16548,11 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
       const editorElement = this.element.querySelector("devtools-text-editor");
       if (!eventTarget.isSelfOrDescendant(editorElement) && uiSourceCode.contentType().isTextType()) {
         UI17.Context.Context.instance().setFlavor(Workspace23.UISourceCode.UISourceCode, uiSourceCode);
-        const action4 = UI17.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action4.title(), false, openAiAssistanceId);
-        submenu.defaultSection().appendAction("drjones.sources-panel-context", i18nString17(UIStrings18.startAChat));
-        appendSubmenuPromptAction(
-          submenu,
-          action4,
-          i18nString17(UIStrings18.assessPerformance),
-          "Is this script optimized for performance?",
-          openAiAssistanceId + ".performance"
-        );
-        appendSubmenuPromptAction(
-          submenu,
-          action4,
-          i18nString17(UIStrings18.explainThisScript),
-          "What does this script do?",
-          openAiAssistanceId + ".script"
-        );
-        appendSubmenuPromptAction(
-          submenu,
-          action4,
-          i18nString17(UIStrings18.explainInputHandling),
-          "Does the script handle user input safely",
-          openAiAssistanceId + ".input"
-        );
+        contextMenu.footerSection().appendAction(openAiAssistanceId);
       }
     }
     if (uiSourceCode.contentType().hasScripts() && Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
       this.#callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
-    }
-    function appendSubmenuPromptAction(submenu, action4, label, prompt, jslogContext) {
-      submenu.defaultSection().appendItem(
-        label,
-        () => action4.execute({ prompt }),
-        { disabled: !action4.enabled(), jslogContext }
-      );
     }
   }
   #appendUISourceCodeFrameItems(contextMenu, target) {
@@ -17155,22 +17107,21 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
     `;
   };
   render15(html19`
-    <style>${Input3.checkboxStyles}</style>
     <style>${callStackSidebarPane_css_default}</style>
     <div
       class="ignore-listed-message"
       ?hidden=${!input.showIgnoreListMessage}>
-      <label class="ignore-listed-message-label">
-        <input type="checkbox" tabindex="0" class="ignore-listed-checkbox"
-            .checked=${input.showIgnoreListedChecked}
-            jslog=${VisualLogging13.toggle("show-ignore-listed-frames").track({ change: true })}
-            @change=${(e) => {
-    if (e.target instanceof HTMLInputElement) {
+      <devtools-checkbox
+          class="ignore-listed-checkbox"
+          .checked=${input.showIgnoreListedChecked}
+          jslog=${VisualLogging13.toggle("show-ignore-listed-frames").track({ change: true })}
+          @change=${(e) => {
+    if (e.target instanceof UI18.UIUtils.CheckboxLabel) {
       input.onIgnoreListCheckboxChange(e.target.checked);
     }
-  }} />
+  }}>
         ${i18nString18(UIStrings19.showIgnorelistedFrames)}
-      </label>
+      </devtools-checkbox>
     </div>
     <div
       class="gray-info-message"
@@ -17231,6 +17182,9 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI18.View.SimpleV
       callstackSidebarPaneInstance = new _CallStackSidebarPane();
     }
     return callstackSidebarPaneInstance;
+  }
+  static removeInstance() {
+    callstackSidebarPaneInstance = void 0;
   }
   wasShown() {
     super.wasShown();

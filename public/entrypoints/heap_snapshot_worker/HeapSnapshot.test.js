@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import * as HeapSnapshotWorker from './heap_snapshot_worker.js';
 describe('HeapSnapshot', () => {
@@ -1133,6 +1134,7 @@ describe('HeapSnapshot', () => {
         assert.strictEqual(dominatorsC[1].nodeName, 'root');
     });
     it('heapSnapshotRetainedByContext', async () => {
+        sinon.stub(console, 'warn');
         const builder = new HeapSnapshotBuilder();
         const root = builder.rootNode;
         const context1 = new HeapNode('system / Context', 10, 'hidden', 10);

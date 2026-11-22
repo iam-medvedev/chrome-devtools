@@ -6,14 +6,35 @@ import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { createTarget, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { MockCDPConnection } from '../../../testing/MockCDPConnection.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as App from './app.js';
 describeWithEnvironment('NodeChildTargetManager', () => {
-    it('attaches Node.js targets without a parent target', () => {
-        const browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
+    function setupNodeTargetTest() {
+        const connection = new MockCDPConnection();
+        const browserTarget = createTarget({ type: SDK.Target.Type.BROWSER, connection });
         const childTargetManager = browserTarget.model(App.NodeMain.NodeChildTargetManager);
         assert.exists(childTargetManager);
-        void childTargetManager.attachedToTarget({
+        const sendMessageToTarget = sinon.spy();
+        connection.setSuccessHandler('Target.sendMessageToTarget', request => {
+            const { id, method } = JSON.parse(request.message);
+            if (method === 'Storage.getStorageKey' && request.sessionId) {
+                childTargetManager.receivedMessageFromTarget({
+                    sessionId: request.sessionId,
+                    message: JSON.stringify({
+                        id,
+                        result: { storageKey: 'https://example.com/' },
+                    }),
+                });
+            }
+            sendMessageToTarget(request);
+            return {};
+        });
+        return { childTargetManager, sendMessageToTarget };
+    }
+    it('attaches Node.js targets without a parent target', async () => {
+        const { childTargetManager } = setupNodeTargetTest();
+        await childTargetManager.attachedToTarget({
             sessionId: 'session ID',
             targetInfo: {
                 attached: true,
@@ -30,12 +51,9 @@ describeWithEnvironment('NodeChildTargetManager', () => {
         assert.isNull(target.parentTarget());
         assert.strictEqual(target.sessionId, '');
     });
-    it('sends CDP messages via "sendMessageToTarget"', () => {
-        const browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
-        const sendStub = sinon.stub(browserTarget.targetAgent(), 'invoke_sendMessageToTarget');
-        const childTargetManager = browserTarget.model(App.NodeMain.NodeChildTargetManager);
-        assert.exists(childTargetManager);
-        void childTargetManager.attachedToTarget({
+    it('sends CDP messages via "sendMessageToTarget"', async () => {
+        const { childTargetManager, sendMessageToTarget } = setupNodeTargetTest();
+        await childTargetManager.attachedToTarget({
             sessionId: 'session ID',
             targetInfo: {
                 attached: true,
@@ -50,7 +68,7 @@ describeWithEnvironment('NodeChildTargetManager', () => {
         const target = SDK.TargetManager.TargetManager.instance().targetById('node js target');
         assert.exists(target);
         // Creating the target should have already sent a bunch of messages, like Debugger.enable
-        sinon.assert.calledWithMatch(sendStub, sinon.match((request) => {
+        sinon.assert.calledWithMatch(sendMessageToTarget, sinon.match((request) => {
             const { method } = JSON.parse(request.message);
             return method === 'Debugger.enable';
         }));

@@ -7,6 +7,44 @@ import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import * as SettingsUI from '../../ui/settings/settings.js';
+function createCategory(id) {
+    return {
+        title: '',
+        id,
+        score: null,
+        manualDescription: '',
+        auditRefs: [],
+    };
+}
+function createRunnerResult() {
+    return {
+        lhr: {
+            lighthouseVersion: '',
+            userAgent: '',
+            fetchTime: '',
+            timing: { total: 0 },
+            finalDisplayedUrl: '',
+            artifacts: { Trace: { traceEvents: [] } },
+            audits: {},
+            categories: {
+                performance: createCategory('performance'),
+                accessibility: createCategory('accessibility'),
+                'best-practices': createCategory('best-practices'),
+                seo: createCategory('seo'),
+                'agentic-browsing': createCategory('agentic-browsing'),
+            },
+            categoryGroups: {},
+        },
+        artifacts: {
+            Trace: { traceEvents: [] },
+            settings: { throttlingMethod: 'simulate' },
+        },
+        report: '',
+        stack: '',
+        fatal: false,
+    };
+}
 describeWithEnvironment('LighthouseController', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
@@ -40,8 +78,8 @@ describeWithEnvironment('LighthouseController', () => {
         it('returns categories matching user settings when isAIControlled is not set', () => {
             const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
             const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
-            Common.Settings.Settings.instance().moduleSetting('lighthouse.cat-seo').set(false);
-            Common.Settings.Settings.instance().moduleSetting('lighthouse.cat-perf').set(true);
+            Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catSeoSettingDescriptor).set(false);
+            Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catPerfSettingDescriptor).set(true);
             const categories = controller.getCategoryIDs();
             assert.isFalse(categories.includes('seo'));
             assert.isTrue(categories.includes('performance'));
@@ -49,8 +87,8 @@ describeWithEnvironment('LighthouseController', () => {
         it('returns all supported categories for navigation mode when isAIControlled is true regardless of settings', () => {
             const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
             const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
-            Common.Settings.Settings.instance().moduleSetting('lighthouse.cat-seo').set(false);
-            Common.Settings.Settings.instance().moduleSetting('lighthouse.cat-perf').set(false);
+            Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catSeoSettingDescriptor).set(false);
+            Common.Settings.Settings.instance().resolve(SettingsUI.LighthouseSettings.catPerfSettingDescriptor).set(false);
             const categoriesNoAI = controller.getCategoryIDs({ isAIControlled: false, mode: 'navigation' });
             assert.deepEqual(categoriesNoAI, ['accessibility', 'best-practices']);
             // AI-controlled runs intentionally exclude the experimental 'agentic-browsing' category.
@@ -112,6 +150,39 @@ describeWithEnvironment('LighthouseController', () => {
                 new Promise(resolve => setTimeout(() => resolve('pending'), 0)),
             ]);
             assert.strictEqual(cancelOutcome, 'resolved');
+        });
+    });
+    describe('CPU throttling isolation', () => {
+        it('resets CPU throttling during a run and restores it on completion', async () => {
+            const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+            cpuThrottlingManager.setCPUThrottlingRate(4);
+            let rateDuringAttach;
+            let rateDuringDetach;
+            const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
+            protocolService.attach.callsFake(async () => {
+                rateDuringAttach = cpuThrottlingManager.cpuThrottlingRate();
+            });
+            protocolService.detach.callsFake(async () => {
+                rateDuringDetach = cpuThrottlingManager.cpuThrottlingRate();
+            });
+            protocolService.collectLighthouseResults.resolves(createRunnerResult());
+            const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
+            await controller.startLighthouse({ mode: 'snapshot' });
+            assert.strictEqual(rateDuringAttach, 1);
+            assert.strictEqual(cpuThrottlingManager.cpuThrottlingRate(), 1);
+            await controller.collectLighthouseResults();
+            assert.strictEqual(rateDuringDetach, 1);
+            assert.strictEqual(cpuThrottlingManager.cpuThrottlingRate(), 4);
+        });
+        it('restores CPU throttling when a run is cancelled', async () => {
+            const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+            cpuThrottlingManager.setCPUThrottlingRate(4);
+            const protocolService = sinon.createStubInstance(Lighthouse.LighthouseProtocolService.ProtocolService);
+            const controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
+            await controller.startLighthouse({ mode: 'snapshot' });
+            assert.strictEqual(cpuThrottlingManager.cpuThrottlingRate(), 1);
+            await controller.cancelLighthouse();
+            assert.strictEqual(cpuThrottlingManager.cpuThrottlingRate(), 4);
         });
     });
 });

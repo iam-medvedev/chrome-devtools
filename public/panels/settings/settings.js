@@ -894,7 +894,6 @@ import * as Platform2 from "../../core/platform/platform.js";
 import * as Root2 from "../../core/root/root.js";
 import * as AiAssistanceModel from "../../models/ai_assistance/ai_assistance.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
-import * as Input from "../../ui/components/input/input.js";
 import * as Switch from "../../ui/components/switch/switch.js";
 import * as uiI18n from "../../ui/i18n/i18n.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
@@ -1503,7 +1502,6 @@ var AI_SETTINGS_TAB_DEFAULT_VIEW = (input, output, target) => {
     </div>
   ` : nothing3;
   render2(html2`
-    <style>${Input.checkboxStyles}</style>
     <style>${aiSettingsTab_css_default}</style>
     <div class="ai-settings-container">
     <div class="settings-container-wrapper" jslog=${VisualLogging2.pane("chrome-ai")}>

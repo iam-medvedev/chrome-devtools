@@ -151,13 +151,13 @@
       "path": "../../ui/settings/bundle-tsconfig.ref.json"
     },
     {
+      "path": "../linear_memory_inspector/components/bundle-tsconfig.ref.json"
+    },
+    {
       "path": "../search/bundle-tsconfig.ref.json"
     },
     {
       "path": "../utils/bundle-tsconfig.ref.json"
-    },
-    {
-      "path": "components/bundle-tsconfig.ref.json"
     },
     {
       "path": "forward/bundle-tsconfig.ref.json"
