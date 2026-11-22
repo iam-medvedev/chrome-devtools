@@ -633,6 +633,8 @@ describeWithEnvironment('LiveMetricsView', () => {
                 ?.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com',
                 isPrimaryFrame: () => true,
+                isMainFrame: () => true,
+                isOutermostFrame: () => true,
             });
             await view.updateComplete;
             const envRecs = getEnvironmentRecs(view);
@@ -655,6 +657,8 @@ describeWithEnvironment('LiveMetricsView', () => {
                 ?.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com',
                 isPrimaryFrame: () => true,
+                isMainFrame: () => true,
+                isOutermostFrame: () => true,
             });
             await view.updateComplete;
             const envRecs = getEnvironmentRecs(view);
@@ -681,6 +685,8 @@ describeWithEnvironment('LiveMetricsView', () => {
                 ?.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
                 url: 'https://example.com',
                 isPrimaryFrame: () => true,
+                isMainFrame: () => true,
+                isOutermostFrame: () => true,
             });
             await view.updateComplete;
             const fieldLink = getFieldDataHistoryLink(view);

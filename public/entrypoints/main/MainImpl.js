@@ -144,7 +144,9 @@ export class MainImpl {
     #universe;
     #supportsEmulation = false;
     #veLogsTestMode = false;
+    #eventListenersAbortController = new AbortController();
     constructor(opts) {
+        _a.instanceForTest?.disposeForTest();
         _a.instanceForTest = this;
         this.#supportsEmulation = opts?.supportsEmulation ?? false;
         void this.#loaded();
@@ -469,10 +471,8 @@ export class MainImpl {
         });
         this.#toolbarsPromise = inspectorView.createToolbars();
         this.#veStartPromise = this.#toolbarsPromise.then(() => this.#startVeLogging());
-        inspectorView.renderStatusBar(this.#universe.commentManager.isAgentAttached());
-        this.#universe.commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, event => {
-            inspectorView.renderStatusBar(event.data);
-        });
+        this.#renderStatusBar();
+        this.#universe.commentManager.addEventListener("AgentAttachedChanged" /* CommentManager.CommentManager.Events.AGENT_ATTACHED_CHANGED */, this.#renderStatusBar, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
         // Initialize elements for the live announcer functionality for a11y.
         UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
@@ -481,6 +481,11 @@ export class MainImpl {
         window.setTimeout(this.#initializeTarget.bind(this), 0);
         await this.#toolbarsPromise;
         _a.timeEnd('Main._showAppUI');
+    }
+    #renderStatusBar() {
+        const visible = AiAssistanceModel.AiUtils.isNaturalLanguageInterfaceEnabled() ||
+            this.#universe.commentManager.isAgentAttached();
+        UI.InspectorView.InspectorView.instance().renderStatusBar(visible);
     }
     async #initializeTarget() {
         _a.time('Main._initializeTarget');
@@ -511,7 +516,15 @@ export class MainImpl {
             runtimeModel?.addEventListener(SDK.RuntimeModel.Events.BindingCalled, event => {
                 if (event.data.name === binding) {
                     if (event.data.payload === 'true' || event.data.payload === 'false') {
-                        VisualLogging.setVeDebuggingEnabled(event.data.payload === 'true', (query) => {
+                        const enabled = event.data.payload === 'true';
+                        if (enabled &&
+                            UI.DockController.DockController.instance().dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */) {
+                            // Picking starts from the inspected page, so an undocked DevTools window is inactive at this point.
+                            // On macOS, inactive windows get neither hover events nor the first click, so bring DevTools to
+                            // front for the user to be able to pick right away.
+                            Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
+                        }
+                        VisualLogging.setVeDebuggingEnabled(enabled, (query) => {
                             VisualLogging.setVeDebuggingEnabled(false);
                             void runtimeModel?.defaultExecutionContext()?.evaluateWithSelectedFrameFallback({
                                 expression: `window.inspect(${JSON.stringify(query)})`,
@@ -596,12 +609,13 @@ export class MainImpl {
         }
     }
     #addMainEventListeners(document) {
-        document.addEventListener('keydown', this.#postDocumentKeyDown.bind(this), false);
-        document.addEventListener('beforecopy', this.#redispatchClipboardEvent.bind(this), true);
-        document.addEventListener('copy', this.#redispatchClipboardEvent.bind(this), false);
-        document.addEventListener('cut', this.#redispatchClipboardEvent.bind(this), false);
-        document.addEventListener('paste', this.#redispatchClipboardEvent.bind(this), false);
-        document.addEventListener('contextmenu', this.#contextMenuEventFired.bind(this), true);
+        const { signal } = this.#eventListenersAbortController;
+        document.addEventListener('keydown', this.#postDocumentKeyDown.bind(this), { capture: false, signal });
+        document.addEventListener('beforecopy', this.#redispatchClipboardEvent.bind(this), { capture: true, signal });
+        document.addEventListener('copy', this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+        document.addEventListener('cut', this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+        document.addEventListener('paste', this.#redispatchClipboardEvent.bind(this), { capture: false, signal });
+        document.addEventListener('contextmenu', this.#contextMenuEventFired.bind(this), { capture: true, signal });
     }
     #onSuspendStateChanged() {
         const suspended = SDK.TargetManager.TargetManager.instance().allTargetsSuspended();
@@ -609,6 +623,9 @@ export class MainImpl {
     }
     redispatchClipboardEventForTest(event) {
         this.#redispatchClipboardEvent(event);
+    }
+    disposeForTest() {
+        this.#eventListenersAbortController.abort();
     }
     static instanceForTest = null;
 }

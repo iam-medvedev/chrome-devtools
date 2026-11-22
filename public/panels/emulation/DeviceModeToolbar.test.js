@@ -13,7 +13,6 @@ import { createTarget, describeWithEnvironment } from '../../testing/Environment
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Emulation from './emulation.js';
 function createFakeSetting(defaultValue) {
     let value = defaultValue;
@@ -64,24 +63,18 @@ describeWithEnvironment('DeviceModeToolbar', () => {
         });
         sinon.stub(Common.Settings.Settings, 'instance').returns({
             createSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
-            moduleSetting: (name) => {
-                if (name === 'custom-network-conditions') {
+            createLocalSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
+            resolve: (descriptor) => {
+                if (descriptor.name === 'custom-network-conditions') {
                     return createFakeSetting([]);
                 }
                 return createFakeSetting(false);
             },
-            createLocalSetting: (_name, defaultValue) => createFakeSetting(defaultValue),
-            resolve: (_descriptor) => createFakeSetting(false),
         });
         tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-        // Stub ThrottlingManager to avoid dependency on network condition settings.
-        const fakeSelectElement = document.createElement('select');
-        sinon.stub(MobileThrottling.ThrottlingManager.ThrottlingManager, 'instance').returns({
-            createSaveDataOverrideSelector: () => fakeSelectElement,
-        });
         toolbar = new Emulation.DeviceModeToolbar.DeviceModeToolbar();
         toolbar.model = deviceModeModel;
     });

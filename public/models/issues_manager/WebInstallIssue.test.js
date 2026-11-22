@@ -4,9 +4,13 @@
 import { assert } from 'chai';
 import { describe, it } from 'mocha';
 import sinon from 'sinon';
+import { expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as IssuesManager from './issues_manager.js';
 describe('WebInstallIssue', () => {
+    expectConsoleLogs({
+        warn: ['Web install issue without details received.'],
+    });
     const mockModel = new MockIssuesModel([]);
     const manifestUrl = 'https://example.com/manifest.json';
     for (const [reason, descriptionFile] of [

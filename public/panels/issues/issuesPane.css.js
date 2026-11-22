@@ -9,7 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-.issues-pane {
+:host {
   overflow: hidden;
 }
 

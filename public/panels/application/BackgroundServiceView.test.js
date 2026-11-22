@@ -224,7 +224,7 @@ describeWithEnvironment('BackgroundServiceView', () => {
         dataRows = view.contentElement.querySelectorAll('devtools-data-grid table tr:not(:first-child)');
         assert.lengthOf(dataRows, 1);
         // The event from a different origin should show up when the origin checkbox is checked.
-        const originCheckbox = view.contentElement.querySelector('label.checkbox-label input[type="checkbox"]');
+        const originCheckbox = view.contentElement.querySelector('devtools-checkbox');
         assert.exists(originCheckbox);
         originCheckbox.checked = true;
         originCheckbox.dispatchEvent(new Event('change'));

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
@@ -101,6 +102,9 @@ describe('WebAuthnModel', () => {
         assert.deepEqual(await request, { authenticatorId: AUTHENTICATOR_ID, credentialId: CREDENTIAL.credentialId });
     });
     describe('when the backend returns an error', () => {
+        beforeEach(() => {
+            sinon.stub(console, 'error');
+        });
         const ERROR_MESSAGE = 'Could not find a virtual authenticator matching the ID';
         function failWith(method) {
             connection.setFailureHandler(method, () => ({

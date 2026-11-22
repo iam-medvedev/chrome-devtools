@@ -280,6 +280,17 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             assert.strictEqual(activeHighlightListeners(), 1);
             message.willHide();
         });
+        it('falls back to an object section when the DOM node cannot be resolved', async () => {
+            const { message, pushObjectAsNodeToFrontend } = createDOMNodeMessage();
+            pushObjectAsNodeToFrontend.resolves(null);
+            const messageElement = message.toMessageElement();
+            await pushObjectAsNodeToFrontend.firstCall.returnValue;
+            assert.notExists(messageElement.querySelector('.elements-tree-outline'));
+            const section = messageElement.querySelector('.console-view-object-properties-section');
+            assert.exists(section);
+            // The object template is appended without an extra wrapper element.
+            assert.isTrue(section.parentElement?.parentElement?.classList.contains('object-value-node'));
+        });
         it('holds stack trace preview listeners only while the message is visible', () => {
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
@@ -418,6 +429,25 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const messageElement2 = message2.toMessageElement();
             await formattedPromise2;
             assert.strictEqual(messageElement2.deepTextContent(), 'ƒ appendChild() { [native code] }');
+        });
+        it('reuses the remote object of a raw function parameter when formatting again', async () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            const fn = {
+                type: "function" /* Protocol.Runtime.RemoteObjectType.Function */,
+                description: 'function random() { [native code] }',
+                objectId: '1',
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', { type: SDK.ConsoleModel.FrontendMessageType.Result, parameters: [fn] });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const createRemoteObject = sinon.spy(runtimeModel, 'createRemoteObject');
+            const formatted = expectCall(sinon.stub(message, 'formattedParameterAsFunctionForTest'));
+            const messageElement = message.toMessageElement();
+            await formatted;
+            assert.strictEqual(messageElement.deepTextContent(), 'ƒ random() { [native code] }');
+            message.updateMessageElement();
+            sinon.assert.calledOnceWithExactly(createRemoteObject, fn);
         });
         it('formats performance getters (PerformanceTiming and MemoryInfo)', async () => {
             const target = createTarget();
@@ -1691,6 +1721,88 @@ describeWithEnvironment('ConsoleViewMessage', () => {
             const computedStyle = window.getComputedStyle(coloredSpan);
             assert.strictEqual(computedStyle.color, 'rgb(255, 85, 255)');
             assert.strictEqual(computedStyle.backgroundColor, 'rgb(255, 85, 255)');
+        });
+        it('renders customPreview widget directly inside .console-message-text', async () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const rawCustomParam = {
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                objectId: 'custom-1',
+                customPreview: {
+                    header: JSON.stringify(['span', {}, 'Custom header']),
+                    bodyGetterId: 'body-1',
+                },
+            };
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [rawCustomParam],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const host = new UI.Widget.Widget();
+            host.markAsRoot();
+            renderElementIntoDOM(host);
+            host.contentElement.appendChild(message.toMessageElement());
+            const firstInText = message.contentElement().querySelector('.console-message-text *');
+            assert.exists(firstInText);
+            await UI.Widget.Widget.get(firstInText)?.updateComplete;
+            assert.include(firstInText.deepTextContent(), 'Custom header');
+        });
+        it('navigates multiple object parameters in document order on ArrowDown', async () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const objA = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: 'ObjectA',
+                objectId: 'obj-a',
+            });
+            const objB = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: 'ObjectB',
+                objectId: 'obj-b',
+            });
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [objA, objB],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const host = new UI.Widget.Widget();
+            host.markAsRoot();
+            renderElementIntoDOM(host);
+            const wrapper = message.toMessageElement();
+            host.contentElement.appendChild(wrapper);
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const sections = [...wrapper.querySelectorAll('.console-view-object-properties-section')];
+            assert.lengthOf(sections, 2);
+            wrapper.focus();
+            assert.isTrue(message.maybeHandleOnKeyDown(new KeyboardEvent('keydown', { key: 'ArrowDown' })));
+            assert.isTrue(sections[0].hasFocus());
+            assert.isTrue(message.maybeHandleOnKeyDown(new KeyboardEvent('keydown', { key: 'ArrowDown' })));
+            assert.isTrue(sections[1].hasFocus());
+            host.detach();
+        });
+        it('shows object context menu on right-click for non-expandable objects', () => {
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            const emptyObj = runtimeModel.createRemoteObject({
+                type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+                className: 'Object',
+                description: '{}',
+            });
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', {
+                type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
+                parameters: [emptyObj],
+            });
+            const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
+            const wrapper = message.toMessageElement();
+            renderElementIntoDOM(wrapper);
+            const showStub = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
+            const objSpan = wrapper.querySelector('.console-object');
+            assert.exists(objSpan);
+            objSpan.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+            sinon.assert.calledOnce(showStub);
         });
     });
 });

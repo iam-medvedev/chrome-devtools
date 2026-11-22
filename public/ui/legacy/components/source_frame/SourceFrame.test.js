@@ -5,20 +5,23 @@ import { assert } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../../core/common/common.js';
+import * as Host from '../../../../core/host/host.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Root from '../../../../core/root/root.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as TextUtils from '../../../../core/text_utils/text_utils.js';
 import { dispatchInputEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, expectConsoleLogs, updateHostConfig } from '../../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../../testing/ExpectStubCall.js';
 import { createViewFunctionStub } from '../../../../testing/ViewFunctionHelpers.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
+import * as TextEditor from '../../../components/text_editor/text_editor.js';
 import { render } from '../../../lit/lit.js';
 import * as UI from '../../legacy.js';
 import * as SourceFrame from './source_frame.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('SourceFrame', () => {
+    expectConsoleLogs({ warn: ['Measure loop restarted more than 5 times'] });
     let setting;
     beforeEach(() => {
         setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
@@ -123,6 +126,15 @@ describeWithEnvironment('SourceFrame', () => {
         view.input.onKeyDown(defaultPreventedEvent);
         sinon.assert.calledOnce(stopPropagationSpy);
         sourceFrame.disposeView();
+    });
+    it('configures the text editor caret blink interval from hostConfig and live updates', async () => {
+        updateHostConfig({ caretBlinkInterval: 0 });
+        const sourceFrame = await createSourceFrame('Example');
+        renderElementIntoDOM(sourceFrame);
+        assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(sourceFrame.textEditor.state), TextEditor.Config.getDrawSelectionExtension(0));
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.CaretBlinkIntervalChanged, 500);
+        assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(sourceFrame.textEditor.state), TextEditor.Config.getDrawSelectionExtension(500));
+        sourceFrame.detach();
     });
     describe('toolbarItems', () => {
         async function renderToolbar(sourceFrame) {

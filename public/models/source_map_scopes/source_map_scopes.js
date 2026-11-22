@@ -686,6 +686,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1010,7 +1013,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1794,6 +1796,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2481,6 +2484,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3316,18 +3320,20 @@ var resolveScope = async (script, scopeChain, debuggerWorkspaceBinding) => {
     }
   }
 };
-function shouldIgnoreScope(scope) {
+function shouldIgnoreScope(scope, hasLocalScope) {
   const type = scope.type();
   if (type === Debugger.ScopeType.Local) {
     return false;
   }
-  if (type === Debugger.ScopeType.Module && scope.callFrame().localScope() === null) {
+  if (type === Debugger.ScopeType.Module && !hasLocalScope) {
     return false;
   }
   return scope.emptyReason() !== void 0;
 }
-function visibleScopeChain(callFrame) {
-  return callFrame.scopeChain().filter((scope) => !shouldIgnoreScope(scope));
+async function visibleScopeChain(callFrame) {
+  const scopeChain = await callFrame.scopeChain();
+  const hasLocalScope = scopeChain.some((scope) => scope.type() === Debugger.ScopeType.Local);
+  return scopeChain.filter((scope) => !shouldIgnoreScope(scope, hasLocalScope));
 }
 var resolveScopeChain = async function(callFrame, debuggerWorkspaceBinding) {
   const { pluginManager } = debuggerWorkspaceBinding;
@@ -3340,18 +3346,16 @@ var resolveScopeChain = async function(callFrame, debuggerWorkspaceBinding) {
     if (!sourceMap && callFrame.debuggerModel?.sourceMapManager) {
       sourceMap = await callFrame.debuggerModel.sourceMapManager().sourceMapForClientPromise(callFrame.script);
     }
-    const mappedScopeChain = sourceMap?.resolveScopeChain(callFrame);
+    const mappedScopeChain = sourceMap?.resolveScopeChain(callFrame, await callFrame.scopeChain());
     if (mappedScopeChain) {
       return mappedScopeChain;
     }
   }
   if (callFrame.script.isWasm()) {
-    return callFrame.scopeChain();
+    return await callFrame.scopeChain();
   }
   const thisObject = await resolveThisObject(callFrame, debuggerWorkspaceBinding);
-  return visibleScopeChain(callFrame).map(
-    (scope) => new ScopeWithSourceMappedVariables(scope, thisObject, debuggerWorkspaceBinding)
-  );
+  return (await visibleScopeChain(callFrame)).map((scope) => new ScopeWithSourceMappedVariables(scope, thisObject, debuggerWorkspaceBinding));
 };
 function toScopeVariableMapping({ variableMapping, generatedNames }) {
   const bindings = /* @__PURE__ */ new Map();
@@ -3382,7 +3386,7 @@ var allVariablesInCallFrame = async (callFrame, debuggerWorkspaceBinding) => {
       return result2;
     }
   }
-  const scopeChain = visibleScopeChain(callFrame);
+  const scopeChain = await visibleScopeChain(callFrame);
   const resolvedScopes = await Promise.all(scopeChain.map((scope) => resolveDebuggerScope(scope, debuggerWorkspaceBinding)));
   const result = resolvedScopes.map(toScopeVariableMapping);
   cachedMapByCallFrame.set(callFrame, result);
@@ -3419,7 +3423,7 @@ var allVariablesAtPosition = async (location, debuggerWorkspaceBinding) => {
   return result;
 };
 var resolveThisObject = async (callFrame, debuggerWorkspaceBinding) => {
-  const innermostScope = callFrame.scopeChain().find((scope) => !shouldIgnoreScope(scope));
+  const innermostScope = (await visibleScopeChain(callFrame)).at(0);
   if (!innermostScope) {
     return callFrame.thisObject();
   }
@@ -3700,6 +3704,7 @@ var ScopeChainResolver = class _ScopeChainResolver extends Common.ObjectWrapper.
   }
   modelAdded(debuggerModel) {
     debuggerModel.addEventListener(SDK3.DebuggerModel.Events.DebugInfoAttached, this.#debugInfoAttached, this);
+    debuggerModel.addEventListener(SDK3.DebuggerModel.Events.ScopeChainsInvalidated, this.#scopeChainsInvalidated, this);
     debuggerModel.sourceMapManager().addEventListener(
       SDK3.SourceMapManager.Events.SourceMapAttached,
       this.#sourceMapChanged,
@@ -3713,6 +3718,11 @@ var ScopeChainResolver = class _ScopeChainResolver extends Common.ObjectWrapper.
   }
   modelRemoved(debuggerModel) {
     debuggerModel.removeEventListener(SDK3.DebuggerModel.Events.DebugInfoAttached, this.#debugInfoAttached, this);
+    debuggerModel.removeEventListener(
+      SDK3.DebuggerModel.Events.ScopeChainsInvalidated,
+      this.#scopeChainsInvalidated,
+      this
+    );
     debuggerModel.sourceMapManager().removeEventListener(
       SDK3.SourceMapManager.Events.SourceMapAttached,
       this.#sourceMapChanged,
@@ -3744,6 +3754,12 @@ var ScopeChainResolver = class _ScopeChainResolver extends Common.ObjectWrapper.
   #invalidate(script) {
     this.#cache.delete(script);
     this.dispatchEventToListeners("ScopeChainInvalidated" /* SCOPE_CHAIN_INVALIDATED */, script);
+  }
+  #scopeChainsInvalidated(event) {
+    const callFrames = event.data.debuggerPausedDetails()?.callFrames ?? [];
+    for (const script of new Set(callFrames.map((callFrame) => callFrame.script))) {
+      this.#invalidate(script);
+    }
   }
   #debugInfoAttached(event) {
     this.#invalidate(event.data);

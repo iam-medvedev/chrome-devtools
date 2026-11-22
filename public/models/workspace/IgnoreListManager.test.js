@@ -426,5 +426,38 @@ describe('IgnoreListManager', () => {
             assert.isTrue(ignoreListManager.isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode));
         });
     });
+    describe('ignoreListURL', () => {
+        function ignoreListPatternsFor(url) {
+            const regexSetting = universe.settings.resolve(Workspace.IgnoreListManager.skipStackFramesPatternSettingDescriptor);
+            regexSetting.setAsArray([]);
+            ignoreListManager.ignoreListURL(url);
+            return regexSetting.getAsArray();
+        }
+        it('adds a pattern that matches the URL to the ignore list', () => {
+            const testCases = [
+                { url: urlString `http://www.example.com/foo/jquery-1.7-min.js`, pattern: '/jquery\\-1\\.7\\-min\\.js$' },
+                { url: urlString `https://www.example.com/jquery.js?version=1.7`, pattern: '/jquery\\.js\\b' },
+                { url: urlString `http://www.google.com/jsapi`, pattern: '/jsapi$' },
+                { url: urlString `https://www.google.com/jsapi/`, pattern: '/jsapi/$' },
+                { url: urlString `http://www.google.com`, pattern: 'www\\.google\\.com$' },
+                { url: urlString `http://www.google.com/`, pattern: 'www\\.google\\.com\\b' },
+                { url: urlString ``, pattern: '^$' },
+                {
+                    url: urlString `chrome-extension://extensionName/main.js`,
+                    pattern: '^chrome-extension://extensionName\\b.*/main\\.js$',
+                },
+                { url: urlString `extensions::unload_events`, pattern: '^extensions::unload_events$' },
+            ];
+            for (const { url, pattern } of testCases) {
+                const patterns = ignoreListPatternsFor(url);
+                assert.deepEqual(patterns, [{ pattern, disabled: false }], url);
+                assert.match(url, new RegExp(patterns[0].pattern));
+            }
+        });
+        it('does not add a pattern for about:blank and data URLs', () => {
+            assert.deepEqual(ignoreListPatternsFor(urlString `data:text/html,foo`), []);
+            assert.deepEqual(ignoreListPatternsFor(urlString `about:blank`), []);
+        });
+    });
 });
 //# sourceMappingURL=IgnoreListManager.test.js.map

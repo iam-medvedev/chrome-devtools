@@ -19,6 +19,7 @@ export declare const DEFAULT_VIEW: View;
 export declare class AffectedElementsView extends AffectedResourcesView {
     #private;
     constructor(parent: IssueView, issue: IssuesManager.IssueAggregator.AggregatedIssue, jslogContext: string, view?: View);
+    protected appendAffectedElements(affectedElements: Iterable<IssuesManager.Issue.AffectedElement>): void;
     protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString;
     update(): void;
 }

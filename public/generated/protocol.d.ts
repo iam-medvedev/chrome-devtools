@@ -1,6 +1,5 @@
 /**
  * This file is auto-generated, do not edit manually. *
- * Re-generate with: scripts/tools/dt.py generate-protocol-resources.
  */
 export type integer = number;
 export type binary = string;
@@ -1438,10 +1437,13 @@ export declare namespace Audits {
         NonPhrasingContentOptionChild = "NonPhrasingContentOptionChild",
         InteractiveContentOptionChild = "InteractiveContentOptionChild",
         InteractiveContentLegendChild = "InteractiveContentLegendChild",
-        InteractiveContentSummaryDescendant = "InteractiveContentSummaryDescendant"
+        InteractiveContentSummaryDescendant = "InteractiveContentSummaryDescendant",
+        AnchorMenuDescendant = "AnchorMenuDescendant",
+        InteractiveContentMenuDescendant = "InteractiveContentMenuDescendant",
+        TextMenuDescendant = "TextMenuDescendant"
     }
     /**
-     * This issue warns about errors in the select or summary element content model.
+     * This issue warns about errors in the select, summary, or menu element content model.
      */
     interface ElementAccessibilityIssueDetails {
         nodeId: DOM.BackendNodeId;
@@ -2176,6 +2178,10 @@ export declare namespace BluetoothEmulation {
     }
     interface SimulateGATTDisconnectionRequest {
         address: string;
+    }
+    interface SimulateGATTMtuChangeRequest {
+        address: string;
+        mtu: integer;
     }
     /**
      * Event for when a GATT operation of |type| to the peripheral with |address|
@@ -4524,7 +4530,6 @@ export declare namespace DOM {
         SelectListbox = "select-listbox",
         PermissionIcon = "permission-icon",
         OverscrollAreaParent = "overscroll-area-parent",
-        OverscrollBackdrop = "overscroll-backdrop",
         Skeleton = "skeleton"
     }
     /**
@@ -11353,7 +11358,8 @@ export declare namespace Network {
         PreProvisionedKeyNotFound = "PreProvisionedKeyNotFound",
         AttestationCertificationError = "AttestationCertificationError",
         AttestationSigningError = "AttestationSigningError",
-        FederatedRegistrationRedirected = "FederatedRegistrationRedirected"
+        FederatedRegistrationRedirected = "FederatedRegistrationRedirected",
+        CrossSiteRefreshSessionConfig = "CrossSiteRefreshSessionConfig"
     }
     /**
      * Details about a failed device bound session network request.
@@ -16260,7 +16266,8 @@ export declare namespace Preload {
         PrerenderHostReused = "PrerenderHostReused",
         FormSubmitWhenPrerendering = "FormSubmitWhenPrerendering",
         CrossDocumentRestart = "CrossDocumentRestart",
-        PrefetchFailedCrossOriginSubframe = "PrefetchFailedCrossOriginSubframe"
+        PrefetchFailedCrossOriginSubframe = "PrefetchFailedCrossOriginSubframe",
+        UnexpectedMainFrameNavigation = "UnexpectedMainFrameNavigation"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This
@@ -17782,7 +17789,13 @@ export declare namespace Target {
         browserContextId?: Browser.BrowserContextID;
         /**
          * Provides additional details for specific target types. For example, for
-         * the type of "page", this may be set to "prerender".
+         * the type of "page", this may be set to "prerender", and for "tab", this
+         * may be set to "unloaded". An unloaded tab has a history entry, but no
+         * document for it: for example, after the tab was discarded, after
+         * session restore without load, or after the renderer crashed. The tab
+         * stays unloaded until a new document commits. A new tab that has not
+         * navigated is not unloaded. Target.targetInfoChanged reports changes of
+         * this value for tabs.
          */
         subtype?: string;
         /**
@@ -20678,11 +20691,12 @@ export declare namespace Runtime {
         className?: string;
         /**
          * Remote object value in case of primitive values or JSON values (if it was requested).
+         * Not set in `deep` serialization mode, see `deepSerializedValue`.
          */
         value?: any;
         /**
          * Primitive value which can not be JSON-stringified does not have `value`, but gets this
-         * property.
+         * property. Not set in `deep` serialization mode, see `deepSerializedValue`.
          */
         unserializableValue?: UnserializableValue;
         /**

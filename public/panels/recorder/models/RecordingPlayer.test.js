@@ -39,9 +39,10 @@ describe('RecordingPlayer', () => {
         });
         return stopEvent;
     }
+    let mocks;
     beforeEach(() => {
         installMocksForTargetManager();
-        installMocksForRecordingPlayer();
+        mocks = installMocksForRecordingPlayer();
     });
     afterEach(() => {
         recordingPlayer.disposeForTesting();
@@ -197,16 +198,20 @@ describe('RecordingPlayer', () => {
             });
         }
         it('should reject navigation to chrome:// URLs', async () => {
+            sinon.stub(console, 'error');
             const url = urlString `chrome://settings`;
             const error = await waitForRecordingUrlError(url);
             assert.isNotNull(error);
             assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
+            sinon.assert.calledWith(console.error, 'Replay error', error.message);
         });
         it('should reject navigation to javascript:// URLs', async () => {
+            sinon.stub(console, 'error');
             const url = urlString `javascript:alert(1)`;
             const error = await waitForRecordingUrlError(url);
             assert.isNotNull(error);
             assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
+            sinon.assert.calledWith(console.error, 'Replay error', error.message);
         });
         it('should allow navigation to http:// URLs', async () => {
             const url = urlString `http://example.com`;
@@ -229,10 +234,1003 @@ describe('RecordingPlayer', () => {
             assert.isNull(error);
         });
         it('should reject navigation to other about: URLs', async () => {
+            sinon.stub(console, 'error');
             const url = urlString `about:srcdoc`;
             const error = await waitForRecordingUrlError(url);
             assert.isNotNull(error);
             assert.strictEqual(error.message, `Navigation to ${url} is not allowed, due to blocked schema`);
+            sinon.assert.calledWith(console.error, 'Replay error', error.message);
+        });
+    });
+    describe('Navigation guard', () => {
+        const blockedUrl = 'https://other.test/landing';
+        const blockedMessage = `Navigation to ${blockedUrl} is not allowed, because the recording does not contain its origin`;
+        const fetchEnablePattern = { patterns: [{ urlPattern: '*', resourceType: 'Document', requestStage: 'Response' }] };
+        /**
+         * Replays a recording that navigates to https://allowed.test and calls
+         * `beforeSecondStep` before the second step.
+         */
+        async function replay(beforeSecondStep, extraSteps = []) {
+            recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({
+                title: 'test',
+                steps: [
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    createCustomStep(),
+                    createCustomStep(),
+                    ...extraSteps,
+                ],
+            }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+            let steps = 0;
+            const result = new Promise(resolve => {
+                recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+            });
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => {
+                steps++;
+                if (steps === 2) {
+                    beforeSecondStep();
+                }
+                resolve();
+            });
+            await recordingPlayer.play();
+            return { error: await result, steps };
+        }
+        function createPopupMock(url, extraFrames = []) {
+            const client = {
+                send: sinon.stub().resolves(),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+                parentSession: () => undefined,
+            };
+            const mainFrame = { _id: `frame-${url}`, client, url: () => url, goto: sinon.stub().resolves() };
+            const frames = [
+                mainFrame,
+                ...extraFrames.map((f, index) => ({
+                    _id: `subframe-${index}`,
+                    client: f.client ?? { send: sinon.stub().resolves(), on: sinon.stub(), off: sinon.stub(), detached: false },
+                    url: () => f.url,
+                })),
+            ];
+            const page = {
+                _client: () => client,
+                on: sinon.stub(),
+                off: sinon.stub(),
+                frames: () => frames,
+                mainFrame: () => mainFrame,
+                evaluate: () => '',
+                url: () => url,
+                bringToFront: () => Promise.resolve(),
+                setDefaultTimeout: () => { },
+                close: sinon.stub().resolves(),
+                isClosed: () => false,
+            };
+            return { page, client, frames };
+        }
+        const subframeStep = {
+            type: Models.Schema.StepType.Click,
+            selectors: [['a']],
+            offsetX: 1,
+            offsetY: 1,
+            frame: [0],
+        };
+        it('pauses only document responses during the replay', async () => {
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            const fetchCalls = mocks.send.args.filter(([method]) => method.startsWith('Fetch.'));
+            assert.deepEqual(fetchCalls, [
+                ['Fetch.enable', fetchEnablePattern],
+                ['Fetch.disable'],
+            ]);
+        });
+        it('continues navigations to an origin from the recording', async () => {
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: 'https://allowed.test/next' },
+                    responseStatusCode: 200,
+                });
+            });
+            assert.isNull(error);
+            assert.strictEqual(steps, 3);
+            sinon.assert.calledWith(mocks.send, 'Fetch.continueRequest', { requestId: '1' });
+            sinon.assert.neverCalledWith(mocks.send, 'Fetch.failRequest');
+        });
+        it('continues HTTP redirect responses from unrecorded origins', async () => {
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: 'https://sso.test/bounce' },
+                    responseStatusCode: 302,
+                    responseHeaders: [{ name: 'Location', value: 'https://allowed.test/done' }],
+                });
+            });
+            assert.isNull(error);
+            assert.strictEqual(steps, 3);
+            sinon.assert.calledWith(mocks.send, 'Fetch.continueRequest', { requestId: '1' });
+            sinon.assert.neverCalledWith(mocks.send, 'Fetch.failRequest');
+        });
+        it('fails 304 responses from unrecorded origins', async () => {
+            sinon.stub(console, 'error');
+            const { error } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 304,
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+        });
+        it('fails 302 responses without a Location header from unrecorded origins', async () => {
+            sinon.stub(console, 'error');
+            const { error } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 302,
+                    responseHeaders: [],
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+        });
+        it('fails 302 responses with an invalid Location header from unrecorded origins', async () => {
+            sinon.stub(console, 'error');
+            const { error } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 302,
+                    responseHeaders: [{ name: 'Location', value: 'http://[' }],
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+        });
+        it('continues Content-Disposition attachment downloads from unrecorded origins', async () => {
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: 'https://cdn.test/report.pdf' },
+                    responseStatusCode: 200,
+                    responseHeaders: [{ name: 'Content-Disposition', value: 'attachment; filename="report.pdf"' }],
+                });
+            });
+            assert.isNull(error);
+            assert.strictEqual(steps, 3);
+            sinon.assert.calledWith(mocks.send, 'Fetch.continueRequest', { requestId: '1' });
+            sinon.assert.neverCalledWith(mocks.send, 'Fetch.failRequest');
+        });
+        it('fails responses with more than one Content-Disposition header from unrecorded origins', async () => {
+            sinon.stub(console, 'error');
+            const { error } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                    responseHeaders: [
+                        { name: 'Content-Disposition', value: 'inline' },
+                        { name: 'Content-Disposition', value: 'attachment' },
+                    ],
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+        });
+        it('continues downloads with HTTP whitespace around the attachment type', async () => {
+            const { error } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: 'https://cdn.test/report.pdf' },
+                    responseStatusCode: 200,
+                    responseHeaders: [{ name: 'Content-Disposition', value: ' \tattachment \t; filename="report.pdf"' }],
+                });
+            });
+            assert.isNull(error);
+            sinon.assert.calledWith(mocks.send, 'Fetch.continueRequest', { requestId: '1' });
+        });
+        for (const [name, whitespace] of [['vertical tab', '\v'], ['form feed', '\f'], ['no-break space', '\u00a0']]) {
+            it(`fails responses with a ${name} before the attachment type from unrecorded origins`, async () => {
+                sinon.stub(console, 'error');
+                const { error } = await replay(() => {
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: 200,
+                        responseHeaders: [{ name: 'Content-Disposition', value: `${whitespace}attachment` }],
+                    });
+                });
+                assert.strictEqual(error?.message, blockedMessage);
+            });
+        }
+        for (const status of [302, 404, 500]) {
+            it(`fails ${status} responses with a Content-Disposition attachment header from unrecorded origins`, async () => {
+                sinon.stub(console, 'error');
+                const { error } = await replay(() => {
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: status,
+                        responseHeaders: [{ name: 'Content-Disposition', value: 'attachment' }],
+                    });
+                });
+                assert.strictEqual(error?.message, blockedMessage);
+            });
+        }
+        it('fails non-attachment Content-Disposition tokens from unrecorded origins', async () => {
+            sinon.stub(console, 'error');
+            for (const value of ['attachment-foo', 'attachment/foo']) {
+                const { error } = await replay(() => {
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: 200,
+                        responseHeaders: [{ name: 'Content-Disposition', value }],
+                    });
+                });
+                assert.strictEqual(error?.message, blockedMessage);
+            }
+        });
+        it('fails main frame navigations to an origin that is not in the recording', async () => {
+            sinon.stub(console, 'error');
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+            assert.strictEqual(steps, 2);
+            sinon.assert.calledWith(mocks.send, 'Fetch.failRequest', { requestId: '1', errorReason: 'BlockedByClient' });
+            sinon.assert.neverCalledWith(mocks.send, 'Fetch.continueRequest');
+        });
+        it('blocks the page input of the Puppeteer connection when a navigation is blocked', async () => {
+            sinon.stub(console, 'error');
+            const blockedReplay = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            sinon.assert.calledOnceWithExactly(mocks.blockPageInput, blockedReplay.error);
+        });
+        it('removes the session history of the page at the start of the replay', async () => {
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            sinon.assert.notCalled(mocks.blockPageInput);
+            sinon.assert.calledWith(mocks.send, 'Page.resetNavigationHistory');
+        });
+        it('continues subframe navigations if the recording has no subframe steps', async () => {
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'subframe',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            assert.isNull(error);
+            assert.strictEqual(steps, 3);
+            sinon.assert.calledWith(mocks.send, 'Fetch.continueRequest', { requestId: '1' });
+        });
+        it('fails subframe navigations if the recording has subframe steps', async () => {
+            sinon.stub(console, 'error');
+            const { error, steps } = await replay(() => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'subframe',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            }, [subframeStep]);
+            assert.strictEqual(error?.message, blockedMessage);
+            assert.strictEqual(steps, 2);
+            sinon.assert.calledWith(mocks.send, 'Fetch.failRequest', { requestId: '1', errorReason: 'BlockedByClient' });
+        });
+        it('stops the replay if the main frame is at an origin that is not in the recording', async () => {
+            sinon.stub(console, 'error');
+            const { error, steps } = await replay(() => {
+                mocks.emitFrameNavigated(Object.assign(mocks.mainFrame, { url: () => blockedUrl }));
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+            assert.strictEqual(steps, 2);
+        });
+        it('enables the interception in a new session before the target can run', async () => {
+            const session = { send: sinon.stub().resolves(), on: sinon.stub(), off: sinon.stub(), detached: false };
+            let callsInTheSameTask = [];
+            const { error } = await replay(() => {
+                mocks.emitSessionAttached(session);
+                callsInTheSameTask = [...session.send.args];
+            });
+            assert.isNull(error);
+            assert.deepEqual(callsInTheSameTask, [['Fetch.enable', fetchEnablePattern]]);
+            sinon.assert.calledWith(session.send, 'Fetch.disable');
+        });
+        it('fails closed if Fetch.enable rejects on a frame session when checking subframes', async () => {
+            sinon.stub(console, 'error');
+            const frameSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            const { error } = await replay(() => {
+                mocks.frames.push({ _id: 'oopif-frame', client: frameSession, url: () => 'https://allowed.test/frame' });
+                mocks.emitSessionAttached(frameSession);
+            }, [subframeStep]);
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+        });
+        it('fails closed if Fetch.enable rejects on framenavigated when checking subframes', async () => {
+            sinon.stub(console, 'error');
+            const frameSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            const { error } = await replay(() => {
+                mocks.emitFrameNavigated({ _id: 'oopif-frame', client: frameSession, url: () => 'https://allowed.test/frame' });
+            }, [subframeStep]);
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+        });
+        it('disables the interception in a session if the replay ends while Fetch.enable is in progress', async () => {
+            const enable = Promise.withResolvers();
+            const session = {
+                send: sinon.stub().callsFake((method) => method === 'Fetch.enable' ? enable.promise : Promise.resolve()),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            // The player disposes the guard at the end of the replay.
+            const { error } = await replay(() => {
+                mocks.emitSessionAttached(session);
+            });
+            enable.resolve();
+            assert.isNull(error);
+            sinon.assert.calledWith(session.send, 'Fetch.disable');
+            sinon.assert.calledWith(session.off, 'Fetch.requestPaused');
+        });
+        it('fails closed if Fetch.enable rejects on a frame session that the page does not know yet', async () => {
+            sinon.stub(console, 'error');
+            // Puppeteer can report the session before the frame of the session.
+            const frameSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+                target: () => ({ _getTargetInfo: () => ({ type: 'iframe' }) }),
+            };
+            const { error } = await replay(() => {
+                mocks.emitSessionAttached(frameSession);
+            }, [subframeStep]);
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+        });
+        it('fails closed if Fetch.enable rejects for the main frame on framenavigated', async () => {
+            sinon.stub(console, 'error');
+            const newSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            // The recording has no subframe steps.
+            const { error } = await replay(() => {
+                mocks.emitFrameNavigated(Object.assign(mocks.mainFrame, { client: newSession }));
+            });
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+        });
+        describe('frames of the page at the start of the replay', () => {
+            const frameCustomStep = {
+                type: Models.Schema.StepType.CustomStep,
+                name: 'dummy step',
+                parameters: {},
+                frame: [0],
+            };
+            /** Replays `steps` and returns the error and the number of steps that started. */
+            async function replaySteps(steps) {
+                Object.assign(mocks.mainFrame, { childFrames: () => [mocks.mainFrame] });
+                recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({ title: 'test', steps }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+                let started = 0;
+                const result = new Promise(resolve => {
+                    recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                    recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+                });
+                recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => {
+                    started++;
+                    resolve();
+                });
+                await recordingPlayer.play();
+                return { error: await result, steps: started };
+            }
+            function createFailingSession() {
+                return {
+                    send: sinon.stub().rejects(new Error('protocol failure')),
+                    on: sinon.stub(),
+                    off: sinon.stub(),
+                    detached: false,
+                };
+            }
+            it('stops the replay if a step can send input to a frame from an origin that is not in the recording', async () => {
+                sinon.stub(console, 'error');
+                mocks.frames.push({ _id: 'subframe', client: mocks.mainFrame.client, url: () => blockedUrl });
+                // The first step is interactive, and the recording has a subframe step.
+                const { error, steps } = await replaySteps([frameCustomStep]);
+                assert.strictEqual(error?.message, blockedMessage);
+                assert.strictEqual(steps, 0);
+            });
+            it('does not check the frames if the replay navigates the page first', async () => {
+                mocks.frames.push({ _id: 'subframe', client: mocks.mainFrame.client, url: () => blockedUrl });
+                const { error, steps } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    frameCustomStep,
+                ]);
+                assert.isNull(error);
+                assert.strictEqual(steps, 2);
+            });
+            it('does not check the subframes if the recording has no subframe steps', async () => {
+                mocks.frames.push({ _id: 'subframe', client: mocks.mainFrame.client, url: () => blockedUrl });
+                const { error, steps } = await replaySteps([createCustomStep()]);
+                assert.isNull(error);
+                assert.strictEqual(steps, 1);
+            });
+            it('ignores a Fetch.enable failure on a subframe if the recording has no subframe steps', async () => {
+                sinon.stub(console, 'error');
+                mocks.frames.push({ _id: 'subframe', client: createFailingSession(), url: () => 'https://ads.test/' });
+                const { error, steps } = await replaySteps([createCustomStep()]);
+                assert.isNull(error);
+                assert.strictEqual(steps, 1);
+            });
+            it('stops the replay after a Fetch.enable failure on a subframe if the recording has subframe steps', async () => {
+                sinon.stub(console, 'error');
+                mocks.frames.push({ _id: 'subframe', client: createFailingSession(), url: () => 'https://allowed.test/' });
+                const { error, steps } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    frameCustomStep,
+                ]);
+                assert.strictEqual(error?.message, 'protocol failure');
+                assert.strictEqual(steps, 0);
+            });
+            it('stops the replay if a step targets an OOPIF on a page from an unrecorded origin before a navigate step', async () => {
+                sinon.stub(console, 'error');
+                const oopifUrl = 'https://oopif.test/frame.html';
+                const oopifFrame = { _id: 'oopif', client: mocks.mainFrame.client, url: () => oopifUrl };
+                mocks.mainFrame.url = () => blockedUrl;
+                mocks.pages[0].url = () => blockedUrl;
+                Object.assign(mocks.pages[0], { waitForFrame: async () => oopifFrame });
+                mocks.frames.push(oopifFrame);
+                mocks.targets.push({ url: () => oopifUrl, page: async () => null });
+                // The first step has a different target, thus the guard does not
+                // check the frames of the inspected page at the start of the replay.
+                const { error } = await replaySteps([
+                    { type: Models.Schema.StepType.Close, target: oopifUrl },
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                ]);
+                assert.strictEqual(error?.message, blockedMessage);
+                sinon.assert.notCalled(mocks.mainFrame.goto);
+            });
+            function createPrerenderSession() {
+                return { send: sinon.stub().resolves(), on: sinon.stub(), off: sinon.stub(), detached: false };
+            }
+            it('stops the replay if a prerendered page has an origin that is not in the recording', async () => {
+                sinon.stub(console, 'error');
+                const session = createPrerenderSession();
+                mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => blockedUrl });
+                // The first step is interactive. The page can activate the prerendered page before a step.
+                const { error, steps } = await replaySteps([createCustomStep()]);
+                assert.strictEqual(error?.message, blockedMessage);
+                assert.strictEqual(steps, 0);
+            });
+            it('reads the URL of a prerendered page from its session', async () => {
+                sinon.stub(console, 'error');
+                const session = createPrerenderSession();
+                session.send.withArgs('Page.getFrameTree').resolves({ frameTree: { frame: { url: blockedUrl } } });
+                // The URL of the target is empty until the prerendered page commits.
+                mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => '' });
+                const { error, steps } = await replaySteps([createCustomStep()]);
+                assert.strictEqual(error?.message, blockedMessage);
+                assert.strictEqual(steps, 0);
+            });
+            it('stops the replay if a prerendered page commits a document from an origin that is not in the recording', async () => {
+                sinon.stub(console, 'error');
+                const session = createPrerenderSession();
+                let onFrameNavigated = (_event) => { };
+                session.on.withArgs('Page.frameNavigated').callsFake((_name, listener) => {
+                    onFrameNavigated = listener;
+                });
+                // The response arrived before the interception was on. The document commits later.
+                session.send.withArgs('Page.getFrameTree').callsFake(async () => {
+                    setTimeout(() => {
+                        onFrameNavigated({ frame: { url: 'https://subframe.test/', parentId: 'parent' } });
+                        onFrameNavigated({ frame: { url: blockedUrl } });
+                    }, 0);
+                    return { frameTree: { frame: { url: '' } } };
+                });
+                mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => '' });
+                const { error } = await replaySteps([createCustomStep(), createCustomStep()]);
+                assert.strictEqual(error?.message, blockedMessage);
+            });
+            it('does not check a prerendered page if the replay navigates the page first', async () => {
+                const session = createPrerenderSession();
+                mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => blockedUrl });
+                // The navigation removes the prerendered pages of the current document.
+                const { error, steps } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    createCustomStep(),
+                ]);
+                assert.isNull(error);
+                assert.strictEqual(steps, 2);
+                sinon.assert.calledWith(session.send, 'Fetch.enable', fetchEnablePattern);
+                sinon.assert.neverCalledWith(session.send, 'Page.getFrameTree');
+            });
+            it('checks a prerendered page if a step targets an OOPIF on the inspected page before a navigate step', async () => {
+                sinon.stub(console, 'error');
+                const oopifUrl = 'https://oopif.test/frame.html';
+                const oopifFrame = { _id: 'oopif', client: mocks.mainFrame.client, url: () => oopifUrl };
+                Object.assign(mocks.pages[0], { waitForFrame: async () => oopifFrame });
+                mocks.frames.push(oopifFrame);
+                mocks.targets.push({ url: () => oopifUrl, page: async () => null });
+                const session = createPrerenderSession();
+                mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => blockedUrl });
+                // The page can activate the prerendered page after the input of the first step.
+                const { error } = await replaySteps([
+                    { type: Models.Schema.StepType.Close, target: oopifUrl },
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                ]);
+                assert.strictEqual(error?.message, blockedMessage);
+                sinon.assert.notCalled(mocks.mainFrame.goto);
+            });
+            it('removes the session history if the recording has subframe steps, also if all entries are allowed', async () => {
+                // The history does not report the frames of its entries.
+                mocks.send.withArgs('Page.getNavigationHistory').resolves({
+                    entries: [{ url: 'https://allowed.test/first' }, { url: 'https://allowed.test/second' }],
+                });
+                const { error } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    frameCustomStep,
+                ]);
+                assert.isNull(error);
+                sinon.assert.calledWith(mocks.send, 'Page.resetNavigationHistory');
+            });
+            it('navigates the page to about:blank if a frame is not allowed and the recording has subframe steps', async () => {
+                mocks.pages[0].url = () => 'https://allowed.test/start';
+                mocks.frames.push({ _id: 'subframe', client: mocks.mainFrame.client, url: () => blockedUrl });
+                // The replay navigates the page first, thus the guard does not report the frame.
+                const { error } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    frameCustomStep,
+                ]);
+                assert.isNull(error);
+                const goto = mocks.pages[0].goto;
+                assert.isOk(goto);
+                sinon.assert.calledOnceWithExactly(goto, 'about:blank');
+            });
+            it('does not navigate the page for a frame that is not allowed if the recording has no subframe steps', async () => {
+                mocks.pages[0].url = () => 'https://allowed.test/start';
+                mocks.frames.push({ _id: 'subframe', client: mocks.mainFrame.client, url: () => blockedUrl });
+                const { error } = await replaySteps([
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' },
+                    createCustomStep(),
+                ]);
+                assert.isNull(error);
+                const goto = mocks.pages[0].goto;
+                assert.isOk(goto);
+                sinon.assert.notCalled(goto);
+            });
+        });
+        it('ignores Fetch.enable rejection on a non-frame session or a closed session', async () => {
+            sinon.stub(console, 'error');
+            const workerSession = {
+                send: sinon.stub().rejects(new Error('Fetch.enable was not found')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+                target: () => ({ _getTargetInfo: () => ({ type: 'worker' }) }),
+            };
+            const closedFrameSession = {
+                send: sinon.stub().rejects(new Error('Protocol error (Fetch.enable): Session closed.')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: true,
+            };
+            Object.assign(mocks.mainFrame, { childFrames: () => [mocks.mainFrame] });
+            const subframeCustomStep = {
+                type: Models.Schema.StepType.CustomStep,
+                name: 'dummy step',
+                parameters: {},
+                frame: [0],
+            };
+            const { error } = await replay(() => {
+                mocks.frames.push({ _id: 'closed-frame', client: closedFrameSession, url: () => 'https://allowed.test/frame' });
+                mocks.emitSessionAttached(workerSession);
+                mocks.emitSessionAttached(closedFrameSession);
+            }, [subframeCustomStep]);
+            assert.isNull(error);
+        });
+        it('guards the parent popup when a step targets an OOPIF inside that popup', async () => {
+            sinon.stub(console, 'error');
+            const oopifUrl = 'https://oopif.test/frame.html';
+            const popup = createPopupMock(blockedUrl, [{ url: oopifUrl }]);
+            mocks.pages.push(popup.page);
+            mocks.targets.push({ url: () => oopifUrl, page: async () => null });
+            const { error } = await replay(() => { }, [
+                { type: Models.Schema.StepType.Close, target: oopifUrl },
+            ]);
+            assert.strictEqual(error?.message, blockedMessage);
+            sinon.assert.calledWith(popup.client.send, 'Fetch.enable', fetchEnablePattern);
+            sinon.assert.calledWith(popup.frames[1].client.send, 'Fetch.enable', fetchEnablePattern);
+        });
+        it('guards all pages that share a step target URL', async () => {
+            const popupUrl = 'https://popup.test/index.html';
+            const firstPopup = createPopupMock(popupUrl);
+            const secondPopup = createPopupMock(popupUrl);
+            mocks.pages.push(firstPopup.page, secondPopup.page);
+            mocks.targets.push({ url: () => popupUrl, page: async () => firstPopup.page }, { url: () => popupUrl, page: async () => secondPopup.page });
+            const { error } = await replay(() => { }, [
+                { type: Models.Schema.StepType.Close, target: popupUrl },
+            ]);
+            assert.isNull(error);
+            sinon.assert.calledWith(firstPopup.client.send, 'Fetch.enable', fetchEnablePattern);
+            sinon.assert.calledWith(secondPopup.client.send, 'Fetch.enable', fetchEnablePattern);
+        });
+        describe('step targets that change during the replay', () => {
+            /**
+             * Replays a recording that navigates to https://allowed.test and then
+             * runs `steps`. Calls `beforeStep` with the number of each step.
+             */
+            async function replayWithHook(steps, beforeStep) {
+                recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({ title: 'test', steps: [{ type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' }, ...steps] }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+                let started = 0;
+                const result = new Promise(resolve => {
+                    recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                    recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+                });
+                recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => {
+                    started++;
+                    beforeStep(started);
+                    resolve();
+                });
+                await recordingPlayer.play();
+                return await result;
+            }
+            it('guards a page that gets the URL of a step target after the guard looked for the target', async () => {
+                const popupUrl = 'https://popup.test/index.html';
+                const firstPopup = createPopupMock(popupUrl);
+                const secondPopup = createPopupMock(popupUrl);
+                mocks.pages.push(firstPopup.page);
+                mocks.targets.push({ url: () => popupUrl, page: async () => firstPopup.page });
+                const error = await replayWithHook([{ type: Models.Schema.StepType.Close, target: popupUrl }, createCustomStep()], stepNumber => {
+                    if (stepNumber === 3) {
+                        // The step on the target is complete. A new page with the same URL opens.
+                        mocks.pages.push(secondPopup.page);
+                        mocks.emitTargetCreated({ url: () => popupUrl, page: async () => secondPopup.page });
+                    }
+                });
+                assert.isNull(error);
+                sinon.assert.calledWith(secondPopup.client.send, 'Fetch.enable', fetchEnablePattern);
+            });
+            it('does not guard a new page that does not have the URL of a step target', async () => {
+                const popupUrl = 'https://popup.test/index.html';
+                const firstPopup = createPopupMock(popupUrl);
+                const otherPopup = createPopupMock('https://popup.test/other.html');
+                mocks.pages.push(firstPopup.page);
+                mocks.targets.push({ url: () => popupUrl, page: async () => firstPopup.page });
+                const error = await replayWithHook([{ type: Models.Schema.StepType.Close, target: popupUrl }, createCustomStep()], stepNumber => {
+                    if (stepNumber === 3) {
+                        mocks.pages.push(otherPopup.page);
+                        mocks.emitTargetCreated({ url: () => 'https://popup.test/other.html', page: async () => otherPopup.page });
+                    }
+                });
+                assert.isNull(error);
+                sinon.assert.neverCalledWith(otherPopup.client.send, 'Fetch.enable');
+            });
+            it('stops the wait for a step target when the guard blocks a navigation', async () => {
+                sinon.stub(console, 'error');
+                // No target has the URL of the step. The guard blocks a navigation
+                // while the step waits for the target.
+                mocks.waitForTarget.callsFake(async (_predicate, options) => {
+                    setTimeout(() => {
+                        mocks.emitRequestPaused({
+                            requestId: '1',
+                            frameId: 'main-frame',
+                            request: { url: blockedUrl },
+                            responseStatusCode: 200,
+                        });
+                    }, 0);
+                    return await new Promise((_resolve, reject) => {
+                        options?.signal?.addEventListener('abort', () => reject(new Error('The wait was aborted')));
+                    });
+                });
+                const error = await replayWithHook([{ type: Models.Schema.StepType.Close, target: 'https://popup.test/never.html' }], () => { });
+                assert.strictEqual(error?.message, blockedMessage);
+                sinon.assert.calledOnce(mocks.waitForTarget);
+                assert.isTrue(mocks.waitForTarget.firstCall.args[1].signal.aborted);
+            });
+            it('ignores a step target page that closes while the guard starts on it', async () => {
+                const popupUrl = 'https://popup.test/index.html';
+                const popup = createPopupMock(popupUrl);
+                popup.client.send.withArgs('Fetch.enable').rejects(new Error('Protocol error (Fetch.enable): Session closed.'));
+                popup.page.isClosed = () => true;
+                mocks.pages.push(popup.page);
+                mocks.targets.push({ url: () => popupUrl, page: async () => popup.page });
+                const error = await replayWithHook([{ type: Models.Schema.StepType.Close, target: popupUrl }], () => { });
+                assert.isNull(error);
+            });
+            it('stops the replay if the guard cannot start on a step target page that is open', async () => {
+                sinon.stub(console, 'error');
+                const popupUrl = 'https://popup.test/index.html';
+                const popup = createPopupMock(popupUrl);
+                popup.client.send.withArgs('Fetch.enable').rejects(new Error('protocol failure'));
+                mocks.pages.push(popup.page);
+                mocks.targets.push({ url: () => popupUrl, page: async () => popup.page });
+                const error = await replayWithHook([{ type: Models.Schema.StepType.Close, target: popupUrl }], () => { });
+                assert.strictEqual(error?.message, 'protocol failure');
+                sinon.assert.notCalled(popup.page.close);
+            });
+        });
+        it('retries Fetch.enable on framenavigated when an earlier sessionattached attempt rejected', async () => {
+            sinon.stub(console, 'error');
+            const frameSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            const { error } = await replay(() => {
+                // Reject before the frame is registered in page.frames().
+                mocks.emitSessionAttached(frameSession);
+                // Once the rejection settles, emit framenavigated for the same session.
+                queueMicrotask(() => {
+                    mocks.emitFrameNavigated({ _id: 'oopif-frame', client: frameSession, url: () => 'https://allowed.test/frame' });
+                });
+            }, [subframeStep]);
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+            sinon.assert.calledTwice(frameSession.send);
+            sinon.assert.calledTwice(frameSession.off.withArgs('Fetch.requestPaused'));
+        });
+        it('skips runStep if a navigation was blocked during beforeEachStep', async () => {
+            sinon.stub(console, 'error');
+            recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({
+                title: 'test',
+                steps: [
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/first' },
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/second' },
+                ],
+            }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+            let steps = 0;
+            const result = new Promise(resolve => {
+                recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+            });
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => {
+                steps++;
+                if (steps === 2) {
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: 200,
+                    });
+                }
+                resolve();
+            });
+            await recordingPlayer.play();
+            assert.strictEqual((await result)?.message, blockedMessage);
+            sinon.assert.calledOnceWithExactly(mocks.mainFrame.goto, 'https://allowed.test/first');
+        });
+        it('does not start a step if a navigation is blocked while the page comes to the front', async () => {
+            sinon.stub(console, 'error');
+            let bringToFrontCalls = 0;
+            mocks.pages[0].bringToFront = async () => {
+                bringToFrontCalls++;
+                if (bringToFrontCalls === 2) {
+                    // The second step called `bringToFront()`, and it has not started yet.
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: 200,
+                    });
+                }
+            };
+            recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({
+                title: 'test',
+                steps: [
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/first' },
+                    { type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/second' },
+                ],
+            }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+            const result = new Promise(resolve => {
+                recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+            });
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => resolve());
+            await recordingPlayer.play();
+            assert.strictEqual((await result)?.message, blockedMessage);
+            sinon.assert.calledOnceWithExactly(mocks.mainFrame.goto, 'https://allowed.test/first');
+        });
+        it('checks all documents of a prerender session before the page uses the session', async () => {
+            sinon.stub(console, 'error');
+            const listeners = [];
+            const prerenderSession = {
+                send: sinon.stub().resolves(),
+                on: sinon.stub().callsFake((event, listener) => {
+                    if (event === 'Fetch.requestPaused') {
+                        listeners.push(listener);
+                    }
+                }),
+                off: sinon.stub(),
+                detached: false,
+            };
+            const { error } = await replay(() => {
+                mocks.emitPrerenderSessionAttached(prerenderSession);
+                // The recording has no subframe step, and the page does not know this frame.
+                listeners[0]({
+                    requestId: '1',
+                    frameId: 'prerender-main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            assert.strictEqual(error?.message, blockedMessage);
+            sinon.assert.calledWith(prerenderSession.send.firstCall, 'Fetch.enable', fetchEnablePattern);
+            sinon.assert.calledWith(prerenderSession.send, 'Fetch.failRequest', { requestId: '1', errorReason: 'BlockedByClient' });
+        });
+        it('guards a prerendered page that the page started before the replay', async () => {
+            const createSession = () => ({ send: sinon.stub().resolves(), on: sinon.stub(), off: sinon.stub(), detached: false });
+            const prerenderSession = createSession();
+            const otherSession = createSession();
+            mocks.tabChildTargets.push({
+                _subtype: () => 'prerender',
+                _session: () => prerenderSession,
+                url: () => 'https://allowed.test/prerendered',
+            }, { _subtype: () => undefined, _session: () => otherSession, url: () => blockedUrl });
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            sinon.assert.calledWith(prerenderSession.send.firstCall, 'Fetch.enable', fetchEnablePattern);
+            sinon.assert.notCalled(otherSession.send);
+        });
+        it('ignores a prerendered page from before the replay that is closed when the guard starts', async () => {
+            const session = {
+                send: sinon.stub().rejects(new Error('Protocol error (Fetch.enable): Session closed.')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: true,
+            };
+            // The guard does not check the URL of a page that is closed.
+            mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => blockedUrl });
+            const { error, steps } = await replay(() => { });
+            assert.isNull(error);
+            assert.strictEqual(steps, 3);
+        });
+        it('fails closed if Fetch.enable rejects on a prerender session from before the replay', async () => {
+            sinon.stub(console, 'error');
+            const session = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            mocks.tabChildTargets.push({ _subtype: () => 'prerender', _session: () => session, url: () => 'https://allowed.test/prerendered' });
+            const { error, steps } = await replay(() => { });
+            assert.strictEqual(error?.message, 'Could not enable the navigation guard: protocol failure');
+            assert.strictEqual(steps, 0);
+        });
+        it('keeps the session history if all entries have an origin from the recording', async () => {
+            mocks.send.withArgs('Page.getNavigationHistory').resolves({
+                entries: [{ url: 'https://allowed.test/first' }, { url: 'https://allowed.test/second' }],
+            });
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            sinon.assert.neverCalledWith(mocks.send, 'Page.resetNavigationHistory');
+        });
+        it('removes the session history if an entry has an origin that is not in the recording', async () => {
+            mocks.send.withArgs('Page.getNavigationHistory').resolves({
+                entries: [{ url: blockedUrl }, { url: 'https://allowed.test/second' }],
+            });
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            sinon.assert.calledWith(mocks.send, 'Page.resetNavigationHistory');
+        });
+        it('navigates the page to about:blank before it removes the history, if the document is not allowed', async () => {
+            // The replay navigates the page first, and the recording does not contain this origin.
+            mocks.pages[0].url = () => 'https://unrecorded.test/page';
+            const { error } = await replay(() => { });
+            assert.isNull(error);
+            const goto = mocks.pages[0].goto;
+            assert.isOk(goto);
+            sinon.assert.calledOnceWithExactly(goto, 'about:blank');
+            sinon.assert.calledWith(mocks.send, 'Page.resetNavigationHistory');
+        });
+        it('does not change the page if the guard has an error before it removes the history', async () => {
+            sinon.stub(console, 'error');
+            mocks.pages[0].url = () => 'https://unrecorded.test/page';
+            mocks.send.withArgs('Fetch.enable').callsFake(async () => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            const { error } = await replay(() => { });
+            assert.strictEqual(error?.message, blockedMessage);
+            const goto = mocks.pages[0].goto;
+            assert.isOk(goto);
+            sinon.assert.notCalled(goto);
+            sinon.assert.neverCalledWith(mocks.send, 'Page.getNavigationHistory');
+            sinon.assert.neverCalledWith(mocks.send, 'Page.resetNavigationHistory');
+        });
+        it('fails closed if Fetch.enable rejects on a prerender session', async () => {
+            sinon.stub(console, 'error');
+            const prerenderSession = {
+                send: sinon.stub().rejects(new Error('protocol failure')),
+                on: sinon.stub(),
+                off: sinon.stub(),
+                detached: false,
+            };
+            const { error } = await replay(() => {
+                mocks.emitPrerenderSessionAttached(prerenderSession);
+            });
+            assert.include(error?.message, 'Could not enable the navigation guard: protocol failure');
+        });
+        it('does not wait for the step in progress after the guard blocks a navigation', async () => {
+            sinon.stub(console, 'error');
+            // The step does not complete before the end of the replay.
+            const step = Promise.withResolvers();
+            mocks.mainFrame.goto.callsFake(() => {
+                setTimeout(() => {
+                    mocks.emitRequestPaused({
+                        requestId: '1',
+                        frameId: 'main-frame',
+                        request: { url: blockedUrl },
+                        responseStatusCode: 200,
+                    });
+                }, 0);
+                return step.promise;
+            });
+            recordingPlayer = new Models.RecordingPlayer.RecordingPlayer({
+                title: 'test',
+                steps: [{ type: Models.Schema.StepType.Navigate, url: 'https://allowed.test/' }, createCustomStep()],
+            }, { speed: "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */ });
+            let steps = 0;
+            const result = new Promise(resolve => {
+                recordingPlayer.addEventListener("Error" /* Models.RecordingPlayer.Events.ERROR */, ({ data }) => resolve(data), { once: true });
+                recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => resolve(null), { once: true });
+            });
+            recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, ({ data: { resolve } }) => {
+                steps++;
+                resolve();
+            });
+            await recordingPlayer.play();
+            assert.strictEqual((await result)?.message, blockedMessage);
+            assert.strictEqual(steps, 1);
+            step.resolve();
+        });
+        it('does not run steps if the guard blocks a navigation before the runner starts', async () => {
+            sinon.stub(console, 'error');
+            mocks.send.withArgs('Fetch.enable').callsFake(async () => {
+                mocks.emitRequestPaused({
+                    requestId: '1',
+                    frameId: 'main-frame',
+                    request: { url: blockedUrl },
+                    responseStatusCode: 200,
+                });
+            });
+            const { error, steps } = await replay(() => { });
+            assert.strictEqual(error?.message, blockedMessage);
+            assert.strictEqual(steps, 0);
         });
     });
 });

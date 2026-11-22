@@ -959,6 +959,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1283,7 +1286,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -2067,6 +2069,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network3.DeviceBoundSessionFetchResult || (Network3.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2754,6 +2757,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -4490,14 +4494,6 @@ details > summary {
   }
 }
 
-input[type="checkbox"] {
-  height: var(--sys-size-6);
-  width: var(--sys-size-6);
-  min-height: var(--sys-size-6);
-  min-width: var(--sys-size-6);
-  margin: var(--sys-size-4);
-}
-
 input[type="text"][disabled] {
   color: var(--sys-color-state-disabled);
 }
@@ -5063,7 +5059,6 @@ var FieldSettingsDialog = class extends HTMLElement {
     const output = html6`
       <style>${fieldSettingsDialog_css_default}</style>
       <style>${Input2.textInputStyles}</style>
-      <style>${Input2.checkboxStyles}</style>
       <div class="open-button-section">${this.#renderOpenButton()}</div>
       <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
@@ -5100,16 +5095,13 @@ var FieldSettingsDialog = class extends HTMLElement {
             <div class="advanced-section-contents">
               ${this.#renderOriginMapGrid()}
               <hr class="divider">
-              <label class="url-override">
-                <input
-                  type="checkbox"
-                  .checked=${this.#urlOverrideEnabled}
-                  @change=${this.#onUrlOverrideEnabledChange}
-                  aria-label=${i18nString7(UIStrings7.onlyFetchFieldData)}
-                  jslog=${VisualLogging4.toggle().track({ click: true }).context("field-url-override-enabled")}
-                />
-                ${i18nString7(UIStrings7.onlyFetchFieldData)}
-              </label>
+              <devtools-checkbox
+                class="url-override"
+                .checked=${this.#urlOverrideEnabled}
+                @change=${this.#onUrlOverrideEnabledChange}
+                aria-label=${i18nString7(UIStrings7.onlyFetchFieldData)}
+                jslog=${VisualLogging4.toggle().track({ click: true }).context("field-url-override-enabled")}
+              >${i18nString7(UIStrings7.onlyFetchFieldData)}</devtools-checkbox>
               <input
                 type="text"
                 @keyup=${this.#onUrlOverrideChange}

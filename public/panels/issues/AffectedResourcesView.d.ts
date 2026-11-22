@@ -3,7 +3,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
-import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type LitTemplate } from '../../ui/lit/lit.js';
 import type { IssueView } from './IssueView.js';
@@ -15,15 +14,12 @@ export declare const enum AffectedItem {
     SOURCE = "Source"
 }
 export declare const extractShortPath: (path: Platform.DevToolsPath.UrlString) => string;
-export interface CreateRequestCellOptions {
-    linkToPreflight?: boolean;
-    highlightHeader?: {
-        section: NetworkForward.UIRequestLocation.UIHeaderSection;
-        name: string;
-    };
-    networkTab?: NetworkForward.UIRequestLocation.UIRequestTabs;
-    additionalOnClickAction?: () => void;
+export interface ElementCellData {
+    nodeName: string;
+    deferredNode?: SDK.DOMModel.DeferredDOMNode;
+    onElementClick: () => void;
 }
+export declare function renderElementCell(element: ElementCellData): LitTemplate;
 export interface FrameCellData {
     url: string;
     hasFrame: boolean;
@@ -32,6 +28,17 @@ export interface FrameCellData {
     onMouseLeave: () => void;
 }
 export declare function renderFrameCell(frame: FrameCellData | undefined): LitTemplate;
+export interface ViewInput {
+    resourceNameWithCount: string;
+    labelClass?: string;
+}
+export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
+export interface TableViewInput {
+    onTableRef: (table: HTMLTableElement) => void;
+}
+export type TableView = (input: TableViewInput, output: undefined, target: HTMLElement) => void;
+export declare const TABLE_VIEW: TableView;
 /**
  * The base class for all affected resource views. It provides basic scaffolding
  * as well as machinery for resolving request and frame ids to SDK objects.
@@ -39,34 +46,17 @@ export declare function renderFrameCell(frame: FrameCellData | undefined): LitTe
 export declare abstract class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     #private;
     protected issue: IssuesManager.IssueAggregator.AggregatedIssue;
-    protected affectedResourcesCountElement: HTMLElement;
     protected affectedResources: HTMLElement;
     protected requestResolver: Logs.RequestResolver.RequestResolver;
-    constructor(parent: IssueView, issue: IssuesManager.IssueAggregator.AggregatedIssue, jslogContext: string);
-    /**
-     * Sets the issue to take the resources from. Does not
-     * trigger an update, the caller needs to do that explicitly.
-     */
+    constructor(parent: IssueView, issue: IssuesManager.IssueAggregator.AggregatedIssue, jslogContext: string, view?: View, tableView?: TableView);
     setIssue(issue: IssuesManager.IssueAggregator.AggregatedIssue): void;
-    createAffectedResourcesCounter(): HTMLElement;
-    createAffectedResources(): HTMLElement;
+    protected getAffectedResourcesLabelClass(): string | undefined;
     protected abstract getResourceNameWithCount(count: number): string;
     protected updateAffectedResourceCount(count: number): void;
     isEmpty(): boolean;
     clear(): void;
     expandIfOneResource(): void;
     protected createFrameCellData(frameId: Protocol.Page.FrameId, issueCategory: IssuesManager.Issue.IssueCategory): FrameCellData;
-    protected createFrameCell(frameId: Protocol.Page.FrameId, issueCategory: IssuesManager.Issue.IssueCategory): HTMLElement;
-    protected createRequestCell(affectedRequest: Protocol.Audits.AffectedRequest, options?: CreateRequestCellOptions): HTMLElement;
-    protected createElementCell({ backendNodeId, nodeName, target }: IssuesManager.Issue.AffectedElement, issueCategory: IssuesManager.Issue.IssueCategory): Promise<Element>;
-    protected appendSourceLocation(element: HTMLElement, sourceLocation: {
-        url: string;
-        lineNumber: number;
-        scriptId?: Protocol.Runtime.ScriptId;
-        columnNumber?: number;
-    } | undefined, target: SDK.Target.Target | null | undefined): void;
-    protected appendColumnTitle(header: HTMLElement, title: string, additionalClass?: string | null): void;
-    protected createIssueDetailCell(textContent: string | HTMLElement, additionalClass?: string | null): HTMLTableDataCellElement;
-    protected appendIssueDetailCell(element: HTMLElement, textContent: string | HTMLElement, additionalClass?: string | null): HTMLTableDataCellElement;
+    protected createElementCellData({ backendNodeId, nodeName, target }: IssuesManager.Issue.AffectedElement, issueCategory: IssuesManager.Issue.IssueCategory): ElementCellData;
     abstract update(): void;
 }

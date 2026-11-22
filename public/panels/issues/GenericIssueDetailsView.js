@@ -1,14 +1,9 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import { html, nothing, render } from '../../ui/lit/lit.js';
-import * as PanelsCommon from '../common/common.js';
-import { AffectedResourcesView, renderFrameCell } from './AffectedResourcesView.js';
-const { widget } = UI.Widget;
+import { AffectedResourcesView, renderElementCell, renderFrameCell, } from './AffectedResourcesView.js';
 const UIStrings = {
     /**
      * @description Label in the Issues panel for the number of affected resources
@@ -25,31 +20,10 @@ const UIStrings = {
      * the generic issue affected resources table.
      */
     violatingNode: 'Violating node',
-    /**
-     * @description Fallback text in the Issues panel when an HTML element is
-     * unavailable in the affected resources table.
-     */
-    unavailable: 'Unavailable',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/GenericIssueDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
-    const renderElementCell = (element) => {
-        const { deferredNode } = element;
-        if (!deferredNode) {
-            return html `<td>${element.nodeName || i18nString(UIStrings.unavailable)}</td>`;
-        }
-        // clang-format off
-        return html `
-      <td class="affected-resource-element devtools-link">
-        ${widget(PanelsCommon.DOMLinkifier.DeferredDOMNodeLink, {
-            deferredNode,
-            options: { textContent: element.nodeName || undefined, onClick: element.onElementClick },
-        })}
-      </td>
-    `;
-        // clang-format on
-    };
     // clang-format off
     render(html `
     ${input.showFrameHeader ? html `
@@ -98,14 +72,11 @@ export class GenericIssueDetailsView extends AffectedResourcesView {
         const frame = details.frameId ? this.createFrameCellData(details.frameId, category) : undefined;
         let element;
         if (details.violatingNodeId) {
-            const target = genericIssue.model()?.target();
-            element = {
+            element = this.createElementCellData({
+                backendNodeId: details.violatingNodeId,
                 nodeName: this.#violatingNodeIdName(details.errorType),
-                deferredNode: target ? new SDK.DOMModel.DeferredDOMNode(target, details.violatingNodeId) : undefined,
-                onElementClick: () => {
-                    Host.userMetrics.issuesPanelResourceOpened(category, "Element" /* AffectedItem.ELEMENT */);
-                },
-            };
+                target: genericIssue.model()?.target() ?? null,
+            }, category);
         }
         return { frame, element };
     }

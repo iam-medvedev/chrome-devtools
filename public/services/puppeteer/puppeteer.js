@@ -21,9 +21,24 @@ var ProtocolError = class extends Error {
   code;
   data;
 };
+var PAGE_INPUT_COMMANDS = /* @__PURE__ */ new Set([
+  "DOM.focus",
+  "DOM.scrollIntoViewIfNeeded",
+  "DOM.setFileInputFiles",
+  "Page.navigate",
+  "Page.navigateToHistoryEntry",
+  "Page.reload",
+  "Runtime.callFunctionOn",
+  "Runtime.evaluate",
+  "Runtime.getProperties"
+]);
+function isPageInputCommand(method) {
+  return method.startsWith("Input.") || PAGE_INPUT_COMMANDS.has(method);
+}
 var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
   #connection;
   #sessionId;
+  #pageInputError;
   constructor(connection, sessionId) {
     super(
       "",
@@ -38,8 +53,19 @@ var PuppeteerConnectionAdapter = class extends puppeteer.Connection {
     this.#connection.observe(this);
     this.#sessionId = sessionId;
   }
+  /**
+   * Rejects with `error` all later commands that send input to a page, run
+   * script in a page, or navigate a page. Other commands, for example the
+   * commands that disable CDP domains, continue to work.
+   */
+  blockPageInput(error) {
+    this.#pageInputError ??= error;
+  }
   // eslint-disable-next-line @devtools/no-underscored-properties
   _rawSend(_callbacks, method, params, sessionId, _options) {
+    if (this.#pageInputError && typeof method === "string" && isPageInputCommand(method)) {
+      return Promise.reject(this.#pageInputError);
+    }
     return this.#connection.send(
       method,
       params,

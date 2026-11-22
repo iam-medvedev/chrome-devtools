@@ -23,8 +23,9 @@ describeWithEnvironment('PropertiesWidget', () => {
         connection.setSuccessHandler('DOM.getDocument', () => ({ root: { nodeId: NODE_ID } }));
         connection.setSuccessHandler('DOM.getNodesForSubtreeByStyle', () => ({ nodeIds: [] }));
     });
-    afterEach(() => {
+    afterEach(async () => {
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
+        await UI.Widget.Widget.allUpdatesComplete;
     });
     const updatesUiOnEvent = (event, inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -40,7 +41,7 @@ describeWithEnvironment('PropertiesWidget', () => {
         await view.updateComplete;
         const performUpdate = sinon.spy(view, 'performUpdate');
         model.dispatchEventToListeners(event, ...[node]);
-        await view.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         assert.strictEqual(performUpdate.called, inScope);
     };
     it('updates UI on in scope attribute modified event', updatesUiOnEvent(SDK.DOMModel.Events.AttrModified, true));
@@ -100,6 +101,8 @@ describeWithEnvironment('PropertiesWidget', () => {
             objectId: '1',
             arguments: sinon.match([{ objectId: '2' }]),
         }));
+        await Promise.all(callFunctionOn.returnValues);
+        await UI.Widget.Widget.allUpdatesComplete;
     });
     it('creates a read-only object tree', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
@@ -153,6 +156,7 @@ describeWithEnvironment('PropertiesWidget', () => {
             viewFunction.input.onRegexToggled();
             await viewFunction.nextInput;
             assert.isFalse(viewFunction.input.isRegex);
+            await UI.Widget.Widget.allUpdatesComplete;
         });
     });
     it('correctly filters properties and shows the "No matching property" message', async () => {
@@ -209,6 +213,7 @@ describeWithEnvironment('PropertiesWidget', () => {
         const nestedItem = tree.getInternalTreeOutlineForTest().rootElement().children().find(item => item.listItemElement.textContent?.includes('nested'));
         assert.exists(nestedItem);
         nestedItem.expand();
+        await UI.Widget.Widget.allUpdatesComplete;
         sinon.assert.calledWith(actionTaken, Host.UserMetrics.Action.DOMPropertiesExpanded);
     });
 });
@@ -225,8 +230,6 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             readOnly: true,
         });
         objectTree.expanded = true;
-        const viewFunction = createViewFunctionStub(Elements.PropertiesWidget.PropertiesWidget);
-        new Elements.PropertiesWidget.PropertiesWidget(viewFunction);
         if (filter) {
             objectTree.setFilter({ includeNullOrUndefinedValues: false, regex: new RegExp(filter, 'i') });
         }
@@ -244,6 +247,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             },
             isRegex: false,
         }, undefined, container);
+        await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('elements/properties_widget_no_filter.png');
     });
     it('renders a selected element', async () => {
@@ -277,6 +281,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             },
             isRegex: false,
         }, undefined, container);
+        await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('elements/properties_widget_partial_filter.png');
     });
     it('renders the view with no filter matches', async () => {
@@ -290,6 +295,7 @@ describeWithEnvironment('PropertiesWidget DEFAULT_VIEW', () => {
             },
             isRegex: false,
         }, undefined, container);
+        await UI.Widget.Widget.allUpdatesComplete;
         await assertScreenshot('elements/properties_widget_no_matches.png');
     });
 });

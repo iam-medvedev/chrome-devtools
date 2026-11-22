@@ -22,7 +22,6 @@ __export(ApplicationPanelSidebar_exports, {
   IndexedDBTreeElement: () => IndexedDBTreeElement,
   ResourcesSection: () => ResourcesSection,
   ServiceWorkersTreeElement: () => ServiceWorkersTreeElement,
-  StorageCategoryView: () => StorageCategoryView,
   StorageTreeElement: () => StorageTreeElement,
   SubAppsTreeElement: () => SubAppsTreeElement
 });
@@ -510,6 +509,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -834,7 +836,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1080,13 +1081,13 @@ var IndexedDB;
   })(KeyPathType = IndexedDB2.KeyPathType || (IndexedDB2.KeyPathType = {}));
 })(IndexedDB || (IndexedDB = {}));
 var Input;
-((Input3) => {
+((Input2) => {
   let GestureSourceType;
   ((GestureSourceType2) => {
     GestureSourceType2["Default"] = "default";
     GestureSourceType2["Touch"] = "touch";
     GestureSourceType2["Mouse"] = "mouse";
-  })(GestureSourceType = Input3.GestureSourceType || (Input3.GestureSourceType = {}));
+  })(GestureSourceType = Input2.GestureSourceType || (Input2.GestureSourceType = {}));
   let MouseButton;
   ((MouseButton2) => {
     MouseButton2["None"] = "none";
@@ -1095,47 +1096,47 @@ var Input;
     MouseButton2["Right"] = "right";
     MouseButton2["Back"] = "back";
     MouseButton2["Forward"] = "forward";
-  })(MouseButton = Input3.MouseButton || (Input3.MouseButton = {}));
+  })(MouseButton = Input2.MouseButton || (Input2.MouseButton = {}));
   let DispatchDragEventRequestType;
   ((DispatchDragEventRequestType2) => {
     DispatchDragEventRequestType2["DragEnter"] = "dragEnter";
     DispatchDragEventRequestType2["DragOver"] = "dragOver";
     DispatchDragEventRequestType2["Drop"] = "drop";
     DispatchDragEventRequestType2["DragCancel"] = "dragCancel";
-  })(DispatchDragEventRequestType = Input3.DispatchDragEventRequestType || (Input3.DispatchDragEventRequestType = {}));
+  })(DispatchDragEventRequestType = Input2.DispatchDragEventRequestType || (Input2.DispatchDragEventRequestType = {}));
   let DispatchKeyEventRequestType;
   ((DispatchKeyEventRequestType2) => {
     DispatchKeyEventRequestType2["KeyDown"] = "keyDown";
     DispatchKeyEventRequestType2["KeyUp"] = "keyUp";
     DispatchKeyEventRequestType2["RawKeyDown"] = "rawKeyDown";
     DispatchKeyEventRequestType2["Char"] = "char";
-  })(DispatchKeyEventRequestType = Input3.DispatchKeyEventRequestType || (Input3.DispatchKeyEventRequestType = {}));
+  })(DispatchKeyEventRequestType = Input2.DispatchKeyEventRequestType || (Input2.DispatchKeyEventRequestType = {}));
   let DispatchMouseEventRequestType;
   ((DispatchMouseEventRequestType2) => {
     DispatchMouseEventRequestType2["MousePressed"] = "mousePressed";
     DispatchMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     DispatchMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     DispatchMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(DispatchMouseEventRequestType = Input3.DispatchMouseEventRequestType || (Input3.DispatchMouseEventRequestType = {}));
+  })(DispatchMouseEventRequestType = Input2.DispatchMouseEventRequestType || (Input2.DispatchMouseEventRequestType = {}));
   let DispatchMouseEventRequestPointerType;
   ((DispatchMouseEventRequestPointerType2) => {
     DispatchMouseEventRequestPointerType2["Mouse"] = "mouse";
     DispatchMouseEventRequestPointerType2["Pen"] = "pen";
-  })(DispatchMouseEventRequestPointerType = Input3.DispatchMouseEventRequestPointerType || (Input3.DispatchMouseEventRequestPointerType = {}));
+  })(DispatchMouseEventRequestPointerType = Input2.DispatchMouseEventRequestPointerType || (Input2.DispatchMouseEventRequestPointerType = {}));
   let DispatchTouchEventRequestType;
   ((DispatchTouchEventRequestType2) => {
     DispatchTouchEventRequestType2["TouchStart"] = "touchStart";
     DispatchTouchEventRequestType2["TouchEnd"] = "touchEnd";
     DispatchTouchEventRequestType2["TouchMove"] = "touchMove";
     DispatchTouchEventRequestType2["TouchCancel"] = "touchCancel";
-  })(DispatchTouchEventRequestType = Input3.DispatchTouchEventRequestType || (Input3.DispatchTouchEventRequestType = {}));
+  })(DispatchTouchEventRequestType = Input2.DispatchTouchEventRequestType || (Input2.DispatchTouchEventRequestType = {}));
   let EmulateTouchFromMouseEventRequestType;
   ((EmulateTouchFromMouseEventRequestType2) => {
     EmulateTouchFromMouseEventRequestType2["MousePressed"] = "mousePressed";
     EmulateTouchFromMouseEventRequestType2["MouseReleased"] = "mouseReleased";
     EmulateTouchFromMouseEventRequestType2["MouseMoved"] = "mouseMoved";
     EmulateTouchFromMouseEventRequestType2["MouseWheel"] = "mouseWheel";
-  })(EmulateTouchFromMouseEventRequestType = Input3.EmulateTouchFromMouseEventRequestType || (Input3.EmulateTouchFromMouseEventRequestType = {}));
+  })(EmulateTouchFromMouseEventRequestType = Input2.EmulateTouchFromMouseEventRequestType || (Input2.EmulateTouchFromMouseEventRequestType = {}));
 })(Input || (Input = {}));
 var LayerTree;
 ((LayerTree2) => {
@@ -1618,6 +1619,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network3.DeviceBoundSessionFetchResult || (Network3.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2305,6 +2307,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -4744,7 +4747,6 @@ import * as SDK4 from "../../core/sdk/sdk.js";
 import * as Bindings from "../../models/bindings/bindings.js";
 import * as Workspace from "../../models/workspace/workspace.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
-import * as Input2 from "../../ui/components/input/input.js";
 import * as UI4 from "../../ui/legacy/legacy.js";
 import { html as html3, render as render3 } from "../../ui/lit/lit.js";
 import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
@@ -4980,7 +4982,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   `;
   render3(html3`
     <style>${backgroundServiceView_css_default}</style>
-    <style>${Input2.checkboxStyles}</style>
     <div class="background-service-view">
       <devtools-toolbar class="background-service-toolbar" jslog=${VisualLogging2.toolbar()}>
         <devtools-button title=${buttonTooltip}
@@ -5004,20 +5005,20 @@ var DEFAULT_VIEW2 = (input, output, target) => {
             .iconName=${"download"} .variant=${Buttons2.Button.Variant.TOOLBAR}
             .jslogContext=${"background-service.save-events"}></devtools-button>
         <div class="toolbar-divider"></div>
-        <label title=${i18nString3(UIStrings3.showEventsFromOtherDomains)} class="checkbox-label"
-            jslog=${VisualLogging2.toggle("show-events-from-other-domains").track({ click: true })}
-        >
-          <input type="checkbox" .checked=${input.isOriginCheckboxChecked} @change=${input.onOriginCheckboxChanged}>
+        <devtools-checkbox
+            title=${i18nString3(UIStrings3.showEventsFromOtherDomains)}
+            .checked=${input.isOriginCheckboxChecked}
+            @change=${(e) => input.onOriginCheckboxChanged(e.target.checked)}
+            jslog=${VisualLogging2.toggle("show-events-from-other-domains").track({ click: true })}>
           ${i18nString3(UIStrings3.showEventsFromOtherDomains)}
-        </label>
-        <label title=${i18nString3(UIStrings3.showEventsForOtherStorageKeys)} class="checkbox-label"
-            jslog=${VisualLogging2.toggle("show-events-from-other-partitions").track({ click: true })}
-        >
-          <input type="checkbox" .checked=${input.isStorageKeyCheckboxChecked}
-              @change=${input.onStorageKeyCheckboxChanged}
-          >
+        </devtools-checkbox>
+        <devtools-checkbox
+            title=${i18nString3(UIStrings3.showEventsForOtherStorageKeys)}
+            .checked=${input.isStorageKeyCheckboxChecked}
+            @change=${(e) => input.onStorageKeyCheckboxChanged(e.target.checked)}
+            jslog=${VisualLogging2.toggle("show-events-from-other-partitions").track({ click: true })}>
           ${i18nString3(UIStrings3.showEventsForOtherStorageKeys)}
-        </label>
+        </devtools-checkbox>
       </devtools-toolbar>
       ${input.events.length === 0 ? input.isRecording ? html3`
         ${UI4.Widget.widget(UI4.EmptyWidget.EmptyWidget, {
@@ -5324,14 +5325,12 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.Widg
         this.#selectedEvent = event;
         this.requestUpdate();
       },
-      onOriginCheckboxChanged: (event) => {
-        const checkbox = event.target;
-        this.#isOriginCheckboxChecked = checkbox.checked;
+      onOriginCheckboxChanged: (checked) => {
+        this.#isOriginCheckboxChecked = checked;
         this.refreshView();
       },
-      onStorageKeyCheckboxChanged: (event) => {
-        const checkbox = event.target;
-        this.#isStorageKeyCheckboxChecked = checkbox.checked;
+      onStorageKeyCheckboxChanged: (checked) => {
+        this.#isStorageKeyCheckboxChecked = checked;
         this.refreshView();
       },
       isOriginCheckboxChecked: this.#isOriginCheckboxChecked,
@@ -13545,14 +13544,6 @@ var UIStrings22 = {
    */
   showUrlDecoded: "Show URL-decoded",
   /**
-   * @description Context menu item in the Application panel to start a chat with AI assistance.
-   */
-  startAChat: "Start a chat",
-  /**
-   * @description Context menu item in the Application panel to explain a cookie with AI assistance.
-   */
-  explainCookie: "Explain this cookie",
-  /**
    * @description Empty state header in the cookie preview of the Application panel when no cookie is selected.
    */
   noCookieSelected: "No cookie selected",
@@ -13576,6 +13567,10 @@ var UIStrings22 = {
    * @description Tooltip text for the clear button in the cookies view of the Application panel to delete all cookies.
    */
   clearAllCookies: "Clear all cookies",
+  /**
+   * @description Tooltip text for the cookie value.
+   */
+  cookieValue: "Cookie value",
   /**
    * @description Screen reader announcement for the number of cookies shown in the table of the Application panel.
    * @example {5} PH1
@@ -13603,7 +13598,7 @@ var DEFAULT_COOKIE_PREVIEW_WIDGET_VIEW = (input, output, target) => {
     html16`<style>${cookieItemsView_css_default}</style>
     <div class="cookie-preview-widget">
       <div class="cookie-preview-widget-header">
-        <span class="cookie-preview-widget-header-label">Cookie Value</span>
+        <span class="cookie-preview-widget-header-label">${i18nString22(UIStrings22.cookieValue)}</span>
         <devtools-checkbox
           .checked=${input.showDecoded}
           @change=${(e) => input.onShowDecodedChanged(e.target.checked)}
@@ -13872,14 +13867,7 @@ var CookieItemsView = class extends UI21.Widget.VBox {
     if (this.isAiButtonEnabled() && UI21.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
       this.#updateAiAssistanceContext(cookie);
       if (UI21.Context.Context.instance().flavor(AiAssistanceModel.StorageItem.StorageItem)) {
-        const action8 = UI21.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
-        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString22(UIStrings22.startAChat));
-        submenu.defaultSection().appendItem(
-          i18nString22(UIStrings22.explainCookie),
-          () => action8.execute({ prompt: "What is the purpose of this cookie?" }),
-          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
-        );
+        contextMenu.footerSection().appendAction(openAiAssistanceId);
       }
     }
   }
@@ -15415,15 +15403,7 @@ var UIStrings25 = {
   /**
    * @description Screen reader announcement when a DOM storage key-value item is deleted.
    */
-  domStorageItemDeleted: "The storage item was deleted",
-  /**
-   * @description Context menu item in the Application panel to start a chat with AI assistance.
-   */
-  startAChat: "Start a chat",
-  /**
-   * @description Context menu item in the Application panel to explain a DOM storage item with AI assistance.
-   */
-  explainItem: "Explain this item"
+  domStorageItemDeleted: "The storage item was deleted"
 };
 var str_25 = i18n49.i18n.registerUIStrings("panels/application/DOMStorageItemsView.ts", UIStrings25);
 var i18nString25 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
@@ -15578,14 +15558,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
     const actionRegistry = UI24.ActionRegistry.ActionRegistry.instance();
     if (actionRegistry.hasAction(openAiAssistanceId)) {
       this.#setAiStorageContext(item4);
-      const action8 = actionRegistry.getAction(openAiAssistanceId);
-      const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
-      submenu.defaultSection().appendAction(openAiAssistanceId, i18nString25(UIStrings25.startAChat));
-      submenu.defaultSection().appendItem(
-        i18nString25(UIStrings25.explainItem),
-        () => action8.execute({ prompt: "Explain this storage item." }),
-        { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".storage" }
-      );
+      contextMenu.footerSection().appendAction(openAiAssistanceId);
     }
   }
   onAiButtonClick(item4, _event) {
@@ -15918,15 +15891,17 @@ var ResourcesPanel = class _ResourcesPanel extends UI26.Panel.PanelWithSidebar {
   }
   showCategoryView(categoryName, categoryHeadline, categoryDescription, categoryLink) {
     if (!this.categoryView) {
-      this.categoryView = new StorageCategoryView();
+      this.categoryView = new UI26.EmptyWidget.EmptyWidget(categoryHeadline, categoryDescription);
+      this.categoryView.element.classList.add("storage-view");
+    } else {
+      this.categoryView.header = categoryHeadline;
+      this.categoryView.text = categoryDescription;
     }
     this.categoryView.element.setAttribute(
       "jslog",
       `${VisualLogging18.pane().context(Platform9.StringUtilities.toKebabCase(categoryName))}`
     );
-    this.categoryView.setHeadline(categoryHeadline);
-    this.categoryView.setText(categoryDescription);
-    this.categoryView.setLink(categoryLink);
+    this.categoryView.link = categoryLink;
     this.showView(this.categoryView);
   }
   showDOMStorage(domStorage) {
@@ -18875,18 +18850,6 @@ var WebMCPTreeElement = class extends ApplicationPanelTreeElement {
 // ../../front_end/panels/application/ApplicationPanelSidebar.ts
 var UIStrings31 = {
   /**
-   * @description Context menu item to start a chat with AI in the Application panel sidebar.
-   */
-  startAChat: "Start a chat",
-  /**
-   * @description Context menu item to explain storage with AI in the Application panel sidebar.
-   */
-  explainStorage: "Explain storage",
-  /**
-   * @description Context menu item to explain cookies with AI in the Application panel sidebar.
-   */
-  explainCookies: "Explain cookies",
-  /**
    * @description Tree item label for Sub Apps in the sidebar of the Application panel.
    */
   subApps: "Sub apps",
@@ -20457,14 +20420,7 @@ var DOMStorageTreeElement = class extends ApplicationPanelTreeElement {
       const openAiAssistanceId = "ai-assistance.application-panel-context";
       if (UI32.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
         UI32.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
-        const action8 = UI32.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
-        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString31(UIStrings31.startAChat));
-        submenu.defaultSection().appendItem(
-          i18nString31(UIStrings31.explainStorage),
-          () => action8.execute({ prompt: "What is the purpose of this storage bucket?" }),
-          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".storage" }
-        );
+        contextMenu.footerSection().appendAction(openAiAssistanceId);
       }
     }
     void contextMenu.show();
@@ -20570,14 +20526,7 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
       const openAiAssistanceId = "ai-assistance.application-panel-context";
       if (UI32.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
         UI32.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
-        const action8 = UI32.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-        const submenu = contextMenu.footerSection().appendSubMenuItem(action8.title(), false, openAiAssistanceId);
-        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString31(UIStrings31.startAChat));
-        submenu.defaultSection().appendItem(
-          i18nString31(UIStrings31.explainCookies),
-          () => action8.execute({ prompt: "What is the purpose of these cookies?" }),
-          { disabled: !action8.enabled(), jslogContext: openAiAssistanceId + ".cookies" }
-        );
+        contextMenu.footerSection().appendAction(openAiAssistanceId);
       }
     }
     void contextMenu.show();
@@ -20591,24 +20540,6 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     const storageItem = this.#getStorageItem();
     UI32.Context.Context.instance().setFlavor(AiAssistance2.StorageItem.StorageItem, storageItem);
     return false;
-  }
-};
-var StorageCategoryView = class extends UI32.Widget.VBox {
-  emptyWidget;
-  constructor() {
-    super();
-    this.element.classList.add("storage-view");
-    this.emptyWidget = new UI32.EmptyWidget.EmptyWidget("", "");
-    this.emptyWidget.show(this.element);
-  }
-  setText(text) {
-    this.emptyWidget.text = text;
-  }
-  setHeadline(header) {
-    this.emptyWidget.header = header;
-  }
-  setLink(link2) {
-    this.emptyWidget.link = link2;
   }
 };
 var ResourcesSection = class {

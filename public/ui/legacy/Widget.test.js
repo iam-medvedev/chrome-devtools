@@ -12,7 +12,7 @@ import { TestUniverse } from '../../testing/TestUniverse.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import * as UI from './legacy.js';
-const { html } = Lit;
+const { html, render } = Lit;
 const { Widget } = UI.Widget;
 function checkFocus(id) {
     const focused = UI.DOMUtilities.deepActiveElement(document);
@@ -122,6 +122,22 @@ describeWithEnvironment('Widget', () => {
             sinon.assert.calledOnce(parentWasShown);
             sinon.assert.calledOnce(childOnResize);
             sinon.assert.calledOnce(parentOnResize);
+        });
+        it('calls `wasShown` once in parent-before-child order for pre-created declarative child widgets', () => {
+            class ChildWidget extends Widget {
+            }
+            const parentWidget = new Widget();
+            const parentWasShown = sinon.spy(parentWidget, 'wasShown');
+            let childWidget;
+            render(html `<devtools-widget ${UI.Widget.widget(ChildWidget)} ${UI.Widget.widgetRef(ChildWidget, w => {
+                childWidget = w;
+            })}></devtools-widget>`, parentWidget.contentElement);
+            assert.instanceOf(childWidget, ChildWidget);
+            const childWasShown = sinon.spy(childWidget, 'wasShown');
+            renderElementIntoDOM(parentWidget);
+            sinon.assert.calledOnce(parentWasShown);
+            sinon.assert.calledOnce(childWasShown);
+            sinon.assert.callOrder(parentWasShown, childWasShown);
         });
         it('automatically detaches from any previous parent', () => {
             const parentWidget1 = new Widget();
@@ -352,13 +368,13 @@ describeWithEnvironment('Widget', () => {
         it('resolves when performUpdate throws an error', async () => {
             const widget = new (class extends Widget {
                 async performUpdate() {
-                    throw new Error('AbortError');
+                    throw new DOMException('AbortError', 'AbortError');
                 }
             })();
             // Prevent the test from failing due to the unhandled rejection
             const originalHandler = window.onunhandledrejection;
             window.onunhandledrejection = e => {
-                if (e.reason?.message === 'AbortError') {
+                if (e.reason?.name === 'AbortError') {
                     e.preventDefault();
                 }
             };
@@ -792,6 +808,31 @@ describeWithEnvironment('Widget', () => {
             legacyParent.detach();
             // The tracker should trigger disconnectedCallback and a setTimeout
             assert.strictEqual(detachedCount, 1);
+        });
+        it('does not propagate hideOnDetach to ancestor widgets across disconnect and reconnect', () => {
+            const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+            try {
+                const container = document.createElement('div');
+                renderElementIntoDOM(container);
+                const parent = new UI.Widget.Widget();
+                parent.markAsRoot();
+                parent.show(container);
+                Lit.render(html `<devtools-widget ${UI.Widget.widget(TestWidget)}></devtools-widget>`, parent.contentElement);
+                assert.strictEqual(attachedCount, 1);
+                assert.isFalse(parent.shouldHideOnDetach());
+                parent.detach();
+                clock.tick(0);
+                assert.isFalse(parent.element.isConnected);
+                assert.isNotNull(parent.contentElement.querySelector('devtools-widget'));
+                parent.show(container);
+                assert.isTrue(parent.element.isConnected);
+                assert.isFalse(parent.shouldHideOnDetach());
+                parent.detach();
+                assert.isFalse(parent.element.isConnected);
+            }
+            finally {
+                clock.restore();
+            }
         });
         it('detaches the widget in a shadow root when the owner element is removed', async () => {
             const container = document.createElement('div');

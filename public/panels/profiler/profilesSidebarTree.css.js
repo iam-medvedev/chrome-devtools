@@ -22,6 +22,7 @@ li .icon {
   height: var(--sys-size-9);
   margin-right: var(--sys-size-6);
   flex: none;
+  mask-size: 100%;
 }
 
 /* Heap profiles and CPU profiles */
@@ -39,19 +40,22 @@ li .icon {
 li.small .icon {
   width: var(--sys-size-8);
   height: var(--sys-size-8);
+  /* Center the smaller icon in the same column as regular-sized icons. */
+  margin-left: var(--sys-size-2);
+  margin-right: calc(var(--sys-size-6) + var(--sys-size-2));
 }
 
 li.wait .icon {
   content: none;
 }
 
-li devtools-button {
+li devtools-menu-button {
   min-width: var(--sys-size-12);
   visibility: hidden;
 }
 
 /* Tree outline overrides */
-.heap-snapshot-sidebar-tree-item:not(:hover) devtools-button {
+.heap-snapshot-sidebar-tree-item:not(:hover) devtools-menu-button {
   visibility: hidden;
 }
 
@@ -223,7 +227,7 @@ li.small .subtitle {
   display: none;
 }
 
-li.selected:hover devtools-button {
+li.selected:hover devtools-menu-button {
   visibility: visible;
   margin-left: auto;
 }

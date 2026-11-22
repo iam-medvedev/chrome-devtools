@@ -31,7 +31,12 @@ describeWithEnvironment('EventListenersView', () => {
             type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
             objectId: objectId,
         });
-        const callFunctionStub = sinon.stub(eventTarget, 'callFunction').resolves({ object: null });
+        const resultObject = runtimeModel.createRemoteObject({
+            type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+            objectId: `${objectId}-result`,
+        });
+        sinon.stub(resultObject, 'getOwnProperties').resolves({ properties: [], internalProperties: [] });
+        const callFunctionStub = sinon.stub(eventTarget, 'callFunction').resolves({ object: resultObject });
         return { eventTarget, callFunctionStub };
     }
     function createMockListener(opts) {

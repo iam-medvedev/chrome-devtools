@@ -29,6 +29,9 @@ async function loadCommonModule() {
 function isCommentsEnabled(config) {
   return Boolean(config?.devToolsComments?.enabled);
 }
+function isNaturalLanguageInterfaceEnabled(config) {
+  return Boolean(config?.devToolsAiNaturalLanguageInterface?.enabled);
+}
 UI.ViewManager.registerViewExtension({
   location: UI.ViewManager.ViewLocationValues.STATUS_BAR,
   id: "comments-status-bar-pill",
@@ -39,6 +42,19 @@ UI.ViewManager.registerViewExtension({
   async loadView(universe) {
     const CommonModule = await loadCommonModule();
     return new CommonModule.CommentsStatusBarPill.CommentsStatusBarPill(void 0, [universe.commentManager]);
+  }
+});
+UI.ViewManager.registerViewExtension({
+  location: UI.ViewManager.ViewLocationValues.STATUS_BAR,
+  id: "state-changes-status-bar-pills",
+  order: 2,
+  condition: isNaturalLanguageInterfaceEnabled,
+  // DevTools does not show the command and the title of a status bar view. So they are not translated.
+  commandPrompt: i18n.i18n.lockedLazyString("Show changed settings"),
+  title: i18n.i18n.lockedLazyString("Changed settings"),
+  async loadView(universe) {
+    const CommonModule = await loadCommonModule();
+    return new CommonModule.StateChangesStatusBarPills.StateChangesStatusBarPills(void 0, [universe.stateManager]);
   }
 });
 UI.ActionRegistration.registerActionExtension({

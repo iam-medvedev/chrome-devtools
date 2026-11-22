@@ -100,6 +100,15 @@ describe('VersionController', () => {
             }
         });
     });
+    describe('updateVersionFrom3To4', () => {
+        it('migrates showHeaSnapshotObjectsHiddenProperties to showAdvancedHeapSnapshotProperties', () => {
+            const versionController = new Common.VersionController.VersionController(settings);
+            settings.createSetting('showHeaSnapshotObjectsHiddenProperties', false).set(true);
+            versionController.updateVersionFrom3To4();
+            assert.isFalse(globalStorage.has('showHeaSnapshotObjectsHiddenProperties'));
+            assert.strictEqual(globalStorage.get('showAdvancedHeapSnapshotProperties'), 'true');
+        });
+    });
     describe('updateVersionFrom31To32', () => {
         it('correctly adds resourceTypeName to breakpoints', () => {
             const versionController = new Common.VersionController.VersionController(settings);
@@ -291,11 +300,6 @@ describe('updateVersionFrom37To38', () => {
         const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
         const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-        Common.Settings.registerSettingExtension({
-            settingName: 'console-insights-enabled',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: true,
-        });
         settings = new Common.Settings.Settings({
             syncedStorage,
             globalStorage,
@@ -305,12 +309,9 @@ describe('updateVersionFrom37To38', () => {
             console: new Common.Console.Console(),
         });
     });
-    afterEach(() => {
-        Common.Settings.resetSettings(); // Clear SettingsRegistrations.
-    });
     it('disables console insights setting if onboarding not done', () => {
         const versionController = new Common.VersionController.VersionController(settings);
-        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        const consoleInsightsEnabled = settings.createSetting('console-insights-enabled', false);
         consoleInsightsEnabled.set(true);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
         versionController.updateVersionFrom37To38();
@@ -319,7 +320,7 @@ describe('updateVersionFrom37To38', () => {
     });
     it('preserves state if console insights disabled and not onboarded ', () => {
         const versionController = new Common.VersionController.VersionController(settings);
-        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        const consoleInsightsEnabled = settings.createSetting('console-insights-enabled', false);
         consoleInsightsEnabled.set(false);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', false);
         versionController.updateVersionFrom37To38();
@@ -328,7 +329,7 @@ describe('updateVersionFrom37To38', () => {
     });
     it('preserves state if console insights enabled and onboarded', () => {
         const versionController = new Common.VersionController.VersionController(settings);
-        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        const consoleInsightsEnabled = settings.createSetting('console-insights-enabled', false);
         consoleInsightsEnabled.set(true);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
         versionController.updateVersionFrom37To38();
@@ -337,12 +338,30 @@ describe('updateVersionFrom37To38', () => {
     });
     it('resets onboarding if console insights setting is disabled', () => {
         const versionController = new Common.VersionController.VersionController(settings);
-        const consoleInsightsEnabled = settings.moduleSetting('console-insights-enabled');
+        const consoleInsightsEnabled = settings.createSetting('console-insights-enabled', false);
         consoleInsightsEnabled.set(false);
         const onboardingFinished = settings.createLocalSetting('console-insights-onboarding-finished', true);
         versionController.updateVersionFrom37To38();
         assert.isFalse(consoleInsightsEnabled.get());
         assert.isFalse(onboardingFinished.get());
+    });
+    it('migrates console-insights-enabled during constructor migration when not pre-registered', () => {
+        const mockStore = new InMemoryStorage();
+        const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const globalStorage = new Common.Settings.SettingsStorage({
+            [Common.VersionController.VersionController.GLOBAL_VERSION_SETTING_NAME]: '37',
+            'console-insights-enabled': JSON.stringify(true),
+        }, mockStore);
+        const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const freshSettings = new Common.Settings.Settings({
+            syncedStorage,
+            globalStorage,
+            localStorage,
+            settingRegistrations: [],
+            runSettingsMigration: true,
+            console: new Common.Console.Console(),
+        });
+        assert.isFalse(freshSettings.createSetting('console-insights-enabled', true).get());
     });
 });
 describe('updateVersionFrom38To39', () => {
@@ -408,11 +427,6 @@ describe('updateVersionFrom38To39', () => {
             const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
             const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
             const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
-            Common.Settings.registerSettingExtension({
-                settingName: 'custom-network-conditions',
-                settingType: "array" /* Common.Settings.SettingType.ARRAY */,
-                defaultValue: [],
-            });
             settings = new Common.Settings.Settings({
                 syncedStorage,
                 globalStorage,
@@ -421,11 +435,9 @@ describe('updateVersionFrom38To39', () => {
                 runSettingsMigration: false,
                 console: new Common.Console.Console(),
             });
-            customNetworkCondSetting = settings.moduleSetting('custom-network-conditions');
+            customNetworkCondSetting =
+                settings.createSetting('custom-network-conditions', [], "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
             preferredNetworkCondSetting = settings.createSetting('preferred-network-condition', { i18nTitleKey: 'Offline' });
-        });
-        afterEach(() => {
-            Common.Settings.resetSettings(); // Clear SettingsRegistrations.
         });
         it('updates all settings to have a key', () => {
             // In reality these values are SDK.NetworkManager.Conditions but we
@@ -453,6 +465,30 @@ describe('updateVersionFrom38To39', () => {
                     key: 'KEY',
                 },
             ]);
+        });
+        it('updates settings during constructor migration when not pre-registered', () => {
+            const mockStore = new InMemoryStorage();
+            const syncedStorage = new Common.Settings.SettingsStorage({
+                [Common.VersionController.VersionController.SYNCED_VERSION_SETTING_NAME]: '39',
+                'custom-network-conditions': JSON.stringify([{}]),
+            }, mockStore);
+            const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+            const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+            const freshSettings = new Common.Settings.Settings({
+                syncedStorage,
+                globalStorage,
+                localStorage,
+                settingRegistrations: [],
+                runSettingsMigration: true,
+                console: new Common.Console.Console(),
+            });
+            const resolved = freshSettings.resolve({
+                name: 'custom-network-conditions',
+                type: "array" /* Common.Settings.SettingType.ARRAY */,
+                defaultValue: [],
+                storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+            });
+            assert.deepEqual(resolved.get(), [{ key: 'USER_CUSTOM_SETTING_1' }]);
         });
         it('migrates users who have a preferred-network-condition set to "Fast 4G"', () => {
             preferredNetworkCondSetting.set({ i18nTitleKey: 'Fast 4G' });

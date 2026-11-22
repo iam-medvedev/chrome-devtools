@@ -44,6 +44,11 @@ class AiAgentMock extends AiAssistance.AiAgent.AiAgent {
     declareFunctionForTest(name, declaration) {
         this.declareFunction(name, declaration);
     }
+    onRunCommittedCount = 0;
+    onRunCommitted() {
+        super.onRunCommitted();
+        this.onRunCommittedCount++;
+    }
     disableServerSideLoggingForTest() {
         this.disableServerSideLogging();
     }
@@ -383,36 +388,162 @@ describe('AiAgent', () => {
             ]);
             sinon.assert.calledWithExactly(consoleLogStub, '[AiAgent] Model returned an empty text response without tool calls:', { step: 1, rpcId: 123, functionCalls: undefined });
         });
-        it('should yield unknown error and log functionCalls when model returns an empty text response with only suggestFollowUps', async () => {
-            const mockStorage = {
-                length: 0,
-                clear: () => { },
-                getItem: (key) => key === 'devToolsAiDebug' ?
-                    JSON.stringify({ assistance: true, gca: false, codeGenComplete: false }) :
-                    null,
-                key: () => null,
-                removeItem: () => { },
-                setItem: () => { },
-            };
-            sinon.stub(Platform.HostRuntime.HOST_RUNTIME, 'getLocalStorage').returns(mockStorage);
-            const consoleLogStub = sinon.stub(console, 'log');
-            const functionCalls = [
-                { name: 'suggestFollowUps', args: { suggestions: ['Follow-up question'] } },
-            ];
-            const agent = new AiAgentMock({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls }]]),
-            });
+        it('prompts for the final answer when suggestFollowUps is called with empty text', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Follow-up question'] },
+                                thoughtSignature: 'sig-1',
+                            }],
+                    }],
+                [{
+                        explanation: 'Final answer',
+                    }],
+            ]);
+            const agent = new AiAgentMock({ aidaClient });
             const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
-            assert.deepEqual(responses, [
+            sinon.assert.calledTwice(aidaClient.doConversation);
+            const secondCallRequest = aidaClient.doConversation.getCall(1).args[0];
+            assert.deepEqual(secondCallRequest.current_message.parts, [
                 {
-                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
-                },
-                {
-                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
-                    error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
+                    functionResponse: {
+                        name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                        response: {
+                            result: 'Suggestions recorded, but your response text was empty. Provide your final Markdown answer to the user now.',
+                        },
+                    },
                 },
             ]);
-            sinon.assert.calledWithExactly(consoleLogStub, '[AiAgent] Model returned an empty text response without tool calls:', { step: 1, rpcId: undefined, functionCalls });
+            assert.isFalse(responses.some(r => r.type === "title" /* AiAssistance.AiAgent.ResponseType.TITLE */ ||
+                r.type === "thought" /* AiAssistance.AiAgent.ResponseType.THOUGHT */ ||
+                r.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */));
+            const answer = responses.find((r) => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */ && r.complete);
+            assert.exists(answer);
+            assert.strictEqual(answer.text, 'Final answer');
+            assert.deepEqual(answer.suggestions, ['Follow-up question']);
+            assert.deepEqual(agent.history, [
+                {
+                    role: Host.AidaClient.Role.USER,
+                    parts: [{ text: 'query' }],
+                },
+                {
+                    role: Host.AidaClient.Role.MODEL,
+                    parts: [{
+                            functionCall: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Follow-up question'] },
+                                thoughtSignature: 'sig-1',
+                            },
+                        }],
+                },
+                {
+                    role: Host.AidaClient.Role.ROLE_UNSPECIFIED,
+                    parts: [{
+                            functionResponse: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                response: {
+                                    result: 'Suggestions recorded, but your response text was empty. Provide your final Markdown answer to the user now.',
+                                },
+                            },
+                        }],
+                },
+                {
+                    role: Host.AidaClient.Role.MODEL,
+                    parts: [{ text: 'Final answer' }],
+                },
+            ]);
+        });
+        it('overwrites earlier standalone suggestions when a later step emits valid suggestions', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Old'] },
+                            }],
+                    }],
+                [{
+                        explanation: 'Final answer',
+                        functionCalls: [
+                            {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['First'] },
+                                thoughtSignature: 'sig-2',
+                            },
+                            {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Latest'] },
+                            },
+                        ],
+                    }],
+            ]);
+            const agent = new AiAgentMock({ aidaClient });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            const answer = responses.find((r) => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */ && r.complete);
+            assert.exists(answer);
+            assert.strictEqual(answer.text, 'Final answer');
+            assert.deepEqual(answer.suggestions, ['Latest']);
+            assert.deepEqual(agent.history.slice(-2), [
+                {
+                    role: Host.AidaClient.Role.MODEL,
+                    parts: [
+                        { text: 'Final answer' },
+                        {
+                            functionCall: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['First'] },
+                                thoughtSignature: 'sig-2',
+                            },
+                        },
+                        {
+                            functionCall: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Latest'] },
+                            },
+                        },
+                    ],
+                },
+                {
+                    role: Host.AidaClient.Role.ROLE_UNSPECIFIED,
+                    parts: [
+                        {
+                            functionResponse: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                response: { result: 'Suggestions recorded.' },
+                            },
+                        },
+                        {
+                            functionResponse: {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                response: { result: 'Suggestions recorded.' },
+                            },
+                        },
+                    ],
+                },
+            ]);
+        });
+        it('yields UNKNOWN error without committing history when the step after empty-text suggestFollowUps returns empty text', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Follow-up question'] },
+                            }],
+                    }],
+                [{
+                        explanation: '',
+                    }],
+            ]);
+            const agent = new AiAgentMock({ aidaClient });
+            const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
+            sinon.assert.calledTwice(aidaClient.doConversation);
+            const errorResponse = findFirstErrorResponse(responses);
+            assert.strictEqual(errorResponse.error, "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */);
+            assert.deepEqual(agent.history, []);
+            assert.strictEqual(agent.onRunCommittedCount, 0);
         });
         it('should yield quota error when aida throws AidaQuotaError', async () => {
             const agent = new AiAgentMock({
@@ -1326,6 +1457,115 @@ describe('AiAgent', () => {
                 assert.strictEqual(findFirstErrorResponse(responses).error, "max-steps" /* AiAssistance.AiAgent.ErrorType.MAX_STEPS */);
                 sinon.assert.callCount(aidaClient.doConversation, AiAssistance.AiAgent.MAX_STEPS);
                 assert.strictEqual(agent.called, 2 * AiAssistance.AiAgent.MAX_STEPS);
+            });
+        });
+        describe('commit boundaries', () => {
+            it('leaves history empty and skips onRunCommitted after first-run abort', async () => {
+                const agent = new AiAgentMock({ aidaClient: mockAidaClient([[{ explanation: 'answer' }]]) });
+                const controller = new AbortController();
+                controller.abort();
+                const responses = await Array.fromAsync(agent.run('query', { selected: null, signal: controller.signal }));
+                const errorResponse = findFirstErrorResponse(responses);
+                assert.strictEqual(errorResponse.error, "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */);
+                assert.deepEqual(agent.history, []);
+                assert.strictEqual(agent.onRunCommittedCount, 0);
+            });
+            it('preserves prior turn history after follow-up step-0 abort', async () => {
+                const aidaClient = mockAidaClient([[{ explanation: 'answer 1' }], [{ explanation: 'answer 2' }]]);
+                const agent = new AiAgentMock({ aidaClient });
+                await Array.fromAsync(agent.run('question 1', { selected: null }));
+                assert.lengthOf(agent.history, 2);
+                assert.strictEqual(agent.onRunCommittedCount, 1);
+                const controller = new AbortController();
+                controller.abort();
+                const responses = await Array.fromAsync(agent.run('question 2', { selected: null, signal: controller.signal }));
+                const errorResponse = findFirstErrorResponse(responses);
+                assert.strictEqual(errorResponse.error, "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */);
+                assert.lengthOf(agent.history, 2);
+                assert.deepEqual(agent.history[0].parts[0], { text: 'question 1' });
+                assert.deepEqual(agent.history[1].parts[0], { text: 'answer 1' });
+                assert.strictEqual(agent.onRunCommittedCount, 1);
+            });
+            it('leaves history untouched after early generator exit without AbortSignal', async () => {
+                const aidaClient = mockAidaClient([
+                    [{ explanation: 'answer 1' }],
+                    [{ explanation: 'thinking', functionCalls: [{ name: 'testFn', args: {} }] }],
+                ]);
+                const agent = new AiAgentMock({ aidaClient });
+                agent.declareFunctionForTest('testFn', {
+                    description: 'test',
+                    parameters: { type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */, description: '', properties: {}, required: [] },
+                    handler: async () => ({ result: 'ok' }),
+                    displayInfoFromArgs: () => ({ action: 'testFn' }),
+                });
+                await Array.fromAsync(agent.run('query 1', { selected: null }));
+                assert.lengthOf(agent.history, 2);
+                assert.strictEqual(agent.onRunCommittedCount, 1);
+                const generator = agent.run('query 2', { selected: null });
+                for await (const response of generator) {
+                    if (response.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */) {
+                        break;
+                    }
+                }
+                assert.lengthOf(agent.history, 2);
+                assert.deepEqual(agent.history[0].parts[0], { text: 'query 1' });
+                assert.deepEqual(agent.history[1].parts[0], { text: 'answer 1' });
+                assert.strictEqual(agent.onRunCommittedCount, 1);
+            });
+            it('commits history and invokes onRunCommitted for MAX_STEPS runs', async () => {
+                const aidaClient = mockAidaClient(Array(AiAssistance.AiAgent.MAX_STEPS).fill([
+                    { explanation: 'step', functionCalls: [{ name: 'testFn', args: {} }] },
+                ]));
+                const agent = new AiAgentMock({ aidaClient });
+                agent.declareFunctionForTest('testFn', {
+                    description: 'test',
+                    parameters: { type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */, description: '', properties: {}, required: [] },
+                    handler: async () => ({ result: 'ok' }),
+                });
+                const responses = await Array.fromAsync(agent.run('query 1', { selected: null }));
+                assert.strictEqual(findFirstErrorResponse(responses).error, "max-steps" /* AiAssistance.AiAgent.ErrorType.MAX_STEPS */);
+                assert.lengthOf(agent.history, 2 * AiAssistance.AiAgent.MAX_STEPS + 1);
+                // AIDA uses ROLE_UNSPECIFIED for functionResponse turns.
+                assert.strictEqual(agent.history.at(-1)?.role, Host.AidaClient.Role.ROLE_UNSPECIFIED);
+                assert.strictEqual(agent.onRunCommittedCount, 1);
+            });
+            it('commits history and invokes onRunCommitted for CONTEXT_CHANGE runs', async () => {
+                const aidaClient = mockAidaClient([
+                    [{ explanation: 'step', functionCalls: [{ name: 'contextFn', args: {} }] }],
+                ]);
+                const agent = new AiAgentMock({ aidaClient });
+                agent.declareFunctionForTest('contextFn', {
+                    description: 'context',
+                    parameters: { type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */, description: '', properties: {}, required: [] },
+                    handler: async () => ({ context: mockConversationContext(), description: 'changed' }),
+                });
+                const responses = await Array.fromAsync(agent.run('query 1', { selected: null }));
+                const contextChangeResponse = responses.find(r => r.type === "context-change" /* AiAssistance.AiAgent.ResponseType.CONTEXT_CHANGE */);
+                assert.isDefined(contextChangeResponse);
+                assert.deepEqual(agent.history, [
+                    {
+                        role: Host.AidaClient.Role.USER,
+                        parts: [{ text: 'query 1' }],
+                    },
+                    {
+                        role: Host.AidaClient.Role.MODEL,
+                        parts: [
+                            { text: 'step' },
+                            { functionCall: { name: 'contextFn', args: {} } },
+                        ],
+                    },
+                    {
+                        // AIDA uses ROLE_UNSPECIFIED for functionResponse turns.
+                        role: Host.AidaClient.Role.ROLE_UNSPECIFIED,
+                        parts: [{
+                                functionResponse: {
+                                    name: 'contextFn',
+                                    response: { result: 'changed' },
+                                },
+                            }],
+                    },
+                ]);
+                assert.strictEqual(agent.onRunCommittedCount, 1);
             });
         });
     });

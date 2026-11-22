@@ -132,6 +132,7 @@ describeWithEnvironment('LighthouseProtocolService', () => {
         assert.instanceOf(outcome, Lighthouse.LighthouseProtocolService.CancelledError);
     });
     it('auto-accepts same-origin dialogs and blocks cross-origin dialogs', async () => {
+        const consoleWarnStub = sinon.stub(console, 'warn');
         sinon.stub(primaryTarget, 'inspectedURL').returns(urlString `https://example.com/page`);
         const service = new Lighthouse.LighthouseProtocolService.ProtocolService();
         await service.attach(urlString `https://example.com/page`);
@@ -156,6 +157,7 @@ describeWithEnvironment('LighthouseProtocolService', () => {
             hasBrowserHandler: true,
         });
         sinon.assert.notCalled(handleDialogStub);
+        sinon.assert.calledWith(consoleWarnStub, sinon.match(/Lighthouse auto-accept for dialog on https:\/\/attacker\.com\/page blocked/));
     });
     describe('worker protocol proxying', () => {
         const MAIN_SESSION_ID = 'LH_MAIN_SESSION';

@@ -11,6 +11,7 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { StubIssue } from '../../testing/StubIssue.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Issues from './issues.js';
 describe('IssuesPane', () => {
     setupLocaleHooks();
@@ -23,7 +24,9 @@ describe('IssuesPane', () => {
     it('shows placeholder if only non-relevant issues have appeared', async () => {
         sinon.stub(universe.issuesManager, 'numberOfAllStoredIssues').returns(10);
         const issuesPane = new Issues.IssuesPane.IssuesPane();
+        renderElementIntoDOM(issuesPane);
         await issuesPane.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         const emptyWidgetElement = issuesPane.contentElement.querySelector('.empty-widget-container');
         assert.exists(emptyWidgetElement);
         const emptyWidgetShadowRoot = emptyWidgetElement.shadowRoot;
@@ -33,7 +36,9 @@ describe('IssuesPane', () => {
     });
     it('shows placeholder', async () => {
         const issuesPane = new Issues.IssuesPane.IssuesPane();
+        renderElementIntoDOM(issuesPane);
         await issuesPane.updateComplete;
+        await UI.Widget.Widget.allUpdatesComplete;
         const emptyWidgetElement = issuesPane.contentElement.querySelector('.empty-widget-container');
         assert.exists(emptyWidgetElement);
         const emptyWidgetShadowRoot = emptyWidgetElement.shadowRoot;
@@ -93,6 +98,24 @@ describe('IssuesPane', () => {
         sinon.assert.calledTwice(consoleErrorStub);
         assert.include(textContent, 'Invalid type attribute');
         assert.notInclude(textContent, 'Deprecated feature used');
+    });
+    it('renders toolbar checkboxes', async () => {
+        const issuesPane = new Issues.IssuesPane.IssuesPane();
+        renderElementIntoDOM(issuesPane);
+        await issuesPane.updateComplete;
+        const checkboxes = [...issuesPane.contentElement.querySelectorAll('devtools-checkbox')];
+        assert.deepEqual(checkboxes.map(c => c.title), [
+            'Group displayed issues under associated categories',
+            'Group displayed issues as page errors, breaking changes, and improvements',
+            'Include cookie issues caused by third-party sites',
+        ]);
+        assert.deepEqual(checkboxes.map(c => c.hidden), [true, false, false]);
+    });
+    it('renders toolbar issue counter', async () => {
+        const issuesPane = new Issues.IssuesPane.IssuesPane();
+        renderElementIntoDOM(issuesPane);
+        await issuesPane.updateComplete;
+        assert.exists(issuesPane.contentElement.querySelector('devtools-issue-counter#console-issues-counter'));
     });
 });
 //# sourceMappingURL=IssuesPane.test.js.map

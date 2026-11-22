@@ -33,7 +33,6 @@ describeWithEnvironment('AccessibilitySidebarView', () => {
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
         view?.detach();
         view = undefined;
-        UI.ViewManager.ViewManager.removeInstance();
     });
     it('notifies ViewManager when visibility is toggled', async () => {
         view = Accessibility.AccessibilitySidebarView.AccessibilitySidebarView.instance({ forceNew: true });

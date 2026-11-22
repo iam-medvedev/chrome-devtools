@@ -94,6 +94,9 @@ export class Button extends HTMLElement {
         this.#props.inverseColorTheme = data.inverseColorTheme;
         this.#render();
     }
+    get iconName() {
+        return this.#props.iconName;
+    }
     set iconName(iconName) {
         this.#props.iconName = iconName;
         this.#render();
@@ -105,6 +108,9 @@ export class Button extends HTMLElement {
     set toggleType(toggleType) {
         this.#props.toggleType = toggleType;
         this.#render();
+    }
+    get variant() {
+        return this.#props.variant;
     }
     set variant(variant) {
         this.#props.variant = variant;

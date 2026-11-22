@@ -9,6 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { Printer } from '../../testing/PropertyParser.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import { nothing, render } from '../../ui/lit/lit.js';
 import * as Elements from './elements.js';
@@ -29,10 +30,9 @@ describeWithEnvironment('PropertyRenderer', () => {
         it('parses text', () => {
             // Prevent normalization to get an accurate representation of the parser result.
             sinon.stub(Element.prototype, 'normalize');
-            assert.deepEqual(textFragments(renderValueElement('--p', 'var(--v)').valueElement), ['var', '(', '--v', ')']);
-            assert.deepEqual(textFragments(renderValueElement('--p', '/* comments are text */ 1px solid 4').valueElement), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
-            assert.deepEqual(textFragments(renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)')
-                .valueElement), [
+            assert.deepEqual(textFragments(renderValueElement('--p', 'var(--v)')), ['var', '(', '--v', ')']);
+            assert.deepEqual(textFragments(renderValueElement('--p', '/* comments are text */ 1px solid 4')), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
+            assert.deepEqual(textFragments(renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)')), [
                 '2px', ' ', 'var', '(', '--double', ',', ' ', 'var', '(', '--fallback', ',', ' ', 'black', ')',
                 ')', ' ', '#32a1ce', ' ', 'rgb', '(', '124', ' ', '125', ' ', '21', ' ', '0', ')',
             ]);
@@ -45,7 +45,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const ast = new SDK.CSSPropertyParser.SyntaxTree(property, rule, tree);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, []);
             const context = new Elements.PropertyRenderer.RenderingContext(ast, null, new Map(), matchedResult);
-            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), rule, Printer.walk(ast).get());
+            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context)).join(''), rule, Printer.walk(ast).get());
         });
         it('nicely formats binary expressions', () => {
             const property = 'calc((50 -(0* 4))* 1vmin)';
@@ -55,7 +55,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParserMatchers.BinOpMatcher()]);
             const renderer = new Elements.PropertyRenderer.BinOpRenderer();
             const context = new Elements.PropertyRenderer.RenderingContext(ast, null, new Map([[renderer.matchType, renderer]]), matchedResult);
-            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), '*{--property: calc((50 - (0 * 4)) * 1vmin);}', Printer.walk(ast).get());
+            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context)).join(''), '*{--property: calc((50 - (0 * 4)) * 1vmin);}', Printer.walk(ast).get());
         });
         it('correctly renders subtrees', () => {
             const property = '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)';
@@ -65,17 +65,17 @@ describeWithEnvironment('PropertyRenderer', () => {
             const ast = new SDK.CSSPropertyParser.SyntaxTree(property, rule, tree);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, []);
             const context = new Elements.PropertyRenderer.RenderingContext(ast, null, new Map(), matchedResult);
-            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context).nodes).join(''), property, Printer.walk(ast).get());
+            assert.deepEqual(textFragments(Elements.PropertyRenderer.Renderer.render(tree, context)).join(''), property, Printer.walk(ast).get());
         });
         it('renders trailing comments', () => {
             const property = '/* color: red */ blue /* color: red */';
-            assert.strictEqual(textFragments(renderValueElement('--p', property).valueElement).join(''), property);
+            assert.strictEqual(textFragments(renderValueElement('--p', property)).join(''), property);
             const withoutSpaces = '/* color: red */blue/* color: red */';
-            assert.strictEqual(textFragments(renderValueElement('--p', withoutSpaces).valueElement).join(''), withoutSpaces);
+            assert.strictEqual(textFragments(renderValueElement('--p', withoutSpaces)).join(''), withoutSpaces);
         });
         it('renders malformed comments', () => {
             const property = 'red /* foo: bar';
-            assert.strictEqual(textFragments(renderValueElement('--p', property).valueElement).join(''), property);
+            assert.strictEqual(textFragments(renderValueElement('--p', property)).join(''), property);
         });
         it('computes preceding space from the AST', () => {
             const property = '/* c1 */1px  /* c2 */ solid\tvar( --v , 2px )/* c3 */';
@@ -106,6 +106,66 @@ describeWithEnvironment('PropertyRenderer', () => {
                 ['/* c3 */', ''],
             ]);
         });
+        it('passes callbacks to match renderers for a single node and for an array', () => {
+            const matchedResult = SDK.CSSPropertyParser.matchDeclaration('color', 'red blue', [new SDK.CSSPropertyParserMatchers.ColorMatcher()]);
+            assert.exists(matchedResult);
+            const nodes = SDK.CSSPropertyParser.ASTUtils.siblings(SDK.CSSPropertyParser.ASTUtils.declValue(matchedResult.ast.tree));
+            assert.lengthOf(nodes, 2);
+            const seen = [];
+            const colorRenderer = {
+                matchType: SDK.CSSPropertyParserMatchers.ColorMatch,
+                render(_match, context) {
+                    seen.push(context.callbacks);
+                    return nothing;
+                },
+            };
+            const context = new Elements.PropertyRenderer.RenderingContext(matchedResult.ast, null, new Map([[colorRenderer.matchType, colorRenderer]]), matchedResult);
+            const callbacks = { onColor: () => { } };
+            Elements.PropertyRenderer.Renderer.render(nodes[0], context, callbacks);
+            assert.deepEqual(seen, [callbacks]);
+            seen.length = 0;
+            Elements.PropertyRenderer.Renderer.render(nodes, context, callbacks);
+            assert.deepEqual(seen, [callbacks, callbacks]);
+        });
+        it('does not forward callbacks into nested Renderer.render calls', () => {
+            const matchedResult = SDK.CSSPropertyParser.matchDeclaration('color', 'hsl(120deg, 100%, 50%)', [
+                new SDK.CSSPropertyParserMatchers.ColorMatcher(),
+                new SDK.CSSPropertyParserMatchers.AngleMatcher(),
+            ]);
+            assert.exists(matchedResult);
+            const valueNode = SDK.CSSPropertyParser.ASTUtils.declValue(matchedResult.ast.tree);
+            assert.exists(valueNode);
+            let outerCallbacks;
+            let innerCallbacks;
+            const renderers = new Map([
+                [
+                    SDK.CSSPropertyParserMatchers.ColorMatch,
+                    {
+                        matchType: SDK.CSSPropertyParserMatchers.ColorMatch,
+                        render(match, context) {
+                            outerCallbacks = context.callbacks;
+                            return Elements.PropertyRenderer.Renderer.render(SDK.CSSPropertyParser.ASTUtils.children(match.node), context);
+                        },
+                    },
+                ],
+                [
+                    SDK.CSSPropertyParserMatchers.AngleMatch,
+                    {
+                        matchType: SDK.CSSPropertyParserMatchers.AngleMatch,
+                        render(_match, context) {
+                            innerCallbacks = context.callbacks;
+                            return nothing;
+                        },
+                    },
+                ],
+            ]);
+            const context = new Elements.PropertyRenderer.RenderingContext(matchedResult.ast, null, renderers, matchedResult);
+            const callbacks = { onColor: () => { } };
+            Elements.PropertyRenderer.Renderer.render(valueNode, context, callbacks);
+            assert.strictEqual(outerCallbacks, callbacks);
+            assert.exists(innerCallbacks);
+            assert.deepEqual(innerCallbacks, {});
+        });
     });
     describe('URLRenderer', () => {
         it('linkifies package relative URLs completed against the stylesheet URL', () => {
@@ -120,7 +180,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const matchers = [new SDK.CSSPropertyParserMatchers.URLMatcher()];
             const matchedResult = SDK.CSSPropertyParser.matchDeclaration(name, value, matchers);
             assert.exists(matchedResult);
-            const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
+            const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
             const link = valueElement.querySelector('.devtools-link');
             assert.exists(link);
             assert.strictEqual(link.href, 'http://example.com/styles/fromcss.png');
@@ -139,7 +199,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const matchers = [new SDK.CSSPropertyParserMatchers.URLMatcher()];
             const matchedResult = SDK.CSSPropertyParser.matchDeclaration(name, value, matchers);
             assert.exists(matchedResult);
-            const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
+            const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
             const link = valueElement.querySelector('.devtools-link');
             assert.exists(link);
             assert.strictEqual(link.href, 'http://example.com/styles/resources/iframed.png');
@@ -157,7 +217,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             const matchers = [new SDK.CSSPropertyParserMatchers.URLMatcher()];
             const matchedResult = SDK.CSSPropertyParser.matchDeclaration(name, value, matchers);
             assert.exists(matchedResult);
-            const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
+            const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
             const links = Array.from(valueElement.querySelectorAll('.devtools-link'));
             assert.lengthOf(links, 2);
             assert.strictEqual(links[0].textContent, 'test-1x.png');
@@ -165,6 +225,69 @@ describeWithEnvironment('PropertyRenderer', () => {
             assert.strictEqual(links[1].textContent, 'test-2x.png');
             assert.strictEqual(links[1].href, 'http://example.com/styles/test-2x.png');
             assert.strictEqual(valueElement.textContent, '-webkit-image-set(url(test-1x.png) 1x, url(test-2x.png) 2x)');
+        });
+    });
+    describe('StringRenderer', () => {
+        it('renders string with unescaped tooltip title', () => {
+            const renderer = new Elements.PropertyRenderer.StringRenderer();
+            const name = 'content';
+            const value = '"\\2716"';
+            const matchers = [new SDK.CSSPropertyParserMatchers.StringMatcher()];
+            const matchedResult = SDK.CSSPropertyParser.matchDeclaration(name, value, matchers);
+            assert.exists(matchedResult);
+            const valueElement = Elements.PropertyRenderer.Renderer.renderValueElement({ name, value }, matchedResult, [renderer]);
+            const span = valueElement.querySelector('span');
+            assert.exists(span);
+            assert.strictEqual(span.textContent, '"\\2716"');
+            assert.strictEqual(span.title, '"\u2716"');
+        });
+    });
+    describe('EditableContent', () => {
+        it('renders initial state with null editedValue', () => {
+            const view = createViewFunctionStub(Elements.PropertyRenderer.EditableContent);
+            const widget = new Elements.PropertyRenderer.EditableContent(undefined, view);
+            renderElementIntoDOM(widget);
+            assert.isNull(view.input.editedValue);
+        });
+        it('updates editedValue when onValueEdit is called', () => {
+            const view = createViewFunctionStub(Elements.PropertyRenderer.EditableContent);
+            const widget = new Elements.PropertyRenderer.EditableContent(undefined, view);
+            renderElementIntoDOM(widget);
+            view.input.onValueEdit('42px');
+            assert.strictEqual(view.input.editedValue, '42px');
+        });
+        describe('view', () => {
+            it('renders default slot when editedValue is null', () => {
+                const target = document.createElement('div');
+                Elements.PropertyRenderer.DEFAULT_VIEW({
+                    editedValue: null,
+                    onValueEdit: () => { },
+                }, undefined, target);
+                assert.exists(target.querySelector('slot[name="icon"]'));
+                assert.exists(target.querySelector('slot:not([name])'));
+            });
+            it('renders editedValue text instead of default slot when editedValue is set', () => {
+                const target = document.createElement('div');
+                Elements.PropertyRenderer.DEFAULT_VIEW({
+                    editedValue: '100deg',
+                    onValueEdit: () => { },
+                }, undefined, target);
+                assert.exists(target.querySelector('slot[name="icon"]'));
+                assert.isNull(target.querySelector('slot:not([name])'));
+                assert.strictEqual(target.textContent, '100deg');
+            });
+            it('forwards ValueEditEvent detail to onValueEdit', () => {
+                const target = document.createElement('div');
+                const onValueEdit = sinon.spy();
+                Elements.PropertyRenderer.DEFAULT_VIEW({
+                    editedValue: null,
+                    onValueEdit,
+                }, undefined, target);
+                const iconSlot = target.querySelector('slot[name="icon"]');
+                assert.exists(iconSlot);
+                iconSlot.dispatchEvent(new Elements.PropertyRenderer.ValueEditEvent('2turn'));
+                sinon.assert.calledOnceWithExactly(onValueEdit, '2turn');
+            });
         });
     });
 });
@@ -303,7 +426,7 @@ describe('TracingContext', () => {
         assert.exists(innerMatchedResult);
         const lastNode = innerMatchedResult.ast.tree.lastChild; // c3
         assert.exists(lastNode);
-        const renderingContext = new Elements.PropertyRenderer.RenderingContext(innerMatchedResult.ast, null, new Map(), innerMatchedResult, undefined, undefined, childTracingContext);
+        const renderingContext = new Elements.PropertyRenderer.RenderingContext(innerMatchedResult.ast, null, new Map(), innerMatchedResult, undefined, childTracingContext);
         const longhands = SDK.CSSMetadata.cssMetadata().getLonghands(matchedResult.ast.propertyName ?? '');
         assert.exists(longhands);
         // In the fully substituted value, c3 appears in the fifth position.

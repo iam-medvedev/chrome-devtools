@@ -543,6 +543,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -867,7 +870,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -1651,6 +1653,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2338,6 +2341,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus2;
   ((PreloadingStatus3) => {
@@ -2987,7 +2991,9 @@ var generatedProperties = [
   {
     "keywords": [
       "horizontal",
-      "vertical"
+      "vertical",
+      "inline-axis",
+      "block-axis"
     ],
     "name": "-webkit-box-orient"
   },
@@ -5904,9 +5910,7 @@ var generatedProperties = [
     "keywords": [
       "normal"
     ],
-    "name": "font-language-override",
-    "runtime_flag": "FontLanguageOverride",
-    "runtime_flag_status": "stable"
+    "name": "font-language-override"
   },
   {
     "inherited": true,
@@ -8932,7 +8936,8 @@ var generatedProperties = [
     ],
     "keywords": [
       "none",
-      "auto"
+      "auto",
+      "match-element"
     ],
     "name": "view-transition-name"
   },
@@ -9089,7 +9094,9 @@ var generatedPropertyValues = {
   "-webkit-box-orient": {
     "values": [
       "horizontal",
-      "vertical"
+      "vertical",
+      "inline-axis",
+      "block-axis"
     ]
   },
   "-webkit-box-pack": {
@@ -15138,7 +15145,11 @@ var RemoteObjectImpl = class extends RemoteObject {
       silent: true
     });
     const error = response.getError();
-    return error || response.exceptionDetails ? error || response.result.description : void 0;
+    if (error || response.exceptionDetails) {
+      return error || response.result.description;
+    }
+    this.debuggerModel().invalidateScopeChains();
+    return void 0;
   }
   async deleteProperty(name) {
     if (!this.#objectId) {
@@ -15157,6 +15168,7 @@ var RemoteObjectImpl = class extends RemoteObject {
     if (!response.result.value) {
       return "Failed to delete property.";
     }
+    this.debuggerModel().invalidateScopeChains();
     return void 0;
   }
   async callFunction(functionDeclaration, args, params) {
@@ -15252,6 +15264,7 @@ var ScopeRemoteObject = class extends RemoteObjectImpl {
     if (error) {
       return error;
     }
+    this.debuggerModel().invalidateScopeChains();
     if (this.#savedScopeProperties) {
       for (const property of this.#savedScopeProperties) {
         if (property.name === name) {
@@ -16517,6 +16530,7 @@ __export(SDKSettings_exports, {
   cpuPressureSettingDescriptor: () => cpuPressureSettingDescriptor,
   cssSourceMapsEnabledSettingDescriptor: () => cssSourceMapsEnabledSettingDescriptor,
   customFormattersSettingDescriptor: () => customFormattersSettingDescriptor,
+  customNetworkConditionsSettingDescriptor: () => customNetworkConditionsSettingDescriptor,
   dataSaverSettingDescriptor: () => dataSaverSettingDescriptor,
   disableAsyncStackTracesSettingDescriptor: () => disableAsyncStackTracesSettingDescriptor,
   disablePausedStateOverlaySettingDescriptor: () => disablePausedStateOverlaySettingDescriptor,
@@ -20367,6 +20381,19 @@ function originatingElement(node) {
   }
   return current;
 }
+async function parentElementInFlatTree(node) {
+  if (node.hasAssignedSlot()) {
+    return await node.assignedSlot?.deferredNode.resolvePromise() ?? null;
+  }
+  let parent = node.parentNode;
+  while (parent?.isShadowRoot()) {
+    parent = parent.parentNode;
+  }
+  if (!parent || parent.nodeType() === 9 /* DOCUMENT_NODE */) {
+    return null;
+  }
+  return parent;
+}
 function treeScopeNodeId(node, property) {
   return property.ownerStyle.type === "Inline" /* Inline */ ? node.getTreeRoot()?.backendNodeId() : property.ownerStyle.parentRule?.treeScope;
 }
@@ -20513,16 +20540,19 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       inheritedResult.matchedCSSRules = cleanUserAgentPayload(inheritedResult.matchedCSSRules);
     }
     this.#environmentVariables = await this.cssModel().getEnvironmentVariables();
-    this.#mainDOMCascade = await this.buildMainCascade(
+    const maxInheritedDepth = Math.max(inheritedPayload?.length ?? 0, inheritedPseudoPayload?.length ?? 0);
+    const inheritedNodes = await this.resolveInheritedParentNodes(maxInheritedDepth);
+    this.#mainDOMCascade = this.buildMainCascade(
       inlinePayload,
       attributesPayload,
       matchedPayload,
       inheritedPayload,
       animationStylesPayload,
       transitionsStylePayload,
-      inheritedAnimatedPayload
+      inheritedAnimatedPayload,
+      inheritedNodes
     );
-    [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] = this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload);
+    [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] = this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload, inheritedNodes);
     for (const domCascade of Array.from(this.#customHighlightPseudoDOMCascades.values()).concat(Array.from(this.#pseudoDOMCascades.values())).concat(this.#mainDOMCascade)) {
       for (const style of domCascade.styles()) {
         this.#styleToDOMCascade.set(style, domCascade);
@@ -20537,7 +20567,19 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       this.#functionRuleMap.set(rule.functionName().text, rules);
     }
   }
-  async buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload) {
+  async resolveInheritedParentNodes(maxDepth) {
+    const parents = [];
+    let current = this.#node;
+    for (let i = 0; i < maxDepth; ++i) {
+      current = await parentElementInFlatTree(current);
+      if (!current) {
+        break;
+      }
+      parents.push(current);
+    }
+    return parents;
+  }
+  buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload, inheritedNodes) {
     const nodeCascades = [];
     const nodeStyles = [];
     function addAttributesStyle() {
@@ -20584,14 +20626,8 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       false
       /* #isInherited */
     ));
-    let parentNode = this.#node.parentNode;
-    const traverseParentInFlatTree = async (node) => {
-      if (node.hasAssignedSlot()) {
-        return await node.assignedSlot?.deferredNode.resolvePromise() ?? null;
-      }
-      return node.parentNode;
-    };
-    for (let i = 0; parentNode && inheritedPayload && i < inheritedPayload.length; ++i) {
+    for (let i = 0; inheritedPayload && i < inheritedPayload.length && i < inheritedNodes.length; ++i) {
+      const parentNode = inheritedNodes[i];
       const inheritedStyles = [];
       const entryPayload = inheritedPayload[i];
       const inheritedAnimatedEntryPayload = inheritedAnimatedPayload[i];
@@ -20645,12 +20681,10 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
         inheritedStyles.push(inheritedRule.style);
         this.#inheritedStyles.add(inheritedRule.style);
       }
-      const node = parentNode;
-      parentNode = await traverseParentInFlatTree(parentNode);
       nodeCascades.push(new NodeCascade(
         this,
         inheritedStyles,
-        node,
+        parentNode,
         true
         /* #isInherited */
       ));
@@ -20702,7 +20736,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       }
     }
   }
-  buildPseudoCascades(pseudoPayload, inheritedPseudoPayload) {
+  buildPseudoCascades(pseudoPayload, inheritedPseudoPayload, inheritedNodes) {
     const pseudoInheritanceCascades = /* @__PURE__ */ new Map();
     const customHighlightPseudoInheritanceCascades = /* @__PURE__ */ new Map();
     if (!pseudoPayload) {
@@ -20749,8 +20783,8 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       }
     }
     if (inheritedPseudoPayload) {
-      let parentNode = this.#node.parentNode;
-      for (let i = 0; parentNode && i < inheritedPseudoPayload.length; ++i) {
+      for (let i = 0; i < inheritedPseudoPayload.length && i < inheritedNodes.length; ++i) {
+        const parentNode = inheritedNodes[i];
         const inheritedPseudoMatches = inheritedPseudoPayload[i].pseudoElements;
         for (let j = 0; j < inheritedPseudoMatches.length; ++j) {
           const inheritedEntryPayload = inheritedPseudoMatches[j];
@@ -20789,7 +20823,6 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
             }
           }
         }
-        parentNode = parentNode.parentNode;
       }
     }
     for (const [pseudoType, nodeCascade] of pseudoCascades.entries()) {
@@ -22686,7 +22719,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
    *      paused position. We need the generated range to resolve variable
    *      values.
    */
-  resolveMappedScopeChain(callFrame) {
+  resolveMappedScopeChain(callFrame, scopeChain) {
     const rangeChain = this.#findGeneratedRangeChainForFrame(callFrame);
     const innerMostOriginalScope = rangeChain.at(-1)?.originalScope;
     if (innerMostOriginalScope === void 0) {
@@ -22699,7 +22732,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       const isFunctionScope = originalScope.isStackFrame;
       const isInnerMostFunction = isFunctionScope && !seenFunctionScope;
       const returnValue = isInnerMostFunction ? callFrame.returnValue() : null;
-      const scopeNumber = range ? findMatchingScopeNumber(callFrame, range) : void 0;
+      const scopeNumber = range ? findMatchingScopeNumber(callFrame, scopeChain, range) : void 0;
       result.push(new SourceMapScopeChainEntry(
         callFrame,
         originalScope,
@@ -22710,7 +22743,7 @@ var SourceMapScopesInfo = class _SourceMapScopesInfo {
       ));
       seenFunctionScope ||= isFunctionScope;
     }
-    const globalScope = callFrame.scopeChain()?.find((s) => s.type() === Debugger.ScopeType.Global);
+    const globalScope = scopeChain.find((s) => s.type() === Debugger.ScopeType.Global);
     if (globalScope) {
       result.push(globalScope);
     }
@@ -23002,8 +23035,7 @@ function positionRange(callFrame, scope) {
     end: scriptRelativePosition(range.end)
   };
 }
-function findMatchingScopeNumber(callFrame, range) {
-  const scopeChain = callFrame.scopeChain();
+function findMatchingScopeNumber(callFrame, scopeChain, range) {
   const exactMatch = scopeChain.find((scope) => {
     const scopeRange = positionRange(callFrame, scope);
     return scopeRange !== null && comparePositions2(scopeRange.start, range.start) === 0 && comparePositions2(scopeRange.end, range.end) === 0;
@@ -23701,12 +23733,12 @@ var SourceMap = class _SourceMap {
   compatibleForURL(sourceURL, other) {
     return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) && this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
   }
-  resolveScopeChain(frame) {
+  resolveScopeChain(frame, scopeChain) {
     this.#ensureSourceMapProcessed();
     if (this.#provenance === "user" /* USER */ || !this.#scopesInfo?.hasVariablesAndBindings()) {
       return null;
     }
-    return this.#scopesInfo.resolveMappedScopeChain(frame);
+    return this.#scopesInfo.resolveMappedScopeChain(frame, scopeChain);
   }
   resolveMappedVariablesAtPosition(location, ignoreInnerBlockScopes = false) {
     this.#ensureSourceMapProcessed();
@@ -27827,7 +27859,7 @@ var EmulationModel = class extends SDKModel {
     this.#settingListeners.push(
       visionDeficiencySetting.addChangeListener(() => this.#emulateVisionDeficiency(visionDeficiencySetting.get()))
     );
-    if (visionDeficiencySetting.get()) {
+    if (visionDeficiencySetting.get() && visionDeficiencySetting.get() !== Emulation.SetEmulatedVisionDeficiencyRequestType.None) {
       void this.#emulateVisionDeficiency(visionDeficiencySetting.get());
     }
     const osTextScaleSetting = settings.resolve(emulatedOSTextScaleSettingDescriptor);
@@ -28542,6 +28574,12 @@ var textEditorIndentSettingDescriptor = {
   defaultValue: "    ",
   storageType: Common19.Settings.SettingStorageType.SYNCED
 };
+var customNetworkConditionsSettingDescriptor = {
+  name: "custom-network-conditions",
+  type: Common19.Settings.SettingType.ARRAY,
+  defaultValue: [],
+  storageType: Common19.Settings.SettingStorageType.SYNCED
+};
 
 // ../../front_end/core/sdk/ConsoleModel.ts
 var UIStrings6 = {
@@ -28672,6 +28710,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
     if ("error" in result) {
       return;
     }
+    executionContext.debuggerModel.invalidateScopeChains();
     try {
       await this.#console.showPromise();
     } catch {
@@ -33572,6 +33611,20 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     return this.#debuggerPausedDetails;
   }
   /**
+   * Call this after running code in the paused target that can assign to variables (e.g. a console evaluation).
+   * The scope chains of the paused call frames are re-fetched on demand afterwards. Listeners are expected to
+   * recompute whatever they derived from a scope chain, similar to what happens after a step.
+   */
+  invalidateScopeChains() {
+    const callFrames = this.#debuggerPausedDetails?.callFrames ?? [];
+    for (const callFrame of callFrames) {
+      callFrame.markScopeChainStale();
+    }
+    if (callFrames.length > 0) {
+      this.dispatchEventToListeners("ScopeChainsInvalidated" /* ScopeChainsInvalidated */, this);
+    }
+  }
+  /**
    * @returns null if the pause was presented, or the step to issue instead, as decided by the before-paused callback.
    */
   async setDebuggerPausedDetails(debuggerPausedDetails) {
@@ -33905,6 +33958,7 @@ var Events10 = /* @__PURE__ */ ((Events36) => {
   Events36["GlobalObjectCleared"] = "GlobalObjectCleared";
   Events36["CallFrameSelected"] = "CallFrameSelected";
   Events36["DebuggerIsReadyToPause"] = "DebuggerIsReadyToPause";
+  Events36["ScopeChainsInvalidated"] = "ScopeChainsInvalidated";
   return Events36;
 })(Events10 || {});
 var DebuggerDispatcher = class {
@@ -34091,8 +34145,9 @@ var CallFrame = class _CallFrame {
   script;
   payload;
   #location;
-  #scopeChain;
-  #localScope;
+  /** Shared with the virtual call frames of this call frame, as they share the payload. */
+  #scopeChainState = { stale: false };
+  #scopes;
   inlineFrameIndex;
   functionName;
   #functionLocation;
@@ -34104,19 +34159,10 @@ var CallFrame = class _CallFrame {
     this.script = script;
     this.payload = payload;
     this.#location = Location.fromPayload(debuggerModel, payload.location, inlineFrameIndex);
-    this.#scopeChain = [];
-    this.#localScope = null;
     this.inlineFrameIndex = inlineFrameIndex || 0;
     this.functionName = functionName ?? payload.functionName;
     this.canBeRestarted = Boolean(payload.canBeRestarted);
     this.exception = exception;
-    for (let i = 0; i < payload.scopeChain.length; ++i) {
-      const scope = new Scope(this, i);
-      this.#scopeChain.push(scope);
-      if (scope.type() === Debugger.ScopeType.Local) {
-        this.#localScope = scope;
-      }
-    }
     if (payload.functionLocation) {
       this.#functionLocation = Location.fromPayload(debuggerModel, payload.functionLocation);
     }
@@ -34135,16 +34181,44 @@ var CallFrame = class _CallFrame {
     return result;
   }
   createVirtualCallFrame(inlineFrameIndex, name) {
-    return new _CallFrame(this.debuggerModel, this.script, this.payload, inlineFrameIndex, name, this.exception);
+    const callFrame = new _CallFrame(this.debuggerModel, this.script, this.payload, inlineFrameIndex, name, this.exception);
+    callFrame.#scopeChainState = this.#scopeChainState;
+    return callFrame;
   }
   get id() {
     return this.payload.callFrameId;
   }
-  scopeChain() {
-    return this.#scopeChain;
+  /**
+   * Call this after running code in the paused target that can assign to variables. The scope chain V8
+   * reported with the pause is a snapshot, so it is re-fetched the next time it is requested.
+   */
+  markScopeChainStale() {
+    this.#scopeChainState.stale = true;
   }
-  localScope() {
-    return this.#localScope;
+  async scopeChain() {
+    const state = this.#scopeChainState;
+    while (state.stale || state.refetch) {
+      if (!state.refetch) {
+        state.stale = false;
+        state.refetch = this.#refetchScopeChain();
+      }
+      await state.refetch;
+    }
+    const payload = this.payload.scopeChain;
+    if (this.#scopes?.payload !== payload) {
+      this.#scopes = { payload, chain: payload.map((_, ordinal) => new Scope(this, ordinal)) };
+    }
+    return this.#scopes.chain;
+  }
+  async #refetchScopeChain() {
+    try {
+      const response = await this.debuggerModel.agent.invoke_getScopeChain({ callFrameId: this.id });
+      if (!response.getError()) {
+        this.payload.scopeChain = response.scopeChain;
+      }
+    } finally {
+      this.#scopeChainState.refetch = void 0;
+    }
   }
   thisObject() {
     return this.payload.this ? this.debuggerModel.runtimeModel().createRemoteObject(this.payload.this) : null;
@@ -34159,15 +34233,19 @@ var CallFrame = class _CallFrame {
     const evaluateResponse = await this.debuggerModel.agent.invoke_evaluateOnCallFrame(
       { callFrameId: this.id, expression, silent: true, objectGroup: "backtrace" }
     );
-    if (evaluateResponse.getError() || evaluateResponse.exceptionDetails) {
+    if (evaluateResponse.getError()) {
+      return null;
+    }
+    if (evaluateResponse.exceptionDetails) {
+      this.debuggerModel.invalidateScopeChains();
       return null;
     }
     const response = await this.debuggerModel.agent.invoke_setReturnValue({ newValue: evaluateResponse.result });
-    if (response.getError()) {
-      return null;
+    if (!response.getError()) {
+      this.#returnValue = this.debuggerModel.runtimeModel().createRemoteObject(evaluateResponse.result);
     }
-    this.#returnValue = this.debuggerModel.runtimeModel().createRemoteObject(evaluateResponse.result);
-    return this.#returnValue;
+    this.debuggerModel.invalidateScopeChains();
+    return response.getError() ? null : this.#returnValue;
   }
   location() {
     return this.#location;
@@ -34307,7 +34385,7 @@ var Scope = class {
     return this.#payload.emptyReason;
   }
   extraProperties() {
-    if (this !== this.#callFrame.localScope() || this.#callFrame.script.isWasm()) {
+    if (this.#type !== Debugger.ScopeType.Local || this.#callFrame.script.isWasm()) {
       return [];
     }
     const extraProperties = [];
@@ -35189,7 +35267,7 @@ var CONNECTION_TYPES = /* @__PURE__ */ new Map([
   ["wimax", Network.ConnectionType.Wimax]
 ]);
 function customUserNetworkConditionsSetting(settings) {
-  return settings.moduleSetting("custom-network-conditions");
+  return settings.resolve(customNetworkConditionsSettingDescriptor);
 }
 function activeNetworkThrottlingKeySetting(settings) {
   return settings.createSetting("active-network-condition-key", "NO_THROTTLING" /* NO_THROTTLING */);
@@ -40614,6 +40692,18 @@ function shouldGroupAnimations(firstAnimation, anim) {
   }
   return !animationTimeline && firstAnimation.startTime() === anim.startTime();
 }
+function getParticipantId(animation) {
+  const source = animation.source();
+  const timeline = animation.viewOrScrollTimeline();
+  const target = `node:${source.backendNodeId()}`;
+  const timelineId = timeline ? `|timeline:${timeline.sourceNodeId}:${timeline.axis}` : "";
+  const cssId = animation.cssId();
+  if (cssId) {
+    return `${target}|css:${JSON.stringify([cssId, animation.name()])}${timelineId}`;
+  }
+  const fingerprint = [animation.type(), animation.name()];
+  return `${target}|web:${JSON.stringify(fingerprint)}${timelineId}`;
+}
 var AnimationModel = class extends SDKModel {
   runtimeModel;
   agent;
@@ -40678,6 +40768,7 @@ var AnimationModel = class extends SDKModel {
       }
     }
     if (!foundAnimation || !foundAnimationGroup) {
+      await this.animationStarted(payload);
       return;
     }
     await foundAnimation.setPayload(payload);
@@ -40698,9 +40789,10 @@ var AnimationModel = class extends SDKModel {
     this.#flushPendingAnimations();
   }
   #matchExistingGroups(incomingGroup) {
+    const incomingParticipantIds = incomingGroup.getParticipantIds();
     let matchedGroup = null;
     for (const group of this.animationGroups.values()) {
-      if (group.matches(incomingGroup)) {
+      if (group.matches(incomingGroup, incomingParticipantIds)) {
         matchedGroup = group;
         group.rebaseTo(incomingGroup);
         break;
@@ -40747,6 +40839,12 @@ var AnimationModel = class extends SDKModel {
   }
   releaseAnimations(animations) {
     void this.agent.invoke_releaseAnimations({ animations });
+  }
+  forgetAnimationGroup(group) {
+    this.animationGroups.delete(group.id());
+    for (const animation of group.animations()) {
+      this.#animationsById.delete(animation.id());
+    }
   }
   async suspendModel() {
     await this.agent.invoke_disable().then(() => this.#reset());
@@ -41068,9 +41166,8 @@ var AnimationGroup = class {
   animations() {
     return this.#animations;
   }
-  release() {
-    this.#animationModel.animationGroups.delete(this.id());
-    this.#animationModel.releaseAnimations(this.#animationIds());
+  forget() {
+    this.#animationModel.forgetAnimationGroup(this);
   }
   #animationIds() {
     function extractId(animation) {
@@ -41126,13 +41223,13 @@ var AnimationGroup = class {
     return this.#scrollNode;
   }
   seekTo(currentTime) {
-    const animations = [];
+    const animationIds = [];
     const currentTimes = [];
     for (const animation of this.#animations) {
-      animations.push(animation.id());
+      animationIds.push(animation.id());
       currentTimes.push(animation.playbackRate() >= 0 ? currentTime : animation.endTime() - animation.startTime() - currentTime);
     }
-    void this.#animationModel.agent.invoke_seekAnimations({ animations, currentTimes });
+    void this.#animationModel.agent.invoke_seekAnimations({ animations: animationIds, currentTimes });
   }
   paused() {
     return this.#paused;
@@ -41156,23 +41253,22 @@ var AnimationGroup = class {
     }
     return this.#animationModel.agent.invoke_getCurrentTime({ id: longestAnim.id() }).then(({ currentTime }) => currentTime || 0);
   }
-  matches(group) {
-    function extractId(anim) {
-      const timelineId = (anim.viewOrScrollTimeline()?.sourceNodeId ?? "") + (anim.viewOrScrollTimeline()?.axis ?? "");
-      const regularId = anim.type() === Animation.AnimationType.WebAnimation ? anim.type() + anim.id() : anim.cssId();
-      return regularId + timelineId;
-    }
-    if (this.#animations.length !== group.#animations.length) {
+  /**
+   * Best-effort signatures for matching replays on the same element despite new
+   * protocol IDs. Animations without a cssId can match different effects; mutable
+   * timing and keyframe details are intentionally excluded.
+   * Returned as a sorted multiset: identical animations are kept as duplicates.
+   */
+  getParticipantIds() {
+    return this.#animations.map(getParticipantId).sort();
+  }
+  matches(group, participantIds) {
+    if (this.#animationModel !== group.#animationModel || this.#animations.length !== group.#animations.length) {
       return false;
     }
-    const left = this.#animations.map(extractId).sort();
-    const right = group.#animations.map(extractId).sort();
-    for (let i = 0; i < left.length; i++) {
-      if (left[i] !== right[i]) {
-        return false;
-      }
-    }
-    return true;
+    const thisParticipantIds = this.getParticipantIds();
+    const otherParticipantIds = participantIds ?? group.getParticipantIds();
+    return thisParticipantIds.every((id, index) => id === otherParticipantIds[index]);
   }
   shouldInclude(group) {
     const [firstIncomingAnimation] = group.#animations;
@@ -41183,7 +41279,11 @@ var AnimationGroup = class {
     this.#animations.push(...animations);
   }
   rebaseTo(group) {
-    this.#animationModel.releaseAnimations(this.#animationIds());
+    const incomingIds = new Set(group.#animationIds());
+    const releasedIds = this.#animationIds().filter((id) => !incomingIds.has(id));
+    if (releasedIds.length) {
+      this.#animationModel.releaseAnimations(releasedIds);
+    }
     this.#animations = group.#animations;
     this.#scrollNode = void 0;
   }

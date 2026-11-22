@@ -920,6 +920,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1244,7 +1247,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -2028,6 +2030,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2715,6 +2718,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {

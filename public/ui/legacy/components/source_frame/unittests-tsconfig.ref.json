@@ -19,7 +19,6 @@
     "../../../../../../../../front_end/ui/legacy/components/source_frame/JSONView.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/ResourceSourceFrame.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/SourceFrame.test.ts",
-    "../../../../../../../../front_end/ui/legacy/components/source_frame/StreamingContentHexView.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/source_frame/XMLView.test.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -32,6 +31,9 @@
     },
     {
       "path": "../../../../core/common/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../../../core/host/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../../../core/platform/bundle-tsconfig.ref.json"
@@ -59,6 +61,9 @@
     },
     {
       "path": "../../../components/buttons/bundle-tsconfig.ref.json"
+    },
+    {
+      "path": "../../../components/text_editor/bundle-tsconfig.ref.json"
     },
     {
       "path": "../../../lit/bundle-tsconfig.ref.json"

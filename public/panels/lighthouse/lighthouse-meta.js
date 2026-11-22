@@ -2,6 +2,7 @@
 import * as Common from "../../core/common/common.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as UI from "../../ui/legacy/legacy.js";
+import * as SettingsUI from "../../ui/settings/settings.js";
 import * as Lighthouse from "./lighthouse.js";
 var UIStrings = {
   /**
@@ -85,84 +86,44 @@ Common.Revealer.registerRevealer({
     return new Lighthouse2.LighthousePanel.ReportRevealer();
   }
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.catPerfSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.performance),
-  settingName: "lighthouse.cat-perf",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.performance)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.catA11ySettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.accessibility),
-  settingName: "lighthouse.cat-a11y",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.accessibility)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.catBestPracticesSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.bestPractices),
-  settingName: "lighthouse.cat-best-practices",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.bestPractices)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.catSeoSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.seo),
-  settingName: "lighthouse.cat-seo",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.seo)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.catAgenticBrowsingSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.agenticBrowsing),
-  settingName: "lighthouse.cat-agentic-browsing",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.agenticBrowsing)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.deviceTypeSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.device),
-  settingName: "lighthouse.device-type",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "mobile"
+  title: i18nLazyString(UIStrings.device)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.modeSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.mode),
-  settingName: "lighthouse.mode",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "navigation"
+  title: i18nLazyString(UIStrings.mode)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.throttlingSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.throttling),
-  settingName: "lighthouse.throttling",
-  settingType: Common.Settings.SettingType.ENUM,
-  defaultValue: "simulate"
+  title: i18nLazyString(UIStrings.throttling)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.clearStorageSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.clearStorage),
-  settingName: "lighthouse.clear-storage",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: true
+  title: i18nLazyString(UIStrings.clearStorage)
 });
-Common.Settings.registerSettingExtension({
+SettingsUI.SettingUIRegistration.register(SettingsUI.LighthouseSettings.enableSamplingSettingDescriptor, {
   category: Common.Settings.SettingCategory.NONE,
-  storageType: Common.Settings.SettingStorageType.SYNCED,
-  title: i18nLazyString(UIStrings.enableSampling),
-  settingName: "lighthouse.enable-sampling",
-  settingType: Common.Settings.SettingType.BOOLEAN,
-  defaultValue: false
+  title: i18nLazyString(UIStrings.enableSampling)
 });
 //# sourceMappingURL=lighthouse-meta.js.map

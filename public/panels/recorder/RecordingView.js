@@ -20,7 +20,8 @@ import * as Models from './models/models.js';
 import recordingViewStyles from './recordingView.css.js';
 import { ReplaySection } from './ReplaySection.js';
 import { StepView, } from './StepView.js';
-const { html } = Lit;
+const { html, nothing } = Lit;
+const { classMap } = Lit.Directives;
 const { widget } = UI.Widget;
 const UIStrings = {
     /**
@@ -546,6 +547,10 @@ function renderSections(input) {
         ? html `<div class="step recording">${i18nString(UIStrings.recording)}</div>`
         : null}
                 </div>
+                ${i < input.sections.length - 1 ? html `<div class=${classMap({
+        'timeline-filler': true,
+        'is-error': getPreviousState(i + 1, -1) === "error" /* State.ERROR */,
+    })}></div>` : nothing}
               </div>
             </div>
         `)}
@@ -681,7 +686,17 @@ export class RecordingView extends UI.Widget.Widget {
     lastReplayResult;
     replayAllowed = false;
     breakpointIndexes = new Set();
-    extensionConverters = [];
+    #extensionConverters = [];
+    get extensionConverters() {
+        return this.#extensionConverters;
+    }
+    set extensionConverters(converters) {
+        if (this.#extensionConverters === converters) {
+            return;
+        }
+        this.#extensionConverters = converters;
+        void this.#convertToCode();
+    }
     replayExtensions;
     extensionDescriptor;
     onPlayRecording;
@@ -702,6 +717,9 @@ export class RecordingView extends UI.Widget.Widget {
         return this.#recorderSettings;
     }
     set recorderSettings(settings) {
+        if (this.#recorderSettings === settings) {
+            return;
+        }
         this.#recorderSettings = settings;
         this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
         void this.#convertToCode();
@@ -711,6 +729,9 @@ export class RecordingView extends UI.Widget.Widget {
         return this.#builtInConverters;
     }
     set builtInConverters(converters) {
+        if (this.#builtInConverters === converters) {
+            return;
+        }
         this.#builtInConverters = converters;
         this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
         void this.#convertToCode();

@@ -4,7 +4,6 @@
 
 /**
  * This file is auto-generated, do not edit manually. *
- * Re-generate with: scripts/tools/dt.py generate-protocol-resources.
  */
 
 
@@ -600,6 +599,13 @@ declare namespace ProtocolProxyApi {
      * Simulates a GATT disconnection from the peripheral with |address|.
      */
     invoke_simulateGATTDisconnection(params: Protocol.BluetoothEmulation.SimulateGATTDisconnectionRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Simulates the ATT MTU exchange procedure from Bluetooth Core Specification
+     * Vol 3 Part F 3.4.2 establishing |mtu| for the connection to the peripheral
+     * with |address|.
+     */
+    invoke_simulateGATTMtuChange(params: Protocol.BluetoothEmulation.SimulateGATTMtuChangeRequest): Promise<Protocol.ProtocolResponseWithError>;
 
   }
   export interface BluetoothEmulationDispatcher {

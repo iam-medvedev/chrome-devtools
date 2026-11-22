@@ -148,6 +148,10 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
      */
     #networkPersistedGroupConfigSetting;
     #mainPersistedGroupConfigSetting;
+    #listenersAttached = false;
+    #boundOnMainDataChanged = () => {
+        this.mainFlameChart.scheduleUpdate();
+    };
     constructor(delegate, commentManager) {
         super({ jslog: `${VisualLogging.section('timeline.flame-chart-view')}` });
         this.registerRequiredCSS(timelineFlameChartViewStyles);
@@ -172,7 +176,6 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
             Common.Settings.Settings.instance().createSetting('timeline-persisted-network-flamechart-track-config', null);
         this.mainDataProvider = new TimelineFlameChartDataProvider();
         this.mainDataProvider.setPersistedGroupConfigSetting(this.#mainPersistedGroupConfigSetting);
-        this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DATA_CHANGED */, () => this.mainFlameChart.scheduleUpdate());
         this.mainDataProvider.addEventListener("FlameChartItemHovered" /* TimelineFlameChartDataProviderEvents.FLAME_CHART_ITEM_HOVERED */, e => this.detailsView.revealEventInTreeView(e.data));
         this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, {
             // The TimelineOverlays are used for selected elements
@@ -316,7 +319,6 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
         this.#onMainEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.mainDataProvider, event.data.entryFromIndex);
         this.#onNetworkEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.networkDataProvider, event.data.entryFromIndex);
         this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
-        this.mainDataProvider.addEventListener("EntryLabelAnnotationAdded" /* TimelineFlameChartDataProviderEvents.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
         this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onNetworkAddEntryLabelAnnotation, this);
         this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onMainEntriesLinkAnnotationCreated, this);
         this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onNetworkEntriesLinkAnnotationCreated, this);
@@ -376,7 +378,6 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
         this.#boundRefreshAfterIgnoreList = this.#refreshAfterIgnoreList.bind(this);
         this.#selectedEvents = null;
         this.groupBySetting = Common.Settings.Settings.instance().createSetting('timeline-tree-group-by', AggregatedTimelineTreeView.GroupBy.None);
-        this.groupBySetting.addChangeListener(this.refreshMainFlameChart, this);
         this.refreshMainFlameChart();
         // Comments on flame chart entries are drawn by the shared comments overlay.
         // TimelineCommentController connects the canvases and Overlays to it.
@@ -388,7 +389,27 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
             overlays: this.#overlays,
             eventsSerializer: this.#eventsSerializer,
         }, commentManager);
+    }
+    #attachListeners() {
+        if (this.#listenersAttached) {
+            return;
+        }
+        this.#listenersAttached = true;
+        this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DATA_CHANGED */, this.#boundOnMainDataChanged);
+        this.mainDataProvider.connectImageCache();
+        this.groupBySetting.addChangeListener(this.refreshMainFlameChart, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
+    }
+    #detachListeners() {
+        if (!this.#listenersAttached) {
+            return;
+        }
+        this.#listenersAttached = false;
+        this.#debouncedUpdateSearchResults.cancel();
+        this.mainDataProvider.removeEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DATA_CHANGED */, this.#boundOnMainDataChanged);
+        this.mainDataProvider.disconnectImageCache();
+        this.groupBySetting.removeChangeListener(this.refreshMainFlameChart, this);
+        TraceBounds.TraceBounds.removeListener(this.#onTraceBoundsChangeBound);
     }
     containingElement() {
         return this.element;
@@ -1168,14 +1189,24 @@ export class TimelineFlameChartView extends TimelineFlameChartViewBase {
         this.#networkPersistedGroupConfigSetting.removeChangeListener(this.resizeToPreferredHeights, this);
         Workspace.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#boundRefreshAfterIgnoreList);
         this.#commentController.willHide();
+        this.#detachListeners();
+    }
+    onDetach() {
+        this.#detachListeners();
+        super.onDetach();
     }
     wasShown() {
         super.wasShown();
+        this.#attachListeners();
         this.#networkPersistedGroupConfigSetting.addChangeListener(this.resizeToPreferredHeights, this);
         Workspace.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#boundRefreshAfterIgnoreList);
         this.#commentController.wasShown();
         if (this.needsResizeToPreferredHeights) {
             this.resizeToPreferredHeights();
+        }
+        if (this.#parsedTrace && TraceBounds.TraceBounds.BoundsManager.instance().state()) {
+            this.setupWindowTimes();
+            this.updateSearchResults(false, false);
         }
         this.#updateFlameCharts();
     }

@@ -6,7 +6,7 @@ declare const SplitWidgetBase: Common.ObjectWrapper.EventMixin<EventTypes, typeo
 export declare class SplitWidget extends SplitWidgetBase {
     #private;
     private setting;
-    constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean, element?: SplitWidgetElement);
+    constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean, element?: HTMLElement);
     isVertical(): boolean;
     setVertical(isVertical: boolean): void;
     setAutoAdjustOrientation(autoAdjustOrientation: boolean): void;
@@ -51,6 +51,14 @@ export declare class SplitWidget extends SplitWidgetBase {
     toggleSidebar(): boolean;
 }
 export type ShowAttribute = 'main' | 'sidebar' | 'both';
+/**
+ * `<devtools-split-view>` hosts a `SplitWidget`.
+ *
+ * `direction`, `sidebar-position`, and `show` can change at any time.
+ * `name`, `sidebar-initial-size`, `sidebar-initial-width`,
+ * `sidebar-initial-height`, and `constraints-in-dip` are only read when
+ * the widget is created.
+ */
 export declare class SplitWidgetElement extends WidgetElement<SplitWidget> {
     static readonly observedAttributes: string[];
     constructor();

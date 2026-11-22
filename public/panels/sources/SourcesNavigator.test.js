@@ -7,14 +7,16 @@ import { assert } from 'chai';
 import { afterEach, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../core/text_utils/text_utils.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { getAxeViolations } from '../../testing/AxeHelpers.js';
 import { assertScreenshot, raf, renderElementIntoDOM, setTestUniverseForWidgets } from '../../testing/DOMHelpers.js';
-import { deinitializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { dispatchEvent } from '../../testing/MockConnection.js';
 import { MockDebuggerBackend } from '../../testing/MockScopeChain.js';
@@ -80,7 +82,8 @@ describe('NetworkNavigatorView', () => {
             settings: backend.universe.settings,
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
+        sinon.stub(Persistence.NetworkPersistenceManager.NetworkPersistenceManager, 'instance')
+            .returns(backend.universe.networkPersistenceManager);
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
         setTestUniverseForWidgets(backend.universe);
     });
@@ -92,9 +95,6 @@ describe('NetworkNavigatorView', () => {
         assert.exists(navigatorView);
         return navigatorView;
     }
-    afterEach(async () => {
-        await deinitializeGlobalVars();
-    });
     describe('reveals main target', () => {
         let tabTarget;
         let target;
@@ -665,7 +665,8 @@ describe('FilesNavigatorView', () => {
             settings: backend.universe.settings,
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
+        sinon.stub(Persistence.NetworkPersistenceManager.NetworkPersistenceManager, 'instance')
+            .returns(backend.universe.networkPersistenceManager);
         UI.ActionRegistration.maybeRemoveActionExtension('sources.add-folder-to-workspace');
         UI.ActionRegistration.registerActionExtension({
             actionId: 'sources.add-folder-to-workspace',
@@ -689,9 +690,6 @@ describe('FilesNavigatorView', () => {
         await raf();
         return navigatorView;
     }
-    afterEach(async () => {
-        await deinitializeGlobalVars();
-    });
     it('renders the empty state with placeholder and automatic file system nudge', async () => {
         sinon.stub(backend.universe.automaticFileSystemManager, 'availability').get(() => 'available');
         await createFilesNavigatorView();
@@ -777,6 +775,204 @@ describe('FilesNavigatorView', () => {
         }
         assert.strictEqual(contentData.text, 'testme');
         project.removeProject();
+        await backend.universe.networkPersistenceManager.updateInterceptionPatternsForTests();
+    });
+    it('has no aXe violations when showing a file system folder in the navigator pane', async () => {
+        const debuggerActionIds = [
+            'debugger.toggle-pause',
+            'debugger.step-over',
+            'debugger.step-into',
+            'debugger.step-out',
+            'debugger.step',
+            'debugger.toggle-breakpoints-active',
+        ];
+        let sourcesPanel;
+        let fileSystemWorkspaceBinding;
+        try {
+            UI.ZoomManager.ZoomManager.instance({
+                forceNew: true,
+                win: window,
+                frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            });
+            for (const actionId of debuggerActionIds) {
+                UI.ActionRegistration.maybeRemoveActionExtension(actionId);
+                UI.ActionRegistration.registerActionExtension({
+                    actionId,
+                    category: "DEBUGGER" /* UI.ActionRegistration.ActionCategory.DEBUGGER */,
+                    title: () => actionId,
+                });
+            }
+            const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+            UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+            SDK.EventBreakpointsModel.EventBreakpointsManager.instance({
+                forceNew: true,
+                targetManager: backend.universe.targetManager,
+            });
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+                .returns(backend.universe.debuggerWorkspaceBinding);
+            Sources.CallStackSidebarPane.CallStackSidebarPane.instance({ forceNew: true });
+            Sources.BreakpointsView.BreakpointsSidebarController.instance({
+                forceNew: true,
+                breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance(),
+                settings: Common.Settings.Settings.instance(),
+            });
+            UI.ViewManager.resetViewRegistration();
+            UI.ViewManager.registerViewExtension({
+                id: 'sources.threads',
+                title: () => 'Threads',
+                commandPrompt: () => 'Show Threads',
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return new Sources.ThreadsSidebarPane.ThreadsSidebarPane();
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                id: 'sources.scope-chain',
+                title: () => 'Scope',
+                commandPrompt: () => 'Show Scope',
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return Sources.ScopeChainSidebarPane.ScopeChainSidebarPane.instance();
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                id: 'sources.watch',
+                title: () => 'Watch',
+                commandPrompt: () => 'Show Watch',
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return Sources.WatchExpressionsSidebarPane.WatchExpressionsSidebarPane.instance();
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                id: 'sources.js-breakpoints',
+                title: () => 'Breakpoints',
+                commandPrompt: () => 'Show Breakpoints',
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return Sources.BreakpointsView.BreakpointsView.instance({ forceNew: true });
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                id: 'navigator-network',
+                title: () => 'Page',
+                commandPrompt: () => 'Show Page',
+                order: 2,
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                id: 'navigator-files',
+                title: () => 'Workspace',
+                commandPrompt: () => 'Show Workspace',
+                order: 3,
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return new Sources.SourcesNavigator.FilesNavigatorView();
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                id: 'navigator-overrides',
+                title: () => 'Overrides',
+                commandPrompt: () => 'Show Overrides',
+                order: 4,
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return Sources.SourcesNavigator.OverridesNavigatorView.instance({ forceNew: true });
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                id: 'navigator-content-scripts',
+                title: () => 'Content scripts',
+                commandPrompt: () => 'Show Content scripts',
+                order: 5,
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return new Sources.SourcesNavigator.ContentScriptsNavigatorView();
+                },
+            });
+            UI.ViewManager.registerViewExtension({
+                location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                id: 'navigator-snippets',
+                title: () => 'Snippets',
+                commandPrompt: () => 'Show Snippets',
+                order: 6,
+                persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
+                async loadView() {
+                    return new Sources.SourcesNavigator.SnippetsNavigatorView();
+                },
+            });
+            const viewManager = UI.ViewManager.ViewManager.instance({ forceNew: true, universe: backend.universe });
+            sourcesPanel = new Sources.SourcesPanel.SourcesPanel();
+            sinon.stub(sourcesPanel, 'setAsCurrentPanel').resolves();
+            UI.ViewManager.registerLocationResolver({
+                name: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
+                category: "SOURCES" /* UI.ViewManager.ViewLocationCategory.SOURCES */,
+                async loadResolver() {
+                    assert.exists(sourcesPanel);
+                    return sourcesPanel;
+                },
+            });
+            renderElementIntoDOM(sourcesPanel, { includeCommonStyles: true });
+            fileSystemWorkspaceBinding = new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(backend.universe.isolatedFileSystemManager, workspace);
+            const fileSystemPath = urlString `file:///var/www3`;
+            const platformFileSystem = new Persistence.PlatformFileSystem.PlatformFileSystem(fileSystemPath, Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT, false);
+            backend.universe.isolatedFileSystemManager.addPlatformFileSystem(fileSystemPath, platformFileSystem);
+            await viewManager.showView('navigator-files');
+            await UI.Widget.Widget.allUpdatesComplete;
+            await raf();
+            const filesNavigatorWidget = await viewManager.view('navigator-files').widget();
+            assert.instanceOf(filesNavigatorWidget, Sources.SourcesNavigator.FilesNavigatorView);
+            await filesNavigatorWidget.updateComplete;
+            const navigatorView = filesNavigatorWidget.children().find(child => child instanceof Sources.NavigatorView.NavigatorView);
+            assert.exists(navigatorView);
+            await navigatorView.updateComplete;
+            const rootElement = getTreeOutline(navigatorView).rootElement();
+            assert.lengthOf(rootElement.children(), 1);
+            const folderNode = rootElement.firstChild();
+            assert.exists(folderNode);
+            assert.strictEqual(getTreeElementTitle(folderNode), 'www3');
+            assert.isTrue(folderNode.listItemElement.classList.contains('navigator-fs-tree-item'));
+            assert.isFalse(folderNode.listItemElement.classList.contains('has-mapped-files'));
+            folderNode.expand();
+            await navigatorView.updateComplete;
+            assert.strictEqual(folderNode.childCount(), 0);
+            assert.isTrue(folderNode.selected);
+            const navigatorLocation = sourcesPanel.resolveLocation("navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */);
+            assert.exists(navigatorLocation);
+            const tabbedPane = navigatorLocation.widget();
+            assert.instanceOf(tabbedPane, UI.TabbedPane.TabbedPane);
+            assert.isTrue(tabbedPane.element.classList.contains('navigator-tabbed-pane'));
+            const violations = await getAxeViolations(tabbedPane.element, {
+                'aria-required-children': {
+                    enabled: false,
+                },
+            });
+            assert.isEmpty(violations);
+        }
+        finally {
+            sourcesPanel?.detach(/* overrideHideOnDetach= */ true);
+            if (sourcesPanel) {
+                window.removeEventListener('beforeunload', sourcesPanel.handleBeforeUnload, true);
+            }
+            fileSystemWorkspaceBinding?.dispose();
+            for (const actionId of debuggerActionIds) {
+                UI.ActionRegistration.maybeRemoveActionExtension(actionId);
+            }
+            UI.ViewManager.ViewManager.removeInstance();
+            UI.ViewManager.resetViewRegistration();
+            UI.Context.Context.removeInstance();
+            UI.InspectorView.InspectorView.removeInstance();
+            Sources.BreakpointsView.BreakpointsSidebarController.removeInstance();
+            SDK.EventBreakpointsModel.EventBreakpointsManager.removeInstance();
+            UI.ZoomManager.ZoomManager.removeInstance();
+        }
     });
 });
 describe('OverridesNavigatorView', () => {
@@ -803,7 +999,8 @@ describe('OverridesNavigatorView', () => {
             settings: backend.universe.settings,
         });
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
+        sinon.stub(Persistence.NetworkPersistenceManager.NetworkPersistenceManager, 'instance')
+            .returns(backend.universe.networkPersistenceManager);
         setTestUniverseForWidgets(backend.universe);
     });
     async function createOverridesNavigatorView() {
@@ -818,9 +1015,6 @@ describe('OverridesNavigatorView', () => {
         await raf();
         return navigatorView;
     }
-    afterEach(async () => {
-        await deinitializeGlobalVars();
-    });
     it('renders the empty state with placeholder', async () => {
         await createOverridesNavigatorView();
         await assertScreenshot('sources/overrides-navigator-empty.png');
@@ -895,7 +1089,9 @@ describe('OverridesNavigatorView', () => {
         assert.lengthOf(checkboxes, 1);
         assert.strictEqual(checkboxes[0], checkbox);
         assert.isFalse(checkbox.checked);
+        navigatorView.detach();
         project.removeProject();
+        await navigatorView.updateComplete;
     });
 });
 //# sourceMappingURL=SourcesNavigator.test.js.map

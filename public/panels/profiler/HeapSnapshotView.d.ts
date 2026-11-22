@@ -1,10 +1,11 @@
+import '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot/heap_snapshot.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -248,20 +249,41 @@ export declare class HeapProfileHeader extends ProfileHeader {
     loadFromFile(file: File): Promise<DOMError | null>;
     profileType(): HeapSnapshotProfileType;
 }
-export declare class HeapSnapshotStatisticsView extends UI.Widget.VBox {
-    pieChart: PerfUI.PieChart.PieChart;
-    constructor();
-    static valueFormatter(value: number): string;
-    setTotalAndRecords(total: number, records: PerfUI.PieChart.Slice[]): void;
+export interface HeapSnapshotStatisticsViewInput {
+    pieChartData: PerfUI.PieChart.PieChartData;
 }
+export type StatisticsView = (input: HeapSnapshotStatisticsViewInput, output: undefined, target: HTMLElement) => void;
+export declare const STATISTICS_DEFAULT_VIEW: StatisticsView;
+export declare class HeapSnapshotStatisticsView extends UI.Widget.VBox {
+    #private;
+    constructor(element?: HTMLElement, view?: StatisticsView);
+    wasShown(): void;
+    static valueFormatter(value: number): string;
+    set total(total: number);
+    set records(records: PerfUI.PieChart.Slice[]);
+    setTotalAndRecords(total: number, records: PerfUI.PieChart.Slice[]): void;
+    performUpdate(): void;
+}
+export interface HeapAllocationStackViewInput {
+    frames: HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null | undefined;
+    target: SDK.Target.Target | null;
+}
+export type AllocationStackView = (input: HeapAllocationStackViewInput, output: undefined, target: HTMLElement) => void;
+export declare const ALLOCATION_STACK_DEFAULT_VIEW: AllocationStackView;
 export declare class HeapAllocationStackView extends UI.Widget.Widget {
-    readonly heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null;
-    readonly linkifier: Components.Linkifier.Linkifier;
-    frameElements: HTMLElement[];
-    constructor(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null);
+    #private;
+    constructor(heapProfilerModelOrElement?: SDK.HeapProfilerModel.HeapProfilerModel | null | HTMLElement, view?: AllocationStackView);
+    wasShown(): void;
+    get heapProfilerModel(): SDK.HeapProfilerModel.HeapProfilerModel | null;
+    set heapProfilerModel(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null);
+    get frames(): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null | undefined;
+    set frames(frames: HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null | undefined);
+    static onContextMenu(link: Element, event: Event): void;
     onContextMenu(link: Element, event: Event): void;
+    static onStackViewKeydown(event: KeyboardEvent): void;
     onStackViewKeydown(event: KeyboardEvent): void;
     setAllocatedObject(snapshot: HeapSnapshotModel.HeapSnapshotProxy.HeapSnapshotProxy, snapshotNodeIndex: number): Promise<void>;
     clear(): void;
+    performUpdate(): void;
 }
 export {};

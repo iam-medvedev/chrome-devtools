@@ -22,7 +22,7 @@ import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html } from '../../ui/lit/lit.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
 import * as PanelsCommon from '../common/common.js';
 import * as Elements from './elements.js';
@@ -159,6 +159,43 @@ describe('StylesSidebarPane', () => {
                 sinon.assert.notCalled(resetFocusSpy);
             });
         });
+        describe('header view', () => {
+            it('invokes onFilterChanged when filter input changes', () => {
+                const host = new UI.Widget.Widget();
+                renderElementIntoDOM(host);
+                const onFilterChanged = sinon.spy();
+                Elements.StylesSidebarPane.DEFAULT_HEADER_VIEW({
+                    showNoMatches: false,
+                    toolbarItems: [],
+                    toolbarPane: null,
+                    toolbarPaneAnimation: null,
+                    onFilterChanged,
+                    onRegexToggled: () => { },
+                    onToolbarPaneAnimationEnd: () => { },
+                }, undefined, host.contentElement);
+                const filterInput = host.contentElement.querySelector('devtools-toolbar-input[type="filter"]');
+                assert.exists(filterInput);
+                filterInput.dispatchEvent(new CustomEvent('change', { detail: 'color' }));
+                sinon.assert.calledOnceWithExactly(onFilterChanged, 'color');
+            });
+            it('renders no-matches message when showNoMatches is true', () => {
+                const host = new UI.Widget.Widget();
+                renderElementIntoDOM(host);
+                Elements.StylesSidebarPane.DEFAULT_HEADER_VIEW({
+                    showNoMatches: true,
+                    toolbarItems: [],
+                    toolbarPane: null,
+                    toolbarPaneAnimation: null,
+                    onFilterChanged: () => { },
+                    onRegexToggled: () => { },
+                    onToolbarPaneAnimationEnd: () => { },
+                }, undefined, host.contentElement);
+                const noMatches = host.contentElement.querySelector('.gray-info-message');
+                assert.exists(noMatches);
+                assert.isFalse(noMatches.hidden);
+                assert.strictEqual(noMatches.textContent, 'No matching selector or style');
+            });
+        });
         describe('createNewRuleInViaInspectorStyleSheet', () => {
             it('creates a new rule in the via inspector stylesheet and starts editing the selector', async () => {
                 node.frameId.returns('frame-id');
@@ -280,7 +317,7 @@ describe('StylesSidebarPane', () => {
                 });
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
                 assert.lengthOf(sectionBlocks, 2);
-                assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@position-try --try-one');
+                assert.strictEqual(sectionBlocks[1].titleText(), '@position-try --try-one');
                 assert.lengthOf(sectionBlocks[1].sections, 1);
                 assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.PositionTryRuleSection);
             });
@@ -325,10 +362,10 @@ describe('StylesSidebarPane', () => {
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
                 assert.lengthOf(sectionBlocks, 3);
                 const inheritedBlock = sectionBlocks[1];
-                assert.strictEqual(inheritedBlock.titleElement()?.textContent, 'Inherited from ');
+                assert.strictEqual(inheritedBlock.titleText(), 'Inherited from ');
                 assert.lengthOf(inheritedBlock.childBlocks, 1);
                 const layerBlock = inheritedBlock.childBlocks[0];
-                assert.strictEqual(layerBlock.titleElement()?.textContent, 'Layermylayer');
+                assert.strictEqual(layerBlock.titleText(), 'Layermylayer');
                 const elementStyleSections = sectionBlocks[0].sections;
                 const inheritedStyleSections = layerBlock.sections;
                 // Filter to something that only matches the inherited style.
@@ -336,22 +373,22 @@ describe('StylesSidebarPane', () => {
                 sectionBlocks.forEach(block => block.updateFilter());
                 assert.isTrue(elementStyleSections[0].element.classList.contains('hidden'));
                 assert.isFalse(inheritedStyleSections[0].element.classList.contains('hidden'));
-                assert.isFalse(inheritedBlock.titleElement()?.classList.contains('hidden'));
-                assert.isFalse(layerBlock.titleElement()?.classList.contains('hidden'));
+                assert.isFalse(inheritedBlock.isHidden());
+                assert.isFalse(layerBlock.isHidden());
                 // Filter to something that matches nothing.
                 stylesSidebarPane.setFilter(/display/i);
                 sectionBlocks.forEach(block => block.updateFilter());
                 assert.isTrue(elementStyleSections[0].element.classList.contains('hidden'));
                 assert.isTrue(inheritedStyleSections[0].element.classList.contains('hidden'));
-                assert.isTrue(inheritedBlock.titleElement()?.classList.contains('hidden'));
-                assert.isTrue(layerBlock.titleElement()?.classList.contains('hidden'));
+                assert.isTrue(inheritedBlock.isHidden());
+                assert.isTrue(layerBlock.isHidden());
                 // Clear filter.
                 stylesSidebarPane.setFilter(null);
                 sectionBlocks.forEach(block => block.updateFilter());
                 assert.isFalse(elementStyleSections[0].element.classList.contains('hidden'));
                 assert.isFalse(inheritedStyleSections[0].element.classList.contains('hidden'));
-                assert.isFalse(inheritedBlock.titleElement()?.classList.contains('hidden'));
-                assert.isFalse(layerBlock.titleElement()?.classList.contains('hidden'));
+                assert.isFalse(inheritedBlock.isHidden());
+                assert.isFalse(layerBlock.isHidden());
             });
             it('hides sidebar separators when filtering results', async () => {
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new ComputedStyle.ComputedStyleModel.ComputedStyleModel());
@@ -427,19 +464,16 @@ describe('StylesSidebarPane', () => {
                 // Block 3 represents the pseudo ::before element.
                 // Block 4 represents the pseudo ::after element.
                 assert.lengthOf(sectionBlocks, 5);
-                assert.isNull(sectionBlocks[0].titleElement());
-                assert.exists(sectionBlocks[1].titleElement());
-                assert.exists(sectionBlocks[2].titleElement());
-                assert.exists(sectionBlocks[3].titleElement());
-                assert.exists(sectionBlocks[4].titleElement());
-                // Define a helper function to assert the visibility of block title elements.
+                assert.isNull(sectionBlocks[0].title);
+                assert.exists(sectionBlocks[1].title);
+                assert.exists(sectionBlocks[2].title);
+                assert.exists(sectionBlocks[3].title);
+                assert.exists(sectionBlocks[4].title);
+                // Define a helper function to assert the visibility of block titles.
                 const assertBlockVisibility = (expectedVisibilities) => {
                     for (let i = 1; i < sectionBlocks.length; i++) {
-                        const titleEl = sectionBlocks[i].titleElement();
-                        if (titleEl) {
-                            const isHidden = titleEl.classList.contains('hidden');
-                            assert.strictEqual(!isHidden, expectedVisibilities[i - 1], `Block ${i} visibility mismatch`);
-                        }
+                        const isHidden = sectionBlocks[i].isHidden();
+                        assert.strictEqual(!isHidden, expectedVisibilities[i - 1], `Block ${i} visibility mismatch`);
                     }
                 };
                 // Initially, all blocks should be visible when the filter is null.
@@ -501,7 +535,7 @@ describe('StylesSidebarPane', () => {
                 });
                 const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
                 const blocks = sectionBlocks.slice(1).map(block => ({
-                    title: block.titleElement()?.textContent,
+                    title: block.titleText(),
                     sections: block.sections.map(section => section.headerText()),
                 }));
                 assert.deepEqual(blocks, [
@@ -1330,7 +1364,7 @@ describe('StylesSidebarPane', () => {
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
             assert.lengthOf(sectionBlocks, 2);
-            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, 'Other @rules');
+            assert.strictEqual(sectionBlocks[1].titleText(), 'Other @rules');
             assert.lengthOf(sectionBlocks[1].sections, 3);
             const contents = [
                 '@font-palette-values --palette {    font-family: Bixa;    override-colors: 0 red;}',
@@ -1404,7 +1438,7 @@ describe('StylesSidebarPane', () => {
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
             assert.lengthOf(sectionBlocks, 2);
-            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@function');
+            assert.strictEqual(sectionBlocks[1].titleText(), '@function');
             assert.lengthOf(sectionBlocks[1].sections, 1);
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FunctionRuleSection);
             assert.strictEqual(sectionBlocks[1].sections[0].element.deepTextContent().replaceAll(/\s+/g, ' ').trim(), '--f(--x, --y) { @media (width > 400px) { @container --foo (width > 300px) { @supports (color: red) { result: var(--y); } } } result: var(--x);}');
@@ -1456,7 +1490,7 @@ describe('StylesSidebarPane', () => {
             });
             const sectionBlocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
             assert.lengthOf(sectionBlocks, 2);
-            assert.strictEqual(sectionBlocks[1].titleElement()?.textContent, '@function');
+            assert.strictEqual(sectionBlocks[1].titleText(), '@function');
             assert.lengthOf(sectionBlocks[1].sections, 2);
             assert.instanceOf(sectionBlocks[1].sections[0], Elements.StylePropertiesSection.FunctionRuleSection);
             assert.instanceOf(sectionBlocks[1].sections[1], Elements.StylePropertiesSection.FunctionRuleSection);
@@ -2171,8 +2205,11 @@ describe('StylesSidebarPane', () => {
                 cssPropertyPrompt.setText('var(--rgb');
                 await cssPropertyPrompt.complete(true);
                 const colorCompletions = spyObj?.updateSuggestions.firstCall.args[1];
-                const renderedElement = colorCompletions?.[0].subtitleRenderer?.();
-                assert.instanceOf(renderedElement, InlineEditor.ColorSwatch.ColorSwatch);
+                const subtitleTemplate = colorCompletions?.[0].subtitleTemplate;
+                assert.exists(subtitleTemplate);
+                const container = document.createElement('div');
+                render(subtitleTemplate, container);
+                assert.instanceOf(container.querySelector('.suggestion-subtitle'), InlineEditor.ColorSwatch.ColorSwatch);
             });
             it('shows autocomplete item with color swatch for CSS variables with wide gamut color', async () => {
                 const attachedElement = document.createElement('div');
@@ -2183,8 +2220,11 @@ describe('StylesSidebarPane', () => {
                 cssPropertyPrompt.setText('var(--wide');
                 await cssPropertyPrompt.complete(true);
                 const colorCompletions = spyObj?.updateSuggestions.firstCall.args[1];
-                const renderedElement = colorCompletions?.[0].subtitleRenderer?.();
-                assert.instanceOf(renderedElement, InlineEditor.ColorSwatch.ColorSwatch);
+                const subtitleTemplate = colorCompletions?.[0].subtitleTemplate;
+                assert.exists(subtitleTemplate);
+                const container = document.createElement('div');
+                render(subtitleTemplate, container);
+                assert.instanceOf(container.querySelector('.suggestion-subtitle'), InlineEditor.ColorSwatch.ColorSwatch);
             });
             it('shows autocomplete property names for CSS aliases', async () => {
                 const attachedElement = document.createElement('div');
@@ -3496,7 +3536,7 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         const blocks1 = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles1, new Map(), new Map(), null);
         stylesSidebarPane.sectionBlocks = blocks1;
         assert.lengthOf(blocks1, 2);
-        assert.strictEqual(blocks1[1].titleElement()?.textContent, '@property');
+        assert.strictEqual(blocks1[1].titleText(), '@property');
         // 2. State 2: Animation starts. @keyframes matches in addition to @property.
         // In CSS cascade order, @keyframes appears before @property.
         const matchedStyles2 = await getMatchedStyles({
@@ -3509,15 +3549,15 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         const blocks2 = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles2, new Map(), new Map(), null);
         stylesSidebarPane.sectionBlocks = blocks2;
         assert.lengthOf(blocks2, 3);
-        assert.strictEqual(blocks2[1].titleElement()?.textContent, '@keyframes my-animation');
-        assert.strictEqual(blocks2[2].titleElement()?.textContent, '@property');
+        assert.strictEqual(blocks2[1].titleText(), '@keyframes my-animation');
+        assert.strictEqual(blocks2[2].titleText(), '@property');
         // 3. State 3: Animation stops. @keyframes becomes inactive.
         // The relative ordering of blocks (@keyframes before @property) should be preserved.
         const blocks3 = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles1, new Map(), new Map(), null);
         stylesSidebarPane.sectionBlocks = blocks3;
         assert.lengthOf(blocks3, 3);
-        assert.strictEqual(blocks3[1].titleElement()?.textContent, '@keyframes my-animation');
-        assert.strictEqual(blocks3[2].titleElement()?.textContent, '@property');
+        assert.strictEqual(blocks3[1].titleText(), '@keyframes my-animation');
+        assert.strictEqual(blocks3[2].titleText(), '@property');
         assert.isTrue(blocks3[1].sections[0].isInactive(), '@keyframes section should be marked inactive');
         assert.isFalse(blocks3[2].sections[0].isInactive(), '@property section should remain active');
     });
@@ -3719,7 +3759,7 @@ describeWithEnvironment('StylesSidebarPane Inactive Styles', () => {
         assert.deepEqual(inheritedBlock2.childBlocks, [layerBlock2]);
         // Verify filtering by a property only in the child layer block keeps the inherited parent block's title visible.
         stylesSidebarPane.setFilter(/font-size/i);
-        assert.isFalse(inheritedBlock2.titleElement()?.classList.contains('hidden'), 'Parent block title should remain visible when child block has a matching section');
+        assert.isFalse(inheritedBlock2.isHidden(), 'Parent block title should remain visible when child block has a matching section');
     });
 });
 describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyframes rules', () => {
@@ -4012,7 +4052,7 @@ describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyfr
         });
         const blocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map(), new Map(), null);
         assert.lengthOf(blocks, 2);
-        assert.strictEqual(blocks[1].titleElement()?.textContent, '@keyframes fadeIn');
+        assert.strictEqual(blocks[1].titleText(), '@keyframes fadeIn');
         assert.lengthOf(blocks[1].sections, 2);
         assert.strictEqual(blocks[1].sections[0].headerText(), '0%');
         assert.strictEqual(blocks[1].sections[1].headerText(), '100%');
@@ -4034,7 +4074,7 @@ describeWithEnvironment('StylesSidebarPane updates, completions, and media/keyfr
         });
         const blocks = await stylesSidebarPane.rebuildSectionsForMatchedStyleRulesForTest(matchedStyles, new Map([['display', 'none']]), new Map(), null);
         assert.lengthOf(blocks, 2);
-        assert.strictEqual(blocks[1].titleElement()?.textContent, '@keyframes slide');
+        assert.strictEqual(blocks[1].titleText(), '@keyframes slide');
         assert.strictEqual(blocks[1].sections[0].headerText(), '50%');
     });
     it('marks earlier duplicate and shorthand properties within the same rule as OVERLOADED', async () => {

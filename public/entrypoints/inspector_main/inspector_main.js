@@ -215,10 +215,6 @@ var supportsPrefersReducedData = () => {
   const query = "not all and (prefers-reduced-data), (prefers-reduced-data)";
   return window.matchMedia(query).matches;
 };
-var supportsPrefersReducedTransparency = () => {
-  const query = "not all and (prefers-reduced-transparency), (prefers-reduced-transparency)";
-  return window.matchMedia(query).matches;
-};
 var supportsPrefersContrast = () => {
   const query = "not all and (prefers-contrast), (prefers-contrast)";
   return window.matchMedia(query).matches;
@@ -313,10 +309,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
       input.prefersReducedDataSetting,
       i18nString(UIStrings.forcesCssPrefersreduceddataMedia)
     ) : nothing}
-        ${input.prefersReducedTransparencySetting ? renderControlForSetting(
+        ${renderControlForSetting(
       input.prefersReducedTransparencySetting,
       i18nString(UIStrings.forcesCssPrefersreducedtransparencyMedia)
-    ) : nothing}
+    )}
         ${renderControlForSetting(
       input.colorGamutSetting,
       i18nString(UIStrings.forcesCssColorgamutMediaFeature)
@@ -394,7 +390,7 @@ var RenderingOptionsView = class extends UI.Widget.VBox {
       prefersContrastSetting: supportsPrefersContrast() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersContrastSettingDescriptor) : null,
       prefersReducedMotionSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedMotionSettingDescriptor),
       prefersReducedDataSetting: supportsPrefersReducedData() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedDataSettingDescriptor) : null,
-      prefersReducedTransparencySetting: supportsPrefersReducedTransparency() ? settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor) : null,
+      prefersReducedTransparencySetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeaturePrefersReducedTransparencySettingDescriptor),
       colorGamutSetting: settings.resolve(SDK.SDKSettings.emulatedCSSMediaFeatureColorGamutSettingDescriptor),
       visionDeficiencySetting: settings.resolve(SDK.SDKSettings.emulatedVisionDeficiencySettingDescriptor),
       osTextScaleSetting: settings.resolve(SDK.SDKSettings.emulatedOSTextScaleSettingDescriptor),
@@ -739,7 +735,8 @@ var outermostTargetSelector_css_default = `/*
 
 @scope to (devtools-widget > *) {
   button.soft-dropdown {
-    height: var(--sys-size-11);
+    height: var(--sys-size-9);
+    max-width: var(--sys-size-21);
     text-align: left;
     position: relative;
     border: none;
@@ -767,7 +764,7 @@ var outermostTargetSelector_css_default = `/*
 
     & > .title {
       padding-right: var(--sys-size-2);
-      width: 120px;
+      flex: 0 1 auto;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;

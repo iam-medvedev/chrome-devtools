@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { afterEach, before, beforeEach, describe, it } from 'mocha';
+import { before, beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistance from '../../models/ai_assistance/ai_assistance.js';
+import { registerTestTeardown } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -34,10 +35,6 @@ describe('CookieItemsView', () => {
             },
         });
     });
-    afterEach(() => {
-        UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
-        UI.ActionRegistry.ActionRegistry.removeInstance();
-    });
     let universe;
     let cookieItemsView;
     let viewFunction;
@@ -50,6 +47,10 @@ describe('CookieItemsView', () => {
         UI.ShortcutRegistry.ShortcutRegistry.instance({
             forceNew: true,
             actionRegistry,
+        });
+        registerTestTeardown(() => {
+            UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
+            UI.ActionRegistry.ActionRegistry.removeInstance();
         });
         universe.createTarget({ url: urlString `http://example.com` }).setInspectedURL(urlString `http://example.com`);
         mockCookieModel = sinon.createStubInstance(SDK.CookieModel.CookieModel);
@@ -67,7 +68,7 @@ describe('CookieItemsView', () => {
         viewFunction.input.onAiButtonClick?.(cookie, dummyEvent);
         sinon.assert.calledOnce(executeStub);
     });
-    it('populates context menu with Debug with AI submenu and expected items', () => {
+    it('populates context menu with Debug with AI item', () => {
         cookieItemsView.performUpdate();
         // Stub UI.Context flavor
         const contextFlavorStub = sinon.stub(UI.Context.Context.instance(), 'flavor');
@@ -79,7 +80,19 @@ describe('CookieItemsView', () => {
         viewFunction.input.onPopulateAiContextMenu?.(cookie, contextMenu);
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem, 'Expected Debug with AI context menu item');
-        assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain this cookie']);
+        assert.isUndefined(debugWithAiItem?.subItems);
+    });
+    it('omits Debug with AI item when StorageItem flavor is null', () => {
+        cookieItemsView.performUpdate();
+        // Stub UI.Context flavor
+        const contextFlavorStub = sinon.stub(UI.Context.Context.instance(), 'flavor');
+        contextFlavorStub.withArgs(AiAssistance.StorageItem.StorageItem).returns(null);
+        const dummyEvent = new Event('contextmenu');
+        const contextMenu = new UI.ContextMenu.ContextMenu(dummyEvent);
+        const cookie = new SDK.Cookie.Cookie('cookie-name', 'value');
+        viewFunction.input.onPopulateAiContextMenu?.(cookie, contextMenu);
+        const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
+        assert.isUndefined(debugWithAiItem);
     });
     it('sets StorageItem flavor on select', () => {
         cookieItemsView.performUpdate();

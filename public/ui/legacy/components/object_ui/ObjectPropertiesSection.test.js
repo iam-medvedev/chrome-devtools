@@ -24,6 +24,16 @@ function getRootTreeElement(section) {
     return child;
 }
 /**
+ * Dumps the text of a tree element and its descendants, one line per element,
+ * indenting each nesting level by four spaces.
+ */
+function dumpTree(element, indent = '') {
+    return [
+        `${indent}${element.listItemElement.textContent}`,
+        ...element.children().flatMap(child => dumpTree(child, `${indent}    `)),
+    ];
+}
+/**
  * Creates a mocked `SDK.RemoteObject.RemoteObject` from a plain JavaScript object.
  * Deeply parses nested objects and automatically routes properties wrapped in `[[...]]`
  * to the object's `internalProperties`.
@@ -577,6 +587,35 @@ describeWithEnvironment('ObjectPropertiesSection', () => {
             await raf();
             assert.isFalse(groupElement.classList.contains('expanded'));
         });
+    });
+    it('works with local remote objects', async () => {
+        const array = [];
+        for (let i = 1000; i < 1256; ++i) {
+            array.push(i);
+        }
+        const object = SDK.RemoteObject.RemoteObject.fromLocalObject({ a: 'b', c: array });
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionWidget();
+        section.root = object;
+        const titleSpan = document.createElement('span');
+        titleSpan.textContent = 'local object';
+        section.title = titleSpan;
+        renderElementIntoDOM(section);
+        assert.exists(section.objectTree);
+        section.objectTree.expanded = true;
+        await UI.Widget.Widget.allUpdatesComplete;
+        const rootElement = getRootTreeElement(section);
+        const arrayElement = rootElement.childAt(1);
+        assert.exists(arrayElement);
+        arrayElement.expand();
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.deepEqual(dumpTree(rootElement), [
+            'local object',
+            '    a: "b"',
+            '    c: [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016,…]',
+            '        [0 … 99]',
+            '        [100 … 199]',
+            '        [200 … 255]',
+        ]);
     });
     it('populates the context menu with a copy option for LocalJSONObjects', async () => {
         const objectTree = new ObjectUI.ObjectPropertiesSection.ObjectTree(SDK.RemoteObject.RemoteObject.fromLocalObject({ foo: 'bar' }), {
@@ -1399,6 +1438,25 @@ describeWithEnvironment('ObjectTreeExpansionTracker', () => {
         await raf();
         assert.isTrue(quux.expanded);
         assert.strictEqual(quux.childCount(), 1);
+    });
+    it('preserves objectTree when re-assigned a RemoteObject wrapper with the same objectId', () => {
+        const target = createTarget();
+        const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+        assert.exists(runtimeModel);
+        const rawObject = {
+            type: "object" /* Protocol.Runtime.RemoteObjectType.Object */,
+            className: 'Object',
+            description: 'Object',
+            objectId: 'same-obj-id',
+        };
+        const firstWrapper = runtimeModel.createRemoteObject(rawObject);
+        const secondWrapper = runtimeModel.createRemoteObject(rawObject);
+        const section = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionWidget();
+        section.root = firstWrapper;
+        const initialTree = section.objectTree;
+        assert.exists(initialTree);
+        section.root = secondWrapper;
+        assert.strictEqual(section.objectTree, initialTree);
     });
 });
 //# sourceMappingURL=ObjectPropertiesSection.test.js.map

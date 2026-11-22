@@ -7,7 +7,7 @@ import sinon from 'sinon';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import { assertScreenshot, querySelectorErrorOnMissing, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createFakeSetting } from '../../testing/EnvironmentHelpers.js';
+import { createFakeSetting, registerTestTeardown } from '../../testing/EnvironmentHelpers.js';
 import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { StubStackTrace } from '../../testing/StackTraceHelpers.js';
@@ -151,11 +151,13 @@ describe('UIUtils', () => {
             });
             const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
             UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry });
+            registerTestTeardown(() => {
+                UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
+                UI.ActionRegistry.ActionRegistry.reset();
+            });
         });
         afterEach(() => {
             UI.ActionRegistration.reset();
-            UI.ActionRegistry.ActionRegistry.reset();
-            UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
         });
         function setup() {
             const { bindToAction } = UI.UIUtils;
@@ -870,6 +872,72 @@ describe('UIUtils', () => {
             assert.isTrue(div.classList.contains(className));
         });
     });
+    describe('deepElementFromEvent', () => {
+        function setupShadowButtonWithOriginBanner() {
+            const container = document.createElement('div');
+            const originBanner = document.createElement('div');
+            originBanner.style.position = 'fixed';
+            originBanner.style.left = '0';
+            originBanner.style.top = '0';
+            originBanner.style.width = '40px';
+            originBanner.style.height = '20px';
+            originBanner.style.zIndex = '1000';
+            const host = document.createElement('div');
+            host.style.position = 'fixed';
+            host.style.left = '60px';
+            host.style.top = '50px';
+            host.style.width = '40px';
+            host.style.height = '20px';
+            host.style.zIndex = '1000';
+            const shadowRoot = host.attachShadow({ mode: 'open' });
+            const innerButton = document.createElement('button');
+            innerButton.style.display = 'block';
+            innerButton.style.margin = '0';
+            innerButton.style.padding = '0';
+            innerButton.style.border = '0';
+            innerButton.style.width = '40px';
+            innerButton.style.height = '20px';
+            shadowRoot.appendChild(innerButton);
+            container.append(originBanner, host);
+            renderElementIntoDOM(container);
+            return { originBanner, host, innerButton };
+        }
+        it('returns the composed shadow target for dispatched zero-coordinate MouseEvents instead of the element at (0, 0)', () => {
+            const { originBanner, host, innerButton } = setupShadowButtonWithOriginBanner();
+            assert.strictEqual(document.elementFromPoint(0, 0), originBanner);
+            const resolvedTargets = [];
+            host.addEventListener('click', event => {
+                resolvedTargets.push(UI.UIUtils.deepElementFromEvent(event));
+            });
+            innerButton.click();
+            assert.lengthOf(resolvedTargets, 1);
+            assert.strictEqual(resolvedTargets[0], innerButton);
+        });
+        it('returns null once a zero-coordinate MouseEvent finishes dispatch instead of hitting (0, 0)', () => {
+            const { originBanner, host, innerButton } = setupShadowButtonWithOriginBanner();
+            assert.strictEqual(document.elementFromPoint(0, 0), originBanner);
+            const event = new MouseEvent('contextmenu', { bubbles: true, composed: true });
+            innerButton.dispatchEvent(event);
+            assert.strictEqual(event.target, host);
+            assert.strictEqual(event.which, 1);
+            assert.isNull(UI.UIUtils.deepElementFromEvent(event));
+        });
+        it('pierces shadow roots at event coordinates when pointer coordinates are present', () => {
+            const { host, innerButton } = setupShadowButtonWithOriginBanner();
+            const resolvedTargets = [];
+            host.addEventListener('click', event => {
+                resolvedTargets.push(UI.UIUtils.deepElementFromEvent(event));
+            });
+            const rect = innerButton.getBoundingClientRect();
+            host.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                clientX: Math.round(rect.left + rect.width / 2),
+                clientY: Math.round(rect.top + rect.height / 2),
+            }));
+            assert.lengthOf(resolvedTargets, 1);
+            assert.strictEqual(resolvedTargets[0], innerButton);
+        });
+    });
 });
 describe('bindToSetting (string)', () => {
     function setup(opts = {}) {
@@ -1055,6 +1123,23 @@ describe('bindToSetting (devtools-button)', () => {
     });
 });
 describe('CheckboxLabel', () => {
+    it('can be unchecked after the user checked it', () => {
+        const checkbox = document.createElement('devtools-checkbox');
+        renderElementIntoDOM(checkbox);
+        checkbox.click();
+        assert.isTrue(checkbox.checked);
+        checkbox.checked = false;
+        assert.isFalse(checkbox.checked);
+    });
+    it('can be made indeterminate again after the user clicked it', () => {
+        const checkbox = document.createElement('devtools-checkbox');
+        renderElementIntoDOM(checkbox);
+        checkbox.indeterminate = true;
+        checkbox.click();
+        assert.isFalse(checkbox.indeterminate);
+        checkbox.indeterminate = true;
+        assert.isTrue(checkbox.indeterminate);
+    });
     it('treats a non-boolean falsy checked value as unchecked instead of toggling', () => {
         const checkbox = document.createElement('devtools-checkbox');
         checkbox.checked = true;

@@ -133,7 +133,6 @@ describe('CSSAngle', () => {
             assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('ray(20.8deg closest-side)'), { value: 20.8, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
             assert.isNull(InlineEditor.CSSAngleUtils.parseText('rotate(12345)'));
             assert.isNull(InlineEditor.CSSAngleUtils.parseText(''));
-            // TODO(changhaohan): crbug.com/1138628 handle unitless 0 case
             assert.isNull(InlineEditor.CSSAngleUtils.parseText('rotate(0)'));
         });
         it('converts angles in degree to other units correctly', () => {

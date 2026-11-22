@@ -12,6 +12,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UIHelpers from '../../../ui/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
+import * as SettingsUI from '../../../ui/settings/settings.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PanelCommon from '../../common/common.js';
 import * as PanelUtils from '../../utils/utils.js';
@@ -234,7 +235,7 @@ export class SyncSection extends UI.Widget.Widget {
         this.#view = view;
         this.#receiveBadgesSetting = Common.Settings.Settings.instance().resolve(Badges.receiveGdpBadgesSettingDescriptor);
         this.#syncSetting =
-            Common.Settings.Settings.instance().moduleSetting('sync-preferences');
+            Common.Settings.Settings.instance().resolve(SettingsUI.MainSettings.syncPreferencesSettingDescriptor);
     }
     wasShown() {
         super.wasShown();
@@ -289,7 +290,6 @@ export class SyncSection extends UI.Widget.Widget {
         });
     }
     #onWarningClick(event) {
-        // TODO: investigate if /advance link is alive
         const warningLink = this.#syncInfo.isSyncActive ? 'chrome://settings/syncSetup/advanced' : 'chrome://settings/syncSetup';
         UIHelpers.openInNewTab(warningLink, /* allowPrivileged=*/ true);
         event.consume();

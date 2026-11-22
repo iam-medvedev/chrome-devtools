@@ -8,7 +8,6 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as Input from '../../../ui/components/input/input.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -270,20 +269,19 @@ const EMPTY_EDITOR_VALUES = {
 function renderDeviceItem(input) {
     // clang-format off
     return html `
-    <label class="devices-list-item" tabindex="-1">
-      <input
+    <div class="devices-list-item" tabindex="-1">
+      <devtools-checkbox
         class="devices-list-checkbox"
-        type="checkbox"
         .checked=${live(input.checked)}
         jslog=${VisualLogging.toggle().track({ click: true })}
-        @click=${(event) => {
+        @change=${(event) => {
         const checkbox = event.currentTarget;
         input.onToggle(checkbox.checked);
-        event.consume();
     }}
-      />
-      <span class="device-name">${input.title}</span>
-    </label>
+      >
+        <span class="device-name">${input.title}</span>
+      </devtools-checkbox>
+    </div>
   `;
     // clang-format on
 }
@@ -526,7 +524,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
     const customAfter = editingIndex !== null ? input.customDevices.slice(editingIndex + 1) : [];
     // clang-format off
     render(html `
-    <style>${Input.checkboxStyles}</style>
     <style>${devicesSettingsTabStyles}</style>
     <div class="settings-card-container-wrapper">
       <div class="settings-card-container ignore-list-settings">

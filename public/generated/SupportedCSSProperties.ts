@@ -99,7 +99,9 @@ export const generatedProperties: CSSProperty[] = [
  {
   "keywords": [
    "horizontal",
-   "vertical"
+   "vertical",
+   "inline-axis",
+   "block-axis"
   ],
   "name": "-webkit-box-orient"
  },
@@ -3016,9 +3018,7 @@ export const generatedProperties: CSSProperty[] = [
   "keywords": [
    "normal"
   ],
-  "name": "font-language-override",
-  "runtime_flag": "FontLanguageOverride",
-  "runtime_flag_status": "stable"
+  "name": "font-language-override"
  },
  {
   "inherited": true,
@@ -6044,7 +6044,8 @@ export const generatedProperties: CSSProperty[] = [
   ],
   "keywords": [
    "none",
-   "auto"
+   "auto",
+   "match-element"
   ],
   "name": "view-transition-name"
  },
@@ -6201,7 +6202,9 @@ export const generatedPropertyValues: Record<string, CSSPropertyValue> = {
  "-webkit-box-orient": {
   "values": [
    "horizontal",
-   "vertical"
+   "vertical",
+   "inline-axis",
+   "block-axis"
   ]
  },
  "-webkit-box-pack": {

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as Common from '../../../core/common/common.js';
+import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as SourceMapScopes from '../../../models/source_map_scopes/source_map_scopes.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../testing/ExpectStubCall.js';
 import { TestPlugin } from '../../../testing/LanguagePluginHelpers.js';
@@ -21,6 +22,7 @@ import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.nex
 import * as ScopesCodec from '../../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as UI from '../../legacy/legacy.js';
 import * as ThemeSupport from '../../legacy/theme_support/theme_support.js';
+import * as SettingsUI from '../../settings/settings.js';
 import * as TextEditor from './text_editor.js';
 const { urlString } = Platform.DevToolsPath;
 function makeState(doc, extensions = []) {
@@ -69,13 +71,14 @@ describeWithEnvironment('TextEditor', () => {
             const editor = new TextEditor.TextEditor.TextEditor(makeState('line1  \n  line2( )\n\tline3  ', TextEditor.Config.showWhitespace.instance()));
             renderElementIntoDOM(editor);
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-trailingWhitespace, .cm-highlightedSpaces'), 0);
-            Common.Settings.Settings.instance().moduleSetting('show-whitespaces-in-editor').set('all');
+            const showWhitespacesSetting = Common.Settings.Settings.instance().resolve(SettingsUI.SourcesSettings.showWhitespacesInEditorSettingDescriptor);
+            showWhitespacesSetting.set('all');
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-highlightedSpaces'), 4);
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-highlightedTab'), 1);
-            Common.Settings.Settings.instance().moduleSetting('show-whitespaces-in-editor').set('trailing');
+            showWhitespacesSetting.set('trailing');
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-highlightedSpaces'), 0);
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-trailingWhitespace'), 2);
-            Common.Settings.Settings.instance().moduleSetting('show-whitespaces-in-editor').set('none');
+            showWhitespacesSetting.set('none');
             assert.lengthOf(editor.editor.dom.querySelectorAll('.cm-trailingWhitespace, .cm-highlightedSpaces'), 0);
             editor.remove();
         });
@@ -137,6 +140,141 @@ describeWithEnvironment('TextEditor', () => {
             const state = makeState('.some-selector {}', CodeMirror.css.cssLanguage);
             const { from, to } = state.wordAt(1);
             assert.strictEqual(state.sliceDoc(from, to), 'some');
+        });
+    });
+    describe('caret blink interval', () => {
+        function dispatchCaretBlinkIntervalChanged(caretBlinkInterval) {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.CaretBlinkIntervalChanged, caretBlinkInterval);
+        }
+        async function getCursorLayer(editor) {
+            editor.focus();
+            await raf();
+            const layer = editor.editor.dom.querySelector('.cm-cursorLayer');
+            assert.instanceOf(layer, HTMLElement);
+            return layer;
+        }
+        it('defaults to 1200ms caret blink duration when caretBlinkInterval is unset', async () => {
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(undefined));
+            const layer = await getCursorLayer(editor);
+            assert.strictEqual(layer.style.animationDuration, '1200ms');
+            editor.remove();
+        });
+        it('caches getDrawSelectionExtension by interval and normalizes -0 to 0', () => {
+            assert.strictEqual(TextEditor.Config.getDrawSelectionExtension(500), TextEditor.Config.getDrawSelectionExtension(500));
+            assert.strictEqual(TextEditor.Config.getDrawSelectionExtension(0), TextEditor.Config.getDrawSelectionExtension(-0));
+        });
+        it('falls back to default drawSelection extension on invalid or overflowing intervals', () => {
+            assert.strictEqual(TextEditor.Config.getDrawSelectionExtension(-5), TextEditor.Config.getDrawSelectionExtension(undefined));
+            assert.strictEqual(TextEditor.Config.getDrawSelectionExtension(Number.NaN), TextEditor.Config.getDrawSelectionExtension(undefined));
+            assert.strictEqual(TextEditor.Config.getDrawSelectionExtension(Number.MAX_VALUE), TextEditor.Config.getDrawSelectionExtension(undefined));
+        });
+        it('disables cursor blinking when hostConfig.caretBlinkInterval is 0', async () => {
+            updateHostConfig({ caretBlinkInterval: 0 });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+            const layer = await getCursorLayer(editor);
+            assert.strictEqual(layer.style.animationDuration, '0ms');
+            assert.strictEqual(getComputedStyle(layer).animationDuration, '0s');
+            editor.remove();
+        });
+        it('configures caret blink duration from hostConfig.caretBlinkInterval', async () => {
+            updateHostConfig({ caretBlinkInterval: 500 });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(500));
+            assert.strictEqual((await getCursorLayer(editor)).style.animationDuration, '1000ms');
+            editor.remove();
+        });
+        it('falls back to default caret blink duration when hostConfig.caretBlinkInterval is invalid', async () => {
+            for (const invalid of [-5, Number.NaN]) {
+                updateHostConfig({ caretBlinkInterval: invalid });
+                const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+                renderElementIntoDOM(editor);
+                assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(undefined));
+                assert.strictEqual((await getCursorLayer(editor)).style.animationDuration, '1200ms');
+                editor.remove();
+            }
+        });
+        it('updates mounted editors on live CaretBlinkIntervalChanged events', async () => {
+            updateHostConfig({ caretBlinkInterval: 500 });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            const layer = await getCursorLayer(editor);
+            assert.strictEqual(layer.style.animationDuration, '1000ms');
+            dispatchCaretBlinkIntervalChanged(0);
+            assert.strictEqual(layer.style.animationDuration, '0ms');
+            dispatchCaretBlinkIntervalChanged(500);
+            assert.strictEqual(layer.style.animationDuration, '1000ms');
+            dispatchCaretBlinkIntervalChanged(750);
+            assert.strictEqual(layer.style.animationDuration, '1500ms');
+            editor.remove();
+        });
+        it('deduplicates identical live CaretBlinkIntervalChanged events including -0', () => {
+            updateHostConfig({ caretBlinkInterval: 500 });
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            const dispatchSpy = sinon.spy(editor.editor, 'dispatch');
+            dispatchCaretBlinkIntervalChanged(0);
+            sinon.assert.calledOnce(dispatchSpy);
+            dispatchCaretBlinkIntervalChanged(0);
+            dispatchCaretBlinkIntervalChanged(-0);
+            sinon.assert.calledOnce(dispatchSpy);
+            editor.remove();
+        });
+        it('skips plain editor states without drawSelectionCompartment on CaretBlinkIntervalChanged', () => {
+            const plainEditor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({ doc: 'plain' }));
+            renderElementIntoDOM(plainEditor);
+            assert.isUndefined(TextEditor.Config.drawSelectionCompartment.get(plainEditor.state));
+            const plainDispatchSpy = sinon.spy(plainEditor.editor, 'dispatch');
+            assert.doesNotThrow(() => dispatchCaretBlinkIntervalChanged(0));
+            sinon.assert.notCalled(plainDispatchSpy);
+            plainEditor.remove();
+        });
+        it('syncs caret blink interval on connectedCallback when editor is accessed before DOM attach', async () => {
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            const hasInstanceStub = sinon.stub(ThemeSupport.ThemeSupport, 'hasInstance').returns(false);
+            const view = editor.editor;
+            hasInstanceStub.restore();
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(view.state), TextEditor.Config.getDrawSelectionExtension(undefined));
+            dispatchCaretBlinkIntervalChanged(0);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(view.state), TextEditor.Config.getDrawSelectionExtension(undefined));
+            renderElementIntoDOM(editor);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+            assert.strictEqual((await getCursorLayer(editor)).style.animationDuration, '0ms');
+            editor.remove();
+        });
+        it('removes caret blink change listener when disconnected and resyncs on reconnect', async () => {
+            const themeSupport = ThemeSupport.ThemeSupport.instance();
+            const addSpy = sinon.spy(themeSupport, 'addEventListener');
+            const removeSpy = sinon.spy(themeSupport, 'removeEventListener');
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('hello'));
+            renderElementIntoDOM(editor);
+            editor.remove();
+            const caretListenersOf = (spy) => spy.getCalls()
+                .filter(call => call.args[0] === ThemeSupport.CaretBlinkIntervalChangeEvent.eventName)
+                .map(call => call.args[1]);
+            const added = caretListenersOf(addSpy);
+            assert.isNotEmpty(added);
+            assert.sameMembers(caretListenersOf(removeSpy), added);
+            dispatchCaretBlinkIntervalChanged(0);
+            renderElementIntoDOM(editor);
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+            assert.strictEqual((await getCursorLayer(editor)).style.animationDuration, '0ms');
+            editor.remove();
+        });
+        it('reconfigures stale externally created state assigned after CaretBlinkIntervalChanged', async () => {
+            const editor = new TextEditor.TextEditor.TextEditor(makeState('one'));
+            renderElementIntoDOM(editor);
+            const staleState = makeState('two');
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(staleState), TextEditor.Config.getDrawSelectionExtension(undefined));
+            dispatchCaretBlinkIntervalChanged(0);
+            editor.state = staleState;
+            assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+            assert.strictEqual((await getCursorLayer(editor)).style.animationDuration, '0ms');
+            editor.remove();
         });
     });
     describe('autocompletion', () => {
@@ -581,6 +719,32 @@ describeWithEnvironment('TextEditor autocompletion', () => {
         assert.isNull(propResultWhilePausedElsewhere);
         sinon.assert.notCalled(unrelatedFrameEvaluateSpy);
         sinon.assert.notCalled(evaluateSpy);
+    });
+});
+describe('TextEditor without ThemeSupport', () => {
+    beforeEach(() => {
+        sinon.stub(ThemeSupport.ThemeSupport, 'hasInstance').returns(false);
+    });
+    it('preserves hostConfig.caretBlinkInterval = 0 across mount and state replacement when ThemeSupport is absent', () => {
+        assert.isFalse(ThemeSupport.ThemeSupport.hasInstance());
+        updateHostConfig({ caretBlinkInterval: 0 });
+        const initialState = CodeMirror.EditorState.create({
+            doc: 'hello',
+            extensions: [
+                TextEditor.Config.drawSelectionCompartment.of(TextEditor.Config.getConfiguredDrawSelectionExtension()),
+            ],
+        });
+        const editor = new TextEditor.TextEditor.TextEditor(initialState);
+        renderElementIntoDOM(editor);
+        assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+        editor.state = CodeMirror.EditorState.create({
+            doc: 'updated',
+            extensions: [
+                TextEditor.Config.drawSelectionCompartment.of(TextEditor.Config.getDrawSelectionExtension(undefined)),
+            ],
+        });
+        assert.strictEqual(TextEditor.Config.drawSelectionCompartment.get(editor.state), TextEditor.Config.getDrawSelectionExtension(0));
+        editor.remove();
     });
 });
 //# sourceMappingURL=TextEditor.test.js.map

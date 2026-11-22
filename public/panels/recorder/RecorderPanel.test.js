@@ -2,13 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assert } from 'chai';
-import { after, beforeEach, describe, it } from 'mocha';
+import { after, afterEach, beforeEach, describe, it } from 'mocha';
+import * as Platform from '../../core/platform/platform.js';
+import * as PublicExtensions from '../../models/extensions/extensions.js';
+import { doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Models from './models/models.js';
 import { RecorderPanel } from './recorder.js';
 describeWithEnvironment('RecorderPanel', () => {
     setupActionRegistry();
+    let panel = null;
+    afterEach(async () => {
+        if (panel) {
+            panel.detach();
+            await doubleRaf();
+            panel = null;
+        }
+    });
     function makeRecording() {
         const step = {
             type: Models.Schema.StepType.Navigate,
@@ -21,25 +32,31 @@ describeWithEnvironment('RecorderPanel', () => {
         return recording;
     }
     async function setupPanel(recording) {
-        const panel = new RecorderPanel.RecorderPanel();
+        panel = new RecorderPanel.RecorderPanel();
         panel.setCurrentPageForTesting("RecordingPage" /* RecorderPanel.Pages.RECORDING_PAGE */);
         panel.setCurrentRecordingForTesting(recording);
-        const div = document.createElement('div');
-        panel.markAsRoot();
-        panel.show(div);
+        renderElementIntoDOM(panel);
         await panel.updateComplete;
+        await doubleRaf();
         return panel;
     }
+    describe('Visual logging', () => {
+        it('should set the panel visual logging context on the root element', async () => {
+            panel = new RecorderPanel.RecorderPanel();
+            renderElementIntoDOM(panel);
+            await panel.updateComplete;
+            assert.strictEqual(panel.element.getAttribute('jslog'), 'Panel; context: chrome-recorder; track: resize');
+        });
+    });
     describe('Navigation', () => {
         it('should return back to the previous page if recording was cancelled', async () => {
             const previousPage = "AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */;
-            const panel = new RecorderPanel.RecorderPanel();
+            panel = new RecorderPanel.RecorderPanel();
             panel.setCurrentPageForTesting(previousPage);
             panel.setCurrentPageForTesting("CreateRecordingPage" /* RecorderPanel.Pages.CREATE_RECORDING_PAGE */);
-            const div = document.createElement('div');
-            panel.markAsRoot();
-            panel.show(div);
+            renderElementIntoDOM(panel);
             await panel.updateComplete;
+            await doubleRaf();
             await panel.onRecordingCancelled();
             assert.strictEqual(panel.getCurrentPageForTesting(), previousPage);
         });
@@ -286,6 +303,49 @@ describeWithEnvironment('RecorderPanel', () => {
             assert.isFalse(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
             panel.setCurrentPageForTesting("AllRecordingsPage" /* RecorderPanel.Pages.ALL_RECORDINGS_PAGE */);
             assert.isFalse(panel.isActionPossible("chrome-recorder.toggle-code-view" /* RecorderActions.TOGGLE_CODE_VIEW */));
+        });
+    });
+    describe('Extension converters', () => {
+        const channels = [];
+        afterEach(async () => {
+            if (panel) {
+                panel.detach();
+                await doubleRaf();
+                panel = null;
+            }
+            const pluginManager = PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance();
+            for (const plugin of pluginManager.plugins()) {
+                pluginManager.removePlugin(plugin);
+            }
+            for (const channel of channels.splice(0)) {
+                channel.port1.close();
+                channel.port2.close();
+            }
+        });
+        it('preserves extension converter IDs when registration order changes', async () => {
+            const pluginManager = PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance();
+            const channelA = new MessageChannel();
+            const channelB = new MessageChannel();
+            channels.push(channelA, channelB);
+            const pluginA = new PublicExtensions.RecorderExtensionEndpoint.RecorderExtensionEndpoint('Export A', channelA.port1, ['export'], Platform.DevToolsPath.urlString `chrome-extension://ext-a`, pluginManager, 'text/javascript');
+            const pluginB = new PublicExtensions.RecorderExtensionEndpoint.RecorderExtensionEndpoint('Export B', channelB.port1, ['export'], Platform.DevToolsPath.urlString `chrome-extension://ext-b`, pluginManager, 'text/javascript');
+            pluginManager.addPlugin(pluginA);
+            pluginManager.addPlugin(pluginB);
+            const panel = await setupPanel(makeRecording());
+            assert.deepEqual(panel.extensionConverters.map(converter => converter.getId()), [
+                'extension_chrome-extension://ext-a_Export A',
+                'extension_chrome-extension://ext-b_Export B',
+            ]);
+            pluginManager.removePlugin(pluginA);
+            pluginManager.removePlugin(pluginB);
+            pluginManager.addPlugin(pluginB);
+            pluginManager.addPlugin(pluginA);
+            await panel.updateComplete;
+            await doubleRaf();
+            assert.deepEqual(panel.extensionConverters.map(converter => converter.getId()), [
+                'extension_chrome-extension://ext-b_Export B',
+                'extension_chrome-extension://ext-a_Export A',
+            ]);
         });
     });
 });

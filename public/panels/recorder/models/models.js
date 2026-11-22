@@ -18,12 +18,548 @@ var ConverterIds = /* @__PURE__ */ ((ConverterIds2) => {
   return ConverterIds2;
 })(ConverterIds || {});
 
+// ../../front_end/panels/recorder/models/NavigationGuard.ts
+var NavigationGuard_exports = {};
+__export(NavigationGuard_exports, {
+  NavigationGuard: () => NavigationGuard,
+  collectAllowedNavigations: () => collectAllowedNavigations,
+  hasSubframeSteps: () => hasSubframeSteps,
+  isNavigationAllowed: () => isNavigationAllowed
+});
+import * as Common from "../../../core/common/common.js";
+var SESSION_ATTACHED = "sessionattached";
+var NON_INTERACTIVE_STEP_TYPES = /* @__PURE__ */ new Set(["setViewport", "emulateNetworkConditions"]);
+var REDIRECT_STATUS_CODES = /* @__PURE__ */ new Set([301, 302, 303, 307, 308]);
+function addAllowedNavigation(allowed, url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return;
+  }
+  if (parsed.origin === "null") {
+    allowed.urls.add(parsed.href);
+  } else {
+    allowed.origins.add(parsed.origin);
+  }
+}
+function shouldAllowCurrentUrl(flow, currentUrl) {
+  if (Common.ParsedURL.schemeIs(currentUrl, "devtools:")) {
+    return true;
+  }
+  for (const step of flow.steps) {
+    if ("target" in step && step.target && step.target !== "main") {
+      continue;
+    }
+    if (step.type === "navigate") {
+      return false;
+    }
+    if (!NON_INTERACTIVE_STEP_TYPES.has(step.type)) {
+      return true;
+    }
+  }
+  return true;
+}
+function isRedirectResponse(event) {
+  if (event.responseStatusCode === void 0 || !REDIRECT_STATUS_CODES.has(event.responseStatusCode)) {
+    return false;
+  }
+  const locationHeader = event.responseHeaders?.find((header) => header.name.toLowerCase() === "location");
+  const locationValue = locationHeader?.value.trim();
+  if (!locationValue) {
+    return false;
+  }
+  try {
+    new URL(locationValue, event.request.url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function isAttachmentResponse(event) {
+  const status = event.responseStatusCode;
+  if (status === void 0 || status < 200 || status > 299) {
+    return false;
+  }
+  const dispositions = event.responseHeaders?.filter((header) => header.name.toLowerCase() === "content-disposition") ?? [];
+  return dispositions.length === 1 && /^[ \t]*attachment[ \t]*(?:;|$)/i.test(dispositions[0].value);
+}
+function isSessionClosedError(err) {
+  if (!(err instanceof Error)) {
+    return false;
+  }
+  return err.name === "TargetCloseError" || err.message.includes("Session closed") || err.message.includes("Target closed") || err.message.includes("Session with given id not found");
+}
+function canHaveFrames(session) {
+  try {
+    const type = session.target()._getTargetInfo().type;
+    return type === "iframe" || type === "page";
+  } catch {
+    return true;
+  }
+}
+function collectAllowedNavigations(flow, currentUrl) {
+  const allowed = { origins: /* @__PURE__ */ new Set(), urls: /* @__PURE__ */ new Set() };
+  if (shouldAllowCurrentUrl(flow, currentUrl)) {
+    addAllowedNavigation(allowed, currentUrl);
+  }
+  for (const step of flow.steps) {
+    if (step.type === "navigate") {
+      addAllowedNavigation(allowed, step.url);
+    }
+    if ("target" in step && typeof step.target === "string" && step.target !== "main") {
+      addAllowedNavigation(allowed, step.target);
+    }
+    for (const event of step.assertedEvents ?? []) {
+      if (event.url) {
+        addAllowedNavigation(allowed, event.url);
+      }
+    }
+  }
+  return allowed;
+}
+function hasSubframeSteps(flow) {
+  return flow.steps.some((step) => {
+    const hasFrame = "frame" in step && Boolean(step.frame?.length);
+    const hasTarget = "target" in step && Boolean(step.target) && step.target !== "main";
+    return hasFrame || hasTarget;
+  });
+}
+function isNavigationAllowed(url, allowed) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === "null") {
+    return allowed.urls.has(parsed.href);
+  }
+  return allowed.origins.has(parsed.origin);
+}
+var NavigationGuard = class {
+  #allowedNavigations;
+  #checkSubframes;
+  /** True if a step can send input to the page before the page navigates. */
+  #replayUsesCurrentPage;
+  #onError;
+  #guardedPages = /* @__PURE__ */ new Set();
+  /** The pages for which the guard checked the documents from before the guard. */
+  #checkedPages = /* @__PURE__ */ new Set();
+  #guardedClients = /* @__PURE__ */ new Set();
+  #prerenderClients = /* @__PURE__ */ new Set();
+  #cleanups = [];
+  #error;
+  #disposed = false;
+  /** Aborted when the guard has an error or is disposed. */
+  #abortController = new AbortController();
+  #stepTargetUrls = /* @__PURE__ */ new Set();
+  #watchedBrowsers = /* @__PURE__ */ new Set();
+  #errorOrDispose = Promise.withResolvers();
+  /**
+   * @param onError The guard calls it each time it blocks a navigation or
+   * cannot enable the interception.
+   */
+  constructor(flow, currentUrl, onError) {
+    this.#allowedNavigations = collectAllowedNavigations(flow, currentUrl);
+    this.#checkSubframes = hasSubframeSteps(flow);
+    this.#replayUsesCurrentPage = shouldAllowCurrentUrl(flow, currentUrl);
+    this.#onError = onError;
+  }
+  /** The first error of the guard, if a navigation was blocked. */
+  get error() {
+    return this.#error;
+  }
+  /**
+   * Resolves when the guard has an error or when `dispose()` is called. Use
+   * it to stop a wait for an operation that the guard blocked.
+   */
+  get errorOrDisposePromise() {
+    return this.#errorOrDispose.promise;
+  }
+  #block(url) {
+    this.#error ??= new Error(`Navigation to ${url} is not allowed, because the recording does not contain its origin`);
+    this.#abortController.abort();
+    this.#errorOrDispose.resolve();
+    this.#onError();
+  }
+  #failGuard(err) {
+    const message = err instanceof Error ? err.message : String(err);
+    this.#error ??= new Error(`Could not enable the navigation guard: ${message}`);
+    this.#abortController.abort();
+    this.#errorOrDispose.resolve();
+    this.#onError();
+  }
+  /**
+   * A failure to enable the interception on the session of `frame` can be
+   * ignored if the session is closed, or if the frame is a subframe and the
+   * guard does not check subframes.
+   */
+  #canIgnoreFailure(frame, guardedPage, err) {
+    if (frame.client.detached || isSessionClosedError(err)) {
+      return true;
+    }
+    return frame !== guardedPage.mainFrame() && !this.#checkSubframes;
+  }
+  async #guardClient(client, guardedPage) {
+    if (this.#disposed || this.#guardedClients.has(client)) {
+      return;
+    }
+    this.#guardedClients.add(client);
+    const onRequestPaused = (event) => {
+      const isInactivePrerender = this.#prerenderClients.has(client) && guardedPage.mainFrame().client !== client;
+      const isSubframe = !isInactivePrerender && event.frameId !== guardedPage.mainFrame()._id;
+      if (isSubframe && !this.#checkSubframes || isRedirectResponse(event) || isAttachmentResponse(event) || isNavigationAllowed(event.request.url, this.#allowedNavigations)) {
+        void client.send("Fetch.continueRequest", { requestId: event.requestId }).catch(() => {
+        });
+        return;
+      }
+      this.#block(event.request.url);
+      void client.send("Fetch.failRequest", { requestId: event.requestId, errorReason: "BlockedByClient" }).catch(() => {
+      });
+    };
+    const onSessionAttached = (session) => {
+      void this.#guardClient(session, guardedPage).catch((err) => {
+        if (!this.#checkSubframes || session.detached || isSessionClosedError(err)) {
+          return;
+        }
+        if (canHaveFrames(session)) {
+          this.#failGuard(err);
+        }
+      });
+    };
+    client.on("Fetch.requestPaused", onRequestPaused);
+    client.on(SESSION_ATTACHED, onSessionAttached);
+    const cleanup = async () => {
+      client.off(SESSION_ATTACHED, onSessionAttached);
+      await client.send("Fetch.disable").catch(() => {
+      });
+      client.off("Fetch.requestPaused", onRequestPaused);
+    };
+    this.#cleanups.push(cleanup);
+    try {
+      await client.send(
+        "Fetch.enable",
+        { patterns: [{ urlPattern: "*", resourceType: "Document", requestStage: "Response" }] }
+      );
+    } catch (err) {
+      this.#guardedClients.delete(client);
+      const index = this.#cleanups.indexOf(cleanup);
+      if (index !== -1) {
+        this.#cleanups.splice(index, 1);
+      }
+      client.off(SESSION_ATTACHED, onSessionAttached);
+      client.off("Fetch.requestPaused", onRequestPaused);
+      throw err;
+    }
+  }
+  // Finds the documents that loaded without a paused response.
+  #checkFrameUrl(frame, guardedPage) {
+    const url = frame.url();
+    const isSubframe = frame !== guardedPage.mainFrame();
+    if (isSubframe && !this.#checkSubframes || !url || url.startsWith("about:") || url.startsWith("chrome-error:")) {
+      return;
+    }
+    if (!isNavigationAllowed(url, this.#allowedNavigations)) {
+      this.#block(url);
+    }
+  }
+  /**
+   * Checks the document of a prerendered page from before the replay. A
+   * response can arrive before the interception is on and commit later, and
+   * Puppeteer does not report the navigations of a prerendered page. Thus the
+   * guard reads the URL of the main frame from the session, now and for each
+   * later commit. The URL of the target is empty until the page commits.
+   */
+  async #checkExistingPrerender(session, targetUrl) {
+    const checkUrl = (url) => {
+      if (!url || url.startsWith("about:") || url.startsWith("chrome-error:")) {
+        return;
+      }
+      if (!isNavigationAllowed(url, this.#allowedNavigations)) {
+        this.#block(url);
+      }
+    };
+    const onFrameNavigated = (event) => {
+      if (!event.frame.parentId) {
+        checkUrl(event.frame.url);
+      }
+    };
+    session.on("Page.frameNavigated", onFrameNavigated);
+    this.#cleanups.push(async () => {
+      session.off("Page.frameNavigated", onFrameNavigated);
+    });
+    try {
+      await session.send("Page.enable");
+      const tree = await session.send("Page.getFrameTree");
+      checkUrl(tree?.frameTree?.frame.url ?? targetUrl);
+    } catch (err) {
+      if (!session.detached && !isSessionClosedError(err)) {
+        this.#failGuard(err);
+      }
+    }
+  }
+  /**
+   * Returns the prerendered pages of `guardedPage` that have a session. The
+   * session of a prerendered page is a child of the tab session.
+   * `browser.targets()` does not contain prerender targets, thus use the
+   * child targets of the tab target.
+   */
+  #prerenderTargets(guardedPage) {
+    const pageSession = guardedPage.mainFrame().client;
+    const tabSession = pageSession.parentSession();
+    if (!tabSession || tabSession === pageSession) {
+      return [];
+    }
+    const tabTarget = tabSession.target();
+    const result = [];
+    for (const prerenderTarget of tabTarget._childTargets()) {
+      const session = prerenderTarget._session();
+      if (prerenderTarget._subtype() === "prerender" && session) {
+        result.push({ session, url: prerenderTarget.url() });
+      }
+    }
+    return result;
+  }
+  /**
+   * Checks the documents that `guardedPage` has now: the frames and the
+   * prerendered pages. They loaded without a check, and a step can send input
+   * to them before they navigate. Checks each page one time only.
+   */
+  async #checkExistingDocuments(guardedPage) {
+    if (this.#checkedPages.has(guardedPage)) {
+      return;
+    }
+    this.#checkedPages.add(guardedPage);
+    for (const frame of guardedPage.frames()) {
+      this.#checkFrameUrl(frame, guardedPage);
+    }
+    for (const { session, url } of this.#prerenderTargets(guardedPage)) {
+      if (this.#guardedClients.has(session)) {
+        await this.#checkExistingPrerender(session, url);
+      }
+    }
+  }
+  /**
+   * Enables the guard on all frames of `guardedPage`. The guard also checks
+   * the URLs that the frames have now, if `checkExistingFrames` is true or if
+   * a step can send input to the inspected page before the page navigates.
+   * A later call with `checkExistingFrames` set to true does this check for a
+   * page that has the guard already.
+   */
+  async guardPage(guardedPage, checkExistingFrames) {
+    if (this.#guardedPages.has(guardedPage)) {
+      if (checkExistingFrames) {
+        await this.#checkExistingDocuments(guardedPage);
+      }
+      return;
+    }
+    this.#guardedPages.add(guardedPage);
+    const onFrameNavigated = (frame) => {
+      void this.#guardClient(frame.client, guardedPage).catch((err) => {
+        if (!this.#canIgnoreFailure(frame, guardedPage, err)) {
+          this.#failGuard(err);
+        }
+      });
+      this.#checkFrameUrl(frame, guardedPage);
+    };
+    guardedPage.on("framenavigated", onFrameNavigated);
+    this.#cleanups.push(async () => {
+      guardedPage.off("framenavigated", onFrameNavigated);
+    });
+    const pageSession = guardedPage.mainFrame().client;
+    const tabSession = pageSession.parentSession();
+    if (tabSession && tabSession !== pageSession) {
+      const onPageSessionAttached = (session) => {
+        this.#prerenderClients.add(session);
+        void this.#guardClient(session, guardedPage).catch((err) => {
+          if (!session.detached && !isSessionClosedError(err)) {
+            this.#failGuard(err);
+          }
+        });
+      };
+      tabSession.on(SESSION_ATTACHED, onPageSessionAttached);
+      this.#cleanups.push(async () => {
+        tabSession.off(SESSION_ATTACHED, onPageSessionAttached);
+      });
+      for (const { session } of this.#prerenderTargets(guardedPage)) {
+        this.#prerenderClients.add(session);
+        try {
+          await this.#guardClient(session, guardedPage);
+        } catch (err) {
+          if (!session.detached && !isSessionClosedError(err)) {
+            this.#failGuard(err);
+          }
+        }
+      }
+    }
+    for (const frame of guardedPage.frames()) {
+      try {
+        await this.#guardClient(frame.client, guardedPage);
+      } catch (err) {
+        if (frame === guardedPage.mainFrame() || !this.#canIgnoreFailure(frame, guardedPage, err)) {
+          throw err;
+        }
+      }
+    }
+    if (checkExistingFrames || this.#replayUsesCurrentPage) {
+      await this.#checkExistingDocuments(guardedPage);
+    }
+    await this.#removeHistory(
+      guardedPage,
+      /* navigateAwayIfDisallowed= */
+      !checkExistingFrames
+    );
+  }
+  /**
+   * Returns true if the URL of a frame is from an origin that is not in the
+   * recording. about: pages and the Chrome error page do not come from the
+   * network.
+   */
+  #isDisallowedUrl(url) {
+    if (!url || url.startsWith("about:") || url.startsWith("chrome-error:")) {
+      return false;
+    }
+    return !isNavigationAllowed(url, this.#allowedNavigations);
+  }
+  /**
+   * Removes the session history of `guardedPage`, if it can contain a
+   * document with an origin that is not in the recording. Chrome does not
+   * pause a response for a back/forward cache restore, thus `history.back()`
+   * could show such a document from before the replay.
+   *
+   * The history reports only the URLs of main frames, and a restore reports
+   * no navigation for subframes. Thus, if the guard checks subframes, it
+   * always removes the history.
+   *
+   * If `navigateAwayIfDisallowed` is true and the current document has such
+   * an origin, the page first navigates to about:blank, so that the history
+   * does not contain this document. The guard does not change the page if it
+   * has an error or is disposed, because the replay does not run then.
+   */
+  async #removeHistory(guardedPage, navigateAwayIfDisallowed) {
+    if (this.#error || this.#disposed) {
+      return;
+    }
+    const url = guardedPage.url();
+    if (Common.ParsedURL.schemeIs(url, "devtools:")) {
+      return;
+    }
+    const client = guardedPage.mainFrame().client;
+    if (!this.#checkSubframes) {
+      const history = await client.send("Page.getNavigationHistory");
+      if (this.#error || this.#disposed) {
+        return;
+      }
+      const entries = history?.entries ?? [];
+      if (entries.length > 0 && entries.every((entry) => isNavigationAllowed(entry.url, this.#allowedNavigations))) {
+        return;
+      }
+    }
+    const hasDisallowedDocument = this.#isDisallowedUrl(url) || this.#checkSubframes && guardedPage.frames().some((frame) => this.#isDisallowedUrl(frame.url()));
+    if (navigateAwayIfDisallowed && hasDisallowedDocument) {
+      await guardedPage.goto("about:blank");
+      if (this.#error || this.#disposed) {
+        return;
+      }
+    }
+    await client.send("Page.resetNavigationHistory");
+  }
+  /**
+   * Enables the guard on a page that a step targets. A page that is closed
+   * cannot receive input, thus the guard ignores a failure for such a page.
+   */
+  async #guardStepTargetPage(targetPage) {
+    try {
+      await this.guardPage(
+        targetPage,
+        /* checkExistingFrames= */
+        true
+      );
+    } catch (err) {
+      if (!targetPage.isClosed() && !isSessionClosedError(err)) {
+        throw err;
+      }
+    }
+  }
+  /**
+   * Enables the guard on the page of `target`, and on each page that contains
+   * a frame with the URL of `target` (for example, an OOPIF in a popup).
+   */
+  async #guardPagesOfTarget(browser, target) {
+    const targetUrl = target.url();
+    const targetPage = await target.page();
+    if (targetPage) {
+      await this.#guardStepTargetPage(targetPage);
+    }
+    for (const candidatePage of await browser.pages()) {
+      if (candidatePage.url() === targetUrl || candidatePage.frames().some((frame) => frame.url() === targetUrl)) {
+        await this.#guardStepTargetPage(candidatePage);
+      }
+    }
+  }
+  /**
+   * Replay finds the target of a step separately, after `guardStepTarget`. In
+   * the time between, a page can open a new target with the same URL. Thus
+   * the guard also enables itself on each target that gets one of the step
+   * target URLs later.
+   */
+  #watchStepTargets(browser) {
+    if (this.#watchedBrowsers.has(browser)) {
+      return;
+    }
+    this.#watchedBrowsers.add(browser);
+    const onTarget = (target) => {
+      if (this.#disposed || !this.#stepTargetUrls.has(target.url())) {
+        return;
+      }
+      void this.#guardPagesOfTarget(browser, target).catch((err) => this.#failGuard(err));
+    };
+    browser.on("targetcreated", onTarget);
+    browser.on("targetchanged", onTarget);
+    this.#cleanups.push(async () => {
+      browser.off("targetcreated", onTarget);
+      browser.off("targetchanged", onTarget);
+    });
+  }
+  /**
+   * Enables the guard on each page that has the URL `targetUrl` or that
+   * contains a frame with this URL (for example, an OOPIF in a popup). Waits
+   * for a target with this URL for `timeout` milliseconds at most. The wait
+   * stops when the guard has an error or is disposed.
+   */
+  async guardStepTarget(browser, targetUrl, timeout) {
+    this.#stepTargetUrls.add(targetUrl);
+    this.#watchStepTargets(browser);
+    const signal = this.#abortController.signal;
+    let target;
+    try {
+      target = await browser.waitForTarget((t) => t.url() === targetUrl, { timeout, signal });
+    } catch (err) {
+      if (signal.aborted) {
+        return;
+      }
+      throw err;
+    }
+    await this.#guardPagesOfTarget(browser, target);
+  }
+  /** Disables the interception and removes all listeners. */
+  async dispose() {
+    this.#disposed = true;
+    this.#abortController.abort();
+    this.#errorOrDispose.resolve();
+    for (const cleanup of this.#cleanups.splice(0)) {
+      await cleanup();
+    }
+  }
+};
+
 // ../../front_end/panels/recorder/models/RecorderSettings.ts
 var RecorderSettings_exports = {};
 __export(RecorderSettings_exports, {
   RecorderSettings: () => RecorderSettings
 });
-import * as Common2 from "../../../core/common/common.js";
+import * as Common3 from "../../../core/common/common.js";
 import * as i18n from "../../../core/i18n/i18n.js";
 
 // ../../front_end/panels/recorder/models/RecordingPlayer.ts
@@ -35,7 +571,7 @@ __export(RecordingPlayer_exports, {
   ReplayResult: () => ReplayResult,
   defaultTimeout: () => defaultTimeout
 });
-import * as Common from "../../../core/common/common.js";
+import * as Common2 from "../../../core/common/common.js";
 import * as SDK from "../../../core/sdk/sdk.js";
 import * as PuppeteerService from "../../../services/puppeteer/puppeteer.js";
 import * as PuppeteerReplay from "../../../third_party/puppeteer-replay/puppeteer-replay.js";
@@ -59,16 +595,16 @@ var ReplayResult = /* @__PURE__ */ ((ReplayResult2) => {
 })(ReplayResult || {});
 var defaultTimeout = 5e3;
 function isPageTarget(target) {
-  return Common.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
+  return Common2.ParsedURL.schemeIs(target.url, "devtools:") || target.type === "page" || target.type === "background_page" || target.type === "webview";
 }
 function checkNavigationUrl(url) {
   const allowedSchemes = ["http:", "https:", "data:"];
-  const isAllowed = allowedSchemes.some((scheme) => Common.ParsedURL.schemeIs(url, scheme));
+  const isAllowed = allowedSchemes.some((scheme) => Common2.ParsedURL.schemeIs(url, scheme));
   if (!isAllowed && url !== "about:blank") {
     throw new Error(`Navigation to ${url} is not allowed, due to blocked schema`);
   }
 }
-var RecordingPlayer = class _RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
+var RecordingPlayer = class _RecordingPlayer extends Common2.ObjectWrapper.ObjectWrapper {
   userFlow;
   speed;
   timeout;
@@ -155,7 +691,7 @@ var RecordingPlayer = class _RecordingPlayer extends Common.ObjectWrapper.Object
         true
       );
     });
-    return { page, browser };
+    return { page, browser, connection: puppeteerConnection };
   }
   static async disconnectPuppeteer(browser) {
     try {
@@ -211,9 +747,15 @@ var RecordingPlayer = class _RecordingPlayer extends Common.ObjectWrapper.Object
     this.breakpointIndexes = breakpointIndexes;
   }
   async play() {
-    const { page, browser } = await _RecordingPlayer.connectPuppeteer();
+    const { page, browser, connection } = await _RecordingPlayer.connectPuppeteer();
     this.aborted = false;
     const player = this;
+    const guard = new NavigationGuard(this.userFlow, page.url(), () => {
+      if (guard.error) {
+        connection.blockPageInput(guard.error);
+      }
+      this.abort();
+    });
     class ExtensionWithBreak extends PuppeteerReplay.PuppeteerRunnerExtension {
       #speed;
       constructor(browser2, page2, {
@@ -247,31 +789,57 @@ var RecordingPlayer = class _RecordingPlayer extends Common.ObjectWrapper.Object
         }
       }
       async runStep(step, flow) {
-        if (Common.ParsedURL.schemeIs(page?.url(), "devtools:") && (step.type === "setViewport" || step.type === "navigate")) {
+        if (guard.error) {
+          return;
+        }
+        if (Common2.ParsedURL.schemeIs(page?.url(), "devtools:") && (step.type === "setViewport" || step.type === "navigate")) {
           return;
         }
         if (step.type === "navigate") {
           checkNavigationUrl(step.url);
         }
         await this.page.bringToFront();
-        await super.runStep(step, flow);
+        if ("target" in step && step.target && step.target !== "main") {
+          const timeout = step.timeout || flow?.timeout || this.timeout;
+          await guard.guardStepTarget(this.browser, step.target, timeout);
+        }
+        if (guard.error || player.aborted) {
+          return;
+        }
+        const stepPromise = super.runStep(step, flow);
+        stepPromise.catch(() => {
+        });
+        await Promise.race([stepPromise, guard.errorOrDisposePromise]);
       }
     }
     const extension = new ExtensionWithBreak(browser, page, {
       timeout: this.timeout,
       speed: this.speed
     });
-    this.#runner = await PuppeteerReplay.createRunner(this.userFlow, extension);
     let error;
     try {
-      await this.#runner.run();
+      await guard.guardPage(
+        page,
+        /* checkExistingFrames= */
+        false
+      );
+      this.#runner = await PuppeteerReplay.createRunner(this.userFlow, extension);
+      if (!guard.error && !this.aborted) {
+        await this.#runner.run();
+      }
     } catch (err) {
       error = err;
-      console.error("Replay error", err.message);
     } finally {
+      await guard.dispose();
+      error = guard.error ?? error;
+      if (error) {
+        console.error("Replay error", error.message);
+      }
       await _RecordingPlayer.disconnectPuppeteer(browser);
     }
-    if (this.aborted) {
+    if (guard.error) {
+      this.dispatchEventToListeners("Error" /* ERROR */, guard.error);
+    } else if (this.aborted) {
       this.dispatchEventToListeners("Abort" /* ABORT */);
     } else if (error) {
       this.dispatchEventToListeners("Error" /* ERROR */, error);
@@ -316,20 +884,20 @@ var str_ = i18n.i18n.registerUIStrings(
 );
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var RecorderSettings = class {
-  #selectorAttribute = Common2.Settings.Settings.instance().createSetting(
+  #selectorAttribute = Common3.Settings.Settings.instance().createSetting(
     "recorder-selector-attribute",
     ""
   );
-  #speed = Common2.Settings.Settings.instance().createSetting(
+  #speed = Common3.Settings.Settings.instance().createSetting(
     "recorder-panel-replay-speed",
     "normal" /* NORMAL */
   );
-  #replayExtension = Common2.Settings.Settings.instance().createSetting(
+  #replayExtension = Common3.Settings.Settings.instance().createSetting(
     "recorder-panel-replay-extension",
     ""
   );
   #selectorTypes = /* @__PURE__ */ new Map();
-  #preferredCopyFormat = Common2.Settings.Settings.instance().createSetting(
+  #preferredCopyFormat = Common3.Settings.Settings.instance().createSetting(
     "recorder-preferred-copy-format",
     "json" /* JSON */
   );
@@ -337,7 +905,7 @@ var RecorderSettings = class {
     for (const selectorType of Object.values(SelectorType)) {
       this.#selectorTypes.set(
         selectorType,
-        Common2.Settings.Settings.instance().createSetting(
+        Common3.Settings.Settings.instance().createSetting(
           `recorder-${selectorType}-selector-enabled`,
           true
         )
@@ -437,7 +1005,7 @@ __export(RecordingSession_exports, {
   Events: () => Events2,
   RecordingSession: () => RecordingSession
 });
-import * as Common3 from "../../../core/common/common.js";
+import * as Common4 from "../../../core/common/common.js";
 import * as Platform from "../../../core/platform/platform.js";
 import * as SDK3 from "../../../core/sdk/sdk.js";
 import * as UI2 from "../../../ui/legacy/legacy.js";
@@ -611,7 +1179,7 @@ var RecorderBinding = Object.freeze({
   addStep: "addStep",
   stopShortcut: "stopShortcut"
 });
-var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.ObjectWrapper {
+var RecordingSession = class _RecordingSession extends Common4.ObjectWrapper.ObjectWrapper {
   #target;
   #pageAgent;
   #targetAgent;
@@ -623,7 +1191,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
   #scriptIdentifiers = /* @__PURE__ */ new Map();
   #runtimeEventDescriptors = /* @__PURE__ */ new Map();
   #childTargetEventDescriptors = /* @__PURE__ */ new Map();
-  #mutex = new Common3.Mutex.Mutex();
+  #mutex = new Common4.Mutex.Mutex();
   #userFlow;
   #stepsPendingNavigationByTargetId = /* @__PURE__ */ new Map();
   #started = false;
@@ -943,7 +1511,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
   }
   static get #allowUntrustedEvents() {
     try {
-      Common3.Settings.Settings.instance().settingForTest("untrusted-recorder-events");
+      Common4.Settings.Settings.instance().settingForTest("untrusted-recorder-events");
       return true;
     } catch {
     }
@@ -980,7 +1548,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
   #tearDownTarget = async (target) => {
     const descriptors = this.#childTargetEventDescriptors.get(target);
     if (descriptors) {
-      Common3.EventTarget.removeEventListeners(descriptors);
+      Common4.EventTarget.removeEventListeners(descriptors);
     }
     await this.#injectCleanUpScript(target);
     await this.#removeBindings(target);
@@ -1003,7 +1571,7 @@ var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.Obj
     await Promise.all(Object.values(RecorderBinding).map((name) => target.runtimeAgent().invoke_removeBinding({ name })));
     const descriptors = this.#runtimeEventDescriptors.get(target);
     if (descriptors) {
-      Common3.EventTarget.removeEventListeners(descriptors);
+      Common4.EventTarget.removeEventListeners(descriptors);
     }
   }
   async #injectApplicationScript(target) {
@@ -1189,7 +1757,7 @@ var RecordingStorage_exports = {};
 __export(RecordingStorage_exports, {
   RecordingStorage: () => RecordingStorage
 });
-import * as Common4 from "../../../core/common/common.js";
+import * as Common5 from "../../../core/common/common.js";
 import * as Platform2 from "../../../core/platform/platform.js";
 var instance = null;
 var UUIDGenerator = class {
@@ -1199,10 +1767,10 @@ var UUIDGenerator = class {
 };
 var RecordingStorage = class _RecordingStorage {
   #recordingsSetting;
-  #mutex = new Common4.Mutex.Mutex();
+  #mutex = new Common5.Mutex.Mutex();
   #idGenerator = new UUIDGenerator();
   constructor() {
-    this.#recordingsSetting = Common4.Settings.Settings.instance().createSetting(
+    this.#recordingsSetting = Common5.Settings.Settings.instance().createSetting(
       "recorder-recordings-ng",
       []
     );
@@ -1270,7 +1838,7 @@ var ScreenshotStorage_exports = {};
 __export(ScreenshotStorage_exports, {
   ScreenshotStorage: () => ScreenshotStorage
 });
-import * as Common5 from "../../../core/common/common.js";
+import * as Common6 from "../../../core/common/common.js";
 var instance2 = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 var ScreenshotStorage = class _ScreenshotStorage {
@@ -1278,7 +1846,7 @@ var ScreenshotStorage = class _ScreenshotStorage {
   #screenshots;
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
-    this.#screenshotSettings = Common5.Settings.Settings.instance().createSetting(
+    this.#screenshotSettings = Common6.Settings.Settings.instance().createSetting(
       "recorder-screenshots",
       []
     );
@@ -1481,6 +2049,7 @@ function getTooltipForActions(translation, action) {
 }
 export {
   ConverterIds_exports as ConverterIds,
+  NavigationGuard_exports as NavigationGuard,
   RecorderSettings_exports as RecorderSettings,
   RecorderShortcutHelper_exports as RecorderShortcutHelper,
   RecordingPlayer_exports as RecordingPlayer,

@@ -13,11 +13,12 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { html, nothing, render } from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import * as Extensions from './extensions/extensions.js';
 import { targetForEvent } from './TargetForEvent.js';
+import timelineDetailsViewStyles from './timelineDetailsView.css.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { rangeForSelection, } from './TimelineSelection.js';
 import timelineTreeViewStyles from './timelineTreeView.css.js';
@@ -186,6 +187,83 @@ function renderDetailsPlaceholder(input, _output, target) {
     render(input.showPlaceholder ? html `<div class="empty-state">${i18nString(UIStrings.selectItemForDetails)}</div>` :
         nothing, target);
 }
+const { ifDefined, styleMap } = Directives;
+export var CellKind;
+(function (CellKind) {
+    CellKind["NAME"] = "name";
+})(CellKind || (CellKind = {}));
+function renderNameCell(input, output) {
+    const link = input.topCallFrameLink ? TimelineUIUtils.linkifyTopCallFrame(input.topCallFrameLink.event, input.topCallFrameLink.target, input.topCallFrameLink.linkifier, input.topCallFrameLink.isFreshOrEnhanced, input.topCallFrameLink.maxLength) :
+        null;
+    if (output) {
+        output.appendContextMenuItems = link ? contextMenu => contextMenu.appendApplicableItems(link) : undefined;
+    }
+    // clang-format off
+    return html `
+    <div class="name-container">
+      <div class="activity-icon-container">
+        <div class="activity-icon"
+            aria-label=${ifDefined(input.iconLabel)}
+            style=${styleMap({ backgroundColor: input.iconColor })}></div>
+      </div>
+      <div class="activity-name">${input.name}</div>
+      ${input.badge ? html `
+        <div class="entity-badge" aria-label=${input.badge}>${input.badge}</div>` : nothing}
+      ${link ? html `<div class="activity-link">${link}</div>` : nothing}
+    </div>`;
+    // clang-format on
+}
+function renderNameCellIntoTd(input, output, target) {
+    render(renderNameCell(input, output), target);
+}
+/**
+ * Computes the presentation data of the name cell for `profileNode`.
+ */
+export function nameCellViewInput(treeView, profileNode, columnId) {
+    const event = profileNode.event;
+    if (profileNode.isGroupNode()) {
+        const info = treeView.displayInfoForGroupNode(profileNode);
+        let badge;
+        if (columnId === 'site' && treeView.isThirdPartyTreeView()) {
+            if (treeView.nodeIsFirstParty(profileNode)) {
+                badge = i18nString(UIStrings.firstParty);
+            }
+            else if (treeView.nodeIsExtension(profileNode)) {
+                badge = i18nString(UIStrings.extension);
+            }
+        }
+        return {
+            columnId,
+            kind: "name" /* CellKind.NAME */,
+            name: info.name,
+            iconColor: info.color,
+            badge,
+        };
+    }
+    if (!event) {
+        return { columnId, kind: "name" /* CellKind.NAME */, name: '' };
+    }
+    const parsedTrace = treeView.parsedTrace;
+    const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
+    const isFreshOrEnhanced = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
+    const iconColor = Trace.Types.Extensions.isSyntheticExtensionEntry(event) ?
+        Extensions.ExtensionUI.extensionEntryColor(event) :
+        TimelineUIUtils.eventColor(event);
+    return {
+        columnId,
+        kind: "name" /* CellKind.NAME */,
+        name: TimelineUIUtils.eventTitle(event),
+        iconColor,
+        iconLabel: TimelineUIUtils.eventStyle(event).category.title,
+        topCallFrameLink: {
+            event,
+            target,
+            linkifier: treeView.linkifier,
+            isFreshOrEnhanced,
+            maxLength: treeView.maxLinkLength,
+        },
+    };
+}
 export class TimelineTreeView extends TimelineTreeViewBase {
     /** This is sorted by ts. */
     #selectedEvents;
@@ -226,8 +304,8 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     constructor(element, options) {
         super(element, options);
         this.#selectedEvents = null;
-        this.element.classList.add('timeline-tree-view');
-        this.registerRequiredCSS(timelineTreeViewStyles);
+        // The details sidebar (`detailsView`) renders trace event details styled by `timelineDetailsViewStyles`.
+        this.registerRequiredCSS(timelineTreeViewStyles, timelineDetailsViewStyles);
         this.searchResults = [];
     }
     get selectedEvents() {
@@ -390,6 +468,10 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     wasShown() {
         super.wasShown();
+        this.element.classList.add('timeline-tree-view');
+        if (!this.#compactMode && this.splitWidget) {
+            this.splitWidget.show(this.element);
+        }
         // Only refresh if data or configuration changed while detached,
         // avoiding rebuilding the DataGrid which resets expanded nodes and
         // selection.
@@ -728,8 +810,12 @@ export class TimelineTreeView extends TimelineTreeViewBase {
         this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node });
     }
     willHide() {
+        this.element.classList.remove('timeline-tree-view');
         this.dataGrid.removeEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
         this.dataGrid.removeEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.#onDataGridDeselection, this);
+        if (!this.#compactMode) {
+            this.splitWidget?.detach();
+        }
         super.willHide();
     }
     /**
@@ -760,9 +846,7 @@ export class TimelineTreeView extends TimelineTreeViewBase {
     }
     onContextMenu(contextMenu, eventGridNode) {
         const gridNode = eventGridNode;
-        if (gridNode.linkElement) {
-            contextMenu.appendApplicableItems(gridNode.linkElement);
-        }
+        gridNode.appendLinkContextMenuItems(contextMenu);
         const profileNode = gridNode.profileNode;
         if (profileNode) {
             this.appendContextMenuItems(contextMenu, profileNode);
@@ -858,7 +942,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     grandTotalTime;
     maxSelfTime;
     maxTotalTime;
-    linkElement;
+    #viewOutput = {};
     constructor(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView) {
         super(null, false);
         this.populated = false;
@@ -867,7 +951,9 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         this.grandTotalTime = grandTotalTime;
         this.maxSelfTime = maxSelfTime;
         this.maxTotalTime = maxTotalTime;
-        this.linkElement = null;
+    }
+    appendLinkContextMenuItems(contextMenu) {
+        this.#viewOutput.appendContextMenuItems?.(contextMenu);
     }
     createCell(columnId) {
         if (columnId === 'activity' || columnId === 'site') {
@@ -877,53 +963,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     }
     createNameCell(columnId) {
         const cell = this.createTD(columnId);
-        const container = cell.createChild('div', 'name-container');
-        const iconContainer = container.createChild('div', 'activity-icon-container');
-        const icon = iconContainer.createChild('div', 'activity-icon');
-        const name = container.createChild('div', 'activity-name');
-        const event = this.profileNode.event;
-        if (this.profileNode.isGroupNode()) {
-            const treeView = this.treeView;
-            const info = treeView.displayInfoForGroupNode(this.profileNode);
-            name.textContent = info.name;
-            icon.style.backgroundColor = info.color;
-            if (info.icon) {
-                iconContainer.insertBefore(info.icon, icon);
-            }
-            // Include badges with the name, if relevant.
-            if (columnId === 'site' && this.treeView.isThirdPartyTreeView()) {
-                const thirdPartyTree = this.treeView;
-                let badgeText = '';
-                if (thirdPartyTree.nodeIsFirstParty(this.profileNode)) {
-                    badgeText = i18nString(UIStrings.firstParty);
-                }
-                else if (thirdPartyTree.nodeIsExtension(this.profileNode)) {
-                    badgeText = i18nString(UIStrings.extension);
-                }
-                if (badgeText) {
-                    const badge = container.createChild('div', 'entity-badge');
-                    badge.textContent = badgeText;
-                    UI.ARIAUtils.setLabel(badge, badgeText);
-                }
-            }
-        }
-        else if (event) {
-            name.textContent = TimelineUIUtils.eventTitle(event);
-            const parsedTrace = this.treeView.parsedTrace;
-            const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
-            const linkifier = this.treeView.linkifier;
-            const isFreshOrEnhanced = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
-            const maxLength = this.treeView.maxLinkLength;
-            this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced, maxLength);
-            if (this.linkElement) {
-                container.createChild('div', 'activity-link').appendChild(this.linkElement);
-            }
-            UI.ARIAUtils.setLabel(icon, TimelineUIUtils.eventStyle(event).category.title);
-            icon.style.backgroundColor = TimelineUIUtils.eventColor(event);
-            if (Trace.Types.Extensions.isSyntheticExtensionEntry(event)) {
-                icon.style.backgroundColor = Extensions.ExtensionUI.extensionEntryColor(event);
-            }
-        }
+        renderNameCellIntoTd(nameCellViewInput(this.treeView, this.profileNode, columnId), this.#viewOutput, cell);
         return cell;
     }
     createValueCell(columnId) {
@@ -1042,6 +1082,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.init();
         this.stackView = new TimelineStackView(this);
         this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SELECTION_CHANGED */, this.onStackViewSelectionChanged, this);
+        // Surface hovers in the heaviest stack sidebar as hovers of this tree view.
+        this.stackView.addEventListener("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, ({ data: node }) => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node }));
     }
     refreshTree(forceRefresh = false) {
         if (this.isShowing() || forceRefresh) {

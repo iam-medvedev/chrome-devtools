@@ -283,14 +283,16 @@ export const DEFAULT_VIEW = (input, output, target) => {
             ${i18nString(UIStrings.sent)}
           </button>
         </div>
-        <button
-          class="toolbar-button"
-          title=${i18nString(UIStrings.clearComments)}
-          aria-label=${i18nString(UIStrings.clearComments)}
+        <devtools-button
+          .data=${{
+        variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
+        iconName: 'clear',
+        title: i18nString(UIStrings.clearComments),
+        accessibleLabel: i18nString(UIStrings.clearComments),
+        jslogContext: 'clear-comments',
+    }}
           @click=${input.onClearAll}
-          jslog=${VisualLogging.action('clear-comments').track({ click: true })}>
-          <devtools-icon name="clear"></devtools-icon>
-        </button>
+        ></devtools-button>
       </div>
 
       ${hasThreads ? html `

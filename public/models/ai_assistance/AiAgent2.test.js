@@ -13,6 +13,7 @@ import { setupLocaleHooks } from '../../testing/LocaleHelpers.js';
 import { setupRuntimeHooks } from '../../testing/RuntimeHelpers.js';
 import { setupSettingsHooks } from '../../testing/SettingsHelpers.js';
 import { TestUniverse } from '../../testing/TestUniverse.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as AiAssistance from './ai_assistance.js';
@@ -26,7 +27,7 @@ function assertIsTextPart(part) {
     assert.isTrue('text' in part);
 }
 function getFunctionDeclarations(aidaClient, callIndex) {
-    sinon.assert.callCount(aidaClient.doConversation, callIndex + 1);
+    assert.isAbove(aidaClient.doConversation.callCount, callIndex);
     const callArgs = aidaClient.doConversation.getCall(callIndex).args[0];
     return callArgs.function_declarations ?? [];
 }
@@ -124,19 +125,55 @@ describe('AiAgent2', () => {
         const learnSkillsDeclaration = getFunctionDeclarations(aidaClient, 0).find(d => d.name === 'learnSkills');
         assert.exists(learnSkillsDeclaration);
         assert.include(learnSkillsDeclaration.description, SKILLS.performance.description);
-        assert.notInclude(learnSkillsDeclaration.description, '# Data Formats');
+        assert.notInclude(learnSkillsDeclaration.description, '# References');
+        assert.notInclude(learnSkillsDeclaration.description, '## Network request data format');
+        assert.notInclude(learnSkillsDeclaration.description, '## Call frame data format');
         assert.notInclude(learnSkillsDeclaration.description, PerformanceTraceFormatter.networkDataFormatDescription.trim());
         assert.notInclude(learnSkillsDeclaration.description, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
         const learnResult = await agent.learnSkill(['performance']);
         assert.include(learnResult, '# Investigation Workflow');
-        assert.include(learnResult, '# Data Formats');
+        assert.include(learnResult, '# References');
+        assert.include(learnResult, '## Network request data format');
+        assert.include(learnResult, '## Call frame data format');
         assert.include(learnResult, PerformanceTraceFormatter.networkDataFormatDescription.trim());
         assert.include(learnResult, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
         const secondLearnResult = await agent.learnSkill(['performance']);
         assert.strictEqual(secondLearnResult, 'Error: Skill \'performance\' is already loaded. Call its tools directly instead of invoking learnSkills for \'performance\' again.');
-        assert.notInclude(secondLearnResult, '# Data Formats');
+        assert.notInclude(secondLearnResult, '# References');
+        assert.notInclude(secondLearnResult, '## Network request data format');
+        assert.notInclude(secondLearnResult, '## Call frame data format');
         assert.notInclude(secondLearnResult, PerformanceTraceFormatter.networkDataFormatDescription.trim());
         assert.notInclude(secondLearnResult, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
+    });
+    describe('end-to-end trace formatting integration', () => {
+        let traceContext;
+        let agent;
+        beforeEach(async function () {
+            const trace = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz');
+            traceContext = AiAssistance.PerformanceTraceContext.PerformanceTraceContext.fromParsedTrace(trace, universe.targetManager, undefined, universe.debuggerWorkspaceBinding);
+            agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: mockAidaClient(), originLock: defaultOriginLock });
+        });
+        it('deduplicates facts when trace context is present before learnSkill', async () => {
+            const enhancedQuery = await agent.enhanceQuery('q1', traceContext);
+            assert.include(enhancedQuery, '# References');
+            assert.include(enhancedQuery, '## Network request data format');
+            assert.include(enhancedQuery, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+            assert.notInclude(enhancedQuery, '## Call frame data format');
+            const learnResult = await agent.learnSkill(['performance']);
+            assert.include(learnResult, '## Call frame data format');
+            assert.include(learnResult, PerformanceTraceFormatter.callFrameDataFormatDescription.trim());
+            assert.notInclude(learnResult, '## Network request data format');
+            assert.notInclude(learnResult, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+        });
+        it('deduplicates facts when learnSkill precedes context attachment', async () => {
+            const learnResult = await agent.learnSkill(['performance']);
+            assert.include(learnResult, '## Network request data format');
+            assert.include(learnResult, '## Call frame data format');
+            const enhancedQuery = await agent.enhanceQuery('q1', traceContext);
+            assert.include(enhancedQuery, '# Critical network requests');
+            assert.notInclude(enhancedQuery, '# References');
+            assert.notInclude(enhancedQuery, PerformanceTraceFormatter.networkDataFormatDescription.trim());
+        });
     });
     it('prevents duplicate loading', async () => {
         const aidaClient = mockAidaClient();
@@ -165,16 +202,20 @@ describe('AiAgent2', () => {
         const callArgs = aidaClient.doConversation.getCall(0).args[0];
         assert.propertyVal(callArgs, 'client_feature', Host.AidaClient.ClientFeature.CHROME_DEVTOOLS_V2_AGENT);
     });
-    it('parses and yields follow-up suggestions from model response', async () => {
-        const aidaClient = mockAidaClient([[{
-                    explanation: 'Root Cause: CSS error\n\nSuggestion: Fix layout\nSUGGESTIONS: ["Can you fix this?", "Explain why this happens"]',
-                }]]);
+    it('trims surrounding whitespace and skips whitespace-only streaming chunks', async () => {
+        const aidaClient = mockAidaClient([[
+                { explanation: '  \n  ' },
+                { explanation: '  Partial answer\n' },
+                { explanation: '  Partial answer is complete.\n\n' },
+            ]]);
         const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
         const responses = await Array.fromAsync(agent.run('question', { selected: null }));
-        const answerResponse = responses.find(r => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
-        assert.isDefined(answerResponse);
-        assert.strictEqual(answerResponse.text, 'Root Cause: CSS error\n\nSuggestion: Fix layout');
-        assert.deepEqual(answerResponse.suggestions, ['Can you fix this?', 'Explain why this happens']);
+        const answers = responses.filter((response) => response.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+        assert.lengthOf(answers, 2);
+        assert.isFalse(answers[0].complete);
+        assert.strictEqual(answers[0].text, 'Partial answer');
+        assert.isTrue(answers[1].complete);
+        assert.strictEqual(answers[1].text, 'Partial answer is complete.');
     });
     it('handles learning skills correctly (UI step and AIDA response)', async () => {
         const aidaClient = mockAidaClient([
@@ -717,7 +758,7 @@ describe('AiAgent2', () => {
             const recordTraceTool = AiAssistance.ToolRegistry.ToolRegistry.get('recordPerformanceTrace');
             assert.exists(recordTraceTool);
             sinon.stub(recordTraceTool, 'permissionPrompt').value("allow-once-or-always" /* AiAssistance.Tool.PermissionPrompt.ALLOW_ONCE_OR_ALWAYS */);
-            const fakeContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext);
+            const fakeContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext, { getPromptFacts: [] });
             const handlerStub = sinon.stub(recordTraceTool, 'handler').callsFake(async (_args, _capabilities, options) => {
                 if (options?.approved !== true) {
                     return {
@@ -961,7 +1002,7 @@ describe('AiAgent2', () => {
             lighthouseRecording: runLighthouseStub,
             originLock: defaultOriginLock,
         });
-        const traceContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext);
+        const traceContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext, { getPromptFacts: [] });
         const runLighthouseTool = AiAssistance.ToolRegistry.ToolRegistry.get("runLighthouse" /* AiAssistance.Tool.ToolName.RUN_LIGHTHOUSE */);
         assert.exists(runLighthouseTool);
         const handlerSpy = sinon.spy(runLighthouseTool, 'handler');
@@ -1019,7 +1060,7 @@ describe('AiAgent2', () => {
         assert.isUndefined(contextChange.widgets);
     });
     it('provides getPerformanceTraceContext capability to performance tools', async () => {
-        const traceContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext);
+        const traceContext = sinon.createStubInstance(AiAssistance.PerformanceTraceContext.PerformanceTraceContext, { getPromptFacts: [] });
         const aidaClient = mockAidaClient([
             [{
                     explanation: '',
@@ -1270,238 +1311,25 @@ describe('AiAgent2', () => {
         });
     });
     describe('follow-up suggestions', () => {
-        describe('in a completed response', () => {
-            /**
-             * Parses `input` as a completed response and asserts both the remaining
-             * `answer` text (defaulting to `''`) and the extracted `suggestions`
-             * (defaulting to `undefined`).
-             */
-            function assertSuggestions(input, expected = {}) {
-                const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: mockAidaClient(), originLock: defaultOriginLock });
-                const parsed = agent.parseTextResponse(input);
-                assert.strictEqual(parsed.answer, expected.answer ?? '');
-                assert.deepEqual(parsed.suggestions, expected.suggestions);
-            }
-            it('extracts suggestions from a SUGGESTIONS line at the end', () => {
-                assertSuggestions('SUGGESTIONS: ["how to fix", "why it fails"]', {
-                    suggestions: ['how to fix', 'why it fails'],
-                });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["a", "b"]', {
-                    answer: 'Answer.',
-                    suggestions: ['a', 'b'],
-                });
-                assertSuggestions('Answer.\n\nSUGGESTIONS: ["a"]\n\n', {
-                    answer: 'Answer.',
-                    suggestions: ['a'],
-                });
-            });
-            it('keeps the text before a directive on the same line', () => {
-                assertSuggestions('Done. SUGGESTIONS: ["a"]', {
-                    answer: 'Done.',
-                    suggestions: ['a'],
-                });
-                assertSuggestions('Here is the solution to apply. **Suggestions**: ["inspect element", "check styles"]', {
-                    answer: 'Here is the solution to apply.',
-                    suggestions: ['inspect element', 'check styles'],
-                });
-                assertSuggestions('**Suggestions**: [1] Fix contrast. SUGGESTIONS: ["fix color", "adjust size"]', {
-                    answer: '**Suggestions**: [1] Fix contrast.',
-                    suggestions: ['fix color', 'adjust size'],
-                });
-            });
-            it('extracts suggestions across markdown formatting, list prefixes, and case variations', () => {
-                const expected = { suggestions: ['fix color', 'adjust size'] };
-                assertSuggestions('SUGGESTIONS:  ["fix color", "adjust size"]', expected);
-                assertSuggestions('suggestions: ["fix color", "adjust size"]', expected);
-                assertSuggestions('**Suggestions**: ["fix color", "adjust size"]', expected);
-                assertSuggestions('**SUGGESTIONS:** ["fix color", "adjust size"]', expected);
-                assertSuggestions('**SUGGESTIONS: ["fix color", "adjust size"]**', expected);
-                assertSuggestions('*Suggestions*: ["fix color", "adjust size"]', expected);
-                assertSuggestions('*Suggestions: ["fix color", "adjust size"]*', expected);
-                assertSuggestions('***Suggestions***: ["fix color", "adjust size"]', expected);
-                assertSuggestions('_Suggestions_: ["fix color", "adjust size"]', expected);
-                assertSuggestions('_Suggestions: ["fix color", "adjust size"]_', expected);
-                assertSuggestions('__SUGGESTIONS__: ["fix color", "adjust size"]', expected);
-                assertSuggestions('__SUGGESTIONS: ["fix color", "adjust size"]__', expected);
-                assertSuggestions('`SUGGESTIONS`: ["fix color", "adjust size"]', expected);
-                assertSuggestions('`SUGGESTIONS:` ["fix color", "adjust size"]', expected);
-                assertSuggestions('SUGGESTIONS: `["fix color", "adjust size"]`', expected);
-                assertSuggestions('- Suggestions: ["fix color", "adjust size"]', expected);
-                assertSuggestions('* Suggestions: ["fix color", "adjust size"]', expected);
-                assertSuggestions('1. Suggestions: ["fix color", "adjust size"]', expected);
-                assertSuggestions('### Suggestions: ["fix color", "adjust size"]', expected);
-            });
-            it('extracts suggestions that contain square brackets', () => {
-                assertSuggestions('SUGGESTIONS: ["Why does [type=text] fail?", "check [disabled] attribute"]', {
-                    suggestions: ['Why does [type=text] fail?', 'check [disabled] attribute'],
-                });
-            });
-            it('sanitizes suggestions', () => {
-                assertSuggestions('SUGGESTIONS: ["valid", 123, null, {"key": "val"}]', {
-                    suggestions: ['valid'],
-                });
-                assertSuggestions(`SUGGESTIONS: ["${'a'.repeat(300)}"]`, {
-                    suggestions: ['a'.repeat(200)],
-                });
-                assertSuggestions('SUGGESTIONS: ["line1\\nline2", "word1\\r\\nword2", "excessive   spaces"]', {
-                    suggestions: ['line1 line2', 'word1 word2', 'excessive spaces'],
-                });
-            });
-            it('removes a directive with no usable suggestions', () => {
-                assertSuggestions('SUGGESTIONS: []');
-                assertSuggestions('SUGGESTIONS: [""]');
-                assertSuggestions('Answer.\n**Suggestions**: ["", "   ", "\\n\\n"]', { answer: 'Answer.' });
-            });
-            it('removes a plain SUGGESTIONS directive even if its array is not valid JSON', () => {
-                assertSuggestions('Done. SUGGESTIONS: [\'a\']', { answer: 'Done.' });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["a", "b",]', { answer: 'Answer.' });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["a", "b', { answer: 'Answer.' });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["a"] and more text', { answer: 'Answer.' });
-                assertSuggestions('SUGGESTIONS:');
-                assertSuggestions('SUGGESTIONS: "not an array"');
-                assertSuggestions('- SUGGESTIONS: [');
-            });
-            it('keeps other spellings of the directive if the array is not valid JSON', () => {
-                assertSuggestions('**Suggestions**: [invalid json]', { answer: '**Suggestions**: [invalid json]' });
-                assertSuggestions('Answer.\n**Suggestions**: ["a", "b', { answer: 'Answer.\n**Suggestions**: ["a", "b' });
-                assertSuggestions('**SUGGESTIONS:** [\'a\']', { answer: '**SUGGESTIONS:** [\'a\']' });
-                assertSuggestions('Suggestions: check the padding', { answer: 'Suggestions: check the padding' });
-                assertSuggestions('Here are some suggestions: try changing the color.', {
-                    answer: 'Here are some suggestions: try changing the color.',
-                });
-            });
-            it('keeps lines that only resemble a directive', () => {
-                assertSuggestions('A few suggestions: [see docs](https://example.com)', {
-                    answer: 'A few suggestions: [see docs](https://example.com)',
-                });
-                assertSuggestions('suggestions: ["a", "b"],', { answer: 'suggestions: ["a", "b"],' });
-                assertSuggestions('const DEFAULT_SUGGESTIONS: string[] = [];', {
-                    answer: 'const DEFAULT_SUGGESTIONS: string[] = [];',
-                });
-                assertSuggestions('Use DEFAULT_SUGGESTIONS: ["a", "b"]', { answer: 'Use DEFAULT_SUGGESTIONS: ["a", "b"]' });
-            });
-            it('only treats the last line as a directive', () => {
-                assertSuggestions('Here are some suggestions:\n- Bullet 1', { answer: 'Here are some suggestions:\n- Bullet 1' });
-                assertSuggestions('**Suggestions**:\n- Fix padding', { answer: '**Suggestions**:\n- Fix padding' });
-                assertSuggestions('**Suggestions**:\n- Fix A\nSUGGESTIONS: ["a"]', {
-                    answer: '**Suggestions**:\n- Fix A',
-                    suggestions: ['a'],
-                });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["a"]\nMore text.', {
-                    answer: 'Answer.\nSUGGESTIONS: ["a"]\nMore text.',
-                });
-                assertSuggestions('Answer.\nSUGGESTIONS: ["first"]\nMore.\nSUGGESTIONS: ["second"]', {
-                    answer: 'Answer.\nSUGGESTIONS: ["first"]\nMore.',
-                    suggestions: ['second'],
-                });
-            });
-            it('does not change code blocks', () => {
-                const openArray = ['```js', 'const config = {', '  suggestions: [', '    \'a\',', '  ],', '};', '```'].join('\n');
-                assertSuggestions(openArray, { answer: openArray });
-                const doubleQuoted = ['```js', 'const config = {', '  suggestions: ["a", "b"],', '};', '```'].join('\n');
-                assertSuggestions(doubleQuoted, { answer: doubleQuoted });
-                const upperCase = ['```yaml', 'SUGGESTIONS: ["a"]', '```'].join('\n');
-                assertSuggestions(upperCase, { answer: upperCase });
-                assertSuggestions('```js\n  suggestions: [', { answer: '```js\n  suggestions: [' });
-            });
-            it('extracts suggestions after a closed code block', () => {
-                assertSuggestions('```js\nconst x = 1;\n```\nSUGGESTIONS: ["a"]', {
-                    answer: '```js\nconst x = 1;\n```',
-                    suggestions: ['a'],
-                });
-            });
-            it('does not extract suggestions from an answer wrapped in a 5-backtick code chunk', () => {
-                const wrapped = '`````\nhello world\nSUGGESTIONS: ["a"]\n`````';
-                assertSuggestions(wrapped, { answer: wrapped });
-            });
-            it('returns an empty answer for an empty response', () => {
-                assertSuggestions('');
-                assertSuggestions('  \n  ');
-            });
-        });
-        describe('while the response is streaming', () => {
-            /**
-             * Runs the agent with a response that streams as `chunks`, where each
-             * chunk is the full text received so far. Returns the text of each
-             * partial answer shown while streaming, and the completed answer.
-             */
-            async function runWithStreamedResponse(chunks) {
-                const [firstChunk, ...otherChunks] = chunks;
-                const agent = new AiAssistance.AiAgent2.AiAgent2({
-                    aidaClient: mockAidaClient([[{ explanation: firstChunk }, ...otherChunks.map(explanation => ({ explanation }))]]),
-                    originLock: defaultOriginLock,
-                });
-                const responses = await Array.fromAsync(agent.run('question', { selected: null }));
-                const answers = responses.filter((response) => response.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
-                return {
-                    partialAnswers: answers.filter(answer => !answer.complete).map(answer => answer.text),
-                    completedAnswer: answers.find(answer => answer.complete),
-                };
-            }
-            it('hides a streaming directive whose suggestion text contains a closing bracket', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'Answer.',
-                    'Answer.\nSUGGESTIONS: ["Why does [type=text] fail?", "Ano',
-                    'Answer.\nSUGGESTIONS: ["Why does [type=text] fail?", "Another"]',
-                ]);
-                assert.deepEqual(partialAnswers, ['Answer.', 'Answer.']);
-                assert.strictEqual(completedAnswer?.text, 'Answer.');
-                assert.deepEqual(completedAnswer?.suggestions, ['Why does [type=text] fail?', 'Another']);
-            });
-            it('keeps the text before a streaming directive on the same line', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'Done. SUGGESTIONS: ["Why does [type=t',
-                    'Done. SUGGESTIONS: ["Why does [type=text] fail?"]',
-                ]);
-                assert.deepEqual(partialAnswers, ['Done.']);
-                assert.strictEqual(completedAnswer?.text, 'Done.');
-                assert.deepEqual(completedAnswer?.suggestions, ['Why does [type=text] fail?']);
-            });
-            it('hides other spellings of a streaming directive', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'Answer.\n**Suggestions**: ["a", "b',
-                    'Answer.\n**Suggestions**: ["a", "b"]',
-                ]);
-                assert.deepEqual(partialAnswers, ['Answer.']);
-                assert.strictEqual(completedAnswer?.text, 'Answer.');
-                assert.deepEqual(completedAnswer?.suggestions, ['a', 'b']);
-            });
-            it('shows no partial answer while only a directive has streamed', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'SUGGESTIONS: ["a',
-                    'SUGGESTIONS: ["a"]',
-                ]);
-                assert.deepEqual(partialAnswers, []);
-                assert.strictEqual(completedAnswer?.text, '');
-                assert.deepEqual(completedAnswer?.suggestions, ['a']);
-            });
-            it('shows hidden prose again once the next line streams', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'Here are some suggestions:',
-                    'Here are some suggestions:\n- Fix padding',
-                    'Here are some suggestions:\n- Fix padding\n- Fix margin',
-                ]);
-                assert.deepEqual(partialAnswers, ['Here are some', 'Here are some suggestions:\n- Fix padding']);
-                assert.strictEqual(completedAnswer?.text, 'Here are some suggestions:\n- Fix padding\n- Fix margin');
-                assert.isUndefined(completedAnswer?.suggestions);
-            });
-            it('shows a non-plain directive with an invalid array once the response completes', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'Answer.\n**Suggestions**: [invalid',
-                    'Answer.\n**Suggestions**: [invalid json]',
-                ]);
-                assert.deepEqual(partialAnswers, ['Answer.']);
-                assert.strictEqual(completedAnswer?.text, 'Answer.\n**Suggestions**: [invalid json]');
-                assert.isUndefined(completedAnswer?.suggestions);
-            });
-            it('does not hide an identifier that contains the keyword', async () => {
-                const { partialAnswers, completedAnswer } = await runWithStreamedResponse([
-                    'const DEFAULT_SUGGESTIONS:',
-                    'const DEFAULT_SUGGESTIONS: string[] = [];',
-                ]);
-                assert.deepEqual(partialAnswers, ['const DEFAULT_SUGGESTIONS:']);
-                assert.strictEqual(completedAnswer?.text, 'const DEFAULT_SUGGESTIONS: string[] = [];');
-            });
+        it('leaves SUGGESTIONS text untouched in the answer without extracting suggestions', async () => {
+            const aidaClient = mockAidaClient([[
+                    { explanation: 'Answer.\nSUGGESTIONS: ["first' },
+                    { explanation: 'Answer.\nSUGGESTIONS: ["first"]' },
+                    { explanation: 'Answer.\nSUGGESTIONS: ["first", "second"]' },
+                ]]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const responses = await Array.fromAsync(agent.run('question', { selected: null }));
+            const answers = responses.filter((response) => response.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+            assert.lengthOf(answers, 3);
+            assert.isFalse(answers[0].complete);
+            assert.strictEqual(answers[0].text, 'Answer.\nSUGGESTIONS: ["first');
+            assert.isUndefined(answers[0].suggestions);
+            assert.isFalse(answers[1].complete);
+            assert.strictEqual(answers[1].text, 'Answer.\nSUGGESTIONS: ["first"]');
+            assert.isUndefined(answers[1].suggestions);
+            assert.isTrue(answers[2].complete);
+            assert.strictEqual(answers[2].text, 'Answer.\nSUGGESTIONS: ["first", "second"]');
+            assert.isUndefined(answers[2].suggestions);
         });
         it('handles suggestFollowUps call in the final response', async () => {
             const aidaClient = mockAidaClient([
@@ -1535,10 +1363,25 @@ describe('AiAgent2', () => {
             sinon.assert.calledTwice(aidaClient.doConversation);
             const secondCallArgs = aidaClient.doConversation.getCall(1).args[0];
             const historicalContexts = secondCallArgs.historical_contexts ?? [];
-            assert.lengthOf(historicalContexts, 2);
+            assert.lengthOf(historicalContexts, 3);
             assert.strictEqual(historicalContexts[0].role, Host.AidaClient.Role.USER);
             assert.strictEqual(historicalContexts[1].role, Host.AidaClient.Role.MODEL);
-            assert.deepEqual(historicalContexts[1].parts, [{ text: 'Answer to user query' }]);
+            assert.deepEqual(historicalContexts[1].parts, [
+                { text: 'Answer to user query' },
+                {
+                    functionCall: {
+                        name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                        args: { suggestions: ['First suggestion', 'Second suggestion'] },
+                    },
+                },
+            ]);
+            assert.strictEqual(historicalContexts[2].role, Host.AidaClient.Role.ROLE_UNSPECIFIED);
+            assert.deepEqual(historicalContexts[2].parts, [{
+                    functionResponse: {
+                        name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                        response: { result: 'Suggestions recorded.' },
+                    },
+                }]);
         });
         it('sanitizes suggestFollowUps arguments', async () => {
             const aidaClient = mockAidaClient([
@@ -1580,24 +1423,7 @@ describe('AiAgent2', () => {
             assert.exists(secondAnswer);
             assert.isUndefined(secondAnswer.suggestions);
         });
-        it('strips text suggestions directive and uses suggestFollowUps when both are present', async () => {
-            const aidaClient = mockAidaClient([
-                [{
-                        explanation: 'Here is the answer.\nSUGGESTIONS: ["From text"]',
-                        functionCalls: [{
-                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
-                                args: { suggestions: ['From function'] },
-                            }],
-                    }],
-            ]);
-            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-            const responses = await Array.fromAsync(agent.run('question', { selected: null }));
-            const answer = responses.find((r) => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
-            assert.exists(answer);
-            assert.strictEqual(answer.text, 'Here is the answer.');
-            assert.deepEqual(answer.suggestions, ['From function']);
-        });
-        it('yields an UNKNOWN error when suggestFollowUps is called without explanation text', async () => {
+        it('rolls back draft state when the step after empty-text suggestFollowUps returns empty text', async () => {
             const aidaClient = mockAidaClient([
                 [{
                         explanation: '',
@@ -1607,23 +1433,29 @@ describe('AiAgent2', () => {
                             }],
                     }],
                 [{
+                        explanation: '',
+                    }],
+                [{
                         explanation: 'Subsequent answer',
                     }],
             ]);
             const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
-            const firstResponses = await Array.fromAsync(agent.run('first question', { selected: null }));
-            // Verify that only 1 doConversation call was made and the turn ended with an error.
-            sinon.assert.calledOnce(aidaClient.doConversation);
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(domNodeContext, 'getUserFacingDetails').resolves([{ title: 'DOM', text: 'details' }]);
+            const firstResponses = await Array.fromAsync(agent.run('first question', { selected: domNodeContext }));
+            sinon.assert.calledTwice(aidaClient.doConversation);
             const errorResponse = firstResponses.find((r) => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */);
             assert.exists(errorResponse);
             assert.strictEqual(errorResponse.error, "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */);
+            assert.strictEqual(agent.activeSkills.size, 0);
             // Run second turn and verify historical_contexts does not store the failed turn.
             await Array.fromAsync(agent.run('second question', { selected: null }));
-            sinon.assert.calledTwice(aidaClient.doConversation);
-            const secondCallArgs = aidaClient.doConversation.getCall(1).args[0];
-            assert.isUndefined(secondCallArgs.historical_contexts);
+            sinon.assert.callCount(aidaClient.doConversation, 3);
+            const thirdCallArgs = aidaClient.doConversation.getCall(2).args[0];
+            assert.isUndefined(thirdCallArgs.historical_contexts);
         });
-        it('does not store suggestFollowUps in historical_contexts when concluding after a tool call', async () => {
+        it('stores suggestFollowUps in historical_contexts when concluding after a tool call', async () => {
             const aidaClient = mockAidaClient([
                 [{
                         explanation: '',
@@ -1648,12 +1480,12 @@ describe('AiAgent2', () => {
             assert.exists(answer);
             assert.strictEqual(answer.text, 'Answer after tool');
             assert.deepEqual(answer.suggestions, ['Follow-up after tool']);
-            // Run second turn and verify historical_contexts contains the tool turn and answer text, but not suggestFollowUps.
+            // Run second turn and verify historical_contexts contains the tool turn, answer text, and suggestFollowUps.
             await Array.fromAsync(agent.run('second question', { selected: null }));
             sinon.assert.callCount(aidaClient.doConversation, 3);
             const thirdCallArgs = aidaClient.doConversation.getCall(2).args[0];
             const historicalContexts = thirdCallArgs.historical_contexts ?? [];
-            assert.lengthOf(historicalContexts, 4);
+            assert.lengthOf(historicalContexts, 5);
             assert.strictEqual(historicalContexts[0].role, Host.AidaClient.Role.USER);
             assert.strictEqual(historicalContexts[1].role, Host.AidaClient.Role.MODEL);
             assert.lengthOf(historicalContexts[1].parts, 1);
@@ -1665,7 +1497,22 @@ describe('AiAgent2', () => {
             assertIsFunctionResponse(historicalContexts[2].parts[0]);
             assert.strictEqual(historicalContexts[2].parts[0].functionResponse.name, 'learnSkills');
             assert.strictEqual(historicalContexts[3].role, Host.AidaClient.Role.MODEL);
-            assert.deepEqual(historicalContexts[3].parts, [{ text: 'Answer after tool' }]);
+            assert.deepEqual(historicalContexts[3].parts, [
+                { text: 'Answer after tool' },
+                {
+                    functionCall: {
+                        name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                        args: { suggestions: ['Follow-up after tool'] },
+                    },
+                },
+            ]);
+            assert.strictEqual(historicalContexts[4].role, Host.AidaClient.Role.ROLE_UNSPECIFIED);
+            assert.deepEqual(historicalContexts[4].parts, [{
+                    functionResponse: {
+                        name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                        response: { result: 'Suggestions recorded.' },
+                    },
+                }]);
         });
         it('handles parallel learnSkills and suggestFollowUps calls', async () => {
             const aidaClient = mockAidaClient([
@@ -1719,6 +1566,33 @@ describe('AiAgent2', () => {
             assert.exists(answer);
             assert.strictEqual(answer.text, 'Final answer');
             assert.deepEqual(answer.suggestions, ['Final suggestion']);
+        });
+        it('ignores premature suggestFollowUps calls when the final step omits suggestFollowUps', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [
+                            {
+                                name: 'learnSkills',
+                                args: { skills: ['styling'] },
+                            },
+                            {
+                                name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME,
+                                args: { suggestions: ['Premature'] },
+                            },
+                        ],
+                    }],
+                [{
+                        explanation: 'Final answer',
+                    }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const responses = await Array.fromAsync(agent.run('question', { selected: null }));
+            sinon.assert.calledTwice(aidaClient.doConversation);
+            const answer = responses.find((r) => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+            assert.exists(answer);
+            assert.strictEqual(answer.text, 'Final answer');
+            assert.isUndefined(answer.suggestions);
         });
     });
     describe('Auto-learn skills', () => {
@@ -1841,6 +1715,139 @@ describe('AiAgent2', () => {
             assert.lengthOf(contextEvents, 1);
             assert.isUndefined(contextEvents[0].autoLearnedSkills);
         });
+        it('discards the draft and reloads an auto-learned skill on retry after a first-run abort', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: 'Answer',
+                        functionCalls: [{ name: AiAssistance.AiAgent.SUGGEST_FOLLOW_UPS_FUNCTION_NAME, args: { suggestions: ['s'] } }],
+                    }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(domNodeContext, 'getUserFacingDetails').resolves([{ title: 'DOM', text: 'details' }]);
+            const abortController = new AbortController();
+            abortController.abort();
+            await Array.fromAsync(agent.run('q1', { selected: domNodeContext, signal: abortController.signal }));
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const responses = await Array.fromAsync(agent.run('q2', { selected: domNodeContext }));
+            const callArgs = aidaClient.doConversation.getCall(1).args[0];
+            assert.isUndefined(callArgs.historical_contexts);
+            assertIsTextPart(callArgs.current_message.parts[0]);
+            assert.include(callArgs.current_message.parts[0].text, 'Skill styling loaded. Instructions:');
+            assert.include(callArgs.current_message.parts[0].text, SKILLS.styling.instructions);
+            const declarations = getFunctionDeclarations(aidaClient, 1).map(d => d.name);
+            assert.includeMembers(declarations, ['getStyles', 'setElementStyles', 'executeJavaScript']);
+            const contextEvents = responses.filter(r => r.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */);
+            assert.lengthOf(contextEvents, 1);
+            assert.deepEqual(contextEvents[0].autoLearnedSkills, ['styling']);
+            const answerEvents = responses.filter(r => r.type === "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */);
+            assert.lengthOf(answerEvents, 1);
+            assert.strictEqual(answerEvents[0].text, 'Answer');
+        });
+        it('omits uncommitted auto-loaded tools after an aborted run', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['styling'] } }],
+                    }],
+                [{ explanation: 'Done' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            const abortController = new AbortController();
+            abortController.abort();
+            await Array.fromAsync(agent.run('q1', { selected: domNodeContext, signal: abortController.signal }));
+            await Array.fromAsync(agent.run('q2', { selected: null }));
+            const declarations = getFunctionDeclarations(aidaClient, 1).map(d => d.name);
+            assert.deepEqual(declarations, ['learnSkills', 'suggestFollowUps']);
+            const callArgs = aidaClient.doConversation.getCall(2).args[0];
+            const functionResponse = callArgs.current_message.parts[0];
+            assertIsFunctionResponse(functionResponse);
+            const result = functionResponse.functionResponse.response.result;
+            assert.isString(result);
+            assert.include(result, SKILLS.styling.instructions);
+            assert.notInclude(result, 'already loaded');
+        });
+        it('discards a mid-run learnSkills draft when a later step aborts', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['performance'] } }],
+                    }],
+                [{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['performance'] } }],
+                    }],
+                [{ explanation: 'Done' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            const abortController = new AbortController();
+            let yieldedAbort = false;
+            const gen = agent.run('q1', { selected: null, signal: abortController.signal });
+            for await (const res of gen) {
+                if (res.type === "action" /* AiAssistance.AiAgent.ResponseType.ACTION */) {
+                    abortController.abort();
+                }
+                else if (res.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
+                    res.error === "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */) {
+                    yieldedAbort = true;
+                }
+            }
+            assert.isTrue(yieldedAbort, 'Expected an ABORT error response');
+            assert.deepEqual(agent.history, []);
+            assert.strictEqual(agent.activeSkills.size, 0);
+            await Array.fromAsync(agent.run('q2', { selected: null }));
+            const declarations = getFunctionDeclarations(aidaClient, 1).map(d => d.name);
+            assert.deepEqual(declarations, ['learnSkills', 'suggestFollowUps']);
+            const callArgs = aidaClient.doConversation.getCall(2).args[0];
+            const functionResponse = callArgs.current_message.parts[0];
+            assertIsFunctionResponse(functionResponse);
+            const result = functionResponse.functionResponse.response.result;
+            assert.isString(result);
+            assert.include(result, SKILLS.performance.instructions);
+        });
+        it('preserves committed skills and shared tools when a follow-up turn aborts', async () => {
+            const aidaClient = mockAidaClient([
+                [{
+                        explanation: '',
+                        functionCalls: [{ name: 'learnSkills', args: { skills: ['lighthouse'] } }],
+                    }],
+                [{ explanation: 'Done' }],
+                [{ explanation: 'ignored' }],
+            ]);
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient, originLock: defaultOriginLock });
+            await Array.fromAsync(agent.run('q1', { selected: null }));
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            const abortController = new AbortController();
+            abortController.abort();
+            await Array.fromAsync(agent.run('q2', { selected: domNodeContext, signal: abortController.signal }));
+            assert.lengthOf(agent.history, 4);
+            assert.deepEqual(agent.activeSkills, new Set(['lighthouse']));
+            await Array.fromAsync(agent.run('q3', { selected: null }));
+            const declarations = getFunctionDeclarations(aidaClient, 3).map(d => d.name);
+            assert.notInclude(declarations, 'setElementStyles');
+            assert.includeMembers(declarations, ['getStyles', 'executeJavaScript']);
+        });
+        it('discards uncommitted draft skills and tool declarations after early generator exit without AbortSignal', async () => {
+            const agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: mockAidaClient(), originLock: defaultOriginLock });
+            const domNodeContext = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(domNodeContext, 'getPromptDetails').resolves('DOM prompt');
+            sinon.stub(domNodeContext, 'getUserFacingDetails').resolves([{ title: 'DOM', text: 'details' }]);
+            let sawContextResponse = false;
+            for await (const res of agent.run('q1', { selected: domNodeContext })) {
+                if (res.type === "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */) {
+                    sawContextResponse = true;
+                    break;
+                }
+            }
+            assert.isTrue(sawContextResponse);
+            assert.strictEqual(agent.activeSkills.size, 0);
+            const declaredNames = agent.buildRequest({ text: 'probe' }, Host.AidaClient.Role.USER).function_declarations?.map(d => d.name);
+            assert.deepEqual(declaredNames, ['learnSkills', 'suggestFollowUps']);
+        });
     });
     describe('context deduplication', () => {
         const stylingAutoLoadPrefix = `Skill styling loaded. Instructions:\n${SKILLS.styling.instructions}\n\n`;
@@ -1909,7 +1916,7 @@ describe('AiAgent2', () => {
             await Array.fromAsync(agent.run('q2', { selected: contextB }));
             assert.exists(responses1.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
                 r.error === "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */));
-            assert.strictEqual(getSentPromptText(aidaClient, 1), '# Inspected element\n\nelement-B\n\n# User request\n\nQUERY: q2');
+            assert.strictEqual(getSentPromptText(aidaClient, 1), `${stylingAutoLoadPrefix}# Inspected element\n\nelement-B\n\n# User request\n\nQUERY: q2`);
         });
         it('keeps deduplicating context details after a run reaches MAX_STEPS', async () => {
             const mockData = [];
@@ -1927,6 +1934,129 @@ describe('AiAgent2', () => {
             assert.exists(responses1.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
                 r.error === "max-steps" /* AiAssistance.AiAgent.ErrorType.MAX_STEPS */));
             assert.strictEqual(getSentPromptText(aidaClient, AiAssistance.AiAgent.MAX_STEPS), 'The selected context is unchanged since it was last provided earlier in this conversation.\n\n# User request\n\nQUERY: q2');
+        });
+    });
+    describe('prompt facts deduplication', () => {
+        let agent;
+        const factA = { title: 'Fact A', description: 'desc-A' };
+        const factB = { title: 'Fact B', description: 'desc-B' };
+        const sharedFact = { title: 'Shared Fact', description: 'shared-desc' };
+        const contextFact = { title: 'Context Fact', description: 'context-desc' };
+        function createUnmappedContext(promptDetails, facts) {
+            return sinon.createStubInstance(AiAssistance.LighthouseContext.LighthouseContext, {
+                getPromptDetails: Promise.resolve(promptDetails),
+                getPromptFacts: facts,
+            });
+        }
+        beforeEach(() => {
+            sinon.stub(SKILLS, 'styling').value({
+                name: 'styling',
+                description: '',
+                allowedTools: [],
+                instructions: 'instructions for styling',
+                facts: [factA, sharedFact],
+            });
+            sinon.stub(SKILLS, 'network').value({
+                name: 'network',
+                description: '',
+                allowedTools: [],
+                instructions: 'instructions for network',
+                facts: [factB, sharedFact],
+            });
+            agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: mockAidaClient(), originLock: defaultOriginLock });
+        });
+        it('appends unsent context facts on the first turn and omits them on follow-up turns', async () => {
+            const context = createUnmappedContext('# Lighthouse report\n\nreport details', [factA]);
+            const enhancedQuery1 = await agent.enhanceQuery('q1', context);
+            assert.include(enhancedQuery1, '# Lighthouse report\n\nreport details\n\n# References\n\n## Fact A\n\ndesc-A');
+            const enhancedQuery2 = await agent.enhanceQuery('q2', context);
+            assert.include(enhancedQuery2, 'The selected context is unchanged');
+            assert.notInclude(enhancedQuery2, 'Fact A');
+        });
+        it('sends prompt facts when context details are null and omits them on follow-up turns', async () => {
+            const context = createUnmappedContext(null, [factA]);
+            const enhancedQuery1 = await agent.enhanceQuery('q1', context);
+            assert.strictEqual(enhancedQuery1, '# References\n\n## Fact A\n\ndesc-A\n\n# User request\n\nQUERY: q1');
+            const enhancedQuery2 = await agent.enhanceQuery('q2', context);
+            assert.strictEqual(enhancedQuery2, 'q2');
+        });
+        it('deduplicates facts across context and skill loading', async () => {
+            const context = createUnmappedContext(null, [factA]);
+            await agent.enhanceQuery('q1', context);
+            const skillResponse = await agent.learnSkill(['styling']);
+            assert.include(skillResponse, 'instructions for styling\n\n# References\n\n## Shared Fact\n\nshared-desc');
+            assert.notInclude(skillResponse, 'Fact A');
+        });
+        it('deduplicates facts across skill loading then context evaluation', async () => {
+            await agent.learnSkill(['styling']);
+            const context = createUnmappedContext('context details', [factA]);
+            const enhancedQuery = await agent.enhanceQuery('q1', context);
+            assert.strictEqual(enhancedQuery, 'context details\n\n# User request\n\nQUERY: q1');
+        });
+        it('deduplicates shared facts across an auto-loaded skill and its context', async () => {
+            const context = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(context, 'getPromptDetails').resolves('# Inspected element\n\nnode details');
+            sinon.stub(context, 'getPromptFacts').returns([sharedFact, contextFact]);
+            const enhancedQuery = await agent.enhanceQuery('q1', context);
+            assert.strictEqual(enhancedQuery, [
+                'Skill styling loaded. Instructions:\ninstructions for styling',
+                '# References\n\n## Fact A\n\ndesc-A\n\n## Shared Fact\n\nshared-desc',
+                '# Inspected element\n\nnode details',
+                '# References\n\n## Context Fact\n\ncontext-desc',
+                '# User request\n\nQUERY: q1',
+            ].join('\n\n'));
+        });
+        it('delimits the query when an auto-loaded skill consumes all facts on a null-details context', async () => {
+            const context = new AiAssistance.DOMNodeContext.DOMNodeContext(sinon.createStubInstance(SDK.DOMModel.DOMNode));
+            sinon.stub(context, 'getPromptDetails').resolves(null);
+            sinon.stub(context, 'getPromptFacts').returns([sharedFact]);
+            const enhancedQuery = await agent.enhanceQuery('q1', context);
+            assert.strictEqual(enhancedQuery, [
+                'Skill styling loaded. Instructions:\ninstructions for styling',
+                '# References\n\n## Fact A\n\ndesc-A\n\n## Shared Fact\n\nshared-desc',
+                '# User request\n\nQUERY: q1',
+            ].join('\n\n'));
+        });
+        it('deduplicates shared facts within a multi-skill learnSkill call', async () => {
+            const skillResponse = await agent.learnSkill(['styling', 'network']);
+            assert.strictEqual(skillResponse, 'Skill styling loaded. Instructions:\ninstructions for styling\n\n# References\n\n## Fact A\n\ndesc-A\n\n## Shared Fact\n\nshared-desc\n\n' +
+                'Skill network loaded. Instructions:\ninstructions for network\n\n# References\n\n## Fact B\n\ndesc-B');
+        });
+        it('resends facts after an abort error clears the cache', async () => {
+            agent = new AiAssistance.AiAgent2.AiAgent2({
+                aidaClient: mockAidaClient([[MockAidaAbortError]]),
+                originLock: defaultOriginLock,
+            });
+            const context = createUnmappedContext('context details', [factA]);
+            await Array.fromAsync(agent.run('q1', { selected: context }));
+            const enhancedQuery = await agent.enhanceQuery('q2', context);
+            assert.include(enhancedQuery, 'context details\n\n# References\n\n## Fact A\n\ndesc-A');
+        });
+        it('preserves committed facts while rolling back uncommitted facts when a follow-up turn aborts', async () => {
+            agent = new AiAssistance.AiAgent2.AiAgent2({
+                aidaClient: mockAidaClient([[{ explanation: 'answer 1' }], [MockAidaAbortError]]),
+                originLock: defaultOriginLock,
+            });
+            const contextA = createUnmappedContext('details A', [factA]);
+            const contextB = createUnmappedContext('details B', [factA, factB]);
+            await Array.fromAsync(agent.run('q1', { selected: contextA }));
+            const abortResponses = await Array.fromAsync(agent.run('q2', { selected: contextB }));
+            assert.exists(abortResponses.find(r => r.type === "error" /* AiAssistance.AiAgent.ResponseType.ERROR */ &&
+                r.error === "abort" /* AiAssistance.AiAgent.ErrorType.ABORT */));
+            const enhancedQuery = await agent.enhanceQuery('q3', contextB);
+            assert.strictEqual(enhancedQuery, 'details B\n\n# References\n\n## Fact B\n\ndesc-B\n\n# User request\n\nQUERY: q3');
+        });
+        it('omits facts on follow-up turns after a MAX_STEPS error', async () => {
+            const stepResponse = [{
+                    explanation: '',
+                    functionCalls: [{ name: 'learnSkills', args: { skills: ['styling'] } }],
+                }];
+            const limitAidaClient = mockAidaClient(Array.from({ length: AiAssistance.AiAgent.MAX_STEPS }, () => stepResponse));
+            agent = new AiAssistance.AiAgent2.AiAgent2({ aidaClient: limitAidaClient, originLock: defaultOriginLock });
+            const context = createUnmappedContext('context details', [factA]);
+            await Array.fromAsync(agent.run('q1', { selected: context }));
+            const enhancedQuery = await agent.enhanceQuery('q2', context);
+            assert.notInclude(enhancedQuery, 'Fact A');
         });
     });
 });

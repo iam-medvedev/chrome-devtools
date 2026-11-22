@@ -19,7 +19,6 @@ describeWithEnvironment('BinaryResourceViewFactory', () => {
             return contentData.text;
         }
         assert.strictEqual(await getResourceText(factory.createBase64View()), 'c2VuZGluZyB0aGlzIHV0Zi04IHN0cmluZyBhcyBhIGJpbmFyeSBtZXNzYWdlLi4u');
-        assert.instanceOf(factory.createHexView(), SourceFrame.StreamingContentHexView.StreamingContentHexView);
         assert.strictEqual(await getResourceText(factory.createUtf8View()), 'sending this utf-8 string as a binary message...');
     });
     it('returns the right content for the "copy-to-clipboard" getters', async () => {

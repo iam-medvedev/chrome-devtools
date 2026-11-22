@@ -662,7 +662,7 @@ export class StepView extends UI.Widget.Widget {
         if (this.#viewInput.step) {
             for (const converter of this.#viewInput.builtInConverters || []) {
                 actions.push({
-                    id: COPY_ACTION_PREFIX + Platform.StringUtilities.toKebabCase(converter.getId()),
+                    id: COPY_ACTION_PREFIX + converter.getId(),
                     label: converter.getFormatName(),
                     group: 'copy',
                     groupTitle: i18nString(UIStrings.copyAs),
@@ -670,7 +670,7 @@ export class StepView extends UI.Widget.Widget {
             }
             for (const converter of this.#viewInput.extensionConverters || []) {
                 actions.push({
-                    id: COPY_ACTION_PREFIX + Platform.StringUtilities.toKebabCase(converter.getId()),
+                    id: COPY_ACTION_PREFIX + converter.getId(),
                     label: converter.getFormatName(),
                     group: 'copy',
                     groupTitle: i18nString(UIStrings.copyAs),
@@ -694,7 +694,9 @@ export class StepView extends UI.Widget.Widget {
         if (preferredCopyAction) {
             contextMenu.section('copy').appendItem(preferredCopyAction.label, () => {
                 this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(preferredCopyAction.id));
-            }, { jslogContext: preferredCopyAction.id });
+            }, {
+                jslogContext: preferredCopyAction.jslogContext ?? Platform.StringUtilities.toKebabCase(preferredCopyAction.id),
+            });
         }
         if (copyActions.length) {
             const copyAs = contextMenu.section('copy').appendSubMenuItem(i18nString(UIStrings.copyAs), false, 'copy');
@@ -704,7 +706,7 @@ export class StepView extends UI.Widget.Widget {
                 }
                 copyAs.section(item.group).appendItem(item.label, () => {
                     this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(item.id));
-                }, { jslogContext: item.id });
+                }, { jslogContext: item.jslogContext ?? Platform.StringUtilities.toKebabCase(item.id) });
             }
         }
     }

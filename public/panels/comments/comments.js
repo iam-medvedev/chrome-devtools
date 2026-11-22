@@ -95,29 +95,6 @@ var commentsPane_css_default = `/*
     border-radius: var(--sys-shape-corner-full) var(--sys-shape-corner-full) 0 0;
   }
 
-  .toolbar-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--sys-size-11);
-    height: var(--sys-size-11);
-    padding: 0;
-    border: none;
-    background: transparent;
-    border-radius: var(--sys-shape-corner-extra-small);
-    cursor: pointer;
-    color: var(--sys-color-on-surface-subtle);
-  }
-
-  .toolbar-button:hover {
-    background-color: var(--sys-color-state-hover-on-subtle);
-    color: var(--sys-color-on-surface);
-  }
-
-  .toolbar-button:active {
-    background-color: var(--sys-color-state-ripple-neutral-on-subtle);
-  }
-
   /* Queued and sent threads share a single scroll area below the toolbar. */
   .comments-scroll-container {
     /* Offset parent for the sections, so their offsetTop is their scroll position. */
@@ -651,14 +628,16 @@ var DEFAULT_VIEW = (input, output, target) => {
             ${i18nString(UIStrings.sent)}
           </button>
         </div>
-        <button
-          class="toolbar-button"
-          title=${i18nString(UIStrings.clearComments)}
-          aria-label=${i18nString(UIStrings.clearComments)}
+        <devtools-button
+          .data=${{
+    variant: Buttons.Button.Variant.TOOLBAR,
+    iconName: "clear",
+    title: i18nString(UIStrings.clearComments),
+    accessibleLabel: i18nString(UIStrings.clearComments),
+    jslogContext: "clear-comments"
+  }}
           @click=${input.onClearAll}
-          jslog=${VisualLogging.action("clear-comments").track({ click: true })}>
-          <devtools-icon name="clear"></devtools-icon>
-        </button>
+        ></devtools-button>
       </div>
 
       ${hasThreads ? html`

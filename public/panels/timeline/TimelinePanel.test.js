@@ -72,7 +72,8 @@ describe('TimelinePanel', function () {
         renderElementIntoDOM(timeline);
     });
     afterEach(() => {
-        timeline.detach();
+        timeline.detach(/* overrideHideOnDetach= */ true);
+        Timeline.TimelinePanel.TimelinePanel.removeInstance();
         Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
     });
@@ -244,7 +245,8 @@ describe('TimelinePanel', function () {
         }
         it('opens the sidebar once a trace is imported if the user has not seen it before', async function () {
             setupStubs({ sidebarHasBeenOpened: false, sidebarIsShowing: false });
-            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({
+            timeline.detach(/* overrideHideOnDetach= */ true);
+            timeline = Timeline.TimelinePanel.TimelinePanel.instance({
                 forceNew: true,
                 resourceLoader,
                 targetManager,
@@ -252,6 +254,7 @@ describe('TimelinePanel', function () {
                 commentManager: new CommentManager.CommentManager.CommentManager(),
                 traceModel,
             });
+            renderElementIntoDOM(timeline);
             const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
             const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
             await timeline.loadingComplete(events, null, null);
@@ -259,7 +262,8 @@ describe('TimelinePanel', function () {
         });
         it('does not open the sidebar if the user has seen it already', async function () {
             setupStubs({ sidebarHasBeenOpened: true, sidebarIsShowing: false });
-            const timeline = Timeline.TimelinePanel.TimelinePanel.instance({
+            timeline.detach(/* overrideHideOnDetach= */ true);
+            timeline = Timeline.TimelinePanel.TimelinePanel.instance({
                 forceNew: true,
                 resourceLoader,
                 targetManager,
@@ -267,6 +271,7 @@ describe('TimelinePanel', function () {
                 commentManager: new CommentManager.CommentManager.CommentManager(),
                 traceModel,
             });
+            renderElementIntoDOM(timeline);
             const showBothStub = sinon.stub(timeline.splitWidget(), 'showBoth').callsFake(() => { });
             const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
             await timeline.loadingComplete(events, null, null);
@@ -564,6 +569,7 @@ describe('TimelinePanel', function () {
                 }
                 return event;
             });
+            const consoleErrorStub = sinon.stub(console, 'error');
             const loadResourceStub = resourceLoader.loadResource;
             loadResourceStub.rejects(new Error('CSP violation'));
             timeline['setState']("Recording" /* Timeline.TimelinePanel.State.RECORDING */);
@@ -576,6 +582,7 @@ describe('TimelinePanel', function () {
             const initiator = loadResourceStub.firstCall.args[1];
             assert.strictEqual(initiator.target, primaryTarget, 'Expected initiator.target to be primaryPageTarget, not null');
             assert.strictEqual(initiator.initiatorUrl, 'http://localhost:8080/index.html');
+            sinon.assert.calledWith(consoleErrorStub, sinon.match.has('message', sinon.match(/Could not load content for http:\/\/localhost:8080\/source\.map\.json: CSP violation/)));
         }
         finally {
             primaryTarget.dispose('test');

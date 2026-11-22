@@ -4,7 +4,6 @@
 
 /**
  * This file is auto-generated, do not edit manually. *
- * Re-generate with: scripts/tools/dt.py generate-protocol-resources.
  */
 
 
@@ -1353,6 +1352,15 @@ export namespace ProtocolMapping {
      */
     'BluetoothEmulation.simulateGATTDisconnection': {
       paramsType: [Protocol.BluetoothEmulation.SimulateGATTDisconnectionRequest];
+      returnType: void;
+    };
+    /**
+     * Simulates the ATT MTU exchange procedure from Bluetooth Core Specification
+     * Vol 3 Part F 3.4.2 establishing |mtu| for the connection to the peripheral
+     * with |address|.
+     */
+    'BluetoothEmulation.simulateGATTMtuChange': {
+      paramsType: [Protocol.BluetoothEmulation.SimulateGATTMtuChangeRequest];
       returnType: void;
     };
     /**

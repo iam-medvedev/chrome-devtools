@@ -249,24 +249,10 @@ h1 {
   justify-content: space-between;
 }
 
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  gap: var(--sys-size-3);
-  line-height: 1.1;
-  padding: var(--sys-size-3);
-}
-
 .checkbox-container {
   display: flex;
   flex-flow: row wrap;
   gap: var(--sys-size-5);
-}
-
-input[type="checkbox"]:focus-visible {
-  outline: var(--sys-color-state-focus-ring) auto var(--sys-size-1);
 }
 
 devtools-icon[name="help"] {
@@ -405,7 +391,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     html2`
       <style>${createRecordingView_css_default}</style>
       <style>${Input.textInputStyles}</style>
-      <style>${Input.checkboxStyles}</style>
       <div class="wrapper" jslog=${VisualLogging.section("create-recording-view")}>
         <div class="header-wrapper">
           <h1>${i18nString(UIStrings.createRecording)}</h1>
@@ -469,20 +454,16 @@ var DEFAULT_VIEW2 = (input, output, target) => {
         <div class="checkbox-container">
           ${repeat(selectorTypes, (item5) => {
       return html2`
-              <label class="checkbox-label selector-type">
-                <input
-                  @keydown=${onKeyDown}
-                  .value=${item5.selectorType}
-                  jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item5.selectorType}`)}
-                  .checked=${item5.checked}
-                  type="checkbox"
-                  @change=${(e) => onUpdate({
+              <devtools-checkbox
+                class="selector-type"
+                @keydown=${onKeyDown}
+                jslog=${VisualLogging.toggle().track({ click: true }).context(`selector-${item5.selectorType}`)}
+                .checked=${item5.checked}
+                @change=${(e) => onUpdate({
         selectorType: item5.selectorType,
         checked: e.target.checked
       })}
-                />
-                ${selectorTypeToLabel.get(item5.selectorType) || item5.selectorType}
-              </label>
+              >${selectorTypeToLabel.get(item5.selectorType) || item5.selectorType}</devtools-checkbox>
             `;
     })}
         </div>
@@ -1408,8 +1389,41 @@ var recordingView_css_default = `/*
 
   .content {
     grid-area: section;
-    align-self: start;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /*
+   * Continues the timeline from the last step to the next section. It has a
+   * height when the screenshot is taller than the steps. Its position matches
+   * the center of the timeline column in timelineSection.css.
+   */
+  .timeline-filler {
+    --override-color-recording-successful-text: #36a854;
+
+    flex: 1;
+    width: var(--sys-size-2);
+    margin-inline-start: calc(var(--timeline-section-inset-inline-start) + (var(--sys-size-8) - var(--sys-size-2)) / 2);
+    background-color: var(--sys-color-primary);
+  }
+
+  .timeline-filler.is-error {
+    background-color: var(--sys-color-error);
+  }
+
+  .was-successful .timeline-filler {
+    animation: flash-timeline-filler 2s;
+  }
+
+  @keyframes flash-timeline-filler {
+    25% {
+      background-color: var(--override-color-recording-successful-text);
+    }
+
+    75% {
+      background-color: var(--override-color-recording-successful-text);
+    }
   }
 
   .step {
@@ -4470,7 +4484,7 @@ var StepView = class extends UI9.Widget.Widget {
     if (this.#viewInput.step) {
       for (const converter of this.#viewInput.builtInConverters || []) {
         actions.push({
-          id: COPY_ACTION_PREFIX + Platform4.StringUtilities.toKebabCase(converter.getId()),
+          id: COPY_ACTION_PREFIX + converter.getId(),
           label: converter.getFormatName(),
           group: "copy",
           groupTitle: i18nString7(UIStrings7.copyAs)
@@ -4478,7 +4492,7 @@ var StepView = class extends UI9.Widget.Widget {
       }
       for (const converter of this.#viewInput.extensionConverters || []) {
         actions.push({
-          id: COPY_ACTION_PREFIX + Platform4.StringUtilities.toKebabCase(converter.getId()),
+          id: COPY_ACTION_PREFIX + converter.getId(),
           label: converter.getFormatName(),
           group: "copy",
           groupTitle: i18nString7(UIStrings7.copyAs),
@@ -4512,7 +4526,9 @@ var StepView = class extends UI9.Widget.Widget {
         this.#handleStepAction(
           new Menus.Menu.MenuItemSelectedEvent(preferredCopyAction.id)
         );
-      }, { jslogContext: preferredCopyAction.id });
+      }, {
+        jslogContext: preferredCopyAction.jslogContext ?? Platform4.StringUtilities.toKebabCase(preferredCopyAction.id)
+      });
     }
     if (copyActions.length) {
       const copyAs = contextMenu.section("copy").appendSubMenuItem(i18nString7(UIStrings7.copyAs), false, "copy");
@@ -4524,7 +4540,7 @@ var StepView = class extends UI9.Widget.Widget {
           this.#handleStepAction(
             new Menus.Menu.MenuItemSelectedEvent(item5.id)
           );
-        }, { jslogContext: item5.id });
+        }, { jslogContext: item5.jslogContext ?? Platform4.StringUtilities.toKebabCase(item5.id) });
       }
     }
   }
@@ -4535,7 +4551,8 @@ var StepView = class extends UI9.Widget.Widget {
 };
 
 // ../../front_end/panels/recorder/RecordingView.ts
-var { html: html10 } = Lit10;
+var { html: html10, nothing: nothing3 } = Lit10;
+var { classMap: classMap2 } = Lit10.Directives;
 var { widget: widget4 } = UI10.Widget;
 var UIStrings8 = {
   /**
@@ -5049,6 +5066,10 @@ function renderSections(input) {
       UIStrings8.recording
     )}</div>` : null}
                 </div>
+                ${i < input.sections.length - 1 ? html10`<div class=${classMap2({
+      "timeline-filler": true,
+      "is-error": getPreviousState(i + 1, -1) === "error" /* ERROR */
+    })}></div>` : nothing3}
               </div>
             </div>
         `
@@ -5182,7 +5203,17 @@ var RecordingView = class extends UI10.Widget.Widget {
   lastReplayResult;
   replayAllowed = false;
   breakpointIndexes = /* @__PURE__ */ new Set();
-  extensionConverters = [];
+  #extensionConverters = [];
+  get extensionConverters() {
+    return this.#extensionConverters;
+  }
+  set extensionConverters(converters) {
+    if (this.#extensionConverters === converters) {
+      return;
+    }
+    this.#extensionConverters = converters;
+    void this.#convertToCode();
+  }
   replayExtensions;
   extensionDescriptor;
   onPlayRecording;
@@ -5203,6 +5234,9 @@ var RecordingView = class extends UI10.Widget.Widget {
     return this.#recorderSettings;
   }
   set recorderSettings(settings) {
+    if (this.#recorderSettings === settings) {
+      return;
+    }
     this.#recorderSettings = settings;
     this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
     void this.#convertToCode();
@@ -5212,6 +5246,9 @@ var RecordingView = class extends UI10.Widget.Widget {
     return this.#builtInConverters;
   }
   set builtInConverters(converters) {
+    if (this.#builtInConverters === converters) {
+      return;
+    }
     this.#builtInConverters = converters;
     this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
     void this.#convertToCode();
@@ -5954,7 +5991,14 @@ var DEFAULT_VIEW11 = (input, output, target) => {
           ${input.importError ? html11`<div class='error'>Import error: ${input.importError.message}</div>` : ""}
           ${renderCurrentPage()}
         </div>
-    `, target, { container: { listeners: { setrecording: input.onSetRecording } } });
+    `, target, {
+    container: {
+      // Visual logging attributes all interactions in the panel to this root.
+      // Panel usage metrics depend on it.
+      attributes: { jslog: `${VisualLogging9.panel(RecorderPanel.panelName).track({ resize: true })}` },
+      listeners: { setrecording: input.onSetRecording }
+    }
+  });
 };
 var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   static panelName = "chrome-recorder";
@@ -6146,6 +6190,10 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
   }
   #extensionViewShowRequestedListener;
+  #extensionsUpdatedDescriptor;
+  #onExtensionsUpdated = (event) => {
+    this.#updateExtensions(event.data);
+  };
   #recorderSettings = new Models8.RecorderSettings.RecorderSettings();
   #shortcutHelper = new Models8.RecorderShortcutHelper.RecorderShortcutHelper();
   #disableRecorderImportWarningSetting = Common2.Settings.Settings.instance().createSetting(
@@ -6183,12 +6231,17 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     ]);
     const extensionManager = Extensions2.ExtensionManager.ExtensionManager.instance();
     this.#updateExtensions(extensionManager.extensions());
-    extensionManager.addEventListener(Extensions2.ExtensionManager.Events.EXTENSIONS_UPDATED, (event) => {
-      this.#updateExtensions(event.data);
-    });
   }
   wasShown() {
     super.wasShown();
+    if (!this.#extensionsUpdatedDescriptor) {
+      const extensionManager = Extensions2.ExtensionManager.ExtensionManager.instance();
+      this.#extensionsUpdatedDescriptor = extensionManager.addEventListener(
+        Extensions2.ExtensionManager.Events.EXTENSIONS_UPDATED,
+        this.#onExtensionsUpdated
+      );
+      this.#updateExtensions(extensionManager.extensions());
+    }
     UI11.Context.Context.instance().setFlavor(_RecorderPanel, this);
     this.requestUpdate();
     void this.updateComplete.then(() => {
@@ -6197,10 +6250,18 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
   }
   willHide() {
     super.willHide();
+    if (this.#extensionsUpdatedDescriptor) {
+      Common2.EventTarget.removeEventListeners([this.#extensionsUpdatedDescriptor]);
+      this.#extensionsUpdatedDescriptor = void 0;
+    }
     UI11.Context.Context.instance().setFlavor(_RecorderPanel, null);
   }
   onDetach() {
     super.onDetach();
+    if (this.#extensionsUpdatedDescriptor) {
+      Common2.EventTarget.removeEventListeners([this.#extensionsUpdatedDescriptor]);
+      this.#extensionsUpdatedDescriptor = void 0;
+    }
     if (this.currentRecordingSession) {
       void this.currentRecordingSession.stop();
     }
@@ -6213,8 +6274,8 @@ var RecorderPanel = class _RecorderPanel extends UI11.Widget.VBox {
     }
   }
   #updateExtensions(extensions) {
-    this.extensionConverters = extensions.filter((extension) => extension.getCapabilities().includes("export")).map((extension, idx) => {
-      return new Converters.ExtensionConverter.ExtensionConverter(idx, extension);
+    this.extensionConverters = extensions.filter((extension) => extension.getCapabilities().includes("export")).map((extension) => {
+      return new Converters.ExtensionConverter.ExtensionConverter(extension);
     });
     this.replayExtensions = extensions.filter((extension) => extension.getCapabilities().includes("replay"));
   }

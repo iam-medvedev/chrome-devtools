@@ -17,7 +17,6 @@ describeWithEnvironment('ScreencastApp', () => {
     let screencastApp;
     afterEach(() => {
         screencastApp?.rootView?.detach();
-        UI.InspectorView.InspectorView.removeInstance();
     });
     it('can start casting', async () => {
         // presentUI() attaches the root view to document.body. Production installs the common

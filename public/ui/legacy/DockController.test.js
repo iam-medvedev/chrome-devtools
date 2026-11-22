@@ -8,42 +8,14 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import * as SettingsUI from '../settings/settings.js';
 import * as LegacyUI from './legacy.js';
 async function registerDockingSettings(currentValue) {
-    Common.Settings.registerSettingsForTest([{
-            category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-            settingName: 'currentDockState',
-            settingType: "enum" /* Common.Settings.SettingType.ENUM */,
-            defaultValue: currentValue,
-            options: [
-                {
-                    value: 'right',
-                    text: () => 'right',
-                    title: () => 'Dock to right',
-                    raw: false,
-                },
-                {
-                    value: 'bottom',
-                    text: () => 'bottom',
-                    title: () => 'Dock to bottom',
-                    raw: false,
-                },
-                {
-                    value: 'left',
-                    text: () => 'left',
-                    title: () => 'Dock to left',
-                    raw: false,
-                },
-                {
-                    value: 'undocked',
-                    text: () => 'undocked',
-                    title: () => 'Undock',
-                    raw: false,
-                },
-            ],
-        }]);
     Root.Runtime.experiments.clearForTest();
-    await initializeGlobalVars({ reset: false });
+    await initializeGlobalVars();
+    Common.Settings.Settings.instance()
+        .resolve(SettingsUI.MainSettings.currentDockStateSettingDescriptor)
+        .set(currentValue);
 }
 describe('DockController', () => {
     afterEach(async () => {

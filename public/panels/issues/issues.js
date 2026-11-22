@@ -8,7 +8,7 @@ var __export = (target, all) => {
 var AffectedDescendantsWithinSelectElementView_exports = {};
 __export(AffectedDescendantsWithinSelectElementView_exports, {
   AffectedDescendantsWithinSelectElementView: () => AffectedDescendantsWithinSelectElementView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW2
+  DEFAULT_VIEW: () => DEFAULT_VIEW3
 });
 import * as Host3 from "../../core/host/host.js";
 import * as i18n5 from "../../core/i18n/i18n.js";
@@ -20,30 +20,38 @@ import * as PanelsCommon3 from "../common/common.js";
 var AffectedElementsView_exports = {};
 __export(AffectedElementsView_exports, {
   AffectedElementsView: () => AffectedElementsView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import * as Host2 from "../../core/host/host.js";
 import * as i18n3 from "../../core/i18n/i18n.js";
 import * as SDK2 from "../../core/sdk/sdk.js";
 import * as UI2 from "../../ui/legacy/legacy.js";
-import { Directives, html as html2, render as render2 } from "../../ui/lit/lit.js";
-import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
+import { Directives as Directives2, html as html2, render as render2 } from "../../ui/lit/lit.js";
+import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
 import * as PanelsCommon2 from "../common/common.js";
 
 // ../../front_end/panels/issues/AffectedResourcesView.ts
+var AffectedResourcesView_exports = {};
+__export(AffectedResourcesView_exports, {
+  AffectedItem: () => AffectedItem,
+  AffectedResourcesView: () => AffectedResourcesView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  TABLE_VIEW: () => TABLE_VIEW,
+  extractShortPath: () => extractShortPath,
+  renderElementCell: () => renderElementCell,
+  renderFrameCell: () => renderFrameCell
+});
 import * as Common from "../../core/common/common.js";
 import * as Host from "../../core/host/host.js";
 import * as i18n from "../../core/i18n/i18n.js";
 import * as SDK from "../../core/sdk/sdk.js";
 import * as Logs from "../../models/logs/logs.js";
 import * as Buttons from "../../ui/components/buttons/buttons.js";
-import * as RequestLinkIcon from "../../ui/components/request_link_icon/request_link_icon.js";
-import { Icon } from "../../ui/kit/kit.js";
-import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI from "../../ui/legacy/legacy.js";
-import { html, nothing, render } from "../../ui/lit/lit.js";
-import * as VisualLogging from "../../ui/visual_logging/visual_logging.js";
+import { Directives, html, nothing, render } from "../../ui/lit/lit.js";
 import * as PanelsCommon from "../common/common.js";
+var { classMap, ref } = Directives;
+var { widget } = UI.Widget;
 var UIStrings = {
   /**
    * @description Fallback text in the Issues panel when a frame URL is unknown in the affected resources table.
@@ -60,9 +68,29 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/issues/AffectedResourcesView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var AffectedItem = /* @__PURE__ */ ((AffectedItem2) => {
+  AffectedItem2["COOKIE"] = "Cookie";
+  AffectedItem2["DIRECTIVE"] = "Directive";
+  AffectedItem2["ELEMENT"] = "Element";
+  AffectedItem2["REQUEST"] = "Request";
+  AffectedItem2["SOURCE"] = "Source";
+  return AffectedItem2;
+})(AffectedItem || {});
 var extractShortPath = (path) => {
   return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [""])[0];
 };
+function renderElementCell(element) {
+  const { deferredNode } = element;
+  if (!deferredNode) {
+    return html`<td>${element.nodeName || i18nString(UIStrings.unavailable)}</td>`;
+  }
+  return html`
+    <td class="affected-resource-element devtools-link">${widget(PanelsCommon.DOMLinkifier.DeferredDOMNodeLink, {
+    deferredNode,
+    options: { textContent: element.nodeName || void 0, onClick: element.onElementClick }
+  })}</td>
+  `;
+}
 function renderFrameCell(frame) {
   if (!frame) {
     return html`<td></td>`;
@@ -92,16 +120,34 @@ function renderFrameCell(frame) {
     </td>
   `;
 }
+var DEFAULT_VIEW = (input, _output, target) => {
+  const labelClasses = { "affected-resource-label": true };
+  if (input.labelClass) {
+    labelClasses[input.labelClass] = true;
+  }
+  render(html`<div class=${classMap(labelClasses)}>${input.resourceNameWithCount}</div>`, target);
+};
+var TABLE_VIEW = (input, _output, target) => {
+  render(
+    html`<table class="affected-resource-list" ${ref((e) => {
+      if (e instanceof HTMLTableElement) {
+        input.onTableRef(e);
+      }
+    })}></table>`,
+    target
+  );
+};
 var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
   #parentView;
+  #view;
   issue;
-  affectedResourcesCountElement;
   affectedResources;
-  #affectedResourcesCount;
-  #frameListeners;
-  #unresolvedFrameIds;
+  #affectedResourcesCount = 0;
+  #resourceNameWithCount = "";
+  #frameListeners = [];
+  #unresolvedFrameIds = /* @__PURE__ */ new Set();
   requestResolver;
-  constructor(parent, issue, jslogContext) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW, tableView = TABLE_VIEW) {
     super(
       /* title */
       void 0,
@@ -110,39 +156,45 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
       jslogContext
     );
     this.#parentView = parent;
+    this.#view = view;
     this.issue = issue;
     this.toggleOnClick = true;
-    this.affectedResourcesCountElement = this.createAffectedResourcesCounter();
-    this.affectedResources = this.createAffectedResources();
-    this.#affectedResourcesCount = 0;
+    this.#render();
+    const body = new UI.TreeOutline.TreeElement();
+    let table;
+    tableView(
+      {
+        onTableRef: (el) => {
+          table = el;
+        }
+      },
+      void 0,
+      body.listItemElement
+    );
+    if (!table) {
+      throw new Error("The affected resources table view did not render a table");
+    }
+    this.appendChild(body);
+    this.affectedResources = table;
     this.requestResolver = new Logs.RequestResolver.RequestResolver(Logs.NetworkLog.NetworkLog.instance());
-    this.#frameListeners = [];
-    this.#unresolvedFrameIds = /* @__PURE__ */ new Set();
   }
-  /**
-   * Sets the issue to take the resources from. Does not
-   * trigger an update, the caller needs to do that explicitly.
-   */
   setIssue(issue) {
     this.issue = issue;
   }
-  createAffectedResourcesCounter() {
-    const counterLabel = document.createElement("div");
-    counterLabel.classList.add("affected-resource-label");
-    this.listItemElement.appendChild(counterLabel);
-    return counterLabel;
+  #render() {
+    const input = {
+      resourceNameWithCount: this.#resourceNameWithCount,
+      labelClass: this.getAffectedResourcesLabelClass()
+    };
+    this.#view(input, void 0, this.listItemElement);
   }
-  createAffectedResources() {
-    const body = new UI.TreeOutline.TreeElement();
-    const affectedResources = document.createElement("table");
-    affectedResources.classList.add("affected-resource-list");
-    body.listItemElement.appendChild(affectedResources);
-    this.appendChild(body);
-    return affectedResources;
+  getAffectedResourcesLabelClass() {
+    return void 0;
   }
   updateAffectedResourceCount(count) {
     this.#affectedResourcesCount = count;
-    this.affectedResourcesCountElement.textContent = this.getResourceNameWithCount(count);
+    this.#resourceNameWithCount = this.getResourceNameWithCount(count);
+    this.#render();
     this.hidden = this.#affectedResourcesCount === 0;
     this.#parentView.updateAffectedResourceVisibility();
   }
@@ -150,7 +202,6 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
     return this.#affectedResourcesCount === 0;
   }
   clear() {
-    this.affectedResources.textContent = "";
     this.requestResolver.clear();
   }
   expandIfOneResource() {
@@ -224,121 +275,28 @@ var AffectedResourcesView = class extends UI.TreeOutline.TreeElement {
       }
     };
   }
-  createFrameCell(frameId, issueCategory) {
-    const frame = this.#resolveFrameId(frameId);
-    const url = frame && (frame.unreachableUrl() || frame.url) || i18nString(UIStrings.unknown);
-    const frameCell = document.createElement("td");
-    frameCell.classList.add("affected-resource-cell");
-    if (frame) {
-      const icon = new Icon();
-      icon.name = "code-circle";
-      icon.classList.add("link", "elements-panel", "medium");
-      icon.onclick = async () => {
+  createElementCellData({ backendNodeId, nodeName, target }, issueCategory) {
+    return {
+      nodeName,
+      deferredNode: target ? new SDK.DOMModel.DeferredDOMNode(target, backendNodeId) : void 0,
+      onElementClick: () => {
         Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* ELEMENT */);
-        const frame2 = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
-        if (frame2) {
-          const ownerNode = await frame2.getOwnerDOMNodeOrDocument();
-          if (ownerNode) {
-            void Common.Revealer.reveal(ownerNode);
-          }
-        }
-      };
-      icon.title = i18nString(UIStrings.clickToRevealTheFramesDomNodeIn);
-      frameCell.appendChild(icon);
-    }
-    frameCell.appendChild(document.createTextNode(url));
-    frameCell.onmouseenter = () => {
-      const frame2 = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
-      if (frame2) {
-        void frame2.highlight();
       }
     };
-    frameCell.onmouseleave = () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK.TargetManager.TargetManager.instance());
-    return frameCell;
-  }
-  createRequestCell(affectedRequest, options = {}) {
-    const requestCell = document.createElement("td");
-    requestCell.classList.add("affected-resource-cell");
-    const requestLinkIcon = new RequestLinkIcon.RequestLinkIcon.RequestLinkIcon();
-    requestLinkIcon.data = { ...options, affectedRequest, requestResolver: this.requestResolver, displayURL: true };
-    requestCell.appendChild(requestLinkIcon);
-    return requestCell;
-  }
-  async createElementCell({ backendNodeId, nodeName, target }, issueCategory) {
-    if (!target) {
-      const cellElement2 = document.createElement("td");
-      cellElement2.textContent = nodeName || i18nString(UIStrings.unavailable);
-      return cellElement2;
-    }
-    function sendTelemetry() {
-      Host.userMetrics.issuesPanelResourceOpened(issueCategory, "Element" /* ELEMENT */);
-    }
-    const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
-    const anchor = PanelsCommon.DOMLinkifier.Linkifier.instance().linkify(
-      deferredDOMNode,
-      { textContent: nodeName || void 0, onClick: sendTelemetry }
-    );
-    const cellElement = document.createElement("td");
-    cellElement.classList.add("affected-resource-element", "devtools-link");
-    render(anchor, cellElement);
-    return cellElement;
-  }
-  appendSourceLocation(element, sourceLocation, target) {
-    const sourceCodeLocation = document.createElement("td");
-    sourceCodeLocation.classList.add("affected-source-location");
-    if (sourceLocation) {
-      const linkifier = new Components.Linkifier.Linkifier(UI.UIUtils.MaxLengthForDisplayedURLsInConsole);
-      const sourceAnchor = linkifier.linkifyScriptLocation(
-        target || null,
-        sourceLocation.scriptId || null,
-        sourceLocation.url,
-        sourceLocation.lineNumber,
-        { columnNumber: sourceLocation.columnNumber }
-      );
-      sourceAnchor.setAttribute("jslog", `${VisualLogging.link("source-location").track({ click: true })}`);
-      sourceCodeLocation.appendChild(sourceAnchor);
-    }
-    element.appendChild(sourceCodeLocation);
-  }
-  appendColumnTitle(header, title, additionalClass = null) {
-    const info = document.createElement("td");
-    info.classList.add("affected-resource-header");
-    if (additionalClass) {
-      info.classList.add(additionalClass);
-    }
-    info.textContent = title;
-    header.appendChild(info);
-  }
-  createIssueDetailCell(textContent, additionalClass = null) {
-    const cell = document.createElement("td");
-    if (typeof textContent === "string") {
-      cell.textContent = textContent;
-    } else {
-      cell.appendChild(textContent);
-    }
-    if (additionalClass) {
-      cell.classList.add(additionalClass);
-    }
-    return cell;
-  }
-  appendIssueDetailCell(element, textContent, additionalClass = null) {
-    const cell = this.createIssueDetailCell(textContent, additionalClass);
-    element.appendChild(cell);
-    return cell;
   }
 };
 
 // ../../front_end/panels/issues/AffectedElementsView.ts
-var { ifDefined } = Directives;
-var { widget } = UI2.Widget;
-var DEFAULT_VIEW = (input, _output, target) => {
-  const renderElementCell = (row) => {
+var { ifDefined } = Directives2;
+var { widget: widget2 } = UI2.Widget;
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  const renderElementCell2 = (row) => {
     const { deferredNode } = row;
     if (!deferredNode) {
       return html2`<td>${row.nodeName || i18nString2(UIStrings2.unavailable)}</td>`;
     }
     return html2`
-      <td class="affected-resource-element devtools-link">${widget(PanelsCommon2.DOMLinkifier.DeferredDOMNodeLink, {
+      <td class="affected-resource-element devtools-link">${widget2(PanelsCommon2.DOMLinkifier.DeferredDOMNodeLink, {
       deferredNode,
       options: { textContent: row.nodeName || void 0, onClick: row.onElementClick }
     })}</td>
@@ -346,10 +304,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
   };
   render2(html2`
     ${input.rows.map((row) => html2`
-      <tr jslog=${VisualLogging2.tableRow("affected-element")}
+      <tr jslog=${VisualLogging.tableRow("affected-element")}
           data-backend-node-id=${ifDefined(row.backendNodeId ? String(row.backendNodeId) : void 0)}
           data-target-id=${ifDefined(row.backendNodeId ? row.targetId : void 0)}>
-        ${renderElementCell(row)}
+        ${renderElementCell2(row)}
       </tr>
     `)}
   `, target);
@@ -368,11 +326,11 @@ var str_2 = i18n3.i18n.registerUIStrings("panels/issues/AffectedElementsView.ts"
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var AffectedElementsView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW2) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
-  #appendAffectedElements(affectedElements) {
+  appendAffectedElements(affectedElements) {
     const rows = Array.from(affectedElements, (element) => this.#createAffectedElementRow(element));
     this.#view({ rows }, void 0, this.affectedResources);
     this.updateAffectedResourceCount(rows.length);
@@ -395,13 +353,13 @@ var AffectedElementsView = class extends AffectedResourcesView {
   }
   update() {
     this.requestResolver.clear();
-    this.#appendAffectedElements(this.issue.elements());
+    this.appendAffectedElements(this.issue.elements());
   }
 };
 
 // ../../front_end/panels/issues/AffectedDescendantsWithinSelectElementView.ts
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  const renderElementCell = (row) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  const renderElementCell2 = (row) => {
     if (!row.target) {
       return html3`<td>${row.nodeName || i18nString3(UIStrings3.unavailable)}</td>`;
     }
@@ -418,7 +376,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   render3(html3`
     ${input.rows.map((row) => html3`
       <tr class="affected-resource-select-element-descendant">
-        ${renderElementCell(row)}
+        ${renderElementCell2(row)}
       </tr>
     `)}
   `, target);
@@ -444,7 +402,7 @@ var str_3 = i18n5.i18n.registerUIStrings("panels/issues/AffectedDescendantsWithi
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW2) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW3) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -479,7 +437,7 @@ var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsV
 var AffectedLazyLoadImagesView_exports = {};
 __export(AffectedLazyLoadImagesView_exports, {
   AffectedLazyLoadImagesView: () => AffectedLazyLoadImagesView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW3
+  DEFAULT_VIEW: () => DEFAULT_VIEW4
 });
 import * as i18n7 from "../../core/i18n/i18n.js";
 import { html as html4, render as render4 } from "../../ui/lit/lit.js";
@@ -491,43 +449,37 @@ var UIStrings4 = {
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/issues/AffectedLazyLoadImagesView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var DEFAULT_VIEW3 = async (input, _output, target) => {
-  const templates = [];
-  for (const issue of input.issues) {
-    for (const element of issue.elements()) {
-      templates.push(html4`<tr>
-        ${await input.createElementCell(element, input.issueCategory)}
-      </tr>`);
-    }
-  }
-  render4(html4`${templates}`, target);
+var DEFAULT_VIEW4 = (input, _output, target) => {
+  render4(html4`
+    ${input.elements.map((element) => html4`<tr>${renderElementCell(element)}</tr>`)}
+  `, target);
 };
 var AffectedLazyLoadImagesView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW3) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW4) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
   update() {
     this.requestResolver.clear();
-    void this.#render();
+    this.#render();
   }
   getResourceNameWithCount(count) {
     return i18nString4(UIStrings4.nElements, { n: count });
   }
-  async #render() {
+  #render() {
     const issues = this.issue.getLazyLoadImageIssues();
+    const issueCategory = this.issue.getCategory();
     let count = 0;
+    const elements = [];
     for (const issue of issues) {
       count += issue.elementCount();
+      for (const element of issue.elements()) {
+        elements.push(this.createElementCellData(element, issueCategory));
+      }
     }
     this.updateAffectedResourceCount(count);
-    const input = {
-      issues,
-      issueCategory: this.issue.getCategory(),
-      createElementCell: this.createElementCell.bind(this)
-    };
-    await this.#view(input, void 0, this.affectedResources);
+    this.#view({ elements }, void 0, this.affectedResources);
   }
 };
 
@@ -535,7 +487,7 @@ var AffectedLazyLoadImagesView = class extends AffectedResourcesView {
 var AffectedMetadataAllowedSitesView_exports = {};
 __export(AffectedMetadataAllowedSitesView_exports, {
   AffectedMetadataAllowedSitesView: () => AffectedMetadataAllowedSitesView,
-  DEFAULT_VIEW: () => DEFAULT_VIEW4
+  DEFAULT_VIEW: () => DEFAULT_VIEW5
 });
 import "../../ui/kit/kit.js";
 import * as i18n9 from "../../core/i18n/i18n.js";
@@ -571,7 +523,7 @@ function renderOptOut(details) {
     PH2: learnMoreLink
   })}</span>`;
 }
-var DEFAULT_VIEW4 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, _output, target) => {
   const siteListFormatter = new Intl.ListFormat(i18n9.DevToolsLocale.DevToolsLocale.instance().locale, { type: "unit", style: "short" });
   render5(html5`
       <tbody>
@@ -585,7 +537,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
 };
 var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW4) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW5) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -602,13 +554,15 @@ var AffectedMetadataAllowedSitesView = class extends AffectedResourcesView {
 // ../../front_end/panels/issues/AffectedSelectivePermissionsInterventionView.ts
 var AffectedSelectivePermissionsInterventionView_exports = {};
 __export(AffectedSelectivePermissionsInterventionView_exports, {
-  AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView
+  AffectedSelectivePermissionsInterventionView: () => AffectedSelectivePermissionsInterventionView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6
 });
 import * as i18n11 from "../../core/i18n/i18n.js";
+import * as Platform from "../../core/platform/platform.js";
 import * as Bindings from "../../models/bindings/bindings.js";
-import * as Components2 from "../../ui/legacy/components/utils/utils.js";
+import * as Components from "../../ui/legacy/components/utils/utils.js";
 import * as UI3 from "../../ui/legacy/legacy.js";
-import { Directives as Directives2, html as html6, nothing as nothing3, render as render6 } from "../../ui/lit/lit.js";
+import { html as html6, nothing as nothing3, render as render6 } from "../../ui/lit/lit.js";
 var UIStrings6 = {
   /**
    * @description Label in the Issues panel for the number of affected violations in the selective permissions intervention table.
@@ -637,73 +591,120 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/issues/AffectedSelectivePermissionsInterventionView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var { widget: widget2 } = UI3.Widget;
-var AffectedSelectivePermissionsInterventionView = class extends AffectedResourcesView {
-  #linkifier = new Components2.Linkifier.Linkifier();
-  getResourceNameWithCount(count) {
-    return i18nString6(UIStrings6.nViolations, { n: count });
-  }
-  #render() {
-    const issues = Array.from(this.issue.getSelectivePermissionsInterventionIssues());
-    render6(
-      html6`
-      <tr>
-        <td class="affected-resource-header">${i18nString6(UIStrings6.api)}</td>
-        <td class="affected-resource-header">${i18nString6(UIStrings6.script)}</td>
-        <td class="affected-resource-header">${i18nString6(UIStrings6.adAncestry)}</td>
-      </tr>
-      ${issues.map((issue) => this.#renderDetail(issue))}
-    `,
-      this.affectedResources,
-      { host: this }
-    );
-    this.updateAffectedResourceCount(issues.length);
-  }
-  #renderDetail(issue) {
-    const details = issue.details();
-    const issuesModel = issue.model();
-    const stackTracePromise = details.stackTrace && issuesModel ? this.#resolveStackTrace(details.stackTrace, issuesModel) : Promise.resolve(html6`<span>${i18nString6(UIStrings6.unknown)}</span>`);
-    const target = issuesModel ? issuesModel.target() : null;
-    return html6`
+var { widget: widget3 } = UI3.Widget;
+var STACK_TRACE_OPTIONS = {
+  expandable: true
+};
+var DEFAULT_VIEW6 = (input, _output, target) => {
+  const renderScriptCell = (script) => {
+    switch (script.status) {
+      case "unknown":
+        return html6`<span>${i18nString6(UIStrings6.unknown)}</span>`;
+      case "loading":
+        return html6`<span>${i18nString6(UIStrings6.loading)}</span>`;
+      case "ready":
+        return html6`${widget3(Components.JSPresentationUtils.StackTracePreviewContent, {
+          stackTrace: script.stackTrace,
+          options: STACK_TRACE_OPTIONS
+        })}`;
+      default:
+        Platform.assertNever(script, `Unhandled script cell state: ${JSON.stringify(script)}`);
+    }
+  };
+  render6(html6`
+    <tr>
+      <td class="affected-resource-header">${i18nString6(UIStrings6.api)}</td>
+      <td class="affected-resource-header">${i18nString6(UIStrings6.script)}</td>
+      <td class="affected-resource-header">${i18nString6(UIStrings6.adAncestry)}</td>
+    </tr>
+    ${input.rows.map((row) => html6`
       <tr class="affected-resource-directive">
-        <td>${details.apiName}</td>
-        <td>${Directives2.until(stackTracePromise, html6`<span>${i18nString6(UIStrings6.loading)}</span>`)}</td>
+        <td>${row.apiName}</td>
+        <td>${renderScriptCell(row.script)}</td>
         <td class="affected-resource-cell">
           <div class="ad-ancestry-list">
-            ${(details.adAncestry?.ancestryChain || []).map((script) => {
-      const link4 = this.#linkifier.linkifyScriptLocation(target, script.scriptId, "", 0);
-      return html6`<div>${link4}</div>`;
-    })}
-            ${details.adAncestry?.rootScriptFilterlistRule ? html6`<div>Rule: ${details.adAncestry.rootScriptFilterlistRule}</div>` : nothing3}
+            ${row.adAncestryScripts.map((script) => html6`
+              <div>${widget3(Components.Linkifier.ScriptLocationLink, {
+    target: script.target ?? void 0,
+    scriptId: script.scriptId,
+    sourceURL: Platform.DevToolsPath.EmptyUrlString,
+    lineNumber: 0
+  })}</div>
+            `)}
+            ${row.rootScriptFilterlistRule ? html6`<div>Rule: ${row.rootScriptFilterlistRule}</div>` : nothing3}
           </div>
         </td>
       </tr>
-    `;
+    `)}
+  `, target);
+};
+var AffectedSelectivePermissionsInterventionView = class extends AffectedResourcesView {
+  #view;
+  #updateId = 0;
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW6) {
+    super(parent, issue, jslogContext);
+    this.#view = view;
   }
-  async #resolveStackTrace(stackTrace, issuesModel) {
+  getResourceNameWithCount(count) {
+    return i18nString6(UIStrings6.nViolations, { n: count });
+  }
+  #appendDetails(issues) {
+    const updateId = ++this.#updateId;
+    const rows = [];
+    const pendingResolutions = [];
+    for (const issue of issues) {
+      const details = issue.details();
+      const issuesModel = issue.model();
+      const target = issuesModel && !issuesModel.target().isDisposed() ? issuesModel.target() : null;
+      const rowIndex = rows.length;
+      rows.push({
+        apiName: details.apiName,
+        script: details.stackTrace && target ? { status: "loading" } : { status: "unknown" },
+        adAncestryScripts: (details.adAncestry?.ancestryChain ?? []).map((script) => ({
+          target,
+          scriptId: script.scriptId
+        })),
+        rootScriptFilterlistRule: details.adAncestry?.rootScriptFilterlistRule
+      });
+      if (details.stackTrace && target) {
+        pendingResolutions.push(this.#resolveStackTrace(details.stackTrace, target).then((stackTrace) => {
+          if (updateId !== this.#updateId) {
+            return;
+          }
+          rows[rowIndex] = {
+            ...rows[rowIndex],
+            script: { status: "ready", stackTrace }
+          };
+          this.#view({ rows: [...rows] }, void 0, this.affectedResources);
+        }));
+      }
+    }
+    this.#view({ rows: [...rows] }, void 0, this.affectedResources);
+    this.updateAffectedResourceCount(rows.length);
+    void Promise.all(pendingResolutions);
+  }
+  async #resolveStackTrace(stackTrace, target) {
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-    const stackTraceTranslated = await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime(stackTrace, issuesModel.target());
-    return html6`${widget2(Components2.JSPresentationUtils.StackTracePreviewContent, {
-      stackTrace: stackTraceTranslated,
-      options: { expandable: true }
-    })}`;
+    return await debuggerWorkspaceBinding.createStackTraceFromProtocolRuntime(stackTrace, target);
+  }
+  clear() {
+    ++this.#updateId;
+    this.requestResolver.clear();
+    this.#view({ rows: [] }, void 0, this.affectedResources);
   }
   update() {
     this.requestResolver.clear();
-    this.#linkifier.reset();
-    this.#render();
+    this.#appendDetails(this.issue.getSelectivePermissionsInterventionIssues());
   }
 };
 
 // ../../front_end/panels/issues/GenericIssueDetailsView.ts
 var GenericIssueDetailsView_exports = {};
 __export(GenericIssueDetailsView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW7,
   GenericIssueDetailsView: () => GenericIssueDetailsView
 });
-import * as Host4 from "../../core/host/host.js";
 import * as i18n13 from "../../core/i18n/i18n.js";
-import * as SDK4 from "../../core/sdk/sdk.js";
 
 // gen/front_end/generated/protocol.ts
 var Accessibility;
@@ -1182,6 +1183,9 @@ var Audits;
     ElementAccessibilityIssueReason2["InteractiveContentOptionChild"] = "InteractiveContentOptionChild";
     ElementAccessibilityIssueReason2["InteractiveContentLegendChild"] = "InteractiveContentLegendChild";
     ElementAccessibilityIssueReason2["InteractiveContentSummaryDescendant"] = "InteractiveContentSummaryDescendant";
+    ElementAccessibilityIssueReason2["AnchorMenuDescendant"] = "AnchorMenuDescendant";
+    ElementAccessibilityIssueReason2["InteractiveContentMenuDescendant"] = "InteractiveContentMenuDescendant";
+    ElementAccessibilityIssueReason2["TextMenuDescendant"] = "TextMenuDescendant";
   })(ElementAccessibilityIssueReason = Audits2.ElementAccessibilityIssueReason || (Audits2.ElementAccessibilityIssueReason = {}));
   let StyleSheetLoadingIssueReason;
   ((StyleSheetLoadingIssueReason2) => {
@@ -1506,7 +1510,6 @@ var DOM;
     PseudoType2["SelectListbox"] = "select-listbox";
     PseudoType2["PermissionIcon"] = "permission-icon";
     PseudoType2["OverscrollAreaParent"] = "overscroll-area-parent";
-    PseudoType2["OverscrollBackdrop"] = "overscroll-backdrop";
     PseudoType2["Skeleton"] = "skeleton";
   })(PseudoType = DOM2.PseudoType || (DOM2.PseudoType = {}));
   let ShadowRootType;
@@ -2290,6 +2293,7 @@ var Network;
     DeviceBoundSessionFetchResult2["AttestationCertificationError"] = "AttestationCertificationError";
     DeviceBoundSessionFetchResult2["AttestationSigningError"] = "AttestationSigningError";
     DeviceBoundSessionFetchResult2["FederatedRegistrationRedirected"] = "FederatedRegistrationRedirected";
+    DeviceBoundSessionFetchResult2["CrossSiteRefreshSessionConfig"] = "CrossSiteRefreshSessionConfig";
   })(DeviceBoundSessionFetchResult = Network2.DeviceBoundSessionFetchResult || (Network2.DeviceBoundSessionFetchResult = {}));
   let RefreshEventDetailsRefreshResult;
   ((RefreshEventDetailsRefreshResult2) => {
@@ -2977,6 +2981,7 @@ var Preload;
     PrerenderFinalStatus2["FormSubmitWhenPrerendering"] = "FormSubmitWhenPrerendering";
     PrerenderFinalStatus2["CrossDocumentRestart"] = "CrossDocumentRestart";
     PrerenderFinalStatus2["PrefetchFailedCrossOriginSubframe"] = "PrefetchFailedCrossOriginSubframe";
+    PrerenderFinalStatus2["UnexpectedMainFrameNavigation"] = "UnexpectedMainFrameNavigation";
   })(PrerenderFinalStatus = Preload2.PrerenderFinalStatus || (Preload2.PrerenderFinalStatus = {}));
   let PreloadingStatus;
   ((PreloadingStatus2) => {
@@ -3546,10 +3551,7 @@ var Runtime;
 })(Runtime || (Runtime = {}));
 
 // ../../front_end/panels/issues/GenericIssueDetailsView.ts
-import * as UI4 from "../../ui/legacy/legacy.js";
 import { html as html7, nothing as nothing4, render as render7 } from "../../ui/lit/lit.js";
-import * as PanelsCommon4 from "../common/common.js";
-var { widget: widget3 } = UI4.Widget;
 var UIStrings7 = {
   /**
    * @description Label in the Issues panel for the number of affected resources
@@ -3565,30 +3567,11 @@ var UIStrings7 = {
    * @description Link text in the Issues panel for the violating DOM node in
    * the generic issue affected resources table.
    */
-  violatingNode: "Violating node",
-  /**
-   * @description Fallback text in the Issues panel when an HTML element is
-   * unavailable in the affected resources table.
-   */
-  unavailable: "Unavailable"
+  violatingNode: "Violating node"
 };
 var str_7 = i18n13.i18n.registerUIStrings("panels/issues/GenericIssueDetailsView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW5 = (input, _output, target) => {
-  const renderElementCell = (element) => {
-    const { deferredNode } = element;
-    if (!deferredNode) {
-      return html7`<td>${element.nodeName || i18nString7(UIStrings7.unavailable)}</td>`;
-    }
-    return html7`
-      <td class="affected-resource-element devtools-link">
-        ${widget3(PanelsCommon4.DOMLinkifier.DeferredDOMNodeLink, {
-      deferredNode,
-      options: { textContent: element.nodeName || void 0, onClick: element.onElementClick }
-    })}
-      </td>
-    `;
-  };
+var DEFAULT_VIEW7 = (input, _output, target) => {
   render7(html7`
     ${input.showFrameHeader ? html7`
       <tr>
@@ -3605,7 +3588,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
 };
 var GenericIssueDetailsView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW5) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW7) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -3631,14 +3614,14 @@ var GenericIssueDetailsView = class extends AffectedResourcesView {
     const frame = details.frameId ? this.createFrameCellData(details.frameId, category) : void 0;
     let element;
     if (details.violatingNodeId) {
-      const target = genericIssue.model()?.target();
-      element = {
-        nodeName: this.#violatingNodeIdName(details.errorType),
-        deferredNode: target ? new SDK4.DOMModel.DeferredDOMNode(target, details.violatingNodeId) : void 0,
-        onElementClick: () => {
-          Host4.userMetrics.issuesPanelResourceOpened(category, "Element" /* ELEMENT */);
-        }
-      };
+      element = this.createElementCellData(
+        {
+          backendNodeId: details.violatingNodeId,
+          nodeName: this.#violatingNodeIdName(details.errorType),
+          target: genericIssue.model()?.target() ?? null
+        },
+        category
+      );
     }
     return { frame, element };
   }
@@ -3671,7 +3654,7 @@ var IssueRevealer_exports = {};
 __export(IssueRevealer_exports, {
   IssueRevealer: () => IssueRevealer
 });
-import * as UI12 from "../../ui/legacy/legacy.js";
+import * as UI11 from "../../ui/legacy/legacy.js";
 
 // ../../front_end/panels/issues/IssuesPane.ts
 var IssuesPane_exports = {};
@@ -3682,20 +3665,21 @@ __export(IssuesPane_exports, {
 import "../../ui/legacy/legacy.js";
 import * as Common6 from "../../core/common/common.js";
 import * as i18n43 from "../../core/i18n/i18n.js";
-import * as Platform6 from "../../core/platform/platform.js";
+import * as Platform7 from "../../core/platform/platform.js";
 import * as IssuesManager11 from "../../models/issues_manager/issues_manager.js";
 import * as IssueCounter5 from "../../ui/components/issue_counter/issue_counter.js";
-import * as UI11 from "../../ui/legacy/legacy.js";
-import * as VisualLogging7 from "../../ui/visual_logging/visual_logging.js";
+import * as UI10 from "../../ui/legacy/legacy.js";
+import { html as html21, nothing as nothing7, render as render21 } from "../../ui/lit/lit.js";
+import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/issues/HiddenIssuesRow.ts
 import "../../ui/components/adorners/adorners.js";
 import * as i18n15 from "../../core/i18n/i18n.js";
 import * as IssuesManager from "../../models/issues_manager/issues_manager.js";
 import * as Buttons2 from "../../ui/components/buttons/buttons.js";
-import * as UI5 from "../../ui/legacy/legacy.js";
+import * as UI4 from "../../ui/legacy/legacy.js";
 import { html as html8, render as render8 } from "../../ui/lit/lit.js";
-import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
    * @description Title in the Issues panel for the hidden issues row.
@@ -3708,7 +3692,7 @@ var UIStrings8 = {
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var DEFAULT_VIEW6 = (input, _output, target) => {
+var DEFAULT_VIEW8 = (input, _output, target) => {
   const stopPropagationForEnter = (event) => {
     if (event.key === "Enter") {
       event.stopImmediatePropagation();
@@ -3721,15 +3705,15 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
     </devtools-adorner>
     <div class="title">${i18nString8(UIStrings8.hiddenIssues)}</div>
     <devtools-button class="unhide-all-issues-button"
-                     jslog=${VisualLogging3.action().track({ click: true }).context("issues.unhide-all-hiddes")}
+                     jslog=${VisualLogging2.action().track({ click: true }).context("issues.unhide-all-hiddes")}
                      @click=${input.onUnhideAllIssues}
                      @keydown=${stopPropagationForEnter}
                      .variant=${Buttons2.Button.Variant.OUTLINED}>${i18nString8(UIStrings8.unhideAll)}</devtools-button>
   </div>`, target);
 };
-var HiddenIssuesRow = class extends UI5.TreeOutline.TreeElement {
+var HiddenIssuesRow = class extends UI4.TreeOutline.TreeElement {
   #view;
-  constructor(view = DEFAULT_VIEW6) {
+  constructor(view = DEFAULT_VIEW8) {
     super(void 0, true, "hidden-issues");
     this.#view = view;
     this.toggleOnClick = true;
@@ -3755,13 +3739,13 @@ import "../../ui/kit/kit.js";
 import "./components/components.js";
 import * as Common2 from "../../core/common/common.js";
 import * as i18n17 from "../../core/i18n/i18n.js";
-import * as Platform from "../../core/platform/platform.js";
+import * as Platform2 from "../../core/platform/platform.js";
 import * as IssuesManager3 from "../../models/issues_manager/issues_manager.js";
 import * as IssueCounter from "../../ui/components/issue_counter/issue_counter.js";
-import * as UI6 from "../../ui/legacy/legacy.js";
+import * as UI5 from "../../ui/legacy/legacy.js";
 import { html as html9, render as render9 } from "../../ui/lit/lit.js";
-import * as Components3 from "./components/components.js";
-var { widget: widget4 } = UI6.Widget;
+import * as Components2 from "./components/components.js";
+var { widget: widget4 } = UI5.Widget;
 var UIStrings9 = {
   /**
    * @description Context menu item in the Issues panel to hide all current page errors.
@@ -3803,7 +3787,7 @@ function getClassNameFromKind(kind) {
       return "page-errors";
   }
 }
-var DEFAULT_VIEW7 = (input, _output, target) => {
+var DEFAULT_VIEW9 = (input, _output, target) => {
   render9(html9`
     <div class="header">
       <devtools-icon class="leading-issue-icon extra-large" .name=${input.iconName}></devtools-icon>
@@ -3811,19 +3795,19 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
         <span>${input.count}</span>
       </devtools-adorner>
       <div class="title">${input.title}</div>
-      <devtools-widget class="hide-available-issues" ${widget4(Components3.HideIssuesMenu.HideIssuesMenu, {
+      <devtools-widget class="hide-available-issues" ${widget4(Components2.HideIssuesMenu.HideIssuesMenu, {
     menuItemLabel: input.menuItemLabel,
     menuItemAction: input.menuItemAction
   })}></devtools-widget>
     </div>
   `, target);
 };
-var IssueKindView = class extends UI6.TreeOutline.TreeElement {
+var IssueKindView = class extends UI5.TreeOutline.TreeElement {
   #kind;
   #issueCount = 0;
   #view;
-  constructor(kind, view = DEFAULT_VIEW7) {
-    super(void 0, true, Platform.StringUtilities.toKebabCase(kind));
+  constructor(kind, view = DEFAULT_VIEW9) {
+    super(void 0, true, Platform2.StringUtilities.toKebabCase(kind));
     this.#kind = kind;
     this.#view = view;
     this.toggleOnClick = true;
@@ -3883,7 +3867,7 @@ var issuesPane_css_default = `/*
  * found in the LICENSE file.
  */
 
-.issues-pane {
+:host {
   overflow: hidden;
 }
 
@@ -4336,25 +4320,29 @@ devtools-button.elements-panel {
 // ../../front_end/panels/issues/IssueView.ts
 var IssueView_exports = {};
 __export(IssueView_exports, {
-  IssueView: () => IssueView
+  DEFAULT_VIEW: () => DEFAULT_VIEW19,
+  IssueView: () => IssueView,
+  MIXED_CONTENT_ROWS_VIEW: () => MIXED_CONTENT_ROWS_VIEW,
+  REQUEST_ROWS_VIEW: () => REQUEST_ROWS_VIEW
 });
+import "../../ui/components/adorners/adorners.js";
+import "../../ui/components/request_link_icon/request_link_icon.js";
+import "../../ui/kit/kit.js";
 import * as Common5 from "../../core/common/common.js";
-import * as Host10 from "../../core/host/host.js";
+import * as Host9 from "../../core/host/host.js";
 import * as i18n41 from "../../core/i18n/i18n.js";
-import * as Platform5 from "../../core/platform/platform.js";
+import * as Platform6 from "../../core/platform/platform.js";
 import * as IssuesManager9 from "../../models/issues_manager/issues_manager.js";
 import * as NetworkForward3 from "../network/forward/forward.js";
-import * as Adorners from "../../ui/components/adorners/adorners.js";
 import * as IssueCounter3 from "../../ui/components/issue_counter/issue_counter.js";
 import * as MarkdownView from "../../ui/components/markdown_view/markdown_view.js";
-import { Icon as Icon2 } from "../../ui/kit/kit.js";
-import * as UI10 from "../../ui/legacy/legacy.js";
-import { html as html21, render as render21 } from "../../ui/lit/lit.js";
-import * as VisualLogging6 from "../../ui/visual_logging/visual_logging.js";
+import * as UI9 from "../../ui/legacy/legacy.js";
+import { Directives as Directives3, html as html20, render as render20 } from "../../ui/lit/lit.js";
+import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
 
 // ../../front_end/panels/issues/AffectedBlockedByResponseView.ts
 import "../../ui/components/request_link_icon/request_link_icon.js";
-import * as Host5 from "../../core/host/host.js";
+import * as Host4 from "../../core/host/host.js";
 import * as i18n19 from "../../core/i18n/i18n.js";
 import * as IssuesManager5 from "../../models/issues_manager/issues_manager.js";
 import { html as html10, render as render10 } from "../../ui/lit/lit.js";
@@ -4382,7 +4370,7 @@ var UIStrings10 = {
 };
 var str_10 = i18n19.i18n.registerUIStrings("panels/issues/AffectedBlockedByResponseView.ts", UIStrings10);
 var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-var DEFAULT_VIEW8 = (input, _output, target) => {
+var DEFAULT_VIEW10 = (input, _output, target) => {
   render10(html10`
     <tr>
       <td class="affected-resource-header">${i18nString10(UIStrings10.requestC)}</td>
@@ -4407,7 +4395,7 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
 };
 var AffectedBlockedByResponseView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW8) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW10) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -4421,7 +4409,7 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
         rows,
         requestResolver: this.requestResolver,
         onRequestClick: () => {
-          Host5.userMetrics.issuesPanelResourceOpened(
+          Host4.userMetrics.issuesPanelResourceOpened(
             IssuesManager5.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY,
             "Request" /* REQUEST */
           );
@@ -4451,12 +4439,12 @@ var AffectedBlockedByResponseView = class extends AffectedResourcesView {
 
 // ../../front_end/panels/issues/AffectedCookiesView.ts
 import * as Common3 from "../../core/common/common.js";
-import * as Host6 from "../../core/host/host.js";
+import * as Host5 from "../../core/host/host.js";
 import * as i18n21 from "../../core/i18n/i18n.js";
 import * as NetworkForward from "../network/forward/forward.js";
 import { html as html11, render as render11 } from "../../ui/lit/lit.js";
-import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
-var DEFAULT_VIEW9 = (input, _output, target) => {
+import * as VisualLogging3 from "../../ui/visual_logging/visual_logging.js";
+var DEFAULT_VIEW11 = (input, _output, target) => {
   render11(html11`
     <tr>
       <td class="affected-resource-header">${i18nString11(UIStrings11.name)}</td>
@@ -4465,13 +4453,13 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       </td>
     </tr>
     ${input.cookies.map((cookie) => html11`
-      <tr class="affected-resource-cookie" jslog=${VisualLogging4.tableRow("affected-cookie")}>
+      <tr class="affected-resource-cookie" jslog=${VisualLogging3.tableRow("affected-cookie")}>
         <td>
           ${cookie.hasRequest ? html11`
             <button
               class="link devtools-link"
               tabindex="0"
-              jslog=${VisualLogging4.link("issues.filter-network-requests-by-cookie").track({ click: true })}
+              jslog=${VisualLogging3.link("issues.filter-network-requests-by-cookie").track({ click: true })}
               @click=${cookie.onClick}
             >${cookie.name}</button>
           ` : cookie.name}
@@ -4484,14 +4472,14 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
 var RAW_COOKIE_LINES_VIEW = (input, _output, target) => {
   render11(html11`
     ${input.cookieLines.map((cookie) => html11`
-      <tr class="affected-resource-directive" jslog=${VisualLogging4.tableRow("affected-raw-cookie")}>
+      <tr class="affected-resource-directive" jslog=${VisualLogging3.tableRow("affected-raw-cookie")}>
         <td>
           ${cookie.hasRequest ? html11`
             <button
               class="link devtools-link"
               title=${i18nString11(UIStrings11.filterSetCookieTitle)}
               tabindex="0"
-              jslog=${VisualLogging4.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}
+              jslog=${VisualLogging3.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}
               @click=${() => input.onRawCookieClick(cookie.rawCookieLine)}
             >${cookie.rawCookieLine}</button>
           ` : cookie.rawCookieLine}
@@ -4532,7 +4520,7 @@ var str_11 = i18n21.i18n.registerUIStrings("panels/issues/AffectedCookiesView.ts
 var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var AffectedCookiesView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW9) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW11) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -4547,7 +4535,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
         domainAndPath: `${cookie.domain}${cookie.path}`,
         hasRequest,
         onClick: () => {
-          Host6.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Cookie" /* COOKIE */);
+          Host5.userMetrics.issuesPanelResourceOpened(this.issue.getCategory(), "Cookie" /* COOKIE */);
           void Common3.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
             {
               filterType: NetworkForward.UIFilter.FilterType.CookieDomain,
@@ -4606,18 +4594,18 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
 
 // ../../front_end/panels/issues/AffectedDirectivesView.ts
 import * as Common4 from "../../core/common/common.js";
-import * as Host7 from "../../core/host/host.js";
+import * as Host6 from "../../core/host/host.js";
 import * as i18n23 from "../../core/i18n/i18n.js";
-import * as Platform2 from "../../core/platform/platform.js";
-import * as SDK5 from "../../core/sdk/sdk.js";
+import * as Platform3 from "../../core/platform/platform.js";
+import * as SDK4 from "../../core/sdk/sdk.js";
 import * as IssuesManager6 from "../../models/issues_manager/issues_manager.js";
-import * as Components4 from "../../ui/legacy/components/utils/utils.js";
-import * as UI7 from "../../ui/legacy/legacy.js";
+import * as Components3 from "../../ui/legacy/components/utils/utils.js";
+import * as UI6 from "../../ui/legacy/legacy.js";
 import { html as html12, nothing as nothing5, render as render12 } from "../../ui/lit/lit.js";
-import * as VisualLogging5 from "../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "../../ui/visual_logging/visual_logging.js";
 import * as IssuesComponents from "./components/components.js";
-var { widget: widget5 } = UI7.Widget;
-var DEFAULT_VIEW10 = (input, _output, target) => {
+var { widget: widget5 } = UI6.Widget;
+var DEFAULT_VIEW12 = (input, _output, target) => {
   const renderStatus = (isReportOnly) => html12`
     <td class=${isReportOnly ? "affected-resource-report-only-status" : "affected-resource-blocked-status"}>
       ${isReportOnly ? i18nString12(UIStrings12.reportonly) : i18nString12(UIStrings12.blocked)}
@@ -4635,7 +4623,7 @@ var DEFAULT_VIEW10 = (input, _output, target) => {
       location.lineNumber,
       { columnNumber: location.columnNumber }
     );
-    sourceAnchor.setAttribute("jslog", `${VisualLogging5.link("source-location").track({ click: true })}`);
+    sourceAnchor.setAttribute("jslog", `${VisualLogging4.link("source-location").track({ click: true })}`);
     return html12`<td class="affected-source-location">${sourceAnchor}</td>`;
   };
   const renderBlockedElement = (data) => {
@@ -4761,8 +4749,8 @@ var str_12 = i18n23.i18n.registerUIStrings("panels/issues/AffectedDirectivesView
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var AffectedDirectivesView = class extends AffectedResourcesView {
   #view;
-  #linkifier = new Components4.Linkifier.Linkifier(UI7.UIUtils.MaxLengthForDisplayedURLsInConsole);
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW10) {
+  #linkifier = new Components3.Linkifier.Linkifier(UI6.UIUtils.MaxLengthForDisplayedURLsInConsole);
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW12) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -4798,7 +4786,7 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
         columnNumber: location.columnNumber
       };
     }
-    const blockedURL = cspIssueDetails.blockedURL ? cspIssueDetails.blockedURL : Platform2.DevToolsPath.EmptyUrlString;
+    const blockedURL = cspIssueDetails.blockedURL ? cspIssueDetails.blockedURL : Platform3.DevToolsPath.EmptyUrlString;
     const nodeId = cspIssueDetails.violatingNodeId;
     let elementsPanelLinkData;
     if (model && nodeId) {
@@ -4807,22 +4795,22 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
         onElementRevealIconClick: () => {
           const sdkTarget = model.getTargetIfNotDisposed();
           if (sdkTarget) {
-            Host7.userMetrics.issuesPanelResourceOpened(category, "Element" /* ELEMENT */);
-            const deferredDOMNode = new SDK5.DOMModel.DeferredDOMNode(sdkTarget, nodeId);
+            Host6.userMetrics.issuesPanelResourceOpened(category, "Element" /* ELEMENT */);
+            const deferredDOMNode = new SDK4.DOMModel.DeferredDOMNode(sdkTarget, nodeId);
             void Common4.Revealer.reveal(deferredDOMNode);
           }
         },
         onElementRevealIconMouseEnter: () => {
           const sdkTarget = model.getTargetIfNotDisposed();
           if (sdkTarget) {
-            const deferredDOMNode = new SDK5.DOMModel.DeferredDOMNode(sdkTarget, nodeId);
+            const deferredDOMNode = new SDK4.DOMModel.DeferredDOMNode(sdkTarget, nodeId);
             if (deferredDOMNode) {
               deferredDOMNode.highlight();
             }
           }
         },
         onElementRevealIconMouseLeave: () => {
-          SDK5.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK5.TargetManager.TargetManager.instance());
+          SDK4.OverlayModel.OverlayModel.hideDOMNodeHighlight(SDK4.TargetManager.TargetManager.instance());
         }
       };
     }
@@ -4843,11 +4831,11 @@ var AffectedDirectivesView = class extends AffectedResourcesView {
 };
 
 // ../../front_end/panels/issues/AffectedDocumentsInQuirksModeView.ts
-import * as Host8 from "../../core/host/host.js";
+import * as Host7 from "../../core/host/host.js";
 import * as i18n25 from "../../core/i18n/i18n.js";
-import * as SDK6 from "../../core/sdk/sdk.js";
+import * as SDK5 from "../../core/sdk/sdk.js";
 import { html as html13, render as render13 } from "../../ui/lit/lit.js";
-import * as PanelsCommon5 from "../common/common.js";
+import * as PanelsCommon4 from "../common/common.js";
 var UIStrings13 = {
   /**
    * @description Label in the Issues panel for the number of affected document nodes.
@@ -4872,15 +4860,15 @@ var UIStrings13 = {
 };
 var str_13 = i18n25.i18n.registerUIStrings("panels/issues/AffectedDocumentsInQuirksModeView.ts", UIStrings13);
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
-var DEFAULT_VIEW11 = (input, _output, target) => {
-  const renderElementCell = (row) => {
+var DEFAULT_VIEW13 = (input, _output, target) => {
+  const renderElementCell2 = (row) => {
     if (!row.target) {
       return html13`<td>${row.nodeName || i18nString13(UIStrings13.unavailable)}</td>`;
     }
-    const deferredDOMNode = new SDK6.DOMModel.DeferredDOMNode(row.target, row.backendNodeId);
+    const deferredDOMNode = new SDK5.DOMModel.DeferredDOMNode(row.target, row.backendNodeId);
     return html13`
       <td class="affected-resource-element devtools-link">
-        ${PanelsCommon5.DOMLinkifier.Linkifier.instance().linkify(
+        ${PanelsCommon4.DOMLinkifier.Linkifier.instance().linkify(
       deferredDOMNode,
       { textContent: row.nodeName || void 0, onClick: row.onElementClick }
     )}
@@ -4895,7 +4883,7 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
     </tr>
     ${input.rows.map((row) => html13`
       <tr class="affected-resource-quirks-mode">
-        ${renderElementCell(row)}
+        ${renderElementCell2(row)}
         <td>${row.mode}</td>
         <td>${row.url}</td>
       </tr>
@@ -4904,7 +4892,7 @@ var DEFAULT_VIEW11 = (input, _output, target) => {
 };
 var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW11) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW13) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -4917,14 +4905,14 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
   }
   #createQuirksModeDocumentRow(issue) {
     const details = issue.details();
-    const target = SDK6.FrameManager.FrameManager.instance().getFrame(details.frameId)?.resourceTreeModel().target() || null;
+    const target = SDK5.FrameManager.FrameManager.instance().getFrame(details.frameId)?.resourceTreeModel().target() || null;
     const category = issue.getCategory();
     return {
       nodeName: "document",
       backendNodeId: details.documentNodeId,
       target,
       onElementClick: () => {
-        Host8.userMetrics.issuesPanelResourceOpened(category, "Element" /* ELEMENT */);
+        Host7.userMetrics.issuesPanelResourceOpened(category, "Element" /* ELEMENT */);
       },
       mode: details.isLimitedQuirksMode ? "Limited Quirks Mode" : "Quirks Mode",
       url: details.url
@@ -4940,7 +4928,7 @@ var AffectedDocumentsInQuirksModeView = class extends AffectedElementsView {
 // ../../front_end/panels/issues/AffectedHeavyAdView.ts
 import * as i18n27 from "../../core/i18n/i18n.js";
 import { html as html14, render as render14 } from "../../ui/lit/lit.js";
-var DEFAULT_VIEW12 = (input, _output, target) => {
+var DEFAULT_VIEW14 = (input, _output, target) => {
   render14(html14`
     <tr>
       <td class="affected-resource-header">${i18nString14(UIStrings14.limitExceeded)}</td>
@@ -5007,7 +4995,7 @@ var str_14 = i18n27.i18n.registerUIStrings("panels/issues/AffectedHeavyAdView.ts
 var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var AffectedHeavyAdView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW12) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW14) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -5057,7 +5045,7 @@ var AffectedHeavyAdView = class extends AffectedResourcesView {
 // ../../front_end/panels/issues/AffectedPartitioningBlobURLView.ts
 import * as i18n29 from "../../core/i18n/i18n.js";
 import { html as html15, render as render15 } from "../../ui/lit/lit.js";
-var DEFAULT_VIEW13 = (input, _output, target) => {
+var DEFAULT_VIEW15 = (input, _output, target) => {
   render15(html15`
     ${input.messages.map((message) => html15`<div>${message}</div>`)}
   `, target);
@@ -5090,7 +5078,7 @@ var str_15 = i18n29.i18n.registerUIStrings("panels/issues/AffectedPartitioningBl
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW13) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW15) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -5128,7 +5116,6 @@ var AffectedPartitioningBlobURLView = class extends AffectedResourcesView {
 
 // ../../front_end/panels/issues/AffectedPermissionElementsView.ts
 import * as i18n31 from "../../core/i18n/i18n.js";
-import { html as html16, render as render16 } from "../../ui/lit/lit.js";
 var UIStrings16 = {
   /**
    * @description Label in the Issues panel for the number of affected permission elements.
@@ -5139,62 +5126,52 @@ var str_16 = i18n31.i18n.registerUIStrings("panels/issues/AffectedPermissionElem
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var AffectedPermissionElementsView = class extends AffectedElementsView {
   update() {
-    this.clear();
-    void this.#appendAffectedElements(this.issue.getPermissionElementIssues());
+    this.requestResolver.clear();
+    const elements = [];
+    for (const issue of this.issue.getPermissionElementIssues()) {
+      elements.push(...issue.elements());
+    }
+    this.appendAffectedElements(elements);
   }
   getResourceNameWithCount(count) {
     return i18nString16(UIStrings16.nElements, { n: count });
-  }
-  async #appendAffectedElements(issues) {
-    let count = 0;
-    const templates = [];
-    for (const issue of issues) {
-      for (const element of issue.elements()) {
-        count++;
-        templates.push(html16`<tr>
-          ${await this.createElementCell(element, this.issue.getCategory())}
-        </tr>`);
-      }
-    }
-    render16(html16`${templates}`, this.affectedResources);
-    this.updateAffectedResourceCount(count);
   }
 };
 
 // ../../front_end/panels/issues/AffectedSharedArrayBufferIssueDetailsView.ts
 import * as i18n33 from "../../core/i18n/i18n.js";
-import * as Platform3 from "../../core/platform/platform.js";
+import * as Platform4 from "../../core/platform/platform.js";
 import * as IssuesManager7 from "../../models/issues_manager/issues_manager.js";
-import * as Components5 from "../../ui/legacy/components/utils/utils.js";
-import * as UI8 from "../../ui/legacy/legacy.js";
-import { html as html17, render as render17 } from "../../ui/lit/lit.js";
-var { widget: widget6 } = UI8.Widget;
-var DEFAULT_VIEW14 = (input, _output, target) => {
+import * as Components4 from "../../ui/legacy/components/utils/utils.js";
+import * as UI7 from "../../ui/legacy/legacy.js";
+import { html as html16, render as render16 } from "../../ui/lit/lit.js";
+var { widget: widget6 } = UI7.Widget;
+var DEFAULT_VIEW16 = (input, _output, target) => {
   const renderSourceLocation = (location) => {
     if (!location) {
-      return html17`<td class="affected-source-location"></td>`;
+      return html16`<td class="affected-source-location"></td>`;
     }
-    return html17`
-      <td class="affected-source-location">${widget6(Components5.Linkifier.ScriptLocationLink, {
+    return html16`
+      <td class="affected-source-location">${widget6(Components4.Linkifier.ScriptLocationLink, {
       target: location.target ?? void 0,
       scriptId: location.scriptId ?? void 0,
       sourceURL: location.url,
       lineNumber: location.lineNumber,
       options: {
         columnNumber: location.columnNumber,
-        maxLength: UI8.UIUtils.MaxLengthForDisplayedURLsInConsole,
+        maxLength: UI7.UIUtils.MaxLengthForDisplayedURLsInConsole,
         jslogContext: "source-location"
       }
     })}</td>
     `;
   };
-  render17(html17`
+  render16(html16`
     <tr>
       <td class="affected-resource-header">${i18nString17(UIStrings17.sourceLocation)}</td>
       <td class="affected-resource-header">${i18nString17(UIStrings17.trigger)}</td>
       <td class="affected-resource-header">${i18nString17(UIStrings17.status)}</td>
     </tr>
-    ${input.rows.map((row) => html17`
+    ${input.rows.map((row) => html16`
       <tr class="affected-resource-directive">
         ${renderSourceLocation(row.sourceLocation)}
         <td title=${row.triggerTitle}>${row.triggerText}</td>
@@ -5261,7 +5238,7 @@ var str_17 = i18n33.i18n.registerUIStrings("panels/issues/AffectedSharedArrayBuf
 var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW14) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW16) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -5301,7 +5278,7 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
         triggerTitle = i18nString17(UIStrings17.sharedarraybufferWasTransferedTo);
         break;
       default:
-        Platform3.assertNever(sabIssueDetails.type, `Unhandled issue type: ${sabIssueDetails.type}`);
+        Platform4.assertNever(sabIssueDetails.type, `Unhandled issue type: ${sabIssueDetails.type}`);
     }
     return {
       sourceLocation,
@@ -5318,14 +5295,14 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
 
 // ../../front_end/panels/issues/AffectedSourcesView.ts
 import * as i18n35 from "../../core/i18n/i18n.js";
-import * as Components6 from "../../ui/legacy/components/utils/utils.js";
-import { html as html18, render as render18 } from "../../ui/lit/lit.js";
-var DEFAULT_VIEW15 = (input, _output, target) => {
-  render18(html18`
-    ${input.sources.map((source) => html18`
+import * as Components5 from "../../ui/legacy/components/utils/utils.js";
+import { html as html17, render as render17 } from "../../ui/lit/lit.js";
+var DEFAULT_VIEW17 = (input, _output, target) => {
+  render17(html17`
+    ${input.sources.map((source) => html17`
       <tr class="affected-resource-source">
         <td>
-          ${Components6.Linkifier.Linkifier.renderLinkifiedUrl(
+          ${Components5.Linkifier.Linkifier.renderLinkifiedUrl(
     source.url,
     {
       columnNumber: source.columnNumber,
@@ -5351,7 +5328,7 @@ var str_18 = i18n35.i18n.registerUIStrings("panels/issues/AffectedSourcesView.ts
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
 var AffectedSourcesView = class extends AffectedResourcesView {
   #view;
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW15) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW17) {
     super(parent, issue, jslogContext);
     this.#view = view;
   }
@@ -5375,7 +5352,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
 
 // ../../front_end/panels/issues/AffectedTrackingSitesView.ts
 import * as i18n37 from "../../core/i18n/i18n.js";
-import { html as html19, render as render19 } from "../../ui/lit/lit.js";
+import { html as html18, render as render18 } from "../../ui/lit/lit.js";
 var UIStrings19 = {
   /**
    * @description Label in the Issues panel for the number of affected potentially tracking websites. See https://github.com/privacycg/nav-tracking-mitigations/blob/main/bounce-tracking-explainer.md and https://developer.mozilla.org/en-US/docs/Glossary/eTLD.
@@ -5385,10 +5362,10 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("panels/issues/AffectedTrackingSitesView.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 function defaultView(input, output, target) {
-  render19(
-    html19`
+  render18(
+    html18`
       <tbody>
-        ${input.trackingSites.map((site) => html19`
+        ${input.trackingSites.map((site) => html18`
           <tr class="affected-resource-directive">
             <td class="affected-resource-cell" title=${site}>${site}</td>
           </tr>
@@ -5411,27 +5388,27 @@ var AffectedTrackingSitesView = class extends AffectedResourcesView {
 };
 
 // ../../front_end/panels/issues/IssueView.ts
-import * as Components8 from "./components/components.js";
+import * as Components7 from "./components/components.js";
 
 // ../../front_end/panels/issues/CorsIssueDetailsView.ts
 import "../../ui/components/request_link_icon/request_link_icon.js";
-import * as Host9 from "../../core/host/host.js";
+import * as Host8 from "../../core/host/host.js";
 import * as i18n39 from "../../core/i18n/i18n.js";
-import * as Platform4 from "../../core/platform/platform.js";
+import * as Platform5 from "../../core/platform/platform.js";
 import * as IssuesManager8 from "../../models/issues_manager/issues_manager.js";
 import * as NetworkForward2 from "../network/forward/forward.js";
-import * as Components7 from "../../ui/legacy/components/utils/utils.js";
-import * as UI9 from "../../ui/legacy/legacy.js";
-import { html as html20, nothing as nothing6, render as render20 } from "../../ui/lit/lit.js";
-var { widget: widget7 } = UI9.Widget;
-var DEFAULT_VIEW16 = (input, _output, target) => {
-  const renderStatus = (isWarning) => html20`
+import * as Components6 from "../../ui/legacy/components/utils/utils.js";
+import * as UI8 from "../../ui/legacy/legacy.js";
+import { html as html19, nothing as nothing6, render as render19 } from "../../ui/lit/lit.js";
+var { widget: widget7 } = UI8.Widget;
+var DEFAULT_VIEW18 = (input, _output, target) => {
+  const renderStatus = (isWarning) => html19`
     <td class=${isWarning ? "affected-resource-report-only-status" : "affected-resource-blocked-status"}>
       ${isWarning ? i18nString20(UIStrings20.warning) : i18nString20(UIStrings20.blocked)}
     </td>
   `;
-  const renderRequestCell = (request) => {
-    return html20`
+  const renderRequestCell2 = (request) => {
+    return html19`
       <td class="affected-resource-cell">
         <devtools-request-link-icon .data=${{
       ...request,
@@ -5441,33 +5418,33 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
       </td>
     `;
   };
-  const renderPreflightCell = (preflight) => preflight ? renderRequestCell(preflight) : html20`<td></td>`;
-  const renderCodeExampleCell = (text) => html20`<td class="code-example">${text}</td>`;
+  const renderPreflightCell = (preflight) => preflight ? renderRequestCell2(preflight) : html19`<td></td>`;
+  const renderCodeExampleCell = (text) => html19`<td class="code-example">${text}</td>`;
   const renderSourceLocationCell = (location) => {
     if (!location) {
-      return html20`<td class="affected-source-location"></td>`;
+      return html19`<td class="affected-source-location"></td>`;
     }
-    return html20`
-      <td class="affected-source-location">${widget7(Components7.Linkifier.ScriptLocationLink, {
+    return html19`
+      <td class="affected-source-location">${widget7(Components6.Linkifier.ScriptLocationLink, {
       target: location.target ?? void 0,
       scriptId: location.scriptId ?? void 0,
       sourceURL: location.url,
       lineNumber: location.lineNumber,
       options: {
         columnNumber: location.columnNumber,
-        maxLength: UI9.UIUtils.MaxLengthForDisplayedURLsInConsole,
+        maxLength: UI8.UIUtils.MaxLengthForDisplayedURLsInConsole,
         jslogContext: "source-location"
       }
     })}</td>
     `;
   };
-  const renderSecureContextCell = (isSecureContext) => html20`
+  const renderSecureContextCell = (isSecureContext) => html19`
     <td>${isSecureContext === void 0 ? nothing6 : isSecureContext ? i18nString20(UIStrings20.secure) : i18nString20(UIStrings20.insecure)}</td>
   `;
   const renderExtraHeaderColumns = (issueCode2) => {
     switch (issueCode2) {
       case IssuesManager8.CorsIssue.IssueCode.INVALID_HEADER_VALUES:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequestIfProblematic)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.header)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.problem)}</td>
@@ -5475,60 +5452,60 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.WILDCARD_ORIGN_NOT_ALLOWED:
-        return html20`<td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequestIfProblematic)}</td>`;
+        return html19`<td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequestIfProblematic)}</td>`;
       case IssuesManager8.CorsIssue.IssueCode.PREFLIGHT_RESPONSE_INVALID:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequest)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.problem)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.ORIGIN_MISMATCH:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequestIfProblematic)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.initiatorContext)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.allowedOrigin)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.ALLOW_CREDENTIALS_REQUIRED:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequestIfProblematic)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.allowCredentialsValueFromHeader)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.INSECURE_LOCAL_NETWORK:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.resourceAddressSpace)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.initiatorAddressSpace)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.initiatorContext)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.METHOD_DISALLOWED_BY_PREFLIGHT_RESPONSE:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequest)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.disallowedRequestMethod)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.HEADER_DISALLOWED_BY_PREFLIGHT_RESPONSE:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.preflightRequest)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.disallowedRequestHeader)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.DISALLOWED_BY_MODE:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.initiatorContext)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.sourceLocation)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.CORS_DISABLED_SCHEME:
-        return html20`
+        return html19`
           <td class="affected-resource-header">${i18nString20(UIStrings20.initiatorContext)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.sourceLocation)}</td>
           <td class="affected-resource-header">${i18nString20(UIStrings20.unsupportedScheme)}</td>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.NO_CORS_REDIRECT_MODE_NOT_FOLLOW:
-        return html20`<td class="affected-resource-header">${i18nString20(UIStrings20.sourceLocation)}</td>`;
+        return html19`<td class="affected-resource-header">${i18nString20(UIStrings20.sourceLocation)}</td>`;
       case IssuesManager8.CorsIssue.IssueCode.REDIRECT_CONTAINS_CREDENTIALS:
       case IssuesManager8.CorsIssue.IssueCode.PREFLIGHT_MISSING_ALLOW_EXTERNAL:
       case IssuesManager8.CorsIssue.IssueCode.PREFLIGHT_INVALID_ALLOW_EXTERNAL:
@@ -5536,15 +5513,15 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
       case IssuesManager8.CorsIssue.IssueCode.LOCAL_NETWORK_ACCESS_PERMISSION_DENIED:
         return nothing6;
       default:
-        Platform4.assertNever(issueCode2, "Unknown issue code: " + issueCode2);
+        Platform5.assertNever(issueCode2, "Unknown issue code: " + issueCode2);
     }
   };
   const renderRow = (issueCode2, row) => {
     switch (issueCode2) {
       case IssuesManager8.CorsIssue.IssueCode.INVALID_HEADER_VALUES:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderPreflightCell(row.preflight)}
             ${renderCodeExampleCell(row.header)}
@@ -5554,18 +5531,18 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.WILDCARD_ORIGN_NOT_ALLOWED:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderPreflightCell(row.preflight)}
           </tr>
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.PREFLIGHT_RESPONSE_INVALID:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderPreflightCell(row.preflight)}
             <td>${row.problem}</td>
@@ -5573,9 +5550,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.ORIGIN_MISMATCH:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderPreflightCell(row.preflight)}
             ${renderCodeExampleCell(row.initiatorOrigin)}
@@ -5586,9 +5563,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
       case IssuesManager8.CorsIssue.IssueCode.ALLOW_CREDENTIALS_REQUIRED:
       case IssuesManager8.CorsIssue.IssueCode.METHOD_DISALLOWED_BY_PREFLIGHT_RESPONSE:
       case IssuesManager8.CorsIssue.IssueCode.HEADER_DISALLOWED_BY_PREFLIGHT_RESPONSE:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderPreflightCell(row.preflight)}
             ${renderCodeExampleCell(row.failedParameter)}
@@ -5596,9 +5573,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.INSECURE_LOCAL_NETWORK:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             <td>${row.resourceIPAddressSpace}</td>
             <td>${row.initiatorIPAddressSpace}</td>
@@ -5607,9 +5584,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.DISALLOWED_BY_MODE:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderCodeExampleCell(row.initiatorOrigin)}
             ${renderSourceLocationCell(row.sourceLocation)}
@@ -5617,9 +5594,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.CORS_DISABLED_SCHEME:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderCodeExampleCell(row.initiatorOrigin)}
             ${renderSourceLocationCell(row.sourceLocation)}
@@ -5628,9 +5605,9 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
         `;
       // clang-format on
       case IssuesManager8.CorsIssue.IssueCode.NO_CORS_REDIRECT_MODE_NOT_FOLLOW:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
             ${renderSourceLocationCell(row.sourceLocation)}
           </tr>
@@ -5641,19 +5618,19 @@ var DEFAULT_VIEW16 = (input, _output, target) => {
       case IssuesManager8.CorsIssue.IssueCode.PREFLIGHT_INVALID_ALLOW_EXTERNAL:
       case IssuesManager8.CorsIssue.IssueCode.INVALID_LOCAL_NETWORK_ACCESS:
       case IssuesManager8.CorsIssue.IssueCode.LOCAL_NETWORK_ACCESS_PERMISSION_DENIED:
-        return html20`
+        return html19`
           <tr class="affected-resource-directive">
-            ${renderRequestCell(row.request)}
+            ${renderRequestCell2(row.request)}
             ${renderStatus(row.isWarning)}
           </tr>
         `;
       // clang-format on
       default:
-        Platform4.assertNever(issueCode2, "Unknown issue code: " + issueCode2);
+        Platform5.assertNever(issueCode2, "Unknown issue code: " + issueCode2);
     }
   };
   const issueCode = input.issueCode;
-  render20(issueCode ? html20`
+  render19(issueCode ? html19`
     <tr>
       <td class="affected-resource-header">${i18nString20(UIStrings20.request)}</td>
       <td class="affected-resource-header">${i18nString20(UIStrings20.status)}</td>
@@ -5805,12 +5782,14 @@ var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResourcesView {
   #view;
   #onRequestClick = () => {
-    Host9.userMetrics.issuesPanelResourceOpened(IssuesManager8.Issue.IssueCategory.CORS, "Request" /* REQUEST */);
+    Host8.userMetrics.issuesPanelResourceOpened(IssuesManager8.Issue.IssueCategory.CORS, "Request" /* REQUEST */);
   };
-  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW16) {
+  constructor(parent, issue, jslogContext, view = DEFAULT_VIEW18) {
     super(parent, issue, jslogContext);
     this.#view = view;
-    this.affectedResourcesCountElement.classList.add("cors-issue-affected-resource-label");
+  }
+  getAffectedResourcesLabelClass() {
+    return "cors-issue-affected-resource-label";
   }
   getResourceNameWithCount(count) {
     return i18nString20(UIStrings20.nRequests, { n: count });
@@ -5978,6 +5957,8 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
 };
 
 // ../../front_end/panels/issues/IssueView.ts
+var { ifDefined: ifDefined2 } = Directives3;
+var { widget: widget8 } = UI9.Widget;
 var UIStrings21 = {
   /**
    * @description Column header in the Issues panel for the resource name in the mixed content affected resources table.
@@ -6027,43 +6008,59 @@ var UIStrings21 = {
 };
 var str_21 = i18n41.i18n.registerUIStrings("panels/issues/IssueView.ts", UIStrings21);
 var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
+function renderRequestCell(request, requestResolver, onRequestClick) {
+  const data = {
+    affectedRequest: request.affectedRequest,
+    networkTab: request.networkTab,
+    requestResolver,
+    displayURL: true,
+    additionalOnClickAction: onRequestClick
+  };
+  return html20`
+    <td class="affected-resource-cell">
+      <devtools-request-link-icon .data=${data}></devtools-request-link-icon>
+    </td>
+  `;
+}
+var REQUEST_ROWS_VIEW = (input, _output, target) => {
+  render20(html20`
+    ${input.requests.map((request) => html20`
+      <tr class="affected-resource-request"
+          jslog=${VisualLogging5.tableRow("affected-request")}
+          data-network-request-id=${ifDefined2(request.affectedRequest.requestId)}>
+        ${renderRequestCell(request, input.requestResolver, input.onRequestClick)}
+      </tr>
+    `)}
+  `, target);
+};
 var AffectedRequestsView = class extends AffectedResourcesView {
-  #appendAffectedRequests(affectedRequests) {
-    let count = 0;
-    for (const affectedRequest of affectedRequests) {
-      const element = document.createElement("tr");
-      element.classList.add("affected-resource-request");
-      element.setAttribute("jslog", `${VisualLogging6.tableRow("affected-request")}`);
-      if (affectedRequest.requestId) {
-        element.setAttribute("data-network-request-id", affectedRequest.requestId);
+  #view;
+  constructor(parent, issue, jslogContext, view = REQUEST_ROWS_VIEW) {
+    super(parent, issue, jslogContext);
+    this.#view = view;
+  }
+  #renderAffectedRequests(affectedRequests) {
+    const category = this.issue.getCategory();
+    const networkTab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward3.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT;
+    const requests = Array.from(affectedRequests, (affectedRequest) => ({ affectedRequest, networkTab }));
+    const input = {
+      requests,
+      requestResolver: this.requestResolver,
+      onRequestClick: () => {
+        Host9.userMetrics.issuesPanelResourceOpened(category, "Request" /* REQUEST */);
       }
-      const category = this.issue.getCategory();
-      const tab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward3.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT;
-      element.appendChild(this.createRequestCell(affectedRequest, {
-        networkTab: tab,
-        additionalOnClickAction() {
-          Host10.userMetrics.issuesPanelResourceOpened(category, "Request" /* REQUEST */);
-        }
-      }));
-      this.affectedResources.appendChild(element);
-      count++;
-    }
-    this.updateAffectedResourceCount(count);
+    };
+    this.#view(input, void 0, this.affectedResources);
+    this.updateAffectedResourceCount(requests.length);
   }
   getResourceNameWithCount(count) {
     return i18nString21(UIStrings21.nRequests, { n: count });
   }
   update() {
-    this.clear();
-    for (const unused of this.issue.getBlockedByResponseDetails()) {
-      this.updateAffectedResourceCount(0);
-      return;
-    }
-    if (this.issue.getCategory() === IssuesManager9.Issue.IssueCategory.MIXED_CONTENT) {
-      this.updateAffectedResourceCount(0);
-      return;
-    }
-    this.#appendAffectedRequests(this.issue.requests());
+    this.requestResolver.clear();
+    const hasBlockedByResponseDetails = Array.from(this.issue.getBlockedByResponseDetails()).length > 0;
+    const isMixedContent = this.issue.getCategory() === IssuesManager9.Issue.IssueCategory.MIXED_CONTENT;
+    this.#renderAffectedRequests(hasBlockedByResponseDetails || isMixedContent ? [] : this.issue.requests());
   }
 };
 var issueTypeToNetworkHeaderMap = /* @__PURE__ */ new Map([
@@ -6080,48 +6077,58 @@ var issueTypeToNetworkHeaderMap = /* @__PURE__ */ new Map([
     NetworkForward3.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT
   ]
 ]);
-var AffectedMixedContentView = class _AffectedMixedContentView extends AffectedResourcesView {
-  #appendAffectedMixedContentDetails(mixedContentIssues) {
-    const header = document.createElement("tr");
-    this.appendColumnTitle(header, i18nString21(UIStrings21.name));
-    this.appendColumnTitle(header, i18nString21(UIStrings21.restrictionStatus));
-    this.affectedResources.appendChild(header);
-    let count = 0;
-    for (const issue of mixedContentIssues) {
-      const details = issue.details();
-      this.appendAffectedMixedContent(details);
-      count++;
+var MIXED_CONTENT_ROWS_VIEW = (input, _output, target) => {
+  const renderResourceCell = (row) => {
+    if (row.request) {
+      return renderRequestCell(row.request, input.requestResolver, input.onRequestClick);
     }
-    this.updateAffectedResourceCount(count);
+    return html20`<td class="affected-resource-mixed-content-info" title=${row.insecureURL}>${row.shortPath}</td>`;
+  };
+  render20(html20`
+    <tr>
+      <td class="affected-resource-header">${i18nString21(UIStrings21.name)}</td>
+      <td class="affected-resource-header">${i18nString21(UIStrings21.restrictionStatus)}</td>
+    </tr>
+    ${input.rows.map((row) => html20`
+      <tr class="affected-resource-mixed-content">
+        ${renderResourceCell(row)}
+        <td class="affected-resource-mixed-content-info">${row.status}</td>
+      </tr>
+    `)}
+  `, target);
+};
+var AffectedMixedContentView = class _AffectedMixedContentView extends AffectedResourcesView {
+  #view;
+  constructor(parent, issue, jslogContext, view = MIXED_CONTENT_ROWS_VIEW) {
+    super(parent, issue, jslogContext);
+    this.#view = view;
+  }
+  #renderAffectedMixedContentDetails(mixedContentIssues) {
+    const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) || NetworkForward3.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT;
+    const rows = Array.from(mixedContentIssues, (issue) => {
+      const details = issue.details();
+      return {
+        request: details.request ? { affectedRequest: details.request, networkTab } : void 0,
+        insecureURL: details.insecureURL,
+        shortPath: extractShortPath(details.insecureURL),
+        status: _AffectedMixedContentView.#translateStatus(details.resolutionStatus)
+      };
+    });
+    const input = {
+      rows,
+      requestResolver: this.requestResolver,
+      onRequestClick: () => {
+        Host9.userMetrics.issuesPanelResourceOpened(
+          IssuesManager9.Issue.IssueCategory.MIXED_CONTENT,
+          "Request" /* REQUEST */
+        );
+      }
+    };
+    this.#view(input, void 0, this.affectedResources);
+    this.updateAffectedResourceCount(rows.length);
   }
   getResourceNameWithCount(count) {
     return i18nString21(UIStrings21.nResources, { n: count });
-  }
-  appendAffectedMixedContent(mixedContent) {
-    const element = document.createElement("tr");
-    element.classList.add("affected-resource-mixed-content");
-    if (mixedContent.request) {
-      const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) || NetworkForward3.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT;
-      element.appendChild(this.createRequestCell(mixedContent.request, {
-        networkTab,
-        additionalOnClickAction() {
-          Host10.userMetrics.issuesPanelResourceOpened(
-            IssuesManager9.Issue.IssueCategory.MIXED_CONTENT,
-            "Request" /* REQUEST */
-          );
-        }
-      }));
-    } else {
-      const filename = extractShortPath(mixedContent.insecureURL);
-      const cell = this.appendIssueDetailCell(element, filename, "affected-resource-mixed-content-info");
-      cell.title = mixedContent.insecureURL;
-    }
-    this.appendIssueDetailCell(
-      element,
-      _AffectedMixedContentView.#translateStatus(mixedContent.resolutionStatus),
-      "affected-resource-mixed-content-info"
-    );
-    this.affectedResources.appendChild(element);
   }
   static #translateStatus(resolutionStatus) {
     switch (resolutionStatus) {
@@ -6134,32 +6141,88 @@ var AffectedMixedContentView = class _AffectedMixedContentView extends AffectedR
     }
   }
   update() {
-    this.clear();
-    this.#appendAffectedMixedContentDetails(this.issue.getMixedContentIssues());
+    this.requestResolver.clear();
+    this.#renderAffectedMixedContentDetails(this.issue.getMixedContentIssues());
   }
 };
-var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
+function renderLinks(links) {
+  return html20`
+    <ul class="link-list">
+      ${links.map(({ link: link3, linkTitle }) => html20`
+        <li>
+          <devtools-link class="link devtools-link" href=${link3} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: linkTitle })}</devtools-link>
+        </li>
+      `)}
+    </ul>`;
+}
+function renderIssueBodyItem(input, _output, target) {
+  switch (input.kind) {
+    case "description":
+      render20(html20`<devtools-markdown-view .data=${input.markdownData}></devtools-markdown-view>`, target, {
+        container: { attributes: { "aria-posinset": 1, "aria-setsize": input.setSize } }
+      });
+      return;
+    case "affected-resources":
+      render20(html20`${i18nString21(UIStrings21.affectedResources)}`, target, {
+        container: {
+          classes: ["affected-resources-label"],
+          attributes: { "aria-posinset": 2, "aria-setsize": input.setSize }
+        }
+      });
+      return;
+    case "links":
+      render20(renderLinks(input.links), target, {
+        container: { classes: ["link-wrapper"], attributes: { "aria-posinset": 3, "aria-setsize": 3 } }
+      });
+      return;
+    default:
+      Platform6.assertNever(input, `Unhandled IssueBodyItemInput: ${JSON.stringify(input)}`);
+  }
+}
+var IssueBodyTreeElement = class extends UI9.TreeOutline.TreeElement {
+  constructor(input, jslogContext) {
+    super(void 0, false, jslogContext);
+    this.setCollapsible(false);
+    this.selectable = false;
+    renderIssueBodyItem(input, void 0, this.listItemElement);
+  }
+};
+var DEFAULT_VIEW19 = (input, _output, target) => {
+  render20(html20`
+    <div class="header">
+      <devtools-icon class="leading-issue-icon extra-large"
+                     .name=${input.iconName}
+                     title=${input.iconTitle}></devtools-icon>
+      <devtools-adorner class="aggregated-issues-count" .name=${"countWrapper"}>
+        <span>${input.aggregatedIssuesCount}</span>
+      </devtools-adorner>
+      <div class="title">${input.title}</div>
+      ${widget8(Components7.HideIssuesMenu.HideIssuesMenu, {
+    menuItemLabel: input.hideIssuesMenuLabel,
+    menuItemAction: input.onToggleHideIssues
+  })}
+    </div>
+  `, target, { container: { classes: input.isHidden ? ["issue", "hidden-issue"] : ["issue"] } });
+};
+var IssueView = class _IssueView extends UI9.TreeOutline.TreeElement {
   #issue;
   #description;
   toggleOnClick;
   affectedResources;
   #affectedResourceViews;
-  #aggregatedIssuesCount;
-  #issueKindIcon = null;
-  #hasBeenExpandedBefore;
+  #hasBeenExpandedBefore = false;
   #throttle;
   #needsUpdateOnExpand = true;
-  #hiddenIssuesMenu;
   #contentCreated = false;
-  constructor(issue, description) {
-    super(void 0, void 0, Platform5.StringUtilities.toKebabCase(issue.getCategory()));
+  #view;
+  constructor(issue, description, view = DEFAULT_VIEW19) {
+    super(void 0, void 0, Platform6.StringUtilities.toKebabCase(issue.getCategory()));
     this.#issue = issue;
     this.#description = description;
+    this.#view = view;
     this.#throttle = new Common5.Throttler.Throttler(250);
     this.toggleOnClick = true;
-    this.listItemElement.classList.add("issue");
-    this.childrenListElement.classList.add("issue-body");
-    this.childrenListElement.classList.add(_IssueView.#getBodyCSSClass(this.#issue.getKind()));
+    this.childrenListElement.classList.add("issue-body", _IssueView.#getBodyCSSClass(this.#issue.getKind()));
     this.affectedResources = this.#createAffectedResources();
     this.#affectedResourceViews = [
       new AffectedCookiesView(this, this.#issue, "affected-cookies"),
@@ -6183,9 +6246,6 @@ var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
       new AffectedLazyLoadImagesView(this, this.#issue, "lazy-load-image-details"),
       new AffectedSelectivePermissionsInterventionView(this, this.#issue, "selective-permissions-intervention-details")
     ];
-    this.#hiddenIssuesMenu = new Components8.HideIssuesMenu.HideIssuesMenu();
-    this.#aggregatedIssuesCount = null;
-    this.#hasBeenExpandedBefore = false;
   }
   /**
    * Sets the issue to take the resources from. Assumes that the description
@@ -6220,7 +6280,7 @@ var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
     this.update();
   }
   createContent() {
-    this.#appendHeader();
+    this.#render();
     this.#createBody();
     this.appendChild(this.affectedResources);
     const visibleAffectedResource = [];
@@ -6242,44 +6302,37 @@ var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
   #updateAffectedResourcesPositionAndSize(visibleAffectedResource) {
     for (let i = 0; i < visibleAffectedResource.length; i++) {
       const element = visibleAffectedResource[i].listItemElement;
-      UI10.ARIAUtils.setPositionInSet(element, i + 1);
-      UI10.ARIAUtils.setSetSize(element, visibleAffectedResource.length);
+      UI9.ARIAUtils.setPositionInSet(element, i + 1);
+      UI9.ARIAUtils.setSetSize(element, visibleAffectedResource.length);
     }
   }
-  #appendHeader() {
-    const header = document.createElement("div");
-    header.classList.add("header");
-    this.#issueKindIcon = new Icon2();
-    this.#issueKindIcon.classList.add("leading-issue-icon", "extra-large");
-    this.#aggregatedIssuesCount = document.createElement("span");
-    const countAdorner = new Adorners.Adorner.Adorner();
-    countAdorner.name = "countWrapper";
-    countAdorner.append(this.#aggregatedIssuesCount);
-    countAdorner.classList.add("aggregated-issues-count");
-    header.appendChild(this.#issueKindIcon);
-    header.appendChild(countAdorner);
-    const title = document.createElement("div");
-    title.classList.add("title");
-    title.textContent = this.#description.title;
-    header.appendChild(title);
-    if (this.#hiddenIssuesMenu) {
-      this.#hiddenIssuesMenu.show(
-        header,
-        void 0,
-        /* suppressOrphanWidgetError= */
-        true
-      );
-    }
-    this.#updateFromIssue();
-    this.listItemElement.appendChild(header);
+  #render() {
+    const kind = this.#issue.getKind();
+    const isHidden = this.#issue.isHidden();
+    const input = {
+      iconName: IssueCounter3.IssueCounter.getIssueKindIconName(kind),
+      iconTitle: IssuesManager9.Issue.getIssueKindDescription(kind),
+      aggregatedIssuesCount: this.#issue.getAggregatedIssuesCount(),
+      title: this.#description.title,
+      isHidden,
+      hideIssuesMenuLabel: isHidden ? i18nString21(UIStrings21.unhideIssuesLikeThis) : i18nString21(UIStrings21.hideIssuesLikeThis),
+      onToggleHideIssues: this.#onToggleHideIssues
+    };
+    this.#view(input, void 0, this.listItemElement);
   }
+  #onToggleHideIssues = () => {
+    const setting = IssuesManager9.IssuesManager.getHideIssueByCodeSetting();
+    const values = setting.get();
+    values[this.#issue.code()] = this.#issue.isHidden() ? IssuesManager9.IssuesManager.IssueStatus.UNHIDDEN : IssuesManager9.IssuesManager.IssueStatus.HIDDEN;
+    setting.set(values);
+  };
   onexpand() {
     const category = this.#issue.getCategory();
     if (category === IssuesManager9.Issue.IssueCategory.COOKIE) {
       const cookieIssueSubCategory = IssuesManager9.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
-      Host10.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCategory);
+      Host9.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCategory);
     } else {
-      Host10.userMetrics.issuesPanelIssueExpanded(category);
+      Host9.userMetrics.issuesPanelIssueExpanded(category);
     }
     if (this.#needsUpdateOnExpand) {
       this.#doUpdate();
@@ -6291,77 +6344,41 @@ var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
       }
     }
   }
-  #updateFromIssue() {
-    if (this.#issueKindIcon) {
-      const kind = this.#issue.getKind();
-      this.#issueKindIcon.name = IssueCounter3.IssueCounter.getIssueKindIconName(kind);
-      this.#issueKindIcon.title = IssuesManager9.Issue.getIssueKindDescription(kind);
-    }
-    if (this.#aggregatedIssuesCount) {
-      this.#aggregatedIssuesCount.textContent = `${this.#issue.getAggregatedIssuesCount()}`;
-    }
-    this.listItemElement.classList.toggle("hidden-issue", this.#issue.isHidden());
-    if (this.#hiddenIssuesMenu) {
-      this.#hiddenIssuesMenu.menuItemLabel = this.#issue.isHidden() ? i18nString21(UIStrings21.unhideIssuesLikeThis) : i18nString21(UIStrings21.hideIssuesLikeThis);
-      this.#hiddenIssuesMenu.menuItemAction = () => {
-        const setting = IssuesManager9.IssuesManager.getHideIssueByCodeSetting();
-        const values = setting.get();
-        values[this.#issue.code()] = this.#issue.isHidden() ? IssuesManager9.IssuesManager.IssueStatus.UNHIDDEN : IssuesManager9.IssuesManager.IssueStatus.HIDDEN;
-        setting.set(values);
-      };
-    }
-  }
   updateAffectedResourceVisibility() {
     const noResources = this.#affectedResourceViews.every((view) => view.isEmpty());
     this.affectedResources.hidden = noResources;
   }
+  #getBodySetSize() {
+    return this.#description.links.length === 0 ? 2 : 3;
+  }
   #createAffectedResources() {
-    const wrapper = new UI10.TreeOutline.TreeElement(void 0, false, "affected-resources");
-    wrapper.setCollapsible(false);
+    const wrapper = new IssueBodyTreeElement({ kind: "affected-resources", setSize: this.#getBodySetSize() }, "affected-resources");
     wrapper.setExpandable(true);
     wrapper.expand();
-    wrapper.selectable = false;
-    wrapper.listItemElement.classList.add("affected-resources-label");
-    wrapper.listItemElement.textContent = i18nString21(UIStrings21.affectedResources);
     wrapper.childrenListElement.classList.add("affected-resources");
-    UI10.ARIAUtils.setPositionInSet(wrapper.listItemElement, 2);
-    UI10.ARIAUtils.setSetSize(wrapper.listItemElement, this.#description.links.length === 0 ? 2 : 3);
     return wrapper;
   }
   #createBody() {
-    const messageElement = new UI10.TreeOutline.TreeElement(void 0, false, "issue-description");
-    messageElement.setCollapsible(false);
-    messageElement.selectable = false;
-    const markdownComponent = new MarkdownView.MarkdownView.MarkdownView();
-    markdownComponent.data = {
-      tokens: this.#description.markdown,
-      renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(
-        this.#description.substitutions
-      )
-    };
-    messageElement.listItemElement.appendChild(markdownComponent);
-    UI10.ARIAUtils.setPositionInSet(messageElement.listItemElement, 1);
-    UI10.ARIAUtils.setSetSize(messageElement.listItemElement, this.#description.links.length === 0 ? 2 : 3);
+    const messageElement = new IssueBodyTreeElement(
+      {
+        kind: "description",
+        markdownData: {
+          tokens: this.#description.markdown,
+          renderer: new MarkdownView.MarkdownPlaceholderLitRenderer.MarkdownPlaceholderLitRenderer(
+            this.#description.substitutions
+          )
+        },
+        setSize: this.#getBodySetSize()
+      },
+      "issue-description"
+    );
     this.appendChild(messageElement);
   }
   #createReadMoreLinks() {
     if (this.#description.links.length === 0) {
       return;
     }
-    const linkWrapper = new UI10.TreeOutline.TreeElement();
-    linkWrapper.setCollapsible(false);
-    linkWrapper.listItemElement.classList.add("link-wrapper");
-    UI10.ARIAUtils.setPositionInSet(linkWrapper.listItemElement, 3);
-    UI10.ARIAUtils.setSetSize(linkWrapper.listItemElement, 3);
-    const linkList = linkWrapper.listItemElement.createChild("ul", "link-list");
-    for (const description of this.#description.links) {
-      const linkListItem = linkList.createChild("li");
-      render21(
-        html21`<devtools-link class="link devtools-link" href=${description.link} jslogcontext="learn-more">${i18nString21(UIStrings21.learnMoreS, { PH1: description.linkTitle })}</devtools-link>`,
-        linkListItem
-      );
-    }
-    this.appendChild(linkWrapper);
+    this.appendChild(new IssueBodyTreeElement({ kind: "links", links: this.#description.links }));
   }
   #doUpdate() {
     if (this.expanded) {
@@ -6369,7 +6386,7 @@ var IssueView = class _IssueView extends UI10.TreeOutline.TreeElement {
       this.updateAffectedResourceVisibility();
     }
     this.#needsUpdateOnExpand = !this.expanded;
-    this.#updateFromIssue();
+    this.#render();
   }
   update() {
     void this.#throttle.schedule(async () => this.#doUpdate());
@@ -6482,10 +6499,12 @@ var UIStrings22 = {
 var str_22 = i18n43.i18n.registerUIStrings("panels/issues/IssuesPane.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
 var ISSUES_PANEL_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/issues";
-var IssueCategoryView = class extends UI11.TreeOutline.TreeElement {
+var { widget: widget9 } = UI10.Widget;
+var { bindToSetting } = UI10.UIUtils;
+var IssueCategoryView = class extends UI10.TreeOutline.TreeElement {
   #category;
   constructor(category) {
-    super(void 0, void 0, Platform6.StringUtilities.toKebabCase(category));
+    super(void 0, void 0, Platform7.StringUtilities.toKebabCase(category));
     this.#category = category;
     this.toggleOnClick = true;
     this.listItemElement.classList.add("issue-category");
@@ -6535,40 +6554,48 @@ var IssueCategoryView = class extends UI11.TreeOutline.TreeElement {
 function getGroupIssuesByCategorySetting() {
   return Common6.Settings.Settings.instance().createSetting("group-issues-by-category", false);
 }
-var IssuesPane = class extends UI11.Widget.VBox {
+var IssuesPane = class extends UI10.Widget.VBox {
   #categoryViews;
   #issueViews;
   #kindViews;
-  #showThirdPartyCheckbox;
   #issuesTree;
   #hiddenIssuesRow;
-  #noIssuesMessageDiv;
   #issuesManager;
   #aggregator;
   #dirtyIssues = /* @__PURE__ */ new Set();
+  #groupByCategorySetting = getGroupIssuesByCategorySetting();
+  #groupByKindSetting = getGroupIssuesByKindSetting();
+  #showThirdPartyIssuesSetting = IssuesManager11.Issue.getShowThirdPartyIssuesSetting(Common6.Settings.Settings.instance());
+  #issueCounterData;
+  #issueCounterTitle = "";
+  #showTree = false;
+  #noIssuesHeader = "";
   constructor() {
-    super({
-      jslog: `${VisualLogging7.panel("issues")}`,
-      useShadowDom: true
-    });
-    this.registerRequiredCSS(issuesPane_css_default);
-    this.contentElement.classList.add("issues-pane");
+    super({ useShadowDom: "pure" });
     this.#categoryViews = /* @__PURE__ */ new Map();
     this.#kindViews = /* @__PURE__ */ new Map();
     this.#issueViews = /* @__PURE__ */ new Map();
-    this.#showThirdPartyCheckbox = null;
-    this.#createToolbars();
-    this.#issuesTree = new UI11.TreeOutline.TreeOutlineInShadow();
+    this.#groupByCategorySetting.addChangeListener(() => {
+      this.#fullUpdate(true);
+    });
+    this.#groupByKindSetting.addChangeListener(() => {
+      this.#fullUpdate(true);
+    });
+    this.#issuesTree = new UI10.TreeOutline.TreeOutlineInShadow();
     this.#issuesTree.setShowSelectionOnKeyboardFocus(true);
     this.#issuesTree.contentElement.classList.add("issues");
     this.#issuesTree.registerRequiredCSS(issuesTree_css_default);
-    this.contentElement.appendChild(this.#issuesTree.element);
     this.#hiddenIssuesRow = new HiddenIssuesRow();
     this.#issuesTree.appendChild(this.#hiddenIssuesRow);
-    this.#noIssuesMessageDiv = new UI11.EmptyWidget.EmptyWidget("", i18nString22(UIStrings22.issuesPanelDescription));
-    this.#noIssuesMessageDiv.link = ISSUES_PANEL_EXPLANATION_URL;
-    this.#noIssuesMessageDiv.show(this.contentElement);
     this.#issuesManager = IssuesManager11.IssuesManager.IssuesManager.instance();
+    this.#issueCounterData = {
+      clickHandler: () => {
+        const summary = IssueCounter5.IssueCounter.getIssueCountsEnumeration(this.#issuesManager, false);
+        UI10.ARIAUtils.LiveAnnouncer.alert(summary);
+      },
+      displayMode: IssueCounter5.IssueCounter.DisplayMode.SHOW_ALWAYS,
+      issuesManager: this.#issuesManager
+    };
     this.#aggregator = new IssuesManager11.IssueAggregator.IssueAggregator(this.#issuesManager);
     this.#aggregator.addEventListener(IssuesManager11.IssueAggregator.Events.AGGREGATED_ISSUE_UPDATED, (event) => {
       this.#dirtyIssues.add(event.data);
@@ -6590,74 +6617,34 @@ var IssuesPane = class extends UI11.Widget.VBox {
   elementsToRestoreScrollPositionsFor() {
     return [this.#issuesTree.element];
   }
-  #createToolbars() {
-    const toolbarContainer = this.contentElement.createChild("div", "issues-toolbar-container");
-    toolbarContainer.setAttribute("jslog", `${VisualLogging7.toolbar()}`);
-    toolbarContainer.role = "toolbar";
-    const leftToolbar = toolbarContainer.createChild("devtools-toolbar", "issues-toolbar-left");
-    leftToolbar.role = "presentation";
-    const rightToolbar = toolbarContainer.createChild("devtools-toolbar", "issues-toolbar-right");
-    rightToolbar.role = "presentation";
-    const groupByCategorySetting = getGroupIssuesByCategorySetting();
-    const groupByCategoryCheckbox = new UI11.Toolbar.ToolbarSettingCheckbox(
-      groupByCategorySetting,
-      i18nString22(UIStrings22.groupDisplayedIssuesUnder),
-      i18nString22(UIStrings22.groupByCategory)
-    );
-    groupByCategoryCheckbox.setVisible(false);
-    rightToolbar.appendToolbarItem(groupByCategoryCheckbox);
-    groupByCategorySetting.addChangeListener(() => {
-      this.#fullUpdate(true);
-    });
-    const groupByKindSetting = getGroupIssuesByKindSetting();
-    const groupByKindSettingCheckbox = new UI11.Toolbar.ToolbarSettingCheckbox(
-      groupByKindSetting,
-      i18nString22(UIStrings22.groupDisplayedIssuesUnderKind),
-      i18nString22(UIStrings22.groupByKind)
-    );
-    rightToolbar.appendToolbarItem(groupByKindSettingCheckbox);
-    groupByKindSetting.addChangeListener(() => {
-      this.#fullUpdate(true);
-    });
-    groupByKindSettingCheckbox.setVisible(true);
-    const thirdPartySetting = IssuesManager11.Issue.getShowThirdPartyIssuesSetting(Common6.Settings.Settings.instance());
-    this.#showThirdPartyCheckbox = new UI11.Toolbar.ToolbarSettingCheckbox(
-      thirdPartySetting,
-      i18nString22(UIStrings22.includeCookieIssuesCausedBy),
-      i18nString22(UIStrings22.includeThirdpartyCookieIssues)
-    );
-    rightToolbar.appendToolbarItem(this.#showThirdPartyCheckbox);
-    rightToolbar.appendSeparator();
-    const issueCounter = new IssueCounter5.IssueCounter.IssueCounter();
-    issueCounter.data = {
-      clickHandler: () => {
-        const summary = IssueCounter5.IssueCounter.getIssueCountsEnumeration(
-          IssuesManager11.IssuesManager.IssuesManager.instance(),
-          false
-        );
-        UI11.ARIAUtils.LiveAnnouncer.alert(summary);
-      },
-      tooltipCallback: () => {
-        const issueEnumeration = IssueCounter5.IssueCounter.getIssueCountsEnumeration(
-          IssuesManager11.IssuesManager.IssuesManager.instance(),
-          false
-        );
-        issueCounter.title = issueEnumeration;
-      },
-      displayMode: IssueCounter5.IssueCounter.DisplayMode.SHOW_ALWAYS,
-      issuesManager: IssuesManager11.IssuesManager.IssuesManager.instance()
-    };
-    issueCounter.id = "console-issues-counter";
-    issueCounter.setAttribute("jslog", `${VisualLogging7.counter("issues")}`);
-    const issuesToolbarItem = new UI11.Toolbar.ToolbarItem(issueCounter);
-    rightToolbar.appendToolbarItem(issuesToolbarItem);
-    return { toolbarContainer };
-  }
   async performUpdate() {
     const issuesToUpdate = [...this.#dirtyIssues];
     this.#dirtyIssues.clear();
     await Promise.allSettled(issuesToUpdate.map((issue) => this.#updateIssueView(issue)));
     this.#updateCounts();
+    render21(html21`
+      <style>${issuesPane_css_default}</style>
+      <div class="issues-toolbar-container" role="toolbar" jslog=${VisualLogging6.toolbar()}>
+        <devtools-toolbar class="issues-toolbar-left" role="presentation"></devtools-toolbar>
+        <devtools-toolbar class="issues-toolbar-right" role="presentation">
+          <!-- The option to toggle category grouping is hidden for now. -->
+          <devtools-checkbox hidden title=${i18nString22(UIStrings22.groupDisplayedIssuesUnder)}
+              ${bindToSetting(this.#groupByCategorySetting)}>${i18nString22(UIStrings22.groupByCategory)}</devtools-checkbox>
+          <devtools-checkbox title=${i18nString22(UIStrings22.groupDisplayedIssuesUnderKind)}
+              ${bindToSetting(this.#groupByKindSetting)}>${i18nString22(UIStrings22.groupByKind)}</devtools-checkbox>
+          <devtools-checkbox title=${i18nString22(UIStrings22.includeCookieIssuesCausedBy)}
+              ${bindToSetting(this.#showThirdPartyIssuesSetting)}>${i18nString22(UIStrings22.includeThirdpartyCookieIssues)}</devtools-checkbox>
+          <div class="toolbar-divider"></div>
+          <devtools-issue-counter id="console-issues-counter" title=${this.#issueCounterTitle}
+              .data=${this.#issueCounterData} jslog=${VisualLogging6.counter("issues")}></devtools-issue-counter>
+        </devtools-toolbar>
+      </div>
+      ${this.#issuesTree.element}
+      ${this.#showTree ? nothing7 : widget9(UI10.EmptyWidget.EmptyWidget, {
+      header: this.#noIssuesHeader,
+      text: i18nString22(UIStrings22.issuesPanelDescription),
+      link: ISSUES_PANEL_EXPLANATION_URL
+    })}`, this.contentElement, { container: { classes: ["issues-pane"], attributes: { jslog: `${VisualLogging6.panel("issues")}` } } });
   }
   /** Don't call directly. Use `requestUpdate` instead. */
   async #updateIssueView(issue) {
@@ -6682,7 +6669,7 @@ var IssuesPane = class extends UI11.Widget.VBox {
     } else {
       issueView.setIssue(issue);
       const newParent = this.#getIssueViewParent(issue);
-      if (issueView.parent !== newParent && !(newParent instanceof UI11.TreeOutline.TreeOutline && issueView.parent === newParent.rootElement())) {
+      if (issueView.parent !== newParent && !(newParent instanceof UI10.TreeOutline.TreeOutline && issueView.parent === newParent.rootElement())) {
         issueView.parent?.removeChild(issueView);
         this.appendIssueViewToParent(issueView, newParent);
       }
@@ -6703,7 +6690,7 @@ var IssuesPane = class extends UI11.Widget.VBox {
       console.error("The issues tree should only contain IssueView objects as direct children");
       return 0;
     });
-    if (parent instanceof UI11.TreeOutline.TreeElement) {
+    if (parent instanceof UI10.TreeOutline.TreeElement) {
       this.#updateItemPositionAndSize(parent);
     }
   }
@@ -6713,8 +6700,8 @@ var IssuesPane = class extends UI11.Widget.VBox {
     for (let i = 0; i < childNodes.length; i++) {
       const node = childNodes[i];
       if (node.classList.contains("issue")) {
-        UI11.ARIAUtils.setPositionInSet(node, ++treeItemCount);
-        UI11.ARIAUtils.setSetSize(node, childNodes.length / 2);
+        UI10.ARIAUtils.setPositionInSet(node, ++treeItemCount);
+        UI10.ARIAUtils.setSetSize(node, childNodes.length / 2);
       }
     }
   }
@@ -6787,11 +6774,12 @@ var IssuesPane = class extends UI11.Widget.VBox {
     }
   }
   #updateCounts() {
+    this.#issueCounterTitle = IssueCounter5.IssueCounter.getIssueCountsEnumeration(this.#issuesManager, false);
     this.#showIssuesTreeOrNoIssuesDetectedMessage(
       this.#issuesManager.numberOfIssues(),
       this.#issuesManager.numberOfHiddenIssues()
     );
-    if (getGroupIssuesByKindSetting().get()) {
+    if (this.#groupByKindSetting.get()) {
       this.#updateIssueKindViewsCount();
     }
   }
@@ -6799,8 +6787,8 @@ var IssuesPane = class extends UI11.Widget.VBox {
     if (issuesCount > 0 || hiddenIssueCount > 0) {
       this.#hiddenIssuesRow.hidden = hiddenIssueCount === 0;
       this.#hiddenIssuesRow.update(hiddenIssueCount);
+      this.#showTree = true;
       this.#issuesTree.element.hidden = false;
-      this.#noIssuesMessageDiv.hideWidget();
       const firstChild = this.#issuesTree.firstChild();
       if (firstChild) {
         firstChild.select(
@@ -6810,10 +6798,10 @@ var IssuesPane = class extends UI11.Widget.VBox {
         this.setDefaultFocusedElement(firstChild.listItemElement);
       }
     } else {
+      this.#showTree = false;
       this.#issuesTree.element.hidden = true;
       const hasOnlyThirdPartyIssues = this.#issuesManager.numberOfAllStoredIssues() - this.#issuesManager.numberOfThirdPartyCookiePhaseoutIssues() > 0;
-      this.#noIssuesMessageDiv.header = hasOnlyThirdPartyIssues ? i18nString22(UIStrings22.onlyThirdpartyCookieIssues) : i18nString22(UIStrings22.noIssues);
-      this.#noIssuesMessageDiv.showWidget();
+      this.#noIssuesHeader = hasOnlyThirdPartyIssues ? i18nString22(UIStrings22.onlyThirdpartyCookieIssues) : i18nString22(UIStrings22.noIssues);
     }
   }
   async reveal(issue) {
@@ -6840,8 +6828,8 @@ var IssuesPane = class extends UI11.Widget.VBox {
 // ../../front_end/panels/issues/IssueRevealer.ts
 var IssueRevealer = class {
   async reveal(issue) {
-    await UI12.ViewManager.ViewManager.instance().showView("issues-pane");
-    const view = UI12.ViewManager.ViewManager.instance().view("issues-pane");
+    await UI11.ViewManager.ViewManager.instance().showView("issues-pane");
+    const view = UI11.ViewManager.ViewManager.instance().view("issues-pane");
     if (view) {
       const issuesPane = await view.widget();
       if (issuesPane instanceof IssuesPane) {
@@ -6857,6 +6845,7 @@ export {
   AffectedElementsView_exports as AffectedElementsView,
   AffectedLazyLoadImagesView_exports as AffectedLazyLoadImagesView,
   AffectedMetadataAllowedSitesView_exports as AffectedMetadataAllowedSitesView,
+  AffectedResourcesView_exports as AffectedResourcesView,
   AffectedSelectivePermissionsInterventionView_exports as AffectedSelectivePermissionsInterventionView,
   GenericIssueDetailsView_exports as GenericIssueDetailsView,
   IssueRevealer_exports as IssueRevealer,

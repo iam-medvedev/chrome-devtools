@@ -4,12 +4,14 @@
 import { assert } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
 import sinon from 'sinon';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { stripLitHtmlCommentNodes } from '../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, stripLitHtmlCommentNodes } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html } from '../../ui/lit/lit.js';
 import * as PanelsCommon from '../common/common.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('LighthouseReportRenderer', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
@@ -21,7 +23,12 @@ describeWithEnvironment('LighthouseReportRenderer', () => {
     const NODE = sinon.createStubInstance(SDK.DOMModel.DOMNode);
     NODE.id = NODE_ID;
     const SNIPPET = 'SNIPPET';
+    const SOURCE_URL = urlString `https://example.com/script.js`;
     const LH_NODE_HTML = (path, snippet) => `<div class="lh-node" data-path="${path}" data-snippet="${snippet}"></div>`;
+    const LH_SOURCE_LOCATION_HTML = (url, line, column) => {
+        const data = `data-source-url="${url}" data-source-line="${line}" data-source-column="${column}"`;
+        return `<div class="lh-source-location" ${data}>placeholder</div>`;
+    };
     beforeEach(async () => {
         Lighthouse = await import('./lighthouse.js');
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
@@ -31,37 +38,42 @@ describeWithEnvironment('LighthouseReportRenderer', () => {
         linkElement.textContent = 'link';
         sourceElement = document.createElement('div');
     });
-    it('resolves node and calls linkifier', async () => {
+    it('resolves node and passes it to the view', async () => {
         sourceElement.innerHTML = LH_NODE_HTML(PATH, SNIPPET);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         sinon.stub(domModel, 'pushNodeByPathToFrontend').withArgs(PATH).returns(Promise.resolve(NODE_ID));
         sinon.stub(domModel, 'nodeForId').withArgs(NODE_ID).returns(NODE);
-        sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify')
-            .withArgs(NODE, { tooltip: SNIPPET, preventKeyboardFocus: undefined })
-            .returns(html `<div>link</div>`);
-        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
-        assert.strictEqual(stripLitHtmlCommentNodes(sourceElement.firstChild.innerHTML), '<div>link</div>');
+        const view = sinon.stub();
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, view);
+        const nodeElement = sourceElement.firstElementChild;
+        assert.lengthOf(nodeElement.children, 1);
+        sinon.assert.calledOnceWithExactly(view, { type: 'node', node: NODE, snippet: SNIPPET }, undefined, nodeElement.firstElementChild);
     });
     it('handles multiple nodes', async () => {
         const domModel = target.model(SDK.DOMModel.DOMModel);
         assert.exists(domModel);
         const pushNodeByPathToFrontend = sinon.stub(domModel, 'pushNodeByPathToFrontend');
         const nodeForId = sinon.stub(domModel, 'nodeForId');
-        const linkify = sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify');
+        const view = sinon.stub();
         const NUM_NODES = 3;
+        const nodes = [];
         for (let i = 1; i <= NUM_NODES; ++i) {
             sourceElement.innerHTML += LH_NODE_HTML(PATH + i, SNIPPET + i);
             const nodeId = i;
             const node = { id: nodeId };
+            nodes.push(node);
             pushNodeByPathToFrontend.withArgs(PATH + i).returns(Promise.resolve(nodeId));
             nodeForId.withArgs(nodeId).returns(node);
-            linkify.withArgs(node, { tooltip: SNIPPET + i, preventKeyboardFocus: undefined })
-                .returns(html `<div>link${i}</div>`);
         }
-        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
-        assert.strictEqual(sourceElement.childNodes.length, NUM_NODES);
-        assert.deepEqual([...sourceElement.childNodes].map(n => n.textContent), ['link1', 'link2', 'link3']);
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, view);
+        sinon.assert.callCount(view, NUM_NODES);
+        assert.deepEqual(view.args.map(([input]) => input), [
+            { type: 'node', node: nodes[0], snippet: 'SNIPPET1' },
+            { type: 'node', node: nodes[1], snippet: 'SNIPPET2' },
+            { type: 'node', node: nodes[2], snippet: 'SNIPPET3' },
+        ]);
+        assert.deepEqual(view.args.map(([, , viewTarget]) => viewTarget), [...sourceElement.children].map(child => child.firstElementChild));
     });
     it('resets tooltip', async () => {
         sourceElement.innerHTML = LH_NODE_HTML(PATH, SNIPPET);
@@ -69,9 +81,8 @@ describeWithEnvironment('LighthouseReportRenderer', () => {
         assert.exists(domModel);
         sinon.stub(domModel, 'pushNodeByPathToFrontend').returns(Promise.resolve(NODE_ID));
         sinon.stub(domModel, 'nodeForId').returns(NODE);
-        sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').returns(html `<div>link</div>`);
         const installTooltip = sinon.spy(UI.Tooltip.Tooltip, 'install');
-        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, sinon.stub());
         assert.isTrue(installTooltip.calledOnceWith(sourceElement.firstChild, ''));
     });
     it('only keeps link and screenshot', async () => {
@@ -82,9 +93,8 @@ describeWithEnvironment('LighthouseReportRenderer', () => {
         assert.exists(domModel);
         sinon.stub(domModel, 'pushNodeByPathToFrontend').returns(Promise.resolve(NODE_ID));
         sinon.stub(domModel, 'nodeForId').returns(NODE);
-        sinon.stub(PanelsCommon.DOMLinkifier.Linkifier.instance(), 'linkify').returns(html `<div>link</div>`);
         await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
-        assert.strictEqual(stripLitHtmlCommentNodes(sourceElement.firstElementChild.innerHTML), '<div class="lh-element-screenshot"></div><div>link</div>');
+        assert.strictEqual(stripLitHtmlCommentNodes(sourceElement.firstElementChild.innerHTML), '<div class="lh-element-screenshot"></div><span><devtools-widget></devtools-widget></span>');
     });
     it('skips malformed nodes', async () => {
         const originalHtml = [
@@ -96,8 +106,119 @@ describeWithEnvironment('LighthouseReportRenderer', () => {
         assert.exists(domModel);
         sinon.stub(domModel, 'pushNodeByPathToFrontend').withArgs('PATH_WIHTOUT_NODE').returns(Promise.resolve(NODE_ID));
         sourceElement.innerHTML = originalHtml;
-        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
+        const view = sinon.stub();
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, view);
+        sinon.assert.notCalled(view);
         assert.strictEqual(sourceElement.innerHTML, originalHtml);
+    });
+    it('keeps the existing link element when re-linkifying resolves the same DOMNode', async () => {
+        sourceElement.innerHTML = LH_NODE_HTML(PATH, SNIPPET);
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        sinon.stub(domModel, 'pushNodeByPathToFrontend').withArgs(PATH).resolves(NODE_ID);
+        sinon.stub(domModel, 'nodeForId').withArgs(NODE_ID).returns(NODE);
+        const view = sinon.stub();
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, view);
+        const firstContainer = sourceElement.firstElementChild?.firstElementChild;
+        assert.exists(firstContainer);
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement, view);
+        sinon.assert.calledOnce(view);
+        assert.strictEqual(sourceElement.firstElementChild?.firstElementChild, firstContainer);
+    });
+    it('reverts a linked node back to plain text when a subsequent pass cannot resolve it', async () => {
+        sourceElement.innerHTML = `<div class="lh-node" data-path="${PATH}" data-snippet="${SNIPPET}" title="div.hero"><div class="lh-element-screenshot"></div><div class="lh-node__snippet">${SNIPPET}</div></div>`;
+        const originalHtml = sourceElement.firstElementChild?.innerHTML;
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        assert.exists(domModel);
+        const pushNodeStub = sinon.stub(domModel, 'pushNodeByPathToFrontend').withArgs(PATH).resolves(NODE_ID);
+        sinon.stub(domModel, 'nodeForId').withArgs(NODE_ID).returns(NODE);
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
+        assert.strictEqual(sourceElement.firstElementChild.title, '');
+        pushNodeStub.withArgs(PATH).resolves(null);
+        await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifyNodeDetails(sourceElement);
+        assert.strictEqual(sourceElement.firstElementChild?.innerHTML, originalHtml);
+        assert.strictEqual(sourceElement.firstElementChild.title, 'div.hero');
+    });
+    describe('linkifySourceLocationDetails', () => {
+        it('passes the source location to the view and clears the placeholder', async () => {
+            sourceElement.innerHTML = LH_SOURCE_LOCATION_HTML(SOURCE_URL, '10', '5');
+            const view = sinon.stub();
+            await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifySourceLocationDetails(sourceElement, view);
+            const placeholder = sourceElement.firstElementChild;
+            sinon.assert.calledOnceWithExactly(view, { type: 'source-location', url: SOURCE_URL, lineNumber: 10, columnNumber: 5 }, undefined, placeholder);
+            assert.lengthOf(placeholder.childNodes, 0);
+        });
+        it('skips source locations with missing data', async () => {
+            const originalHtml = [
+                LH_SOURCE_LOCATION_HTML('', '10', '5'),
+                LH_SOURCE_LOCATION_HTML(SOURCE_URL, '', '5'),
+                LH_SOURCE_LOCATION_HTML(SOURCE_URL, '10', ''),
+            ].join('');
+            sourceElement.innerHTML = originalHtml;
+            const view = sinon.stub();
+            await Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer.linkifySourceLocationDetails(sourceElement, view);
+            sinon.assert.notCalled(view);
+            assert.strictEqual(sourceElement.innerHTML, originalHtml);
+        });
+    });
+    describe('view', () => {
+        it('renders a DOM node link', () => {
+            const viewTarget = document.createElement('div');
+            Lighthouse.LighthouseReportRenderer.DEFAULT_VIEW({ type: 'node', node: NODE, snippet: SNIPPET }, undefined, viewTarget);
+            const widgetElement = viewTarget.querySelector('devtools-widget');
+            assert.exists(widgetElement);
+            const config = UI.Widget.widgetConfigs.get(widgetElement);
+            assert.strictEqual(config?.widgetClass, PanelsCommon.DOMLinkifier.DOMNodeLink);
+            assert.deepEqual(config?.widgetParams, { node: NODE, options: { tooltip: SNIPPET } });
+        });
+        it('renders a source location link', () => {
+            const viewTarget = document.createElement('div');
+            Lighthouse.LighthouseReportRenderer.DEFAULT_VIEW({ type: 'source-location', url: SOURCE_URL, lineNumber: 10, columnNumber: 5 }, undefined, viewTarget);
+            const link = viewTarget.querySelector('.devtools-link');
+            assert.exists(link);
+            assert.strictEqual(link.title, SOURCE_URL);
+            assert.match(link.textContent ?? '', /script\.js:11$/);
+        });
+    });
+    describe('widget presenter', () => {
+        it('passes the report to the view when report is set', async () => {
+            const emptyCategory = {
+                title: '',
+                id: '',
+                score: null,
+                manualDescription: '',
+                auditRefs: [],
+            };
+            const lhr = {
+                lighthouseVersion: '',
+                userAgent: '',
+                fetchTime: '2026-01-01T00:00:00.000Z',
+                timing: { total: 0 },
+                finalDisplayedUrl: 'http://example.com',
+                artifacts: { Trace: { traceEvents: [] } },
+                audits: {},
+                categories: {
+                    performance: emptyCategory,
+                    accessibility: emptyCategory,
+                    'best-practices': emptyCategory,
+                    seo: emptyCategory,
+                    'agentic-browsing': emptyCategory,
+                },
+                categoryGroups: {},
+            };
+            const view = createViewFunctionStub(Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer);
+            const widget = new Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer(undefined, view);
+            widget.markAsRoot();
+            renderElementIntoDOM(widget);
+            const initialInput = await view.nextInput;
+            assert.strictEqual(initialInput.type, 'report');
+            assert.isNull(initialInput.report);
+            widget.report = lhr;
+            const updatedInput = await view.nextInput;
+            assert.strictEqual(updatedInput.type, 'report');
+            assert.strictEqual(updatedInput.report, lhr);
+            widget.detach();
+        });
     });
     describe('renderLighthouseScores', () => {
         const baseReport = {

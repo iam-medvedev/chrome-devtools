@@ -3,23 +3,33 @@
 // found in the LICENSE file.
 import { assert } from 'chai';
 import { beforeEach, describe, it } from 'mocha';
+import sinon from 'sinon';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { MockCDPConnection } from '../../testing/MockCDPConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
+import * as Geometry from '../../ui/geometry/geometry.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as SettingsUI from '../../ui/settings/settings.js';
-import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Sensors from './sensors.js';
 const { CPUPerformanceTier, CPUThrottlingManager } = SDK.CPUThrottlingManager;
+function createSensorsView() {
+    return new Sensors.SensorsView.SensorsView(undefined, [
+        Common.Settings.Settings.instance(),
+        SDK.TargetManager.TargetManager.instance(),
+        CPUThrottlingManager.instance(),
+    ]);
+}
 describeWithEnvironment('SensorsView', () => {
     let view;
-    beforeEach(() => {
-        view = new Sensors.SensorsView.SensorsView();
+    beforeEach(async () => {
+        view = createSensorsView();
         renderElementIntoDOM(view);
+        await UI.Widget.Widget.allUpdatesComplete;
     });
-    it('updates the custom location select when the setting changes', () => {
+    it('updates the custom location select when the setting changes', async () => {
         const customLocationsSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.emulationLocationsSettingDescriptor);
         customLocationsSetting.set([{
                 title: 'Test Location',
@@ -29,10 +39,22 @@ describeWithEnvironment('SensorsView', () => {
                 locale: 'en-US',
                 accuracy: 0,
             }]);
+        await UI.Widget.Widget.allUpdatesComplete;
         const select = view.contentElement.querySelector('.geo-fields select');
         assert.exists(select);
         const options = Array.from(select.options).map(option => option.textContent);
         assert.include(options, 'Test Location');
+    });
+    it('picks up changes of the custom locations that happen while it is hidden', async () => {
+        const customLocationsSetting = Common.Settings.Settings.instance().resolve(SettingsUI.EmulationSettings.emulationLocationsSettingDescriptor);
+        const titles = () => Array.from(view.contentElement.querySelectorAll('.geo-fields option'), option => option.textContent);
+        view.hideWidget();
+        customLocationsSetting.set([{ title: 'Hidden Location', lat: 1, long: 2, timezoneId: '', locale: '', accuracy: 0 }]);
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.notInclude(titles(), 'Hidden Location');
+        view.showWidget();
+        await UI.Widget.Widget.allUpdatesComplete;
+        assert.include(titles(), 'Hidden Location');
     });
     describe('Location select', () => {
         const BERLIN = {
@@ -176,6 +198,32 @@ describeWithEnvironment('SensorsView', () => {
             assert.isFalse(locationInputsDisabled());
             assert.deepEqual(locationInputValues(), BERLIN_INPUT_VALUES);
             assert.strictEqual(locationSetting.get(), '52.52@13.405:Europe/Berlin:de-DE::50');
+            const latitudeInput = locationInput('latitude');
+            assert.strictEqual(latitudeInput.getRootNode().activeElement, latitudeInput);
+        });
+        it('does not focus the latitude input when "Other…" is replaced before the view updates', async () => {
+            await selectLocation('Berlin');
+            const select = locationSelect();
+            select.value = 'custom';
+            select.dispatchEvent(new Event('change'));
+            select.value = 'unavailable';
+            select.dispatchEvent(new Event('change'));
+            await settled();
+            assert.strictEqual(selectedLocationTitle(), 'Location unavailable');
+            assert.notStrictEqual(select.getRootNode().activeElement, locationInput('latitude'));
+        });
+        it('does not focus the latitude input when the view is detached before it updates', async () => {
+            await selectLocation('Berlin');
+            const select = locationSelect();
+            select.value = 'custom';
+            select.dispatchEvent(new Event('change'));
+            // Detaching cancels the pending update.
+            view.detach();
+            await settled();
+            renderElementIntoDOM(view);
+            await settled();
+            assert.strictEqual(selectedLocationTitle(), 'Other…');
+            assert.notStrictEqual(select.getRootNode().activeElement, locationInput('latitude'));
         });
         it('emulates an unavailable location', async () => {
             await selectLocation('Berlin');
@@ -271,11 +319,12 @@ describeWithEnvironment('SensorsView', () => {
         });
     });
     describe('Location input events', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             const select = view.contentElement.querySelector('.geo-fields select');
             assert.exists(select);
             select.value = 'custom';
             select.dispatchEvent(new Event('change'));
+            await UI.Widget.Widget.allUpdatesComplete;
         });
         it('validates latitude input and adds error class if invalid', () => {
             const latitudeInput = view.contentElement.querySelector('#latitude-input');
@@ -313,6 +362,20 @@ describeWithEnvironment('SensorsView', () => {
             latitudeInput.dispatchEvent(new Event('change'));
             const locationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
             assert.isTrue(locationSetting.get().includes('45'));
+        });
+        it('applies a location input on Enter, but not while an IME composition is confirmed', () => {
+            const locationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
+            const timezoneInput = view.contentElement.querySelector('#timezone-input');
+            assert.exists(timezoneInput);
+            timezoneInput.value = 'Europe/Berlin';
+            const composing = new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, cancelable: true });
+            timezoneInput.dispatchEvent(composing);
+            assert.isFalse(composing.defaultPrevented);
+            assert.isFalse(locationSetting.get().includes('Europe/Berlin'));
+            const enter = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            timezoneInput.dispatchEvent(enter);
+            assert.isTrue(enter.defaultPrevented);
+            assert.isTrue(locationSetting.get().includes('Europe/Berlin'));
         });
         it('modifies latitude input on ArrowUp key', () => {
             const latitudeInput = view.contentElement.querySelector('#latitude-input');
@@ -437,6 +500,22 @@ describeWithEnvironment('SensorsView', () => {
             assert.isFalse(orientationInputsDisabled());
             assert.deepEqual(orientationInputValues(), ['0', '90', '0']);
             assert.deepEqual(orientationOverrides, [{ alpha: 0, beta: 90, gamma: 0 }]);
+            const alphaInput = query('#alpha-input');
+            assert.strictEqual(alphaInput.getRootNode().activeElement, alphaInput);
+        });
+        it('focuses the alpha input after its value is reset when "Custom orientation" is selected', async () => {
+            await selectOrientation('Landscape left');
+            const alphaInput = query('#alpha-input');
+            const valuesOnFocus = [];
+            const focus = alphaInput.focus.bind(alphaInput);
+            alphaInput.focus = () => {
+                valuesOnFocus.push(alphaInput.value);
+                focus();
+            };
+            await selectOrientation('Custom orientation');
+            // Focusing the input selects its content. Writing the value afterwards would drop the selection.
+            assert.deepEqual(valuesOnFocus, ['0']);
+            assert.deepEqual(orientationInputValues(), ['0', '90', '0']);
         });
         it('switches to "Custom orientation" when the inputs of a preset are edited', async () => {
             await selectOrientation('Landscape left');
@@ -504,11 +583,12 @@ describeWithEnvironment('SensorsView', () => {
     });
     describe('Device Orientation input events', () => {
         let alphaInput;
-        beforeEach(() => {
+        beforeEach(async () => {
             const select = view.contentElement.querySelector('.orientation-content select');
             assert.exists(select);
             select.value = 'custom';
             select.dispatchEvent(new Event('change'));
+            await UI.Widget.Widget.allUpdatesComplete;
             alphaInput = view.contentElement.querySelector('#alpha-input');
             assert.exists(alphaInput);
         });
@@ -531,6 +611,18 @@ describeWithEnvironment('SensorsView', () => {
             alphaInput.dispatchEvent(new Event('input'));
             alphaInput.dispatchEvent(new Event('change'));
             const orientationSetting = Common.Settings.Settings.instance().createSetting('emulation.device-orientation-override', '');
+            assert.isTrue(orientationSetting.get().includes('45'));
+        });
+        it('applies the alpha input on Enter, but not while an IME composition is confirmed', () => {
+            const orientationSetting = Common.Settings.Settings.instance().createSetting('emulation.device-orientation-override', '');
+            alphaInput.value = '45';
+            const composing = new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, cancelable: true });
+            alphaInput.dispatchEvent(composing);
+            assert.isFalse(composing.defaultPrevented);
+            assert.isFalse(orientationSetting.get().includes('45'));
+            const enter = new KeyboardEvent('keydown', { key: 'Enter', cancelable: true });
+            alphaInput.dispatchEvent(enter);
+            assert.isTrue(enter.defaultPrevented);
             assert.isTrue(orientationSetting.get().includes('45'));
         });
         it('modifies alpha input on ArrowUp key', () => {
@@ -613,11 +705,8 @@ describeWithEnvironment('SensorsView', () => {
             });
             const target = createTarget({ connection });
             assert.exists(target.model(SDK.EmulationModel.EmulationModel));
-            // The throttling manager singleton outlives the per-test SDK singletons,
-            // so the view needs a fresh one to observe the target created above.
-            MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true });
             view.detach();
-            view = new Sensors.SensorsView.SensorsView();
+            view = createSensorsView();
             renderElementIntoDOM(view);
             await settled();
         });
@@ -633,7 +722,7 @@ describeWithEnvironment('SensorsView', () => {
         }
         const checkbox = () => query('devtools-checkbox');
         const numericInput = () => query('.concurrency-details input');
-        const resetButton = () => query('[aria-label="Reset to the default value"]');
+        const resetButton = () => query('[accessiblelabel="Reset to the default value"]');
         const warning = () => query('[aria-label="Exceeding the default value may degrade system performance"]');
         const isVisible = (element) => getComputedStyle(element).visibility === 'visible';
         async function toggleOverride(checked) {
@@ -730,38 +819,46 @@ describeWithEnvironment('SensorsView', () => {
             assert.exists(option);
             mockHostTier = "low" /* CPUPerformanceTier.Low */;
             await CPUThrottlingManager.instance().updateHostDefaultCPUPerformanceTier();
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(option.text, 'No override (Tier 1: LOW)');
             assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
         });
-        it('dynamically updates "no-override" label when CPU throttling rate changes', () => {
+        it('dynamically updates "no-override" label when CPU throttling rate changes', async () => {
             const select = view.contentElement.querySelector('.cpu-performance-section select');
             assert.exists(select);
             const option = select.querySelector('option[value="no-override"]');
             assert.exists(option);
             assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
             CPUThrottlingManager.instance().setCPUThrottlingRate(4);
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(option.text, 'No override (Tier 2: MID)');
             assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "mid" /* CPUPerformanceTier.Mid */);
             CPUThrottlingManager.instance().setCPUThrottlingRate(1);
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
             assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "ultra" /* CPUPerformanceTier.Ultra */);
         });
-        it('dynamically updates "no-override" label when CPU throttling rate changes even with active override', () => {
+        it('dynamically updates "no-override" label when CPU throttling rate changes even with active override', async () => {
             const select = view.contentElement.querySelector('.cpu-performance-section select');
             assert.exists(select);
             const option = select.querySelector('option[value="no-override"]');
             assert.exists(option);
             select.value = 'low';
             select.dispatchEvent(new Event('change'));
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
             assert.strictEqual(option.text, 'No override (Tier 4: ULTRA)');
             CPUThrottlingManager.instance().setCPUThrottlingRate(4);
+            await UI.Widget.Widget.allUpdatesComplete;
             assert.strictEqual(CPUThrottlingManager.instance().effectiveCPUPerformanceTier(), "low" /* CPUPerformanceTier.Low */);
             assert.strictEqual(option.text, 'No override (Tier 2: MID)');
         });
-        it('shows the throttled tier in "no-override" option label when throttling is active on startup', () => {
+        it('shows the throttled tier in "no-override" option label when throttling is active on startup', async () => {
             CPUThrottlingManager.instance().setCPUThrottlingRate(4);
-            const localView = new Sensors.SensorsView.SensorsView();
+            await UI.Widget.Widget.allUpdatesComplete;
+            const localView = createSensorsView();
+            renderElementIntoDOM(localView, { allowMultipleChildren: true });
+            await UI.Widget.Widget.allUpdatesComplete;
             const select = localView.contentElement.querySelector('.cpu-performance-section select');
             assert.exists(select);
             const option = select.querySelector('option[value="no-override"]');
@@ -781,6 +878,99 @@ describeWithEnvironment('SensorsView', () => {
         });
     });
 });
+describeWithEnvironment('SensorsView presenter', () => {
+    const BERLIN = {
+        title: 'Berlin',
+        lat: 52.52,
+        long: 13.405,
+        timezoneId: 'Europe/Berlin',
+        locale: 'de-DE',
+        accuracy: 50,
+    };
+    async function createPresenter() {
+        const settings = Common.Settings.Settings.instance();
+        settings.resolve(SettingsUI.EmulationSettings.emulationLocationsSettingDescriptor).set([BERLIN]);
+        const output = { focusLatitudeInput: sinon.stub(), focusAlphaInput: sinon.stub() };
+        const view = createViewFunctionStub(Sensors.SensorsView.SensorsView, output);
+        const widget = new Sensors.SensorsView.SensorsView(undefined, [settings, SDK.TargetManager.TargetManager.instance(), CPUThrottlingManager.instance()], view);
+        renderElementIntoDOM(widget);
+        await view.nextInput;
+        return { view, output, settings };
+    }
+    it('passes the initial state to the view', async () => {
+        const { view } = await createPresenter();
+        assert.isFalse(view.input.locationOverrideEnabled);
+        assert.strictEqual(view.input.selectedLocationIndex, 0);
+        assert.deepEqual(view.input.customLocations, [BERLIN]);
+        assert.isFalse(view.input.orientationOverrideEnabled);
+        assert.strictEqual(view.input.selectedOrientation, 'noOverride');
+    });
+    it('applies a custom location that is selected', async () => {
+        const { view, settings } = await createPresenter();
+        view.input.onLocationSelectChange(JSON.stringify(BERLIN));
+        const input = await view.nextInput;
+        assert.isTrue(input.locationOverrideEnabled);
+        assert.strictEqual(input.selectedLocationIndex, 1);
+        assert.strictEqual(input.location.latitude, 52.52);
+        assert.strictEqual(input.location.timezoneId, 'Europe/Berlin');
+        assert.strictEqual(settings.createSetting('emulation.location-override', '').get(), '52.52@13.405:Europe/Berlin:de-DE::50');
+    });
+    it('selects "Other…" when a field of a custom location changes', async () => {
+        const { view } = await createPresenter();
+        view.input.onLocationSelectChange(JSON.stringify(BERLIN));
+        await view.nextInput;
+        view.input.onLocationFieldChange('latitude', '10');
+        let input = await view.nextInput;
+        assert.strictEqual(input.selectedLocationIndex, 2);
+        assert.strictEqual(input.location.latitude, 10);
+        assert.strictEqual(input.location.longitude, 13.405);
+        // "Other…" stays selected when the values match the custom location again.
+        view.input.onLocationFieldChange('latitude', '52.52');
+        input = await view.nextInput;
+        assert.strictEqual(input.selectedLocationIndex, 2);
+    });
+    it('asks the view to focus the latitude input when "Other…" is selected', async () => {
+        const { view, output } = await createPresenter();
+        view.input.onLocationSelectChange('custom');
+        const input = await view.nextInput;
+        assert.isTrue(input.locationOverrideEnabled);
+        sinon.assert.calledOnce(output.focusLatitudeInput);
+        sinon.assert.notCalled(output.focusAlphaInput);
+    });
+    it('applies an orientation preset that is selected', async () => {
+        const { view, settings } = await createPresenter();
+        view.input.onOrientationSelectChange('[90, 0, -90]');
+        const input = await view.nextInput;
+        assert.isTrue(input.orientationOverrideEnabled);
+        assert.strictEqual(input.selectedOrientation, '[90, 0, -90]');
+        assert.deepInclude(input.orientation, { alpha: 90, beta: 0, gamma: -90 });
+        assert.isTrue(input.animateOrientation);
+        assert.deepEqual(JSON.parse(settings.createSetting('emulation.device-orientation-override', '').get()), { alpha: 90, beta: 0, gamma: -90 });
+    });
+    it('resets to portrait and asks the view to focus the alpha input for a custom orientation', async () => {
+        const { view, output } = await createPresenter();
+        view.input.onOrientationSelectChange('custom');
+        const input = await view.nextInput;
+        assert.strictEqual(input.selectedOrientation, '[0, 90, 0]');
+        assert.deepInclude(input.orientation, { alpha: 0, beta: 90, gamma: 0 });
+        sinon.assert.calledOnce(output.focusAlphaInput);
+        sinon.assert.notCalled(output.focusLatitudeInput);
+    });
+    it('only rotates the device by dragging the stage while the override is on', async () => {
+        const { view } = await createPresenter();
+        const dragStart = new Geometry.Vector(0, 0, 1);
+        assert.isFalse(view.input.onStageDragStart(dragStart));
+        view.input.onOrientationSelectChange('[0, 90, 0]');
+        await view.nextInput;
+        assert.isTrue(view.input.onStageDragStart(dragStart));
+        view.input.onStageDrag(new Geometry.Vector(0.5, 0, Math.sqrt(0.75)), false);
+        const input = await view.nextInput;
+        assert.strictEqual(input.selectedOrientation, 'custom');
+        assert.isFalse(input.animateOrientation);
+        const { alpha, beta, gamma } = input.orientation;
+        assert.notDeepEqual([alpha, beta, gamma], [0, 90, 0]);
+    });
+});
 describeWithEnvironment('SensorsView screenshots', () => {
     let view;
     beforeEach(async () => {
@@ -794,7 +984,7 @@ describeWithEnvironment('SensorsView screenshots', () => {
             }]);
         // The view is taller than the screenshot viewport. Render it at a fixed
         // size and let it scroll, like the drawer does.
-        view = renderElementIntoDOM(new Sensors.SensorsView.SensorsView(), { includeCommonStyles: true, width: 600, height: 480 });
+        view = renderElementIntoDOM(createSensorsView(), { includeCommonStyles: true, width: 600, height: 480 });
         view.element.style.overflowY = 'auto';
         await UI.Widget.Widget.allUpdatesComplete;
     });
@@ -807,7 +997,7 @@ describeWithEnvironment('SensorsView screenshots', () => {
         element.dispatchEvent(new Event('change'));
     }
     function finishAnimations() {
-        for (const animation of view.contentElement.getAnimations({ subtree: true })) {
+        for (const animation of view.contentElement.getAnimations()) {
             animation.finish();
         }
     }

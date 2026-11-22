@@ -92,6 +92,7 @@ export class SplitWidget extends SplitWidgetBase {
         });
         this.#resizerElement = this.contentElement.createChild('div', 'shadow-split-widget-resizer');
         this.#resizerElement.setAttribute('jslog', `${VisualLogging.resizer().track({ drag: true })}`);
+        this.#resizerElement.setAttribute('part', 'resizer');
         this.#resizerWidget = new SimpleResizerWidget();
         this.#resizerWidget.setEnabled(true);
         this.#resizerWidget.addEventListener("ResizeStart" /* ResizerWidgetEvents.RESIZE_START */, this.#onResizeStart, this);
@@ -787,6 +788,14 @@ export class SplitWidget extends SplitWidgetBase {
         this.#showHideSidebarButton.setTitle(sidebarHidden ? this.#showSidebarButtonTitle : this.#hideSidebarButtonTitle);
     }
 }
+/**
+ * `<devtools-split-view>` hosts a `SplitWidget`.
+ *
+ * `direction`, `sidebar-position`, and `show` can change at any time.
+ * `name`, `sidebar-initial-size`, `sidebar-initial-width`,
+ * `sidebar-initial-height`, and `constraints-in-dip` are only read when
+ * the widget is created.
+ */
 export class SplitWidgetElement extends WidgetElement {
     static observedAttributes = ['direction', 'sidebar-position', 'sidebar-initial-size', 'show'];
     constructor() {
@@ -797,10 +806,12 @@ export class SplitWidgetElement extends WidgetElement {
             const secondIsSidebar = element.getAttribute('sidebar-position') === 'second';
             const settingName = element.getAttribute('name') ?? undefined;
             const sidebarSize = parseFloat(element.getAttribute('sidebar-initial-size') || '');
-            const defaultSidebarWidth = !isNaN(sidebarSize) ? sidebarSize : undefined;
-            const defaultSidebarHeight = !isNaN(sidebarSize) ? sidebarSize : undefined;
-            const widget = new SplitWidget(vertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, 
-            /* constraintsInDip=*/ false, element);
+            const sidebarWidth = parseFloat(element.getAttribute('sidebar-initial-width') || '');
+            const sidebarHeight = parseFloat(element.getAttribute('sidebar-initial-height') || '');
+            const fallbackSize = !isNaN(sidebarSize) ? sidebarSize : 200;
+            const defaultSidebarWidth = !isNaN(sidebarWidth) ? sidebarWidth : fallbackSize;
+            const defaultSidebarHeight = !isNaN(sidebarHeight) ? sidebarHeight : fallbackSize;
+            const widget = new SplitWidget(vertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, element.hasAttribute('constraints-in-dip'), element);
             if (element.getAttribute('sidebar-initial-size') === 'minimized') {
                 widget.setSidebarMinimized(true);
             }
@@ -834,13 +845,19 @@ export class SplitWidgetElement extends WidgetElement {
         }
         else if (name === 'show') {
             if (newValue === 'main') {
-                widget.hideSidebar();
+                if (widget.showMode() !== "OnlyMain" /* ShowMode.ONLY_MAIN */) {
+                    widget.hideSidebar();
+                }
             }
             else if (newValue === 'sidebar') {
-                widget.hideMain();
+                if (widget.showMode() !== "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */) {
+                    widget.hideMain();
+                }
             }
             else if (newValue === 'both' || newValue === null) {
-                widget.showBoth();
+                if (widget.showMode() !== "Both" /* ShowMode.BOTH */) {
+                    widget.showBoth();
+                }
             }
         }
     }

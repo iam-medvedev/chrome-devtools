@@ -64,16 +64,25 @@ export declare const SUGGEST_FOLLOW_UPS_FUNCTION_NAME = "suggestFollowUps";
  *
  * ## Model history for function calls
  *
- * This is the history sent to the model, separate from the saved history
- * below. `AiAgent#runFunctionCalls()` stores the model's explanation text and
- * every function call in a response as one `MODEL` turn. The next request
- * carries one `functionResponse` per call, in the same order. A denied call
- * gets a response that says it did not run. After a context change, each call
- * that did not run gets a "Not executed" response. In the final response,
- * `suggestFollowUps` is not recorded in the history. When called prematurely
- * alongside other tools, its suggestions are ignored and it receives a
- * `functionResponse` instructing the model to call `suggestFollowUps` only in
- * the final response.
+ * Model history is sent to the model, separate from the saved history below.
+ * `AiAgent` records non-empty text and `functionCall` parts in one `MODEL`
+ * turn, followed by matching `ROLE_UNSPECIFIED` `functionResponse` parts in
+ * order:
+ * - Standard tools: `AiAgent#runFunctionCalls()` executes each handler and
+ *   records its result or error.
+ * - Denied calls: When approval is rejected, `AiAgent#callFunction()` returns
+ *   a response stating that the call did not run.
+ * - Context changes: `AiAgent#contextChangeResponses()` gives the switching
+ *   call its description and each remaining call a `"Not executed"` response.
+ * - `suggestFollowUps` with final text: `AiAgent#handleFinalResponse()`
+ *   records the answer and all `suggestFollowUps` calls verbatim, plus
+ *   matching synthetic `"Suggestions recorded."` responses.
+ * - `suggestFollowUps` alone with empty text: `AiAgent#run()` retains valid
+ *   suggestions for the run, and `AiAgent#runFunctionCalls()` requests the
+ *   final Markdown answer.
+ * - `suggestFollowUps` alongside other tools: `AiAgent#run()` discards the
+ *   premature suggestions, and `AiAgent#runFunctionCalls()` instructs the
+ *   model to call `suggestFollowUps` only in the final response.
  *
  * ## Saved history
  *
@@ -342,6 +351,20 @@ export interface ConversationSuggestion {
 /** At least one. */
 export type ConversationSuggestions = [ConversationSuggestion, ...ConversationSuggestion[]];
 export type ConversationContextJslog = 'ai-context-dom-node' | 'ai-context-network-request' | 'ai-context-file' | 'ai-context-performance-trace' | 'ai-context-accessibility' | 'ai-context-storage';
+/**
+ * A persistent fact about the context or skill that is only sent to the model once
+ * per conversation to save tokens.
+ *
+ * `AiAgent2` deduplicates facts by object reference identity (`Set<PromptFact>`),
+ * so callers must return stable constant references rather than inline object literals.
+ */
+export interface PromptFact {
+    readonly title: string;
+    /**
+     * Omit custom markdown headings because AiAgent2 renders `# References` and `## ${title}` automatically.
+     */
+    readonly description: string;
+}
 export declare abstract class ConversationContext<T> {
     abstract readonly jslogContext: ConversationContextJslog;
     abstract getItem(): T;
@@ -389,6 +412,13 @@ export declare abstract class ConversationContext<T> {
      * Currently only used by AiAgent2.
      */
     getPromptDetails(): Promise<string | null>;
+    /**
+     * Returns persistent facts about the context that are only sent to the model
+     * once per conversation, reducing token usage in subsequent turns.
+     * Return stable constant `PromptFact` references so `AiAgent2` can deduplicate them.
+     * Currently only used by AiAgent2 (V1 agents use `addFact()`).
+     */
+    getPromptFacts(): readonly PromptFact[];
     /**
      * Returns a list of context details to display to the user in the UI.
      * Currently only used by AiAgent2.
@@ -636,9 +666,9 @@ export declare abstract class AiAgent<T> {
     removeFact(fact: Host.AidaClient.RequestFact): boolean;
     clearFacts(): void;
     /**
-     * Clears any subclass-specific caches. This is called when a run encounters
-     * an error (e.g., cross-origin navigation, abort, or execution error) to
-     * prevent unvalidated cached data from being replayed in subsequent runs.
+     * Clears subclass-specific caches after a non-`MAX_STEPS` error (such as
+     * cross-origin navigation, abort, or execution failure) when uncommitted
+     * `runEntries` are discarded instead of committed to `#history`.
      */
     clearCache(): void;
     /**
@@ -669,22 +699,14 @@ export declare abstract class AiAgent<T> {
      */
     parseTextResponseForSuggestions(text: string): ParsedResponse;
     /**
-     * Parses a streaming text response into a
-     * though/action/title/answer/suggestions component.
+     * Parses a partial or completed model text response into answer text and
+     * optional follow-up suggestions.
+     *
+     * By default, extracts `SUGGESTIONS:` text directives for V1 agents
+     * (`StylingAgent`, `PerformanceAgent`). `AiAgent2` overrides this method
+     * because V2 receives suggestions from `suggestFollowUps` tool calls.
      */
     parseTextResponse(response: string): ParsedResponse;
-    /**
-     * Parses the text of a response that is still streaming. Only the `answer`
-     * of the result is shown, as a partial answer. By default, partial answers
-     * use the same parsing as completed answers.
-     *
-     * This hook exists so that `AiAgent2` (AI V2) can parse follow-up
-     * suggestions differently without changing the V1 agents. Remove it once
-     * AI V2 ships and the V1 agents are removed. b/568697679 explores getting
-     * suggestions from a function call instead of parsing them from text,
-     * which would remove the need for this parsing.
-     */
-    protected parsePartialTextResponse(response: string): ParsedResponse;
     protected finalizeAnswer(answer: AnswerResponse): Promise<AnswerResponse>;
     /**
      * Declare a function that the AI model can call.
@@ -704,15 +726,23 @@ export declare abstract class AiAgent<T> {
      * context and before the request is built.
      */
     protected preRun(): Promise<void>;
+    /**
+     * Called after `#commitRun()` appends a run's messages to `#history` on final
+     * answers, `CONTEXT_CHANGE`, and `MAX_STEPS`, and skipped on aborts, errors,
+     * or early generator exits. Subclasses can override this method to promote
+     * per-run draft state to session state.
+     */
+    protected onRunCommitted(): void;
     run(initialQuery: string, options: {
         selected: ConversationContext<T> | null;
         signal?: AbortSignal;
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }
 /**
- * Validates and sanitizes raw follow-up suggestions from the model (either
- * `args.suggestions` from a `suggestFollowUps` tool call or a `JSON.parse`d
- * `SUGGESTIONS:` text directive).
+ * Validates and sanitizes raw follow-up suggestions from the model. Used for
+ * `args.suggestions` from `suggestFollowUps` tool calls, and for parsed
+ * `SUGGESTIONS:` text directives while V1 agents (`StylingAgent`,
+ * `PerformanceAgent`) exist.
  *
  * Expects `parsed` to be a `string[]`, but accepts `unknown` because model
  * output is untrusted. Returns non-empty string items with whitespace
@@ -726,8 +756,8 @@ export declare function sanitizeSuggestionsList(parsed: unknown): [string, ...st
  * Returns `undefined` if `suggestions` is not valid JSON, not an array, or no
  * items remain.
  *
- * TODO(b/568697679): Remove this JSON-string wrapper and consolidate into a
- * single function once legacy `SUGGESTIONS:` text parsing is removed.
+ * This JSON-string sanitization wrapper remains only while V1 agents
+ * (`StylingAgent`, `PerformanceAgent`) exist.
  */
 export declare function sanitizeSuggestions(suggestions: string): [string, ...string[]] | undefined;
 /**

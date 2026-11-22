@@ -69,6 +69,7 @@ async function renderHeadersComponent(request) {
     renderElementIntoDOM(component, { includeCommonStyles: true });
     await UI.Widget.Widget.allUpdatesComplete;
     await RenderCoordinator.done();
+    await UI.Widget.Widget.allUpdatesComplete;
     return component;
 }
 const getTextFromRow = (row) => {
@@ -460,11 +461,10 @@ describeWithEnvironment('RequestHeadersView', () => {
         assert.isNotNull(headerRow.shadowRoot);
         const checkRow = (shadowRoot, headerName, headerValue, isEditable) => {
             assert.strictEqual(shadowRoot.querySelector('.header-name')?.textContent?.trim(), headerName);
-            const valueEditableComponent = shadowRoot.querySelector('.header-value devtools-editable-span');
+            const valueEditableComponent = shadowRoot.querySelector('.header-value devtools-widget');
             if (isEditable) {
                 assert.instanceOf(valueEditableComponent, HTMLElement);
-                assert.isNotNull(valueEditableComponent.shadowRoot);
-                const valueEditable = valueEditableComponent.shadowRoot.querySelector('.editable');
+                const valueEditable = valueEditableComponent.querySelector('.editable');
                 assert.instanceOf(valueEditable, HTMLSpanElement);
                 assert.strictEqual(valueEditable.textContent?.trim(), headerValue);
             }
@@ -479,6 +479,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         pencilButton.click();
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         checkRow(headerRow.shadowRoot, 'foo', 'bar', true);
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideEnableEditingClicked));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.PersistenceNetworkOverridesEnabled));
@@ -504,6 +505,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         pencilButton.click();
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideFileCreated));
     });
     it('categories can be opened and closed with right/left arrow keys', async () => {
@@ -592,6 +594,7 @@ describeWithEnvironment('RequestHeadersView', () => {
         }, undefined, container);
         await UI.Widget.Widget.allUpdatesComplete;
         await RenderCoordinator.done();
+        await UI.Widget.Widget.allUpdatesComplete;
         const button = container.querySelector('.backend-link-button');
         assert.exists(button);
         assert.strictEqual(button.innerText.trim(), 'Open with APM Trace');

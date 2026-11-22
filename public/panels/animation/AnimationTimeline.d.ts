@@ -13,7 +13,10 @@ interface ToolbarViewInput {
     onTogglePauseAllClick: () => void;
     onSetPlaybackRateClick: (playbackRate: number) => void;
 }
-type ToolbarView = (input: ToolbarViewInput, output: undefined, target: HTMLElement) => void;
+interface ToolbarViewOutput {
+    focusClearButton?: () => void;
+}
+type ToolbarView = (input: ToolbarViewInput, output: ToolbarViewOutput, target: HTMLElement) => void;
 export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.AnimationModel.AnimationModel> {
     #private;
     constructor(toolbarView?: ToolbarView);

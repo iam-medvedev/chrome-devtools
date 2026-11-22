@@ -4,7 +4,7 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { IssueView } from './IssueView.js';
 export declare function getGroupIssuesByCategorySetting(): Common.Settings.Setting<boolean>;
-export declare class IssuesPane extends UI.Widget.VBox {
+export declare class IssuesPane extends UI.Widget.VBox<ShadowRoot> {
     #private;
     constructor();
     elementsToRestoreScrollPositionsFor(): Element[];

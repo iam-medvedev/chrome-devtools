@@ -49,7 +49,7 @@ describeWithEnvironment('InspectElementModeController', () => {
         await Promise.all([onModeToggle(inScopeTarget), onModeToggle(inScopeSubTarget)]);
         const anotherInScopeSubTarget = createTarget({ parentTarget: inScopeTarget });
         await onModeToggle(anotherInScopeSubTarget);
-        const anotherOutOfScopeSubTarget = createTarget({ parentTarget: inScopeTarget });
+        const anotherOutOfScopeSubTarget = createTarget({ parentTarget: outOfScopeTarget });
         failOnModeToggle(anotherOutOfScopeSubTarget);
         let expectToggle = false;
         const modeToggles = Promise.all([inScopeTarget, inScopeSubTarget, anotherInScopeSubTarget].map(t => onModeToggle(t).then(() => {
